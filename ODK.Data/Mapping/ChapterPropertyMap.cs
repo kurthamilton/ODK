@@ -8,9 +8,9 @@ namespace ODK.Data.Mapping
     public class ChapterPropertyMap : SqlMap<ChapterProperty>
     {
         public ChapterPropertyMap()
-            : base("ChapterMemberProperties")
+            : base("ChapterProperties")
         {
-            Property(x => x.Id).HasColumnName("ChapterMemberPropertyId").IsIdentity();
+            Property(x => x.Id).HasColumnName("ChapterPropertyId").IsIdentity();
             Property(x => x.ChapterId);
             Property(x => x.DataTypeId);
             Property(x => x.Name);

@@ -8,10 +8,10 @@ namespace ODK.Data.Mapping
     public class ChapterPropertyOptionMap : SqlMap<ChapterPropertyOption>
     {
         public ChapterPropertyOptionMap()
-            : base("ChapterMemberPropertyOptions")
+            : base("ChapterPropertyOptions")
         {
-            Property(x => x.Id).HasColumnName("ChapterMemberPropertyOptionId").IsIdentity();
-            Property(x => x.ChapterPropertyId).HasColumnName("ChapterMemberPropertyId");
+            Property(x => x.Id).HasColumnName("ChapterPropertyOptionId").IsIdentity();
+            Property(x => x.ChapterPropertyId);
             Property(x => x.ChapterId).FromTable("ChapterMemberProperties");
             Property(x => x.DisplayOrder);
             Property(x => x.Value);
