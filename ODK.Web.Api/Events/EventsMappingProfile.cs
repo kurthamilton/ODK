@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ODK.Core.Events;
 
 namespace ODK.Web.Api.Events
 {
@@ -6,6 +7,9 @@ namespace ODK.Web.Api.Events
     {
         public EventsMappingProfile()
         {
+            CreateMap<Event, EventResponse>();
+
+            CreateMap<EventMemberResponse, EventMemberResponseResponse>();
         }
     }
 }

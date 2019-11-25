@@ -18,4 +18,8 @@
     <ProjectReference Include="..\ODK.Services\ODK.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Admin\Events\" />
+  </ItemGroup>
+
 </Project>

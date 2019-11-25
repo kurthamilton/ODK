@@ -17,7 +17,7 @@ namespace ODK.Web.Api.Admin.Chapters
     {
         private readonly IChapterService _chapterService;
         private readonly IMapper _mapper;
-        
+
         public AdminChaptersController(IChapterService chapterService, IMapper mapper)
         {
             _chapterService = chapterService;

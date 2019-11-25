@@ -15,6 +15,9 @@ namespace ODK.Data
             AddMap(new ChapterPropertyOptionMap());
             AddMap(new DataTypeMap());
             AddMap(new EventMap());
+            AddMap(new EventResponseMap());
+            AddMap(new MemberGroupMap());
+            AddMap(new MemberGroupMemberMap());
             AddMap(new MemberImageMap());
             AddMap(new MemberMap());
             AddMap(new MemberPasswordMap());

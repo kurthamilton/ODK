@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
@@ -15,17 +16,19 @@ namespace ODK.Web.Api.Events
     public class EventsController : OdkControllerBase
     {
         private readonly IEventService _eventService;
+        private readonly IMapper _mapper;
 
-        public EventsController(IEventService eventService)
+        public EventsController(IEventService eventService, IMapper mapper)
         {
             _eventService = eventService;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public async Task<IEnumerable<EventResponse>> Get(Guid chapterId)
         {
             IReadOnlyCollection<Event> events = await _eventService.GetEvents(GetMemberId(), chapterId);
-            return events.Select(MapEventsResponseEvent);
+            return events.Select(_mapper.Map<EventResponse>);
         }
 
         [AllowAnonymous]
@@ -33,25 +36,20 @@ namespace ODK.Web.Api.Events
         public async Task<IEnumerable<EventResponse>> Public(Guid chapterId)
         {
             IReadOnlyCollection<Event> events = await _eventService.GetPublicEvents(chapterId);
-            return events.Select(MapEventsResponseEvent);
+            return events.Select(_mapper.Map<EventResponse>);
         }
 
-        private static EventResponse MapEventsResponseEvent(Event @event)
+        [HttpGet("{id}/responses")]
+        public async Task<IEnumerable<EventMemberResponseResponse>> Responses(Guid id)
         {
-            return new EventResponse
-            {
-                Address = @event.Address,
-                ChapterId = @event.ChapterId,
-                Date = @event.Date,
-                Description = @event.Description,
-                Id = @event.Id,
-                ImageUrl = @event.ImageUrl,
-                IsPublic = @event.IsPublic,
-                Location = @event.Location,
-                MapQuery = @event.MapQuery,
-                Name = @event.Name,
-                Time = @event.Time
-            };
+            IReadOnlyCollection<EventMemberResponse> responses = await _eventService.GetEventResponses(GetMemberId(), id);
+            return responses.Select(_mapper.Map<EventMemberResponseResponse>);
+        }
+
+        [HttpPut("{id}/respond")]
+        public async Task Respond(Guid id, EventResponseType type)
+        {
+            await _eventService.UpdateMemberResponse(GetMemberId(), id, type);
         }
     }
 }

@@ -13,6 +13,14 @@ namespace ODK.Data.Repositories
         {
         }
 
+        public async Task<Event> GetEvent(Guid id)
+        {
+            return await Context
+                .Select<Event>()
+                .Where(x => x.Id).EqualTo(id)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime after)
         {
             return await Context
@@ -22,14 +30,12 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public IReadOnlyCollection<EventResponse> GetEventResponses(int eventId)
+        public async Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid eventId)
         {
-            throw new NotImplementedException();
-        }
-
-        public IReadOnlyCollection<EventResponse> GetMemberResponses(int memberId, IEnumerable<int> eventIds)
-        {
-            throw new NotImplementedException();
+            return await Context
+                .Select<EventMemberResponse>()
+                .Where(x => x.EventId).EqualTo(eventId)
+                .ToArrayAsync();
         }
 
         public async Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId, DateTime after)
@@ -42,9 +48,30 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public void UpdateEventResponse(EventResponse eventResponse)
+        public async Task UpdateEventResponse(EventMemberResponse response)
         {
-            throw new NotImplementedException();
+            if (await MemberHasRespondedToEvent(response.EventId, response.MemberId))
+            {
+                await Context
+                    .Update<EventMemberResponse>()
+                    .Set(x => x.ResponseTypeId, response.ResponseTypeId)
+                    .Where(x => x.EventId).EqualTo(response.EventId)
+                    .Where(x => x.MemberId).EqualTo(response.MemberId)
+                    .ExecuteAsync();
+            }
+            else
+            {
+                await Context.InsertAsync(response);
+            }
+        }
+
+        private async Task<bool> MemberHasRespondedToEvent(Guid eventId, Guid memberId)
+        {
+            return await Context
+                .Select<EventMemberResponse>()
+                .Where(x => x.EventId).EqualTo(eventId)
+                .Where(x => x.MemberId).EqualTo(memberId)
+                .CountAsync() > 0;
         }
     }
 }

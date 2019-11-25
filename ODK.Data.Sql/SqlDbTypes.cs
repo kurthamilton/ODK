@@ -25,6 +25,12 @@ namespace ODK.Data.Sql
         public static SqlDbType GetSqlDbType<T>()
         {
             Type type = typeof(T);
+
+            if (type.IsEnum)
+            {
+                type = type.GetEnumUnderlyingType();
+            }
+
             if (Types.ContainsKey(type))
             {
                 return Types[type];

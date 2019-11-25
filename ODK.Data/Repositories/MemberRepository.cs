@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.Threading.Tasks;
 using ODK.Core.Members;
 using ODK.Data.Sql;
@@ -15,14 +13,16 @@ namespace ODK.Data.Repositories
         {
         }
 
-        public async Task AddMemberGroup(int chapterId, string name)
+        public async Task AddMemberGroup(Guid chapterId, string name)
         {
-            throw new NotImplementedException();
+            MemberGroup memberGroup = new MemberGroup(Guid.Empty, chapterId, name);
+            await Context.InsertAsync(memberGroup);
         }
 
-        public async Task AddMemberToGroup(int memberId, int groupId)
+        public async Task AddMemberToGroup(Guid memberId, Guid memberGroupId)
         {
-            throw new NotImplementedException();
+            MemberGroupMember memberGroupMember = new MemberGroupMember(memberGroupId, memberId);
+            await Context.InsertAsync(memberGroupMember);
         }
 
         public async Task AddPasswordResetRequest(Guid memberId, DateTime created, DateTime expires, string token)
@@ -37,9 +37,12 @@ namespace ODK.Data.Repositories
             await Context.InsertAsync(token);
         }
 
-        public async Task DeleteMemberGroup(int groupId)
+        public async Task DeleteMemberGroup(Guid id)
         {
-            throw new NotImplementedException();
+            await Context
+                .Delete<MemberGroup>()
+                .Where(x => x.Id).EqualTo(id)
+                .ExecuteAsync();
         }
 
         public async Task DeletePasswordResetRequest(Guid passwordResetRequestId)
@@ -74,19 +77,21 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Dictionary<int, IReadOnlyCollection<MemberGroup>>> GetMemberGroupMembers(int chapterId)
+        public async Task<IReadOnlyCollection<MemberGroup>> GetMemberGroups(Guid chapterId)
         {
-            throw new NotImplementedException();
+            return await Context
+                .Select<MemberGroup>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .ToArrayAsync();
         }
 
-        public async Task<IReadOnlyCollection<MemberGroup>> GetMemberGroups(int chapterId)
+        public async Task<IReadOnlyCollection<MemberGroup>> GetMemberGroupsForMember(Guid memberId)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<IReadOnlyCollection<MemberGroup>> GetMemberGroupsForMember(int memberId)
-        {
-            throw new NotImplementedException();
+            return await Context
+                .Select<MemberGroup>()
+                .Join<MemberGroupMember, Guid>(x => x.Id, x => x.MemberGroupId)
+                .Where<MemberGroupMember, Guid>(x => x.MemberId).EqualTo(memberId)
+                .ToArrayAsync();
         }
 
         public async Task<MemberImage> GetMemberImage(Guid memberId)
@@ -137,9 +142,13 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task RemoveMemberFromGroup(int memberId, int groupId)
+        public async Task RemoveMemberFromGroup(Guid memberId, Guid memberGroupId)
         {
-            throw new NotImplementedException();
+            await Context
+                .Delete<MemberGroupMember>()
+                .Where(x => x.MemberGroupId).EqualTo(memberGroupId)
+                .Where(x => x.MemberId).EqualTo(memberId)
+                .ExecuteAsync();
         }
 
         public async Task UpdateMember(Guid memberId, string emailAddress, bool emailOptIn, string firstName, string lastName)
@@ -154,9 +163,13 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        public async Task UpdateMemberGroup(int chapterId, string oldName, string newName)
+        public async Task UpdateMemberGroup(MemberGroup memberGroup)
         {
-            throw new NotImplementedException();
+            await Context
+                .Update<MemberGroup>()
+                .Set(x => x.Name, memberGroup.Name)
+                .Where(x => x.Id).EqualTo(memberGroup.Id)
+                .ExecuteAsync();
         }
 
         public async Task UpdateMemberImage(MemberImage image)

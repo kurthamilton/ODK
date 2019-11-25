@@ -6,10 +6,10 @@ namespace ODK.Core.Events
 {
     public interface IEventRepository
     {
+        Task<Event> GetEvent(Guid id);
         Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime after);
-        IReadOnlyCollection<EventResponse> GetEventResponses(int eventId);
-        IReadOnlyCollection<EventResponse> GetMemberResponses(int memberId, IEnumerable<int> eventIds);
+        Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid eventId);
         Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId, DateTime after);
-        void UpdateEventResponse(EventResponse eventResponse);
+        Task UpdateEventResponse(EventMemberResponse response);
     }
 }

@@ -59,7 +59,7 @@ namespace ODK.Services.Members
             Member currentMember = await _memberRepository.GetMember(currentMemberId);
             AssertMemberChapterPermission(currentMember, chapterId);
             return members;
-        }                
+        }
 
         public async Task UpdateMemberImage(MemberImage image)
         {
@@ -105,7 +105,7 @@ namespace ODK.Services.Members
             {
                 throw new OdkNotAuthorizedException();
             }
-        }                
+        }
 
         private async Task AssertMemberPermission(Guid currentMemberId, Guid memberId)
         {

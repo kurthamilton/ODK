@@ -1,9 +1,20 @@
-﻿namespace ODK.Core.Members
+﻿using System;
+
+namespace ODK.Core.Members
 {
     public class MemberGroup
     {
-        public int GroupId { get; set; }
+        public MemberGroup(Guid id, Guid chapterId, string name)
+        {
+            ChapterId = chapterId;
+            Id = id;
+            Name = name;
+        }
 
-        public string Name { get; set; }
+        public Guid ChapterId { get; }
+
+        public Guid Id { get; }
+
+        public string Name { get; }
     }
 }
