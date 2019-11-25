@@ -1,0 +1,24 @@
+﻿@using ODK.Umbraco.Web.Mvc;
+@using ODK.Website.Models;
+@model OdkUmbracoTemplateModel<PersonThumbnailViewModel>
+@{
+    PersonThumbnailViewModel viewModel = Model.Value;
+    string memberUrl = viewModel.PersonPageUrl + "?id=" + viewModel.MemberId;
+}
+
+<div id="member-@viewModel.MemberId" class="card member-tile">
+    <a href="@memberUrl">
+        @if (viewModel.PictureUrl != null)
+        {
+            <img class="card-img-top" src="@viewModel.PictureUrl" alt="Photo of @viewModel.FullName"
+                 data-toggle="tooltip" title="@(viewModel.ShowFullName ? null : viewModel.FullName)">
+        }
+
+        @if (viewModel.ShowFullName)
+        {
+            <div class="search-field member-tile__footer">
+                @viewModel.FullName
+            </div>
+        }
+    </a>
+</div>

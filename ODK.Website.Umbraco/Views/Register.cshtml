@@ -1,0 +1,37 @@
+﻿@using System.Web.Mvc;
+@using Newtonsoft.Json.Linq;
+@using ODK.Umbraco.Content;
+@using ODK.Umbraco.Members;
+@inherits ODK.Umbraco.Web.Mvc.OdkUmbracoTemplatePage
+@{
+    Layout = "Master.cshtml";
+
+    if (CurrentMember != null)
+    {
+        Response.Redirect(Model.Content.Parent.Url);
+        return;
+    }
+
+    string registerButtonText = HomePage.GetHomePageValue<string>("registerButtonText");
+
+    RegisterMemberModel invalidModel = GetInvalidModel<RegisterMemberModel>();
+    RegisterMemberModel model = new RegisterMemberModel(invalidModel);
+    var registerTerms = Model.Content.GetPropertyValue<JArray>("registerTerms");
+}
+
+<div class="container">
+    @Html.Partial("Content")
+
+    @using (Html.BeginUmbracoForm("Register", "Account", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+
+        @Html.Partial("MemberForm", ModelFor<MemberModel>(model))
+
+        @Html.Partial("Form", registerTerms)
+
+        <div>
+            <button type="submit" class="btn btn-primary">@registerButtonText</button>
+        </div>
+    }
+</div>

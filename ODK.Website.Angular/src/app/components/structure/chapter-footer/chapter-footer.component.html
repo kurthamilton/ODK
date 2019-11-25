@@ -1,0 +1,15 @@
+<app-footer>
+    <ng-container *ngIf="links">
+        <div *ngIf="links.instagram">
+            <i class="fab fa-instagram mr-1"></i><a [attr.href]="'https://www.instagram.com/' + links.instagram" target="_blank">{{links.instagram}}</a>
+        </div>
+    
+        <div *ngIf="links.facebook">
+            <i class="fab fa-facebook-f mr-1"></i><a [attr.href]="'https://www.facebook.com/' + links.facebook" target="_blank">{{links.facebook}}</a>
+        </div>
+    
+        <div *ngIf="links.twitter">
+            <i class="fab fa-twitter mr-1"></i><a [attr.href]="'https://www.twitter.com/' + links.twitter" target="_blank">{{links.twitter}}</a>
+        </div>
+    </ng-container>    
+</app-footer>

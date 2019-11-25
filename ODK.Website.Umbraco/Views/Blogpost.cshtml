@@ -1,0 +1,16 @@
+﻿@inherits Umbraco.Web.Mvc.UmbracoTemplatePage
+@{
+    Layout = "Master.cshtml";
+    
+    string excerpt = Model.Content.GetPropertyValue<string>("excerpt");
+}
+
+<section class="section section--main">
+    <div class="container">
+        <article>
+            @Html.Partial("BlogpostMeta", Model.Content)
+            <h3>@excerpt</h3>
+            @Html.Partial("Content")
+        </article>
+    </div>
+</section>

@@ -1,0 +1,52 @@
+﻿@using ODK.Core.Events;
+@using ODK.Umbraco.Events;
+@inherits ODK.Umbraco.Web.Mvc.OdkUmbracoTemplatePage
+@{
+	Layout = "Master.cshtml";
+
+	ODK.Core.Members.IMember member = CurrentMember;
+
+	EventSearchCriteria criteria = new EventSearchCriteria
+	{
+	    FutureOnly = true
+	};
+
+	EventModel[] events = EventService.SearchEvents(Model.Content, member, criteria).ToArray();
+
+    Dictionary<int, EventResponseType> responses = member != null ? EventService.GetMemberResponses(member.Id, events.Select(x => x.Id)) : null;
+}
+
+<section class="section section--main">
+    <div class="container">
+        @if (events.Length == 0)
+        {
+            if (member == null)
+            {
+                <p>There are no upcoming public events. Sign in to see private events.</p>
+            }
+            else
+            {
+                <p>There are no upcoming events.</p>
+            }
+        }
+
+        @foreach (EventModel ev in events)
+        {
+            <div class="list-item">
+                <h2>
+                    @if (responses != null && responses.ContainsKey(ev.Id))
+                    {
+                        @Html.Partial("Events/EventResponseIcon", responses[ev.Id])
+                    }
+                    <a href="@ev.Url">@ev.Name</a>
+                </h2>
+                <h3>@ev.Date.ToString("dddd, dd MMMM yyyy")</h3>
+                <div>@ev.Location</div>
+                @if (!string.IsNullOrEmpty(ev.Description))
+                {
+                    <div>@Html.Raw(ev.Description)</div>
+                }
+            </div>
+        }
+    </div>
+</section>

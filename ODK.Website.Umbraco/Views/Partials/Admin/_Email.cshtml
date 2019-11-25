@@ -1,0 +1,23 @@
+﻿@model ODK.Website.Models.EmailViewModel
+
+@Html.HiddenFor(x => x.Id)
+
+<div class="form-group row">
+    @Html.LabelFor(x => x.Subject, new { @class = "col-form-label col-3 col-md-2  text-right", @for = Model.Id + "-email-subject" })
+    <div class="col-9 col-md-10">
+        @Html.TextBoxFor(x => x.Subject, new { @class = "form-control", id = Model.Id + "-email-subject" })
+    </div>
+</div>
+
+<div class="form-group row">
+    @Html.LabelFor(x => x.Body, new { @class = "col-form-label col-3 col-md-2 text-right", @for = Model.Id + "-email-body" })
+    <div class="col-9 col-md-10">
+        @Html.TextAreaFor(x => x.Body, new { @class = "form-control js-html-editor", id = Model.Id + "-email-body" })
+    </div>
+</div>
+
+<div class="form-group row">
+    <div class="col-9 col-md-10 offset-3 offset-md-2">
+        <button type="submit" class="btn btn-primary">Send</button>
+    </div>
+</div>

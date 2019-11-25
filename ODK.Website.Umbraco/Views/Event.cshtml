@@ -1,0 +1,77 @@
+﻿@using Newtonsoft.Json.Linq;
+@using ODK.Umbraco.Events;
+@inherits ODK.Umbraco.Web.Mvc.OdkUmbracoTemplatePage
+@{
+    Layout = "Master.cshtml";
+
+    EventModel eventModel = new EventModel(Model.Content);
+
+    bool restricted = CurrentMember == null && !eventModel.Public;
+    if (restricted)
+    {
+        Response.Redirect(Model.Content.Parent.Url);
+        return;
+    }
+
+    string mapApiKey = Model.Content.Site().GetPropertyValue<string>("googleMapsApiKey");
+    string mapUrl = !string.IsNullOrEmpty(eventModel.MapQuery) ? "https://www.google.com/maps/embed/v1/place?key=" + mapApiKey + "&q=" + eventModel.MapQuery : null;
+
+    IEnumerable<IPublishedContent> paymentOptions = Model.Content.Children;
+
+    JArray form = Model.Content.GetPropertyValue<JArray>("eventForm");
+}
+
+<section class="section section--main">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-9 col-md-8">
+                <h2>@eventModel.Location</h2>
+                <h2>@eventModel.Date.ToString("dd MMMM yyyy")</h2>
+
+                @if (!string.IsNullOrEmpty(eventModel.Time))
+                {
+                    <h3>@eventModel.Time</h3>
+                }
+
+                @if (!string.IsNullOrEmpty(eventModel.ImageUrl))
+                {
+                    <p><img src="@eventModel.ImageUrl" /></p>
+                }
+
+                <p>
+                    <a class="d-md-none" href="#map">@eventModel.Address</a>
+                    <span class="d-none d-md-inline">@eventModel.Address</span>
+                </p>
+
+                @if (!string.IsNullOrEmpty(eventModel.Description))
+                {
+                    <p>
+                        @Html.Raw(eventModel.Description)
+                    </p>
+                }
+
+                <div class="d-none d-md-block">
+                    @RenderMap(mapUrl)
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-4">
+                <div class="sidebar" data-ajax-container>
+                    @Html.Action("EventSidebar", "Events", new { eventId = Model.Content.Id })
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-8 d-md-none mt-5" id="map">
+                @RenderMap(mapUrl)
+            </div>
+        </div>
+    </div>
+</section>
+
+@helper RenderMap(string url)
+{
+    if (string.IsNullOrEmpty(url))
+    {
+        return;
+    }
+
+    <iframe height="450" frameborder="0" style="border:0; width: 100%;" src="@url" allowfullscreen></iframe>
+}

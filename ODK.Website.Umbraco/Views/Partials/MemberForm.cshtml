@@ -1,0 +1,173 @@
+﻿@using ODK.Umbraco.Members;
+@using ODK.Umbraco.Web.Mvc;
+@model OdkUmbracoTemplateModel<ODK.Core.Members.IMember>
+@{
+    IEnumerable<SelectListItem> knittingExperienceOptions = Model.Helper.GetKnittingExperienceOptions().Select(x => new SelectListItem
+    {
+        Value = x.Value,
+        Text = x.Value
+    });
+
+    RegisterMemberModel registerMember = Model.Value as RegisterMemberModel;
+    UpdateMemberModel updateMember = Model.Value as UpdateMemberModel;
+
+    HtmlHelper<MemberModel> memberHelper = Html.For<MemberModel>(Model.Value);
+    HtmlHelper<RegisterMemberModel> registerHelper = registerMember != null ? Html.For<RegisterMemberModel>(registerMember) : null;
+    HtmlHelper<UpdateMemberModel> updateHelper = updateMember != null ? Html.For<UpdateMemberModel>(updateMember) : null;
+}
+
+<div class="form-group required">
+    @memberHelper.LabelFor(x => x.Email, new { @class = "form-control-label" })
+    @memberHelper.TextBoxFor(x => x.Email, new { type = "email", @class = "form-control", required = "" })
+    @memberHelper.ValidationMessageFor(x => x.Email)
+</div>
+
+<div class="form-group">
+    <div class="form-check">
+        @memberHelper.CheckBoxFor(x => x.EmailOptIn, new { @class = "form-check-input" })
+        @memberHelper.LabelFor(x => x.EmailOptIn, new { @class = "form-control-label form-check-label" })
+        <span class="text-muted">Opt in to emails informing you of upcoming events</span>
+    </div>
+</div>
+
+@if (registerHelper != null)
+{
+    <div class="form-group required">
+        <div class="form-row">
+            <div class="col-6">
+                @registerHelper.LabelFor(x => x.Password, new { @class = "form-control-label" })
+                @registerHelper.TextBoxFor(x => x.Password, new { type = "password", @class = "form-control", required = "" })
+                @registerHelper.ValidationMessageFor(x => x.Password)
+            </div>
+            <div class="col-6">
+                @registerHelper.LabelFor(x => x.PasswordConfirm, new { @class = "form-control-label" })
+                @registerHelper.TextBoxFor(x => x.PasswordConfirm, new { type = "password", @class = "form-control", required = "" })
+                @registerHelper.ValidationMessageFor(x => x.PasswordConfirm)
+            </div>
+        </div>
+    </div>
+}
+
+<div class="form-group required">
+    <div class="form-row">
+        <div class="col-6">
+            @memberHelper.LabelFor(x => x.FirstName, new { @class = "form-control-label" })
+            @memberHelper.TextBoxFor(x => x.FirstName, new { @class = "form-control", required = "" })
+            @memberHelper.ValidationMessageFor(x => x.FirstName)
+        </div>
+        <div class="col-6">
+            @memberHelper.LabelFor(x => x.LastName, new { @class = "form-control-label" })
+            @memberHelper.TextBoxFor(x => x.LastName, new { @class = "form-control", required = "" })
+            @memberHelper.ValidationMessageFor(x => x.LastName)
+        </div>
+    </div>
+</div>
+
+@if (registerHelper != null)
+{
+    <div class="form-group required">
+        @registerHelper.LabelFor(x => x.UploadedPicture, new { @class = "form-control-label" })
+        <div class="input-group mb-3">
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" accept="image/*"
+                       name="@registerHelper.NameFor(x => x.UploadedPicture)" id="@registerHelper.IdFor(x => x.UploadedPicture)">
+                <label class="custom-file-label" for="@registerHelper.NameFor(x => x.UploadedPicture)">Choose file</label>
+            </div>
+        </div>
+        @registerHelper.ValidationMessageFor(x => x.UploadedPicture)
+    </div>
+}
+else if (updateHelper != null)
+{
+    <div class="form-group">
+        @updateHelper.LabelFor(x => x.UploadedPicture, new { @class = "form-control-label" })
+        <div class="input-group mb-3">
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" accept="image/*"
+                       name="@updateHelper.NameFor(x => x.UploadedPicture)" id="@updateHelper.IdFor(x => x.UploadedPicture)">
+                <label class="custom-file-label" for="@updateHelper.NameFor(x => x.UploadedPicture)">Choose file</label>
+            </div>
+        </div>
+        @updateHelper.ValidationMessageFor(x => x.UploadedPicture)
+    </div>
+}
+
+<div class="form-group">
+    @memberHelper.LabelFor(x => x.Neighbourhood, new { @class = "form-control-label" })
+    @Html.Partial("Tooltip", "For other Knitwits to see who's nearby")
+    @memberHelper.TextBoxFor(x => x.Neighbourhood, new { @class = "form-control" })
+    @memberHelper.ValidationMessageFor(x => x.Neighbourhood)
+</div>
+
+<div class="form-group">
+    @memberHelper.LabelFor(x => x.Hometown, new { @class = "form-control-label" })
+    @Html.Partial("Tooltip", "Your hometown")
+    @memberHelper.TextBoxFor(x => x.Hometown, new { @class = "form-control" })
+    @memberHelper.ValidationMessageFor(x => x.Hometown)
+</div>
+
+<div class="form-group required">
+    @memberHelper.LabelFor(x => x.FavouriteBeverage, new { @class = "form-control-label" })
+    @memberHelper.TextBoxFor(x => x.FavouriteBeverage, new { @class = "form-control", required = "" })
+    @memberHelper.ValidationMessageFor(x => x.FavouriteBeverage)
+</div>
+
+<div class="form-group required">
+    @memberHelper.LabelFor(x => x.KnittingExperience, new { @class = "form-control-label" })
+    <label class="text-muted">You don't have to be a great knitter to be a Drunken Knitwit!</label>
+    @memberHelper.DropDownListFor(x => x.KnittingExperience, knittingExperienceOptions, "Select...", new { @class = "form-control" })
+    @memberHelper.ValidationMessageFor(x => x.KnittingExperience)
+</div>
+
+<div class="form-group required" data-other-for="@memberHelper.IdFor(x => x.KnittingExperience)" data-other-key="@knittingExperienceOptions.Last().Value">
+    @memberHelper.LabelFor(x => x.KnittingExperienceOther, new { @class = "form-control-label", required = "" })
+    @memberHelper.TextBoxFor(x => x.KnittingExperienceOther, new { @class = "form-control" })
+    @memberHelper.ValidationMessageFor(x => x.KnittingExperienceOther)
+</div>
+
+<div class="form-group required">
+    @memberHelper.LabelFor(x => x.Reason, new { @class = "form-control-label" })
+    @memberHelper.TextAreaFor(x => x.Reason, new { rows = 3, @class = "form-control", required = "", maxlength = 500 })
+    @memberHelper.ValidationMessageFor(x => x.Reason)
+</div>
+
+<div class="form-group">
+    @memberHelper.LabelFor(x => x.FacebookProfile, new { @class = "form-control-label" })
+    @Html.Partial("Tooltip", "This is optional, and only other members will be able to see it.")
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text">
+                <span class="d-none d-md-inline">https://www.facebook.com/</span>
+                <span class="d-md-none"><i class="fa fa-facebook-square"></i>&nbsp;<span class="align-middle">/</span></span>
+            </span>
+        </div>
+        @memberHelper.TextBoxFor(x => x.FacebookProfile, new { @class = "form-control" })
+    </div>
+    @memberHelper.ValidationMessageFor(x => x.FacebookProfile)
+</div>
+
+@if (Model.Value.Joined != null)
+{
+    <div class="form-group">
+        @memberHelper.LabelFor(x => x.Joined, new { @class = "form-control-label" })
+        <span class="form-control-plaintext">@Model.Value.Joined.Value.ToString("dd MMMM yyyy")</span>
+    </div>
+}
+
+@if (Model.Value.Type != MemberTypes.None)
+{
+    <div class="form-group">
+        @memberHelper.LabelFor(x => x.Type, new { @class = "form-control-label" })
+        <span class="form-control-plaintext">@Model.Value.Type</span>
+    </div>
+}
+
+@helper RequiredIf(bool condition)
+{
+    if (!condition)
+    {
+        return;
+    }
+
+    @Html.Raw("required")
+}

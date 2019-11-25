@@ -1,0 +1,6 @@
+<div *ngIf="notifications.length" class="container">
+    <div *ngFor="let notification of notifications" class="mt-3">
+        <app-notification [notification]="notification" (dismiss)="onDismiss(notification)">
+        </app-notification>
+    </div>
+</div>

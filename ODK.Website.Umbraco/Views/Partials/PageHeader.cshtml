@@ -1,0 +1,10 @@
+﻿@inherits Umbraco.Web.Mvc.UmbracoTemplatePage
+@{
+    string title = Model.Content.GetPropertyValue<string>("PageTitle") ?? Model.Content.Name;
+}
+
+<section class="section section--header">
+    <div class="container">
+        <h1>@title</h1>
+    </div>
+</section>

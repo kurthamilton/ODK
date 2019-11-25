@@ -1,0 +1,58 @@
+﻿@using Newtonsoft.Json.Linq;
+@model JArray
+
+@foreach (JToken field in Model)
+{
+    <div>
+        @RenderField(field)
+    </div>
+}
+
+@helper RenderField(JToken field)
+{
+    string name = field.Value<string>("formName");
+    string label = field.Value<string>("formLabel");
+    string subLabel = field.Value<string>("formSublabel");
+    string type = field.Value<string>("formType");
+    string options = field.Value<string>("formOptions");
+    bool required = field.Value<string>("formRequired") == "True";
+
+    <div class="form-group @(required ? "required" : null)">
+        @if (type != "CheckBox")
+        {
+            @Label(name, label, subLabel)
+        }
+
+        @switch (type)
+        {
+            case "DropDownList":
+
+                <select id="@name" name="@name" class="form-control" @(required ? "required" : null)>
+                    <option value="">Please select...</option>
+                    @foreach (string option in options.Split('|'))
+                    {
+                        <option>@option</option>
+                    }
+                </select>
+                break;
+
+            case "CheckBox":
+                <div class="form-check">
+                    <input id="@name" name="@name" type="checkbox" class="form-check-input" @(required ? "required" : null) value="true">
+                    <input type="hidden" value="false" name="@name" />
+                    @Label(name, label, subLabel, "form-check-label")
+                </div>
+                break;
+        }
+    </div>
+
+}
+
+@helper Label(string name, string label, string subLabel, string cssClass = "form-control-label")
+{
+    <label for="@name" class="@cssClass">@Html.Raw(label)</label>
+    if (!string.IsNullOrEmpty(subLabel))
+    {
+        <span class="text-muted">@subLabel</span>
+    }
+}

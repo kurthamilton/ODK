@@ -1,0 +1,37 @@
+﻿@inherits Umbraco.Web.Mvc.UmbracoTemplatePage
+@{
+    string[] messages = TempData["Feedback.Messages"] as string[];
+    if (messages == null || messages.Length == 0)
+    {
+        return;
+    }
+
+    bool[] successes = TempData["Feedback.Successes"] as bool[];
+    if (successes == null || messages.Length != successes.Length)
+    {
+        return;
+    }
+}
+
+<div class="container">
+    @for (int i = 0; i < messages.Length; i++)
+    {
+        @RenderMessage(messages[i], successes[i])
+    }
+</div>
+
+@helper RenderMessage(string message, bool success)
+{
+    if (string.IsNullOrEmpty(message))
+    {
+        return;
+    }
+
+    string alertType = success ? "success" : "warning";
+    <div class="alert alert-@alertType alert-dismissible fade show mt-3" role="alert">
+        @message
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}

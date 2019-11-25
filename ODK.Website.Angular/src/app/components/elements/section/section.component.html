@@ -1,0 +1,20 @@
+<section class="section" 
+         [class.section--hero]="hero === true"
+         [class.section--dark]="theme === 'dark'" [class.section--light]="theme === 'light'">    
+    
+    <div *ngIf="hero === true" class="section--hero__content">
+        <h1 *ngIf="title">{{title}}</h1>
+        <ng-container *ngTemplateOutlet="content">
+        </ng-container>
+    </div>
+
+    <ng-container *ngIf="hero !== true">
+        <h1 *ngIf="title">{{title}}</h1>
+        <ng-container *ngTemplateOutlet="content">
+        </ng-container>
+    </ng-container>
+</section>
+
+<ng-template #content>
+    <ng-content></ng-content>
+</ng-template>

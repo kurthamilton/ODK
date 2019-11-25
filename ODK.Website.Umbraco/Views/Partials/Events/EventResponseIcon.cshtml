@@ -1,0 +1,8 @@
+﻿@using ODK.Core.Events;
+@model EventResponseType
+@{
+    string icon = Model == EventResponseType.Yes ? "check" : Model == EventResponseType.Maybe ? "question" : "times";
+    string colour = Model == EventResponseType.Yes ? "success" : Model == EventResponseType.Maybe ? "warning" : "danger";
+}
+
+<i class="fa fa-@icon-circle text-@colour align-middle icon--event-response" data-toggle="tooltip" title="@Model"></i>

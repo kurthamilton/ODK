@@ -1,0 +1,7 @@
+﻿@model IPublishedContent
+@{
+    IEnumerable<string> categories = Model.GetPropertyValue<IEnumerable<string>>("categories");
+}
+
+<div class="small">@Model.CreateDate.ToString("dd MMMM yyyy")</div>
+<div class="small">@Html.Partial("~/Views/Partials/CategoryLinks.cshtml", categories)</div>

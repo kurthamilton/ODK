@@ -1,0 +1,7 @@
+/*force buttons to be visible*/
+.fc-button-group,
+.fc .fc-prev-button, 
+.fc .fc-next-button,
+.fc .fc-today-button{
+	display: block;
+}

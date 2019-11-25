@@ -1,0 +1,20 @@
+﻿@using ODK.Website.Models.Payments;
+@model RedirectToCheckoutModel
+@{
+    Layout = "~/Views/Master.cshtml";
+
+    <input type="hidden" class="js-api-key" value="@Model.Payment.ApiPublicKey" />
+    <input type="hidden" class="js-payment-id" value="@Model.PaymentId" />
+}
+
+<section class="section section--main">
+    <div class="container">
+        Redirecting to checkout...
+    </div>
+</section>
+
+@section Scripts
+{
+    <script src="https://js.stripe.com/v3/"></script>
+    @Scripts.Render("~/bundles/js/account")
+}

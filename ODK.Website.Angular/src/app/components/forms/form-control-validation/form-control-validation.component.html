@@ -1,0 +1,5 @@
+<ng-container *ngIf="control.invalid && (control.touched || validated)">
+    <div *ngIf="control.errors['required']" class="text-danger">
+        Required
+    </div>    
+</ng-container>

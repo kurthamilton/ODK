@@ -1,0 +1,52 @@
+.section {
+    padding: 90px 20px;
+}
+
+.section--main {
+	padding-top: 30px;
+}
+
+.section--header,
+.section--footer {
+    padding: 1rem 0;
+}
+
+.section--header h1 {
+    font-size: 2rem;
+	margin-bottom: 0;
+}
+
+.section--hero {
+	background-position-y: 0;
+    padding: 50px 20px;
+    
+    align-items: center;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+.section--hero__content {
+	font-size: 1.4rem;
+    max-width: 760px;
+    
+    h1 {
+        font-size: 3rem;
+    }
+    
+    h1:not(:first-child) {
+        margin-top: 4rem;
+    }
+}
+
+.section--dark {
+    background: rgba(37,33,33,.6);
+}
+
+.section--light {
+    background: hsla(0,0%,88%,.6);
+}
+
+.section--dark .section--hero__content {
+	color: #fff;
+}

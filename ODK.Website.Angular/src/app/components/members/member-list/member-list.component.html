@@ -1,0 +1,7 @@
+<ng-container *ngIf="members">
+    <div class="row no-gutters">        
+        <div *ngFor="let member of members" class="col-md-2 col-4">
+            <app-list-member [member]="member"></app-list-member>    
+        </div>
+    </div>
+</ng-container>

@@ -1,0 +1,21 @@
+<footer>
+    <section class="section section--footer bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <a [routerLink]="links.home">Knitwits International Home</a>
+                        </div>
+                        <div class="col-md-12">
+                            <a [routerLink]="links.privacy">Privacy</a>
+                        </div>
+                    </div>                    
+                </div>
+                <div class="col-md-6">        
+                    <ng-content></ng-content>
+                </div>
+            </div>
+        </div>
+    </section>
+</footer>

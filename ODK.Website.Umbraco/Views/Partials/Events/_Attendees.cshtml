@@ -1,0 +1,49 @@
+﻿@using ODK.Core.Events;
+@using ODK.Umbraco.Web.Mvc;
+@using ODK.Website.Models;
+
+@model EventSidebarViewModel
+
+@RenderMemberResponses(EventResponseType.Yes)
+@RenderMemberResponses(EventResponseType.Maybe)
+@RenderMemberResponses(EventResponseType.No)
+
+@helper RenderMemberResponses(EventResponseType responseType)
+{
+    if (!Model.MemberResponses.ContainsKey(responseType))
+    {
+        return;
+    }
+
+    IReadOnlyCollection<ODK.Core.Members.IMember> members = Model.MemberResponses[responseType];
+    if (members.Count == 0)
+    {
+        return;
+    }
+
+    string title =
+        responseType == EventResponseType.Yes
+        ? "Going"
+        : responseType == EventResponseType.Maybe
+        ? "Maybe"
+        : "Not going";
+
+    <div class="card">
+        <div class="card-header">
+            <a href="#" data-toggle="collapse" data-target="#responses-@responseType">@title (@members.Count)</a>
+        </div>
+        <div id="responses-@responseType" class="card-body event-attendees collapse @(responseType == EventResponseType.Yes ? "show" : null)">
+            <div class="row">
+                @foreach (ODK.Core.Members.IMember member in members)
+                {
+                    IPublishedContent chapter = Model.Helper.Content(member.Chapter.Id);
+                    PersonThumbnailViewModel viewModel = new PersonThumbnailViewModel(member, chapter, false);
+
+                    <div class="col-3 col-md-4">
+                        @Html.Partial("PersonThumbnail", new OdkUmbracoTemplateModel<PersonThumbnailViewModel>(viewModel, null))
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

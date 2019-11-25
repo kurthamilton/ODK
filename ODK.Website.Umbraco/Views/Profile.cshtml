@@ -1,0 +1,80 @@
+﻿@using ODK.Umbraco.Members;
+@using ODK.Umbraco.Web.Mvc;
+@using ODK.Website.Controllers;
+@inherits ODK.Umbraco.Web.Mvc.OdkUmbracoTemplatePage
+@{
+    Layout = "Master.cshtml";
+
+    UpdateMemberModel invalidUpdateMemberModel = GetInvalidModel<UpdateMemberModel>();
+    UpdateMemberModel memberModel = new UpdateMemberModel(CurrentUmbracoMember, invalidUpdateMemberModel);
+
+    IPublishedContent chapter = Umbraco.TypedContent(memberModel.Chapter.Id);
+    IPublishedContent accountPage = chapter.GetPropertyValue<IPublishedContent>("accountPage");
+    string accountUrl = accountPage != null ? accountPage.Url : null;
+
+    ChangePasswordModel invalidChangePasswordModel = GetInvalidModel<ChangePasswordModel>();
+    bool isChangePasswordError = invalidChangePasswordModel != null;
+    HtmlHelper<ChangePasswordModel> changePasswordHelper = Html.For<ChangePasswordModel>(invalidChangePasswordModel != null ? invalidChangePasswordModel : new ChangePasswordModel());
+}
+
+<section class="section section--main">
+    <div class="container">
+        <div class="row">
+            <div class="col-6">
+                @if (accountPage != null)
+                {
+                    <div><a href="@accountPage.Url">My subscription</a></div>
+                }
+                <div><a href="#change-password-modal" data-toggle="modal">Change password</a></div>
+            </div>
+
+            @if (memberModel.Picture != null)
+            {
+                <div class="col-6">
+                    <div class="form-group text-right">
+                        <img src="@memberModel.Picture.Url" class="picture--profile" />
+                    </div>
+                </div>
+            }
+        </div>
+
+        @using (Html.BeginUmbracoForm("Update", "Account", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            @Html.Partial("MemberForm", ModelFor<MemberModel>(memberModel))
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        }
+    </div>
+</section>
+
+@using (Html.BeginUmbracoForm<AccountController>("ChangePassword", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="modal @(isChangePasswordError ? "show" : null)" tabindex="-1" role="dialog" id="change-password-modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="form-group">
+                        @changePasswordHelper.LabelFor(x => x.NewPassword)
+                        @changePasswordHelper.TextBoxFor(x => x.NewPassword, new { @class = "form-control", type = "password" })
+                        @changePasswordHelper.ValidationMessageFor(x => x.NewPassword)
+                    </div>
+                    <div class="form-group">
+                        @changePasswordHelper.LabelFor(x => x.PasswordConfirm)
+                        @changePasswordHelper.TextBoxFor(x => x.PasswordConfirm, new { @class = "form-control", type = "password" })
+                        @changePasswordHelper.ValidationMessageFor(x => x.PasswordConfirm)
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,128 @@
+﻿@using ODK.Core.Members;
+@using ODK.Umbraco.Members;
+@using ODK.Website.Models;
+@inherits ODK.Umbraco.Web.Mvc.OdkUmbracoTemplatePage
+@{
+    IEnumerable<MemberTypes> memberTypes = Enum.GetValues(typeof(MemberTypes)).Cast<MemberTypes>();
+    IEnumerable<SelectListItem> memberTypeOptions = memberTypes
+        .Where(x => x != MemberTypes.None)
+        .Select(x => new SelectListItem { Value = ((int)x).ToString(), Text = x.ToString(), Selected = x == MemberTypes.Trial || x == MemberTypes.Partial || x == MemberTypes.Full });
+
+    IReadOnlyCollection<MemberGroupModel> memberGroups = MemberService.GetMemberGroups(HomePage.Id);
+    IEnumerable<SelectListItem> memberGroupOptions = memberGroups.Select(x => new SelectListItem { Value = x.GroupId.ToString(), Text = x.Name }).OrderBy(x => x.Text);
+
+    IEnumerable<SubscriptionStatus> subscriptionStatuses = Enum.GetValues(typeof(SubscriptionStatus)).Cast<SubscriptionStatus>();
+    IEnumerable<SelectListItem> subscriptionStatusOptions = subscriptionStatuses
+        .Where(x => x != SubscriptionStatus.None)
+        .Select(x => new SelectListItem { Text = x.ToString() });
+
+    IDictionary<int, IReadOnlyCollection<MemberGroupModel>> memberGroupMembers = MemberService.GetMemberGroupMembers(HomePage.Id);
+
+    IReadOnlyCollection<ODK.Core.Members.IMember> members = MemberService.GetMembers(new MemberSearchCriteria(HomePage.Id), Umbraco);
+
+    string memberUrl = HomePage.GetPropertyValue<IPublishedContent>("personPage").Url + "?id={0}";
+}
+
+<div class="form-group row">
+    <label for="member-list-member-types" class="col-form-label col-3 col-md-2 text-right">Type</label>
+    <div class="col-9 col-md-10">
+        @Html.ListBox("memberTypes", memberTypeOptions,
+            new { id = "member-list-member-types", @class = "js-chosen form-control",
+                  data_target ="#member-list", data_toggle="table-filter", data_field="member-type" })
+    </div>
+</div>
+
+<div class="form-group row">
+    <label for="member-list-member-groups" class="col-form-label col-3 col-md-2 text-right">Group</label>
+    <div class="col-9 col-md-10">
+        @Html.ListBox("memberGroups", memberGroupOptions,
+            new { id = "member-list-member-groups", @class = "js-chosen form-control",
+                  data_target ="#member-list", data_toggle="table-filter", data_field="member-groups" })
+    </div>
+</div>
+
+<div class="form-group row">
+    <label for="member-list-subscription-statuses" class="col-form-label col-3 col-md-2 text-right">Subscription</label>
+    <div class="col-9 col-md-10">
+        @Html.ListBox("memberSubscriptionStatuses", subscriptionStatusOptions,
+            new { id = "member-list-subscription-statuses", @class = "js-chosen form-control",
+                  data_target ="#member-list", data_toggle="table-filter", data_field="subscription-statuses" })
+    </div>
+</div>
+
+<p>
+    <a href="#send-members-email">Send email</a>
+</p>
+
+<table id="member-list" class="table table-sm js-table-sortable tablesorter js-members-table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Subscription</th>
+            <th>Groups</th>
+            <th data-sort="false" class="d-none d-md-block">Emails</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (ODK.Core.Members.IMember member in members)
+        {
+            string subscriptionCssClass =
+                member.SubscriptionStatus.HasFlag(SubscriptionStatus.Expired) ? "bg-danger"
+                : member.SubscriptionStatus.HasFlag(SubscriptionStatus.Expiring) ? "bg-warning" : null;
+            var groups = memberGroupMembers.ContainsKey(member.Id) ? memberGroupMembers[member.Id] : new MemberGroupModel[] { };
+            var memberOptions = memberGroups.Select(x => new SelectListItem { Value = x.GroupId.ToString(), Text = x.Name, Selected = groups.Any(g => g.GroupId == x.GroupId) });
+
+            <tr data-member-id="@member.Id"
+                data-member-type="@((int)member.Type)" data-member-groups="@string.Join(",", groups.Select(x => x.GroupId))"
+                data-subscription-statuses="@string.Join(",", member.SubscriptionStatus.ToString().Split(',').Select(x => x.Trim()))">
+                <td><a href="@string.Format(memberUrl, member.Id)" target="_blank">@member.FullName</a></td>
+                <td>@member.Type.ToString()</td>
+                <td class="@subscriptionCssClass">
+                    @(member.SubscriptionEndDate != null ? member.SubscriptionEndDate.Value.ToString("yyyy-MM-dd") : null)
+                </td>
+                <td>
+                    @using (Html.BeginUmbracoForm("UpdateMemberGroups", "Admin", FormMethod.Post))
+                    {
+                        <input type="hidden" name="memberId" value="@member.Id" />
+                        @Html.ListBox("groupIds", memberOptions, new { @class = "js-chosen form-control js-submit-on-change" })
+                    }
+                </td>
+                <td class="d-none d-md-block">
+                    <input type="checkbox" disabled @(member.EmailOptIn ? "checked" : null) />
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h3 id="send-members-email">Send Email</h3>
+<p>Send an email to the members visible in the table above</p>
+@using (Html.BeginUmbracoForm("SendMemberEmail", "Admin", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="memberIdString" class="js-member-ids" />
+
+    <div class="form-group row">
+        <div class="col-9 col-md-10 offset-3 offset-md-2">
+            <div class="form-check">
+                @Html.CheckBox("overrideOptIn", false, new { @class = "form-check-input", id = "member-email-override-opt-in" })
+                <label class="form-check-label" for="member-email-override-opt-in">Override opt in?</label>
+                <span class="text-muted">Will ignore the members' email preferences if selected</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-9 col-md-10 offset-3 offset-md-2">
+            <div class="form-check">
+                @Html.CheckBox("fromUser", false, new { @class = "form-check-input", id = "member-email-from-user" })
+                <label class="form-check-label" for="member-email-from-user">From you?</label>
+                <span class="text-muted">Email will be sent from your email address if selected</span>
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("Admin/_Email", new EmailViewModel("member"))
+}

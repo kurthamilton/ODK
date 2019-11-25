@@ -1,0 +1,476 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{41E808E0-3A47-45DF-8634-2CBA94A19783}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ODK.Website</RootNamespace>
+    <AssemblyName>ODK.Website</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="3.3.1" />
+    <PackageReference Include="ClientDependency" Version="1.9.7" />
+    <PackageReference Include="ClientDependency-Mvc5" Version="1.8.0.0" />
+    <PackageReference Include="Examine" Version="0.1.89" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.8.9" />
+    <PackageReference Include="ImageProcessor" Version="2.6.2.25" />
+    <PackageReference Include="ImageProcessor.Web" Version="4.9.3.25" />
+    <PackageReference Include="ImageProcessor.Web.Config" Version="2.4.1.19" />
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="Log4Net.Async" Version="2.0.4" />
+    <PackageReference Include="Lucene.Net" Version="2.9.4.1" />
+    <PackageReference Include="Markdown" Version="1.14.7" />
+    <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNet.Identity.Owin" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.3" />
+    <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.6" />
+    <PackageReference Include="Microsoft.AspNet.SignalR.Core" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNet.Web.Optimization">
+      <Version>1.1.3</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.WebApi" Version="5.2.3" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.3" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.WebHost" Version="5.2.3" />
+    <PackageReference Include="Microsoft.AspNet.WebPages" Version="3.2.6" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.6.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.9.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.9.0" />
+    <PackageReference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" Version="2.0.1" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.2.2" />
+    <PackageReference Include="Microsoft.Net.Compilers" Version="2.9.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Owin" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Owin.Host.SystemWeb" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Owin.Security" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Owin.Security.OAuth" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Web.Infrastructure" Version="1.0.0.0" />
+    <PackageReference Include="MiniProfiler" Version="2.1.0" />
+    <PackageReference Include="MySql.Data" Version="6.10.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Owin" Version="1.0" />
+    <PackageReference Include="semver" Version="2.0.4" />
+    <PackageReference Include="SharpZipLib" Version="1.0.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
+    <PackageReference Include="System.Reflection.Metadata" Version="1.6.0" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.9.0" />
+    <PackageReference Include="Umbraco.ModelsBuilder" Version="3.0.10" />
+    <PackageReference Include="UmbracoCms" Version="7.12.3" />
+    <PackageReference Include="UmbracoCms.Core" Version="7.12.3" />
+    <PackageReference Include="WebGrease">
+      <Version>1.6.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App_Plugins\ModelsBuilder\modelsbuilder.controller.js" />
+    <Content Include="App_Plugins\ModelsBuilder\modelsbuilder.htm" />
+    <Content Include="App_Plugins\ModelsBuilder\modelsbuilder.resource.js" />
+    <Content Include="App_Plugins\Optimus\Content\images\application.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\code.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\cross.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\cross_grey.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\css.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\css_grey.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\db.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\delete.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\directory.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\directory_grey.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\doc.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\file.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\film.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\flash.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\folder_open.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\folder_open_grey.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\html.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\java.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\linux.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\music.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\OptimusLogo.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\pdf.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\php.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\picture.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\ppt.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\psd.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\ruby.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\script.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\script_grey.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\spinner.gif" />
+    <Content Include="App_Plugins\Optimus\Content\images\txt.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\xls.png" />
+    <Content Include="App_Plugins\Optimus\Content\images\zip.png" />
+    <Content Include="App_Plugins\Optimus\Content\jqueryFileTree.css" />
+    <Content Include="App_Plugins\Optimus\Content\Morphing.mp3" />
+    <Content Include="App_Plugins\Optimus\Content\style.css" />
+    <Content Include="App_Plugins\Optimus\Content\stylev6.css" />
+    <Content Include="App_Plugins\Optimus\Content\stylev7.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\animated-overlay.gif" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-icons_222222_256x240.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-icons_454545_256x240.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-icons_888888_256x240.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery-ui.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.accordion.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.all.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.autocomplete.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.base.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.button.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.core.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.datepicker.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.dialog.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.menu.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.progressbar.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.resizable.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.selectable.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.slider.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.spinner.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.tabs.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.theme.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\jquery.ui.tooltip.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\animated-overlay.gif" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-icons_222222_256x240.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-icons_454545_256x240.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-icons_888888_256x240.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery-ui.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.accordion.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.autocomplete.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.button.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.core.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.datepicker.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.dialog.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.menu.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.progressbar.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.resizable.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.selectable.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.slider.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.spinner.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.tabs.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.theme.min.css" />
+    <Content Include="App_Plugins\Optimus\Content\themes\base\minified\jquery.ui.tooltip.min.css" />
+    <Content Include="App_Plugins\Optimus\Dialogs\CreateScript.ascx" />
+    <Content Include="App_Plugins\Optimus\Dialogs\CreateStyleSheet.ascx" />
+    <Content Include="App_Plugins\Optimus\Dialogs\ProviderInstaller.ascx" />
+    <Content Include="App_Plugins\Optimus\Icons\bundle-icon.png" />
+    <Content Include="App_Plugins\Optimus\Icons\bundle_menu_icon.png" />
+    <Content Include="App_Plugins\Optimus\Icons\coffee-icon-grey.png" />
+    <Content Include="App_Plugins\Optimus\Icons\coffee-icon.png" />
+    <Content Include="App_Plugins\Optimus\Icons\less-icon-grey.png" />
+    <Content Include="App_Plugins\Optimus\Icons\less-icon.png" />
+    <Content Include="App_Plugins\Optimus\Icons\sass-icon-grey.png" />
+    <Content Include="App_Plugins\Optimus\Icons\sass-icon.png" />
+    <Content Include="App_Plugins\Optimus\Icons\typescript-icon-grey.png" />
+    <Content Include="App_Plugins\Optimus\Icons\typescript-icon.png" />
+    <Content Include="App_Plugins\Optimus\Pages\FileEditor.aspx" />
+    <None Include="App_Plugins\Optimus\Scripts\jquery-2.0.3.intellisense.js" />
+    <Content Include="App_Plugins\Optimus\Scripts\jquery-2.0.3.js" />
+    <Content Include="App_Plugins\Optimus\Scripts\jquery-2.0.3.min.js" />
+    <Content Include="App_Plugins\Optimus\Scripts\jquery-ui-1.10.2.js" />
+    <Content Include="App_Plugins\Optimus\Scripts\jquery-ui-1.10.2.min.js" />
+    <Content Include="App_Plugins\Optimus\Scripts\jqueryFileTree.js" />
+    <Content Include="App_Plugins\Optimus\Scripts\underscore.js" />
+    <Content Include="App_Plugins\Optimus\Scripts\underscore.min.js" />
+    <Content Include="App_Plugins\Optimus\Services\jqueryFileTree.aspx" />
+    <Content Include="assets\loading.svg" />
+    <Content Include="config\imageprocessor\security.config" />
+    <Content Include="config\imageprocessor\processing.config" />
+    <Content Include="config\imageprocessor\cache.config" />
+    <Content Include="config\umbracoSettings.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="config\trees.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="config\tinyMceConfig.config" />
+    <Content Include="config\scripting.config" />
+    <Content Include="config\metablogConfig.config" />
+    <Content Include="config\log4net.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="config\HealthChecks.config" />
+    <Content Include="config\FileSystemProviders.config" />
+    <Content Include="config\feedProxy.config" />
+    <Content Include="config\ExamineSettings.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="config\ExamineIndex.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="config\EmbeddedMedia.config" />
+    <Content Include="config\Dashboard.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="config\ClientDependency.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="config\BaseRestExtensions.config" />
+    <Content Include="config\BackOfficeTours\getting-started.json" />
+    <Content Include="config\applications.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="config\404handlers.config" />
+    <Content Include="App_Plugins\ModelsBuilder\package.manifest" />
+    <Content Include="App_Plugins\Optimus\Config\bundles.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="App_Plugins\Optimus\Scripts\jquery-2.0.3.min.map" />
+    <Content Include="App_Plugins\Optimus\Views\Dialog.cshtml" />
+    <Content Include="App_Plugins\Optimus\Views\Index.cshtml" />
+    <Content Include="App_Plugins\Optimus\Views\Web.config" />
+    <Content Include="css\admin.css" />
+    <Content Include="css\calendar.css" />
+    <Content Include="css\home.css" />
+    <Content Include="css\lib\chosen.bootstrap\chosen.bootstrap.css" />
+    <Content Include="css\lib\jquery.tablesorter\asc.gif" />
+    <Content Include="css\lib\jquery.tablesorter\bg.gif" />
+    <Content Include="css\lib\jquery.tablesorter\desc.gif" />
+    <Content Include="css\lib\jquery.tablesorter\tablesorter.css" />
+    <Content Include="css\lib\trumbowyg\trumbowyg.icons.svg" />
+    <Content Include="css\lib\trumbowyg\trumbowyg.min.css" />
+    <Content Include="css\style.css" />
+    <Content Include="css\theme-base.css" />
+    <Content Include="css\theme-oxford.css" />
+    <Content Include="Global.asax" />
+    <Content Include="scripts\admin.js" />
+    <Content Include="scripts\calendar.js" />
+    <Content Include="scripts\lib\jquery.tablesorter.min.js" />
+    <Content Include="scripts\lib\trumbowyg.min.js" />
+    <Content Include="scripts\Payments\stripe.js" />
+    <Content Include="scripts\script.js" />
+    <Content Include="Views\Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Views\Partials\Grid\Editors\Textstring.cshtml" />
+    <Content Include="Views\Partials\Grid\Editors\Rte.cshtml" />
+    <Content Include="Views\Partials\Grid\Editors\Media.cshtml" />
+    <Content Include="Views\Partials\Grid\Editors\Macro.cshtml" />
+    <Content Include="Views\Partials\Grid\Editors\Embed.cshtml" />
+    <Content Include="Views\Partials\Grid\Editors\Base.cshtml" />
+    <Content Include="Views\Partials\Grid\Bootstrap3.cshtml" />
+    <Content Include="Views\Partials\Grid\Bootstrap3-Fluid.cshtml" />
+    <Content Include="Views\Partials\Grid\Bootstrap2.cshtml" />
+    <Content Include="Views\Partials\Grid\Bootstrap2-Fluid.cshtml" />
+    <Content Include="Views\MacroPartials\FeaturedProducts.cshtml" />
+    <Content Include="Views\Partials\TopNavigation.cshtml" />
+    <Content Include="Views\Partials\CategoryLinks.cshtml" />
+    <Content Include="Views\Blog.cshtml" />
+    <Content Include="Views\Blogpost.cshtml" />
+    <Content Include="Views\Contact.cshtml" />
+    <Content Include="Views\Home.cshtml" />
+    <Content Include="Views\Master.cshtml" />
+    <Content Include="Views\People.cshtml" />
+    <Content Include="Views\Person.cshtml" />
+    <Content Include="Views\Product.cshtml" />
+    <Content Include="Views\Products.cshtml" />
+    <Content Include="Views\ContentPage.cshtml" />
+    <Content Include="Views\Partials\Content.cshtml" />
+    <None Include="Properties\PublishProfiles\PrecompiledWeb.pubxml" />
+    <None Include="Properties\PublishProfiles\PrecompiledWebUmbraco.pubxml" />
+    <Content Include="Views\Register.cshtml" />
+    <Content Include="Views\Event.cshtml" />
+    <Content Include="Views\Events.cshtml" />
+    <Content Include="Views\Chapter.cshtml" />
+    <Content Include="Views\Partials\MemberForm.cshtml" />
+    <Content Include="Views\Partials\Tooltip.cshtml" />
+    <Content Include="Views\Partials\Feedback.cshtml" />
+    <Content Include="Views\Partials\PageHeader.cshtml" />
+    <Content Include="Views\Profile.cshtml" />
+    <Content Include="Views\Partials\PersonThumbnail.cshtml" />
+    <Content Include="Views\Account.cshtml" />
+    <Content Include="Views\Admin.cshtml" />
+    <Content Include="Views\Partials\BlogpostMeta.cshtml" />
+    <Content Include="Views\Partials\Events\EventSidebar.cshtml" />
+    <Content Include="Views\Partials\Events\EventResponseIcon.cshtml" />
+    <Content Include="Views\Partials\Form.cshtml" />
+    <Content Include="Views\Partials\PaymentButton.cshtml" />
+    <Content Include="Views\Partials\Admin\_ImportMemberPictures.cshtml" />
+    <Content Include="Views\Partials\Admin\_Members.cshtml" />
+    <Content Include="Views\Partials\Admin\_MemberGroups.cshtml" />
+    <Content Include="Views\Partials\Admin\_TestEmail.cshtml" />
+    <Content Include="Views\Partials\Admin\_Email.cshtml" />
+    <Content Include="Views\Login.cshtml" />
+    <Content Include="Views\ResetPassword.cshtml" />
+    <Content Include="Views\Partials\Admin\_CreateEvent.cshtml" />
+    <Content Include="Views\Partials\Admin\_EventInvite.cshtml" />
+    <Content Include="Views\Partials\Events\_ResponseForm.cshtml" />
+    <Content Include="Views\Partials\Events\_TicketForm.cshtml" />
+    <Content Include="Views\Partials\Events\_Attendees.cshtml" />
+    <Content Include="Views\Stripe\RedirectToCheckout.cshtml" />
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="config\grid.editors.config.js" />
+    <Content Include="config\Lang\cs-CZ.user.xml" />
+    <Content Include="config\Lang\da-DK.user.xml" />
+    <Content Include="config\Lang\de-DE.user.xml" />
+    <Content Include="config\Lang\en-GB.user.xml" />
+    <Content Include="config\Lang\en-US.user.xml" />
+    <Content Include="config\Lang\es-ES.user.xml" />
+    <Content Include="config\Lang\fr-FR.user.xml" />
+    <Content Include="config\Lang\he-IL.user.xml" />
+    <Content Include="config\Lang\it-IT.user.xml" />
+    <Content Include="config\Lang\ja-JP.user.xml" />
+    <Content Include="config\Lang\ko-KR.user.xml" />
+    <Content Include="config\Lang\nb-NO.user.xml" />
+    <Content Include="config\Lang\nl-NL.user.xml" />
+    <Content Include="config\Lang\pl-PL.user.xml" />
+    <Content Include="config\Lang\pt-BR.user.xml" />
+    <Content Include="config\Lang\ru-RU.user.xml" />
+    <Content Include="config\Lang\sv-SE.user.xml" />
+    <Content Include="config\Lang\zh-CN.user.xml" />
+    <Content Include="config\splashes\booting.aspx" />
+    <Content Include="config\splashes\noNodes.aspx" />
+    <Content Include="default.aspx" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\ContactController.cs" />
+    <Compile Include="Controllers\EventsController.cs" />
+    <Compile Include="Controllers\StripeController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\CreateEventViewModel.cs" />
+    <Compile Include="Models\EmailViewModel.cs" />
+    <Compile Include="Models\PasswordResetViewModel.cs" />
+    <Compile Include="Models\Payments\MakePaymentRenderModel.cs" />
+    <Compile Include="Models\RequestPasswordResetViewModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Models\EventSidebarViewModel.cs" />
+    <Compile Include="Models\Payments\PaymentStatus.cs" />
+    <Compile Include="Models\PersonThumbnailViewModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ODK.Core\ODK.Core.csproj">
+      <Project>{8ffaa65b-2de7-4718-810a-19483108b56e}</Project>
+      <Name>ODK.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODK.Payments.Stripe\ODK.Payments.Stripe.csproj">
+      <Project>{bb6160da-f30b-403d-882a-f72dbdf5dbb4}</Project>
+      <Name>ODK.Payments.Stripe</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ODK.Umbraco\ODK.Umbraco.csproj">
+      <Project>{81f2dd71-46d7-4d52-a571-324cc799c8f2}</Project>
+      <Name>ODK.Umbraco</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>50058</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:61627/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,15 @@
+﻿@using ODK.Website.Models;
+@model EventSidebarViewModel
+
+<p>
+    There @(Model.TicketsRemaining > 1 ? "are" : "is") @Model.TicketsRemaining ticket@(Model.TicketsRemaining > 1 ? "s" : "") remaining.
+</p>
+
+@if (Model.TicketDeadline != null)
+{
+    <p>
+        The ticket deadline is @string.Format("{0:dd MMMM}", Model.TicketDeadline).
+    </p>
+}
+
+@Html.Partial("PaymentButton", Model.EventPaymentModel)

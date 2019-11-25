@@ -1,0 +1,24 @@
+<app-body title="My Profile">
+    <div class="row">
+        <div class="col-6">
+            <div *ngIf="links">
+                <a [routerLink]="links.subscription">My subscription</a>
+            </div>
+            <div>
+                <button class="btn btn-link p-0" (click)="onShowChangePasswordModal()">Change password</button>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <div class="form-group text-right">
+                <app-profile-picture></app-profile-picture>
+            </div>
+        </div>
+    </div>
+    
+    <app-profile-form></app-profile-form>
+</app-body>
+
+<app-modal [show]="showChangePasswordModal" title="Change password">
+    <app-change-password (passwordUpdate)="onPasswordChanged()"></app-change-password>
+</app-modal>

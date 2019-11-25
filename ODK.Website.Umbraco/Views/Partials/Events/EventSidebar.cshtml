@@ -1,0 +1,34 @@
+﻿@using ODK.Core.Events;
+@using ODK.Website.Models;
+@model EventSidebarViewModel
+
+@if (Model.MemberId > 0)
+{
+    if (Model.EventPaymentModel != null)
+    {
+        if (Model.MemberResponse == EventResponseType.Yes)
+        {
+            @Html.Partial("Events/EventResponseIcon", Model.MemberResponse)
+
+            @:You have bought a ticket
+        }
+        else if (Model.TicketDeadline != null && Model.TicketDeadline < DateTime.Today)
+        {
+            <span class="text-danger">The ticket deadline has passed</span>
+        }
+        else if (Model.TicketsRemaining > 0)
+        {
+            @Html.Partial("Events/_TicketForm")
+        }
+        else
+        {
+            <span class="text-danger">There are no tickets remaining</span>
+        }
+    }
+    else
+    {
+        @Html.Partial("Events/_ResponseForm")
+    }
+
+    @Html.Partial("Events/_Attendees")
+}
