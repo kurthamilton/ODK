@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Services.Mails", "ODK.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Data.Sql", "ODK.Data.Sql\ODK.Data.Sql.csproj", "{E7BAF3C7-E4C4-460D-AE18-0602A4FDC42B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Services.Tests", "ODK.Services.Tests\ODK.Services.Tests.csproj", "{FD92B744-475E-419B-B967-5504BCA36B8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Services.Tests", "ODK.Services.Tests\ODK.Services.Tests.csproj", "{FD92B744-475E-419B-B967-5504BCA36B8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Data.Sql.Tests", "ODK.Data.Sql.Tests\ODK.Data.Sql.Tests.csproj", "{8E1AF470-3303-41DE-BC1B-0A7F20AB78F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{FD92B744-475E-419B-B967-5504BCA36B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD92B744-475E-419B-B967-5504BCA36B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD92B744-475E-419B-B967-5504BCA36B8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E1AF470-3303-41DE-BC1B-0A7F20AB78F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E1AF470-3303-41DE-BC1B-0A7F20AB78F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E1AF470-3303-41DE-BC1B-0A7F20AB78F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E1AF470-3303-41DE-BC1B-0A7F20AB78F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

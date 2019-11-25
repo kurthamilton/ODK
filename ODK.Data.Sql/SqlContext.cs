@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -17,7 +16,7 @@ namespace ODK.Data.Sql
         protected SqlContext(string connectionString)
         {
             _connectionString = connectionString;
-        }        
+        }
 
         public SqlDeleteQuery<T> Delete<T>()
         {
@@ -26,36 +25,7 @@ namespace ODK.Data.Sql
 
         public async Task ExecuteNonQueryAsync<T>(SqlQuery<T> query)
         {
-            using (DbConnection connection = await OpenConnectionAsync())
-            {
-                using (DbCommand command = query.ToCommand())
-                {
-                    command.Connection = connection;
-
-                    await command.ExecuteNonQueryAsync();
-                }
-            }
-        }
-
-        public async Task<T> ExecuteSqlAsync<T>(string sql, Func<DbDataReader, T> read, IEnumerable<IDataParameter> parameters = null)
-        {
-            using (DbConnection connection = await OpenConnectionAsync())
-            {
-                using (DbCommand command = new SqlCommand(sql))
-                {
-                    command.Connection = connection;
-
-                    using (DbDataReader reader = await command.ExecuteReaderAsync())
-                    {
-                        if (!reader.Read())
-                        {
-                            return default(T);
-                        }
-                        
-                        return read(reader);
-                    }
-                }
-            }
+            await ExecuteQueryAsync(query, command => command.ExecuteNonQueryAsync());
         }
 
         public SqlMap<T> GetMap<T>()
@@ -75,51 +45,39 @@ namespace ODK.Data.Sql
             await ExecuteNonQueryAsync(query);
         }
 
+        public async Task<TRecord> ReadRecordAsync<T, TRecord>(SqlQuery<T> query, Func<DbDataReader, TRecord> read)
+        {
+            return await ReadQueryAsync(query, reader =>
+            {
+                if (!reader.Read())
+                {
+                    return default(TRecord);
+                }
+
+                return read(reader);
+            });
+        }
+
         public async Task<T> ReadRecordAsync<T>(SqlQuery<T> query)
         {
-            using (DbConnection connection = await OpenConnectionAsync())
-            {
-                using (DbCommand command = query.ToCommand())
-                {
-                    command.Connection = connection;
-
-                    using (DbDataReader reader = await command.ExecuteReaderAsync())
-                    {
-                        if (!reader.Read())
-                        {
-                            return default(T);
-                        }
-
-                        SqlMap<T> map = GetMap<T>();
-                        return map.Read(reader);
-                    }
-                }
-            }
+            SqlMap<T> map = GetMap<T>();
+            return await ReadRecordAsync(query, map.Read);
         }
 
         public async Task<IReadOnlyCollection<T>> ReadRecordsAsync<T>(SqlQuery<T> query)
         {
-            List<T> records = new List<T>();
-
-            using (DbConnection connection = await OpenConnectionAsync())
+            return await ReadQueryAsync(query, reader =>
             {
-                using (DbCommand command = query.ToCommand())
+                SqlMap<T> map = GetMap<T>();
+                List<T> records = new List<T>();
+                while (reader.Read())
                 {
-                    command.Connection = connection;
-
-                    using (DbDataReader reader = await command.ExecuteReaderAsync())
-                    {
-                        SqlMap<T> map = GetMap<T>();
-                        while (reader.Read())
-                        {
-                            T record = map.Read(reader);
-                            records.Add(record);
-                        }
-
-                        return records;
-                    }
+                    T record = map.Read(reader);
+                    records.Add(record);
                 }
-            }
+
+                return records;
+            });
         }
 
         public SqlSelectQuery<T> Select<T>()
@@ -138,11 +96,37 @@ namespace ODK.Data.Sql
             _maps.Add(key, map);
         }
 
-        private async Task<DbConnection> OpenConnectionAsync()
+        private async Task ExecuteQueryAsync<T>(SqlQuery<T> query, Func<DbCommand, Task> action)
         {
-            SqlConnection connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
-            return connection;
+            string sql = query.ToSql();
+            IEnumerable<(SqlColumn, object)> parameterValues = query.GetParameterValues();
+
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                using (DbCommand command = new SqlCommand(sql, connection))
+                {
+                    foreach ((SqlColumn column, object value) in parameterValues)
+                    {
+                        command.Parameters.Add(column.ToParameter(value));
+                    }
+
+                    await connection.OpenAsync();
+                    await action(command);
+                }
+            }
+        }
+
+        private async Task<TResult> ReadQueryAsync<T, TResult>(SqlQuery<T> query, Func<DbDataReader, TResult> read)
+        {
+            TResult result = default(TResult);
+
+            await ExecuteQueryAsync(query, async command =>
+            {
+                DbDataReader reader = await command.ExecuteReaderAsync();
+                result = read(reader);
+            });
+
+            return result;
         }
     }
 }

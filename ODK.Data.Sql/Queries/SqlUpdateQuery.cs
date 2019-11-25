@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Sql.Queries
 {
@@ -9,10 +8,6 @@ namespace ODK.Data.Sql.Queries
         public SqlUpdateQuery(SqlContext context)
             : base(context)
         {
-            SqlMap<T> map = context.GetMap<T>();
-
-            AppendSql($"UPDATE {map.TableName}");
-
             AddFrom();
         }
 
@@ -20,6 +15,6 @@ namespace ODK.Data.Sql.Queries
         {
             AddUpdateColumn(expression, value);
             return this;
-        }        
+        }
     }
 }

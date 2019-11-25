@@ -17,7 +17,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Chapter>()
-                .Join<Chapter, ChapterAdminMember, Guid>(x => x.Id, x => x.ChapterId)
+                .Join<ChapterAdminMember, Guid>(x => x.Id, x => x.ChapterId)
                 .Where<ChapterAdminMember, Guid>(x => x.MemberId, memberId)
                 .ToArrayAsync();
         }

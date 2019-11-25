@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace ODK.Data.Sql.Queries
 {
     public abstract class SqlConditionalQuery<T> : SqlQuery<T>
     {
-        private readonly StringBuilder _sql = new StringBuilder();
-
         protected SqlConditionalQuery(SqlContext context)
             : base(context)
         {
@@ -32,6 +29,6 @@ namespace ODK.Data.Sql.Queries
         {
             AddCondition(expression, @operator, value);
             return this;
-        }        
+        }
     }
 }

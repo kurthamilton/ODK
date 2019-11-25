@@ -204,19 +204,15 @@ namespace ODK.Data.Repositories
                         .Where(x => x.Id, memberProperty.Id)
                         .ExecuteAsync();
                 }
-            }            
+            }
         }
 
         private async Task<bool> MemberHasImage(Guid memberId)
         {
-            string sql = "SELECT COUNT(*) FROM MemberImages WHERE MemberId = @MemberId";
-
-            int count = await Context.ExecuteSqlAsync(sql, x => x.GetInt32(0), new[]
-            {
-                new SqlParameter("@MemberId", SqlDbType.UniqueIdentifier) { Value = memberId }
-            });
-
-            return count > 0;
+            return await Context
+                .Select<MemberImage>()
+                .Where(x => x.MemberId, memberId)
+                .CountAsync() > 0;
         }
     }
 }

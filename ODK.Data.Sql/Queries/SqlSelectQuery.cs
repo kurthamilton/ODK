@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using ODK.Data.Sql.Mapping;
 
@@ -9,11 +10,8 @@ namespace ODK.Data.Sql.Queries
         public SqlSelectQuery(SqlContext context)
             : base(context)
         {
-            SqlMap<T> map = context.GetMap<T>();
-
-            AppendSql("SELECT ");
-            AppendSql(map.SelectColumnSql);
-
+            SqlMap<T> map = Context.GetMap<T>();
+            AddSelectColumns(map.SelectColumns.Select(x => x.ToSql()));
             AddFrom();
         }
 
