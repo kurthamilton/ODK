@@ -82,6 +82,24 @@ namespace ODK.Data.Sql.Tests.Queries
             Assert.AreEqual("INSERT INTO Table (String) VALUES (@String)", sql);
         }
 
+        [Test]
+        public static void ToSql_WithOutputIdentity_AddsIdentityColumnAsOutput()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int).IsIdentity();
+            map.AddProperty(x => x.String);
+
+            SqlContext context = CreateMockContext(map);
+
+            SqlQuery<TestEntity> query = new SqlInsertValuesQuery<TestEntity>(context)
+                .Value(new TestEntity())
+                .OutputIdentity();
+
+            string sql = query.ToSql();
+
+            Assert.AreEqual("INSERT INTO Table (String) OUTPUT inserted.Int VALUES (@String)", sql);
+        }
+
         private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)
         {
             MockContext context = new MockContext();

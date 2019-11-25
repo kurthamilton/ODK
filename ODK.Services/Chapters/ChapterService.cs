@@ -15,16 +15,6 @@ namespace ODK.Services.Chapters
             _chapterRepository = chapterRepository;
         }
 
-        public async Task<IReadOnlyCollection<Chapter>> GetAdminChapters(Guid memberId)
-        {
-            IReadOnlyCollection<Chapter> chapters = await _chapterRepository.GetAdminChapters(memberId);
-            if (chapters.Count == 0)
-            {
-                throw new OdkNotAuthorizedException();
-            }
-            return chapters;
-        }
-
         public async Task<Chapter> GetChapter(Guid id)
         {
             Chapter chapter = await _chapterRepository.GetChapter(id);

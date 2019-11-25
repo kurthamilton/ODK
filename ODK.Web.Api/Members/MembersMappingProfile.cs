@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ODK.Core.Members;
 using ODK.Services.Members;
+using ODK.Web.Api.Members.Responses;
 
 namespace ODK.Web.Api.Members
 {
@@ -8,12 +9,12 @@ namespace ODK.Web.Api.Members
     {
         public MembersMappingProfile()
         {
-            CreateMap<Member, MemberResponse>();
+            CreateMap<Member, MemberApiResponse>();
 
-            CreateMap<MemberProfile, MemberProfileResponse>()
+            CreateMap<MemberProfile, MemberProfileApiResponse>()
                 .ForMember(x => x.Properties, opt => opt.MapFrom(x => x.MemberProperties));
 
-            CreateMap<MemberProperty, MemberProfilePropertyResponse>();
+            CreateMap<MemberProperty, MemberProfilePropertyApiResponse>();
         }
     }
 }

@@ -7,7 +7,17 @@ namespace ODK.Web.Api
 {
     public abstract class OdkControllerBase : ControllerBase
     {
-        public Guid GetMemberId()
+        protected IActionResult Created()
+        {
+            return StatusCode(201);
+        }
+
+        protected ActionResult<T> Created<T>(T response)
+        {
+            return StatusCode(201, response);
+        }
+
+        protected Guid GetMemberId()
         {
             Guid? memberId = TryGetMemberId();
             if (memberId == null)
@@ -17,20 +27,15 @@ namespace ODK.Web.Api
             return memberId.Value;
         }
 
-        public Guid? TryGetMemberId()
+        protected Guid? TryGetMemberId()
         {
-            if (User == null)
-            {
-                return null;
-            }
-
-            Claim claim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+            Claim claim = User?.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
             if (claim == null)
             {
                 return null;
             }
 
             return Guid.TryParse(claim.Value, out Guid memberId) ? memberId : new Guid?();
-        }        
+        }
     }
 }

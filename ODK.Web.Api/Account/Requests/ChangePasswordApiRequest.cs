@@ -1,6 +1,6 @@
-﻿namespace ODK.Web.Api.Account
+﻿namespace ODK.Web.Api.Account.Requests
 {
-    public class ChangePasswordRequest
+    public class ChangePasswordApiRequest
     {
         public string CurrentPassword { get; set; }
 

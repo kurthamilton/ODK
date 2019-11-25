@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ODK.Web.Api.DataTypes
+namespace ODK.Web.Api.DataTypes.Responses
 {
-    public class DataTypeResponse
+    public class DataTypeApiResponse
     {
         public Guid Id { get; set; }
 

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ODK.Web.Api.Chapters
+namespace ODK.Web.Api.Chapters.Responses
 {
-    public class ChapterPropertyResponse
+    public class ChapterPropertyApiResponse
     {
         public Guid DataTypeId { get; set; }
 

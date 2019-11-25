@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.DataTypes;
 using ODK.Services.DataTypes;
+using ODK.Web.Api.DataTypes.Responses;
 
 namespace ODK.Web.Api.DataTypes
 {
@@ -24,10 +25,10 @@ namespace ODK.Web.Api.DataTypes
         }
 
         [HttpGet]
-        public async Task<IEnumerable<DataTypeResponse>> Get()
+        public async Task<IEnumerable<DataTypeApiResponse>> Get()
         {
             IReadOnlyCollection<DataType> dataTypes = await _dataTypeService.GetDataTypes();
-            return dataTypes.Select(_mapper.Map<DataTypeResponse>);
+            return dataTypes.Select(_mapper.Map<DataTypeApiResponse>);
         }
     }
 }

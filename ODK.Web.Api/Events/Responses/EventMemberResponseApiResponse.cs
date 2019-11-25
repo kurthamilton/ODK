@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ODK.Web.Api.Events
+namespace ODK.Web.Api.Events.Responses
 {
-    public class EventMemberResponseResponse
+    public class EventMemberResponseApiResponse
     {
         public Guid EventId { get; set; }
 

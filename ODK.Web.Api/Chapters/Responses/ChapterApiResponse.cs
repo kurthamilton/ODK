@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ODK.Web.Api.Chapters
+namespace ODK.Web.Api.Chapters.Responses
 {
-    public class ChapterResponse
+    public class ChapterApiResponse
     {
         public Guid CountryId { get; set; }
 

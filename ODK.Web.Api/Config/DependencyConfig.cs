@@ -18,10 +18,10 @@ namespace ODK.Web.Api.Config
 {
     public static class DependencyConfig
     {
-        public static void ConfigureDependencies(this IServiceCollection services, IConfiguration configuration, 
+        public static void ConfigureDependencies(this IServiceCollection services, IConfiguration configuration,
             AuthSettings authSettings)
         {
-            // Services     
+            // Services
             services.AddSingleton(new AuthenticationSettings
             {
                 AccessTokenLifetimeMinutes = authSettings.AccessTokenLifetimeMinutes,
@@ -29,8 +29,10 @@ namespace ODK.Web.Api.Config
                 RefreshTokenLifetimeDays = authSettings.RefreshTokenLifetimeDays
             });
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IChapterAdminService, ChapterAdminService>();
             services.AddScoped<IChapterService, ChapterService>();
             services.AddScoped<IDataTypeService, DataTypeService>();
+            services.AddScoped<IEventAdminService, EventAdminService>();
             services.AddScoped<IEventService, EventService>();
             services.AddSingleton(configuration.Map<SmtpSettings>("Smtp"));
             services.AddScoped<IMailService, MailService>();

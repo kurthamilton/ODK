@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ODK.Web.Api.Account
+namespace ODK.Web.Api.Account.Responses
 {
-    public class AuthenticationTokenResponse
+    public class AuthenticationTokenApiResponse
     {
         public string AccessToken { get; set; }
 

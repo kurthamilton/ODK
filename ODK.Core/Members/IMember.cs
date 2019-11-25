@@ -1,5 +1,4 @@
 ﻿using System;
-using ODK.Core.Chapters;
 
 namespace ODK.Core.Members
 {
@@ -14,7 +13,7 @@ namespace ODK.Core.Members
         string Email { get; }
 
         bool EmailOptIn { get; }
-        
+
         string FacebookProfile { get; }
 
         string FavouriteBeverage { get; }
@@ -26,25 +25,25 @@ namespace ODK.Core.Members
         string Hometown { get; }
 
         int Id { get; }
-        
+
         DateTime? Joined { get; }
 
         string KnittingExperience { get; }
-        
+
         string KnittingExperienceOther { get; }
-        
+
         string LastName { get; }
 
         double? LastPaymentAmount { get; }
 
         DateTime? LastPaymentDate { get; }
-        
+
         string Neighbourhood { get; }
 
         string PictureThumbnailUrl { get; }
 
         string PictureUrl { get; }
-        
+
         string Reason { get; }
 
         DateTime? SubscriptionEndDate { get; }

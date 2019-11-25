@@ -89,12 +89,12 @@ namespace ODK.Data.Sql.Tests.Queries
 
             SqlContext context = CreateMockContext(map);
             SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
-                .OrderBy(x => x.Int, "DESC")
-                .OrderBy(x => x.String, "ASC");
+                .OrderBy(x => x.Int, SqlSortDirection.Descending)
+                .OrderBy(x => x.String);
 
             string sql = query.ToSql();
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table ORDER BY Table.[Int] DESC,Table.[String]", sql);
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table ORDER BY Table.[Int] DESC,Table.[String] ASC", sql);
         }
 
         [Test]

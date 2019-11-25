@@ -1,6 +1,6 @@
-﻿namespace ODK.Web.Api.Chapters
+﻿namespace ODK.Web.Api.Chapters.Responses
 {
-    public class ChapterDetailsResponse
+    public class ChapterDetailsApiResponse
     {
         public string BannerImageUrl { get; set; }
 

@@ -18,6 +18,11 @@ namespace ODK.Services.Events
             _memberRepository = memberRepository;
         }
 
+        public async Task CreateEvent(Guid currentMemberId, CreateEvent @event)
+        {
+
+        }
+
         public async Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid currentMemberId, Guid eventId)
         {
             await AssertMemberEventPermission(currentMemberId, eventId);
@@ -61,6 +66,15 @@ namespace ODK.Services.Events
         }
 
         private async Task AssertMemberChapterPermission(Guid memberId, Guid chapterId)
+        {
+            Member member = await _memberRepository.GetMember(memberId);
+            if (member?.ChapterId != chapterId)
+            {
+                throw new OdkNotAuthorizedException();
+            }
+        }
+
+        private async Task AssertMemberChapterAdminPermission(Guid memberId, Guid chapterId)
         {
             Member member = await _memberRepository.GetMember(memberId);
             if (member?.ChapterId != chapterId)

@@ -20,13 +20,6 @@ namespace ODK.Services.Members
             _memberRepository = memberRepository;
         }
 
-        public async Task<Member> GetMember(Guid currentMemberId, Guid memberId)
-        {
-            Member member = await _memberRepository.GetMember(memberId);
-            await AssertMemberPermission(currentMemberId, member);
-            return member;
-        }
-
         public async Task<MemberImage> GetMemberImage(Guid currentMemberId, Guid memberId)
         {
             await AssertMemberPermission(currentMemberId, memberId);
@@ -38,14 +31,7 @@ namespace ODK.Services.Members
         {
             Member member = await GetMember(currentMemberId, memberId);
 
-            IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(member.ChapterId);
-            IReadOnlyCollection<MemberProperty> memberProperties = await _memberRepository.GetMemberProperties(member.Id);
-            IDictionary<Guid, MemberProperty> memberPropertyDictionary = memberProperties.ToDictionary(x => x.ChapterPropertyId, x => x);
-
-            IEnumerable<MemberProperty> allMemberProperties = chapterProperties.Select(x =>
-                memberPropertyDictionary.ContainsKey(x.Id) ? memberPropertyDictionary[x.Id] : new MemberProperty(Guid.Empty, member.Id, x.Id, null));
-
-            return new MemberProfile(member, allMemberProperties);
+            return await GetMemberProfile(member);
         }
 
         public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId)
@@ -61,13 +47,14 @@ namespace ODK.Services.Members
             return members;
         }
 
-        public async Task UpdateMemberImage(MemberImage image)
+        public async Task<MemberImage> UpdateMemberImage(MemberImage image)
         {
             AssertFileIsImage(image);
             await _memberRepository.UpdateMemberImage(image);
+            return await _memberRepository.GetMemberImage(image.MemberId);
         }
 
-        public async Task UpdateMemberProfile(UpdateMemberProfile profile)
+        public async Task<MemberProfile> UpdateMemberProfile(UpdateMemberProfile profile)
         {
             MemberProfile existing = await GetMemberProfile(profile.Id, profile.Id);
 
@@ -89,6 +76,8 @@ namespace ODK.Services.Members
 
             await _memberRepository.UpdateMember(profile.Id, existing.EmailAddress, existing.EmailOptIn, existing.FirstName, existing.LastName);
             await _memberRepository.UpdateMemberProperties(profile.Id, existing.MemberProperties);
+
+            return existing;
         }
 
         private static void AssertFileIsImage(MemberImage image)
@@ -127,6 +116,25 @@ namespace ODK.Services.Members
 
             Member currentMember = await _memberRepository.GetMember(currentMemberId);
             AssertMemberChapterPermission(currentMember, member.ChapterId);
+        }
+
+        private async Task<Member> GetMember(Guid currentMemberId, Guid memberId)
+        {
+            Member member = await _memberRepository.GetMember(memberId);
+            await AssertMemberPermission(currentMemberId, member);
+            return member;
+        }
+
+        private async Task<MemberProfile> GetMemberProfile(Member member)
+        {
+            IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(member.ChapterId);
+            IReadOnlyCollection<MemberProperty> memberProperties = await _memberRepository.GetMemberProperties(member.Id);
+            IDictionary<Guid, MemberProperty> memberPropertyDictionary = memberProperties.ToDictionary(x => x.ChapterPropertyId, x => x);
+
+            IEnumerable<MemberProperty> allMemberProperties = chapterProperties.Select(x =>
+                memberPropertyDictionary.ContainsKey(x.Id) ? memberPropertyDictionary[x.Id] : new MemberProperty(Guid.Empty, member.Id, x.Id, null));
+
+            return new MemberProfile(member, allMemberProperties);
         }
 
         private async Task ValidateMemberProfile(Guid memberId, MemberProfile profile)

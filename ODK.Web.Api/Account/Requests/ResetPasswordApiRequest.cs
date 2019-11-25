@@ -1,6 +1,6 @@
-﻿namespace ODK.Web.Api.Account
+﻿namespace ODK.Web.Api.Account.Requests
 {
-    public class ResetPasswordRequest
+    public class ResetPasswordApiRequest
     {
         public string Password { get; set; }
 

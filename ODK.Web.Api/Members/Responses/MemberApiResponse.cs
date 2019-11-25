@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ODK.Web.Api.Members
+namespace ODK.Web.Api.Members.Responses
 {
-    public class MemberResponse
+    public class MemberApiResponse
     {
         public Guid ChapterId { get; set; }
 

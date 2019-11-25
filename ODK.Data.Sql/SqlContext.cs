@@ -38,11 +38,13 @@ namespace ODK.Data.Sql
             return _maps[key] as SqlMap<T>;
         }
 
-        public async Task InsertAsync<T>(T entity)
+        public async Task<Guid> InsertAsync<T>(T entity)
         {
             SqlQuery<T> query = new SqlInsertValuesQuery<T>(this)
-                .Value(entity);
-            await ExecuteNonQueryAsync(query);
+                .Value(entity)
+                .OutputIdentity();
+
+            return await ReadRecordAsync(query, reader => reader.GetGuid(0));
         }
 
         public async Task<TRecord> ReadRecordAsync<T, TRecord>(SqlQuery<T> query, Func<DbDataReader, TRecord> read)
@@ -101,9 +103,10 @@ namespace ODK.Data.Sql
             _maps[key] = map;
         }
 
-        private async Task ExecuteQueryAsync<T>(SqlQuery<T> query, Func<DbCommand, Task> action)
+        private async Task ExecuteQueryAsync<T>(SqlQuery<T> query, Func<DbCommand, Task> action, string appendSql = "")
         {
-            string sql = query.ToSql();
+            string sql = query.ToSql() + appendSql;
+
             IEnumerable<(SqlColumn, object)> parameterValues = query.GetParameterValues();
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -121,7 +124,7 @@ namespace ODK.Data.Sql
             }
         }
 
-        private async Task<TResult> ReadQueryAsync<T, TResult>(SqlQuery<T> query, Func<DbDataReader, TResult> read)
+        private async Task<TResult> ReadQueryAsync<T, TResult>(SqlQuery<T> query, Func<DbDataReader, TResult> read, string appendSql = "")
         {
             TResult result = default(TResult);
 
@@ -129,7 +132,7 @@ namespace ODK.Data.Sql
             {
                 DbDataReader reader = await command.ExecuteReaderAsync();
                 result = read(reader);
-            });
+            }, appendSql);
 
             return result;
         }

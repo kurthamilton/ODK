@@ -1,6 +1,7 @@
 ﻿using System;
 using AutoMapper;
 using ODK.Core.Chapters;
+using ODK.Web.Api.Chapters.Responses;
 
 namespace ODK.Web.Api.Chapters
 {
@@ -8,19 +9,19 @@ namespace ODK.Web.Api.Chapters
     {
         public ChaptersMappingProfile()
         {
-            CreateMap<Chapter, ChapterResponse>();
+            CreateMap<Chapter, ChapterApiResponse>();
 
-            CreateMap<Chapter, ChapterDetailsResponse>();
+            CreateMap<Chapter, ChapterDetailsApiResponse>();
 
-            CreateMap<ChapterLinks, ChapterLinksResponse>()
+            CreateMap<ChapterLinks, ChapterLinksApiResponse>()
                 .ForMember(x => x.Facebook, opt => opt.MapFrom(x => x.FacebookName))
                 .ForMember(x => x.Instagram, opt => opt.MapFrom(x => x.InstagramName))
                 .ForMember(x => x.Twitter, opt => opt.MapFrom(x => x.TwitterName));
 
-            CreateMap<ChapterProperty, ChapterPropertyResponse>()
+            CreateMap<ChapterProperty, ChapterPropertyApiResponse>()
                 .ForMember(x => x.Required, opt => opt.Condition(x => x.Required));
 
-            CreateMap<ChapterPropertyOption, ChapterPropertyOptionResponse>()
+            CreateMap<ChapterPropertyOption, ChapterPropertyOptionApiResponse>()
                 .ForMember(x => x.FreeText, opt => opt.MapFrom(x => x.Value.Equals("Other", StringComparison.OrdinalIgnoreCase) ? true : new bool?()));
         }
     }

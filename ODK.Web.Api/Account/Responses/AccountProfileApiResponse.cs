@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ODK.Web.Api.Account
+namespace ODK.Web.Api.Account.Responses
 {
-    public class AccountProfileResponse
+    public class AccountProfileApiResponse
     {
         public string EmailAddress { get; set; }
 
@@ -15,6 +15,6 @@ namespace ODK.Web.Api.Account
 
         public string LastName { get; set; }
 
-        public IEnumerable<AccountProfilePropertyResponse> Properties { get; set; }
+        public IEnumerable<AccountProfilePropertyApiResponse> Properties { get; set; }
     }
 }

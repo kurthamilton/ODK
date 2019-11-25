@@ -12,8 +12,9 @@ namespace ODK.Data.Sql.Queries
         private readonly IList<ISqlQueryCondition> _conditions = new List<ISqlQueryCondition>();
         private bool _delete;
         private T _insertEntity;
+        private SqlColumn _insertOutputColumn;
         private readonly IList<ISqlComponent> _joins = new List<ISqlComponent>();
-        private readonly IList<(SqlColumn Column, string Direction)> _orderByFields = new List<(SqlColumn, string)>();
+        private readonly IList<(SqlColumn Column, SqlSortDirection Direction)> _orderByFields = new List<(SqlColumn, SqlSortDirection)>();
         private readonly IList<string> _selectColumns = new List<string>();
         private readonly IList<(SqlColumn Column, object Value)> _updateColumns = new List<(SqlColumn, object)>();
 
@@ -101,19 +102,24 @@ namespace ODK.Data.Sql.Queries
             _insertEntity = entity;
         }
 
+        protected void AddInsertOutput(SqlColumn column)
+        {
+            _insertOutputColumn = column;
+        }
+
         protected void AddJoin<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField)
         {
             SqlJoin<TFrom, TTo, TValue> join = new SqlJoin<TFrom, TTo, TValue>(fromField, toField);
             _joins.Add(join);
         }
 
-        protected void AddOrderBy<TValue>(Expression<Func<T, TValue>> expression, string direction = null)
+        protected void AddOrderBy<TValue>(Expression<Func<T, TValue>> expression, SqlSortDirection direction = SqlSortDirection.Ascending)
         {
             SqlMap<T> map = Context.GetMap<T>();
 
             SqlColumn column = map.GetColumn(expression);
 
-            _orderByFields.Add((column, string.Equals(direction, "DESC", StringComparison.OrdinalIgnoreCase) ? "DESC" : ""));
+            _orderByFields.Add((column, direction));
         }
 
         protected void AddSelectColumn(string column)
@@ -164,6 +170,7 @@ namespace ODK.Data.Sql.Queries
             {
                 IReadOnlyCollection<SqlColumn> columns = map.InsertColumns;
                 return $"INSERT INTO {map.TableName} ({string.Join(",", columns.Select(x => x.ColumnName))}) " +
+                       (_insertOutputColumn != null ? $"OUTPUT inserted.{_insertOutputColumn.ColumnName} " : "") +
                        $"VALUES ({ string.Join(",", columns.Select(x => x.ParameterName))})";
             }
 
@@ -183,7 +190,9 @@ namespace ODK.Data.Sql.Queries
 
         private string OrderBySql()
         {
-            return _orderByFields.Count > 0 ? $" ORDER BY {string.Join(",", _orderByFields.Select(x => $"{x.Column.ToSql()} {x.Direction}".Trim()))}" : "";
+            return _orderByFields.Count > 0 ?
+                $" ORDER BY {string.Join(",", _orderByFields.Select(x => $"{x.Column.ToSql()} {(x.Direction == SqlSortDirection.Descending ? "DESC" : "ASC")}"))}"
+                : "";
         }
 
         private string WhereSql()

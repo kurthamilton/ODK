@@ -14,7 +14,7 @@ namespace ODK.Data.Sql.Queries
             AddSelectColumns(map.SelectColumns.Select(x => x.ToSql()));
         }
 
-        public SqlSelectQuery<T> OrderBy<TValue>(Expression<Func<T, TValue>> expression, string direction = null)
+        public SqlSelectQuery<T> OrderBy<TValue>(Expression<Func<T, TValue>> expression, SqlSortDirection direction = SqlSortDirection.Ascending)
         {
             AddOrderBy(expression, direction);
             return this;

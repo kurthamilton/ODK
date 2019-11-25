@@ -17,11 +17,11 @@ namespace ODK.Web.Api.Config
             app.UseExceptionHandler(a => a.Run(HandleException));
         }
 
-        private static (ErrorResponse response, HttpStatusCode statusCode) CreateErrorResponse(Exception exception)
+        private static (ErrorApiResponse response, HttpStatusCode statusCode) CreateErrorResponse(Exception exception)
         {
             if (exception is OdkServiceException odkServiceException)
             {
-                return (new ErrorResponse
+                return (new ErrorApiResponse
                 {
                     Messages = odkServiceException.Messages
                 }, HttpStatusCode.BadRequest);
@@ -29,15 +29,15 @@ namespace ODK.Web.Api.Config
 
             if (exception is OdkNotFoundException)
             {
-                return (new ErrorResponse(), HttpStatusCode.NotFound);
+                return (new ErrorApiResponse(), HttpStatusCode.NotFound);
             }
 
             if (exception is OdkNotAuthorizedException)
             {
-                return (new ErrorResponse(), HttpStatusCode.Forbidden);
+                return (new ErrorApiResponse(), HttpStatusCode.Forbidden);
             }
 
-            return (new ErrorResponse(), HttpStatusCode.InternalServerError);
+            return (new ErrorApiResponse(), HttpStatusCode.InternalServerError);
         }
 
         private static async Task HandleException(HttpContext context)
@@ -45,8 +45,8 @@ namespace ODK.Web.Api.Config
             IExceptionHandlerPathFeature exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
             Exception exception = exceptionHandlerPathFeature.Error;
 
-            (ErrorResponse response, HttpStatusCode statusCode) = CreateErrorResponse(exception);
-            
+            (ErrorApiResponse response, HttpStatusCode statusCode) = CreateErrorResponse(exception);
+
             string result = JsonConvert.SerializeObject(response, JsonConfig.SerializerSettings);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;

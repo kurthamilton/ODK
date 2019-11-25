@@ -1,6 +1,6 @@
-﻿namespace ODK.Web.Api.Account
+﻿namespace ODK.Web.Api.Account.Requests
 {
-    public class LoginRequest
+    public class LoginApiRequest
     {
         public string Password { get; set; }
 

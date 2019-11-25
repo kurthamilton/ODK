@@ -7,6 +7,8 @@ namespace ODK.Services.Events
 {
     public interface IEventService
     {
+        Task CreateEvent(Guid currentMemberId, CreateEvent @event);
+
         Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid currentMemberId, Guid eventId);
 
         Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId);

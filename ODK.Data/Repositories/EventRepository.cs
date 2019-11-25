@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Threading.Tasks;
 using ODK.Core.Events;
 using ODK.Data.Sql;
@@ -13,6 +14,12 @@ namespace ODK.Data.Repositories
         {
         }
 
+        public async Task<Event> CreateEvent(Event @event)
+        {
+            Guid id = await Context.InsertAsync(@event);
+            return await GetEvent(id);
+        }
+
         public async Task<Event> GetEvent(Guid id)
         {
             return await Context
@@ -21,12 +28,13 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime after)
+        public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime? after)
         {
             return await Context
                 .Select<Event>()
+                .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
-                .Where(x => x.Date).GreaterThanOrEqualTo(after)
+                .Where(x => x.Date).GreaterThanOrEqualTo(after ?? SqlDateTime.MinValue.Value)
                 .ToArrayAsync();
         }
 
@@ -42,6 +50,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Event>()
+                .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .Where(x => x.Date).GreaterThanOrEqualTo(after)
                 .Where(x => x.IsPublic).EqualTo(true)

@@ -1,6 +1,6 @@
-﻿namespace ODK.Web.Api.Chapters
+﻿namespace ODK.Web.Api.Chapters.Responses
 {
-    public class ChapterLinksResponse
+    public class ChapterLinksApiResponse
     {
         public string Facebook { get; set; }
 

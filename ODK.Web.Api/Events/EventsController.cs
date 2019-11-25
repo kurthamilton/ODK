@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
 using ODK.Services.Events;
+using ODK.Web.Api.Events.Responses;
 
 namespace ODK.Web.Api.Events
 {
@@ -25,31 +26,32 @@ namespace ODK.Web.Api.Events
         }
 
         [HttpGet]
-        public async Task<IEnumerable<EventResponse>> Get(Guid chapterId)
+        public async Task<IEnumerable<EventApiResponse>> Get(Guid chapterId)
         {
             IReadOnlyCollection<Event> events = await _eventService.GetEvents(GetMemberId(), chapterId);
-            return events.Select(_mapper.Map<EventResponse>);
+            return events.Select(_mapper.Map<EventApiResponse>);
         }
 
         [AllowAnonymous]
         [HttpGet("public")]
-        public async Task<IEnumerable<EventResponse>> Public(Guid chapterId)
+        public async Task<IEnumerable<EventApiResponse>> Public(Guid chapterId)
         {
             IReadOnlyCollection<Event> events = await _eventService.GetPublicEvents(chapterId);
-            return events.Select(_mapper.Map<EventResponse>);
+            return events.Select(_mapper.Map<EventApiResponse>);
         }
 
         [HttpGet("{id}/responses")]
-        public async Task<IEnumerable<EventMemberResponseResponse>> Responses(Guid id)
+        public async Task<IEnumerable<EventMemberResponseApiResponse>> Responses(Guid id)
         {
             IReadOnlyCollection<EventMemberResponse> responses = await _eventService.GetEventResponses(GetMemberId(), id);
-            return responses.Select(_mapper.Map<EventMemberResponseResponse>);
+            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
         }
 
         [HttpPut("{id}/respond")]
-        public async Task Respond(Guid id, EventResponseType type)
+        public async Task<IActionResult> Respond(Guid id, EventResponseType type)
         {
             await _eventService.UpdateMemberResponse(GetMemberId(), id, type);
+            return NoContent();
         }
     }
 }

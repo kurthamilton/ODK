@@ -1,12 +1,10 @@
 ﻿using System;
 
-namespace ODK.Web.Api.Chapters
+namespace ODK.Web.Api.Account.Requests
 {
-    public class ChapterPropertyOptionResponse
+    public class UpdateMemberPropertyApiRequest
     {
         public Guid ChapterPropertyId { get; set; }
-
-        public bool? FreeText { get; set; }
 
         public string Value { get; set; }
     }

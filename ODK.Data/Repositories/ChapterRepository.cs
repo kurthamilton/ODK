@@ -30,6 +30,15 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<ChapterAdminMember> GetChapterAdminMember(Guid chapterId, Guid memberId)
+        {
+            return await Context
+                .Select<ChapterAdminMember>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .Where(x => x.MemberId).EqualTo(memberId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<ChapterLinks> GetChapterLinks(Guid chapterId)
         {
             return await Context

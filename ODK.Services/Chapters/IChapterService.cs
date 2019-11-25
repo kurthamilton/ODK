@@ -7,8 +7,6 @@ namespace ODK.Services.Chapters
 {
     public interface IChapterService
     {
-        Task<IReadOnlyCollection<Chapter>> GetAdminChapters(Guid memberId);
-
         Task<Chapter> GetChapter(Guid id);
 
         Task<ChapterLinks> GetChapterLinks(Guid chapterId);
@@ -17,6 +15,6 @@ namespace ODK.Services.Chapters
 
         Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId);
 
-        Task<IReadOnlyCollection<Chapter>> GetChapters();        
+        Task<IReadOnlyCollection<Chapter>> GetChapters();
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace ODK.Web.Api.Account
+namespace ODK.Web.Api.Account.Requests
 {
-    public class UpdateMemberProfileRequest
+    public class UpdateMemberProfileApiRequest
     {
         public string EmailAddress { get; set; }
 
@@ -12,6 +12,6 @@ namespace ODK.Web.Api.Account
 
         public string LastName { get; set; }
 
-        public IEnumerable<UpdateMemberPropertyRequest> Properties { get; set; }
+        public IEnumerable<UpdateMemberPropertyApiRequest> Properties { get; set; }
     }
 }

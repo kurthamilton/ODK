@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ODK.Core.Events;
+using ODK.Web.Api.Events.Responses;
 
 namespace ODK.Web.Api.Events
 {
@@ -7,9 +8,10 @@ namespace ODK.Web.Api.Events
     {
         public EventsMappingProfile()
         {
-            CreateMap<Event, EventResponse>();
+            CreateMap<Event, EventApiResponse>()
+                .ForMember(x => x.IsPublic, opt => opt.Condition(x => x.IsPublic));
 
-            CreateMap<EventMemberResponse, EventMemberResponseResponse>();
+            CreateMap<EventMemberResponse, EventMemberResponseApiResponse>();
         }
     }
 }

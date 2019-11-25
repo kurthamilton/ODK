@@ -2,6 +2,7 @@
 using ODK.Core.Members;
 using ODK.Services.Authentication;
 using ODK.Services.Members;
+using ODK.Web.Api.Account.Responses;
 
 namespace ODK.Web.Api.Account
 {
@@ -9,10 +10,10 @@ namespace ODK.Web.Api.Account
     {
         public AccountMappingProfile()
         {
-            CreateMap<MemberProfile, AccountProfileResponse>()
+            CreateMap<MemberProfile, AccountProfileApiResponse>()
                 .ForMember(x => x.Properties, opt => opt.MapFrom(x => x.MemberProperties));
-            CreateMap<MemberProperty, AccountProfilePropertyResponse>();
-            CreateMap<AuthenticationToken, AuthenticationTokenResponse>();
+            CreateMap<MemberProperty, AccountProfilePropertyApiResponse>();
+            CreateMap<AuthenticationToken, AuthenticationTokenApiResponse>();
         }
     }
 }

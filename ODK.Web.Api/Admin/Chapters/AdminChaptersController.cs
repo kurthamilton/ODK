@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
 using ODK.Services.Chapters;
-using ODK.Web.Api.Chapters;
+using ODK.Web.Api.Chapters.Responses;
 
 namespace ODK.Web.Api.Admin.Chapters
 {
@@ -15,20 +15,20 @@ namespace ODK.Web.Api.Admin.Chapters
     [Route("admin/chapters")]
     public class AdminChaptersController : OdkControllerBase
     {
-        private readonly IChapterService _chapterService;
+        private readonly IChapterAdminService _chapterAdminService;
         private readonly IMapper _mapper;
 
-        public AdminChaptersController(IChapterService chapterService, IMapper mapper)
+        public AdminChaptersController(IChapterAdminService chapterAdminService, IMapper mapper)
         {
-            _chapterService = chapterService;
+            _chapterAdminService = chapterAdminService;
             _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IEnumerable<ChapterResponse>> Get()
+        public async Task<IEnumerable<ChapterApiResponse>> Get()
         {
-            IReadOnlyCollection<Chapter> chapters = await _chapterService.GetAdminChapters(GetMemberId());
-            return chapters.Select(_mapper.Map<ChapterResponse>);
+            IReadOnlyCollection<Chapter> chapters = await _chapterAdminService.GetChapters(GetMemberId());
+            return chapters.Select(_mapper.Map<ChapterApiResponse>);
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ODK.Web.Api.Account
+namespace ODK.Web.Api.Members.Responses
 {
-    public class AccountProfilePropertyResponse
+    public class MemberProfilePropertyApiResponse
     {
         public Guid ChapterPropertyId { get; set; }
 

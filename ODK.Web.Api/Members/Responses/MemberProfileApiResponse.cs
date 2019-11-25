@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ODK.Web.Api.Members
+namespace ODK.Web.Api.Members.Responses
 {
-    public class MemberProfileResponse
+    public class MemberProfileApiResponse
     {
         public string FirstName { get; set; }
 
@@ -11,6 +11,6 @@ namespace ODK.Web.Api.Members
 
         public string LastName { get; set; }
 
-        public IEnumerable<MemberProfilePropertyResponse> Properties { get; set; }
+        public IEnumerable<MemberProfilePropertyApiResponse> Properties { get; set; }
     }
 }

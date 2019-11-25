@@ -2,7 +2,7 @@
 
 namespace ODK.Web.Api.Errors
 {
-    public class ErrorResponse
+    public class ErrorApiResponse
     {
         public IEnumerable<string> Messages { get; set; }
     }

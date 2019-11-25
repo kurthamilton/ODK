@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ODK.Web.Api.Events
+namespace ODK.Web.Api.Admin.Events.Requests
 {
-    public class EventResponse
+    public class CreateEventApiRequest
     {
         public string Address { get; set; }
 
@@ -12,17 +12,13 @@ namespace ODK.Web.Api.Events
 
         public string Description { get; set; }
 
-        public Guid Id { get; set; }
-
-        public string ImageUrl { get; set; }
-
-        public bool IsPublic { get; set; }
-
         public string Location { get; set; }
 
         public string MapQuery { get; set; }
 
         public string Name { get; set; }
+
+        public bool IsPublic { get; set; }
 
         public string Time { get; set; }
     }
