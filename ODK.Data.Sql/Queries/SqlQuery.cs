@@ -15,7 +15,7 @@ namespace ODK.Data.Sql.Queries
     {
         private readonly IList<string> _conditions = new List<string>();
         private string _from = "";
-        private readonly IList<string> _joins = new List<string>();
+        private readonly IList<ISqlComponent> _joins = new List<ISqlComponent>();
         private readonly IList<string> _orderByFields = new List<string>();
         private readonly IList<SqlColumn> _updateColumns = new List<SqlColumn>();
 
@@ -78,8 +78,8 @@ namespace ODK.Data.Sql.Queries
 
         protected void AddJoin<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField)
         {
-            SqlJoin<TFrom, TTo, TValue> join = new SqlJoin<TFrom, TTo, TValue>(Context, fromField, toField);
-            _joins.Add(join.ToSql());
+            SqlJoin<TFrom, TTo, TValue> join = new SqlJoin<TFrom, TTo, TValue>(fromField, toField);
+            _joins.Add(join);
         }
 
         protected void AddOrderBy<TValue>(Expression<Func<T, TValue>> expression, string direction = null)
@@ -148,7 +148,8 @@ namespace ODK.Data.Sql.Queries
 
         private string JoinSql()
         {
-            return string.Join(" ", _joins);
+            SqlMap<T> map = Context.GetMap<T>();
+            return string.Join(" ", map.Joins.Union(_joins).Select(x => x.ToSql(Context)));
         }
 
         private string OrderBySql()

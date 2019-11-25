@@ -13,6 +13,7 @@ namespace ODK.Data.Sql.Mapping
         private readonly IDictionary<string, SqlColumn> _entityColumns = new Dictionary<string, SqlColumn>();
         private IReadOnlyList<SqlColumn> _insertColumns;
         private string _insertColumnSql;
+        private readonly IList<ISqlComponent> _joins = new List<ISqlComponent>();
         private string _selectColumnSql;
 
         protected SqlMap(string tableName)
@@ -25,7 +26,7 @@ namespace ODK.Data.Sql.Mapping
 
         public string InsertColumnSql => _insertColumnSql ?? (_insertColumnSql = string.Join(",", InsertColumns.Select(x => x.ToSql())));
 
-        public string JoinSql { get; private set; } = "";
+        public IReadOnlyCollection<ISqlComponent> Joins => _joins.ToArray();
 
         public string SelectColumnSql => _selectColumnSql ?? (_selectColumnSql = string.Join(",", _columns.Select(x => x.ToSql())));
 
@@ -52,9 +53,7 @@ namespace ODK.Data.Sql.Mapping
 
         protected void Join<TJoin, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TJoin, TValue>> targetField)
         {
-            // SqlJoin<T, TJoin, TValue> sqlJoin = new SqlJoin<T, TJoin, TValue>(this, thisField, targetField);
-
-            // JoinSql += sqlJoin.ToSql();
+            SqlJoin<T, TJoin, TValue> sqlJoin = new SqlJoin<T, TJoin, TValue>(thisField, targetField);            
         }
 
         protected SqlColumn Property<TValue>(Expression<Func<T, TValue>> expression)
