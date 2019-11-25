@@ -18,7 +18,7 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<Chapter>()
                 .Join<ChapterAdminMember, Guid>(x => x.Id, x => x.ChapterId)
-                .Where<ChapterAdminMember, Guid>(x => x.MemberId, memberId)
+                .Where<ChapterAdminMember, Guid>(x => x.MemberId).EqualTo(memberId)
                 .ToArrayAsync();
         }
 
@@ -26,7 +26,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Chapter>()
-                .Where(x => x.Id, id)
+                .Where(x => x.Id).EqualTo(id)
                 .FirstOrDefaultAsync();
         }
 
@@ -34,7 +34,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<ChapterLinks>()
-                .Where(x => x.ChapterId, chapterId)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
                 .FirstOrDefaultAsync();
         }
 
@@ -43,7 +43,7 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<ChapterProperty>()
                 .OrderBy(x => x.DisplayOrder)
-                .Where(x => x.ChapterId, chapterId)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
                 .ToArrayAsync();
         }
 
@@ -53,7 +53,7 @@ namespace ODK.Data.Repositories
                 .Select<ChapterPropertyOption>()
                 .OrderBy(x => x.ChapterPropertyId)
                 .OrderBy(x => x.DisplayOrder)
-                .Where(x => x.ChapterId, chapterId)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
                 .ToArrayAsync();
         }
 

@@ -17,8 +17,8 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Event>()
-                .Where(x => x.ChapterId, chapterId)
-                .Where(x => x.Date, ">=", after)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .Where(x => x.Date).GreaterThanOrEqualTo(after)
                 .ToArrayAsync();
         }
 
@@ -36,9 +36,9 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Event>()
-                .Where(x => x.ChapterId, chapterId)
-                .Where(x => x.Date, ">=", after)
-                .Where(x => x.IsPublic, true)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .Where(x => x.Date).GreaterThanOrEqualTo(after)
+                .Where(x => x.IsPublic).EqualTo(true)
                 .ToArrayAsync();
         }
 

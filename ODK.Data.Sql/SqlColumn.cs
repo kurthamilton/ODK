@@ -52,7 +52,7 @@ namespace ODK.Data.Sql
 
         public IDataParameter ToParameter(object value)
         {
-            return new SqlParameter(ParameterName, Type) { Value = value != null ? value : DBNull.Value };
+            return new SqlParameter(ParameterName, Type) { Value = value ?? DBNull.Value };
         }
 
         public string ToSql()

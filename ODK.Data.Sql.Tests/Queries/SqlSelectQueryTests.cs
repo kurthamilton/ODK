@@ -1,0 +1,140 @@
+﻿using System.Linq;
+using NUnit.Framework;
+using ODK.Data.Sql.Mapping;
+using ODK.Data.Sql.Queries;
+using ODK.Data.Sql.Tests.Mapping;
+
+namespace ODK.Data.Sql.Tests.Queries
+{
+    public static class SqlSelectQueryTests
+    {
+        [Test]
+        public static void GetParameterValues_NoConditions_ReturnsEmptyCollection()
+        {
+            SqlContext context = CreateMockContext();
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context);
+
+            (SqlColumn, object)[] parameterValues = query.GetParameterValues().ToArray();
+
+            CollectionAssert.IsEmpty(parameterValues);
+        }
+
+        [Test]
+        public static void GetParameterValues_ReturnsConditionValues()
+        {
+            SqlContext context = CreateMockContext();
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .Where(x => x.Int).EqualTo(1)
+                .Where(x => x.String).EqualTo("value");
+
+            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues().ToArray();
+
+            CollectionAssert.AreEqual(new [] { "Int", "String" }, parameterValues.Select(x => x.Column.ColumnName));
+            CollectionAssert.AreEqual(new object[] { 1, "value" }, parameterValues.Select(x => x.Value));
+        }
+
+        [Test]
+        public static void ToSql_NoConditions_ReturnsSql()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String);
+
+            SqlContext context = CreateMockContext(map);
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context);
+
+            string sql = query.ToSql();
+
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table", sql);
+        }
+
+        [Test]
+        public static void ToSql_WithConditions_ReturnsParameterisedSql()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String);
+
+            SqlContext context = CreateMockContext(map);
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .Where(x => x.Int).GreaterThanOrEqualTo(1)
+                .Where(x => x.String).EqualTo("abc");
+
+            string sql = query.ToSql();
+
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE Table.[Int] >= @Int AND Table.[String] = @String", sql);
+        }
+
+        [Test]
+        public static void ToSql_MapsColumnName()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String).HasColumnName("Other");
+
+            SqlContext context = CreateMockContext(map);
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context);
+
+            string sql = query.ToSql();
+
+            Assert.AreEqual("SELECT Table.[Int],Table.[Other] FROM Table", sql);
+        }
+
+        [Test]
+        public static void ToSql_AddsOrderByFields()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String);
+
+            SqlContext context = CreateMockContext(map);
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .OrderBy(x => x.Int, "DESC")
+                .OrderBy(x => x.String, "ASC");
+
+            string sql = query.ToSql();
+
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table ORDER BY Table.[Int] DESC,Table.[String]", sql);
+        }
+
+        [Test]
+        public static void ToSql_WithRootTableJoin_ReturnsJoinedTable()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String);
+
+            SqlContext context = CreateMockContext(map);
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .Join<TestRelatedEntity, int>(x => x.Int, x => x.Int);
+
+            string sql = query.ToSql();
+
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table JOIN Related ON Table.[Int] = Related.[Int]", sql);
+        }
+
+        private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null, SqlMap<TestRelatedEntity> relatedMap = null)
+        {
+            MockContext context = new MockContext();
+            context.AddMockMap(map ?? CreateMap());
+            context.AddMockMap(relatedMap ?? CreateRelatedMap());
+            return context;
+        }
+
+        private static SqlMap<TestEntity> CreateMap()
+        {
+            TestEntityMap map = new TestEntityMap();
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String);
+            return map;
+        }
+
+        private static SqlMap<TestRelatedEntity> CreateRelatedMap()
+        {
+            TestRelatedEntityMap map = new TestRelatedEntityMap("Related");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.Other);
+            return map;
+        }
+    }
+}

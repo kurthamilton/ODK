@@ -46,7 +46,7 @@ namespace ODK.Data.Repositories
         {
             await Context
                 .Delete<MemberPasswordResetRequest>()
-                .Where(x => x.Id, passwordResetRequestId)
+                .Where(x => x.Id).EqualTo(passwordResetRequestId)
                 .ExecuteAsync();
         }
 
@@ -54,7 +54,7 @@ namespace ODK.Data.Repositories
         {
             await Context
                 .Delete<MemberRefreshToken>()
-                .Where(x => x.Id, id)
+                .Where(x => x.Id).EqualTo(id)
                 .ExecuteAsync();
         }
 
@@ -62,7 +62,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Member>()
-                .Where(x => x.EmailAddress, emailAddress)
+                .Where(x => x.EmailAddress).EqualTo(emailAddress)
                 .FirstOrDefaultAsync();
         }
 
@@ -70,7 +70,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Member>()
-                .Where(x => x.Id, memberId)
+                .Where(x => x.Id).EqualTo(memberId)
                 .FirstOrDefaultAsync();
         }
 
@@ -93,7 +93,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<MemberImage>()
-                .Where(x => x.MemberId, memberId)
+                .Where(x => x.MemberId).EqualTo(memberId)
                 .FirstOrDefaultAsync();
         }
 
@@ -101,7 +101,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<MemberPassword>()
-                .Where(x => x.MemberId, memberId)
+                .Where(x => x.MemberId).EqualTo(memberId)
                 .FirstOrDefaultAsync();
         }
 
@@ -109,7 +109,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<MemberProperty>()
-                .Where(x => x.MemberId, memberId)
+                .Where(x => x.MemberId).EqualTo(memberId)
                 .ToArrayAsync();
         }
 
@@ -117,7 +117,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Member>()
-                .Where(x => x.ChapterId, chapterId)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
                 .ToArrayAsync();
         }
 
@@ -125,7 +125,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<MemberPasswordResetRequest>()
-                .Where(x => x.Token, token)
+                .Where(x => x.Token).EqualTo(token)
                 .FirstOrDefaultAsync();
         }
 
@@ -133,7 +133,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<MemberRefreshToken>()
-                .Where(x => x.RefreshToken, refreshToken)
+                .Where(x => x.RefreshToken).EqualTo(refreshToken)
                 .FirstOrDefaultAsync();
         }
 
@@ -150,7 +150,7 @@ namespace ODK.Data.Repositories
                 .Set(x => x.EmailOptIn, emailOptIn)
                 .Set(x => x.FirstName, firstName)
                 .Set(x => x.LastName, lastName)
-                .Where(x => x.Id, memberId)
+                .Where(x => x.Id).EqualTo(memberId)
                 .ExecuteAsync();
         }
 
@@ -169,7 +169,7 @@ namespace ODK.Data.Repositories
                     .Update<MemberImage>()
                     .Set(x => x.ImageData, image.ImageData)
                     .Set(x => x.MimeType, image.MimeType)
-                    .Where(x => x.MemberId, image.MemberId)
+                    .Where(x => x.MemberId).EqualTo(image.MemberId)
                     .ExecuteAsync();
             }
             else
@@ -184,7 +184,7 @@ namespace ODK.Data.Repositories
                 .Update<MemberPassword>()
                 .Set(x => x.Password, password.Password)
                 .Set(x => x.Salt, password.Salt)
-                .Where(x => x.MemberId, password.MemberId)
+                .Where(x => x.MemberId).EqualTo(password.MemberId)
                 .ExecuteAsync();
         }
 
@@ -201,7 +201,7 @@ namespace ODK.Data.Repositories
                     await Context
                         .Update<MemberProperty>()
                         .Set(x => x.Value, memberProperty.Value)
-                        .Where(x => x.Id, memberProperty.Id)
+                        .Where(x => x.Id).EqualTo(memberProperty.Id)
                         .ExecuteAsync();
                 }
             }
@@ -211,7 +211,7 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<MemberImage>()
-                .Where(x => x.MemberId, memberId)
+                .Where(x => x.MemberId).EqualTo(memberId)
                 .CountAsync() > 0;
         }
     }

@@ -93,7 +93,12 @@ namespace ODK.Data.Sql
         protected void AddMap<T>(SqlMap<T> map)
         {
             string key = typeof(T).FullName;
-            _maps.Add(key, map);
+            if (key == null)
+            {
+                return;
+            }
+
+            _maps[key] = map;
         }
 
         private async Task ExecuteQueryAsync<T>(SqlQuery<T> query, Func<DbCommand, Task> action)

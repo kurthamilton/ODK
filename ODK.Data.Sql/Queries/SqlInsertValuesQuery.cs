@@ -9,7 +9,7 @@
 
         public SqlInsertValuesQuery<T> Value(T entity)
         {
-            AddInsertColumns(entity);
+            AddInsertEntity(entity);
             return this;
         }
     }

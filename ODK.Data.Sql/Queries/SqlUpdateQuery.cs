@@ -8,7 +8,6 @@ namespace ODK.Data.Sql.Queries
         public SqlUpdateQuery(SqlContext context)
             : base(context)
         {
-            AddFrom();
         }
 
         public SqlUpdateQuery<T> Set<TValue>(Expression<Func<T, TValue>> expression, TValue value)

@@ -6,7 +6,6 @@
             : base(context)
         {
             AddDelete();
-            AddFrom();
         }
     }
 }

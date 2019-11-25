@@ -9,15 +9,13 @@ namespace ODK.Data.Sql.Queries
 {
     public abstract class SqlQuery<T>
     {
-        private readonly IList<string> _conditions = new List<string>();
+        private readonly IList<ISqlQueryCondition> _conditions = new List<ISqlQueryCondition>();
         private bool _delete;
-        private string _from = "";
+        private T _insertEntity;
         private readonly IList<ISqlComponent> _joins = new List<ISqlComponent>();
-        private readonly IList<string> _insertColumns = new List<string>();
-        private readonly IList<string> _joins = new List<string>();
-        private readonly IList<string> _orderByFields = new List<string>();
+        private readonly IList<(SqlColumn Column, string Direction)> _orderByFields = new List<(SqlColumn, string)>();
         private readonly IList<string> _selectColumns = new List<string>();
-        private readonly IList<SqlColumn> _updateColumns = new List<SqlColumn>();
+        private readonly IList<(SqlColumn Column, object Value)> _updateColumns = new List<(SqlColumn, object)>();
 
         protected SqlQuery(SqlContext context)
         {
@@ -25,8 +23,6 @@ namespace ODK.Data.Sql.Queries
         }
 
         protected SqlContext Context { get; }
-
-        private IList<(SqlColumn column, object value)> ParameterValues { get; } = new List<(SqlColumn, object)>();
 
         public async Task ExecuteAsync()
         {
@@ -47,7 +43,33 @@ namespace ODK.Data.Sql.Queries
 
         public IEnumerable<(SqlColumn, object)> GetParameterValues()
         {
-            return ParameterValues.ToArray();
+            if (_conditions.Count > 0)
+            {
+                foreach (ISqlQueryCondition condition in _conditions)
+                {
+                    yield return (condition.GetColumn(Context), condition.Value);
+                }
+            }
+
+            if (_insertEntity != null)
+            {
+                SqlMap<T> map = Context.GetMap<T>();
+
+                foreach (SqlColumn column in map.InsertColumns)
+                {
+                    object value = map.GetEntityValue(_insertEntity, column);
+
+                    yield return (column, value);
+                }
+            }
+
+            if (_updateColumns.Count > 0)
+            {
+                foreach ((SqlColumn column, object value) updateColumn in _updateColumns)
+                {
+                    yield return updateColumn;
+                }
+            }
         }
 
         public async Task<IReadOnlyCollection<T>> ToArrayAsync()
@@ -64,14 +86,9 @@ namespace ODK.Data.Sql.Queries
                OrderBySql();
         }
 
-        protected void AddCondition<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression, string @operator, TValue value)
+        protected void AddCondition<TEntity, TValue>(SqlQueryCondition<T, TEntity, TValue> condition)
         {
-            SqlMap<TEntity> map = Context.GetMap<TEntity>();
-            SqlColumn column = map.GetColumn(expression);
-
-            _conditions.Add($"{column.ToSql()} {@operator} {column.ParameterName}");
-
-            AddParameterValue(column, value);
+            _conditions.Add(condition);
         }
 
         protected void AddDelete()
@@ -79,24 +96,9 @@ namespace ODK.Data.Sql.Queries
             _delete = true;
         }
 
-        protected void AddFrom()
+        protected void AddInsertEntity(T entity)
         {
-            SqlMap<T> map = Context.GetMap<T>();
-            _from = map.TableName;
-        }
-
-        protected void AddInsertColumns(T entity)
-        {
-            SqlMap<T> map = Context.GetMap<T>();
-
-            foreach (SqlColumn column in map.InsertColumns)
-            {
-                string entityFieldName = map.GetEntityFieldName(column);
-                object value = entity.GetType().GetProperty(entityFieldName)?.GetValue(entity);
-
-                _insertColumns.Add(column.ColumnName);
-                AddParameterValue(column, value);
-            }
+            _insertEntity = entity;
         }
 
         protected void AddJoin<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField)
@@ -111,13 +113,7 @@ namespace ODK.Data.Sql.Queries
 
             SqlColumn column = map.GetColumn(expression);
 
-            string orderBy = column.ToSql();
-            if (string.Equals(direction, "DESC", StringComparison.OrdinalIgnoreCase))
-            {
-                orderBy += " DESC";
-            }
-
-            _orderByFields.Add(orderBy);
+            _orderByFields.Add((column, string.Equals(direction, "DESC", StringComparison.OrdinalIgnoreCase) ? "DESC" : ""));
         }
 
         protected void AddSelectColumn(string column)
@@ -139,23 +135,13 @@ namespace ODK.Data.Sql.Queries
 
             // TODO: resolve conflict between set parameter and where parameter when both operate on same column
             SqlColumn column = map.GetColumn(expression);
-            AddParameterValue(column, value);
-            _updateColumns.Add(column);
-        }
-
-        private static string UpdateColumnSql(SqlColumn column)
-        {
-            return $"{column.ToSql()} = {column.ParameterName}";
-        }
-
-        private void AddParameterValue(SqlColumn column, object value)
-        {
-            ParameterValues.Add((column, value));
+            _updateColumns.Add((column, value));
         }
 
         private string FromSql()
         {
-            return _from.Length > 0 ? $" FROM {_from}" : "";
+            SqlMap<T> map = Context.GetMap<T>();
+            return _insertEntity == null ? $" FROM {map.TableName}" : "";
         }
 
         private string InitialClauseSql()
@@ -170,19 +156,15 @@ namespace ODK.Data.Sql.Queries
             if (_updateColumns.Count > 0)
             {
 
-                return $"UPDATE {map.TableName}" +
-                       $"SET {string.Join(",", _updateColumns.Select(UpdateColumnSql))}";
+                return $"UPDATE {map.TableName} " +
+                       $"SET {string.Join(",", _updateColumns.Select(x => $"{x.Column.ToSql()} = {x.Column.ParameterName}"))}";
             }
 
-        private string JoinSql()
-        {
-            SqlMap<T> map = Context.GetMap<T>();
-            return string.Join(" ", map.Joins.Union(_joins).Select(x => x.ToSql(Context)));
-        }
-            if (_insertColumns.Count > 0)
+            if (_insertEntity != null)
             {
-                return $"INSERT INTO {map.TableName} ({string.Join(",", _insertColumns)}) " +
-                       $"VALUES({ string.Join(",", map.InsertColumns.Select(x => x.ParameterName))})";
+                IReadOnlyCollection<SqlColumn> columns = map.InsertColumns;
+                return $"INSERT INTO {map.TableName} ({string.Join(",", columns.Select(x => x.ColumnName))}) " +
+                       $"VALUES ({ string.Join(",", columns.Select(x => x.ParameterName))})";
             }
 
             if (_delete)
@@ -195,17 +177,18 @@ namespace ODK.Data.Sql.Queries
 
         private string JoinSql()
         {
-            return string.Join(" ", _joins);
+            SqlMap<T> map = Context.GetMap<T>();
+            return string.Join(" ", map.Joins.Union(_joins).Select(x => x.ToSql(Context)));
         }
 
         private string OrderBySql()
         {
-            return _orderByFields.Count > 0 ? $" ORDER BY {string.Join(",", _orderByFields)}" : "";
+            return _orderByFields.Count > 0 ? $" ORDER BY {string.Join(",", _orderByFields.Select(x => $"{x.Column.ToSql()} {x.Direction}".Trim()))}" : "";
         }
 
         private string WhereSql()
         {
-            return _conditions.Count > 0 ? $" WHERE {string.Join(" AND ", _conditions)}" : "";
+            return _conditions.Count > 0 ? $" WHERE {string.Join(" AND ", _conditions.Select(x => x.ToSql(Context)))}" : "";
         }
     }
 }
