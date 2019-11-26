@@ -15,6 +15,11 @@ namespace ODK.Core.Members
 
         public Guid Id { get; }
 
-        public string Name { get; }
+        public string Name { get; private set; }
+
+        public void Update(string name)
+        {
+            Name = name;
+        }
     }
 }

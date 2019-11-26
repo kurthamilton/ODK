@@ -36,6 +36,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IEventService, EventService>();
             services.AddSingleton(configuration.Map<SmtpSettings>("Smtp"));
             services.AddScoped<IMailService, MailService>();
+            services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();
 
             // Data
@@ -46,6 +47,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IDataTypeRepository, DataTypeRepository>();
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IMemberRepository, MemberRepository>();
+            services.AddScoped<IMemberGroupRepository, MemberGroupRepository>();
         }
     }
 }
