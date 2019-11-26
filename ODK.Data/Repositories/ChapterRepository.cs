@@ -39,6 +39,14 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<ChapterEmailSettings> GetChapterEmailSettings(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterEmailSettings>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<ChapterLinks> GetChapterLinks(Guid chapterId)
         {
             return await Context

@@ -8,16 +8,20 @@ namespace ODK.Services.Members
     public class MemberProfile
     {
         public MemberProfile(Member member, IEnumerable<MemberProperty> memberProperties)
+            : this(member.EmailAddress, member.EmailOptIn, member.FirstName, member.LastName, member.CreatedDate.Date, memberProperties)
         {
-            EmailAddress = member.EmailAddress;
-            EmailOptIn = member.EmailOptIn;
-            FirstName = member.FirstName;
-            Joined = member.CreatedDate.Date;
-            LastName = member.LastName;
-            MemberProperties = memberProperties.ToArray();
-        }        
+        }
 
-        public string EmailAddress { get; private set; }
+        public MemberProfile(string emailAddress, bool emailOptIn, string firstName, string lastName, DateTime joined, IEnumerable<MemberProperty> memberProperties)
+        {
+            EmailAddress = emailAddress.Trim();
+            Joined = joined;
+            MemberProperties = memberProperties.ToArray();
+
+            Update(emailOptIn, firstName, lastName);
+        }
+
+        public string EmailAddress { get; }
 
         public bool EmailOptIn { get; private set; }
 
@@ -29,12 +33,11 @@ namespace ODK.Services.Members
 
         public IReadOnlyCollection<MemberProperty> MemberProperties { get; }
 
-        public void Update(string emailAddress, bool emailOptIn, string firstName, string lastName)
+        public void Update(bool emailOptIn, string firstName, string lastName)
         {
-            EmailAddress = emailAddress;
             EmailOptIn = emailOptIn;
-            FirstName = firstName;
-            LastName = lastName;
+            FirstName = firstName.Trim();
+            LastName = lastName.Trim();
         }
     }
 }

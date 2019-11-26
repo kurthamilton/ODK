@@ -18,6 +18,6 @@ namespace ODK.Core.Members
 
         public Guid MemberId { get; }
 
-        public string RefreshToken { get; set; }
+        public string RefreshToken { get; }
     }
 }

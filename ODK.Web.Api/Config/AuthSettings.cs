@@ -6,6 +6,8 @@
 
         public string Key { get; set; }
 
+        public int PasswordResetTokenLifetimeMinutes { get; set; }
+
         public int RefreshTokenLifetimeDays { get; set; }
     }
 }

@@ -7,7 +7,7 @@ using ODK.Data.Sql;
 namespace ODK.Data.Repositories
 {
     public class PaymentRepository : RepositoryBase, IPaymentRepository
-    {        
+    {
         public PaymentRepository(SqlContext context)
             : base(context)
         {

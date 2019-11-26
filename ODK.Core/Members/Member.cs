@@ -4,9 +4,10 @@ namespace ODK.Core.Members
 {
     public class Member
     {
-        public Member(Guid id, Guid chapterId, string emailAddress, bool emailOptIn, 
-            string firstName, string lastName, DateTime createdDate, bool disabled)
+        public Member(Guid id, Guid chapterId, string emailAddress, bool emailOptIn,
+            string firstName, string lastName, DateTime createdDate, bool activated, bool disabled)
         {
+            Activated = activated;
             ChapterId = chapterId;
             CreatedDate = createdDate;
             Disabled = disabled;
@@ -16,6 +17,8 @@ namespace ODK.Core.Members
             Id = id;
             LastName = lastName;
         }
+
+        public bool Activated { get; }
 
         public Guid ChapterId { get; }
 
@@ -31,6 +34,6 @@ namespace ODK.Core.Members
 
         public Guid Id { get; }
 
-        public string LastName { get; }     
+        public string LastName { get; }
     }
 }

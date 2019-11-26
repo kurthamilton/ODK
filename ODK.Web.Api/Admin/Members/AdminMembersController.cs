@@ -31,5 +31,19 @@ namespace ODK.Web.Api.Admin.Members
             IReadOnlyCollection<Member> members = await _memberAdminService.GetMembers(GetMemberId(), chapterId);
             return members.Select(_mapper.Map<MemberApiResponse>);
         }
+
+        [HttpPut("{id}/disable")]
+        public async Task<IActionResult> DisableMember(Guid id)
+        {
+            await _memberAdminService.DisableMember(GetMemberId(), id);
+            return NoContent();
+        }
+
+        [HttpPut("{id}/enable")]
+        public async Task<IActionResult> EnableMember(Guid id)
+        {
+            await _memberAdminService.EnableMember(GetMemberId(), id);
+            return NoContent();
+        }
     }
 }

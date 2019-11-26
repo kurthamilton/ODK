@@ -7,14 +7,16 @@ namespace ODK.Services.Members
 {
     public interface IMemberService
     {
+        Task CreateMember(Guid chapterId, CreateMemberProfile profile);
+
         Task<MemberImage> GetMemberImage(Guid currentMemberId, Guid memberId);
 
         Task<MemberProfile> GetMemberProfile(Guid currentMemberId, Guid memberId);
 
         Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId);
 
-        Task<MemberImage> UpdateMemberImage(MemberImage image);
+        Task<MemberImage> UpdateMemberImage(Guid id, UpdateMemberImage image);
 
-        Task<MemberProfile> UpdateMemberProfile(UpdateMemberProfile profile);
+        Task<MemberProfile> UpdateMemberProfile(Guid id, UpdateMemberProfile profile);
     }
 }

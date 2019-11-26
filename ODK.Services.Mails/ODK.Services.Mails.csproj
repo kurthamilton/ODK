@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
     <ProjectReference Include="..\ODK.Services\ODK.Services.csproj" />
   </ItemGroup>
 

@@ -1,60 +1,57 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Services.Authentication;
+using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
+using ODK.Services.Mails;
 using ODK.Services.Members;
 
 namespace ODK.Services.Tests.Members
 {
     public static class MemberServiceTests
     {
-        [TestCase("", "first", "last")]
-        [TestCase("email", "", "last")]
-        [TestCase("email", "first", "")]
-        public static void UpdateProfile_EmptyRequiredProperties_ThrowsException(string emailAddress, string firstName, string lastName)
+        [TestCase("", "last")]
+        [TestCase("first", "")]
+        public static void UpdateProfile_EmptyRequiredProperties_ThrowsException(string firstName, string lastName)
         {
             MemberService service = CreateService();
 
-            Member member = CreateMockMember(emailAddress: emailAddress, firstName: firstName, lastName: lastName);
-            
             UpdateMemberProfile profile = new UpdateMemberProfile
             {
-                EmailAddress = emailAddress,
                 FirstName = firstName,
                 LastName = lastName
             };
 
-            Assert.ThrowsAsync<OdkServiceException>(() => service.UpdateMemberProfile(profile));
+            Assert.ThrowsAsync<OdkServiceException>(() => service.UpdateMemberProfile(Guid.NewGuid(), profile));
         }
 
         [Test]
         public static void UpdateProfile_EmptyRequiredMemberProperty_ThrowsException()
         {
-            ChapterProperty[] chapterProperties = new[]
+            ChapterProperty[] chapterProperties =
             {
                 CreateMockChapterProperty("required", required: true),
                 CreateMockChapterProperty("optional", required: false)
             };
 
-            MemberProperty[] memberProperties = new[]
+            MemberProperty[] memberProperties =
             {
                 CreateMockMemberProperty(chapterProperties[0].Id, ""),
                 CreateMockMemberProperty(chapterProperties[1].Id, "optional")
             };
 
-            Member member = CreateMockMember();            
+            Member member = CreateMockMember();
             IChapterRepository chapterRepository = CreateMockChapterRepository(chapterProperties: chapterProperties);
             IMemberRepository memberRepository = CreateMockMemberRepository(member, memberProperties);
             MemberService service = CreateService(memberRepository, chapterRepository);
 
             UpdateMemberProfile profile = new UpdateMemberProfile
             {
-                EmailAddress = "email",
                 FirstName = "first",
                 LastName = "last",
                 Properties = memberProperties.Select(x => new UpdateMemberProperty
@@ -64,14 +61,22 @@ namespace ODK.Services.Tests.Members
                 })
             };
 
-            Assert.ThrowsAsync<OdkServiceException>(() => service.UpdateMemberProfile(profile));
+            Assert.ThrowsAsync<OdkServiceException>(() => service.UpdateMemberProfile(Guid.NewGuid(), profile));
         }
 
         private static MemberService CreateService(IMemberRepository memberRepository = null,
             IChapterRepository chapterRepository = null)
         {
             return new MemberService(memberRepository ?? CreateMockMemberRepository(CreateMockMember()),
-                chapterRepository ?? CreateMockChapterRepository());
+                chapterRepository ?? CreateMockChapterRepository(),
+                CreateMockAuthorizationService(),
+                CreateMockMailService(),
+                new AuthenticationSettings());
+        }
+
+        private static IAuthorizationService CreateMockAuthorizationService()
+        {
+            return Mock.Of<IAuthorizationService>();
         }
 
         private static ChapterProperty CreateMockChapterProperty(string name = null, bool required = false)
@@ -97,6 +102,11 @@ namespace ODK.Services.Tests.Members
             return mock.Object;
         }
 
+        private static IMailService CreateMockMailService()
+        {
+            return Mock.Of<IMailService>();
+        }
+
         private static Member CreateMockMember(Guid? memberId = null, Guid? chapterId = null,
             string emailAddress = null, string firstName = null, string lastName = null)
         {
@@ -108,10 +118,11 @@ namespace ODK.Services.Tests.Members
                 firstName ?? "first",
                 lastName ?? "last",
                 DateTime.Now,
+                true,
                 false);
         }
 
-        private static MemberProperty CreateMockMemberProperty(Guid? chapterPropertyId = null, 
+        private static MemberProperty CreateMockMemberProperty(Guid? chapterPropertyId = null,
             string value = null)
         {
             return new MemberProperty(
@@ -121,7 +132,7 @@ namespace ODK.Services.Tests.Members
                 value);
         }
 
-        private static IMemberRepository CreateMockMemberRepository(Member member = null, 
+        private static IMemberRepository CreateMockMemberRepository(Member member = null,
             IEnumerable<MemberProperty> memberProperties = null)
         {
             Mock<IMemberRepository> mock = new Mock<IMemberRepository>();

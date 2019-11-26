@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -32,6 +31,14 @@ namespace ODK.Web.Api.Account
         }
 
         [AllowAnonymous]
+        [HttpPost("Activate")]
+        public async Task<IActionResult> Activate([FromForm] ActivateAccountApiRequest request)
+        {
+            await _authenticationService.ActivateAccount(request.ActivationToken, request.Password);
+            return Created();
+        }
+
+        [AllowAnonymous]
         [HttpPost("CompletePasswordReset")]
         public async Task<IActionResult> CompleteResetPassword([FromForm] ResetPasswordApiRequest request)
         {
@@ -44,8 +51,13 @@ namespace ODK.Web.Api.Account
         {
             byte[] imageData = await file.ToByteArrayAsync();
 
-            MemberImage image = new MemberImage(GetMemberId(), imageData, file.ContentType);
-            image = await _memberService.UpdateMemberImage(image);
+            UpdateMemberImage update = new UpdateMemberImage
+            {
+                ImageData = imageData,
+                MimeType = file.ContentType
+            };
+
+            MemberImage image = await _memberService.UpdateMemberImage(GetMemberId(), update);
             return File(image.ImageData, image.MimeType);
         }
 
@@ -75,21 +87,9 @@ namespace ODK.Web.Api.Account
         [HttpPut("Profile")]
         public async Task<MemberProfileApiResponse> UpdateProfile([FromForm] UpdateMemberProfileApiRequest request)
         {
-            UpdateMemberProfile update = new UpdateMemberProfile
-            {
-                EmailAddress = request.EmailAddress,
-                EmailOptIn = request.EmailOptIn,
-                FirstName = request.FirstName,
-                Id = GetMemberId(),
-                LastName = request.LastName,
-                Properties = request.Properties.Select(x => new UpdateMemberProperty
-                {
-                    ChapterPropertyId = x.ChapterPropertyId,
-                    Value = x.Value
-                })
-            };
+            UpdateMemberProfile update = _mapper.Map<UpdateMemberProfile>(request);
 
-            MemberProfile profile = await _memberService.UpdateMemberProfile(update);
+            MemberProfile profile = await _memberService.UpdateMemberProfile(GetMemberId(), update);
 
             return _mapper.Map<MemberProfileApiResponse>(profile);
         }
@@ -104,10 +104,19 @@ namespace ODK.Web.Api.Account
         }
 
         [AllowAnonymous]
-        [HttpPost("RequestPasswordReset")]
-        public async Task<IActionResult> RequestPasswordReset(string username)
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register([FromForm] CreateMemberProfileApiRequest request)
         {
-            await _authenticationService.RequestPasswordReset(username);
+            CreateMemberProfile profile = _mapper.Map<CreateMemberProfile>(request);
+            await _memberService.CreateMember(request.ChapterId, profile);
+            return Created();
+        }
+
+        [AllowAnonymous]
+        [HttpPost("RequestPasswordReset")]
+        public async Task<IActionResult> RequestPasswordReset([FromForm] RequestPasswordResetApiRequest request)
+        {
+            await _authenticationService.RequestPasswordReset(request.Username);
             return Created();
         }
     }

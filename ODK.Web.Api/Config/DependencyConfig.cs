@@ -3,11 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using ODK.Core.Chapters;
 using ODK.Core.DataTypes;
 using ODK.Core.Events;
+using ODK.Core.Mail;
 using ODK.Core.Members;
 using ODK.Data;
 using ODK.Data.Repositories;
 using ODK.Data.Sql;
 using ODK.Services.Authentication;
+using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.DataTypes;
 using ODK.Services.Events;
@@ -19,16 +21,20 @@ namespace ODK.Web.Api.Config
     public static class DependencyConfig
     {
         public static void ConfigureDependencies(this IServiceCollection services, IConfiguration configuration,
-            AuthSettings authSettings)
+            AuthSettings authSettings, UrlSettings urlSettings)
         {
             // Services
             services.AddSingleton(new AuthenticationSettings
             {
                 AccessTokenLifetimeMinutes = authSettings.AccessTokenLifetimeMinutes,
+                ActivateAccountUrl = $"{urlSettings.WebBase}{urlSettings.ActivateAccount}",
                 Key = authSettings.Key,
+                PasswordResetTokenLifetimeMinutes = authSettings.PasswordResetTokenLifetimeMinutes,
+                PasswordResetUrl = $"{urlSettings.WebBase}{urlSettings.PasswordReset}",
                 RefreshTokenLifetimeDays = authSettings.RefreshTokenLifetimeDays
             });
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IAuthorizationService, AuthorizationService>();
             services.AddScoped<IChapterAdminService, ChapterAdminService>();
             services.AddScoped<IChapterService, ChapterService>();
             services.AddScoped<IDataTypeService, DataTypeService>();
@@ -46,6 +52,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IChapterRepository, ChapterRepository>();
             services.AddScoped<IDataTypeRepository, DataTypeRepository>();
             services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IMemberEmailRepository, MemberEmailRepository>();
             services.AddScoped<IMemberRepository, MemberRepository>();
             services.AddScoped<IMemberGroupRepository, MemberGroupRepository>();
         }

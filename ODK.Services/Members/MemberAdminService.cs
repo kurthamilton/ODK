@@ -58,6 +58,20 @@ namespace ODK.Services.Members
             await _memberGroupRepository.DeleteMemberGroup(memberGroup.Id);
         }
 
+        public async Task DisableMember(Guid currentMemberId, Guid id)
+        {
+            Member member = await GetMember(currentMemberId, id);
+
+            await _memberRepository.DisableMember(member.Id);
+        }
+
+        public async Task EnableMember(Guid currentMemberId, Guid id)
+        {
+            Member member = await GetMember(currentMemberId, id);
+
+            await _memberRepository.EnableMember(member.Id);
+        }
+
         public async Task<IReadOnlyCollection<MemberGroupMember>> GetMemberGroupMembers(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
@@ -97,6 +111,19 @@ namespace ODK.Services.Members
             await _memberGroupRepository.UpdateMemberGroup(update);
 
             return update;
+        }
+
+        private async Task<Member> GetMember(Guid currentMemberId, Guid id)
+        {
+            Member member = await _memberRepository.GetMember(id);
+            if (member == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, member.ChapterId);
+
+            return member;
         }
 
         private async Task<MemberGroup> GetMemberGroup(Guid currentMemberId, Guid id)

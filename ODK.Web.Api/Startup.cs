@@ -21,7 +21,7 @@ namespace ODK.Web.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().ConfigureJson();            
+            services.AddControllers().ConfigureJson();
             services.ConfigureMapping(typeof(MappingConfig));
 
             services.Configure<IISServerOptions>(options =>
@@ -30,9 +30,9 @@ namespace ODK.Web.Api
             });
 
             AppSettings settings = GetAppSettings();
-            services.ConfigureDependencies(Configuration, settings.Auth);
+            services.ConfigureDependencies(Configuration, settings.Auth, settings.Urls);
             services.ConfigureAuthentication(settings.Auth);
-            services.ConfigureCors(CorsPolicyName, settings.Cors);            
+            services.ConfigureCors(CorsPolicyName, settings.Cors);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,7 +58,7 @@ namespace ODK.Web.Api
             {
                 endpoints.MapControllers();
             });
-        }        
+        }
 
         private AppSettings GetAppSettings()
         {

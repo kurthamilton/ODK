@@ -1,31 +1,54 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
+using ODK.Core.Cryptography;
+using ODK.Core.Mail;
 using ODK.Core.Members;
+using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
 using ODK.Services.Mails;
 
 namespace ODK.Services.Authentication
 {
     public class AuthenticationService : IAuthenticationService
-    {        
+    {
+        private readonly IAuthorizationService _authorizationService;
         private readonly IMailService _mailService;
         private readonly IMemberRepository _memberRepository;
         private readonly AuthenticationSettings _settings;
 
-        public AuthenticationService(IMemberRepository memberRepository, IMailService mailService, AuthenticationSettings settings)
+        public AuthenticationService(IMemberRepository memberRepository, IMailService mailService, AuthenticationSettings settings,
+            IAuthorizationService authorizationService)
         {
+            _authorizationService = authorizationService;
             _mailService = mailService;
             _memberRepository = memberRepository;
             _settings = settings;
         }
 
+        public async Task ActivateAccount(string activationToken, string password)
+        {
+            MemberActivationToken token = await _memberRepository.GetMemberActivationToken(activationToken);
+            if (token == null)
+            {
+                return;
+            }
+
+            await UpdatePassword(token.MemberId, password);
+
+            await _memberRepository.DeleteActivationToken(token.MemberId);
+            await _memberRepository.ActivateMember(token.MemberId);
+
+            // TODO: Send new member emails
+        }
+
         public async Task ChangePassword(Guid memberId, string currentPassword, string newPassword)
         {
+            await _authorizationService.AssertMemberIsCurrent(memberId);
             await AssertMemberPasswordMatches(memberId, currentPassword, "Current password is incorrect");
             await UpdatePassword(memberId, newPassword);
         }
@@ -35,13 +58,22 @@ namespace ODK.Services.Authentication
             const string message = "Username or password incorrect";
 
             Member member = await _memberRepository.FindMemberByEmailAddress(username);
-            if (member == null)
-            {
-                throw new OdkServiceException(message);
-            }
-
 
             await AssertMemberPasswordMatches(member.Id, password, message);
+
+            try
+            {
+                _authorizationService.AssertMemberIsCurrent(member);
+            }
+            catch
+            {
+                if (member.Disabled)
+                {
+                    throw new OdkServiceException("This account has been disabled");
+                }
+
+                throw;
+            }
 
             return await GenerateAccessToken(member);
         }
@@ -63,6 +95,7 @@ namespace ODK.Services.Authentication
             }
 
             Member member = await _memberRepository.GetMember(memberRefreshToken.MemberId);
+            _authorizationService.AssertMemberIsCurrent(member);
 
             AuthenticationToken authenticationToken = await GenerateAccessToken(member, memberRefreshToken.Expires);
 
@@ -74,22 +107,28 @@ namespace ODK.Services.Authentication
         public async Task RequestPasswordReset(string username)
         {
             Member member = await _memberRepository.FindMemberByEmailAddress(username);
-            if (member == null)
+
+            DateTime created = DateTime.UtcNow;
+            DateTime expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
+            string token = RandomStringGenerator.Generate(64);
+
+            try
+            {
+                _authorizationService.AssertMemberIsCurrent(member);
+            }
+            catch
             {
                 return;
             }
 
-            DateTime created = DateTime.UtcNow;
-            DateTime expires = created.AddHours(1);
-            string token = GenerateRandomString(64);
             await _memberRepository.AddPasswordResetRequest(member.Id, created, expires, token);
 
-            string from = "noreply@drunkenknitwits.com";
-            string[] to = new[] { member.EmailAddress };
-            string subject = "Password reset request";
-            string body = "Body";
+            string url = _settings.PasswordResetUrl.Replace("{token}", token);
 
-            await _mailService.SendMail(from, to, subject, body);
+            await _mailService.SendMail(member, EmailType.PasswordReset, new Dictionary<string, string>
+            {
+                { "url", url }
+            });
         }
 
         public async Task ResetPassword(string token, string password)
@@ -111,18 +150,6 @@ namespace ODK.Services.Authentication
             await UpdatePassword(request.MemberId, password);
 
             await _memberRepository.DeletePasswordResetRequest(request.Id);
-
-            return;
-        }
-
-        private static string GenerateRandomString(int length)
-        {
-            byte[] randomNumber = new byte[length];
-            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(randomNumber);
-                return Convert.ToBase64String(randomNumber);
-            }
         }
 
         private static void ValidatePassword(string password)
@@ -154,7 +181,7 @@ namespace ODK.Services.Authentication
 
             JwtSecurityToken token = new JwtSecurityToken
             (
-                claims: new Claim[]
+                claims: new []
                 {
                     new Claim(ClaimTypes.NameIdentifier, member.Id.ToString())
                 },
@@ -169,19 +196,20 @@ namespace ODK.Services.Authentication
             return new AuthenticationToken(member.Id, member.ChapterId, accessToken, refreshToken);
         }
 
-        private async Task<string> GenerateRefreshToken(Guid memberId, DateTime? refreshTokenExpires = null)
+        private async Task<string> GenerateRefreshToken(Guid memberId, DateTime? expires = null)
         {
-            string refreshToken = GenerateRandomString(32);
+            string refreshToken = RandomStringGenerator.Generate(32);
 
-            if (refreshTokenExpires == null)
+            if (expires == null)
             {
-                refreshTokenExpires = DateTime.UtcNow.AddDays(_settings.RefreshTokenLifetimeDays);
+                expires = DateTime.UtcNow.AddDays(_settings.RefreshTokenLifetimeDays);
             }
 
-            await _memberRepository.AddRefreshToken(memberId, refreshToken, refreshTokenExpires.Value);
+            MemberRefreshToken token = new MemberRefreshToken(Guid.Empty, memberId, expires.Value, refreshToken);
+            await _memberRepository.AddRefreshToken(token);
 
             return refreshToken;
-        }        
+        }
 
         private async Task UpdatePassword(Guid memberId, string password)
         {

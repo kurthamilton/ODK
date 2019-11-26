@@ -4,8 +4,6 @@ namespace ODK.Web.Api.Account.Requests
 {
     public class UpdateMemberProfileApiRequest
     {
-        public string EmailAddress { get; set; }
-
         public bool EmailOptIn { get; set; }
 
         public string FirstName { get; set; }

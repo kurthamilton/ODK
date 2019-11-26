@@ -16,6 +16,7 @@ namespace ODK.Data.Mapping
             Property(x => x.FirstName);
             Property(x => x.LastName);
             Property(x => x.CreatedDate);
+            Property(x => x.Activated);
             Property(x => x.Disabled);
         }
 
@@ -30,7 +31,9 @@ namespace ODK.Data.Mapping
                 firstName: reader.GetString(4),
                 lastName: reader.GetString(5),
                 createdDate: reader.GetDateTime(6),
-                disabled: reader.GetBoolean(7)
+                activated: reader.GetBoolean(7),
+                disabled: reader.GetBoolean(8)
+
             );
         }
     }
