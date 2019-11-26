@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using ODK.Core.Caching;
 using ODK.Core.Chapters;
 using ODK.Services.Exceptions;
 
@@ -8,16 +10,20 @@ namespace ODK.Services.Chapters
 {
     public class ChapterService : IChapterService
     {
+        private readonly ICache _cache;
         private readonly IChapterRepository _chapterRepository;
 
-        public ChapterService(IChapterRepository chapterRepository)
+        public ChapterService(IChapterRepository chapterRepository, ICache cache)
         {
+            _cache = cache;
             _chapterRepository = chapterRepository;
         }
 
         public async Task<Chapter> GetChapter(Guid id)
         {
-            Chapter chapter = await _chapterRepository.GetChapter(id);
+            IReadOnlyCollection<Chapter> chapters = _cache.TryGetCollection<Chapter>();
+
+            Chapter chapter = chapters != null ? chapters.SingleOrDefault(x => x.Id == id) : await _chapterRepository.GetChapter(id);
             if (chapter == null)
             {
                 throw new OdkNotFoundException();
@@ -47,7 +53,7 @@ namespace ODK.Services.Chapters
 
         public async Task<IReadOnlyCollection<Chapter>> GetChapters()
         {
-            return await _chapterRepository.GetChapters();
+            return await _cache.GetOrSetCollection(_chapterRepository.GetChapters);
         }
     }
 }

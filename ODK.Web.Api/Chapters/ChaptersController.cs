@@ -42,7 +42,7 @@ namespace ODK.Web.Api.Chapters
         }
 
         [AllowAnonymous]
-        [HttpGet("{id}/links")]
+        [HttpGet("{id}/Links")]
         public async Task<ChapterLinksApiResponse> Links(Guid id)
         {
             ChapterLinks links = await _chapterService.GetChapterLinks(id);

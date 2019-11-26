@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ODK.Core.Caching;
 using ODK.Core.Chapters;
 using ODK.Core.DataTypes;
 using ODK.Core.Events;
@@ -10,6 +11,7 @@ using ODK.Data.Repositories;
 using ODK.Data.Sql;
 using ODK.Services.Authentication;
 using ODK.Services.Authorization;
+using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.DataTypes;
 using ODK.Services.Events;
@@ -35,6 +37,7 @@ namespace ODK.Web.Api.Config
             });
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IAuthorizationService, AuthorizationService>();
+            services.AddScoped<ICache, Cache>();
             services.AddScoped<IChapterAdminService, ChapterAdminService>();
             services.AddScoped<IChapterService, ChapterService>();
             services.AddScoped<IDataTypeService, DataTypeService>();
