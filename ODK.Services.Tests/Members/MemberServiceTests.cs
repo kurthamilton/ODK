@@ -24,7 +24,8 @@ namespace ODK.Services.Tests.Members
             UpdateMemberProfile profile = new UpdateMemberProfile
             {
                 FirstName = firstName,
-                LastName = lastName
+                LastName = lastName,
+                Properties = new UpdateMemberProperty[0]
             };
 
             Assert.ThrowsAsync<OdkServiceException>(() => service.UpdateMemberProfile(Guid.NewGuid(), profile));
