@@ -12,7 +12,7 @@ namespace ODK.Data.Mapping
         {
             Property(x => x.Id).HasColumnName("MemberPropertyId").IsIdentity();
             Property(x => x.MemberId);
-            Property(x => x.ChapterPropertyId).HasColumnName("ChapterMemberPropertyId");
+            Property(x => x.ChapterPropertyId);
             Property(x => x.Value);
         }
 

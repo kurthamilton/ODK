@@ -57,6 +57,22 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
+        public async Task UpdateEvent(Event @event)
+        {
+            await Context
+                .Update<Event>()
+                .Set(x => x.Address, @event.Address)
+                .Set(x => x.Date, @event.Date)
+                .Set(x => x.Description, @event.Description)
+                .Set(x => x.ImageUrl, @event.ImageUrl)
+                .Set(x => x.IsPublic, @event.IsPublic)
+                .Set(x => x.Location, @event.Location)
+                .Set(x => x.MapQuery, @event.MapQuery)
+                .Set(x => x.Name, @event.Name)
+                .Set(x => x.Time, @event.Time)
+                .ExecuteAsync();
+        }
+
         public async Task UpdateEventResponse(EventMemberResponse response)
         {
             if (await MemberHasRespondedToEvent(response.EventId, response.MemberId))

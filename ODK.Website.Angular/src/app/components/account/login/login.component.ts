@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
@@ -16,17 +16,15 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class LoginComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
-    private authenticationService: AuthenticationService,
+  constructor(private authenticationService: AuthenticationService,
     private route: ActivatedRoute,
     private router: Router
   ) {
   }
 
   form: FormViewModel;
-  messages: string[];
 
-  private formCallback: Subject<boolean> = new Subject<boolean>();
+  private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
     password: FormControlViewModel;
     username: FormControlViewModel;
@@ -65,9 +63,8 @@ export class LoginComponent implements OnInit {
     this.authenticationService
       .login(username, password)
       .subscribe((result: ServiceResult<AuthenticationToken>) => {
-        this.formCallback.next(true);
-        this.messages = result.messages;
-        this.changeDetector.detectChanges();
+        this.formCallback.next(result.messages);
+
         if (result.success === true) {
           // const url: string = this.route.snapshot.queryParams[appPaths.login.queryParams.returnUrl] || appPaths.home.path;
           this.router.navigateByUrl('/');

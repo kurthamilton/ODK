@@ -29,11 +29,38 @@ namespace ODK.Services.Events
             return await _eventRepository.CreateEvent(@event);
         }
 
+        public async Task<Event> GetEvent(Guid currentMemberId, Guid id)
+        {
+            Event @event = await _eventRepository.GetEvent(id);
+            if (@event == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
+
+            return @event;
+        }
+
         public async Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             return await _eventRepository.GetEvents(chapterId, null);
+        }
+
+        public async Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
+        {
+            Event update = await GetEvent(memberId, id);
+
+            update.Update(@event.Address, @event.Date, @event.Description, null, @event.IsPublic, @event.Location,
+                @event.MapQuery, @event.Name, @event.Time);
+
+            ValidateEvent(update);
+
+            await _eventRepository.UpdateEvent(@update);
+
+            return @update;
         }
 
         private static void ValidateEvent(Event @event)

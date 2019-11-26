@@ -1,6 +1,3 @@
 <app-body title="Login">
     <app-form [form]="form" (formSubmit)="onFormSubmit()"></app-form>
-    <ng-container *ngIf="messages">
-        <div *ngFor="let message of messages" class="text-danger">{{message}}</div>    
-    </ng-container>    
 </app-body>

@@ -1,1 +1,1 @@
-export type FormControlType  = 'password' | 'text' | 'textarea' | 'checkbox' | 'readonly';
+export type FormControlType  = 'password' | 'text' | 'textarea' | 'checkbox' | 'readonly' | 'date';

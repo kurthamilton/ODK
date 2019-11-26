@@ -1,0 +1,7 @@
+<ng-container *ngIf="chapters">
+    <ul class="nav flex-column">
+        <li class="nav-item" *ngFor="let chapter of chapters">
+          <a class="nav-link " [routerLink]="chapter.link">{{chapter.text}}</a>
+        </li>
+    </ul>
+</ng-container>

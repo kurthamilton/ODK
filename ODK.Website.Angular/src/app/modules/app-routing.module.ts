@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes, UrlTree, DefaultUrlSerializer, UrlSerializer } from '@angular/router';
 
-import { appPaths } from './app-paths' ;
-import { AuthenticatedGuardService } from './authenticated-guard.service';
+import { appPaths } from '../routing/app-paths' ;
+import { AuthenticatedGuardService } from '../routing/authenticated-guard.service';
 import { BlogComponent } from '../components/blogs/blog/blog.component';
 import { ChapterComponent } from '../components/chapters/chapter/chapter.component';
-import { ChapterGuardService } from './chapter-guard.service';
+import { ChapterGuardService } from '../routing/chapter-guard.service';
 import { ChapterLayoutComponent } from '../components/layouts/chapter-layout/chapter-layout.component';
-import { ChapterMemberGuardService } from './chapter-member-guard.service';
+import { ChapterMemberGuardService } from '../routing/chapter-member-guard.service';
 import { ContactComponent } from '../components/contact/contact/contact.component';
 import { EventComponent } from '../components/events/event/event.component';
 import { EventsComponent } from '../components/events/events/events.component';

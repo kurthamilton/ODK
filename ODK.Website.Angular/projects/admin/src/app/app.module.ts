@@ -1,22 +1,38 @@
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { DatePipe } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './components/app/app.component';
 import { AppRoutingModule } from './routing/app-routing.module';
-import { HttpAuthInterceptorService } from 'src/app/services/http/http-auth-interceptor.service';
+import { ChapterComponent } from './components/chapters/chapter/chapter.component';
+import { ChapterLayoutComponent } from './components/layouts/chapter-layout/chapter-layout.component';
+import { ChapterMenuComponent } from './components/structure/chapter-menu/chapter-menu.component';
+import { CreateEventComponent } from './components/events/create-event/create-event.component';
+import { EventsComponent } from './components/events/events/events.component';
+import { HomeComponent } from './components/home/home/home.component';
+import { AppBaseModule } from './modules/add-base.module';
+import { EventComponent } from './components/events/event/event.component';
+import { EventFormComponent } from './components/events/event-form/event-form.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ChapterComponent,
+    ChapterLayoutComponent,
+    ChapterMenuComponent,
+    CreateEventComponent,
+    EventsComponent,
+    HomeComponent,
+    EventComponent,
+    EventFormComponent,
   ],
   imports: [
-    BrowserModule,
+    AppBaseModule,
     AppRoutingModule,
     HttpClientModule
   ],
-  providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptorService, multi: true },
+  providers: [    
+    { provide: DatePipe, useClass: DatePipe }
   ],
   bootstrap: [AppComponent]
 })

@@ -4,5 +4,6 @@
         <div class="d-flex align-items-center" [class.justify-content-end]="justifyButton === 'end'">
             <button type="submit" class="btn btn-primary">{{form.buttonText}}</button>
         </div>
+        <app-error-messages *ngIf="messages.length > 0" [messages]="messages"></app-error-messages>
     </fieldset>
 </form>

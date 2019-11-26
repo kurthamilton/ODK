@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter } from '@angular/core';
 
 import { Subject } from 'rxjs';
 
@@ -15,8 +15,7 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class ChangePasswordComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
-    private authenticationService: AuthenticationService,
+  constructor(private authenticationService: AuthenticationService,
     private notificationService: NotificationService
   ) { 
   }
@@ -24,9 +23,8 @@ export class ChangePasswordComponent implements OnInit {
   @Output() passwordUpdate: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   form: FormViewModel;
-  messages: string[];
   
-  private formCallback: Subject<boolean> = new Subject<boolean>();
+  private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
     confirmPassword: FormControlViewModel;
     currentPassword: FormControlViewModel;
@@ -79,9 +77,7 @@ export class ChangePasswordComponent implements OnInit {
     this.authenticationService
       .changePassword(currentPassword, newPassword)
       .subscribe((result: ServiceResult<{}>) => {
-        this.formCallback.next(true);
-        this.messages = result.messages;
-        this.changeDetector.detectChanges();
+        this.formCallback.next(result.messages);
         
         if (result.success === true) {
           this.notificationService.publish({

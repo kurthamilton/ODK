@@ -150,7 +150,7 @@
               "projects/admin/src/assets"
             ],
             "styles": [
-              "projects/admin/src//css/styles.scss"
+              "projects/admin/src/css/main.scss"
             ],
             "scripts": []
           },

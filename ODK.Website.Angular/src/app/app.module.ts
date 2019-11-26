@@ -4,11 +4,9 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { NgbModule, NgbAlertModule, NgbCollapseModule, NgbDropdownModule, NgbModalModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
-
 import { AccountMenuComponent } from './components/account/account-menu/account-menu.component';
 import { AppComponent } from './components/app/app.component';
-import { AppRoutingModule } from './routing/app-routing.module';
+import { AppRoutingModule } from './modules/app-routing.module';
 import { BlogComponent } from './components/blogs/blog/blog.component';
 import { BodyComponent } from './components/structure/body/body.component';
 import { ChangePasswordComponent } from './components/account/change-password/change-password.component';
@@ -52,6 +50,8 @@ import { NotificationComponent } from './components/notifications/notification/n
 import { ProfilePictureComponent } from './components/account/profile-picture/profile-picture.component';
 import { ProfileFormComponent } from './components/account/profile-form/profile-form.component';
 import { FormControlComponent } from './components/forms/form-control/form-control.component';
+import { AppStyleModule } from './modules/app-style.module';
+import { ErrorMessagesComponent } from './components/elements/error-messages/error-messages.component';
 
 @NgModule({
   declarations: [
@@ -99,18 +99,15 @@ import { FormControlComponent } from './components/forms/form-control/form-contr
     ProfilePictureComponent,
     ProfileFormComponent,
     FormControlComponent,
+    ErrorMessagesComponent,
+
   ],
   imports: [
     AppRoutingModule,
+    AppStyleModule,
     BrowserModule,
     FormsModule,
-    HttpClientModule,
-    NgbModule,
-    NgbAlertModule,
-    NgbCollapseModule,
-    NgbDropdownModule,
-    NgbModalModule,
-    NgbTooltipModule,
+    HttpClientModule,    
     ReactiveFormsModule
   ],
   providers: [    

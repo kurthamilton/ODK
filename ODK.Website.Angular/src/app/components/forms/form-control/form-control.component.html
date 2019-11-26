@@ -10,13 +10,17 @@
         <span *ngIf="viewModel.subtitle" class="ml-1 text-muted">{{viewModel.subtitle}}</span>
     </ng-container>
 
-    <input *ngIf="type === 'text' || type === 'password'"
+    <!-- text / password / date -->
+    <input *ngIf="type === 'text' || type === 'password' || type === 'date'"
         [attr.type]="type" 
         [attr.match]="match"
         [attr.pattern]="pattern"
         [attr.required]="required ? 'required' : null"
-        class="form-control" [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
+        class="form-control" 
+        [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
         (blur)="validate()" />
+
+    <!-- checkbox  -->
     <div *ngIf="type === 'checkbox'" class="form-check">
         <input class="form-check-input" type="checkbox"
             [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id" />
@@ -29,15 +33,21 @@
         </span>
         <span *ngIf="viewModel.subtitle" class="ml-1 text-muted">{{viewModel.subtitle}}</span>
     </div>
+
+    <!-- textarea -->
     <textarea *ngIf="type === 'textarea'"
         rows="3" 
         [attr.required]="required ? 'required' : null"
-        class="form-control" [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
+        class="form-control" 
+        [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
         (blur)="validate()">
     </textarea>
+
+    <!-- readonly -->
     <div *ngIf="type === 'readonly'" class="form-control-plaintext">
         {{viewModel.value}}
     </div>
+
     <app-form-control-validation [control]="control" [label]="viewModel.label" [validated]="validated">
     </app-form-control-validation>
 </div>

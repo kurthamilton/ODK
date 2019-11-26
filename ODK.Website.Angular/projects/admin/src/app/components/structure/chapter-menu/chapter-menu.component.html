@@ -1,0 +1,10 @@
+<ng-container *ngIf="menuItems">
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link" [routerLink]="chapterMenuItem.link">{{chapterMenuItem.text}}</a>
+        </li>
+        <li class="nav-item" *ngFor="let menuItem of menuItems">
+            <a class="nav-link" [routerLink]="menuItem.link" routerLinkActive="active">{{menuItem.text}}</a>
+        </li>
+    </ul>
+</ng-container>

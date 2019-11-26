@@ -18,11 +18,22 @@ export class FormComponent implements OnInit {
   @Input() justifyButton: 'end';
   @Output() formSubmit: EventEmitter<{}> = new EventEmitter<{}>();
 
+  messages: string[] = [];
   submitting = false;
   update: Subject<boolean> = new Subject<boolean>();
 
   ngOnInit(): void {
-    this.form.callback.subscribe((success: boolean) => this.onFormCallback(success));
+    this.form.callback.subscribe((result: boolean | string[]) => {
+      let success: boolean;
+      if (typeof(result) === 'boolean') {
+        success = result;
+      } else {
+        this.messages = result;
+        this.changeDetector.detectChanges();
+      }
+      
+      this.onFormCallback(success);
+    });
   }
 
   onSubmit(): void {
