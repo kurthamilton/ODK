@@ -29,6 +29,13 @@ namespace ODK.Services.Events
             return await _eventRepository.CreateEvent(@event);
         }
 
+        public async Task DeleteEvent(Guid currentMemberId, Guid id)
+        {
+            await AssertEventCanBeDeleted(currentMemberId, id);
+
+            await _eventRepository.DeleteEvent(id);
+        }
+
         public async Task<Event> GetEvent(Guid currentMemberId, Guid id)
         {
             Event @event = await _eventRepository.GetEvent(id);
@@ -60,7 +67,7 @@ namespace ODK.Services.Events
 
             await _eventRepository.UpdateEvent(@update);
 
-            return @update;
+            return update;
         }
 
         private static void ValidateEvent(Event @event)
@@ -70,6 +77,17 @@ namespace ODK.Services.Events
                 @event.Date == DateTime.MinValue)
             {
                 throw new OdkServiceException("Some required fields are missing");
+            }
+        }
+
+        private async Task AssertEventCanBeDeleted(Guid currentMemberId, Guid id)
+        {
+            Event @event = await GetEvent(currentMemberId, id);
+
+            IReadOnlyCollection<EventMemberResponse> responses = await _eventRepository.GetEventResponses(@event.Id);
+            if (responses.Count > 0)
+            {
+                throw new OdkServiceException("Events with responses cannot be deleted");
             }
         }
     }

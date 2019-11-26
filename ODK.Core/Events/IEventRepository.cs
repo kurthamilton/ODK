@@ -7,6 +7,7 @@ namespace ODK.Core.Events
     public interface IEventRepository
     {
         Task<Event> CreateEvent(Event @event);
+        Task DeleteEvent(Guid id);
         Task<Event> GetEvent(Guid id);
         Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime? after);
         Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid eventId);

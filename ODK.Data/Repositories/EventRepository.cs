@@ -20,6 +20,14 @@ namespace ODK.Data.Repositories
             return await GetEvent(id);
         }
 
+        public async Task DeleteEvent(Guid id)
+        {
+            await Context
+                .Delete<Event>()
+                .Where(x => x.Id).EqualTo(id)
+                .ExecuteAsync();
+        }
+
         public async Task<Event> GetEvent(Guid id)
         {
             return await Context

@@ -35,6 +35,13 @@ namespace ODK.Web.Api.Admin.Events
             return Created(response);
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteEvent(Guid id)
+        {
+            await _eventAdminService.DeleteEvent(GetMemberId(), id);
+            return Ok();
+        }
+
         [HttpGet]
         public async Task<IEnumerable<EventApiResponse>> Get(Guid chapterId)
         {
