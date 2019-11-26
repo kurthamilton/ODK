@@ -15,6 +15,6 @@ namespace ODK.Services.Chapters
 
         Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId);
 
-        Task<IReadOnlyCollection<Chapter>> GetChapters();
+        Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(int? currentVersion);
     }
 }

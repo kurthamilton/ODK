@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Caching;
 using ODK.Core.Chapters;
@@ -21,9 +20,7 @@ namespace ODK.Services.Chapters
 
         public async Task<Chapter> GetChapter(Guid id)
         {
-            IReadOnlyCollection<Chapter> chapters = _cache.TryGetCollection<Chapter>();
-
-            Chapter chapter = chapters != null ? chapters.SingleOrDefault(x => x.Id == id) : await _chapterRepository.GetChapter(id);
+            Chapter chapter = await _chapterRepository.GetChapter(id);
             if (chapter == null)
             {
                 throw new OdkNotFoundException();
@@ -51,9 +48,16 @@ namespace ODK.Services.Chapters
             return await _chapterRepository.GetChapterPropertyOptions(chapterId);
         }
 
-        public async Task<IReadOnlyCollection<Chapter>> GetChapters()
+        public async Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(int? currentVersion)
         {
-            return await _cache.GetOrSetCollection(_chapterRepository.GetChapters);
+            int version = await _cache.GetOrSetVersion<Chapter>(_chapterRepository.GetChaptersVersion);
+            if (version == currentVersion)
+            {
+                return new VersionedServiceResult<IReadOnlyCollection<Chapter>>(version);
+            }
+
+            IReadOnlyCollection<Chapter> chapters = await _cache.GetOrSetCollection(_chapterRepository.GetChapters, version);
+            return new VersionedServiceResult<IReadOnlyCollection<Chapter>>(chapters, version);
         }
     }
 }

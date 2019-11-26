@@ -87,6 +87,13 @@ namespace ODK.Data.Sql.Queries
                OrderBySql();
         }
 
+        public async Task<int> VersionAsync()
+        {
+            _selectColumns.Clear();
+            AddSelectColumn("CHECKSUM_AGG(CHECKSUM(*))");
+            return await Context.ReadRecordAsync(this, reader => reader.GetInt32(0));
+        }
+
         protected void AddCondition<TEntity, TValue>(SqlQueryCondition<T, TEntity, TValue> condition)
         {
             _conditions.Add(condition);

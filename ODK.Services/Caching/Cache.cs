@@ -17,8 +17,25 @@ namespace ODK.Services.Caching
 
         public async Task<IReadOnlyCollection<T>> GetOrSetCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter)
         {
-            string key = GetKey<T>();
-            return await GetOrSet(key, getter);
+            return await GetOrSet(getter, null);
+        }
+
+        public async Task<IReadOnlyCollection<T>> GetOrSetCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter, int version)
+        {
+            return await GetOrSet(getter, version);
+        }
+
+        public async Task<int> GetOrSetVersion<T>(Func<Task<int>> getter)
+        {
+            string key = $"{GetKey<T>()}.Version";
+            if (_cache.TryGetValue(key, out int version))
+            {
+                return version;
+            }
+
+            version = await getter();
+            _cache.Set(key, version, TimeSpan.FromMinutes(5));
+            return version;
         }
 
         public void Remove<T>()
@@ -39,16 +56,42 @@ namespace ODK.Services.Caching
             return typeof(T).FullName;
         }
 
-        private async Task<T> GetOrSet<T>(string key, Func<Task<T>> getter)
+        private async Task<T> GetOrSet<T>(Func<Task<T>> getter, int? version)
         {
-            if (_cache.TryGetValue(key, out T value))
+            if (TryGetValue(version, out T value))
             {
                 return value;
             }
 
             value = await getter();
-            _cache.Set(key, value, TimeSpan.FromHours(1));
+            Set(value, version);
             return value;
+        }
+
+        private void Set<T>(T value, int? version)
+        {
+            CacheItem<T> cacheItem = new CacheItem<T>
+            {
+                Value = value,
+                Version = version
+            };
+
+            string key = GetKey<T>();
+
+            _cache.Set(key, cacheItem, TimeSpan.FromHours(1));
+        }
+
+        private bool TryGetValue<T>(int? version, out T value)
+        {
+            string key = GetKey<T>();
+            if (_cache.TryGetValue(key, out CacheItem<T> cacheItem) && (version == null || version == cacheItem.Version))
+            {
+                value = cacheItem.Value;
+                return true;
+            }
+
+            value = default;
+            return false;
         }
     }
 }

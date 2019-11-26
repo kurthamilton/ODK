@@ -30,7 +30,7 @@ namespace ODK.Data.Sql
 
         public SqlMap<T> GetMap<T>()
         {
-            string key = typeof(T).FullName;
+            string key = GetKey<T>();
             if (!_maps.ContainsKey(key))
             {
                 throw new InvalidOperationException($"Type {key} not mapped in sql context");
@@ -53,7 +53,7 @@ namespace ODK.Data.Sql
             {
                 if (!reader.Read())
                 {
-                    return default(TRecord);
+                    return default;
                 }
 
                 return read(reader);
@@ -103,30 +103,31 @@ namespace ODK.Data.Sql
             _maps[key] = map;
         }
 
+        private static string GetKey<T>()
+        {
+            return typeof(T).FullName;
+        }
+
         private async Task ExecuteQueryAsync<T>(SqlQuery<T> query, Func<DbCommand, Task> action, string appendSql = "")
         {
             string sql = query.ToSql() + appendSql;
 
             IEnumerable<(SqlColumn, object)> parameterValues = query.GetParameterValues();
 
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            await using SqlConnection connection = new SqlConnection(_connectionString);
+            await using DbCommand command = new SqlCommand(sql, connection);
+            foreach ((SqlColumn column, object value) in parameterValues)
             {
-                using (DbCommand command = new SqlCommand(sql, connection))
-                {
-                    foreach ((SqlColumn column, object value) in parameterValues)
-                    {
-                        command.Parameters.Add(column.ToParameter(value));
-                    }
-
-                    await connection.OpenAsync();
-                    await action(command);
-                }
+                command.Parameters.Add(column.ToParameter(value));
             }
+
+            await connection.OpenAsync();
+            await action(command);
         }
 
         private async Task<TResult> ReadQueryAsync<T, TResult>(SqlQuery<T> query, Func<DbDataReader, TResult> read, string appendSql = "")
         {
-            TResult result = default(TResult);
+            TResult result = default;
 
             await ExecuteQueryAsync(query, async command =>
             {

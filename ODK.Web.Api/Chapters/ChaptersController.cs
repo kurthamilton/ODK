@@ -14,7 +14,7 @@ namespace ODK.Web.Api.Chapters
     [Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class ChaptersController : ControllerBase
+    public class ChaptersController : OdkControllerBase
     {
         private readonly IChapterService _chapterService;
         private readonly IMapper _mapper;
@@ -27,10 +27,11 @@ namespace ODK.Web.Api.Chapters
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IEnumerable<ChapterApiResponse>> Get()
+        public async Task<ActionResult<IEnumerable<ChapterApiResponse>>> Get()
         {
-            IReadOnlyCollection<Chapter> chapters = await _chapterService.GetChapters();
-            return chapters.Select(_mapper.Map<ChapterApiResponse>);
+            return await HandleVersionedRequest(
+                _chapterService.GetChapters,
+                x => x.Select(_mapper.Map<ChapterApiResponse>));
         }
 
         [AllowAnonymous]

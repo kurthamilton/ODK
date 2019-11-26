@@ -81,5 +81,12 @@ namespace ODK.Data.Repositories
                 .OrderBy(x => x.DisplayOrder)
                 .ToArrayAsync();
         }
+
+        public async Task<int> GetChaptersVersion()
+        {
+            return await Context
+                .Select<Chapter>()
+                .VersionAsync();
+        }
     }
 }
