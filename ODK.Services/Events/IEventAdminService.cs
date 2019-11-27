@@ -20,6 +20,8 @@ namespace ODK.Services.Events
 
         Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId);
 
+        Task<IReadOnlyCollection<EventInvites>> GetMemberEventEmails(Guid currentMemberId, Guid chapterId);
+
         Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event);
     }
 }

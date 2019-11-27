@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ODK.Core.Events;
 using ODK.Core.Mail;
 using ODK.Data.Sql;
 
@@ -43,11 +44,12 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IReadOnlyCollection<MemberEventEmail>> GetMemberEventEmails(Guid eventId)
+        public async Task<IReadOnlyCollection<MemberEventEmail>> GetMemberEventEmails(Guid chapterId)
         {
             return await Context
                 .Select<MemberEventEmail>()
-                .Where(x => x.EventId).EqualTo(eventId)
+                .Join<Event, Guid>(x => x.EventId, x => x.Id)
+                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
                 .ToArrayAsync();
         }
     }

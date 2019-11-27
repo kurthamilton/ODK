@@ -73,6 +73,13 @@ namespace ODK.Web.Api.Admin.Events
             return _mapper.Map<EventEmailApiResponse>(email);
         }
 
+        [HttpGet("invites")]
+        public async Task<IEnumerable<EventInvitesApiResponse>> Invites(Guid chapterId)
+        {
+            IReadOnlyCollection<EventInvites> invites = await _eventAdminService.GetMemberEventEmails(GetMemberId(), chapterId);
+            return invites.Select(_mapper.Map<EventInvitesApiResponse>);
+        }
+
         [HttpGet("responses")]
         public async Task<IEnumerable<EventMemberResponseApiResponse>> ChapterResponses(Guid chapterId)
         {

@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ODK.Core.Mail
 {
     public class MemberEventEmail
     {
-        public MemberEventEmail(Guid eventId, Guid memberId, Guid memberEmailId, string responseToken)
+        public MemberEventEmail(Guid eventId, Guid memberId, Guid memberEmailId, string responseToken, bool sent)
         {
             EventId = eventId;
             MemberEmailId = memberEmailId;
             MemberId = memberId;
             ResponseToken = responseToken;
+            Sent = sent;
         }
 
         public Guid EventId { get; }
@@ -21,5 +20,7 @@ namespace ODK.Core.Mail
         public Guid MemberId { get; }
 
         public string ResponseToken { get; }
+
+        public bool Sent { get; }
     }
 }

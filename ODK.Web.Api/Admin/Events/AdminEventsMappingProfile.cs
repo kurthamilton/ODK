@@ -22,6 +22,8 @@ namespace ODK.Web.Api.Admin.Events
         private void MapResponses()
         {
             CreateMap<Email, EventEmailApiResponse>();
+
+            CreateMap<EventInvites, EventInvitesApiResponse>();
         }
     }
 }

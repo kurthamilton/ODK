@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
@@ -84,6 +85,19 @@ namespace ODK.Services.Events
             return await _eventRepository.GetEvents(chapterId, null);
         }
 
+        public async Task<IReadOnlyCollection<EventInvites>> GetMemberEventEmails(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            IReadOnlyCollection<MemberEventEmail> invites = await _memberEmailRepository.GetMemberEventEmails(chapterId);
+            return invites.GroupBy(x => x.EventId).Select(group => new EventInvites
+            {
+                Delivered = group.Count(x => x.Sent),
+                EventId = group.Key,
+                Sent = group.Count()
+            }).ToArray();
+        }
+
         public async Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
         {
             Event update = await GetEvent(memberId, id);
@@ -93,7 +107,7 @@ namespace ODK.Services.Events
 
             ValidateEvent(update);
 
-            await _eventRepository.UpdateEvent(@update);
+            await _eventRepository.UpdateEvent(update);
 
             return update;
         }
