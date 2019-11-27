@@ -29,12 +29,20 @@ namespace ODK.Web.Api.Config
             services.AddSingleton(new AuthenticationSettings
             {
                 AccessTokenLifetimeMinutes = authSettings.AccessTokenLifetimeMinutes,
-                ActivateAccountUrl = $"{urlSettings.WebBase}{urlSettings.ActivateAccount}",
+                ActivateAccountUrl = $"{urlSettings.Base}{urlSettings.ActivateAccount}",
                 Key = authSettings.Key,
                 PasswordResetTokenLifetimeMinutes = authSettings.PasswordResetTokenLifetimeMinutes,
-                PasswordResetUrl = $"{urlSettings.WebBase}{urlSettings.PasswordReset}",
+                PasswordResetUrl = $"{urlSettings.Base}{urlSettings.PasswordReset}",
                 RefreshTokenLifetimeDays = authSettings.RefreshTokenLifetimeDays
             });
+
+            services.AddSingleton(new EventAdminServiceSettings
+            {
+                BaseUrl = urlSettings.Base,
+                EventRsvpUrlFormat = urlSettings.Event,
+                EventUrlFormat = urlSettings.EventRsvp
+            });
+
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IAuthorizationService, AuthorizationService>();
             services.AddScoped<ICache, Cache>();

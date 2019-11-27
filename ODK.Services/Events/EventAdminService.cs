@@ -3,18 +3,27 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
+using ODK.Core.Mail;
+using ODK.Core.Utils;
 using ODK.Services.Exceptions;
 
 namespace ODK.Services.Events
 {
     public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
+        private readonly IChapterRepository _chapterRepository;
         private readonly IEventRepository _eventRepository;
+        private readonly IMemberEmailRepository _memberEmailRepository;
+        private readonly EventAdminServiceSettings _settings;
 
-        public EventAdminService(IEventRepository eventRepository, IChapterRepository chapterRepository)
+        public EventAdminService(IEventRepository eventRepository, IChapterRepository chapterRepository,
+            IMemberEmailRepository memberEmailRepository, EventAdminServiceSettings settings)
             : base(chapterRepository)
         {
+            _chapterRepository = chapterRepository;
             _eventRepository = eventRepository;
+            _memberEmailRepository = memberEmailRepository;
+            _settings = settings;
         }
 
         public async Task<Event> CreateEvent(Guid memberId, CreateEvent createEvent)
@@ -56,12 +65,24 @@ namespace ODK.Services.Events
             return @event;
         }
 
+        public async Task<Email> GetEventEmail(Guid currentMemberId, Guid eventId)
+        {
+            Event @event = await GetEvent(currentMemberId, eventId);
+            Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
+            Email email = await _memberEmailRepository.GetEmail(EmailType.EventInvite);
+
+            string subject = ReplaceEventEmailTokens(email.Subject, chapter, @event);
+            string body = ReplaceEventEmailTokens(email.Body, chapter, @event);
+
+            return new Email(EmailType.EventInvite, subject, body);
+        }
+
         public async Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             return await _eventRepository.GetEvents(chapterId, null);
-        }        
+        }
 
         public async Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
         {
@@ -96,6 +117,36 @@ namespace ODK.Services.Events
             {
                 throw new OdkServiceException("Events with responses cannot be deleted");
             }
+        }
+
+        private string ReplaceEventEmailTokens(string text, Chapter chapter, Event @event, MemberEventEmail eventEmail = null)
+        {
+            IDictionary<string, string> values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "chapter.name", chapter.Name },
+                { "event.date", @event.Date.ToString("dddd dd MMMM, yyyy") },
+                { "event.id", @event.Id.ToString() },
+                { "event.location", @event.Location },
+                { "event.name", @event.Name },
+                { "event.time", @event.Time }
+            };
+
+            if (text.Contains("{event.rsvpurl}"))
+            {
+                values.Add("event.rsvpurl", ReplaceEventEmailTokens(_settings.BaseUrl + _settings.EventRsvpUrlFormat, chapter, @event, eventEmail));
+            }
+
+            if (text.Contains("{event.url}"))
+            {
+                values.Add("event.url", ReplaceEventEmailTokens(_settings.BaseUrl + _settings.EventUrlFormat, chapter, @event, eventEmail));
+            }
+
+            if (eventEmail != null)
+            {
+                values.Add("token", eventEmail.ResponseToken);
+            }
+
+            return text.Interpolate(values);
         }
     }
 }

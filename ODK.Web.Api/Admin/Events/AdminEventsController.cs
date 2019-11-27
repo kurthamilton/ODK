@@ -6,8 +6,10 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
+using ODK.Core.Mail;
 using ODK.Services.Events;
 using ODK.Web.Api.Admin.Events.Requests;
+using ODK.Web.Api.Admin.Events.Responses;
 using ODK.Web.Api.Events.Responses;
 
 namespace ODK.Web.Api.Admin.Events
@@ -47,7 +49,7 @@ namespace ODK.Web.Api.Admin.Events
         {
             IReadOnlyCollection<Event> events = await _eventAdminService.GetEvents(GetMemberId(), chapterId);
             return events.Select(_mapper.Map<EventApiResponse>);
-        }        
+        }
 
         [HttpGet("{id}")]
         public async Task<EventApiResponse> GetEvent(Guid id)
@@ -62,6 +64,13 @@ namespace ODK.Web.Api.Admin.Events
             CreateEvent @event = _mapper.Map<CreateEvent>(request);
             Event updated = await _eventAdminService.UpdateEvent(GetMemberId(), id, @event);
             return _mapper.Map<EventApiResponse>(updated);
+        }
+
+        [HttpGet("{id}/email")]
+        public async Task<EventEmailApiResponse> EventEmail(Guid id)
+        {
+            Email email = await _eventAdminService.GetEventEmail(GetMemberId(), id);
+            return _mapper.Map<EventEmailApiResponse>(email);
         }
 
         [HttpGet("responses")]

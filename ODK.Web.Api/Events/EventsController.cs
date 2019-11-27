@@ -40,18 +40,18 @@ namespace ODK.Web.Api.Events
             return events.Select(_mapper.Map<EventApiResponse>);
         }
 
-        [HttpGet("{id}/responses")]
-        public async Task<IEnumerable<EventMemberResponseApiResponse>> Responses(Guid id)
-        {
-            IReadOnlyCollection<EventMemberResponse> responses = await _eventService.GetEventResponses(GetMemberId(), id);
-            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
-        }
-
         [HttpPut("{id}/respond")]
         public async Task<EventMemberResponseApiResponse> Respond(Guid id, EventResponseType type)
         {
             EventMemberResponse response = await _eventService.UpdateMemberResponse(GetMemberId(), id, type);
             return _mapper.Map<EventMemberResponseApiResponse>(response);
+        }
+
+        [HttpGet("{id}/responses")]
+        public async Task<IEnumerable<EventMemberResponseApiResponse>> Responses(Guid id)
+        {
+            IReadOnlyCollection<EventMemberResponse> responses = await _eventService.GetEventResponses(GetMemberId(), id);
+            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
         }
     }
 }

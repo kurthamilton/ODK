@@ -4,8 +4,12 @@
     {
         public string ActivateAccount { get; set; }
 
-        public string PasswordReset { get; set; }
+        public string Base { get; set; }
 
-        public string WebBase { get; set; }
+        public string Event { get; set; }
+
+        public string EventRsvp { get; set; }
+
+        public string PasswordReset { get; set; }
     }
 }
