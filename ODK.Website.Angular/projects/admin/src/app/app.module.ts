@@ -13,6 +13,7 @@ import { HomeComponent } from './components/home/home/home.component';
 import { AppBaseModule } from './modules/add-base.module';
 import { EventComponent } from './components/events/event/event.component';
 import { EventFormComponent } from './components/events/event-form/event-form.component';
+import { LoginComponent } from './components/account/login/login.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import { EventFormComponent } from './components/events/event-form/event-form.co
     HomeComponent,
     EventComponent,
     EventFormComponent,
+    LoginComponent,
   ],
   imports: [
     AppBaseModule,

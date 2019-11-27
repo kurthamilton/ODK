@@ -13,6 +13,6 @@ namespace ODK.Services.Events
 
         Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId);
 
-        Task UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType);
+        Task<EventMemberResponse> UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType);
     }
 }

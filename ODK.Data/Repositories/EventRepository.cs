@@ -28,6 +28,15 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid chapterId)
+        {
+            return await Context
+                .Select<EventMemberResponse>()
+                .Join<Event, Guid>(x => x.EventId, x => x.Id)
+                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
+                .ToArrayAsync();
+        }
+
         public async Task<Event> GetEvent(Guid id)
         {
             return await Context

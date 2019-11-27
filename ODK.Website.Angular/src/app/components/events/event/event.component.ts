@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { Observable } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
 
 import { appPaths } from 'src/app/routing/app-paths';
@@ -21,27 +22,35 @@ export class EventComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private chapterService: ChapterService,
-    private eventService: EventService
+    private eventService: EventService    
   ) { 
   }
 
   chapter: Chapter;
   event: Event;
-
+  eventId: string;
+  
   ngOnInit(): void {
-    const id: string = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.event.params.id);
-    this.chapterService.getActiveChapter().pipe(
-      tap((chapter: Chapter) => this.chapter = chapter),
-      switchMap((chapter: Chapter) => this.eventService.getEvent(id, chapter.id))
-    ).subscribe((event: Event) => {
-      if (!event) {
+    this.load().subscribe(() => {
+      if (!this.event) {
         this.router.navigateByUrl(appUrls.events(this.chapter));
         return;
-      }
+      }            
 
-      this.event = event;
       this.changeDetector.detectChanges();
     });
-  }
+  }  
 
+  private load(): Observable<{}> {
+    this.eventId = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.event.params.id);
+    this.changeDetector.detectChanges();
+
+    return this.chapterService.getActiveChapter().pipe(
+      tap((chapter: Chapter) => this.chapter = chapter),
+      switchMap((chapter: Chapter) => this.eventService.getEvent(this.eventId, chapter.id).pipe(
+          tap((event: Event) => this.event = event)
+        )        
+      )
+    );
+  }  
 }

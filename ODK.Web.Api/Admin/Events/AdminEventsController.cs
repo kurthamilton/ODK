@@ -47,7 +47,7 @@ namespace ODK.Web.Api.Admin.Events
         {
             IReadOnlyCollection<Event> events = await _eventAdminService.GetEvents(GetMemberId(), chapterId);
             return events.Select(_mapper.Map<EventApiResponse>);
-        }
+        }        
 
         [HttpGet("{id}")]
         public async Task<EventApiResponse> GetEvent(Guid id)
@@ -62,6 +62,13 @@ namespace ODK.Web.Api.Admin.Events
             CreateEvent @event = _mapper.Map<CreateEvent>(request);
             Event updated = await _eventAdminService.UpdateEvent(GetMemberId(), id, @event);
             return _mapper.Map<EventApiResponse>(updated);
+        }
+
+        [HttpGet("responses")]
+        public async Task<IEnumerable<EventMemberResponseApiResponse>> ChapterResponses(Guid chapterId)
+        {
+            IReadOnlyCollection<EventMemberResponse> responses = await _eventAdminService.GetChapterResponses(GetMemberId(), chapterId);
+            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
         }
     }
 }

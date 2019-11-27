@@ -36,6 +36,13 @@ namespace ODK.Services.Events
             await _eventRepository.DeleteEvent(id);
         }
 
+        public async Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _eventRepository.GetChapterResponses(chapterId);
+        }
+
         public async Task<Event> GetEvent(Guid currentMemberId, Guid id)
         {
             Event @event = await _eventRepository.GetEvent(id);
@@ -54,7 +61,7 @@ namespace ODK.Services.Events
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             return await _eventRepository.GetEvents(chapterId, null);
-        }
+        }        
 
         public async Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
         {

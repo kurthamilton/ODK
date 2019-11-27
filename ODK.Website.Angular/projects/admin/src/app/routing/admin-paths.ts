@@ -19,6 +19,9 @@ export const adminPaths = {
     },
     home: {
         path: ''
+    },
+    login: {
+        path: 'login'
     }
 };
 

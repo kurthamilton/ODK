@@ -6,12 +6,14 @@ import { map, catchError } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
 import { Event } from 'src/app/core/events/event';
+import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 import { HttpUtils } from 'src/app/services/http/http-utils';
 import { ServiceResult } from 'src/app/services/service-result';
 
 const baseUrl = `${environment.baseUrl}/admin/events`
 
 const endpoints = {
+  chapterResponses: (chapterId: string) => `${baseUrl}/responses?chapterId=${chapterId}`,
   createEvent: `${baseUrl}`,
   event: (id: string) => `${baseUrl}/${id}`,
   events: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`
@@ -40,6 +42,12 @@ export class EventService {
         };
         return of(result);
       })
+    );
+  }
+
+  getChapterResponses(chapterId: string): Observable<EventMemberResponse[]> {
+    return this.http.get(endpoints.chapterResponses(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
     );
   }
 
@@ -100,6 +108,14 @@ export class EventService {
       mapQuery: response.mapQuery,
       name: response.name,
       time: response.time
+    };
+  }
+
+  private mapEventMemberResponse(response: any): EventMemberResponse {
+    return {
+      eventId: response.eventId,
+      memberId: response.memberId,
+      responseType: response.responseType
     };
   }
 }

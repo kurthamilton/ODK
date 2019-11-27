@@ -1,0 +1,21 @@
+<ng-container *ngIf="going">
+    <div class="sidebar">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">RSVP</h5>
+                <div class="d-flex justify-content-around">
+                    <app-event-response-icon [type]="1" [active]="memberResponse === 1" (respond)="onRespond($event)">                                
+                    </app-event-response-icon>
+                    <app-event-response-icon [type]="2" [active]="memberResponse === 2" (respond)="onRespond($event)">                                
+                    </app-event-response-icon>
+                    <app-event-response-icon [type]="3" [active]="memberResponse === 3" (respond)="onRespond($event)">                                
+                    </app-event-response-icon>
+                </div>
+            </div>
+        </div>
+
+        <app-event-sidebar-attendees title="Going" [members]="going"></app-event-sidebar-attendees>
+        <app-event-sidebar-attendees title="Maybe" [members]="maybe"></app-event-sidebar-attendees>
+        <app-event-sidebar-attendees title="Not going" [members]="notGoing"></app-event-sidebar-attendees>        
+    </div>
+</ng-container>

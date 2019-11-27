@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 
 export abstract class RouteGuardService implements CanActivate {
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private redirectUrl?: string) {
   }
 
   abstract hasAccess(route?: ActivatedRouteSnapshot): Observable<boolean>;
@@ -13,7 +13,7 @@ export abstract class RouteGuardService implements CanActivate {
   canActivate(route: ActivatedRouteSnapshot): Observable<boolean | UrlTree> {
     return this.hasAccess(route).pipe(
       map((permitted: boolean): boolean | UrlTree => 
-        permitted === true ? permitted : this.router.parseUrl('/'))
+        permitted === true ? permitted : this.router.parseUrl(this.redirectUrl || '/'))
     );
   }
 }

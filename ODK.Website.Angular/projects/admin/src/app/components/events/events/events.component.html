@@ -1,4 +1,4 @@
-<ng-container *ngIf="events">
+<ng-container *ngIf="viewModels">
     <p>
         <a class="btn btn-primary" [routerLink]="links.createEvent">Create</a>
     </p>
@@ -9,13 +9,15 @@
                 <th>Name</th>
                 <th>Date</th>
                 <th>Location</th>
+                <th>Going</th>
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let event of events">
-                <td><a [routerLink]="getEventLink(event)">{{event.name}}</a></td>
-                <td>{{event.date | date:'dd MMM yyyy'}}</td>
-                <td>{{event.location}}</td>
+            <tr *ngFor="let viewModel of viewModels">
+                <td><a [routerLink]="getEventLink(viewModel.event)">{{viewModel.event.name}}</a></td>
+                <td>{{viewModel.event.date | date:'dd MMM yyyy'}}</td>
+                <td>{{viewModel.event.location}}</td>
+                <td>{{viewModel.going}}</td>
             </tr>
         </tbody>
     </table>

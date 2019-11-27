@@ -52,6 +52,9 @@ import { ProfileFormComponent } from './components/account/profile-form/profile-
 import { FormControlComponent } from './components/forms/form-control/form-control.component';
 import { AppStyleModule } from './modules/app-style.module';
 import { ErrorMessagesComponent } from './components/elements/error-messages/error-messages.component';
+import { EventResponseIconComponent } from './components/events/event-response-icon/event-response-icon.component';
+import { EventSidebarComponent } from './components/events/event-sidebar/event-sidebar.component';
+import { EventSidebarAttendeesComponent } from './components/events/event-sidebar-attendees/event-sidebar-attendees.component';
 
 @NgModule({
   declarations: [
@@ -100,6 +103,9 @@ import { ErrorMessagesComponent } from './components/elements/error-messages/err
     ProfileFormComponent,
     FormControlComponent,
     ErrorMessagesComponent,
+    EventResponseIconComponent,
+    EventSidebarComponent,
+    EventSidebarAttendeesComponent,
 
   ],
   imports: [

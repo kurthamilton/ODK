@@ -8,12 +8,16 @@ import { AccountDetails } from 'src/app/core/account/account-details';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { environment } from 'src/environments/environment';
 import { Event } from 'src/app/core/events/event';
+import { EventMemberResponse } from 'src/app/core/events/event-member-response';
+import { EventResponseType } from 'src/app/core/events/event-response-type';
 
 const baseUrl = `${environment.baseUrl}/events`;
 
 const endpoints = {
+  eventResponses: (eventId: string) => `${baseUrl}/${eventId}/responses`,
   events: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
-  publicEvents: (chapterId: string) => `${baseUrl}/public?chapterId=${chapterId}`
+  publicEvents: (chapterId: string) => `${baseUrl}/public?chapterId=${chapterId}`,
+  respond: (eventId: string, type: number) => `${baseUrl}/${eventId}/respond?type=${type}`
 }
 
 @Injectable({
@@ -29,6 +33,12 @@ export class EventService {
   getEvent(id: string, chapterId: string): Observable<Event> {
     return this.getEvents(chapterId).pipe(
       map((events: Event[]) => events.find(x => x.id === id))
+    );
+  }
+
+  getEventResponses(eventId: string): Observable<EventMemberResponse[]> {
+    return this.http.get(endpoints.eventResponses(eventId)).pipe(
+      map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
     );
   }
 
@@ -51,6 +61,12 @@ export class EventService {
       )
   }
 
+  respond(eventId: string, responseType: EventResponseType): Observable<EventMemberResponse> {
+    return this.http.put(endpoints.respond(eventId, responseType), null).pipe(
+      map((response: any) => this.mapEventMemberResponse(response))
+    )
+  }
+
   private mapEvent(response: any): Event {
     return {
       address: response.address,
@@ -65,5 +81,13 @@ export class EventService {
       name: response.name,
       time: response.time
     };
+  }
+
+  private mapEventMemberResponse(response: any): EventMemberResponse {
+    return {
+      eventId: response.eventId,
+      memberId: response.memberId,
+      responseType: response.responseTypeId
+    }
   }
 }

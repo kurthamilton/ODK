@@ -11,7 +11,9 @@ namespace ODK.Services.Events
 
         Task DeleteEvent(Guid currentMemberId, Guid id);
 
-        Task<Event> GetEvent(Guid currentMemberId, Guid id);
+        Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid currentMemberId, Guid chapterId);
+
+        Task<Event> GetEvent(Guid currentMemberId, Guid id);        
 
         Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId);
 

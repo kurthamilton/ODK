@@ -35,7 +35,7 @@ namespace ODK.Services.Events
             return await _eventRepository.GetPublicEvents(chapterId, DateTime.Today);
         }
 
-        public async Task UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType)
+        public async Task<EventMemberResponse> UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType)
         {
             responseType = NormalizeResponseType(responseType);
 
@@ -47,6 +47,8 @@ namespace ODK.Services.Events
 
             EventMemberResponse response = new EventMemberResponse(eventId, memberId, responseType);
             await _eventRepository.UpdateEventResponse(response);
+
+            return new EventMemberResponse(eventId, memberId, responseType);
         }
 
         private static EventResponseType NormalizeResponseType(EventResponseType responseType)
