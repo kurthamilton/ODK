@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using ODK.Data.Sql.Mapping;
 using ODK.Data.Sql.Queries;
@@ -28,6 +29,12 @@ namespace ODK.Data.Sql
             await ExecuteQueryAsync(query, command => command.ExecuteNonQueryAsync());
         }
 
+        public SqlColumn GetColumn<T, TValue>(Expression<Func<T, TValue>> expression)
+        {
+            SqlMap<T> map = GetMap<T>();
+            return map.GetColumn(expression);
+        }
+
         public SqlMap<T> GetMap<T>()
         {
             string key = GetKey<T>();
@@ -38,13 +45,15 @@ namespace ODK.Data.Sql
             return _maps[key] as SqlMap<T>;
         }
 
-        public async Task<Guid> InsertAsync<T>(T entity)
+        public string GetTableName<T>()
         {
-            SqlQuery<T> query = new SqlInsertValuesQuery<T>(this)
-                .Value(entity)
-                .OutputIdentity();
+            SqlMap<T> map = GetMap<T>();
+            return map.TableName;
+        }
 
-            return await ReadRecordAsync(query, reader => reader.GetGuid(0));
+        public SqlInsertEntityQuery<T> Insert<T>(T entity)
+        {
+            return new SqlInsertEntityQuery<T>(this, entity);
         }
 
         public async Task<TRecord> ReadRecordAsync<T, TRecord>(SqlQuery<T> query, Func<DbDataReader, TRecord> read)
@@ -110,9 +119,9 @@ namespace ODK.Data.Sql
 
         private async Task ExecuteQueryAsync<T>(SqlQuery<T> query, Func<DbCommand, Task> action, string appendSql = "")
         {
-            string sql = query.ToSql() + appendSql;
+            string sql = query.ToSql(this) + appendSql;
 
-            IEnumerable<(SqlColumn, object)> parameterValues = query.GetParameterValues();
+            IEnumerable<(SqlColumn, object)> parameterValues = query.GetParameterValues(this);
 
             await using SqlConnection connection = new SqlConnection(_connectionString);
             await using DbCommand command = new SqlCommand(sql, connection);

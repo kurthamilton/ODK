@@ -14,7 +14,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlContext context = CreateMockContext();
             SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context);
 
-            (SqlColumn, object)[] parameterValues = query.GetParameterValues().ToArray();
+            (SqlColumn, object)[] parameterValues = query.GetParameterValues(context).ToArray();
 
             CollectionAssert.IsEmpty(parameterValues);
         }
@@ -27,7 +27,7 @@ namespace ODK.Data.Sql.Tests.Queries
                 .Where(x => x.Int).EqualTo(1)
                 .Where(x => x.String).EqualTo("value");
 
-            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues().ToArray();
+            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
             CollectionAssert.AreEqual(new [] { "Int", "String" }, parameterValues.Select(x => x.Column.ColumnName));
             CollectionAssert.AreEqual(new object[] { 1, "value" }, parameterValues.Select(x => x.Value));
@@ -43,7 +43,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlContext context = CreateMockContext(map);
             SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context);
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table", sql);
         }
@@ -60,7 +60,7 @@ namespace ODK.Data.Sql.Tests.Queries
                 .Where(x => x.Int).GreaterThanOrEqualTo(1)
                 .Where(x => x.String).EqualTo("abc");
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE Table.[Int] >= @Int AND Table.[String] = @String", sql);
         }
@@ -75,7 +75,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlContext context = CreateMockContext(map);
             SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context);
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("SELECT Table.[Int],Table.[Other] FROM Table", sql);
         }
@@ -92,7 +92,7 @@ namespace ODK.Data.Sql.Tests.Queries
                 .OrderBy(x => x.Int, SqlSortDirection.Descending)
                 .OrderBy(x => x.String);
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table ORDER BY Table.[Int] DESC,Table.[String] ASC", sql);
         }
@@ -108,7 +108,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
                 .Join<TestRelatedEntity, int>(x => x.Int, x => x.Int);
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table JOIN Related ON Table.[Int] = Related.[Int]", sql);
         }

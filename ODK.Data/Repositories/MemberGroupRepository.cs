@@ -16,12 +16,16 @@ namespace ODK.Data.Repositories
         public async Task AddMemberToGroup(Guid memberId, Guid memberGroupId)
         {
             MemberGroupMember memberGroupMember = new MemberGroupMember(memberGroupId, memberId);
-            await Context.InsertAsync(memberGroupMember);
+            await Context
+                .Insert(memberGroupMember)
+                .ExecuteAsync();
         }
 
         public async Task<MemberGroup> CreateMemberGroup(MemberGroup memberGroup)
         {
-            Guid id = await Context.InsertAsync(memberGroup);
+            Guid id = await Context
+                .Insert(memberGroup)
+                .GetIdentityAsync();
             return await GetMemberGroup(id);
         }
 

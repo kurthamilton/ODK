@@ -16,7 +16,10 @@ namespace ODK.Data.Repositories
 
         public async Task<Event> CreateEvent(Event @event)
         {
-            Guid id = await Context.InsertAsync(@event);
+            Guid id = await Context
+                .Insert(@event)
+                .GetIdentityAsync();
+
             return await GetEvent(id);
         }
 
@@ -103,7 +106,8 @@ namespace ODK.Data.Repositories
             }
             else
             {
-                await Context.InsertAsync(response);
+                await Context.Insert(response)
+                    .ExecuteAsync();
             }
         }
 

@@ -20,7 +20,7 @@ namespace ODK.Data.Sql.Tests.Queries
                 .Set(x => x.String, "updated")
                 .Where(x => x.Int).EqualTo(1);
 
-            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues().ToArray();
+            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
             CollectionAssert.AreEqual(new[] { "Int", "String" }, parameterValues.Select(x => x.Column.ColumnName));
             CollectionAssert.AreEqual(new object[] { 1, "updated" }, parameterValues.Select(x => x.Value));
@@ -37,7 +37,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlQuery<TestEntity> query = new SqlUpdateQuery<TestEntity>(context)
                 .Set(x => x.Int, 5);
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("UPDATE Table SET Table.[Int] = @Int FROM Table", sql);
         }
@@ -54,7 +54,7 @@ namespace ODK.Data.Sql.Tests.Queries
                 .Set(x => x.Int, 5)
                 .Where(x => x.String).EqualTo("value");
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("UPDATE Table SET Table.[Int] = @Int FROM Table WHERE Table.[String] = @String", sql);
         }

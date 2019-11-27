@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ODK.Core.Mail
@@ -7,8 +8,12 @@ namespace ODK.Core.Mail
     {
         Task<Guid> AddMemberEmail(MemberEmail email);
 
+        Task AddMemberEventEmail(MemberEventEmail email);
+
         Task ConfirmMemberEmailSent(Guid id);
 
         Task<Email> GetEmail(EmailType type);
+
+        Task<IReadOnlyCollection<MemberEventEmail>> GetMemberEventEmails(Guid eventId);
     }
 }

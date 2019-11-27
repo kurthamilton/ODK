@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Sql
 {
@@ -17,13 +16,10 @@ namespace ODK.Data.Sql
 
         public string ToSql(SqlContext context)
         {
-            SqlMap<TFrom> fromMap = context.GetMap<TFrom>();
-            SqlMap<TTo> toMap = context.GetMap<TTo>();
+            SqlColumn fromColumn = context.GetColumn(_fromExpression);
+            SqlColumn toColumn = context.GetColumn(_toExpression);
 
-            SqlColumn fromColumn = fromMap.GetColumn(_fromExpression);
-            SqlColumn toColumn = toMap.GetColumn(_toExpression);
-
-            return $" JOIN {toMap.TableName} ON {fromColumn.ToSql()} = {toColumn.ToSql()}";
+            return $" JOIN {context.GetTableName<TTo>()} ON {fromColumn.ToSql()} = {toColumn.ToSql()}";
         }
     }
 }

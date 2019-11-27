@@ -23,23 +23,31 @@ namespace ODK.Data.Repositories
 
         public async Task AddActivationToken(MemberActivationToken token)
         {
-            await Context.InsertAsync(token);
+            await Context
+                .Insert(token)
+                .ExecuteAsync();
         }
 
         public async Task AddPasswordResetRequest(Guid memberId, DateTime created, DateTime expires, string token)
         {
             MemberPasswordResetRequest request = new MemberPasswordResetRequest(Guid.Empty, memberId, created, expires, token);
-            await Context.InsertAsync(request);
+            await Context
+                .Insert(request)
+                .ExecuteAsync();
         }
 
         public async Task AddRefreshToken(MemberRefreshToken token)
         {
-            await Context.InsertAsync(token);
+            await Context
+                .Insert(token)
+                .ExecuteAsync();
         }
 
         public async Task<Guid> CreateMember(Member member)
         {
-            return await Context.InsertAsync(member);
+            return await Context
+                .Insert(member)
+                .GetIdentityAsync();
         }
 
         public async Task DeleteActivationToken(Guid memberId)
@@ -193,7 +201,9 @@ namespace ODK.Data.Repositories
             }
             else
             {
-                await Context.InsertAsync(image);
+                await Context
+                    .Insert(image)
+                    .ExecuteAsync();
             }
         }
 
@@ -213,7 +223,9 @@ namespace ODK.Data.Repositories
             {
                 if (memberProperty.Id == Guid.Empty)
                 {
-                    await Context.InsertAsync(memberProperty);
+                    await Context
+                        .Insert(memberProperty)
+                        .ExecuteAsync();
                 }
                 else
                 {

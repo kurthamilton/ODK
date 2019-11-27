@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Sql.Queries
 {
@@ -27,8 +26,7 @@ namespace ODK.Data.Sql.Queries
 
         public SqlColumn GetColumn(SqlContext context)
         {
-            SqlMap<TEntity> map = context.GetMap<TEntity>();
-            return map.GetColumn(Expression);
+            return context.GetColumn(Expression);
         }
 
         public SqlConditionalQuery<T> GreaterThanOrEqualTo(TValue value)
@@ -38,8 +36,7 @@ namespace ODK.Data.Sql.Queries
 
         public string ToSql(SqlContext context)
         {
-            SqlMap<TEntity> map = context.GetMap<TEntity>();
-            SqlColumn column = map.GetColumn(Expression);
+            SqlColumn column = context.GetColumn(Expression);
 
             return $"{column.ToSql()} {Operator} {column.ParameterName}";
         }

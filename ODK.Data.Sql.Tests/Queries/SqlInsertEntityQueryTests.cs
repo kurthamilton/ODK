@@ -6,7 +6,7 @@ using ODK.Data.Sql.Tests.Mapping;
 
 namespace ODK.Data.Sql.Tests.Queries
 {
-    public static class SqlInsertValuesQueryTests
+    public static class SqlInsertEntityQueryTests
     {
         [Test]
         public static void GetParameterValues_ReturnsEntityValues()
@@ -22,10 +22,9 @@ namespace ODK.Data.Sql.Tests.Queries
             };
 
             SqlContext context = CreateMockContext();
-            SqlQuery<TestEntity> query = new SqlInsertValuesQuery<TestEntity>(context)
-                .Value(entity);
+            SqlQuery<TestEntity> query = new SqlInsertEntityQuery<TestEntity>(context, entity);
 
-            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues().ToArray();
+            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
             CollectionAssert.AreEqual(new[] { "Int", "String" }, parameterValues.Select(x => x.Column.ColumnName));
             CollectionAssert.AreEqual(new object[] { 5, "value" }, parameterValues.Select(x => x.Value));
@@ -40,10 +39,9 @@ namespace ODK.Data.Sql.Tests.Queries
 
             SqlContext context = CreateMockContext(map);
 
-            SqlQuery<TestEntity> query = new SqlInsertValuesQuery<TestEntity>(context)
-                .Value(new TestEntity());
+            SqlQuery<TestEntity> query = new SqlInsertEntityQuery<TestEntity>(context, new TestEntity());
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("INSERT INTO Table (Int,String) VALUES (@Int,@String)", sql);
         }
@@ -57,10 +55,9 @@ namespace ODK.Data.Sql.Tests.Queries
 
             SqlContext context = CreateMockContext(map);
 
-            SqlQuery<TestEntity> query = new SqlInsertValuesQuery<TestEntity>(context)
-                .Value(new TestEntity());
+            SqlQuery<TestEntity> query = new SqlInsertEntityQuery<TestEntity>(context, new TestEntity());
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("INSERT INTO Table (Int,Other) VALUES (@Int,@Other)", sql);
         }
@@ -74,10 +71,9 @@ namespace ODK.Data.Sql.Tests.Queries
 
             SqlContext context = CreateMockContext(map);
 
-            SqlQuery<TestEntity> query = new SqlInsertValuesQuery<TestEntity>(context)
-                .Value(new TestEntity());
+            SqlQuery<TestEntity> query = new SqlInsertEntityQuery<TestEntity>(context, new TestEntity());
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("INSERT INTO Table (String) VALUES (@String)", sql);
         }
@@ -91,11 +87,10 @@ namespace ODK.Data.Sql.Tests.Queries
 
             SqlContext context = CreateMockContext(map);
 
-            SqlQuery<TestEntity> query = new SqlInsertValuesQuery<TestEntity>(context)
-                .Value(new TestEntity())
-                .OutputIdentity();
+            SqlInsertEntityQuery<TestEntity> query = new SqlInsertEntityQuery<TestEntity>(context, new TestEntity());
+            query.OutputIdentity();
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("INSERT INTO Table (String) OUTPUT inserted.Int VALUES (@String)", sql);
         }

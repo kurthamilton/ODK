@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Mail;
 using ODK.Data.Sql;
@@ -14,7 +15,15 @@ namespace ODK.Data.Repositories
 
         public async Task<Guid> AddMemberEmail(MemberEmail email)
         {
-            return await Context.InsertAsync(email);
+            return await Context
+                .Insert(email)
+                .GetIdentityAsync();
+        }
+
+        public async Task AddMemberEventEmail(MemberEventEmail email)
+        {
+            await Context.Insert(email)
+                .ExecuteAsync();
         }
 
         public async Task ConfirmMemberEmailSent(Guid id)
@@ -32,6 +41,14 @@ namespace ODK.Data.Repositories
                 .Select<Email>()
                 .Where(x => x.Type).EqualTo(type)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<IReadOnlyCollection<MemberEventEmail>> GetMemberEventEmails(Guid eventId)
+        {
+            return await Context
+                .Select<MemberEventEmail>()
+                .Where(x => x.EventId).EqualTo(eventId)
+                .ToArrayAsync();
         }
     }
 }

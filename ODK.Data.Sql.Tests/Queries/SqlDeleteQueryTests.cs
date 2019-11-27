@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using NUnit.Framework;
 using ODK.Data.Sql.Mapping;
 using ODK.Data.Sql.Queries;
@@ -22,7 +19,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlQuery<TestEntity> query = new SqlDeleteQuery<TestEntity>(context)
                 .Where(x => x.Int).EqualTo(5);
 
-            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues().ToArray();
+            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
             CollectionAssert.AreEqual(new[] { "Int" }, parameterValues.Select(x => x.Column.ColumnName));
             CollectionAssert.AreEqual(new object[] { 5 }, parameterValues.Select(x => x.Value));
@@ -40,7 +37,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlQuery<TestEntity> query = new SqlDeleteQuery<TestEntity>(context)
                 .Where(x => x.Int).EqualTo(5);
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("DELETE Table FROM Table WHERE Table.[Int] = @Int", sql);
         }
@@ -57,7 +54,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlQuery<TestEntity> query = new SqlDeleteQuery<TestEntity>(context)
                 .Where(x => x.String).EqualTo("value");
 
-            string sql = query.ToSql();
+            string sql = query.ToSql(context);
 
             Assert.AreEqual("DELETE Table FROM Table WHERE Table.[Other] = @Other", sql);
         }
