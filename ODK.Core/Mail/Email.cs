@@ -1,4 +1,7 @@
-﻿namespace ODK.Core.Mail
+﻿using System.Collections.Generic;
+using ODK.Core.Utils;
+
+namespace ODK.Core.Mail
 {
     public class Email
     {
@@ -14,5 +17,13 @@
         public string Subject { get; }
 
         public EmailType Type { get; }
+
+        public Email Interpolate(IDictionary<string, string> parameters)
+        {
+            string body = Body.Interpolate(parameters);
+            string subject = Subject.Interpolate(parameters);
+
+            return new Email(Type, subject, body);
+        }
     }
 }

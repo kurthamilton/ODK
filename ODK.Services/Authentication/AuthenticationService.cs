@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using ODK.Core.Cryptography;
 using ODK.Core.Mail;
 using ODK.Core.Members;
+using ODK.Core.Utils;
 using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
 using ODK.Services.Mails;
@@ -123,7 +124,7 @@ namespace ODK.Services.Authentication
 
             await _memberRepository.AddPasswordResetRequest(member.Id, created, expires, token);
 
-            string url = _settings.PasswordResetUrl.Replace("{token}", token);
+            string url = _settings.PasswordResetUrl.Interpolate(new Dictionary<string, string> { { "token", token } });
 
             await _mailService.SendMail(member, EmailType.PasswordReset, new Dictionary<string, string>
             {

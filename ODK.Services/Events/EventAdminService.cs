@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
+using ODK.Core.Cryptography;
 using ODK.Core.Events;
 using ODK.Core.Mail;
+using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Services.Exceptions;
+using ODK.Services.Mails;
 
 namespace ODK.Services.Events
 {
@@ -14,16 +17,22 @@ namespace ODK.Services.Events
     {
         private readonly IChapterRepository _chapterRepository;
         private readonly IEventRepository _eventRepository;
+        private readonly IMailService _mailService;
         private readonly IMemberEmailRepository _memberEmailRepository;
+        private readonly IMemberRepository _memberRepository;
         private readonly EventAdminServiceSettings _settings;
 
         public EventAdminService(IEventRepository eventRepository, IChapterRepository chapterRepository,
-            IMemberEmailRepository memberEmailRepository, EventAdminServiceSettings settings)
+            IMemberEmailRepository memberEmailRepository, EventAdminServiceSettings settings,
+            IMemberRepository memberRepository,
+            IMailService mailService)
             : base(chapterRepository)
         {
             _chapterRepository = chapterRepository;
             _eventRepository = eventRepository;
+            _mailService = mailService;
             _memberEmailRepository = memberEmailRepository;
+            _memberRepository = memberRepository;
             _settings = settings;
         }
 
@@ -31,7 +40,8 @@ namespace ODK.Services.Events
         {
             await AssertMemberIsChapterAdmin(memberId, createEvent.ChapterId);
 
-            Event @event = new Event(Guid.Empty, createEvent.ChapterId, createEvent.Name, createEvent.Date, createEvent.Location, createEvent.Time, null,
+            Event @event = new Event(Guid.Empty, createEvent.ChapterId, createEvent.Name, createEvent.Date,
+                createEvent.Location, createEvent.Time, null,
                 createEvent.Address, createEvent.MapQuery, createEvent.Description, createEvent.IsPublic);
 
             ValidateEvent(@event);
@@ -46,7 +56,8 @@ namespace ODK.Services.Events
             await _eventRepository.DeleteEvent(id);
         }
 
-        public async Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid currentMemberId, Guid chapterId)
+        public async Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid currentMemberId,
+            Guid chapterId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
@@ -70,12 +81,9 @@ namespace ODK.Services.Events
         {
             Event @event = await GetEvent(currentMemberId, eventId);
             Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
-            Email email = await _memberEmailRepository.GetEmail(EmailType.EventInvite);
-
-            string subject = ReplaceEventEmailTokens(email.Subject, chapter, @event);
-            string body = ReplaceEventEmailTokens(email.Body, chapter, @event);
-
-            return new Email(EmailType.EventInvite, subject, body);
+            Email email = await GetEventEmail();
+            IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event);
+            return email.Interpolate(parameters);
         }
 
         public async Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId)
@@ -89,13 +97,37 @@ namespace ODK.Services.Events
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            IReadOnlyCollection<MemberEventEmail> invites = await _memberEmailRepository.GetMemberEventEmails(chapterId);
+            IReadOnlyCollection<MemberEventEmail> invites =
+                await _memberEmailRepository.GetChapterEventEmails(chapterId);
             return invites.GroupBy(x => x.EventId).Select(group => new EventInvites
             {
                 Delivered = group.Count(x => x.Sent),
                 EventId = group.Key,
                 Sent = group.Count()
             }).ToArray();
+        }
+
+        public async Task SendEventInvites(Guid currentMemberId, Guid eventId)
+        {
+            Event @event = await GetEvent(currentMemberId, eventId);
+            if (@event.Date < DateTime.UtcNow)
+            {
+                throw new OdkServiceException("Invites cannot be sent to past events");
+            }
+
+            Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
+
+            Email email = await GetEventEmail();
+            IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event);
+            email = email.Interpolate(parameters);
+
+            IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(@event.ChapterId);
+            IReadOnlyCollection<MemberEventEmail> sent = await _memberEmailRepository.GetSentEventEmails(eventId);
+
+            foreach (Member member in members.Where(member => sent.All(x => x.MemberId != member.Id)))
+            {
+                await SendEventInvite(@event, member, email);
+            }
         }
 
         public async Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
@@ -110,6 +142,18 @@ namespace ODK.Services.Events
             await _eventRepository.UpdateEvent(update);
 
             return update;
+        }
+
+        private static IDictionary<string, string> GetMemberEmailParameters(string token)
+        {
+            IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                parameters.Add("token", token);
+            }
+
+            return parameters;
         }
 
         private static void ValidateEvent(Event @event)
@@ -133,34 +177,47 @@ namespace ODK.Services.Events
             }
         }
 
-        private string ReplaceEventEmailTokens(string text, Chapter chapter, Event @event, MemberEventEmail eventEmail = null)
+        private async Task<Email> GetEventEmail()
         {
-            IDictionary<string, string> values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            return await _memberEmailRepository.GetEmail(EmailType.EventInvite);
+        }
+
+        private IDictionary<string, string> GetEventEmailParameters(Chapter chapter, Event @event)
+        {
+            IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                { "chapter.name", chapter.Name },
-                { "event.date", @event.Date.ToString("dddd dd MMMM, yyyy") },
-                { "event.id", @event.Id.ToString() },
-                { "event.location", @event.Location },
-                { "event.name", @event.Name },
-                { "event.time", @event.Time }
+                {"chapter.name", chapter.Name},
+                {"event.date", @event.Date.ToString("dddd dd MMMM, yyyy")},
+                {"event.id", @event.Id.ToString()},
+                {"event.location", @event.Location},
+                {"event.name", @event.Name},
+                {"event.time", @event.Time}
             };
 
-            if (text.Contains("{event.rsvpurl}"))
+            parameters.Add("event.rsvpurl", (_settings.BaseUrl + _settings.EventRsvpUrlFormat).Interpolate(parameters));
+            parameters.Add("event.url", (_settings.BaseUrl + _settings.EventUrlFormat).Interpolate(parameters));
+
+            return parameters;
+        }
+
+        private async Task SendEventInvite(Event @event, Member member, Email email)
+        {
+            if (!member.EmailOptIn)
             {
-                values.Add("event.rsvpurl", ReplaceEventEmailTokens(_settings.BaseUrl + _settings.EventRsvpUrlFormat, chapter, @event, eventEmail));
+                return;
             }
 
-            if (text.Contains("{event.url}"))
-            {
-                values.Add("event.url", ReplaceEventEmailTokens(_settings.BaseUrl + _settings.EventUrlFormat, chapter, @event, eventEmail));
-            }
+            string token = RandomStringGenerator.Generate(32);
+            IDictionary<string, string> parameters = GetMemberEmailParameters(token);
 
-            if (eventEmail != null)
-            {
-                values.Add("token", eventEmail.ResponseToken);
-            }
+            email = email.Interpolate(parameters);
 
-            return text.Interpolate(values);
+            MemberEmail memberEmail = await _mailService.CreateMemberEmail(member, email, parameters);
+
+            MemberEventEmail memberEventEmail = new MemberEventEmail(@event.Id, member.Id, memberEmail.Id, token, memberEmail.Sent);
+            await _memberEmailRepository.AddMemberEventEmail(memberEventEmail);
+
+            await _mailService.SendMail(memberEmail, member, email);
         }
     }
 }

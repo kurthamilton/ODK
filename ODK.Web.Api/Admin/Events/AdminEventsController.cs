@@ -73,6 +73,13 @@ namespace ODK.Web.Api.Admin.Events
             return _mapper.Map<EventEmailApiResponse>(email);
         }
 
+        [HttpPost("{id}/sendinvites")]
+        public async Task<IActionResult> SendEventInvites(Guid id)
+        {
+            await _eventAdminService.SendEventInvites(GetMemberId(), id);
+            return Created();
+        }
+
         [HttpGet("invites")]
         public async Task<IEnumerable<EventInvitesApiResponse>> Invites(Guid chapterId)
         {

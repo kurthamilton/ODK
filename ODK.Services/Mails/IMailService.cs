@@ -7,8 +7,12 @@ namespace ODK.Services.Mails
 {
     public interface IMailService
     {
-        Task SendMail(Member member, EmailType type, IDictionary<string, string> parameters);
+        Task<MemberEmail> CreateMemberEmail(Member member, Email email, IDictionary<string, string> parameters);
 
-        Task SendMail(Member member, string subject, string body);
+        Task<MemberEmail> SendMail(MemberEmail memberEmail, Member member, Email email);
+
+        Task<MemberEmail> SendMail(Member member, Email email, IDictionary<string, string> parameters);
+
+        Task<MemberEmail> SendMail(Member member, EmailType type, IDictionary<string, string> parameters);
     }
 }

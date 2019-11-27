@@ -36,6 +36,15 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task<IReadOnlyCollection<MemberEventEmail>> GetChapterEventEmails(Guid chapterId)
+        {
+            return await Context
+                .Select<MemberEventEmail>()
+                .Join<Event, Guid>(x => x.EventId, x => x.Id)
+                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
+                .ToArrayAsync();
+        }
+
         public async Task<Email> GetEmail(EmailType type)
         {
             return await Context
@@ -44,12 +53,11 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IReadOnlyCollection<MemberEventEmail>> GetMemberEventEmails(Guid chapterId)
+        public async Task<IReadOnlyCollection<MemberEventEmail>> GetSentEventEmails(Guid eventId)
         {
             return await Context
                 .Select<MemberEventEmail>()
-                .Join<Event, Guid>(x => x.EventId, x => x.Id)
-                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
+                .Where(x => x.EventId).EqualTo(eventId)
                 .ToArrayAsync();
         }
     }

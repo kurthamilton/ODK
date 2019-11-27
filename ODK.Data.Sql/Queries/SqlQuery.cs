@@ -183,6 +183,11 @@ namespace ODK.Data.Sql.Queries
 
         private string JoinSql(SqlContext context)
         {
+            if (_insertEntity != null)
+            {
+                return "";
+            }
+
             SqlMap<T> map = context.GetMap<T>();
             return string.Join(" ", map.Joins.Union(_joins).Select(x => x.ToSql(context)));
         }

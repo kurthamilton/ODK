@@ -12,8 +12,10 @@ namespace ODK.Core.Mail
 
         Task ConfirmMemberEmailSent(Guid id);
 
+        Task<IReadOnlyCollection<MemberEventEmail>> GetChapterEventEmails(Guid chapterId);
+
         Task<Email> GetEmail(EmailType type);
 
-        Task<IReadOnlyCollection<MemberEventEmail>> GetMemberEventEmails(Guid chapterId);
+        Task<IReadOnlyCollection<MemberEventEmail>> GetSentEventEmails(Guid eventId);
     }
 }

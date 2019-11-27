@@ -39,8 +39,8 @@ namespace ODK.Web.Api.Config
             services.AddSingleton(new EventAdminServiceSettings
             {
                 BaseUrl = urlSettings.Base,
-                EventRsvpUrlFormat = urlSettings.Event,
-                EventUrlFormat = urlSettings.EventRsvp
+                EventRsvpUrlFormat = urlSettings.EventRsvp,
+                EventUrlFormat = urlSettings.Event
             });
 
             services.AddScoped<IAuthenticationService, AuthenticationService>();

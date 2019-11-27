@@ -5,7 +5,9 @@ using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Mail;
+using ODK.Core.Members;
 using ODK.Services.Events;
+using ODK.Services.Mails;
 
 namespace ODK.Services.Tests.Events
 {
@@ -73,7 +75,9 @@ namespace ODK.Services.Tests.Events
                 eventRepository ?? CreateMockEventRepository(CreateMockEvent()),
                 chapterRepository ?? CreateMockChapterRepository(chapter: CreateMockChapter()),
                 memberEmailRepository ?? CreateMockMemberEmailRepository(new Email(EmailType.EventInvite, "Subject", "Body")),
-                new EventAdminServiceSettings { BaseUrl = BaseUrl, EventRsvpUrlFormat = EventRsvpUrlFormat, EventUrlFormat = EventUrlFormat });
+                new EventAdminServiceSettings { BaseUrl = BaseUrl, EventRsvpUrlFormat = EventRsvpUrlFormat, EventUrlFormat = EventUrlFormat },
+                GetMockMemberRepository(),
+                GetMockMailService());
         }
 
         private static Chapter CreateMockChapter(string name = null)
@@ -110,6 +114,11 @@ namespace ODK.Services.Tests.Events
             return mock.Object;
         }
 
+        private static IMailService GetMockMailService()
+        {
+            return Mock.Of<IMailService>();
+        }
+
         private static IMemberEmailRepository CreateMockMemberEmailRepository(Email email = null)
         {
             Mock<IMemberEmailRepository> mock = new Mock<IMemberEmailRepository>();
@@ -118,6 +127,11 @@ namespace ODK.Services.Tests.Events
                 .ReturnsAsync(email);
 
             return mock.Object;
+        }
+
+        private static IMemberRepository GetMockMemberRepository()
+        {
+            return Mock.Of<IMemberRepository>();
         }
     }
 }

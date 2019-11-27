@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using MailKit.Net.Smtp;
 using MimeKit;
@@ -24,62 +23,82 @@ namespace ODK.Services.Mails
             _smtpSettings = smtpSettings;
         }
 
-        public async Task SendMail(Member member, EmailType type, IDictionary<string, string> parameters)
+        public async Task<MemberEmail> CreateMemberEmail(Member member, Email email, IDictionary<string, string> parameters)
+        {
+            email = email.Interpolate(parameters);
+
+            MemberEmail memberEmail = new MemberEmail(Guid.Empty, member.ChapterId, member.EmailAddress, email.Subject, DateTime.UtcNow, false);
+            Guid memberEmailId = await _memberEmailRepository.AddMemberEmail(memberEmail);
+
+            return new MemberEmail(memberEmailId, memberEmail.ChapterId, memberEmail.ToAddress, memberEmail.Subject, memberEmail.CreatedDate, memberEmail.Sent);
+        }
+
+        public async Task<MemberEmail> SendMail(MemberEmail memberEmail, Member member, Email email)
+        {
+            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(member.ChapterId);
+
+            if (await Send(emailSettings.FromEmailAddress, member, email))
+            {
+                await _memberEmailRepository.ConfirmMemberEmailSent(memberEmail.Id);
+            }
+
+            return memberEmail;
+        }
+
+        public async Task<MemberEmail> SendMail(Member member, Email email, IDictionary<string, string> parameters)
+        {
+            MemberEmail memberEmail = await CreateMemberEmail(member, email, parameters);
+
+            return await SendMail(memberEmail, member, email);
+        }
+
+        public async Task<MemberEmail> SendMail(Member member, EmailType type, IDictionary<string, string> parameters)
         {
             Email email = await _memberEmailRepository.GetEmail(type);
 
-            StringBuilder body = new StringBuilder(email.Body);
-            StringBuilder subject = new StringBuilder(email.Subject);
-            foreach (string key in parameters.Keys)
-            {
-                body.Replace($"{{{key}}}", parameters[key]);
-                subject.Replace($"{{{key}}}", parameters[key]);
-            }
-
-            await SendMail(member, subject.ToString(), body.ToString());
+            return await SendMail(member, email, parameters);
         }
 
-        public async Task SendMail(Member member, string subject, string body)
-        {
-            await SendMail(member.ChapterId, member.EmailAddress, subject, body);
-        }
-
-        private async Task SendMail(Guid chapterId, string to, string subject, string body)
-        {
-            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(chapterId);
-
-            MemberEmail memberEmail = new MemberEmail(Guid.Empty, chapterId, to, subject, DateTime.UtcNow, false);
-            Guid memberEmailId = await _memberEmailRepository.AddMemberEmail(memberEmail);
-
-            await Send(emailSettings.FromEmailAddress, to, subject, body);
-            await _memberEmailRepository.ConfirmMemberEmailSent(memberEmailId);
-        }
-
-        private async Task Send(string from, string to, string subject, string body)
+        private static MimeMessage CreateMessage(string from, Member member, Email email)
         {
             MimeMessage message = new MimeMessage
             {
                 Body = new TextPart(TextFormat.Html)
                 {
-                    Text = body
+                    Text = email.Body
                 },
-                Subject = subject
+                Subject = email.Subject
             };
 
             message.From.Add(new MailboxAddress(from));
-            message.To.Add(new MailboxAddress(to));
+            message.To.Add(new MailboxAddress(member.EmailAddress));
 
-            using SmtpClient client = new SmtpClient();
-            await client.ConnectAsync(_smtpSettings.Host, 25, false);
+            return message;
+        }
 
-            if (!string.IsNullOrWhiteSpace(_smtpSettings.Username) &&
-                !string.IsNullOrWhiteSpace(_smtpSettings.Password))
+        private async Task<bool> Send(string from, Member member, Email email)
+        {
+            MimeMessage message = CreateMessage(from, member, email);
+
+            try
             {
-                client.Authenticate(_smtpSettings.Username, _smtpSettings.Password);
-            }
+                using SmtpClient client = new SmtpClient();
+                await client.ConnectAsync(_smtpSettings.Host, 25, false);
 
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+                if (!string.IsNullOrWhiteSpace(_smtpSettings.Username) &&
+                    !string.IsNullOrWhiteSpace(_smtpSettings.Password))
+                {
+                    client.Authenticate(_smtpSettings.Username, _smtpSettings.Password);
+                }
+
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
