@@ -1,6 +1,6 @@
 <div *ngIf="members && members.length > 0" class="card">
-    <div class="card-body">
-        <h5 class="card-title">{{title}}</h5>
+    <div class="card-header">{{title}}</div>
+    <div class="card-body">        
         <div *ngFor="let member of members">{{member.fullName}}</div>
     </div>
 </div>

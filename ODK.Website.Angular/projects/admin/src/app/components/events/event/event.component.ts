@@ -1,16 +1,17 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { Subject, forkJoin } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { adminPaths } from '../../../routing/admin-paths';
+import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from '../../../services/chapters/chapter.service';
 import { Event } from 'src/app/core/events/event';
 import { EventService } from '../../../services/events/event.service';
-import { ServiceResult } from 'src/app/services/service-result';
-import { adminUrls } from '../../../routing/admin-urls';
+import { EventInvites } from 'src/app/core/events/event-invites';
+import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 
 @Component({
   selector: 'app-event',
@@ -28,30 +29,39 @@ export class EventComponent implements OnInit {
   }
 
   chapter: Chapter;
-  event: Event;
-  formCallback: Subject<string[]> = new Subject<string[]>();
-    
-  ngOnInit(): void {
-    const id: string = this.route.snapshot.paramMap.get(adminPaths.events.event.params.id);
+  event: Event;  
+  invites: EventInvites;
+  
+  private responses: EventMemberResponse[];
 
+  ngOnInit(): void {
+    const id: string = this.route.snapshot.paramMap.get(adminPaths.events.event.params.id);    
     forkJoin([
       this.chapterService.getActiveChapter().pipe(
         tap((chapter: Chapter) => this.chapter = chapter)
       ),
       this.eventService.getEvent(id).pipe(
         tap((event: Event) => this.event = event)
+      ),
+      this.eventService.getEventInvites(id).pipe(
+        tap((invites: EventInvites) => this.invites = invites)
+      ),
+      this.eventService.getEventResponses(id).pipe(
+        tap((responses: EventMemberResponse[]) => this.responses = responses)
       )
     ]).subscribe(() => {
+      if (!this.event) {
+        this.router.navigateByUrl(adminUrls.events(this.chapter));
+        return;
+      }
+
       this.changeDetector.detectChanges();
     });
   }
 
-  onFormSubmit(event: Event): void {
-    this.eventService.updateEvent(event).subscribe((result: ServiceResult<Event>) => {
-      this.formCallback.next(result.messages);
-      if (result.success) {
-        this.router.navigateByUrl(adminUrls.events(this.chapter));
-      }
+  onSendInvites(): void {
+    this.eventService.sendInvites(this.event.id).subscribe(() => {
+      
     });
   }
 }

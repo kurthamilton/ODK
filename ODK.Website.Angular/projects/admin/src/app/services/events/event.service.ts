@@ -6,6 +6,7 @@ import { map, catchError } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
 import { Event } from 'src/app/core/events/event';
+import { EventInvites } from 'src/app/core/events/event-invites';
 import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 import { HttpUtils } from 'src/app/services/http/http-utils';
 import { ServiceResult } from 'src/app/services/service-result';
@@ -13,10 +14,14 @@ import { ServiceResult } from 'src/app/services/service-result';
 const baseUrl = `${environment.baseUrl}/admin/events`
 
 const endpoints = {
+  chapterInvites: (chapterId: string) => `${baseUrl}/invites?chapterId=${chapterId}`,
   chapterResponses: (chapterId: string) => `${baseUrl}/responses?chapterId=${chapterId}`,
   createEvent: `${baseUrl}`,
   event: (id: string) => `${baseUrl}/${id}`,
-  events: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`
+  eventInvites: (eventId: string) => `${baseUrl}/${eventId}/invites`,
+  eventResponses: (eventId: string) => `${baseUrl}/${eventId}/responses`,
+  events: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
+  sendInvites: (eventId: string) => `${baseUrl}/${eventId}/sendinvites`
 };
 
 @Injectable({
@@ -45,6 +50,12 @@ export class EventService {
     );
   }
 
+  getChapterInvites(chapterId: string): Observable<EventInvites[]> {
+    return this.http.get(endpoints.chapterInvites(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapEventInvites(x)))
+    );
+  }
+
   getChapterResponses(chapterId: string): Observable<EventMemberResponse[]> {
     return this.http.get(endpoints.chapterResponses(chapterId)).pipe(
       map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
@@ -57,9 +68,27 @@ export class EventService {
     );
   }
 
+  getEventInvites(eventId: string): Observable<EventInvites> {
+    return this.http.get(endpoints.eventInvites(eventId)).pipe(
+      map((response: any) => this.mapEventInvites(response, eventId))
+    );
+  }
+
+  getEventResponses(eventId: string): Observable<EventMemberResponse[]> {
+    return this.http.get(endpoints.eventResponses(eventId)).pipe(
+      map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
+    );
+  }
+
   getEvents(chapterId: string): Observable<Event[]> {
     return this.http.get(endpoints.events(chapterId)).pipe(
       map((response: any) => response.map(x => this.mapEvent(x)))
+    );
+  }
+
+  sendInvites(eventId: string): Observable<{}> {
+    return this.http.post(endpoints.sendInvites(eventId), null).pipe(
+      map(() => ({}))
     );
   }
 
@@ -108,6 +137,14 @@ export class EventService {
       mapQuery: response.mapQuery,
       name: response.name,
       time: response.time
+    };
+  }
+
+  private mapEventInvites(response: any, id?: string): EventInvites {
+    return {
+      delivered: response ? response.delivered : 0,
+      eventId: response ? response.eventId : id,
+      sent: response ? response.sent : 0
     };
   }
 

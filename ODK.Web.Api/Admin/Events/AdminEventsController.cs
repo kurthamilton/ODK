@@ -73,6 +73,20 @@ namespace ODK.Web.Api.Admin.Events
             return _mapper.Map<EventEmailApiResponse>(email);
         }
 
+        [HttpGet("{id}/invites")]
+        public async Task<EventInvitesApiResponse> EventInvites(Guid id)
+        {
+            EventInvites invites = await _eventAdminService.GetEventInvites(GetMemberId(), id);
+            return _mapper.Map<EventInvitesApiResponse>(invites);
+        }
+
+        [HttpGet("{id}/responses")]
+        public async Task<IEnumerable<EventMemberResponseApiResponse>> EventResponses(Guid id)
+        {
+            IReadOnlyCollection<EventMemberResponse> responses = await _eventAdminService.GetEventResponses(GetMemberId(), id);
+            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
+        }
+
         [HttpPost("{id}/sendinvites")]
         public async Task<IActionResult> SendEventInvites(Guid id)
         {
@@ -83,7 +97,7 @@ namespace ODK.Web.Api.Admin.Events
         [HttpGet("invites")]
         public async Task<IEnumerable<EventInvitesApiResponse>> Invites(Guid chapterId)
         {
-            IReadOnlyCollection<EventInvites> invites = await _eventAdminService.GetMemberEventEmails(GetMemberId(), chapterId);
+            IReadOnlyCollection<EventInvites> invites = await _eventAdminService.GetChapterInvites(GetMemberId(), chapterId);
             return invites.Select(_mapper.Map<EventInvitesApiResponse>);
         }
 

@@ -9,16 +9,21 @@
                 <th>Name</th>
                 <th>Date</th>
                 <th>Location</th>
-                <th>Y</th>
-                <th>?</th>
-                <th>X</th>
+                <th><i class="fas fa-envelope"></i></th>
+                <th><i class="fas fa-check-circle text-success"></i></th>
+                <th><i class="fas fa-question-circle text-warning"></i></th>
+                <th><i class="fas fa-times-circle text-danger"></i></th>
             </tr>
         </thead>
         <tbody>
             <tr *ngFor="let viewModel of viewModels">
                 <td><a [routerLink]="getEventLink(viewModel.event)">{{viewModel.event.name}}</a></td>
                 <td>{{viewModel.event.date | date:'dd MMM yyyy'}}</td>
-                <td>{{viewModel.event.location}}</td>
+                <td>{{viewModel.event.location}}</td>                
+                <td>
+                    {{viewModel.invitesSent}}
+                    <span *ngIf="viewModel.invitesFailed">{{viewModel.invitesFailed}}</span>
+                </td>
                 <td>{{viewModel.going}}</td>
                 <td>{{viewModel.maybe}}</td>
                 <td>{{viewModel.declined}}</td>

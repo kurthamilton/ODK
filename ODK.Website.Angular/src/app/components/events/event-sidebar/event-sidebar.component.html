@@ -1,8 +1,8 @@
 <ng-container *ngIf="going">
     <div class="sidebar">
         <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">RSVP</h5>
+            <div class="card-header">RSVP</div>
+            <div class="card-body">                
                 <div class="d-flex justify-content-around">
                     <app-event-response-icon [type]="1" [active]="memberResponse === 1" (respond)="onRespond($event)">                                
                     </app-event-response-icon>

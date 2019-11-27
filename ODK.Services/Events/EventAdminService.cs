@@ -56,6 +56,14 @@ namespace ODK.Services.Events
             await _eventRepository.DeleteEvent(id);
         }
 
+        public async Task<IReadOnlyCollection<EventInvites>> GetChapterInvites(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            IReadOnlyCollection<MemberEventEmail> invites = await _memberEmailRepository.GetChapterEventEmails(chapterId);
+            return MapEmailsToInvites(invites);
+        }
+
         public async Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid currentMemberId,
             Guid chapterId)
         {
@@ -86,26 +94,25 @@ namespace ODK.Services.Events
             return email.Interpolate(parameters);
         }
 
+        public async Task<EventInvites> GetEventInvites(Guid currentMemberId, Guid eventId)
+        {
+            Event @event = await GetEvent(currentMemberId, eventId);
+            IReadOnlyCollection<MemberEventEmail> emails = await _memberEmailRepository.GetEventEmails(@event.Id);
+            return MapEmailsToInvites(emails).SingleOrDefault();
+        }
+
+        public async Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid currentMemberId, Guid eventId)
+        {
+            Event @event = await GetEvent(currentMemberId, eventId);
+            return await _eventRepository.GetEventResponses(@event.Id);
+        }
+
         public async Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             return await _eventRepository.GetEvents(chapterId, null);
-        }
-
-        public async Task<IReadOnlyCollection<EventInvites>> GetMemberEventEmails(Guid currentMemberId, Guid chapterId)
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
-
-            IReadOnlyCollection<MemberEventEmail> invites =
-                await _memberEmailRepository.GetChapterEventEmails(chapterId);
-            return invites.GroupBy(x => x.EventId).Select(group => new EventInvites
-            {
-                Delivered = group.Count(x => x.Sent),
-                EventId = group.Key,
-                Sent = group.Count()
-            }).ToArray();
-        }
+        }        
 
         public async Task SendEventInvites(Guid currentMemberId, Guid eventId)
         {
@@ -122,7 +129,7 @@ namespace ODK.Services.Events
             email = email.Interpolate(parameters);
 
             IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(@event.ChapterId);
-            IReadOnlyCollection<MemberEventEmail> sent = await _memberEmailRepository.GetSentEventEmails(eventId);
+            IReadOnlyCollection<MemberEventEmail> sent = await _memberEmailRepository.GetEventEmails(eventId);
 
             foreach (Member member in members.Where(member => sent.All(x => x.MemberId != member.Id)))
             {
@@ -154,6 +161,16 @@ namespace ODK.Services.Events
             }
 
             return parameters;
+        }
+
+        private static IReadOnlyCollection<EventInvites> MapEmailsToInvites(IEnumerable<MemberEventEmail> emails)
+        {
+            return emails.GroupBy(x => x.EventId).Select(group => new EventInvites
+            {
+                Delivered = group.Count(x => x.Sent),
+                EventId = group.Key,
+                Sent = group.Count()
+            }).ToArray();
         }
 
         private static void ValidateEvent(Event @event)

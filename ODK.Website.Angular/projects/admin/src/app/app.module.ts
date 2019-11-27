@@ -14,6 +14,7 @@ import { AppBaseModule } from './modules/add-base.module';
 import { EventComponent } from './components/events/event/event.component';
 import { EventFormComponent } from './components/events/event-form/event-form.component';
 import { LoginComponent } from './components/account/login/login.component';
+import { EditEventComponent } from './components/events/edit-event/edit-event.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { LoginComponent } from './components/account/login/login.component';
     EventComponent,
     EventFormComponent,
     LoginComponent,
+    EditEventComponent,
   ],
   imports: [
     AppBaseModule,

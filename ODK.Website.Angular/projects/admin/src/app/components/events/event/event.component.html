@@ -1,3 +1,11 @@
-<app-event-form *ngIf="event" buttonText="Update" [chapter]="chapter" [event]="event" [formCallback]="formCallback"
-    (submit)="onFormSubmit($event)">    
-</app-event-form>
+<ng-container *ngIf="event">    
+    <h2>{{event.name}}</h2>
+    <h3>{{event.date | date:'fullDate'}}</h3>
+    <h3>{{event.location}}</h3>    
+    
+    <p *ngIf="invites.sent === 0">
+        <button class="btn btn-primary" (click)="onSendInvites()">Send invites</button>
+    </p>
+
+    <app-edit-event [chapter]="chapter" [event]="event"></app-edit-event>
+</ng-container>

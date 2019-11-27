@@ -53,7 +53,7 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IReadOnlyCollection<MemberEventEmail>> GetSentEventEmails(Guid eventId)
+        public async Task<IReadOnlyCollection<MemberEventEmail>> GetEventEmails(Guid eventId)
         {
             return await Context
                 .Select<MemberEventEmail>()
