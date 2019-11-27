@@ -115,7 +115,7 @@ export class EventService {
     return {
       eventId: response.eventId,
       memberId: response.memberId,
-      responseType: response.responseType
+      responseType: response.responseTypeId
     };
   }
 }

@@ -28,10 +28,10 @@ export class EventSidebarComponent implements OnInit, OnChanges {
 
   @Input() eventId: string;
 
+  declined: Member[];
   going: Member[];
   maybe: Member[];
   memberResponse: EventResponseType;
-  notGoing: Member[];
   
   private memberId: string;
   private members: Member[];
@@ -94,14 +94,15 @@ export class EventSidebarComponent implements OnInit, OnChanges {
     }
 
     const responseMap: Map<string, EventMemberResponse> = ArrayUtils.toMap(this.responses, x => x.memberId);
+    
+    this.declined = this.members
+      .filter(x => responseMap.has(x.id) && responseMap.get(x.id).responseType === EventResponseType.No);
+      
     this.going = this.members
       .filter(x => responseMap.has(x.id) && responseMap.get(x.id).responseType === EventResponseType.Yes);
 
     this.maybe = this.members
-      .filter(x => responseMap.has(x.id) && responseMap.get(x.id).responseType === EventResponseType.Maybe);
-    
-    this.notGoing = this.members
-      .filter(x => responseMap.has(x.id) && responseMap.get(x.id).responseType === EventResponseType.No);
+      .filter(x => responseMap.has(x.id) && responseMap.get(x.id).responseType === EventResponseType.Maybe);        
 
     this.changeDetector.detectChanges();
   }

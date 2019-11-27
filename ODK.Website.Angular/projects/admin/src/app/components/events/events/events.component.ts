@@ -34,7 +34,7 @@ export class EventsComponent implements OnInit {
 
   private chapter: Chapter;
   private events: Event[];
-  private responses: Map<string, EventMemberResponse[]>;
+  private responses: EventMemberResponse[];
 
   ngOnInit(): void {
     this.chapterService.getActiveChapter().pipe(
@@ -44,16 +44,20 @@ export class EventsComponent implements OnInit {
           tap((events: Event[]) => this.events = events)
         ),
         this.eventService.getChapterResponses(chapter.id).pipe(
-          tap((responses: EventMemberResponse[]) => this.responses = ArrayUtils.groupValues(responses, x => x.eventId, x => x))
+          tap((responses: EventMemberResponse[]) => this.responses = responses)
         )
       ]))
     ).subscribe(() => {
-      this.viewModels = this.events.map((event: Event): ListEventViewModel => {
-        const responses: EventMemberResponse[] = this.responses[event.id] || [];
+      const eventResponseMap: Map<string, EventMemberResponse[]> = ArrayUtils.groupValues(this.responses, x => x.eventId, x => x);
+      this.viewModels = this.events.map((event: Event): ListEventViewModel => {        
+        const eventResponses: EventMemberResponse[] = eventResponseMap.get(event.id) || [];
+        const responseTypeMap: Map<EventResponseType, EventMemberResponse[]> = ArrayUtils.groupValues(eventResponses, x => x.responseType, x => x);
         return {
-          canBeDeleted: responses.length === 0,
+          canBeDeleted: eventResponses.length === 0,
+          declined: responseTypeMap.has(EventResponseType.No) ? responseTypeMap.get(EventResponseType.No).length : 0,
           event,
-          going: responses.filter(x => x.responseType === EventResponseType.Yes).length
+          going: responseTypeMap.has(EventResponseType.Yes) ? responseTypeMap.get(EventResponseType.Yes).length : 0,
+          maybe: responseTypeMap.has(EventResponseType.Maybe) ? responseTypeMap.get(EventResponseType.Maybe).length : 0,
         }
       });
       
