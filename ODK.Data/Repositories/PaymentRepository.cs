@@ -12,30 +12,5 @@ namespace ODK.Data.Repositories
             : base(context)
         {
         }
-
-        public void CompletePayment(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void CreatePayment(Payment payment)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Payment GetIncompletePayment(string identifier)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IReadOnlyCollection<Payment> GetCompletePayments(int memberId)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static Payment ReadPayment(SqlDataReader reader, IReadOnlyCollection<PaymentDetail> paymentDetails)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

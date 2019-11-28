@@ -71,6 +71,14 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterPaymentSettings>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId)
         {
             return await Context
