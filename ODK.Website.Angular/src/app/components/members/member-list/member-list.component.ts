@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 
 import { Member } from 'src/app/core/members/member';
 
@@ -7,13 +7,9 @@ import { Member } from 'src/app/core/members/member';
   templateUrl: './member-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MemberListComponent implements OnInit {
+export class MemberListComponent {
 
-  constructor() { }
-
+  @Input() cols: number;
   @Input() members: Member[];
-
-  ngOnInit() {
-  }
-
+  @Input() size: string;
 }

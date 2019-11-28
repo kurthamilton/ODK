@@ -1,6 +1,6 @@
-<div>
-    <a *ngIf="link" [routerLink]="link">
-        <img *ngIf="member.imageUrl" [attr.src]="member.imageUrl" [attr.alt]="'Photo of ' + member.fullName">
+<div *ngIf="member" class="card member-tile">
+    <a *ngIf="links" [routerLink]="links.member">
+        <img *ngIf="image" class="card-img-top" [attr.src]="image" [attr.alt]="'Photo of ' + member.fullName" />
 
         <div>
             {{member.fullName}}

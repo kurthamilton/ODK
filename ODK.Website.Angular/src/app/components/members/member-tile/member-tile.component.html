@@ -1,9 +1,0 @@
-<div *ngIf="member" class="card member-tile">
-    <a *ngIf="links" [routerLink]="links.member">
-        <img *ngIf="image" class="card-img-top" [attr.src]="image" [attr.alt]="'Photo of ' + member.fullName" />
-
-        <div class="member-tile__footer">
-            {{member.fullName}}
-        </div>
-    </a>
-</div>

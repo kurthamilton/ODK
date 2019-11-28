@@ -1,9 +1,5 @@
 <app-body *ngIf="chapter" [title]="chapter.name">
     <h3>Latest members</h3>
-    <div *ngIf="latestMembers" class="row">
-        <div *ngFor="let member of latestMembers" class="col-lg-3 col-6">
-            <app-member-tile [member]="member" [maxWidth]="150"></app-member-tile>
-        </div>
-    </div>
+    <app-member-list [members]="latestMembers" [cols]="4"></app-member-list>
 
 </app-body>

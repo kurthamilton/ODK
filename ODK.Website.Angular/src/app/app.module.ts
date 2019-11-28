@@ -55,7 +55,6 @@ import { ErrorMessagesComponent } from './components/elements/error-messages/err
 import { EventResponseIconComponent } from './components/events/event-response-icon/event-response-icon.component';
 import { EventSidebarComponent } from './components/events/event-sidebar/event-sidebar.component';
 import { EventSidebarAttendeesComponent } from './components/events/event-sidebar-attendees/event-sidebar-attendees.component';
-import { MemberTileComponent } from './components/members/member-tile/member-tile.component';
 
 @NgModule({
   declarations: [
@@ -107,7 +106,6 @@ import { MemberTileComponent } from './components/members/member-tile/member-til
     EventResponseIconComponent,
     EventSidebarComponent,
     EventSidebarAttendeesComponent,
-    MemberTileComponent,
 
   ],
   imports: [
