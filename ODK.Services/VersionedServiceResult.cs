@@ -2,19 +2,19 @@
 {
     public class VersionedServiceResult<T>
     {
-        public VersionedServiceResult(T value, int version)
+        public VersionedServiceResult(long version, T value)
             : this(version)
         {
             Value = value;
         }
 
-        public VersionedServiceResult(int version)
+        public VersionedServiceResult(long version)
         {
             Version = version;
         }
 
         public T Value { get; }
 
-        public int Version { get; }
+        public long Version { get; }
     }
 }

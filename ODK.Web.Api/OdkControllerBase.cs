@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -33,26 +32,33 @@ namespace ODK.Web.Api
             return memberId.Value;
         }
 
-        protected async Task<ActionResult<TResponse>> HandleVersionedRequest<T, TResponse>(Func<int?, Task<VersionedServiceResult<T>>> getter, Func<T, TResponse> map)
+        protected async Task<IActionResult> HandleVersionedRequest<T>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T, IActionResult> map)
         {
-            int? version = null;
-            string requestETag = Request.Headers["If-None-Match"].FirstOrDefault();
-            if (requestETag != null)
-            {
-                Match match = VersionRegex.Match(requestETag);
-                if (match.Success)
-                {
-                    version = int.Parse(match.Groups["version"].Value);
-                }
-            }
+            int? version = GetRequestVersion();
 
             VersionedServiceResult<T> result = await getter(version);
 
-            Response.Headers.Add("ETag", $"\"{result.Version}\"");
+            AddVersionHeader(result.Version);
 
             if (version == result.Version)
             {
-                return StatusCode((int)HttpStatusCode.NotModified);
+                return NotModified();
+            }
+
+            return map(result.Value);
+        }
+
+        protected async Task<ActionResult<TResponse>> HandleVersionedRequest<T, TResponse>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T, TResponse> map)
+        {
+            int? version = GetRequestVersion();
+
+            VersionedServiceResult<T> result = await getter(version);
+
+            AddVersionHeader(result.Version);
+
+            if (version == result.Version)
+            {
+                return NotModified();
             }
 
             return Ok(map(result.Value));
@@ -67,6 +73,28 @@ namespace ODK.Web.Api
             }
 
             return Guid.TryParse(claim.Value, out Guid memberId) ? memberId : new Guid?();
+        }
+
+        private void AddVersionHeader(long version)
+        {
+            Response.Headers.Add("ETag", $"\"{version}\"");
+        }
+
+        private int? GetRequestVersion()
+        {
+            string requestETag = Request.Headers["If-None-Match"].FirstOrDefault();
+            if (requestETag == null)
+            {
+                return null;
+            }
+
+            Match match = VersionRegex.Match(requestETag);
+            return match.Success ? int.Parse(match.Groups["version"].Value) : new int?();
+        }
+
+        private ActionResult NotModified()
+        {
+            return StatusCode((int)HttpStatusCode.NotModified);
         }
     }
 }

@@ -15,6 +15,7 @@ using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.DataTypes;
 using ODK.Services.Events;
+using ODK.Services.Imaging;
 using ODK.Services.Mails;
 using ODK.Services.Members;
 
@@ -43,6 +44,8 @@ namespace ODK.Web.Api.Config
                 EventUrlFormat = urlSettings.Event
             });
 
+            services.AddSingleton(configuration.Map<SmtpSettings>("Smtp"));
+
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IAuthorizationService, AuthorizationService>();
             services.AddScoped<ICache, Cache>();
@@ -51,7 +54,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IDataTypeService, DataTypeService>();
             services.AddScoped<IEventAdminService, EventAdminService>();
             services.AddScoped<IEventService, EventService>();
-            services.AddSingleton(configuration.Map<SmtpSettings>("Smtp"));
+            services.AddScoped<IImageService, ImageService>();
             services.AddScoped<IMailService, MailService>();
             services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();

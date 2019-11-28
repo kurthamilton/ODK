@@ -19,5 +19,11 @@ namespace ODK.Data.Sql.Queries
             AddOrderBy(expression, direction);
             return this;
         }
+
+        public SqlSelectQuery<T> Top(int size)
+        {
+            AddTop(size);
+            return this;
+        }
     }
 }

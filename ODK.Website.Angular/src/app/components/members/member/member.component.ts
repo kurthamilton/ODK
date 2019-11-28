@@ -4,11 +4,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { tap, switchMap } from 'rxjs/operators';
 
 import { appPaths } from 'src/app/routing/app-paths';
+import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapter/chapter.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from 'src/app/services/members/member.service';
-import { appUrls } from 'src/app/routing/app-urls';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-member',

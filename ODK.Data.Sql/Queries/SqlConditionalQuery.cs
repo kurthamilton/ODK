@@ -10,6 +10,11 @@ namespace ODK.Data.Sql.Queries
         {
         }
 
+        public SqlQueryCondition<T, T, TValue> ConditionalWhere<TValue>(Expression<Func<T, TValue>> expression, bool condition)
+        {
+            return Where(expression, condition);
+        }
+
         public SqlConditionalQuery<T> Join<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField)
         {
             return Join<T, TTo, TValue>(thisField, toField);
@@ -28,8 +33,16 @@ namespace ODK.Data.Sql.Queries
 
         public SqlQueryCondition<T, TEntity, TValue> Where<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression)
         {
+            return Where(expression, true);
+        }
+
+        private SqlQueryCondition<T, TEntity, TValue> Where<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression, bool add)
+        {
             SqlQueryCondition<T, TEntity, TValue> condition = new SqlQueryCondition<T, TEntity, TValue>(this, expression);
-            AddCondition(condition);
+            if (add)
+            {
+                AddCondition(condition);
+            }
             return condition;
         }
     }

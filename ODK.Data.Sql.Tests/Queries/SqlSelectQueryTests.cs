@@ -66,6 +66,38 @@ namespace ODK.Data.Sql.Tests.Queries
         }
 
         [Test]
+        public static void ToSql_WithConditionalConditions_ReturnsConditionsIfTrue()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String);
+
+            SqlContext context = CreateMockContext(map);
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .ConditionalWhere(x => x.Int, true).GreaterThanOrEqualTo(1);
+
+            string sql = query.ToSql(context);
+
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE Table.[Int] >= @Int", sql);
+        }
+
+        [Test]
+        public static void ToSql_WithConditionalConditions_DoesNotReturnConditionsIfFalse()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String);
+
+            SqlContext context = CreateMockContext(map);
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .ConditionalWhere(x => x.Int, false).GreaterThanOrEqualTo(1);
+
+            string sql = query.ToSql(context);
+
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table", sql);
+        }
+
+        [Test]
         public static void ToSql_MapsColumnName()
         {
             TestEntityMap map = new TestEntityMap("Table");

@@ -1,1 +1,10 @@
-<app-body *ngIf="chapter" [title]="chapter.name"></app-body>
+<app-body *ngIf="chapter" [title]="chapter.name">
+    <div *ngIf="latestMembers">
+        <div *ngFor="let member of latestMembers">
+            {{member.fullName}}
+
+            <img *ngIf="latestMemberImages.has(member.id)" [attr.src]="latestMemberImages.get(member.id)" />
+        </div>
+    </div>
+
+</app-body>

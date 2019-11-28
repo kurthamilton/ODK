@@ -62,10 +62,22 @@ namespace ODK.Services.Members
             });
         }
 
-        public async Task<MemberImage> GetMemberImage(Guid currentMemberId, Guid memberId)
+        public async Task<IReadOnlyCollection<Member>> GetLatestMembers(Guid currentMemberId, Guid chapterId)
+        {
+            await _authorizationService.AssertMemberIsChapterMember(currentMemberId, chapterId);
+            return await _memberRepository.GetLatestMembers(chapterId, 8);
+        }
+
+        public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? version, Guid currentMemberId, Guid memberId)
         {
             Member member = await GetMember(currentMemberId, memberId);
-            return await _memberRepository.GetMemberImage(member.Id);
+            MemberImage image = await _memberRepository.GetMemberImage(member.Id, version);
+            if (image == null)
+            {
+                return new VersionedServiceResult<MemberImage>(version ?? 0);
+            }
+
+            return new VersionedServiceResult<MemberImage>(image.Version, image);
         }
 
         public async Task<MemberProfile> GetMemberProfile(Guid currentMemberId, Guid memberId)
@@ -84,10 +96,10 @@ namespace ODK.Services.Members
         {
             await _authorizationService.AssertMemberIsCurrent(id);
 
-            MemberImage update = new MemberImage(id, image.ImageData, image.MimeType);
+            MemberImage update = new MemberImage(id, image.ImageData, image.MimeType, 0);
             AssertFileIsImage(update);
             await _memberRepository.UpdateMemberImage(update);
-            return await _memberRepository.GetMemberImage(id);
+            return await _memberRepository.GetMemberImage(id, null);
         }
 
         public async Task<MemberProfile> UpdateMemberProfile(Guid id, UpdateMemberProfile profile)

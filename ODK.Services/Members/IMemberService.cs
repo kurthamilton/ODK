@@ -9,7 +9,9 @@ namespace ODK.Services.Members
     {
         Task CreateMember(Guid chapterId, CreateMemberProfile profile);
 
-        Task<MemberImage> GetMemberImage(Guid currentMemberId, Guid memberId);
+        Task<IReadOnlyCollection<Member>> GetLatestMembers(Guid currentMemberId, Guid chapterId);
+
+        Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid currentMemberId, Guid memberId);
 
         Task<MemberProfile> GetMemberProfile(Guid currentMemberId, Guid memberId);
 

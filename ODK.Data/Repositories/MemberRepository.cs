@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Threading.Tasks;
 using ODK.Core.Members;
 using ODK.Data.Sql;
@@ -100,6 +101,16 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<IReadOnlyCollection<Member>> GetLatestMembers(Guid chapterId, int maxSize)
+        {
+            return await Context
+                .Select<Member>()
+                .Top(maxSize)
+                .OrderBy(x => x.CreatedDate, SqlSortDirection.Descending)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .ToArrayAsync();
+        }
+
         public async Task<Member> GetMember(Guid memberId)
         {
             return await Context
@@ -124,11 +135,12 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<MemberImage> GetMemberImage(Guid memberId)
+        public async Task<MemberImage> GetMemberImage(Guid memberId, long? versionAfter)
         {
             return await Context
                 .Select<MemberImage>()
                 .Where(x => x.MemberId).EqualTo(memberId)
+                .ConditionalWhere(x => x.Version, versionAfter.HasValue).GreaterThan(versionAfter ?? 0)
                 .FirstOrDefaultAsync();
         }
 

@@ -54,7 +54,7 @@ namespace ODK.Data.Repositories
                 .Select<Event>()
                 .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
-                .Where(x => x.Date).GreaterThanOrEqualTo(after ?? SqlDateTime.MinValue.Value)
+                .ConditionalWhere(x => x.Date, after.HasValue).GreaterThanOrEqualTo(after ?? SqlDateTime.MinValue.Value)
                 .ToArrayAsync();
         }
 

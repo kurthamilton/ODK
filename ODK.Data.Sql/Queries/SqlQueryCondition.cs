@@ -29,6 +29,11 @@ namespace ODK.Data.Sql.Queries
             return context.GetColumn(Expression);
         }
 
+        public SqlConditionalQuery<T> GreaterThan(TValue value)
+        {
+            return SetCondition(">", value);
+        }
+
         public SqlConditionalQuery<T> GreaterThanOrEqualTo(TValue value)
         {
             return SetCondition(">=", value);

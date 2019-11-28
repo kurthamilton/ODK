@@ -9,14 +9,14 @@ namespace ODK.Data
         protected RepositoryBase(SqlContext context)
         {
             Context = context;
-        }                
+        }
 
         protected SqlContext Context { get; }
 
         protected SqlConnection OpenConnection()
         {
             throw new NotImplementedException();
-        }                                
+        }
 
         protected void TryCommitTransaction(SqlTransaction transaction)
         {

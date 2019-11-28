@@ -16,6 +16,7 @@ namespace ODK.Data.Sql.Queries
         private readonly IList<ISqlComponent> _joins = new List<ISqlComponent>();
         private readonly IList<ISqlComponent> _orderByFields = new List<ISqlComponent>();
         private readonly IList<string> _selectColumns = new List<string>();
+        private int _top = 0;
         private readonly IList<(SqlColumn Column, object Value)> _updateColumns = new List<(SqlColumn, object)>();
 
         protected SqlQuery(SqlContext context)
@@ -139,6 +140,11 @@ namespace ODK.Data.Sql.Queries
             }
         }
 
+        protected void AddTop(int size)
+        {
+            _top = size;
+        }
+
         protected void AddUpdateColumn<TValue>(Expression<Func<T, TValue>> expression, TValue value)
         {
             // TODO: resolve conflict between set parameter and where parameter when both operate on same column
@@ -155,7 +161,7 @@ namespace ODK.Data.Sql.Queries
         {
             if (_selectColumns.Count > 0)
             {
-                return $"SELECT {string.Join(",", _selectColumns)}";
+                return $"SELECT {(_top > 0 ? $"TOP {_top} " : "")}{string.Join(",", _selectColumns)}";
             }
 
             if (_updateColumns.Count > 0)

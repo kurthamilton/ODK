@@ -17,10 +17,11 @@ namespace ODK.Core.Members
         Task DisableMember(Guid id);
         Task EnableMember(Guid id);
         Task<Member> FindMemberByEmailAddress(string emailAddress);
+        Task<IReadOnlyCollection<Member>> GetLatestMembers(Guid chapterId, int maxSize);
         Task<Member> GetMember(Guid memberId);
         Task<MemberActivationToken> GetMemberActivationToken(Guid memberId);
         Task<MemberActivationToken> GetMemberActivationToken(string activationToken);
-        Task<MemberImage> GetMemberImage(Guid memberId);
+        Task<MemberImage> GetMemberImage(Guid memberId, long? versionAfter);
         Task<MemberPassword> GetMemberPassword(Guid memberId);
         Task<IReadOnlyCollection<MemberProperty>> GetMemberProperties(Guid memberId);
         Task<IReadOnlyCollection<Member>> GetMembers(Guid chapterId);

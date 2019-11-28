@@ -48,7 +48,7 @@ namespace ODK.Services.Chapters
             return await _chapterRepository.GetChapterPropertyOptions(chapterId);
         }
 
-        public async Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(int? currentVersion)
+        public async Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(long? currentVersion)
         {
             int version = await _cache.GetOrSetVersion<Chapter>(_chapterRepository.GetChaptersVersion);
             if (version == currentVersion)
@@ -57,7 +57,7 @@ namespace ODK.Services.Chapters
             }
 
             IReadOnlyCollection<Chapter> chapters = await _cache.GetOrSetCollection(_chapterRepository.GetChapters, version);
-            return new VersionedServiceResult<IReadOnlyCollection<Chapter>>(chapters, version);
+            return new VersionedServiceResult<IReadOnlyCollection<Chapter>>(version, chapters);
         }
     }
 }

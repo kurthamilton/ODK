@@ -12,6 +12,7 @@ namespace ODK.Data.Mapping
             Property(x => x.MemberId);
             Property(x => x.ImageData);
             Property(x => x.MimeType);
+            Property(x => x.Version).IsRowVersion();
         }
 
         public override MemberImage Read(IDataReader reader)
@@ -20,7 +21,8 @@ namespace ODK.Data.Mapping
             (
                 memberId: reader.GetGuid(0),
                 imageData: (byte[])reader.GetValue(1),
-                mimeType: reader.GetString(2)
+                mimeType: reader.GetString(2),
+                version: reader.GetInt64(3)
             );
         }
     }
