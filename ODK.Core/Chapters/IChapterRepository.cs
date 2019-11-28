@@ -6,6 +6,8 @@ namespace ODK.Core.Chapters
 {
     public interface IChapterRepository
     {
+        Task AddContactRequest(ContactRequest contactRequest);
+
         Task<IReadOnlyCollection<Chapter>> GetAdminChapters(Guid memberId);
 
         Task<Chapter> GetChapter(Guid id);

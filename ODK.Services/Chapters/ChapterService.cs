@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ODK.Core.Caching;
 using ODK.Core.Chapters;
 using ODK.Services.Exceptions;
+using ODK.Services.Mails;
 
 namespace ODK.Services.Chapters
 {
@@ -11,11 +12,13 @@ namespace ODK.Services.Chapters
     {
         private readonly ICache _cache;
         private readonly IChapterRepository _chapterRepository;
+        private readonly IMailService _mailService;
 
-        public ChapterService(IChapterRepository chapterRepository, ICache cache)
+        public ChapterService(IChapterRepository chapterRepository, ICache cache, IMailService mailService)
         {
             _cache = cache;
             _chapterRepository = chapterRepository;
+            _mailService = mailService;
         }
 
         public async Task<Chapter> GetChapter(Guid id)
@@ -58,6 +61,25 @@ namespace ODK.Services.Chapters
 
             IReadOnlyCollection<Chapter> chapters = await _cache.GetOrSetCollection(_chapterRepository.GetChapters, version);
             return new VersionedServiceResult<IReadOnlyCollection<Chapter>>(version, chapters);
+        }
+
+        public async Task SendContactMessage(Guid chapterId, string fromAddress, string message)
+        {
+            if (string.IsNullOrWhiteSpace(fromAddress) || string.IsNullOrWhiteSpace(message))
+            {
+                throw new OdkServiceException("Email address and message must be provided");
+            }
+
+            Chapter chapter = await GetChapter(chapterId);
+
+            ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Id,DateTime.UtcNow, fromAddress, message);
+            await _chapterRepository.AddContactRequest(contactRequest);
+
+            await _mailService.SendChapterContactMail(chapter, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "from", fromAddress },
+                { "message", message }
+            });
         }
     }
 }

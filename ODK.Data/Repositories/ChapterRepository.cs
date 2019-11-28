@@ -13,6 +13,13 @@ namespace ODK.Data.Repositories
         {
         }
 
+        public async Task AddContactRequest(ContactRequest contactRequest)
+        {
+            await Context
+                .Insert(contactRequest)
+                .ExecuteAsync();
+        }
+
         public async Task<IReadOnlyCollection<Chapter>> GetAdminChapters(Guid memberId)
         {
             return await Context

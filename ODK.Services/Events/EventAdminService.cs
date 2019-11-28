@@ -234,7 +234,7 @@ namespace ODK.Services.Events
             MemberEventEmail memberEventEmail = new MemberEventEmail(@event.Id, member.Id, memberEmail.Id, token, memberEmail.Sent);
             await _memberEmailRepository.AddMemberEventEmail(memberEventEmail);
 
-            await _mailService.SendMail(memberEmail, member, email);
+            await _mailService.SendMemberMail(memberEmail, member, email);
         }
     }
 }

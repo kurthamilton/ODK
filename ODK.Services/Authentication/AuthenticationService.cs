@@ -126,7 +126,7 @@ namespace ODK.Services.Authentication
 
             string url = _settings.PasswordResetUrl.Interpolate(new Dictionary<string, string> { { "token", token } });
 
-            await _mailService.SendMail(member, EmailType.PasswordReset, new Dictionary<string, string>
+            await _mailService.SendMemberMail(member, EmailType.PasswordReset, new Dictionary<string, string>
             {
                 { "url", url }
             });

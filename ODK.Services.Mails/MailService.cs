@@ -33,9 +33,22 @@ namespace ODK.Services.Mails
             return new MemberEmail(memberEmailId, memberEmail.ChapterId, memberEmail.ToAddress, memberEmail.Subject, memberEmail.CreatedDate, memberEmail.Sent);
         }
 
-        public async Task<MemberEmail> SendMail(MemberEmail memberEmail, Member member, Email email)
+        public async Task SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters)
         {
-            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(member.ChapterId);
+            Email email = await _memberEmailRepository.GetEmail(EmailType.ContactRequest);
+
+            email = email.Interpolate(parameters);
+
+            ChapterEmailSettings emailSettings = await GetChapterEmailSettings(chapter.Id);
+
+            MimeMessage message = CreateMessage(emailSettings.FromEmailAddress, emailSettings.ContactEmailAddress, email);
+
+            await Send(message);
+        }
+
+        public async Task<MemberEmail> SendMemberMail(MemberEmail memberEmail, Member member, Email email)
+        {
+            ChapterEmailSettings emailSettings = await GetChapterEmailSettings(member.ChapterId);
 
             if (await Send(emailSettings.FromEmailAddress, member, email))
             {
@@ -45,21 +58,26 @@ namespace ODK.Services.Mails
             return memberEmail;
         }
 
-        public async Task<MemberEmail> SendMail(Member member, Email email, IDictionary<string, string> parameters)
+        public async Task<MemberEmail> SendMemberMail(Member member, Email email, IDictionary<string, string> parameters)
         {
             MemberEmail memberEmail = await CreateMemberEmail(member, email, parameters);
 
-            return await SendMail(memberEmail, member, email);
+            return await SendMemberMail(memberEmail, member, email);
         }
 
-        public async Task<MemberEmail> SendMail(Member member, EmailType type, IDictionary<string, string> parameters)
+        public async Task<MemberEmail> SendMemberMail(Member member, EmailType type, IDictionary<string, string> parameters)
         {
             Email email = await _memberEmailRepository.GetEmail(type);
 
-            return await SendMail(member, email, parameters);
+            return await SendMemberMail(member, email, parameters);
         }
 
         private static MimeMessage CreateMessage(string from, Member member, Email email)
+        {
+            return CreateMessage(from, member.EmailAddress, email);
+        }
+
+        private static MimeMessage CreateMessage(string from, string to, Email email)
         {
             MimeMessage message = new MimeMessage
             {
@@ -71,15 +89,24 @@ namespace ODK.Services.Mails
             };
 
             message.From.Add(new MailboxAddress(from));
-            message.To.Add(new MailboxAddress(member.EmailAddress));
+            message.To.Add(new MailboxAddress(to));
 
             return message;
+        }
+
+        private async Task<ChapterEmailSettings> GetChapterEmailSettings(Guid chapterId)
+        {
+            return await _chapterRepository.GetChapterEmailSettings(chapterId);
         }
 
         private async Task<bool> Send(string from, Member member, Email email)
         {
             MimeMessage message = CreateMessage(from, member, email);
+            return await Send(message);
+        }
 
+        private async Task<bool> Send(MimeMessage message)
+        {
             try
             {
                 using SmtpClient client = new SmtpClient();

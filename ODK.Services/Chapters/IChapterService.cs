@@ -16,5 +16,7 @@ namespace ODK.Services.Chapters
         Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId);
 
         Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(long? currentVersion);
+
+        Task SendContactMessage(Guid chapterId, string emailAddress, string message);
     }
 }

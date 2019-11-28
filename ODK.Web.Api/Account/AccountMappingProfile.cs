@@ -11,11 +11,11 @@ namespace ODK.Web.Api.Account
     {
         public AccountMappingProfile()
         {
-            MapRequests();
-            MapResponses();
+            CreateRequestMaps();
+            CreateResponseMaps();
         }
 
-        private void MapRequests()
+        private void CreateRequestMaps()
         {
             CreateMap<UpdateMemberImageApiRequest, UpdateMemberImage>()
                 .ForMember(x => x.MimeType, opt => opt.MapFrom(x => x.ContentType));
@@ -28,7 +28,7 @@ namespace ODK.Web.Api.Account
                 .IncludeBase<UpdateMemberProfileApiRequest, UpdateMemberProfile>();
         }
 
-        private void MapResponses()
+        private void CreateResponseMaps()
         {
             CreateMap<MemberProfile, AccountProfileApiResponse>()
                 .ForMember(x => x.Properties, opt => opt.MapFrom(x => x.MemberProperties));

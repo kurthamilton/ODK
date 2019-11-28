@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
 using ODK.Services.Chapters;
+using ODK.Web.Api.Chapters.Requests;
 using ODK.Web.Api.Chapters.Responses;
 
 namespace ODK.Web.Api.Chapters
@@ -40,6 +41,14 @@ namespace ODK.Web.Api.Chapters
         {
             Chapter chapter = await _chapterService.GetChapter(id);
             return _mapper.Map<ChapterDetailsApiResponse>(chapter);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("{id}/Contact")]
+        public async Task<IActionResult> Contact(Guid id, [FromForm] ContactApiRequest request)
+        {
+            await _chapterService.SendContactMessage(id, request.EmailAddress, request.Message);
+            return Created();
         }
 
         [AllowAnonymous]

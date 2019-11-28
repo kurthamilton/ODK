@@ -1,6 +1,7 @@
 ﻿using System;
 using AutoMapper;
 using ODK.Core.Chapters;
+using ODK.Web.Api.Chapters.Requests;
 using ODK.Web.Api.Chapters.Responses;
 
 namespace ODK.Web.Api.Chapters
@@ -8,6 +9,11 @@ namespace ODK.Web.Api.Chapters
     public class ChaptersMappingProfile : Profile
     {
         public ChaptersMappingProfile()
+        {
+            CreateResponseMaps();
+        }
+
+        private void CreateResponseMaps()
         {
             CreateMap<Chapter, ChapterApiResponse>();
 

@@ -63,7 +63,7 @@ namespace ODK.Services.Members
 
             string url = _settings.ActivateAccountUrl.Replace("{token}", activationToken);
 
-            await _mailService.SendMail(create, EmailType.ActivateAccount, new Dictionary<string, string>
+            await _mailService.SendMemberMail(create, EmailType.ActivateAccount, new Dictionary<string, string>
             {
                 { "url", url }
             });
