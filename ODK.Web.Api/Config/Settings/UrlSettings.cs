@@ -1,4 +1,4 @@
-﻿namespace ODK.Web.Api.Config
+﻿namespace ODK.Web.Api.Config.Settings
 {
     public class UrlSettings
     {

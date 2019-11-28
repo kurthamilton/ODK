@@ -5,9 +5,9 @@ using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Services.Authentication;
 using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
+using ODK.Services.Imaging;
 using ODK.Services.Mails;
 using ODK.Services.Members;
 
@@ -72,7 +72,8 @@ namespace ODK.Services.Tests.Members
                 chapterRepository ?? CreateMockChapterRepository(),
                 CreateMockAuthorizationService(),
                 CreateMockMailService(),
-                new AuthenticationSettings());
+                new MemberServiceSettings(),
+                CreateMockImageService());
         }
 
         private static IAuthorizationService CreateMockAuthorizationService()
@@ -101,6 +102,11 @@ namespace ODK.Services.Tests.Members
                 .ReturnsAsync(chapterProperties?.ToArray() ?? new ChapterProperty[0]);
 
             return mock.Object;
+        }
+
+        private static IImageService CreateMockImageService()
+        {
+            return Mock.Of<IImageService>();
         }
 
         private static IMailService CreateMockMailService()

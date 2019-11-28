@@ -20,9 +20,9 @@ namespace ODK.Services.Authentication
         private readonly IAuthorizationService _authorizationService;
         private readonly IMailService _mailService;
         private readonly IMemberRepository _memberRepository;
-        private readonly AuthenticationSettings _settings;
+        private readonly AuthenticationServiceSettings _settings;
 
-        public AuthenticationService(IMemberRepository memberRepository, IMailService mailService, AuthenticationSettings settings,
+        public AuthenticationService(IMemberRepository memberRepository, IMailService mailService, AuthenticationServiceSettings settings,
             IAuthorizationService authorizationService)
         {
             _authorizationService = authorizationService;

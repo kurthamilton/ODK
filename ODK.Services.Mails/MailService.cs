@@ -14,13 +14,13 @@ namespace ODK.Services.Mails
     {
         private readonly IChapterRepository _chapterRepository;
         private readonly IMemberEmailRepository _memberEmailRepository;
-        private readonly SmtpSettings _smtpSettings;
+        private readonly MailServiceSettings _settings;
 
-        public MailService(SmtpSettings smtpSettings, IChapterRepository chapterRepository, IMemberEmailRepository memberEmailRepository)
+        public MailService(MailServiceSettings settings, IChapterRepository chapterRepository, IMemberEmailRepository memberEmailRepository)
         {
             _chapterRepository = chapterRepository;
             _memberEmailRepository = memberEmailRepository;
-            _smtpSettings = smtpSettings;
+            _settings = settings;
         }
 
         public async Task<MemberEmail> CreateMemberEmail(Member member, Email email, IDictionary<string, string> parameters)
@@ -83,12 +83,12 @@ namespace ODK.Services.Mails
             try
             {
                 using SmtpClient client = new SmtpClient();
-                await client.ConnectAsync(_smtpSettings.Host, 25, false);
+                await client.ConnectAsync(_settings.Host, 25, false);
 
-                if (!string.IsNullOrWhiteSpace(_smtpSettings.Username) &&
-                    !string.IsNullOrWhiteSpace(_smtpSettings.Password))
+                if (!string.IsNullOrWhiteSpace(_settings.Username) &&
+                    !string.IsNullOrWhiteSpace(_settings.Password))
                 {
-                    client.Authenticate(_smtpSettings.Username, _smtpSettings.Password);
+                    client.Authenticate(_settings.Username, _settings.Password);
                 }
 
                 await client.SendAsync(message);

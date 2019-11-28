@@ -1,4 +1,4 @@
-﻿namespace ODK.Services.Mails
+﻿namespace ODK.Web.Api.Config.Settings
 {
     public class SmtpSettings
     {

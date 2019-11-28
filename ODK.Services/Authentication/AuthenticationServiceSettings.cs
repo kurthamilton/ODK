@@ -1,10 +1,8 @@
 ﻿namespace ODK.Services.Authentication
 {
-    public class AuthenticationSettings
+    public class AuthenticationServiceSettings
     {
         public int AccessTokenLifetimeMinutes { get; set; }
-
-        public string ActivateAccountUrl { get; set; }
 
         public string Key { get; set; }
 

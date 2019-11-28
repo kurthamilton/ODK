@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ODK.Web.Api.Config.Settings;
 
 namespace ODK.Web.Api.Config
 {
     public static class CorsConfig
-    {        
+    {
         public static void ConfigureCors(this IServiceCollection services, string policyName, CorsSettings settings)
         {
             services.AddCors(options =>

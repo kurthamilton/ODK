@@ -9,7 +9,7 @@ namespace ODK.Payments.Stripe
 {
     public class StripePaymentProvider
     {
-        public async Task<string> CreatePayment(IMember member, IPayment payment, string successUrl, string cancelUrl)
+        public async Task<string> CreatePayment(Member member, IPayment payment, string successUrl, string cancelUrl)
         {
             StripeConfiguration.ApiKey = payment.ApiSecretKey;
 
@@ -30,7 +30,7 @@ namespace ODK.Payments.Stripe
                         Quantity = 1
                     },
                 },
-                CustomerEmail = member.Email,
+                CustomerEmail = member.EmailAddress,
                 SuccessUrl = successUrl,
                 CancelUrl = cancelUrl
             };
@@ -38,6 +38,6 @@ namespace ODK.Payments.Stripe
             var service = new SessionService();
             Session session = await service.CreateAsync(options);
             return session.Id;
-        }              
+        }
     }
 }

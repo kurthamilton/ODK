@@ -49,16 +49,11 @@ namespace ODK.Web.Api.Account
         [HttpPut("Image")]
         public async Task<IActionResult> UpdateImage([FromForm] IFormFile file)
         {
-            byte[] imageData = await file.ToByteArrayAsync();
+            UpdateMemberImageApiRequest request = await FileToApiRequest(file);
+            UpdateMemberImage image = _mapper.Map<UpdateMemberImage>(request);
 
-            UpdateMemberImage update = new UpdateMemberImage
-            {
-                ImageData = imageData,
-                MimeType = file.ContentType
-            };
-
-            MemberImage image = await _memberService.UpdateMemberImage(GetMemberId(), update);
-            return File(image.ImageData, image.MimeType);
+            MemberImage updated = await _memberService.UpdateMemberImage(GetMemberId(), image);
+            return File(updated.ImageData, updated.MimeType);
         }
 
         [AllowAnonymous]
@@ -118,6 +113,17 @@ namespace ODK.Web.Api.Account
         {
             await _authenticationService.RequestPasswordReset(request.Username);
             return Created();
+        }
+
+        private static async Task<UpdateMemberImageApiRequest> FileToApiRequest(IFormFile file)
+        {
+            byte[] imageData = await file.ToByteArrayAsync();
+
+            return new UpdateMemberImageApiRequest
+            {
+                ContentType = file.ContentType,
+                ImageData = imageData
+            };
         }
     }
 }

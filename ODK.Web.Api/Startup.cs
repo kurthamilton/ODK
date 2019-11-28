@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ODK.Web.Api.Config;
+using ODK.Web.Api.Config.Settings;
 
 namespace ODK.Web.Api
 {
@@ -31,7 +32,7 @@ namespace ODK.Web.Api
             });
 
             AppSettings settings = GetAppSettings();
-            services.ConfigureDependencies(Configuration, settings.Auth, settings.Urls);
+            services.ConfigureDependencies(Configuration, settings);
             services.ConfigureAuthentication(settings.Auth);
             services.ConfigureCors(CorsPolicyName, settings.Cors);
         }

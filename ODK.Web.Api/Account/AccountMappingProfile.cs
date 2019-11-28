@@ -17,6 +17,9 @@ namespace ODK.Web.Api.Account
 
         private void MapRequests()
         {
+            CreateMap<UpdateMemberImageApiRequest, UpdateMemberImage>()
+                .ForMember(x => x.MimeType, opt => opt.MapFrom(x => x.ContentType));
+
             CreateMap<UpdateMemberPropertyApiRequest, UpdateMemberProperty>();
 
             CreateMap<UpdateMemberProfileApiRequest, UpdateMemberProfile>();

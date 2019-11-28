@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Threading.Tasks;
 using ODK.Core.Members;
 using ODK.Data.Sql;
@@ -26,6 +25,13 @@ namespace ODK.Data.Repositories
         {
             await Context
                 .Insert(token)
+                .ExecuteAsync();
+        }
+
+        public async Task AddMemberImage(MemberImage image)
+        {
+            await Context
+                .Insert(image)
                 .ExecuteAsync();
         }
 
@@ -201,7 +207,6 @@ namespace ODK.Data.Repositories
         public async Task UpdateMemberImage(MemberImage image)
         {
             bool memberHasImage = await MemberHasImage(image.MemberId);
-
             if (memberHasImage)
             {
                 await Context
@@ -213,9 +218,7 @@ namespace ODK.Data.Repositories
             }
             else
             {
-                await Context
-                    .Insert(image)
-                    .ExecuteAsync();
+                await AddMemberImage(image);
             }
         }
 

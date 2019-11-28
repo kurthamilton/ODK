@@ -7,7 +7,6 @@ using ODK.Core.Cryptography;
 using ODK.Core.Images;
 using ODK.Core.Mail;
 using ODK.Core.Members;
-using ODK.Services.Authentication;
 using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
@@ -22,10 +21,10 @@ namespace ODK.Services.Members
         private readonly IImageService _imageService;
         private readonly IMailService _mailService;
         private readonly IMemberRepository _memberRepository;
-        private readonly AuthenticationSettings _settings;
+        private readonly MemberServiceSettings _settings;
 
         public MemberService(IMemberRepository memberRepository, IChapterRepository chapterRepository, IAuthorizationService authorizationService,
-            IMailService mailService, AuthenticationSettings settings, IImageService imageService)
+            IMailService mailService, MemberServiceSettings settings, IImageService imageService)
         {
             _authorizationService = authorizationService;
             _chapterRepository = chapterRepository;
@@ -38,6 +37,7 @@ namespace ODK.Services.Members
         public async Task CreateMember(Guid chapterId, CreateMemberProfile profile)
         {
             await ValidateMemberProfile(chapterId, profile);
+            ValidateMemberImage(profile.Image.MimeType, profile.Image.ImageData);
 
             Member existing = await _memberRepository.FindMemberByEmailAddress(profile.EmailAddress);
             if (existing != null)
@@ -46,7 +46,11 @@ namespace ODK.Services.Members
             }
 
             Member create = new Member(Guid.Empty, chapterId, profile.EmailAddress, profile.EmailOptIn, profile.FirstName, profile.LastName, DateTime.UtcNow, false, false);
+
             Guid id = await _memberRepository.CreateMember(create);
+
+            MemberImage image = CreateMemberImage(id, profile.Image.MimeType, profile.Image.ImageData);
+            await _memberRepository.AddMemberImage(image);
 
             IEnumerable<MemberProperty> memberProperties = profile.Properties
                 .Select(x => new MemberProperty(Guid.Empty, id, x.ChapterPropertyId, x.Value));
@@ -105,8 +109,8 @@ namespace ODK.Services.Members
         {
             await _authorizationService.AssertMemberIsCurrent(id);
 
-            MemberImage update = new MemberImage(id, image.ImageData, image.MimeType, 0);
-            AssertFileIsImage(update);
+            MemberImage update = CreateMemberImage(id, image.MimeType, image.ImageData);
+
             await _memberRepository.UpdateMemberImage(update);
             return await _memberRepository.GetMemberImage(id, null);
         }
@@ -123,14 +127,6 @@ namespace ODK.Services.Members
             await _memberRepository.UpdateMemberProperties(id, existing.MemberProperties);
 
             return existing;
-        }
-
-        private static void AssertFileIsImage(MemberImage image)
-        {
-            if (!ImageValidator.IsValidMimeType(image.MimeType) || !ImageValidator.IsValidData(image.ImageData))
-            {
-                throw new OdkServiceException("File is not a valid image");
-            }
         }
 
         private static IEnumerable<string> GetMissingMemberProfileProperties(CreateMemberProfile profile, IEnumerable<ChapterProperty> chapterProperties,
@@ -191,6 +187,19 @@ namespace ODK.Services.Members
             }
         }
 
+        private MemberImage CreateMemberImage(Guid memberId, string mimeType, byte[] imageData)
+        {
+            ValidateMemberImage(mimeType, imageData);
+
+            byte[] data = EnforceMaxImageSize(imageData);
+            return new MemberImage(memberId, data, mimeType, 0);
+        }
+
+        private byte[] EnforceMaxImageSize(byte[] imageData)
+        {
+            return _imageService.Reduce(imageData, _settings.MaxImageSize, _settings.MaxImageSize);
+        }
+
         private async Task<Member> GetMember(Guid currentMemberId, Guid memberId)
         {
             Member member = await _memberRepository.GetMember(memberId);
@@ -218,6 +227,14 @@ namespace ODK.Services.Members
         private async Task<Member> GetMember(Guid memberId)
         {
             return await GetMember(memberId, memberId);
+        }
+
+        private void ValidateMemberImage(string mimeType, byte[] data)
+        {
+            if (!ImageValidator.IsValidMimeType(mimeType) || !ImageValidator.IsValidData(data))
+            {
+                throw new OdkServiceException("File is not a valid image");
+            }
         }
 
         private async Task ValidateMemberProfile(Guid chapterId, UpdateMemberProfile profile)

@@ -8,6 +8,7 @@ namespace ODK.Core.Members
     {
         Task ActivateMember(Guid memberId);
         Task AddActivationToken(MemberActivationToken token);
+        Task AddMemberImage(MemberImage image);
         Task AddPasswordResetRequest(Guid memberId, DateTime created, DateTime expires, string token);
         Task AddRefreshToken(MemberRefreshToken token);
         Task<Guid> CreateMember(Member member);

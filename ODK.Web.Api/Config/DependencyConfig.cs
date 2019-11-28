@@ -18,34 +18,35 @@ using ODK.Services.Events;
 using ODK.Services.Imaging;
 using ODK.Services.Mails;
 using ODK.Services.Members;
+using ODK.Web.Api.Config.Settings;
 
 namespace ODK.Web.Api.Config
 {
     public static class DependencyConfig
     {
         public static void ConfigureDependencies(this IServiceCollection services, IConfiguration configuration,
-            AuthSettings authSettings, UrlSettings urlSettings)
+            AppSettings appSettings)
         {
-            // Services
-            services.AddSingleton(new AuthenticationSettings
-            {
-                AccessTokenLifetimeMinutes = authSettings.AccessTokenLifetimeMinutes,
-                ActivateAccountUrl = $"{urlSettings.Base}{urlSettings.ActivateAccount}",
-                Key = authSettings.Key,
-                PasswordResetTokenLifetimeMinutes = authSettings.PasswordResetTokenLifetimeMinutes,
-                PasswordResetUrl = $"{urlSettings.Base}{urlSettings.PasswordReset}",
-                RefreshTokenLifetimeDays = authSettings.RefreshTokenLifetimeDays
-            });
+            ConfigureServiceSettings(services, appSettings);
+            ConfigureServices(services);
+            ConfigureData(services, configuration);
+        }
 
-            services.AddSingleton(new EventAdminServiceSettings
-            {
-                BaseUrl = urlSettings.Base,
-                EventRsvpUrlFormat = urlSettings.EventRsvp,
-                EventUrlFormat = urlSettings.Event
-            });
+        private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
+        {
+            string connectionString = configuration.GetConnectionString("Default");
+            services.AddSingleton<SqlContext>(new OdkContext(connectionString));
 
-            services.AddSingleton(configuration.Map<SmtpSettings>("Smtp"));
+            services.AddScoped<IChapterRepository, ChapterRepository>();
+            services.AddScoped<IDataTypeRepository, DataTypeRepository>();
+            services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IMemberEmailRepository, MemberEmailRepository>();
+            services.AddScoped<IMemberRepository, MemberRepository>();
+            services.AddScoped<IMemberGroupRepository, MemberGroupRepository>();
+        }
 
+        private static void ConfigureServices(this IServiceCollection services)
+        {
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IAuthorizationService, AuthorizationService>();
             services.AddScoped<ICache, Cache>();
@@ -58,17 +59,43 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IMailService, MailService>();
             services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();
+        }
 
-            // Data
-            string connectionString = configuration.GetConnectionString("Default");
-            services.AddSingleton<SqlContext>(new OdkContext(connectionString));
+        private static void ConfigureServiceSettings(IServiceCollection services, AppSettings appSettings)
+        {
+            AuthSettings auth = appSettings.Auth;
+            MembersSettings members = appSettings.Members;
+            SmtpSettings smtp = appSettings.Smtp;
+            UrlSettings urls = appSettings.Urls;
 
-            services.AddScoped<IChapterRepository, ChapterRepository>();
-            services.AddScoped<IDataTypeRepository, DataTypeRepository>();
-            services.AddScoped<IEventRepository, EventRepository>();
-            services.AddScoped<IMemberEmailRepository, MemberEmailRepository>();
-            services.AddScoped<IMemberRepository, MemberRepository>();
-            services.AddScoped<IMemberGroupRepository, MemberGroupRepository>();
+            services.AddSingleton(new AuthenticationServiceSettings
+            {
+                AccessTokenLifetimeMinutes = auth.AccessTokenLifetimeMinutes,
+                Key = auth.Key,
+                PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
+                PasswordResetUrl = $"{urls.Base}{urls.PasswordReset}",
+                RefreshTokenLifetimeDays = auth.RefreshTokenLifetimeDays
+            });
+
+            services.AddSingleton(new EventAdminServiceSettings
+            {
+                BaseUrl = urls.Base,
+                EventRsvpUrlFormat = urls.EventRsvp,
+                EventUrlFormat = urls.Event
+            });
+
+            services.AddSingleton(new MailServiceSettings
+            {
+                Host = smtp.Host,
+                Password = smtp.Password,
+                Username = smtp.Username
+            });
+
+            services.AddSingleton(new MemberServiceSettings
+            {
+                ActivateAccountUrl = $"{urls.Base}{urls.ActivateAccount}",
+                MaxImageSize = members.MaxImageSize
+            });
         }
     }
 }

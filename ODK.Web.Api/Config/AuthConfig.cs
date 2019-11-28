@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using ODK.Web.Api.Config.Settings;
 
 namespace ODK.Web.Api.Config
 {
