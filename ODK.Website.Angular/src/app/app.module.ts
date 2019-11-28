@@ -49,12 +49,11 @@ import { NotificationsComponent } from './components/notifications/notifications
 import { NotificationComponent } from './components/notifications/notification/notification.component';
 import { ProfilePictureComponent } from './components/account/profile-picture/profile-picture.component';
 import { ProfileFormComponent } from './components/account/profile-form/profile-form.component';
-import { FormControlComponent } from './components/forms/form-control/form-control.component';
 import { AppStyleModule } from './modules/app-style.module';
-import { ErrorMessagesComponent } from './components/elements/error-messages/error-messages.component';
 import { EventResponseIconComponent } from './components/events/event-response-icon/event-response-icon.component';
 import { EventSidebarComponent } from './components/events/event-sidebar/event-sidebar.component';
 import { EventSidebarAttendeesComponent } from './components/events/event-sidebar-attendees/event-sidebar-attendees.component';
+import { SharedModule } from './shared.module';
 
 @NgModule({
   declarations: [
@@ -74,9 +73,6 @@ import { EventSidebarAttendeesComponent } from './components/events/event-sideba
     EventListComponent,
     FaqComponent,
     FooterComponent,
-    FormComponent,
-    FormControlsComponent,
-    FormControlValidationComponent,
     HeaderComponent,
     HomeComponent,
     HomeFooterComponent,
@@ -101,8 +97,6 @@ import { EventSidebarAttendeesComponent } from './components/events/event-sideba
     NotificationComponent,
     ProfilePictureComponent,
     ProfileFormComponent,
-    FormControlComponent,
-    ErrorMessagesComponent,
     EventResponseIconComponent,
     EventSidebarComponent,
     EventSidebarAttendeesComponent,
@@ -110,18 +104,16 @@ import { EventSidebarAttendeesComponent } from './components/events/event-sideba
   ],
   imports: [
     AppRoutingModule,
-    AppStyleModule,
     BrowserModule,
-    FormsModule,
-    HttpClientModule,    
-    ReactiveFormsModule
+    HttpClientModule,
+    SharedModule
   ],
-  providers: [    
+  providers: [
     { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptorService, multi: true },
     { provide: DatePipe, useClass: DatePipe }
   ],
   bootstrap: [
-    AppComponent    
+    AppComponent
   ]
 })
 export class AppModule { }

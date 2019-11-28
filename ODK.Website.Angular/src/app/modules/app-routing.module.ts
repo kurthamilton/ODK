@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes, UrlTree, DefaultUrlSerializer, UrlSerializer } from '@angular/router';
+import { RouterModule, Routes, UrlTree, DefaultUrlSerializer, UrlSerializer, PreloadAllModules } from '@angular/router';
 
 import { appPaths } from '../routing/app-paths' ;
 import { AuthenticatedGuardService } from '../routing/authenticated-guard.service';
@@ -20,9 +20,10 @@ import { MembersComponent } from '../components/members/members/members.componen
 import { PrivacyComponent } from '../components/privacy/privacy.component';
 import { ProfileComponent } from '../components/account/profile/profile.component';
 import { SubscriptionComponent } from '../components/account/subscription/subscription.component';
+import { ChapterAdminGuardService } from '../routing/chapter-admin-guard.service';
 
 const appRoutes: Routes = [
-  { 
+  {
     path: appPaths.home.path, component: HomeLayoutComponent, children: [
     { path: '', component: HomeComponent },
     { path: appPaths.login.path, component: LoginComponent },
@@ -30,7 +31,7 @@ const appRoutes: Routes = [
   ] },
   {
     path: appPaths.chapter.path, component: ChapterLayoutComponent, canActivate: [ChapterGuardService], children: [
-      { path: '', component: ChapterComponent },  
+      { path: '', component: ChapterComponent },
       { path: appPaths.chapter.childPaths.blog.path, component: BlogComponent },
       { path: appPaths.chapter.childPaths.contact.path, component: ContactComponent },
       { path: appPaths.chapter.childPaths.events.path, component: EventsComponent },
@@ -40,18 +41,21 @@ const appRoutes: Routes = [
       { path: appPaths.chapter.childPaths.member.path, component: MemberComponent, canActivate: [ChapterMemberGuardService] },
       { path: appPaths.chapter.childPaths.profile.path, component: ProfileComponent, canActivate: [AuthenticatedGuardService] },
       { path: appPaths.chapter.childPaths.subscription.path, component: SubscriptionComponent, canActivate: [AuthenticatedGuardService] },
+      { path: 'admin', canLoad: [ChapterAdminGuardService], loadChildren: () => import('../admin/admin.module').then(m => m.AdminModule) }
     ]
   }
 ];
 
 export class LowerCaseUrlSerializer extends DefaultUrlSerializer {
-  parse(url: string): UrlTree { 
+  parse(url: string): UrlTree {
     return super.parse(url.toLowerCase());
   }
 }
 
 @NgModule({
-  imports: [RouterModule.forRoot(appRoutes)],
+  imports: [RouterModule.forRoot(appRoutes, {
+    preloadingStrategy: PreloadAllModules
+  })],
   exports: [RouterModule],
   providers: [
     { provide: UrlSerializer, useClass: LowerCaseUrlSerializer },

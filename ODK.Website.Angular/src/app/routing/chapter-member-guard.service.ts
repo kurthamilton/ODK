@@ -17,7 +17,7 @@ export class ChapterMemberGuardService extends RouteGuardService {
   constructor(router: Router,
     private chapterService: ChapterService,
     private authenticationService: AuthenticationService
-  ) { 
+  ) {
     super(router);
   }
 
