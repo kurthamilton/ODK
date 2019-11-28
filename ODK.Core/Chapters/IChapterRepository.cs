@@ -22,10 +22,16 @@ namespace ODK.Core.Chapters
 
         Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId);
 
+        Task<long> GetChapterPropertiesVersion(Guid chapterId);
+
         Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId);
+
+        Task<long> GetChapterPropertyOptionsVersion(Guid chapterId);
 
         Task<IReadOnlyCollection<Chapter>> GetChapters();
 
-        Task<int> GetChaptersVersion();
+        Task<long> GetChaptersVersion();
+
+        Task UpdateChapterLinks(ChapterLinks links);
     }
 }

@@ -7,13 +7,13 @@ namespace ODK.Services.Chapters
 {
     public interface IChapterService
     {
-        Task<Chapter> GetChapter(Guid id);
+        Task<VersionedServiceResult<Chapter>> GetChapter(long? currentVersion, Guid id);
 
-        Task<ChapterLinks> GetChapterLinks(Guid chapterId);
+        Task<VersionedServiceResult<ChapterLinks>> GetChapterLinks(long? currentVersion, Guid chapterId);
 
-        Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId);
+        Task<VersionedServiceResult<IReadOnlyCollection<ChapterProperty>>> GetChapterProperties(long? currentVersion, Guid chapterId);
 
-        Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId);
+        Task<VersionedServiceResult<IReadOnlyCollection<ChapterPropertyOption>>> GetChapterPropertyOptions(long? currentVersion, Guid chapterId);
 
         Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(long? currentVersion);
 

@@ -14,6 +14,7 @@ namespace ODK.Data.Mapping
             Property(x => x.FacebookName);
             Property(x => x.InstagramName);
             Property(x => x.TwitterName);
+            Property(x => x.Version).IsRowVersion();
         }
 
         public override ChapterLinks Read(IDataReader reader)
@@ -23,7 +24,8 @@ namespace ODK.Data.Mapping
                 chapterId: reader.GetGuid(0),
                 facebookName: reader.GetStringOrDefault(1),
                 instagramName: reader.GetStringOrDefault(2),
-                twitterName: reader.GetStringOrDefault(3)
+                twitterName: reader.GetStringOrDefault(3),
+                version: reader.GetInt64(4)
             );
         }
     }

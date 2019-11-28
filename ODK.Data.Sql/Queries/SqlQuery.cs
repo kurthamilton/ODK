@@ -91,7 +91,7 @@ namespace ODK.Data.Sql.Queries
         public async Task<int> VersionAsync()
         {
             _selectColumns.Clear();
-            AddSelectColumn("CHECKSUM_AGG(CHECKSUM(*))");
+            AddSelectColumn("ISNULL(CHECKSUM_AGG(CHECKSUM(*)),0)");
             return await Context.ReadRecordAsync(this, reader => reader.GetInt32(0));
         }
 
@@ -115,9 +115,9 @@ namespace ODK.Data.Sql.Queries
             _insertOutputColumn = column;
         }
 
-        protected void AddJoin<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField)
+        protected void AddJoin<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField, SqlJoinType type = SqlJoinType.Inner)
         {
-            SqlJoin<TFrom, TTo, TValue> join = new SqlJoin<TFrom, TTo, TValue>(fromField, toField);
+            SqlJoin<TFrom, TTo, TValue> join = new SqlJoin<TFrom, TTo, TValue>(fromField, toField, type);
             _joins.Add(join);
         }
 

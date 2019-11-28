@@ -80,6 +80,14 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
+        public async Task<long> GetChapterPropertiesVersion(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterProperty>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .VersionAsync();
+        }
+
         public async Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId)
         {
             return await Context
@@ -90,6 +98,14 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
+        public async Task<long> GetChapterPropertyOptionsVersion(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterPropertyOption>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .VersionAsync();
+        }
+
         public async Task<IReadOnlyCollection<Chapter>> GetChapters()
         {
             return await Context
@@ -98,11 +114,34 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<int> GetChaptersVersion()
+        public async Task<long> GetChaptersVersion()
         {
             return await Context
                 .Select<Chapter>()
                 .VersionAsync();
+        }
+
+        public async Task UpdateChapterLinks(ChapterLinks links)
+        {
+            int count = await Context
+                .Select<ChapterLinks>()
+                .Where(x => x.ChapterId).EqualTo(links.ChapterId)
+                .CountAsync();
+            if (count > 0)
+            {
+                await Context
+                    .Update<ChapterLinks>()
+                    .Set(x => x.FacebookName, links.FacebookName)
+                    .Set(x => x.InstagramName, links.InstagramName)
+                    .Set(x => x.TwitterName, links.TwitterName)
+                    .ExecuteAsync();
+            }
+            else
+            {
+                await Context
+                    .Insert(links)
+                    .ExecuteAsync();
+            }
         }
     }
 }

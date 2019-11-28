@@ -2,7 +2,7 @@
 
 namespace ODK.Core.Members
 {
-    public class MemberImage
+    public class MemberImage : IVersioned
     {
         public MemberImage(Guid memberId, byte[] imageData, string mimeType, long version)
         {

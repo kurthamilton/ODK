@@ -4,6 +4,6 @@
     {
         public T Value { get; set; }
 
-        public int? Version { get; set; }
+        public long? Version { get; set; }
     }
 }

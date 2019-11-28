@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using ODK.Core.Caching;
 using ODK.Core.Chapters;
+using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Mails;
 
@@ -10,57 +11,60 @@ namespace ODK.Services.Chapters
 {
     public class ChapterService : IChapterService
     {
-        private readonly ICache _cache;
+        private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IMailService _mailService;
 
-        public ChapterService(IChapterRepository chapterRepository, ICache cache, IMailService mailService)
+        public ChapterService(IChapterRepository chapterRepository, ICacheService cacheService, IMailService mailService)
         {
-            _cache = cache;
+            _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _mailService = mailService;
         }
 
-        public async Task<Chapter> GetChapter(Guid id)
+        public async Task<VersionedServiceResult<Chapter>> GetChapter(long? currentVersion, Guid id)
         {
-            Chapter chapter = await _chapterRepository.GetChapter(id);
+            VersionedServiceResult<IReadOnlyCollection<Chapter>> chapters = await GetChapters(currentVersion);
+            if (chapters.Version == currentVersion)
+            {
+                return new VersionedServiceResult<Chapter>(chapters.Version);
+            }
+
+            Chapter chapter = chapters.Value.SingleOrDefault(x => x.Id == id);
             if (chapter == null)
             {
                 throw new OdkNotFoundException();
             }
-            return chapter;
+            return new VersionedServiceResult<Chapter>(chapters.Version, chapter);
         }
 
-        public async Task<ChapterLinks> GetChapterLinks(Guid chapterId)
+        public async Task<VersionedServiceResult<ChapterLinks>> GetChapterLinks(long? currentVersion, Guid chapterId)
         {
-            ChapterLinks links = await _chapterRepository.GetChapterLinks(chapterId);
-            if (links == null)
-            {
-                throw new OdkNotFoundException();
-            }
-            return links;
+            return await _cacheService.GetOrSetVersionedItem(() => GetChapterLinks(chapterId), chapterId, currentVersion);
         }
 
-        public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId)
+        public async Task<VersionedServiceResult<IReadOnlyCollection<ChapterProperty>>> GetChapterProperties(long? currentVersion, Guid chapterId)
         {
-            return await _chapterRepository.GetChapterProperties(chapterId);
+            return await _cacheService.GetOrSetVersionedCollection(
+                () => _chapterRepository.GetChapterProperties(chapterId),
+                () => _chapterRepository.GetChapterPropertiesVersion(chapterId),
+                currentVersion);
         }
 
-        public async Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId)
+        public async Task<VersionedServiceResult<IReadOnlyCollection<ChapterPropertyOption>>> GetChapterPropertyOptions(long? currentVersion, Guid chapterId)
         {
-            return await _chapterRepository.GetChapterPropertyOptions(chapterId);
+            return await _cacheService.GetOrSetVersionedCollection(
+                () => _chapterRepository.GetChapterPropertyOptions(chapterId),
+                () => _chapterRepository.GetChapterPropertyOptionsVersion(chapterId),
+                currentVersion);
         }
 
         public async Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(long? currentVersion)
         {
-            int version = await _cache.GetOrSetVersion<Chapter>(_chapterRepository.GetChaptersVersion);
-            if (version == currentVersion)
-            {
-                return new VersionedServiceResult<IReadOnlyCollection<Chapter>>(version);
-            }
-
-            IReadOnlyCollection<Chapter> chapters = await _cache.GetOrSetCollection(_chapterRepository.GetChapters, version);
-            return new VersionedServiceResult<IReadOnlyCollection<Chapter>>(version, chapters);
+            return await _cacheService.GetOrSetVersionedCollection(
+                _chapterRepository.GetChapters,
+                _chapterRepository.GetChaptersVersion,
+                currentVersion);
         }
 
         public async Task SendContactMessage(Guid chapterId, string fromAddress, string message)
@@ -70,9 +74,9 @@ namespace ODK.Services.Chapters
                 throw new OdkServiceException("Email address and message must be provided");
             }
 
-            Chapter chapter = await GetChapter(chapterId);
+            VersionedServiceResult<Chapter> chapter = await GetChapter(null, chapterId);
 
-            ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Id,DateTime.UtcNow, fromAddress, message, false);
+            ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Value.Id,DateTime.UtcNow, fromAddress, message, false);
             Guid contactRequestId = await _chapterRepository.AddContactRequest(contactRequest);
 
             IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -81,10 +85,21 @@ namespace ODK.Services.Chapters
                 {"message", message}
             };
 
-            if (await _mailService.SendChapterContactMail(chapter, parameters))
+            if (await _mailService.SendChapterContactMail(chapter.Value, parameters))
             {
                 await _chapterRepository.ConfirmContactRequestSent(contactRequestId);
             }
+        }
+
+        private async Task<ChapterLinks> GetChapterLinks(Guid chapterId)
+        {
+            ChapterLinks links = await _chapterRepository.GetChapterLinks(chapterId);
+            if (links == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            return links;
         }
     }
 }

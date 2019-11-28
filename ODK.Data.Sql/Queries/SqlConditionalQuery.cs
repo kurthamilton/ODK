@@ -22,7 +22,17 @@ namespace ODK.Data.Sql.Queries
 
         public SqlConditionalQuery<T> Join<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField)
         {
-            AddJoin(fromField, toField);
+            return Join(fromField, toField, SqlJoinType.Inner);
+        }
+
+        public SqlConditionalQuery<T> RightJoin<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField)
+        {
+            return RightJoin<T, TTo, TValue>(thisField, toField);
+        }
+
+        public SqlConditionalQuery<T> RightJoin<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField)
+        {
+            AddJoin(fromField, toField, SqlJoinType.Right);
             return this;
         }
 
@@ -34,6 +44,17 @@ namespace ODK.Data.Sql.Queries
         public SqlQueryCondition<T, TEntity, TValue> Where<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression)
         {
             return Where(expression, true);
+        }
+
+        private SqlConditionalQuery<T> Join<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField, SqlJoinType type)
+        {
+            return Join<T, TTo, TValue>(thisField, toField, type);
+        }
+
+        private SqlConditionalQuery<T> Join<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField, SqlJoinType type)
+        {
+            AddJoin(fromField, toField, type);
+            return this;
         }
 
         private SqlQueryCondition<T, TEntity, TValue> Where<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression, bool add)
