@@ -10,7 +10,7 @@ import { ArrayUtils } from 'src/app/utils/array-utils';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { DataType } from 'src/app/core/data-types/data-type';
 import { DataTypeService } from 'src/app/services/data-types/data-type.service';
 import { FormControlViewModel } from '../../forms/form-control.view-model';

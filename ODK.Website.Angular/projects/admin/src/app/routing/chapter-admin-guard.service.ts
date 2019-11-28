@@ -6,7 +6,7 @@ import { map, tap } from 'rxjs/operators';
 
 import { adminPaths } from './admin-paths';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from '../services/chapters/chapter.service';
+import { ChapterAdminService } from '../../../../../src/app/services/chapters/chapter-admin.service';
 import { RouteGuardService } from 'src/app/routing/route-guard.service';
 
 @Injectable({
@@ -15,7 +15,7 @@ import { RouteGuardService } from 'src/app/routing/route-guard.service';
 export class ChapterAdminGuardService extends RouteGuardService {
 
   constructor(router: Router, 
-    private chapterService: ChapterService
+    private chapterService: ChapterAdminService
   ) { 
     super(router);
   }

@@ -1,8 +1,8 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from '../../../services/chapters/chapter.service';
+import { ChapterAdminService } from '../../../../../../../src/app/services/chapters/chapter-admin.service';
 import { MenuItem } from 'src/app/components/structure/navbar/menu-item';
 
 @Component({
@@ -12,22 +12,17 @@ import { MenuItem } from 'src/app/components/structure/navbar/menu-item';
 })
 export class ChapterMenuComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
-    private chapterService: ChapterService
-  ) { 
-  }
+  constructor(private chapterService: ChapterAdminService) { }
 
   chapterMenuItem: MenuItem;
   menuItems: MenuItem[];
 
   ngOnInit(): void {
-    this.chapterService.getActiveChapter().subscribe((chapter: Chapter) => {
-      this.chapterMenuItem = { link: adminUrls.chapter(chapter), text: chapter.name };
-      this.menuItems = [        
-        { link: adminUrls.events(chapter), text: 'Events' }
-      ];
-      this.changeDetector.detectChanges();
-    });
+    const chapter: Chapter = this.chapterService.getActiveChapter();
+    this.chapterMenuItem = { link: adminUrls.chapter(chapter), text: chapter.name };
+    this.menuItems = [        
+      { link: adminUrls.events(chapter), text: 'Events' }
+    ];
   }
 
 }

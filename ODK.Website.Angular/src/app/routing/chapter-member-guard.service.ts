@@ -2,12 +2,11 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 import { AccountDetails } from '../core/account/account-details';
 import { AuthenticationService } from '../services/authentication/authentication.service';
 import { Chapter } from '../core/chapters/chapter';
-import { ChapterService } from '../services/chapter/chapter.service';
+import { ChapterService } from '../services/chapters/chapter.service';
 import { RouteGuardService } from './route-guard.service';
 
 @Injectable({
@@ -28,8 +27,7 @@ export class ChapterMemberGuardService extends RouteGuardService {
       return of(false);
     }
 
-    return this.chapterService.getActiveChapter().pipe(
-      map((chapter: Chapter) => chapter && chapter.id === accountDetails.chapterId)
-    );
+    const chapter: Chapter = this.chapterService.getActiveChapter();
+    return of(chapter && chapter.id === accountDetails.chapterId);
   }
 }

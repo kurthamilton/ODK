@@ -2,12 +2,12 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { Observable } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 
 import { appPaths } from 'src/app/routing/app-paths';
 import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { Event } from 'src/app/core/events/event';
 import { EventService } from 'src/app/services/events/event.service';
 
@@ -45,12 +45,9 @@ export class EventComponent implements OnInit {
     this.eventId = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.event.params.id);
     this.changeDetector.detectChanges();
 
-    return this.chapterService.getActiveChapter().pipe(
-      tap((chapter: Chapter) => this.chapter = chapter),
-      switchMap((chapter: Chapter) => this.eventService.getEvent(this.eventId, chapter.id).pipe(
-          tap((event: Event) => this.event = event)
-        )        
-      )
+    this.chapter = this.chapterService.getActiveChapter();
+    return this.eventService.getEvent(this.eventId, this.chapter.id).pipe(
+      tap((event: Event) => this.event = event)
     );
   }  
 }

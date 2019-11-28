@@ -2,13 +2,11 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 
 import { Subject } from 'rxjs';
 
-import { AccountService } from 'src/app/services/account/account.service';
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
-import { DataTypeService } from 'src/app/services/data-types/data-type.service';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 
 @Component({
   selector: 'app-profile',

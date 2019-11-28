@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 
 @Component({
   selector: 'app-chapter-layout',
@@ -17,8 +17,6 @@ export class ChapterLayoutComponent implements OnInit {
   chapter: Chapter;
 
   ngOnInit(): void {
-    this.chapterService.getActiveChapter().subscribe((chapter: Chapter) => {
-      this.chapter = chapter;
-    });
+    this.chapter = this.chapterService.getActiveChapter();
   }
 }

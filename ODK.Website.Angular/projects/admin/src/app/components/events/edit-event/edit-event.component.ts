@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { Event } from 'src/app/core/events/event';
-import { EventService } from '../../../services/events/event.service';
+import { EventAdminService } from '../../../../../../../src/app/services/events/event-admin.service';
 import { ServiceResult } from 'src/app/services/service-result';
 
 @Component({
@@ -17,7 +17,7 @@ import { ServiceResult } from 'src/app/services/service-result';
 export class EditEventComponent {
 
   constructor(private router: Router,
-    private eventService: EventService
+    private eventService: EventAdminService
   ) {     
   }
 

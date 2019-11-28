@@ -1,9 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
-import { tap, switchMap } from 'rxjs/operators';
-
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from 'src/app/services/members/member.service';
 
@@ -24,10 +22,8 @@ export class MembersComponent implements OnInit {
   members: Member[];
 
   ngOnInit(): void {
-    this.chapterService.getActiveChapter().pipe(
-      tap((chapter: Chapter) => this.chapter = chapter),
-      switchMap((chapter: Chapter) => this.memberService.getMembers(chapter.id))
-    ).subscribe((members: Member[]) => {
+    this.chapter = this.chapterService.getActiveChapter();
+    this.memberService.getMembers(this.chapter.id).subscribe((members: Member[]) => {
       this.members = members;
       this.changeDetector.detectChanges();
     });

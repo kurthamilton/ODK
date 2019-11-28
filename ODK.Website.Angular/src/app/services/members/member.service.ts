@@ -14,7 +14,7 @@ const baseUrl = `${environment.baseUrl}/members`;
 
 const endpoints = {
   latestMembers: (chapterId: string) => `${baseUrl}/latest?chapterId=${chapterId}`,
-  memberImage: (memberId: string) => `${baseUrl}/${memberId}/image`,
+  memberImage: (memberId: string, maxWidth: number) => `${baseUrl}/${memberId}/image?maxWidth=${maxWidth}`,
   memberProfile: (memberId: string) => `${baseUrl}/${memberId}/profile`,
   members: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`
 }
@@ -39,12 +39,12 @@ export class MemberService {
     );
   }
 
-  getMemberImage(memberId: string): Observable<string> {
-    return HttpUtils.getBase64(this.http, endpoints.memberImage(memberId));
+  getMemberImage(memberId: string, maxWidth: number): Observable<string> {
+    return HttpUtils.getBase64(this.http, endpoints.memberImage(memberId, maxWidth));
   }
 
-  getMemberImages(memberIds: string[]): Observable<Map<string, string>> {
-    return forkJoin(memberIds.map(x => this.getMemberImage(x))).pipe(
+  getMemberImages(memberIds: string[], maxWidth: number): Observable<Map<string, string>> {
+    return forkJoin(memberIds.map(x => this.getMemberImage(x, maxWidth))).pipe(
       map((values: string[]) => {
         const map: Map<string, string> = new Map<string, string>();
         memberIds.forEach((memberId: string, i: number) => map.set(memberId, values[i]));

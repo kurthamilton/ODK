@@ -5,9 +5,9 @@ import { Subject } from 'rxjs';
 
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from '../../../services/chapters/chapter.service';
+import { ChapterAdminService } from '../../../../../../../src/app/services/chapters/chapter-admin.service';
 import { Event } from 'src/app/core/events/event';
-import { EventService } from '../../../services/events/event.service';
+import { EventAdminService } from '../../../../../../../src/app/services/events/event-admin.service';
 import { NotificationService } from 'src/app/services/notifications/notification.service';
 import { ServiceResult } from 'src/app/services/service-result';
 
@@ -19,18 +19,15 @@ import { ServiceResult } from 'src/app/services/service-result';
 export class CreateEventComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private chapterService: ChapterService,
-    private eventService: EventService,    
+    private chapterService: ChapterAdminService,
+    private eventService: EventAdminService,    
     private router: Router,
     private notificationService: NotificationService
   ) {     
   }  
   
   ngOnInit(): void {
-    this.chapterService.getActiveChapter().subscribe((chapter: Chapter) => {
-      this.chapter = chapter;
-      this.changeDetector.detectChanges();
-    });
+    this.chapter = this.chapterService.getActiveChapter();
   }  
 
   chapter: Chapter;

@@ -10,7 +10,7 @@ export abstract class RouteGuardService implements CanActivate {
 
   abstract hasAccess(route?: ActivatedRouteSnapshot): Observable<boolean>;
 
-  canActivate(route: ActivatedRouteSnapshot): Observable<boolean | UrlTree> {
+  canActivate(route: ActivatedRouteSnapshot): Observable<boolean | UrlTree> {    
     return this.hasAccess(route).pipe(
       map((permitted: boolean): boolean | UrlTree => 
         permitted === true ? permitted : this.router.parseUrl(this.redirectUrl || '/'))

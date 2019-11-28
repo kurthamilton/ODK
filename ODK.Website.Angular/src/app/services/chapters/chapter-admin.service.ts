@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable, Subject, ReplaySubject } from 'rxjs';
-import { map, take } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
-import { Chapter } from 'src/app/core/chapters/chapter';
 import { environment } from 'src/environments/environment';
+import { Chapter } from 'src/app/core/chapters/chapter';
 
 const baseUrl = `${environment.baseUrl}/admin/chapters`;
 
@@ -16,19 +16,16 @@ const endpoints = {
 @Injectable({
   providedIn: 'root'
 })
-export class ChapterService {
+export class ChapterAdminService {
 
   constructor(private http: HttpClient) { }
 
-  private activeChapterSubject: Subject<Chapter> = new ReplaySubject<Chapter>(1);
+  private activeChapter: Chapter;
 
-  getActiveChapter(): Observable<Chapter> {
-    return this.activeChapterSubject.asObservable()
-      .pipe(
-        take(1)
-      );
+  getActiveChapter(): Chapter {
+    return this.activeChapter;
   }
-  
+
   getChapter(name: string): Observable<Chapter> {
     return this.getChapters().pipe(
       map((chapters: Chapter[]) => chapters.find(x => x.name.toLocaleLowerCase() === name.toLocaleLowerCase()))
@@ -42,7 +39,7 @@ export class ChapterService {
   }
 
   setActiveChapter(chapter: Chapter): void {
-    this.activeChapterSubject.next(chapter);
+    this.activeChapter = chapter;
   }
 
   private mapChapter(response: any): Chapter {

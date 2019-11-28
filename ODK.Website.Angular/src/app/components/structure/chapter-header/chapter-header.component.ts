@@ -3,8 +3,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
-import { tap, switchMap } from 'rxjs/operators';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 
 @Component({
   selector: 'app-chapter-header',
@@ -25,10 +24,8 @@ export class ChapterHeaderComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.chapterService.getActiveChapter().pipe(
-      tap((chapter: Chapter) => this.chapter = chapter),
-      switchMap((chapter: Chapter) => this.chapterService.getChapterDetails(chapter.id))
-    ).subscribe((chapterDetails: ChapterDetails) => {
+    this.chapter = this.chapterService.getActiveChapter();
+    this.chapterService.getChapterDetails(this.chapter.id).subscribe((chapterDetails: ChapterDetails) => {
       
       this.chapterDetails = chapterDetails;
       this.links = {

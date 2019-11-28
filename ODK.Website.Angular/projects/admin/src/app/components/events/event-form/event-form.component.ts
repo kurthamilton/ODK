@@ -4,7 +4,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, E
 import { Observable } from 'rxjs';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from '../../../services/chapters/chapter.service';
+import { ChapterAdminService } from '../../../../../../../src/app/services/chapters/chapter-admin.service';
 import { Event } from 'src/app/core/events/event';
 import { FormControlViewModel } from 'src/app/components/forms/form-control.view-model';
 import { FormViewModel } from 'src/app/components/forms/form.view-model';
@@ -18,7 +18,7 @@ export class EventFormComponent implements OnChanges {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private datePipe: DatePipe,
-    private chapterService: ChapterService
+    private chapterService: ChapterAdminService
   ) {     
   }
 

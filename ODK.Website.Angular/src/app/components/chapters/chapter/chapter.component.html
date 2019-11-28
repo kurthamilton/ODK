@@ -1,9 +1,8 @@
 <app-body *ngIf="chapter" [title]="chapter.name">
-    <div *ngIf="latestMembers">
-        <div *ngFor="let member of latestMembers">
-            {{member.fullName}}
-
-            <img *ngIf="latestMemberImages.has(member.id)" [attr.src]="latestMemberImages.get(member.id)" />
+    <h3>Latest members</h3>
+    <div *ngIf="latestMembers" class="row">
+        <div *ngFor="let member of latestMembers" class="col-lg-3 col-6">
+            <app-member-tile [member]="member" [maxWidth]="150"></app-member-tile>
         </div>
     </div>
 

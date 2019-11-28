@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { Router } from '@angular/router';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from '../../../services/chapters/chapter.service';
+import { ChapterAdminService } from '../../../../../../../src/app/services/chapters/chapter-admin.service';
 import { adminUrls } from '../../../routing/admin-urls';
 import { MenuItem } from 'src/app/components/structure/navbar/menu-item';
 
@@ -14,7 +14,7 @@ import { MenuItem } from 'src/app/components/structure/navbar/menu-item';
 export class HomeComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private chapterService: ChapterService,
+    private chapterService: ChapterAdminService,
     private router: Router    
   ) {     
   }

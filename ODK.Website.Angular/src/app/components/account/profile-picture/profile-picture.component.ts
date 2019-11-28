@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Input } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { Observable } from 'rxjs';
 import { concatMap, tap } from 'rxjs/operators';
@@ -44,7 +44,7 @@ export class ProfilePictureComponent implements OnInit {
   }
 
   private loadImage(): Observable<{}> {
-    return this.memberService.getMemberImage(this.memberId).pipe(
+    return this.memberService.getMemberImage(this.memberId, null).pipe(
       tap((imageData: string) => {
         this.imageData = imageData;
         this.changeDetector.detectChanges();

@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 
 import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { MenuItem } from '../navbar/menu-item';
 
 @Component({

@@ -27,7 +27,7 @@ const endpoints = {
 @Injectable({
   providedIn: 'root'
 })
-export class EventService {
+export class EventAdminService {
 
   constructor(private http: HttpClient) { }
 

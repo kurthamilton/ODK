@@ -6,12 +6,12 @@ import { switchMap, tap } from 'rxjs/operators';
 import { adminUrls } from '../../../routing/admin-urls';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from '../../../services/chapters/chapter.service';
+import { ChapterAdminService } from '../../../../../../../src/app/services/chapters/chapter-admin.service';
 import { Event } from 'src/app/core/events/event';
 import { EventInvites } from 'src/app/core/events/event-invites';
 import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 import { EventResponseType } from 'src/app/core/events/event-response-type';
-import { EventService } from '../../../services/events/event.service';
+import { EventAdminService } from '../../../../../../../src/app/services/events/event-admin.service';
 import { ListEventViewModel } from './list-event.view-model';
 
 @Component({
@@ -22,8 +22,8 @@ import { ListEventViewModel } from './list-event.view-model';
 export class EventsComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private chapterService: ChapterService,
-    private eventService: EventService
+    private chapterService: ChapterAdminService,
+    private eventService: EventAdminService
   ) { 
   }
 
@@ -39,10 +39,9 @@ export class EventsComponent implements OnInit {
   private responses: EventMemberResponse[];
 
   ngOnInit(): void {
-    this.chapterService.getActiveChapter().pipe(
-      tap((chapter: Chapter) => this.chapter = chapter),
-      switchMap((chapter: Chapter) => this.loadEvents(chapter))
-    ).subscribe(() => {
+    this.chapter = this.chapterService.getActiveChapter();
+
+    this.loadEvents(this.chapter).subscribe(() => {
       const eventInvitesMap: Map<string, EventInvites> = ArrayUtils.toMap(this.invites, x => x.eventId);
       const eventResponseMap: Map<string, EventMemberResponse[]> = ArrayUtils.groupValues(this.responses, x => x.eventId, x => x);
 

@@ -47,10 +47,10 @@ namespace ODK.Web.Api.Members
         }
 
         [HttpGet("{id}/Image")]
-        public async Task<IActionResult> MemberImage(Guid id)
+        public async Task<IActionResult> MemberImage(Guid id, int? maxWidth)
         {
             return await HandleVersionedRequest(
-                version => _memberService.GetMemberImage(version, GetMemberId(), id),
+                version => _memberService.GetMemberImage(version, GetMemberId(), id, maxWidth),
                 image => MemberImageResult(image));
         }
 

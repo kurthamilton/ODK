@@ -10,6 +10,7 @@ using ODK.Core.Members;
 using ODK.Services.Authentication;
 using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
+using ODK.Services.Imaging;
 using ODK.Services.Mails;
 
 namespace ODK.Services.Members
@@ -18,15 +19,17 @@ namespace ODK.Services.Members
     {
         private readonly IAuthorizationService _authorizationService;
         private readonly IChapterRepository _chapterRepository;
+        private readonly IImageService _imageService;
         private readonly IMailService _mailService;
         private readonly IMemberRepository _memberRepository;
         private readonly AuthenticationSettings _settings;
 
         public MemberService(IMemberRepository memberRepository, IChapterRepository chapterRepository, IAuthorizationService authorizationService,
-            IMailService mailService, AuthenticationSettings settings)
+            IMailService mailService, AuthenticationSettings settings, IImageService imageService)
         {
             _authorizationService = authorizationService;
             _chapterRepository = chapterRepository;
+            _imageService = imageService;
             _mailService = mailService;
             _memberRepository = memberRepository;
             _settings = settings;
@@ -68,13 +71,19 @@ namespace ODK.Services.Members
             return await _memberRepository.GetLatestMembers(chapterId, 8);
         }
 
-        public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? version, Guid currentMemberId, Guid memberId)
+        public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? version, Guid currentMemberId, Guid memberId, int? maxWidth)
         {
             Member member = await GetMember(currentMemberId, memberId);
             MemberImage image = await _memberRepository.GetMemberImage(member.Id, version);
             if (image == null)
             {
                 return new VersionedServiceResult<MemberImage>(version ?? 0);
+            }
+
+            if (maxWidth != null)
+            {
+                byte[] imageData = _imageService.Resize(image.ImageData, maxWidth.Value, maxWidth.Value);
+                image = new MemberImage(image.MemberId, imageData, image.MimeType, image.Version);
             }
 
             return new VersionedServiceResult<MemberImage>(image.Version, image);

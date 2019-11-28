@@ -7,9 +7,9 @@ import { tap } from 'rxjs/operators';
 import { adminPaths } from '../../../routing/admin-paths';
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from '../../../services/chapters/chapter.service';
+import { ChapterAdminService } from '../../../../../../../src/app/services/chapters/chapter-admin.service';
 import { Event } from 'src/app/core/events/event';
-import { EventService } from '../../../services/events/event.service';
+import { EventAdminService } from '../../../../../../../src/app/services/events/event-admin.service';
 import { EventInvites } from 'src/app/core/events/event-invites';
 import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 
@@ -23,8 +23,8 @@ export class EventComponent implements OnInit {
   constructor(private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
-    private chapterService: ChapterService,
-    private eventService: EventService
+    private chapterService: ChapterAdminService,
+    private eventService: EventAdminService
   ) {     
   }
 
@@ -36,10 +36,8 @@ export class EventComponent implements OnInit {
 
   ngOnInit(): void {
     const id: string = this.route.snapshot.paramMap.get(adminPaths.events.event.params.id);    
+    this.chapter = this.chapterService.getActiveChapter();
     forkJoin([
-      this.chapterService.getActiveChapter().pipe(
-        tap((chapter: Chapter) => this.chapter = chapter)
-      ),
       this.eventService.getEvent(id).pipe(
         tap((event: Event) => this.event = event)
       ),

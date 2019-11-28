@@ -62,15 +62,12 @@ export class AppComponent implements OnInit, OnDestroy {
         delay(0)
       )
       .subscribe((token: AuthenticationToken) => {
-        console.log('auth change');
         if (this.authenticated === true && !token) {
-          console.log('logged out');
           this.authenticated = false;
           this.router.navigateByUrl(adminPaths.login.path);
           return;
         }
 
-        console.log('run auth guard');
         this.authenticated = !!token;
         this.runAuthGuard();
         this.changeDetector.detectChanges();
