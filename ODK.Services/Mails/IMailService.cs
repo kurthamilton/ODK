@@ -10,7 +10,7 @@ namespace ODK.Services.Mails
     {
         Task<MemberEmail> CreateMemberEmail(Member member, Email email, IDictionary<string, string> parameters);
 
-        Task SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters);
+        Task<bool> SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters);
 
         Task<MemberEmail> SendMemberMail(MemberEmail memberEmail, Member member, Email email);
 

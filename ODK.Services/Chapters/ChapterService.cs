@@ -72,14 +72,19 @@ namespace ODK.Services.Chapters
 
             Chapter chapter = await GetChapter(chapterId);
 
-            ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Id,DateTime.UtcNow, fromAddress, message);
-            await _chapterRepository.AddContactRequest(contactRequest);
+            ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Id,DateTime.UtcNow, fromAddress, message, false);
+            Guid contactRequestId = await _chapterRepository.AddContactRequest(contactRequest);
 
-            await _mailService.SendChapterContactMail(chapter, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                { "from", fromAddress },
-                { "message", message }
-            });
+                {"from", fromAddress},
+                {"message", message}
+            };
+
+            if (await _mailService.SendChapterContactMail(chapter, parameters))
+            {
+                await _chapterRepository.ConfirmContactRequestSent(contactRequestId);
+            }
         }
     }
 }

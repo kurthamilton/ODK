@@ -13,10 +13,19 @@ namespace ODK.Data.Repositories
         {
         }
 
-        public async Task AddContactRequest(ContactRequest contactRequest)
+        public async Task<Guid> AddContactRequest(ContactRequest contactRequest)
+        {
+            return await Context
+                .Insert(contactRequest)
+                .GetIdentityAsync();
+        }
+
+        public async Task ConfirmContactRequestSent(Guid contactRequestId)
         {
             await Context
-                .Insert(contactRequest)
+                .Update<ContactRequest>()
+                .Set(x => x.Sent, true)
+                .Where(x => x.Id).EqualTo(contactRequestId)
                 .ExecuteAsync();
         }
 

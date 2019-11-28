@@ -14,6 +14,7 @@ namespace ODK.Data.Mapping
             Property(x => x.CreatedDate);
             Property(x => x.FromAddress);
             Property(x => x.Message);
+            Property(x => x.Sent);
         }
 
         public override ContactRequest Read(IDataReader reader)
@@ -24,7 +25,8 @@ namespace ODK.Data.Mapping
                 chapterId: reader.GetGuid(1),
                 createdDate: reader.GetDateTime(2),
                 fromAddress: reader.GetString(3),
-                message: reader.GetString(4)
+                message: reader.GetString(4),
+                sent: reader.GetBoolean(5)
             );
         }
     }

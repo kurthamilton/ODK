@@ -33,7 +33,7 @@ namespace ODK.Services.Mails
             return new MemberEmail(memberEmailId, memberEmail.ChapterId, memberEmail.ToAddress, memberEmail.Subject, memberEmail.CreatedDate, memberEmail.Sent);
         }
 
-        public async Task SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters)
+        public async Task<bool> SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters)
         {
             Email email = await _memberEmailRepository.GetEmail(EmailType.ContactRequest);
 
@@ -43,7 +43,7 @@ namespace ODK.Services.Mails
 
             MimeMessage message = CreateMessage(emailSettings.FromEmailAddress, emailSettings.ContactEmailAddress, email);
 
-            await Send(message);
+            return await Send(message);
         }
 
         public async Task<MemberEmail> SendMemberMail(MemberEmail memberEmail, Member member, Email email)
