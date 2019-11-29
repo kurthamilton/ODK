@@ -9,6 +9,8 @@ namespace ODK.Services.Authentication
 
         Task ChangePassword(Guid memberId, string currentPassword, string newPassword);
 
+        Task DeleteRefreshToken(string refreshToken);
+
         Task<AuthenticationToken> Login(string username, string password);
 
         Task<AuthenticationToken> RefreshToken(string refreshToken);

@@ -3,7 +3,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { Event } from 'src/app/core/events/event';
 
 function chapterUrl(chapter: Chapter, path?: string): string {
-    return `/${chapter.name.toLocaleLowerCase()}` + (path ? `/${path}` : '');
+    return `/${chapter.name.toLocaleLowerCase()}/admin` + (path ? `/${path}` : '');
 }
 
 export const adminUrls = {

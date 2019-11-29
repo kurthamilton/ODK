@@ -8,6 +8,7 @@ namespace ODK.Data
         public OdkContext(string connectionString)
             : base(connectionString)
         {
+
             AddMap(new ChapterAdminMemberMap());
             AddMap(new ChapterEmailSettingsMap());
             AddMap(new ChapterLinksMap());

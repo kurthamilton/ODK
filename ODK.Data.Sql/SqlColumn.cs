@@ -4,7 +4,7 @@ using System.Data.SqlClient;
 
 namespace ODK.Data.Sql
 {
-    public class SqlColumn
+    public class SqlColumn : ISqlComponent
     {
         public SqlColumn(string name)
         {
@@ -67,7 +67,7 @@ namespace ODK.Data.Sql
             return new SqlParameter(ParameterName, Type) { Value = value ?? DBNull.Value };
         }
 
-        public string ToSql()
+        public string ToSql(SqlContext context)
         {
             return SqlName;
         }

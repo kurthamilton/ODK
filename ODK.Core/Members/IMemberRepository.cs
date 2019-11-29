@@ -14,7 +14,7 @@ namespace ODK.Core.Members
         Task<Guid> CreateMember(Member member);
         Task DeleteActivationToken(Guid memberId);
         Task DeletePasswordResetRequest(Guid passwordResetRequestId);
-        Task DeleteRefreshToken(Guid id);
+        Task DeleteRefreshToken(MemberRefreshToken refreshToken);
         Task DisableMember(Guid id);
         Task EnableMember(Guid id);
         Task<Member> FindMemberByEmailAddress(string emailAddress);

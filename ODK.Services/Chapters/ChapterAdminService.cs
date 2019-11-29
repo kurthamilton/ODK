@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Services.Caching;
@@ -11,22 +12,27 @@ namespace ODK.Services.Chapters
     {
         private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
+        private readonly IChapterService _chapterService;
 
-        public ChapterAdminService(IChapterRepository chapterRepository, ICacheService cacheService)
+        public ChapterAdminService(IChapterRepository chapterRepository, ICacheService cacheService, IChapterService chapterService)
             : base(chapterRepository)
         {
             _cacheService = cacheService;
             _chapterRepository = chapterRepository;
+            _chapterService = chapterService;
         }
 
         public async Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId)
         {
-            IReadOnlyCollection<Chapter> chapters = await _chapterRepository.GetAdminChapters(memberId);
-            if (chapters.Count == 0)
+            IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(memberId);
+            if (chapterAdminMembers.Count == 0)
             {
                 throw new OdkNotAuthorizedException();
             }
-            return chapters;
+            VersionedServiceResult<IReadOnlyCollection<Chapter>> chapters = await _chapterService.GetChapters(null);
+            return chapterAdminMembers
+                .Select(x => chapters.Value.Single(chapter => chapter.Id == x.ChapterId))
+                .ToArray();
         }
 
         public async Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links)

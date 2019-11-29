@@ -1,4 +1,10 @@
 export const appPaths = {
+    admin: {
+        path: ':chapter/admin',
+        params: {
+            chapter: 'chapter'
+        }
+    },
     chapter: {
         childPaths: {
             about: {
@@ -45,6 +51,9 @@ export const appPaths = {
     },
     login: {
         path: 'login'
+    },
+    logout: {
+        path: 'logout'
     },
     privacy: {
         path: 'privacy'

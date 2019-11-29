@@ -18,7 +18,7 @@ namespace ODK.Data.Sql.Queries
         public string ToSql(SqlContext context)
         {
             SqlColumn column = context.GetColumn(Expression);
-            return $"{column.ToSql()} {(Direction == SqlSortDirection.Descending ? "DESC" : "ASC")}";
+            return $"{column.ToSql(context)} {(Direction == SqlSortDirection.Descending ? "DESC" : "ASC")}";
         }
     }
 }

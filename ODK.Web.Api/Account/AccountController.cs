@@ -98,6 +98,13 @@ namespace ODK.Web.Api.Account
             return Created(response);
         }
 
+        [HttpDelete("RefreshToken")]
+        public async Task<IActionResult> DeleteRefreshToken([FromForm] RefreshTokenApiRequest request)
+        {
+            await _authenticationService.DeleteRefreshToken(request.RefreshToken);
+            return NoContent();
+        }
+
         [AllowAnonymous]
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromForm] CreateMemberProfileApiRequest request)

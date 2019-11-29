@@ -43,7 +43,7 @@ namespace ODK.Data.Sql.Queries
         {
             SqlColumn column = context.GetColumn(Expression);
 
-            return $"{column.ToSql()} {Operator} {column.ParameterName}";
+            return $"{column.ToSql(context)} {Operator} {column.ParameterName}";
         }
 
         private SqlConditionalQuery<T> SetCondition(string @operator, TValue value)

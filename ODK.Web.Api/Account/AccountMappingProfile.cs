@@ -30,12 +30,14 @@ namespace ODK.Web.Api.Account
 
         private void CreateResponseMaps()
         {
+            CreateMap<AuthenticationToken, AuthenticationTokenApiResponse>()
+                .ForMember(x => x.AdminChapterIds, opt => opt.Condition(x => x.AdminChapterIds.Count > 0))
+                .ForMember(x => x.SuperAdmin, opt => opt.Condition(x => x.SuperAdmin));
+
             CreateMap<MemberProfile, AccountProfileApiResponse>()
                 .ForMember(x => x.Properties, opt => opt.MapFrom(x => x.MemberProperties));
 
             CreateMap<MemberProperty, AccountProfilePropertyApiResponse>();
-
-            CreateMap<AuthenticationToken, AuthenticationTokenApiResponse>();
         }
     }
 }

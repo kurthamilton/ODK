@@ -22,7 +22,7 @@ namespace ODK.Data.Sql
             SqlColumn fromColumn = context.GetColumn(_fromExpression);
             SqlColumn toColumn = context.GetColumn(_toExpression);
 
-            return $"{ToSqlJoinType()} JOIN {context.GetTableName<TTo>()} ON {fromColumn.ToSql()} = {toColumn.ToSql()}";
+            return $"{ToSqlJoinType()} JOIN {context.GetTableName<TTo>()} ON {fromColumn.ToSql(context)} = {toColumn.ToSql(context)}";
         }
 
         private string ToSqlJoinType()

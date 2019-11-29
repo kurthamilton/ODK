@@ -10,11 +10,11 @@ namespace ODK.Core.Chapters
 
         Task ConfirmContactRequestSent(Guid contactRequestId);
 
-        Task<IReadOnlyCollection<Chapter>> GetAdminChapters(Guid memberId);
-
         Task<Chapter> GetChapter(Guid id);
 
         Task<ChapterAdminMember> GetChapterAdminMember(Guid chapterId, Guid memberId);
+
+        Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid memberId);
 
         Task<ChapterEmailSettings> GetChapterEmailSettings(Guid chapterId);
 

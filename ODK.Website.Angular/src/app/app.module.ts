@@ -1,7 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgModule } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AccountMenuComponent } from './components/account/account-menu/account-menu.component';
@@ -21,9 +20,6 @@ import { EventListComponent } from './components/events/event-list/event-list.co
 import { EventsComponent } from './components/events/events/events.component';
 import { FaqComponent } from './components/about/faq/faq.component';
 import { FooterComponent } from './components/structure/footer/footer.component';
-import { FormComponent } from './components/forms/form/form.component';
-import { FormControlsComponent } from './components/forms/form-controls/form-controls.component';
-import { FormControlValidationComponent } from './components/forms/form-control-validation/form-control-validation.component';
 import { HeaderComponent } from './components/structure/header/header.component';
 import { HomeComponent } from './components/home/home/home.component';
 import { HomeFooterComponent } from './components/structure/home-footer/home-footer.component';
@@ -49,11 +45,11 @@ import { NotificationsComponent } from './components/notifications/notifications
 import { NotificationComponent } from './components/notifications/notification/notification.component';
 import { ProfilePictureComponent } from './components/account/profile-picture/profile-picture.component';
 import { ProfileFormComponent } from './components/account/profile-form/profile-form.component';
-import { AppStyleModule } from './modules/app-style.module';
 import { EventResponseIconComponent } from './components/events/event-response-icon/event-response-icon.component';
 import { EventSidebarComponent } from './components/events/event-sidebar/event-sidebar.component';
 import { EventSidebarAttendeesComponent } from './components/events/event-sidebar-attendees/event-sidebar-attendees.component';
 import { SharedModule } from './shared.module';
+import { LogoutComponent } from './components/account/logout/logout.component';
 
 @NgModule({
   declarations: [
@@ -100,6 +96,7 @@ import { SharedModule } from './shared.module';
     EventResponseIconComponent,
     EventSidebarComponent,
     EventSidebarAttendeesComponent,
+    LogoutComponent,
 
   ],
   imports: [

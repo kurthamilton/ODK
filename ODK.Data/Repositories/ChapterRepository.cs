@@ -29,15 +29,6 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        public async Task<IReadOnlyCollection<Chapter>> GetAdminChapters(Guid memberId)
-        {
-            return await Context
-                .Select<Chapter>()
-                .Join<ChapterAdminMember, Guid>(x => x.Id, x => x.ChapterId)
-                .Where<ChapterAdminMember, Guid>(x => x.MemberId).EqualTo(memberId)
-                .ToArrayAsync();
-        }
-
         public async Task<Chapter> GetChapter(Guid id)
         {
             return await Context
@@ -53,6 +44,14 @@ namespace ODK.Data.Repositories
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .Where(x => x.MemberId).EqualTo(memberId)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid memberId)
+        {
+            return await Context
+                .Select<ChapterAdminMember>()
+                .Where(x => x.MemberId).EqualTo(memberId)
+                .ToArrayAsync();
         }
 
         public async Task<ChapterEmailSettings> GetChapterEmailSettings(Guid chapterId)

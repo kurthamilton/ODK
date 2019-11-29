@@ -6,7 +6,8 @@
         <div ngbDropdownMenu role="menu" *ngIf="links">
             <a class="dropdown-item" [routerLink]="links.profile">My profile</a>
             <a class="dropdown-item" [routerLink]="links.chapter">{{chapter.name}}</a>
-            <a class="dropdown-item" href="/umbraco/surface/account/logout">Sign Out</a>
+            <a *ngIf="links.admin" class="dropdown-item" [routerLink]="links.admin">{{chapter.name}} Admin</a>
+            <a class="dropdown-item" [routerLink]="links.logout">Sign Out</a>
         </div>
     </div>
 </ng-container>

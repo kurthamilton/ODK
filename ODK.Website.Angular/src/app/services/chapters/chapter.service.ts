@@ -26,7 +26,7 @@ const endpoints = {
 })
 export class ChapterService {
 
-  constructor(private http: HttpClient) { }
+  constructor(protected http: HttpClient) { }
 
   private activeChapter: Chapter;
   private chapterDetails: Map<string, ChapterDetails> = new Map<string, ChapterDetails>();
@@ -37,7 +37,7 @@ export class ChapterService {
     return this.activeChapter;
   }
 
-  getChapter(name: string): Observable<Chapter> {
+  getChapter(name: string): Observable<Chapter> {    
     return this.getChapters().pipe(
       map((chapters: Chapter[]) => chapters.find(x => x.name.toLocaleLowerCase() === name.toLocaleLowerCase()))
     );
@@ -99,7 +99,7 @@ export class ChapterService {
     this.activeChapter = chapter;
   }
 
-  private mapChapter(response: any): Chapter {
+  protected mapChapter(response: any): Chapter {
     return {
       countryId: response.countryId,
       id: response.id,

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ODK.Web.Api.Account.Responses
 {
@@ -6,10 +7,14 @@ namespace ODK.Web.Api.Account.Responses
     {
         public string AccessToken { get; set; }
 
+        public IEnumerable<Guid> AdminChapterIds { get; set; }
+
         public Guid ChapterId { get; set; }
 
         public Guid MemberId { get; set; }
 
         public string RefreshToken { get; set; }
+
+        public bool? SuperAdmin { get; set; }
     }
 }

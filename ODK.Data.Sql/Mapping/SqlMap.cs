@@ -42,15 +42,9 @@ namespace ODK.Data.Sql.Mapping
             return _entityColumns[entityFieldName];
         }
 
-        public string GetEntityFieldName(SqlColumn column)
+        public object GetEntityValue(T entity, SqlColumn column, SqlContext context)
         {
-            string entityFieldName = _entityColumns.FirstOrDefault(x => x.Value.ToSql() == column.ToSql()).Key;
-            return _entityColumns.ContainsKey(entityFieldName) ? entityFieldName : null;
-        }
-
-        public object GetEntityValue(T entity, SqlColumn column)
-        {
-            string entityFieldName = GetEntityFieldName(column);
+            string entityFieldName = GetEntityFieldName(column, context);
             return Type.GetProperty(entityFieldName)?.GetValue(entity);
         }
 
@@ -74,6 +68,12 @@ namespace ODK.Data.Sql.Mapping
             _entityColumns.Add(entityFieldName, column);
 
             return column;
+        }
+
+        private string GetEntityFieldName(SqlColumn column, SqlContext context)
+        {
+            string entityFieldName = _entityColumns.FirstOrDefault(x => x.Value.ToSql(context) == column.ToSql(context)).Key;
+            return _entityColumns.ContainsKey(entityFieldName) ? entityFieldName : null;
         }
     }
 }

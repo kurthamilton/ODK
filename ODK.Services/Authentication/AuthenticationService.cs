@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
+using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Mail;
 using ODK.Core.Members;
@@ -18,14 +20,16 @@ namespace ODK.Services.Authentication
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IAuthorizationService _authorizationService;
+        private readonly IChapterRepository _chapterRepository;
         private readonly IMailService _mailService;
         private readonly IMemberRepository _memberRepository;
         private readonly AuthenticationServiceSettings _settings;
 
         public AuthenticationService(IMemberRepository memberRepository, IMailService mailService, AuthenticationServiceSettings settings,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService, IChapterRepository chapterRepository)
         {
             _authorizationService = authorizationService;
+            _chapterRepository = chapterRepository;
             _mailService = mailService;
             _memberRepository = memberRepository;
             _settings = settings;
@@ -52,6 +56,17 @@ namespace ODK.Services.Authentication
             await _authorizationService.AssertMemberIsCurrent(memberId);
             await AssertMemberPasswordMatches(memberId, currentPassword, "Current password is incorrect");
             await UpdatePassword(memberId, newPassword);
+        }
+
+        public async Task DeleteRefreshToken(string refreshToken)
+        {
+            MemberRefreshToken token = await _memberRepository.GetRefreshToken(refreshToken);
+            if (token == null)
+            {
+                return;
+            }
+
+            await _memberRepository.DeleteRefreshToken(token);
         }
 
         public async Task<AuthenticationToken> Login(string username, string password)
@@ -91,7 +106,7 @@ namespace ODK.Services.Authentication
 
             if (memberRefreshToken.Expires < DateTime.UtcNow)
             {
-                await _memberRepository.DeleteRefreshToken(memberRefreshToken.Id);
+                await _memberRepository.DeleteRefreshToken(memberRefreshToken);
                 throw new OdkServiceException(message);
             }
 
@@ -100,7 +115,7 @@ namespace ODK.Services.Authentication
 
             AuthenticationToken authenticationToken = await GenerateAccessToken(member, memberRefreshToken.Expires);
 
-            await _memberRepository.DeleteRefreshToken(memberRefreshToken.Id);
+            await _memberRepository.DeleteRefreshToken(memberRefreshToken);
 
             return authenticationToken;
         }
@@ -177,6 +192,8 @@ namespace ODK.Services.Authentication
 
         private async Task<AuthenticationToken> GenerateAccessToken(Member member, DateTime? refreshTokenExpires = null)
         {
+            IReadOnlyCollection<ChapterAdminMember> adminChapterMembers = await _chapterRepository.GetChapterAdminMembers(member.Id);
+
             byte[] keyBytes = Encoding.ASCII.GetBytes(_settings.Key);
             SymmetricSecurityKey key = new SymmetricSecurityKey(keyBytes);
 
@@ -194,12 +211,13 @@ namespace ODK.Services.Authentication
             string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
             string refreshToken = await GenerateRefreshToken(member.Id, refreshTokenExpires);
 
-            return new AuthenticationToken(member.Id, member.ChapterId, accessToken, refreshToken);
+            return new AuthenticationToken(member.Id, member.ChapterId, accessToken, refreshToken, adminChapterMembers.Select(x => x.ChapterId),
+                adminChapterMembers.Any(x => x.SuperAdmin));
         }
 
         private async Task<string> GenerateRefreshToken(Guid memberId, DateTime? expires = null)
         {
-            string refreshToken = RandomStringGenerator.Generate(32);
+            string refreshToken = RandomStringGenerator.Generate(64);
 
             if (expires == null)
             {

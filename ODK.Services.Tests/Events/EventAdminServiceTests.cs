@@ -93,7 +93,7 @@ namespace ODK.Services.Tests.Events
                 .ReturnsAsync(chapter);
 
             mock.Setup(x => x.GetChapterAdminMember(It.IsAny<Guid>(), It.IsAny<Guid>()))
-                .ReturnsAsync(authorised ? new ChapterAdminMember(Guid.NewGuid(), Guid.NewGuid()) : null);
+                .ReturnsAsync(authorised ? new ChapterAdminMember(Guid.NewGuid(), Guid.NewGuid(), false) : null);
 
             return mock.Object;
         }

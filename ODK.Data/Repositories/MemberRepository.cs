@@ -73,11 +73,11 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        public async Task DeleteRefreshToken(Guid id)
+        public async Task DeleteRefreshToken(MemberRefreshToken refreshToken)
         {
             await Context
                 .Delete<MemberRefreshToken>()
-                .Where(x => x.Id).EqualTo(id)
+                .Where(x => x.Id).EqualTo(refreshToken.Id)
                 .ExecuteAsync();
         }
 

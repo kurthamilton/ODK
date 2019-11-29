@@ -2,7 +2,7 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { Observable, of, Subject, BehaviorSubject } from 'rxjs';
-import { map, catchError, take } from 'rxjs/operators';
+import { map, catchError, take, tap } from 'rxjs/operators';
 
 import { AccountDetails } from 'src/app/core/account/account-details';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
@@ -101,6 +101,22 @@ export class AuthenticationService {
       );
   }
 
+  logout(): Observable<{}> {
+    const token: AuthenticationToken = this.getToken();
+    if (!token) {
+      return;
+    }
+
+    const params: HttpParams = HttpUtils.createFormParams({
+      refreshToken: token.refreshToken
+    });
+
+    return this.http.delete(endpoints.refreshToken, { params }).pipe(
+      tap(() => this.setToken({ success: false })),
+      map(() => ({}))
+    );
+  }
+
   refreshAccessToken(token: AuthenticationToken): Observable<ServiceResult<AuthenticationToken>> {
     if (!token) {
       return of(null);
@@ -127,12 +143,22 @@ export class AuthenticationService {
   }      
 
   private mapToken(response: any): AuthenticationToken {
-    return {
-      accessToken: response.accessToken,
+    const token: AuthenticationToken = {
+      accessToken: response.accessToken,      
       chapterId: response.chapterId,
       memberId: response.memberId,
       refreshToken: response.refreshToken
     };
+
+    if (response.chapterAdminIds) {
+      token.adminChapterIds = response.adminChapterIds;
+    }
+
+    if (response.superAdmin) {
+      token.superAdmin = response.superAdmin;
+    }
+
+    return token;
   }
 
   private requestToken(url: string, options: {

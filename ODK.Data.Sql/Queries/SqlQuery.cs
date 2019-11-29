@@ -59,7 +59,7 @@ namespace ODK.Data.Sql.Queries
 
                 foreach (SqlColumn column in map.InsertColumns)
                 {
-                    object value = map.GetEntityValue(_insertEntity, column);
+                    object value = map.GetEntityValue(_insertEntity, column, context);
 
                     yield return (column, value);
                 }
@@ -167,7 +167,7 @@ namespace ODK.Data.Sql.Queries
             if (_updateColumns.Count > 0)
             {
                 return $"UPDATE {context.GetTableName<T>()} " +
-                       $"SET {string.Join(",", _updateColumns.Select(x => $"{x.Column.ToSql()} = {x.Column.ParameterName}"))}";
+                       $"SET {string.Join(",", _updateColumns.Select(x => $"{x.Column.ToSql(context)} = {x.Column.ParameterName}"))}";
             }
 
             if (_insertEntity != null)
