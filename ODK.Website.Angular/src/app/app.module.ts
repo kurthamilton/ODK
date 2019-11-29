@@ -48,6 +48,7 @@ import { EventSidebarComponent } from './components/events/event-sidebar/event-s
 import { EventSidebarAttendeesComponent } from './components/events/event-sidebar-attendees/event-sidebar-attendees.component';
 import { SharedModule } from './modules/shared.module';
 import { LogoutComponent } from './components/account/logout/logout.component';
+import { PageWithSidebarComponent } from './components/layouts/page-with-sidebar/page-with-sidebar.component';
 
 @NgModule({
   declarations: [    
@@ -93,6 +94,7 @@ import { LogoutComponent } from './components/account/logout/logout.component';
     EventSidebarComponent,
     EventSidebarAttendeesComponent,
     LogoutComponent,
+    PageWithSidebarComponent,
   ],
   imports: [
     AppRoutingModule,

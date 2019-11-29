@@ -88,6 +88,10 @@ export class EventSidebarComponent implements OnInit, OnChanges {
       return;
     }
 
+    this.declined = [];
+    this.going = [];
+    this.maybe = [];
+
     const responseGroups: Map<EventResponseType, Member[]> = new Map<EventResponseType, Member[]>();
     responseGroups.set(EventResponseType.Yes, this.going);
     responseGroups.set(EventResponseType.Maybe, this.maybe);

@@ -1,13 +1,14 @@
 <app-body *ngIf="event" [title]="event.name">
-    <div class="row">
-        <div class="col-lg-9 col-md-8">
+    <app-page-with-sidebar>
+        <ng-container app-main>
             <h2>{{event.location}}</h2>
             <h2>{{event.date | date:'fullDate'}}</h2>
             <h3 *ngIf="event.time">{{event.time}}</h3>
             <p *ngIf="event.description">{{event.description}}</p>
-        </div>
-        <div class="col-lg-3 col-md-4">
+        </ng-container>
+
+        <ng-container app-sidebar>
             <app-event-sidebar [eventId]="eventId"></app-event-sidebar>
-        </div>
-    </div>    
+        </ng-container>
+    </app-page-with-sidebar>    
 </app-body>
