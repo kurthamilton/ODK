@@ -17,6 +17,7 @@ export const appUrls = {
     contact: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.contact.path),
     event: (chapter: Chapter, event: Event) => chapterUrl(chapter, `${chapterPaths.events.path}/${event.id}`),
     events: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.events.path),
+    join: `/${appPaths.join.path}`,
     login: `/${appPaths.login.path}`,
     logout: `/${appPaths.logout.path}`,
     member: (chapter: Chapter, member: Member) => chapterUrl(chapter, `${chapterPaths.members.path}/${member.id}`),

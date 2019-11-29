@@ -32,6 +32,7 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
     profile: string
   };
 
+  joinLink: string;
   loginLink: string;
 
   private destroyed: Subject<{}> = new Subject<{}>();
@@ -50,6 +51,7 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
     if (!token) {
       this.authenticated = false;
       this.links = null;
+      this.joinLink = appUrls.join;
       this.loginLink = appUrls.login;
       this.changeDetector.detectChanges();
       return;

@@ -12,8 +12,7 @@
     </div>
 </ng-container>
 
-<ng-container *ngIf="authenticated === false">
-    <a class="btn btn-primary" [routerLink]="loginLink">
-        Sign in
-    </a>
-</ng-container>
+<div *ngIf="authenticated === false" class="anonymous-links">
+    <a class="btn btn-primary anonymous-link" [routerLink]="loginLink">Sign in</a>
+    <a class="btn btn-success anonymous-link" [routerLink]="joinLink">Join</a>
+</div>

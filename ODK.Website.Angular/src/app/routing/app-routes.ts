@@ -21,15 +21,17 @@ import { MembersComponent } from '../components/members/members/members.componen
 import { PrivacyComponent } from '../components/privacy/privacy.component';
 import { ProfileComponent } from '../components/account/profile/profile.component';
 import { SubscriptionComponent } from '../components/account/subscription/subscription.component';
+import { JoinComponent } from '../components/account/join/join.component';
 
 export const appRoutes: Routes = [
     {
       path: appPaths.home.path, component: HomeLayoutComponent, children: [
       { path: '', component: HomeComponent },
+      { path: appPaths.join.path, component: JoinComponent },
       { path: appPaths.login.path, component: LoginComponent },
       { path: appPaths.logout.path, component: LogoutComponent },
       { path: appPaths.privacy.path, component: PrivacyComponent },
-    ] },
+    ] },    
     {
       path: appPaths.chapter.path, component: ChapterLayoutComponent, canActivate: [ChapterGuardService], children: [
         { path: '', component: ChapterComponent },

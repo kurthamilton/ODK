@@ -49,6 +49,9 @@ export const appPaths = {
     home: {
         path: ''
     },
+    join: {
+        path: 'join'
+    },
     login: {
         path: 'login'
     },

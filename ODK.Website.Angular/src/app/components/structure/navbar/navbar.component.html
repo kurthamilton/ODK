@@ -1,18 +1,21 @@
-<ng-container *ngIf="menuItems">
-    <nav class="navbar navbar-dark bg-dark" [class.navbar-expand-sm]="breakpoint === 'sm'" [class.navbar-expand-lg]="breakpoint === 'lg'">
-        <div class="container position-relative">
+<ng-container *ngIf="groups">
+    <nav class="navbar navbar-dark bg-dark" 
+        [class.navbar-expand-sm]="breakpoint === 'sm'" [class.navbar-expand-lg]="breakpoint === 'lg'">
+        <div class="container position-relative nav-container">
             <button class="navbar-toggler" type="button" (click)="collapsed = !collapsed">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div [ngbCollapse]="collapsed" class="collapse navbar-collapse flex-column">
-                <ul class="navbar-nav">
-                    <li *ngFor="let menuItem of menuItems" class="nav-item">
+                <ul *ngFor="let group of groups" class="navbar-nav">
+                    <li *ngFor="let menuItem of group" class="nav-item">
                         <a *ngIf="menuItem.link" class="nav-link" [routerLink]="menuItem.link" routerLinkActive="active" (click)="collapse()">{{menuItem.text}}</a>
                         <a *ngIf="menuItem.externalLink" class="nav-link" [attr.href]="menuItem.externalLink" target="_blank">{{menuItem.text}}</a>
                     </li>
                 </ul>
             </div>
-            <app-account-menu></app-account-menu>
+            <div class="nav-account-menu">
+                <app-account-menu></app-account-menu>
+            </div>
         </div>
     </nav>
 </ng-container>

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, ChangeDetectorRef, OnChanges } from '@angular/core';
 
 import { MenuItem } from './menu-item';
 
@@ -7,7 +7,7 @@ import { MenuItem } from './menu-item';
   templateUrl: './navbar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnChanges {
   
   constructor(private changeDetector: ChangeDetectorRef) {
   }
@@ -16,6 +16,22 @@ export class NavbarComponent {
 
   @Input() breakpoint: string;
   @Input() menuItems: MenuItem[];
+  @Input() menuItemGroups: MenuItem[][];
+
+  groups: MenuItem[][];
+
+  ngOnChanges(): void {
+    if (!this.menuItems && !this.menuItemGroups) {
+      this.groups = null;
+      return;
+    }
+
+    if (this.menuItemGroups) {
+      this.groups = this.menuItemGroups;
+    } else {
+      this.groups = [ this.menuItems ];
+    }    
+  }
 
   collapse(): void {
     this.collapsed = true;
