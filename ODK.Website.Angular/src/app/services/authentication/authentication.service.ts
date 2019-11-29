@@ -150,7 +150,7 @@ export class AuthenticationService {
       refreshToken: response.refreshToken
     };
 
-    if (response.chapterAdminIds) {
+    if (response.adminChapterIds) {
       token.adminChapterIds = response.adminChapterIds;
     }
 

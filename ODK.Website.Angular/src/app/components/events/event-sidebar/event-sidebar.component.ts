@@ -88,22 +88,22 @@ export class EventSidebarComponent implements OnInit, OnChanges {
       return;
     }
 
-    const memberResponse: EventMemberResponse = this.responses.find(x => x.memberId === this.memberId);
-    if (memberResponse) {
-      this.memberResponse = memberResponse.responseType;
-    }
+    const responseGroups: Map<EventResponseType, Member[]> = new Map<EventResponseType, Member[]>();
+    responseGroups.set(EventResponseType.Yes, this.going);
+    responseGroups.set(EventResponseType.Maybe, this.maybe);
+    responseGroups.set(EventResponseType.No, this.declined);
 
-    const responseMap: Map<string, EventMemberResponse> = ArrayUtils.toMap(this.responses, x => x.memberId);
+    const memberMap: Map<string, Member> = ArrayUtils.toMap(this.members, x => x.id);
+    this.responses.forEach((response: EventMemberResponse) => {
+      const member: Member = memberMap.get(response.memberId);
+      if (member) {
+        responseGroups.get(response.responseType).push(member);
+        if (response.memberId === this.memberId) {
+          this.memberResponse = response.responseType;
+        }
+      }
+    });
     
-    this.declined = this.members
-      .filter(x => responseMap.has(x.id) && responseMap.get(x.id).responseType === EventResponseType.No);
-      
-    this.going = this.members
-      .filter(x => responseMap.has(x.id) && responseMap.get(x.id).responseType === EventResponseType.Yes);
-
-    this.maybe = this.members
-      .filter(x => responseMap.has(x.id) && responseMap.get(x.id).responseType === EventResponseType.Maybe);        
-
     this.changeDetector.detectChanges();
   }
 }

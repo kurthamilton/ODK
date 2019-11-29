@@ -10,6 +10,8 @@ import { EventFormComponent } from './components/events/event-form/event-form.co
 import { EventsComponent } from './components/events/events/events.component';
 import { EventComponent } from './components/events/event/event.component';
 import { SharedModule } from '../shared.module';
+import { EventInvitesComponent } from './components/events/event-invites/event-invites.component';
+import { EventResponsesComponent } from './components/events/event-responses/event-responses.component';
 
 
 @NgModule({
@@ -21,6 +23,8 @@ import { SharedModule } from '../shared.module';
     EventsComponent,
     EventComponent,
     EventFormComponent,
+    EventInvitesComponent,
+    EventResponsesComponent,
   ],
   imports: [
     AdminRoutingModule,

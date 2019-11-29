@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { NgbModule, NgbAlertModule, NgbCollapseModule, NgbDatepickerModule, NgbDropdownModule, NgbModalModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbAlertModule, NgbCollapseModule, NgbDatepickerModule, NgbDropdownModule, NgbModalModule, NgbTooltipModule, NgbTabsetModule } from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
     imports: [
@@ -9,6 +9,7 @@ import { NgbModule, NgbAlertModule, NgbCollapseModule, NgbDatepickerModule, NgbD
         NgbDatepickerModule,
         NgbDropdownModule,
         NgbModalModule,
+        NgbTabsetModule,
         NgbTooltipModule,
     ],
     exports: [
@@ -18,6 +19,7 @@ import { NgbModule, NgbAlertModule, NgbCollapseModule, NgbDatepickerModule, NgbD
         NgbDatepickerModule,
         NgbDropdownModule,
         NgbModalModule,
+        NgbTabsetModule,
         NgbTooltipModule,
     ]    
   })

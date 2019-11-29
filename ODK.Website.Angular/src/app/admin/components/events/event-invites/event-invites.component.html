@@ -1,0 +1,14 @@
+<ng-container *ngIf="invites">
+    <p *ngIf="invites.sent === 0">
+        <button class="btn btn-primary" (click)="onSend()">Send invites</button>
+    </p>
+    
+    <div class="row">
+        <div class="col-3">Sent</div>
+        <div class="col-3">{{invites.sent}}</div>
+    </div>
+    <div class="row text-danger" *ngIf="invites.sent > invites.delivered">
+        <div class="col-3">Failed</div>
+        <div class="col-3">{{invites.sent - invites.delivered}}</div>
+    </div>
+</ng-container>

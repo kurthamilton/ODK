@@ -22,7 +22,7 @@
                 <td>{{viewModel.event.location}}</td>                
                 <td>
                     {{viewModel.invitesSent}}
-                    <span *ngIf="viewModel.invitesFailed">{{viewModel.invitesFailed}}</span>
+                    <span *ngIf="viewModel.invitesFailed" class="text-danger"> ({{viewModel.invitesFailed}})</span>
                 </td>
                 <td>{{viewModel.going}}</td>
                 <td>{{viewModel.maybe}}</td>
