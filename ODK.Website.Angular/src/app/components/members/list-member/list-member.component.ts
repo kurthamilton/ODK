@@ -18,7 +18,8 @@ export class ListMemberComponent implements OnChanges {
     private memberService: MemberService
   ) {     
   }
-
+  
+  @Input() hideName: boolean;
   @Input() maxWidth: number;
   @Input() member: Member;
   

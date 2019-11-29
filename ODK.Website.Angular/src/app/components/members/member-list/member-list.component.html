@@ -1,9 +1,10 @@
 <ng-container *ngIf="members">
     <div class="row no-gutters">        
         <div *ngFor="let member of members"
-            [class.col-md-2]="cols === 6" [class.col-4]="cols === 6"
-            [class.col-6]="cols === 4" [class.col-lg-3]="cols === 4">
-            <app-list-member [member]="member" [maxWidth]="150"></app-list-member>
+            [class.col-md-4]="cols === 4" [class.col-3]="cols === 4"
+            [class.col-md-2]="cols === 3" [class.col-4]="cols === 3"
+            [class.col-lg-3]="cols === 2" [class.col-6]="cols === 2">
+            <app-list-member [hideName]="hideName" [member]="member" [maxWidth]="150"></app-list-member>
         </div>
     </div>
 </ng-container>

@@ -1,9 +1,7 @@
 <div *ngIf="member" class="card member-tile">
     <a *ngIf="links" [routerLink]="links.member">
-        <img *ngIf="image" class="card-img-top" [attr.src]="image" [attr.alt]="'Photo of ' + member.fullName" />
-
-        <div>
-            {{member.fullName}}
-        </div>
+        <img *ngIf="image" class="card-img-top" [attr.src]="image" [attr.alt]="'Photo of ' + member.fullName"
+            [ngbTooltip]="hideName === true ? member.fullName : ''" />
+        <div *ngIf="!hideName">{{member.fullName}}</div>
     </a>
 </div>

@@ -10,6 +10,6 @@ import { Member } from 'src/app/core/members/member';
 export class MemberListComponent {
 
   @Input() cols: number;
+  @Input() hideName: boolean;
   @Input() members: Member[];
-  @Input() size: string;
 }
