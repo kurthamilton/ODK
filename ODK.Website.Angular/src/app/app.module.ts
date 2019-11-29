@@ -3,7 +3,6 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { AccountMenuComponent } from './components/account/account-menu/account-menu.component';
 import { AppComponent } from './components/app/app.component';
 import { AppRoutingModule } from './modules/app-routing.module';
 import { BlogComponent } from './components/blogs/blog/blog.component';
@@ -34,7 +33,6 @@ import { MemberComponent } from './components/members/member/member.component';
 import { MemberListComponent } from './components/members/member-list/member-list.component';
 import { MembersComponent } from './components/members/members/members.component';
 import { ModalComponent } from './components/elements/modal/modal.component';
-import { NavbarComponent } from './components/structure/navbar/navbar.component';
 import { PageTitleComponent } from './components/structure/page-title/page-title.component';
 import { PrivacyComponent } from './components/privacy/privacy.component';
 import { ProfileComponent } from './components/account/profile/profile.component';
@@ -48,12 +46,11 @@ import { ProfileFormComponent } from './components/account/profile-form/profile-
 import { EventResponseIconComponent } from './components/events/event-response-icon/event-response-icon.component';
 import { EventSidebarComponent } from './components/events/event-sidebar/event-sidebar.component';
 import { EventSidebarAttendeesComponent } from './components/events/event-sidebar-attendees/event-sidebar-attendees.component';
-import { SharedModule } from './shared.module';
+import { SharedModule } from './modules/shared.module';
 import { LogoutComponent } from './components/account/logout/logout.component';
 
 @NgModule({
-  declarations: [
-    AccountMenuComponent,
+  declarations: [    
     AppComponent,
     BlogComponent,
     BodyComponent,
@@ -82,7 +79,6 @@ import { LogoutComponent } from './components/account/logout/logout.component';
     MemberListComponent,
     MembersComponent,
     ModalComponent,
-    NavbarComponent,
     PageTitleComponent,
     PrivacyComponent,
     ProfileComponent,
@@ -97,7 +93,6 @@ import { LogoutComponent } from './components/account/logout/logout.component';
     EventSidebarComponent,
     EventSidebarAttendeesComponent,
     LogoutComponent,
-
   ],
   imports: [
     AppRoutingModule,

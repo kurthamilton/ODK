@@ -9,7 +9,7 @@ import { EditEventComponent } from './components/events/edit-event/edit-event.co
 import { EventFormComponent } from './components/events/event-form/event-form.component';
 import { EventsComponent } from './components/events/events/events.component';
 import { EventComponent } from './components/events/event/event.component';
-import { SharedModule } from '../shared.module';
+import { SharedModule } from '../modules/shared.module';
 import { EventInvitesComponent } from './components/events/event-invites/event-invites.component';
 import { EventResponsesComponent } from './components/events/event-responses/event-responses.component';
 

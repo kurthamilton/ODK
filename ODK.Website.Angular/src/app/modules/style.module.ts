@@ -23,4 +23,4 @@ import { NgbModule, NgbAlertModule, NgbCollapseModule, NgbDatepickerModule, NgbD
         NgbTooltipModule,
     ]    
   })
-  export class AppStyleModule {}
+  export class StyleModule {}

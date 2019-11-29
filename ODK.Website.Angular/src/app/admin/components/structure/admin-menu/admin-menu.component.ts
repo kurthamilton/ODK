@@ -14,13 +14,12 @@ export class AdminMenuComponent implements OnInit {
 
   constructor(private chapterService: ChapterAdminService) { }
 
-  chapterMenuItem: MenuItem;
   menuItems: MenuItem[];
 
   ngOnInit(): void {
     const chapter: Chapter = this.chapterService.getActiveChapter();
-    this.chapterMenuItem = { link: adminUrls.chapter(chapter), text: chapter.name };
     this.menuItems = [
+      { link: adminUrls.chapter(chapter), text: chapter.name },
       { link: adminUrls.events(chapter), text: 'Events' }
     ];
   }
