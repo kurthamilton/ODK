@@ -50,6 +50,7 @@ import { SharedModule } from './modules/shared.module';
 import { LogoutComponent } from './components/account/logout/logout.component';
 import { PageWithSidebarComponent } from './components/layouts/page-with-sidebar/page-with-sidebar.component';
 import { JoinComponent } from './components/account/join/join.component';
+import { ChapterSidebarComponent } from './components/chapters/chapter-sidebar/chapter-sidebar.component';
 
 @NgModule({
   declarations: [    
@@ -97,6 +98,7 @@ import { JoinComponent } from './components/account/join/join.component';
     LogoutComponent,
     PageWithSidebarComponent,
     JoinComponent,
+    ChapterSidebarComponent,
   ],
   imports: [
     AppRoutingModule,

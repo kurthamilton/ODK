@@ -106,23 +106,25 @@
 .anonymous-links {
     display: flex;    
 
-    .anonymous-link:not(:first-child) {
-        margin-left: 0.25rem;    
-    }
+    .anonymous-link {
+        padding-top: 0.1rem;
+        padding-bottom: 0.1rem;
+
+        &:not(:first-child) {
+            margin-left: 0.25rem;    
+        }
+    }    
 }
 
 .home {
     .anonymous-links {
         flex-direction: column;
         
-        .anonymous-link {
-            padding-top: 0.1rem;
-            padding-bottom: 0.1rem;
-
+        .anonymous-link {            
             &:not(:first-child) {
                 flex-grow: 1;
                 flex-basis: 0;            
-                margin-right: 0;
+                margin-left: 0;
                 margin-top: 0.25rem;    
             }
         }        

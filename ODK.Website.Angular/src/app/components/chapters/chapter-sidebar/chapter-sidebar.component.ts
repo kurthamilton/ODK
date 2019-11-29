@@ -1,56 +1,57 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
+import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
-import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { Member } from 'src/app/core/members/member';
-import { MemberService } from 'src/app/services/members/member.service';
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { Event } from 'src/app/core/events/event';
+import { EventService } from 'src/app/services/events/event.service';
 
 @Component({
-  selector: 'app-chapter',
-  templateUrl: './chapter.component.html',
+  selector: 'app-chapter-sidebar',
+  templateUrl: './chapter-sidebar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterComponent implements OnInit {
+export class ChapterSidebarComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
-    private memberService: MemberService,
     private authenticationService: AuthenticationService,
-    private sanitizer: DomSanitizer
-  ) {
+    private eventService: EventService
+  ) {     
   }
 
-  chapter: Chapter;
-  latestMembers: Member[];
-  welcomeText: SafeHtml;
+  events: Event[];
+
+  private chapter: Chapter;
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
-
+    
     const token: AuthenticationToken = this.authenticationService.getToken();
-
     if (token) {
       this.loadMemberPage();
     } else {
       this.loadPublicPage();
-    }    
+    }
+  }
+
+  getEventLink(event: Event): string {
+    return appUrls.event(this.chapter, event);
   }
 
   private loadMemberPage(): void {
-    this.memberService.getLatestMembers(this.chapter.id).subscribe((members: Member[]) => {
-      this.latestMembers = members;
+    this.eventService.getEvents(this.chapter.id).subscribe((events: Event[]) => {
+      this.events = events;
       this.changeDetector.detectChanges();
     });
   }
 
   private loadPublicPage(): void {
-    this.chapterService.getChapterDetails(this.chapter.id).subscribe((details: ChapterDetails) => {
-      this.welcomeText = this.sanitizer.bypassSecurityTrustHtml(details.welcomeText);
+    this.eventService.getPublicEvents(this.chapter.id).subscribe((events: Event[]) => {
+      this.events = events;
       this.changeDetector.detectChanges();
     });
-  }  
+  }
 }
