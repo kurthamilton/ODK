@@ -1,4 +1,4 @@
-<ng-container *ngIf="members">
+<ng-container *appLoading="!members">
     <div class="row no-gutters">        
         <div *ngFor="let member of members"
             [class.col-md-4]="cols === 4" [class.col-3]="cols === 4"

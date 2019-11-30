@@ -51,6 +51,8 @@ import { PageWithSidebarComponent } from './components/layouts/page-with-sidebar
 import { JoinComponent } from './components/account/join/join.component';
 import { ChapterSidebarComponent } from './components/chapters/chapter-sidebar/chapter-sidebar.component';
 import { ListMemberComponent } from './components/members/list-member/list-member.component';
+import { LoadingDirective } from './directives/loading/loading.directive';
+import { LoadingSpinnerComponent } from './components/elements/loading-spinner/loading-spinner.component';
 
 @NgModule({
   declarations: [    
@@ -98,7 +100,9 @@ import { ListMemberComponent } from './components/members/list-member/list-membe
     LogoutComponent,
     PageWithSidebarComponent,
     JoinComponent,
-    ChapterSidebarComponent,    
+    ChapterSidebarComponent,
+    LoadingDirective,    
+    LoadingSpinnerComponent
   ],
   imports: [
     AppRoutingModule,
@@ -111,7 +115,10 @@ import { ListMemberComponent } from './components/members/list-member/list-membe
     { provide: DatePipe, useClass: DatePipe }
   ],
   bootstrap: [
-    AppComponent
+    AppComponent    
+  ],
+  entryComponents: [
+    LoadingSpinnerComponent,
   ]
 })
 export class AppModule { }
