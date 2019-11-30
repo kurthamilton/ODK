@@ -22,5 +22,14 @@ namespace ODK.Services
                 throw new OdkNotAuthorizedException();
             }
         }
+
+        protected async Task AssertMemberIsChapterSuperAdmin(Guid memberId, Guid chapterId)
+        {
+            ChapterAdminMember chapterAdminMember = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
+            if (chapterAdminMember == null || !chapterAdminMember.SuperAdmin)
+            {
+                throw new OdkNotAuthorizedException();
+            }
+        }
     }
 }

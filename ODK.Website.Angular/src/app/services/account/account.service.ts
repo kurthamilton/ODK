@@ -1,4 +1,4 @@
-import { HttpClient, HttpEventType, HttpEvent, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
@@ -6,9 +6,8 @@ import { map } from 'rxjs/operators';
 
 import { AccountProfile } from 'src/app/core/account/account-profile';
 import { environment } from 'src/environments/environment';
-import { MemberProperty } from 'src/app/core/members/member-property';
-import { MemberProfile } from 'src/app/core/members/member-profile';
 import { HttpUtils } from '../http/http-utils';
+import { MemberProperty } from 'src/app/core/members/member-property';
 
 const baseUrl = `${environment.baseUrl}/account`;
 

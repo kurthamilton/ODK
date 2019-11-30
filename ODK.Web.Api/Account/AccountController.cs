@@ -7,7 +7,6 @@ using ODK.Core.Members;
 using ODK.Services.Members;
 using ODK.Web.Api.Account.Requests;
 using ODK.Web.Api.Account.Responses;
-using ODK.Web.Api.Extensions;
 using ODK.Web.Api.Members.Responses;
 using AuthenticationToken = ODK.Services.Authentication.AuthenticationToken;
 using IAuthenticationService = ODK.Services.Authentication.IAuthenticationService;
@@ -120,17 +119,6 @@ namespace ODK.Web.Api.Account
         {
             await _authenticationService.RequestPasswordReset(request.Username);
             return Created();
-        }
-
-        private static async Task<UpdateMemberImageApiRequest> FileToApiRequest(IFormFile file)
-        {
-            byte[] imageData = await file.ToByteArrayAsync();
-
-            return new UpdateMemberImageApiRequest
-            {
-                ContentType = file.ContentType,
-                ImageData = imageData
-            };
-        }
+        }        
     }
 }

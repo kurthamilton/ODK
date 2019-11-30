@@ -22,8 +22,8 @@ export class EventComponent implements OnInit {
   constructor(private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
-    private chapterService: ChapterAdminService,
-    private eventService: EventAdminService
+    private chapterAdminService: ChapterAdminService,
+    private eventAdminService: EventAdminService
   ) {
   }
 
@@ -32,8 +32,8 @@ export class EventComponent implements OnInit {
 
   ngOnInit(): void {
     const id: string = this.route.snapshot.paramMap.get(adminPaths.events.event.params.id);
-    this.chapter = this.chapterService.getActiveChapter();
-    this.eventService.getEvent(id).subscribe((event: Event) => {
+    this.chapter = this.chapterAdminService.getActiveChapter();
+    this.eventAdminService.getEvent(id).subscribe((event: Event) => {
       if (!event) {
         this.router.navigateByUrl(adminUrls.events(this.chapter));
         return;

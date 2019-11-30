@@ -4,14 +4,30 @@ using System.Net;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Members;
 using ODK.Services;
+using ODK.Web.Api.Account.Requests;
+using ODK.Web.Api.Extensions;
 
 namespace ODK.Web.Api
 {
     public abstract class OdkControllerBase : ControllerBase
     {
         private static readonly Regex VersionRegex = new Regex(@"^""(?<version>\d+)""$");
+
+        protected static async Task<UpdateMemberImageApiRequest> FileToApiRequest(IFormFile file)
+        {
+            byte[] imageData = await file.ToByteArrayAsync();
+
+            return new UpdateMemberImageApiRequest
+            {
+                ContentType = file.ContentType,
+                ImageData = imageData
+            };
+        }
+
         protected IActionResult Created()
         {
             return StatusCode(201);
@@ -95,6 +111,16 @@ namespace ODK.Web.Api
         private ActionResult NotModified()
         {
             return StatusCode((int)HttpStatusCode.NotModified);
+        }
+
+        protected IActionResult MemberImageResult(MemberImage image)
+        {
+            if (image == null)
+            {
+                return NoContent();
+            }
+
+            return File(image.ImageData, image.MimeType);
         }
     }
 }

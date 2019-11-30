@@ -24,7 +24,7 @@ export class MembersComponent implements OnInit {
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
     this.memberService.getMembers(this.chapter.id).subscribe((members: Member[]) => {
-      this.members = members;
+      this.members = members.sort((a, b) => a.fullName.localeCompare(b.fullName));
       this.changeDetector.detectChanges();
     });
   }

@@ -12,13 +12,15 @@ namespace ODK.Services.Members
     {
         private readonly IMemberGroupRepository _memberGroupRepository;
         private readonly IMemberRepository _memberRepository;
+        private readonly IMemberService _memberService;
 
         public MemberAdminService(IChapterRepository chapterRepository, IMemberRepository memberRepository,
-            IMemberGroupRepository memberGroupRepository)
+            IMemberGroupRepository memberGroupRepository, IMemberService memberService)
             : base(chapterRepository)
         {
             _memberGroupRepository = memberGroupRepository;
             _memberRepository = memberRepository;
+            _memberService = memberService;
         }
 
         public async Task AddMemberToGroup(Guid currentMemberId, Guid memberId, Guid memberGroupId)
@@ -100,6 +102,13 @@ namespace ODK.Services.Members
             await _memberGroupRepository.RemoveMemberFromGroup(memberId, memberGroup.Id);
         }
 
+        public async Task UpdateMemberImage(Guid currentMemberId, Guid id, UpdateMemberImage image)
+        {
+            Member member = await GetMember(currentMemberId, id, true);
+
+            await _memberService.UpdateMemberImage(member.Id, image);
+        }
+
         public async Task<MemberGroup> UpdateMemberGroup(Guid currentMemberId, Guid id, CreateMemberGroup memberGroup)
         {
             MemberGroup update = await GetMemberGroup(currentMemberId, id);
@@ -113,7 +122,7 @@ namespace ODK.Services.Members
             return update;
         }
 
-        private async Task<Member> GetMember(Guid currentMemberId, Guid id)
+        private async Task<Member> GetMember(Guid currentMemberId, Guid id, bool superAdmin = false)
         {
             Member member = await _memberRepository.GetMember(id);
             if (member == null)
@@ -121,7 +130,14 @@ namespace ODK.Services.Members
                 throw new OdkNotFoundException();
             }
 
-            await AssertMemberIsChapterAdmin(currentMemberId, member.ChapterId);
+            if (superAdmin)
+            {
+                await AssertMemberIsChapterSuperAdmin(currentMemberId, member.ChapterId);
+            }
+            else
+            {
+                await AssertMemberIsChapterAdmin(currentMemberId, member.ChapterId);
+            }
 
             return member;
         }

@@ -12,6 +12,8 @@ import { EventComponent } from './components/events/event/event.component';
 import { SharedModule } from '../modules/shared.module';
 import { EventInvitesComponent } from './components/events/event-invites/event-invites.component';
 import { EventResponsesComponent } from './components/events/event-responses/event-responses.component';
+import { MembersComponent } from './components/members/members/members.component';
+import { MemberComponent } from './components/members/member/member.component';
 
 
 @NgModule({
@@ -25,6 +27,8 @@ import { EventResponsesComponent } from './components/events/event-responses/eve
     EventFormComponent,
     EventInvitesComponent,
     EventResponsesComponent,
+    MembersComponent,
+    MemberComponent,
   ],
   imports: [
     AdminRoutingModule,

@@ -17,7 +17,7 @@ import { EventAdminService } from 'src/app/services/events/event-admin.service';
 export class EditEventComponent {
 
   constructor(private router: Router,
-    private eventService: EventAdminService
+    private eventAdminService: EventAdminService
   ) {
   }
 
@@ -27,7 +27,7 @@ export class EditEventComponent {
   formCallback: Subject<string[]> = new Subject<string[]>();
 
   onFormSubmit(event: Event): void {
-    this.eventService.updateEvent(event).subscribe((result: ServiceResult<Event>) => {
+    this.eventAdminService.updateEvent(event).subscribe((result: ServiceResult<Event>) => {
       this.formCallback.next(result.messages);
       if (result.success) {
         this.router.navigateByUrl(adminUrls.events(this.chapter));

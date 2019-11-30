@@ -44,7 +44,7 @@ export class ProfilePictureComponent implements OnInit {
   }
 
   private loadImage(): Observable<{}> {
-    return this.memberService.getMemberImage(this.memberId, null).pipe(
+    return this.memberService.getMemberImage(this.memberId, 250).pipe(
       tap((imageData: string) => {
         this.imageData = imageData;
         this.changeDetector.detectChanges();

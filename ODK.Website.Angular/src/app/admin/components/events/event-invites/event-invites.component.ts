@@ -11,7 +11,7 @@ import { EventInvites } from 'src/app/core/events/event-invites';
 export class EventInvitesComponent implements OnChanges {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private eventService: EventAdminService
+    private eventAdminService: EventAdminService
   ) {     
   }
 
@@ -24,14 +24,14 @@ export class EventInvitesComponent implements OnChanges {
       return;
     }
     
-    this.eventService.getEventInvites(this.eventId).subscribe((invites: EventInvites) => {
+    this.eventAdminService.getEventInvites(this.eventId).subscribe((invites: EventInvites) => {
       this.invites = invites;
       this.changeDetector.detectChanges();
     });
   }
 
   onSend(): void {
-    this.eventService.sendInvites(this.eventId).subscribe(() => {
+    this.eventAdminService.sendInvites(this.eventId).subscribe(() => {
       
     });
   }

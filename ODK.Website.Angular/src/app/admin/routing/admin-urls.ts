@@ -10,7 +10,8 @@ export const adminUrls = {
     chapter: (chapter: Chapter) => chapterUrl(chapter),
     event: (chapter: Chapter, event: Event) => chapterUrl(chapter, `${adminPaths.events.path}/${event.id}`),
     eventCreate: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.events.path}/${adminPaths.events.create.path}`),
-    events: (chapter: Chapter) => chapterUrl(chapter, adminPaths.events.path)
+    events: (chapter: Chapter) => chapterUrl(chapter, adminPaths.events.path),
+    members: (chapter: Chapter) => chapterUrl(chapter, adminPaths.members.path)
 };
 
 Object.freeze(adminUrls);

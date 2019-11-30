@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
@@ -7,7 +7,6 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { Event } from 'src/app/core/events/event';
 import { FormControlViewModel } from 'src/app/components/forms/form-control.view-model';
 import { FormViewModel } from 'src/app/components/forms/form.view-model';
-import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 
 @Component({
   selector: 'app-event-form',
@@ -16,10 +15,7 @@ import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.ser
 })
 export class EventFormComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef,
-    private datePipe: DatePipe,
-    private chapterService: ChapterAdminService
-  ) {
+  constructor(private datePipe: DatePipe) {
   }
 
   @Input() buttonText: string;

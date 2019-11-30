@@ -1,0 +1,20 @@
+<p *ngIf="superAdmin">
+    <input type="file" accept="image/*" #file placeholder="Choose file" (change)="onUploadPicture(file.files)" class="d-none" multiple />
+    <button class="btn btn-link" (click)="file.click()">Upload pictures</button>
+</p>
+
+<table *ngIf="members" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>          
+            <th>Picture</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let member of members">
+            <td>{{member.fullName}}</td>
+            <td><app-member-image [maxWidth]="100" [member]="member"></app-member-image></td>
+        </tr>
+    </tbody>
+</table>

@@ -26,5 +26,7 @@ namespace ODK.Services.Members
         Task RemoveMemberFromGroup(Guid currentMemberId, Guid memberId, Guid memberGroupId);
 
         Task<MemberGroup> UpdateMemberGroup(Guid currentMemberId, Guid id, CreateMemberGroup memberGroup);
+
+        Task UpdateMemberImage(Guid currentMemberId, Guid id, UpdateMemberImage image);
     }
 }

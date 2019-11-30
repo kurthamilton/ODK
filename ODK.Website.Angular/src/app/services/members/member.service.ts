@@ -14,7 +14,7 @@ const baseUrl = `${environment.baseUrl}/members`;
 
 const endpoints = {
   latestMembers: (chapterId: string) => `${baseUrl}/latest?chapterId=${chapterId}`,
-  memberImage: (memberId: string, maxWidth: number) => `${baseUrl}/${memberId}/image?maxWidth=${maxWidth}`,
+  memberImage: (memberId: string, maxWidth: number) => `${baseUrl}/${memberId}/image?${maxWidth ? `maxWidth=${maxWidth}` : ''}`,
   memberProfile: (memberId: string) => `${baseUrl}/${memberId}/profile`,
   members: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`
 }
@@ -24,7 +24,7 @@ const endpoints = {
 })
 export class MemberService {
 
-  constructor(private http: HttpClient) { }
+  constructor(protected http: HttpClient) { }
 
   getLatestMembers(chapterId: string): Observable<Member[]> {
     return this.http.get(endpoints.latestMembers(chapterId))
@@ -66,7 +66,7 @@ export class MemberService {
       );
   }
 
-  private mapMember(response: any): Member {
+  protected mapMember(response: any): Member {
     return {
       chapterId: response.chapterId,
       firstName: response.firstName,

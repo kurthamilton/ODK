@@ -12,15 +12,16 @@ import { MenuItem } from 'src/app/components/structure/navbar/menu-item';
 })
 export class AdminMenuComponent implements OnInit {
 
-  constructor(private chapterService: ChapterAdminService) { }
+  constructor(private chapterAdminService: ChapterAdminService) { }
 
   menuItems: MenuItem[];
 
   ngOnInit(): void {
-    const chapter: Chapter = this.chapterService.getActiveChapter();
+    const chapter: Chapter = this.chapterAdminService.getActiveChapter();
     this.menuItems = [
       { link: adminUrls.chapter(chapter), text: chapter.name },
-      { link: adminUrls.events(chapter), text: 'Events' }
+      { link: adminUrls.events(chapter), text: 'Events' },
+      { link: adminUrls.members(chapter), text: 'Members' }
     ];
   }
 

@@ -27,7 +27,6 @@ import { HomeLayoutComponent } from './components/layouts/home-layout/home-layou
 import { HomeMenuComponent } from './components/structure/home-menu/home-menu.component';
 import { HttpAuthInterceptorService } from './services/http/http-auth-interceptor.service';
 import { ListEventComponent } from './components/events/list-event/list-event.component';
-import { ListMemberComponent } from './components/members/list-member/list-member.component';
 import { LoginComponent } from './components/account/login/login.component';
 import { MemberComponent } from './components/members/member/member.component';
 import { MemberListComponent } from './components/members/member-list/member-list.component';
@@ -51,6 +50,7 @@ import { LogoutComponent } from './components/account/logout/logout.component';
 import { PageWithSidebarComponent } from './components/layouts/page-with-sidebar/page-with-sidebar.component';
 import { JoinComponent } from './components/account/join/join.component';
 import { ChapterSidebarComponent } from './components/chapters/chapter-sidebar/chapter-sidebar.component';
+import { ListMemberComponent } from './components/members/list-member/list-member.component';
 
 @NgModule({
   declarations: [    
@@ -75,7 +75,7 @@ import { ChapterSidebarComponent } from './components/chapters/chapter-sidebar/c
     HomeHeaderComponent,
     HomeLayoutComponent,
     HomeMenuComponent,
-    ListEventComponent,
+    ListEventComponent,    
     ListMemberComponent,
     LoginComponent,
     MemberComponent,
@@ -98,7 +98,7 @@ import { ChapterSidebarComponent } from './components/chapters/chapter-sidebar/c
     LogoutComponent,
     PageWithSidebarComponent,
     JoinComponent,
-    ChapterSidebarComponent,
+    ChapterSidebarComponent,    
   ],
   imports: [
     AppRoutingModule,

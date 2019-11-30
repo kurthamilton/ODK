@@ -22,8 +22,8 @@ import { EventAdminService } from 'src/app/services/events/event-admin.service';
 export class EventsComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private chapterService: ChapterAdminService,
-    private eventService: EventAdminService
+    private chapterAdminService: ChapterAdminService,
+    private eventAdminService: EventAdminService
   ) {
   }
 
@@ -39,7 +39,7 @@ export class EventsComponent implements OnInit {
   private responses: EventMemberResponse[];
 
   ngOnInit(): void {
-    this.chapter = this.chapterService.getActiveChapter();
+    this.chapter = this.chapterAdminService.getActiveChapter();
 
     this.loadEvents(this.chapter).subscribe(() => {
       const eventInvitesMap: Map<string, EventInvites> = ArrayUtils.toMap(this.invites, x => x.eventId);
@@ -72,13 +72,13 @@ export class EventsComponent implements OnInit {
 
   private loadEvents(chapter: Chapter): Observable<{}> {
     return forkJoin([
-      this.eventService.getEvents(chapter.id).pipe(
+      this.eventAdminService.getEvents(chapter.id).pipe(
         tap((events: Event[]) => this.events = events)
       ),
-      this.eventService.getChapterInvites(chapter.id).pipe(
+      this.eventAdminService.getChapterInvites(chapter.id).pipe(
         tap((invites: EventInvites[]) => this.invites = invites)
       ),
-      this.eventService.getChapterResponses(chapter.id).pipe(
+      this.eventAdminService.getChapterResponses(chapter.id).pipe(
         tap((responses: EventMemberResponse[]) => this.responses = responses)
       )
     ]);

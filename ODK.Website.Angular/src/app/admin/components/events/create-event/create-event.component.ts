@@ -19,22 +19,22 @@ import { EventAdminService } from 'src/app/services/events/event-admin.service';
 export class CreateEventComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private chapterService: ChapterAdminService,
-    private eventService: EventAdminService,
+    private chapterAdminService: ChapterAdminService,
+    private eventAdminService: EventAdminService,
     private router: Router,
     private notificationService: NotificationService
   ) {
   }
 
   ngOnInit(): void {
-    this.chapter = this.chapterService.getActiveChapter();
+    this.chapter = this.chapterAdminService.getActiveChapter();
   }
 
   chapter: Chapter;
   formCallback: Subject<string[]> = new Subject<string[]>();
 
   onFormSubmit(event: Event): void {
-    this.eventService.createEvent(event).subscribe((result: ServiceResult<Event>) => {
+    this.eventAdminService.createEvent(event).subscribe((result: ServiceResult<Event>) => {
       this.formCallback.next(result.messages);
 
       if (result.success) {
