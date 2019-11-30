@@ -51,8 +51,7 @@ import { PageWithSidebarComponent } from './components/layouts/page-with-sidebar
 import { JoinComponent } from './components/account/join/join.component';
 import { ChapterSidebarComponent } from './components/chapters/chapter-sidebar/chapter-sidebar.component';
 import { ListMemberComponent } from './components/members/list-member/list-member.component';
-import { LoadingDirective } from './directives/loading/loading.directive';
-import { LoadingSpinnerComponent } from './components/elements/loading-spinner/loading-spinner.component';
+import { MemberProfileComponent } from './components/members/member-profile/member-profile.component';
 
 @NgModule({
   declarations: [    
@@ -101,8 +100,7 @@ import { LoadingSpinnerComponent } from './components/elements/loading-spinner/l
     PageWithSidebarComponent,
     JoinComponent,
     ChapterSidebarComponent,
-    LoadingDirective,    
-    LoadingSpinnerComponent
+    MemberProfileComponent,    
   ],
   imports: [
     AppRoutingModule,
@@ -116,9 +114,6 @@ import { LoadingSpinnerComponent } from './components/elements/loading-spinner/l
   ],
   bootstrap: [
     AppComponent    
-  ],
-  entryComponents: [
-    LoadingSpinnerComponent,
-  ]
+  ]  
 })
 export class AppModule { }

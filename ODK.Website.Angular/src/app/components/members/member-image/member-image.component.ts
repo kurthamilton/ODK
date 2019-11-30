@@ -19,14 +19,17 @@ export class MemberImageComponent implements OnChanges {
   @Input() member: Member;
 
   image: string;
+  loading = true;
 
   ngOnChanges(): void {
     if (!this.member) {
       return;
     }    
 
+    this.loading = true;
     this.memberService.getMemberImage(this.member.id, this.maxWidth).subscribe((image: string) => {
       this.image = image;
+      this.loading = false;
       this.changeDetector.detectChanges();
     })
   }

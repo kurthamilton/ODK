@@ -1,9 +1,11 @@
-<form (ngSubmit)="onSubmit()" [class.was-validated]="form.validated" novalidate>
+<form *ngIf="form" (ngSubmit)="onSubmit()" [class.was-validated]="form.validated" novalidate>
     <fieldset [attr.disabled]="submitting ? 'disabled' : null" class="overlay-container">
         <app-form-controls [form]="form" [validated]="form.validated"></app-form-controls>
-        <div class="d-flex align-items-center" [class.justify-content-end]="justifyButton === 'end'">
-            <button type="submit" class="btn btn-primary">{{form.buttonText}}</button>
-        </div>
-        <app-error-messages [messages]="messages"></app-error-messages>
+        <ng-container *ngIf="form.buttonText">
+            <div class="d-flex align-items-center" [class.justify-content-end]="justifyButton === 'end'">
+                <button type="submit" class="btn btn-primary">{{form.buttonText}}</button>
+            </div>
+            <app-error-messages [messages]="messages"></app-error-messages>
+        </ng-container>
     </fieldset>
 </form>

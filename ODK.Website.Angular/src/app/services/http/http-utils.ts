@@ -22,14 +22,13 @@ export class HttpUtils {
     static getBase64(http: HttpClient, url: string): Observable<string> {
         return http.get(url, { observe: 'response', responseType: 'arraybuffer' })
             .pipe(
-                map((response: HttpResponse<ArrayBuffer>) => {
+                map((response: HttpResponse<ArrayBuffer>) => {                    
                     const contentType: string = response.headers.get('Content-Type');
 
                     const bytes = new Uint8Array(response.body);
-                    const stringBytes = String.fromCharCode(...bytes)
-                    const base64: string = btoa(stringBytes);
-            
-                    return `data:${contentType};base64,${base64}`;
+                    const stringBytes: string = String.fromCharCode(...bytes)                    
+                    const base64: string = btoa(stringBytes);                    
+                    return base64 ? `data:${contentType};base64,${base64}` : '';
                 })
             )
     }

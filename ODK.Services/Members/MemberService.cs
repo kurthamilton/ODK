@@ -75,7 +75,7 @@ namespace ODK.Services.Members
             return await _memberRepository.GetLatestMembers(chapterId, 8);
         }
 
-        public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? version, Guid currentMemberId, Guid memberId, int? maxWidth)
+        public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? version, Guid currentMemberId, Guid memberId, int? size)
         {
             Member member = await GetMember(currentMemberId, memberId);
             MemberImage image = await _memberRepository.GetMemberImage(member.Id, version);
@@ -84,9 +84,9 @@ namespace ODK.Services.Members
                 return new VersionedServiceResult<MemberImage>(version ?? 0);
             }
 
-            if (maxWidth != null)
+            if (size != null)
             {
-                byte[] imageData = _imageService.Resize(image.ImageData, maxWidth.Value, maxWidth.Value);
+                byte[] imageData = _imageService.Crop(image.ImageData, size.Value, size.Value);
                 image = new MemberImage(image.MemberId, imageData, image.MimeType, image.Version);
             }
 

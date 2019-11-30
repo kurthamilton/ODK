@@ -9,6 +9,19 @@ namespace ODK.Services.Imaging
 {
     public class ImageService : IImageService
     {
+        public byte[] Crop(byte[] data, int width, int height)
+        {
+            return ProcessImage(data, image =>
+            {
+                Size size = GetRescaledSize(image.Size(), new Size(width, height), Math.Max);
+                image.Mutate(x =>
+                {
+                    x.Resize(size);
+                    x.Crop(new Rectangle((size.Width - width) / 2, (size.Height - height) / 2, width, height));
+                });
+            });
+        }
+
         public byte[] Reduce(byte[] data, int maxWidth, int maxHeight)
         {
             return ProcessImage(data, image =>
@@ -30,12 +43,12 @@ namespace ODK.Services.Imaging
             });
         }
 
-        private static Size GetRescaledSize(Size current, Size maxSize)
+        private static Size GetRescaledSize(Size current, Size maxSize, Func<double, double, double> chooseRatio)
         {
             double widthRatio = (double)maxSize.Width / current.Width;
             double heightRatio = (double)maxSize.Height / current.Height;
 
-            double ratio = Math.Min(widthRatio, heightRatio);
+            double ratio = chooseRatio(widthRatio, heightRatio);
 
             return new Size((int)Math.Floor(current.Width * ratio), (int)Math.Floor(current.Height * ratio));
         }
@@ -56,7 +69,7 @@ namespace ODK.Services.Imaging
 
         private static void RescaleImage(Image image, int maxWidth, int maxHeight)
         {
-            Size rescaled = GetRescaledSize(image.Size(), new Size(maxWidth, maxHeight));
+            Size rescaled = GetRescaledSize(image.Size(), new Size(maxWidth, maxHeight), Math.Min);
             image.Mutate(x => x.Resize(rescaled));
         }
     }

@@ -23,22 +23,23 @@ export class MemberComponent implements OnInit {
   ) {   
   }
 
-  chapter: Chapter;
   member: Member;
+  memberId: string;
 
   ngOnInit(): void {
-    const id: string = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.member.params.id);
-    this.chapter = this.chapterService.getActiveChapter();
+    this.memberId = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.member.params.id);
+    this.changeDetector.detectChanges();
 
-    this.memberService.getMember(id, this.chapter.id).subscribe((member: Member) => {
+    const chapter: Chapter = this.chapterService.getActiveChapter();
+
+    this.memberService.getMember(this.memberId, chapter.id).subscribe((member: Member) => {      
       if (!member) {
-        this.router.navigateByUrl(appUrls.members(this.chapter));
+        this.router.navigateByUrl(appUrls.members(chapter));
         return;
       }
 
       this.member = member;
       this.changeDetector.detectChanges();
     });
-  }
-
+  }  
 }

@@ -1,0 +1,81 @@
+import { DatePipe } from '@angular/common';
+import { Component, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef } from '@angular/core';
+
+import { forkJoin } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+import { ArrayUtils } from 'src/app/utils/array-utils';
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { FormControlViewModel } from '../../forms/form-control.view-model';
+import { FormViewModel } from '../../forms/form.view-model';
+import { MemberProfile } from 'src/app/core/members/member-profile';
+import { MemberProperty } from 'src/app/core/members/member-property';
+import { MemberService } from 'src/app/services/members/member.service';
+
+@Component({
+  selector: 'app-member-profile',
+  templateUrl: './member-profile.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class MemberProfileComponent implements OnChanges {
+
+  constructor(private changeDetector: ChangeDetectorRef,
+    private datePipe: DatePipe,
+    private chapterService: ChapterService,
+    private memberService: MemberService
+  ) {     
+  }
+
+  @Input() memberId: string;
+
+  form: FormViewModel;
+  
+  private chapterProperties: ChapterProperty[];
+  private profile: MemberProfile;  
+
+  ngOnChanges(): void {
+    if (!this.memberId) {
+      return;
+    }
+
+    const chapter: Chapter = this.chapterService.getActiveChapter();
+
+    forkJoin([
+      this.memberService.getMemberProfile(this.memberId).pipe(
+        tap((profile: MemberProfile) => this.profile = profile)
+      ),
+      this.chapterService.getChapterProperties(chapter.id).pipe(
+        tap((properties: ChapterProperty[]) => this.chapterProperties = properties)
+      )      
+    ]).subscribe(() => {            
+      this.buildProfileForm();
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  private buildProfileForm(): void {
+    const memberPropertyMap: Map<string, MemberProperty> = ArrayUtils.toMap(this.profile.properties, x => x.chapterPropertyId);
+    this.form = {
+      buttonText: '',
+      callback: null,
+      formControls: [
+        ... this.chapterProperties
+          .filter(x => memberPropertyMap.has(x.id) && !!memberPropertyMap.get(x.id).value)
+          .map((x): FormControlViewModel => ({
+            id: x.id,
+            label: x.name,
+            value: memberPropertyMap.get(x.id).value,
+            type: 'readonly'
+          })),
+        { 
+          id: 'joined',
+          label: 'Date joined',
+          value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy'),
+          type: 'readonly'
+        }
+      ]
+    };
+  }
+}

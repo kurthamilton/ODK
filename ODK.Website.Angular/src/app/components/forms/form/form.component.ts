@@ -23,6 +23,11 @@ export class FormComponent implements OnInit {
   update: Subject<boolean> = new Subject<boolean>();
 
   ngOnInit(): void {
+
+    if (!this.form.callback) {
+      return;
+    }
+
     this.form.callback.subscribe((result: boolean | string[]) => {
       let success: boolean;
       if (typeof(result) === 'boolean') {
