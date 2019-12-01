@@ -1,5 +1,7 @@
+import { DataType } from '../data-types/data-type';
+
 export interface ChapterProperty {
-    dataTypeId: string;
+    dataType: DataType;
     helpText: string;
     id: string;
     name: string;

@@ -5,7 +5,7 @@ namespace ODK.Web.Api.Chapters.Responses
 {
     public class ChapterPropertyApiResponse
     {
-        public Guid DataTypeId { get; set; }
+        public int DataTypeId { get; set; }
 
         public string HelpText { get; set; }
 

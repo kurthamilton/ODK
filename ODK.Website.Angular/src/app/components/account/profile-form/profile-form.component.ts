@@ -9,10 +9,11 @@ import { AccountService } from 'src/app/services/account/account.service';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
+import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { DataType } from 'src/app/core/data-types/data-type';
-import { DataTypeService } from 'src/app/services/data-types/data-type.service';
+import { FormControlType } from '../../forms/form-control-type';
 import { FormControlViewModel } from '../../forms/form-control.view-model';
 import { FormViewModel } from '../../forms/form.view-model';
 import { MemberProperty } from 'src/app/core/members/member-property';
@@ -28,7 +29,6 @@ export class ProfileFormComponent implements OnInit {
     private authenticationService: AuthenticationService,
     private accountService: AccountService,
     private chapterService: ChapterService,
-    private dataTypeService: DataTypeService,
     private datePipe: DatePipe
   ) {     
   }
@@ -37,7 +37,7 @@ export class ProfileFormComponent implements OnInit {
 
   private chapterId: string;
   private chapterProperties: Map<string, ChapterProperty>;
-  private dataTypes: Map<string, DataType>;
+  private chapterPropertyOptions: Map<string, ChapterPropertyOption[]>;
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private profile: AccountProfile;
   
@@ -114,21 +114,7 @@ export class ProfileFormComponent implements OnInit {
         },
         value: this.profile.lastName
       },
-      properties: this.profile.properties.map((x): FormControlViewModel => {
-        const chapterProperty: ChapterProperty = this.chapterProperties.get(x.chapterPropertyId);
-        const dataType: DataType = this.dataTypes.get(chapterProperty.dataTypeId);
-        return {
-          helpText: chapterProperty.helpText,
-          id: x.chapterPropertyId,
-          label: chapterProperty.name,
-          subtitle: chapterProperty.subtitle,
-          value: x.value,
-          validators: {
-            required: chapterProperty.required
-          },
-          type: dataType && dataType.name === 'LongText' ? 'textarea' : null
-        }
-      })      
+      properties: this.profile.properties.map((x): FormControlViewModel => this.mapFormControl(x))      
     }
 
     this.form = {
@@ -155,12 +141,50 @@ export class ProfileFormComponent implements OnInit {
       this.chapterService.getChapterProperties(this.chapterId).pipe(
         tap((properties: ChapterProperty[]) => this.chapterProperties = ArrayUtils.toMap(properties, x => x.id))
       ),
-      this.dataTypeService.getDataTypeMap().pipe(
-        tap((dataTypes: Map<string, DataType>) => this.dataTypes = dataTypes)
+      this.chapterService.getChapterPropertyOptions(this.chapterId).pipe(
+        tap((options: ChapterPropertyOption[]) => this.chapterPropertyOptions = ArrayUtils.groupValues(options, x => x.chapterPropertyId, x => x))
       )
     ]).subscribe(() => {
       this.buildForm();
       this.changeDetector.detectChanges();
     });
+  }
+
+  private mapFormControl(property: MemberProperty): FormControlViewModel {
+      const chapterProperty: ChapterProperty = this.chapterProperties.get(property.chapterPropertyId);
+      
+      const formControl: FormControlViewModel = {
+        helpText: chapterProperty.helpText,
+        id: property.chapterPropertyId,
+        label: chapterProperty.name,
+        subtitle: chapterProperty.subtitle,
+        type: this.mapFormControlType(chapterProperty.dataType),
+        value: property.value,
+        validators: {
+          required: chapterProperty.required
+        }
+      };
+
+      if (chapterProperty.dataType === DataType.DropDown) {
+        const chapterPropertyOptions: ChapterPropertyOption[] = this.chapterPropertyOptions.get(chapterProperty.id) || [];
+        formControl.dropDown = {
+          default: 'Select...',
+          freeTextOption: chapterPropertyOptions.find(x => x.freeText).value,
+          options: chapterPropertyOptions.map(x => x.value)
+        };
+      }
+
+      return formControl;
+  }
+
+  private mapFormControlType(dataType: DataType): FormControlType {    
+    switch (dataType) {
+      case DataType.DropDown:
+        return 'dropdown';
+      case DataType.LongText:
+        return 'textarea';
+      default:
+        return 'text';
+    }
   }
 }

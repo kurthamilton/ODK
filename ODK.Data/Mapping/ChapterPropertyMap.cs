@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using ODK.Core.Chapters;
+using ODK.Core.DataTypes;
 using ODK.Data.Sql;
 using ODK.Data.Sql.Mapping;
 
@@ -12,7 +13,7 @@ namespace ODK.Data.Mapping
         {
             Property(x => x.Id).HasColumnName("ChapterPropertyId").IsIdentity();
             Property(x => x.ChapterId);
-            Property(x => x.DataTypeId);
+            Property(x => x.DataType).HasColumnName("DataTypeId");
             Property(x => x.Name);
             Property(x => x.DisplayOrder);
             Property(x => x.Required);
@@ -26,7 +27,7 @@ namespace ODK.Data.Mapping
             (
                 id: reader.GetGuid(0),
                 chapterId: reader.GetGuid(1),
-                dataTypeId: reader.GetGuid(2),
+                dataType: (DataType)reader.GetInt32(2),
                 name: reader.GetString(3),
                 displayOrder: reader.GetInt32(4),
                 required: reader.GetBoolean(5),

@@ -1,17 +1,11 @@
-﻿using System;
-
-namespace ODK.Core.DataTypes
+﻿namespace ODK.Core.DataTypes
 {
-    public class DataType
+    public enum DataType
     {
-        public DataType(Guid id, string name)
-        {
-            Id = id;
-            Name = name;
-        }        
-
-        public Guid Id { get; }
-
-        public string Name { get; }
+        None = 0,
+        Text = 1,
+        LongText = 2,
+        DropDown = 3,
+        Url = 4
     }
 }

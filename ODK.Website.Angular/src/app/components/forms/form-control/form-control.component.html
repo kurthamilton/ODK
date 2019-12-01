@@ -20,6 +20,31 @@
         [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
         (blur)="validate()" />
 
+        <!-- textarea -->
+    <textarea *ngIf="type === 'textarea'"
+        rows="3" 
+        [attr.required]="required ? 'required' : null"
+        class="form-control" 
+        [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
+        (blur)="validate()">
+    </textarea>
+
+    <!-- dropdown -->
+    <ng-container *ngIf="type === 'dropdown'">
+        <select class="form-control"
+            [attr.required]="required ? 'required' : null"
+            [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id">
+            <option *ngIf="viewModel.dropDown.default" value="" 
+                [attr.selected]="selectedOption === viewModel.dropDown.default ? 'selected' : null">
+                {{viewModel.dropDown.default}}
+            </option>
+            <option *ngFor="let option of viewModel.dropDown.options" [attr.value]="option"
+                [attr.selected]="selectedOption === option ? 'selected' : null">
+                {{option}}
+            </option>
+        </select>        
+    </ng-container>    
+
     <!-- checkbox  -->
     <div *ngIf="type === 'checkbox'" class="form-check">
         <input class="form-check-input" type="checkbox"
@@ -32,22 +57,17 @@
             </i>
         </span>
         <span *ngIf="viewModel.subtitle" class="ml-1 text-muted">{{viewModel.subtitle}}</span>
-    </div>
-
-    <!-- textarea -->
-    <textarea *ngIf="type === 'textarea'"
-        rows="3" 
-        [attr.required]="required ? 'required' : null"
-        class="form-control" 
-        [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
-        (blur)="validate()">
-    </textarea>
+    </div>    
 
     <!-- readonly -->
     <div *ngIf="type === 'readonly'" class="form-control-plaintext">
         {{viewModel.value}}
     </div>
 
-    <app-form-control-validation [control]="control" [label]="viewModel.label" [validated]="validated">
+    <app-form-control-validation *ngIf="control" [control]="control" [label]="viewModel.label" [validated]="validated">
     </app-form-control-validation>
 </div>
+
+<app-form-control *ngFor="let child of childControls" [formGroup]="formGroup" [viewModel]="child"
+    [validated]="validated" [updated]="updated" (valueChange)="onChildControlValueChanged(child)">    
+</app-form-control>

@@ -26,9 +26,11 @@ export class FormControlComponent implements OnChanges, OnDestroy {
   @Output() valueChange: EventEmitter<string> = new EventEmitter<string>();
 
   control: AbstractControl;
+  childControls: FormControlViewModel[] = [];
   match: string;
   pattern: string;
   required: boolean;
+  selectedOption: string;
   showLabel: boolean;
   type: FormControlType;
 
@@ -46,19 +48,77 @@ export class FormControlComponent implements OnChanges, OnDestroy {
     
     this.showLabel = this.type !== 'checkbox';
 
-    this.control = this.createFormControl();
-    this.formGroup.addControl(this.viewModel.id, this.control);
+    this.buildDropDown(this.viewModel.value);
+
+    const value: string = this.getValue();
+
+    this.control = this.createFormControl(value);
+
+    if (!this.formGroup.get(this.viewModel.id)) {
+      this.formGroup.addControl(this.viewModel.id, this.control);
+    }
   }
 
   ngOnDestroy(): void {
     this.destroyed.next({});
   }
 
+  onChildControlValueChanged(viewModel: FormControlViewModel): void {
+    if (this.type === 'dropdown') {
+      this.bindValue(viewModel.value);
+    }
+  }
+
   validate(): void {
     this.control.updateValueAndValidity();
   }
 
-  private createFormControl(): FormControl {
+  private addDropDownFreeTextControl(value: string): void {
+    const viewModel: FormControlViewModel = {
+      id: `${this.viewModel.id}-freetext`,
+      label: 'Please specify',
+      validators: this.viewModel.validators,
+      value: value
+    };
+    
+    this.childControls.push(viewModel);    
+  }
+
+  private bindValue(value: string): void {
+    if (this.type === 'dropdown' && value === this.viewModel.dropDown.freeTextOption) {
+      value = this.childControls[0].value;
+    }
+    this.viewModel.value = value;
+    
+    this.valueChange.emit(this.viewModel.value);
+    this.changeDetector.detectChanges();    
+  }
+
+  private buildDropDown(value: string): void {
+    if (this.viewModel.type !== 'dropdown') {
+      return;      
+    }
+
+    this.childControls.length = 0;
+
+    this.selectedOption = this.viewModel.dropDown.options.find(x => x === value);
+    if (this.selectedOption) {
+      if (value === this.viewModel.dropDown.freeTextOption) {
+        this.addDropDownFreeTextControl('');
+      }
+      return;
+    }
+    
+    if (!value || !this.viewModel.dropDown.freeTextOption) {
+      this.selectedOption = this.viewModel.dropDown.default;
+      return;
+    }
+
+    this.selectedOption = this.viewModel.dropDown.freeTextOption;    
+    this.addDropDownFreeTextControl(value);
+  }
+
+  private createFormControl(value: string): AbstractControl {
     const validators: ValidatorFn[] = [];
 
     if (this.required) {
@@ -69,21 +129,33 @@ export class FormControlComponent implements OnChanges, OnDestroy {
       validators.push(Validators.pattern(this.pattern));
     }
     
-    const control: FormControl = this.formBuilder.control(this.viewModel.value, validators);
 
+    let control: AbstractControl = this.formGroup.get(this.viewModel.id);
+    if (!control) {
+      control = this.formBuilder.control(value, validators);
+    }
+    
     // bind value updates back to view models
     control.valueChanges
       .pipe(
         takeUntil(this.updated),
         takeUntil(this.destroyed)
       )
-      .subscribe((value: any) => this.onValueChanged(value));
+      .subscribe(x => this.onValueChanged(x));
 
     return control;
   }
 
-  private onValueChanged(value: string): void {    
-    this.viewModel.value = value;
-    this.changeDetector.detectChanges();
+  private getValue(): string {
+    if (this.type === 'dropdown') {
+      return this.selectedOption;
+    }
+
+    return this.viewModel.value;
+  }
+
+  private onValueChanged(value: string): void {            
+    this.buildDropDown(value);
+    this.bindValue(value);
   }
 }

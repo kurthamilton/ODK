@@ -1,7 +1,6 @@
 ﻿using System;
 using AutoMapper;
 using ODK.Core.Chapters;
-using ODK.Web.Api.Chapters.Requests;
 using ODK.Web.Api.Chapters.Responses;
 
 namespace ODK.Web.Api.Chapters
@@ -25,6 +24,7 @@ namespace ODK.Web.Api.Chapters
                 .ForMember(x => x.Twitter, opt => opt.MapFrom(x => x.TwitterName));
 
             CreateMap<ChapterProperty, ChapterPropertyApiResponse>()
+                .ForMember(x => x.DataTypeId, opt => opt.MapFrom(x => x.DataType))
                 .ForMember(x => x.Required, opt => opt.Condition(x => x.Required));
 
             CreateMap<ChapterPropertyOption, ChapterPropertyOptionApiResponse>()

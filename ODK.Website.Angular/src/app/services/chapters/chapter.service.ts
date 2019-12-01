@@ -125,7 +125,7 @@ export class ChapterService {
 
   private mapChapterProperty(response: any): ChapterProperty {
     return {
-      dataTypeId: response.dataTypeId,
+      dataType: response.dataTypeId,
       helpText: response.helpText,
       id: response.id,
       name: response.name,

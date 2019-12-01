@@ -4,6 +4,7 @@ using System.Linq;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
+using ODK.Core.DataTypes;
 using ODK.Core.Members;
 using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
@@ -86,7 +87,7 @@ namespace ODK.Services.Tests.Members
             return new ChapterProperty(
                 Guid.NewGuid(),
                 Guid.NewGuid(),
-                Guid.NewGuid(),
+                DataType.Text,
                 name ?? "property",
                 1,
                 required,
