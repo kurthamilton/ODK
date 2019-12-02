@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
 
   form: FormViewModel;
   links = {
-    forgottenPassword: `/${appPaths.forgottenPassword.path}`
+    forgottenPassword: `/${appPaths.password.forgotten.path}`
   };
 
   private formCallback: Subject<string[]> = new Subject<string[]>();

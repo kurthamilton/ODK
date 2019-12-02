@@ -149,7 +149,7 @@ namespace ODK.Services.Authentication
 
         public async Task ResetPassword(string token, string password)
         {
-            const string message = "Invalid token";
+            const string message = "Link is invalid or has expired. Please request a new link using the password reset form.";
 
             MemberPasswordResetRequest request = await _memberRepository.GetPasswordResetRequest(token);
             if (request == null)

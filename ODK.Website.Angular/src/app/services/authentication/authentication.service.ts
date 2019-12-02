@@ -16,6 +16,7 @@ const baseUrl = `${environment.baseUrl}/account`;
 
 const endpoints = {
   changePassword: `${baseUrl}/password`,
+  completePasswordReset: `${baseUrl}/password/reset/complete`,
   login: `${baseUrl}/login`,
   refreshToken: `${baseUrl}/refreshToken`,
   requestPasswordReset: `${baseUrl}/password/reset/request`
@@ -42,7 +43,7 @@ export class AuthenticationService {
   private refreshSubject: Subject<ServiceResult<AuthenticationToken>> = new Subject<ServiceResult<AuthenticationToken>>();
   private tokenSubject: Subject<AuthenticationToken>;
 
-  changePassword(currentPassword: string, newPassword: string): Observable<ServiceResult<{}>> {
+  changePassword(currentPassword: string, newPassword: string): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
       currentPassword,
       newPassword
@@ -50,16 +51,35 @@ export class AuthenticationService {
 
     return this.http.put(endpoints.changePassword, params)
       .pipe(
-        map((): ServiceResult<{}> => ({ success: true })),
-        catchError((err: any): Observable<ServiceResult<{}>> => {
+        map((): ServiceResult<void> => ({ success: true })),
+        catchError((err: any): Observable<ServiceResult<void>> => {
           const response = err.error;
-          const result: ServiceResult<{}> = {
+          const result: ServiceResult<void> = {
             messages: response.messages,
             success: false
           };
           return of(result);
         })
       );
+  }
+
+  completePasswordReset(password: string, token: string): Observable<ServiceResult<void>> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      password,
+      token
+    });
+
+    return this.http.post(endpoints.completePasswordReset, params).pipe(
+      map((): ServiceResult<void> => ({ success: true })),
+      catchError((err: any): Observable<ServiceResult<void>> => {
+        const response = err.error;
+        const result: ServiceResult<void> = {
+          messages: response.messages,
+          success: false
+        };
+        return of(result);
+      })
+    )
   }
 
   getAccountDetails(): AccountDetails {

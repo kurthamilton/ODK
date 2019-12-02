@@ -17,20 +17,20 @@ export class ChangePasswordComponent implements OnInit {
 
   constructor(private authenticationService: AuthenticationService,
     private notificationService: NotificationService
-  ) { 
+  ) {
   }
 
   @Output() passwordUpdate: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   form: FormViewModel;
-  
+
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
     confirmPassword: FormControlViewModel;
     currentPassword: FormControlViewModel;
     newPassword: FormControlViewModel;
   };
-  
+
   ngOnInit(): void {
     this.formControls = {
       confirmPassword: {
@@ -58,12 +58,12 @@ export class ChangePasswordComponent implements OnInit {
         type: 'password'
       }
     };
-    
+
     this.form = {
       buttonText: 'Update',
       callback: this.formCallback.asObservable(),
-      formControls: [ 
-        this.formControls.currentPassword, 
+      formControls: [
+        this.formControls.currentPassword,
         this.formControls.newPassword,
         // this.formControls.confirmPassword
       ]
@@ -73,12 +73,12 @@ export class ChangePasswordComponent implements OnInit {
   onFormSubmit(): void {
     const currentPassword: string = this.formControls.currentPassword.value;
     const newPassword: string = this.formControls.newPassword.value;
-    
+
     this.authenticationService
       .changePassword(currentPassword, newPassword)
-      .subscribe((result: ServiceResult<{}>) => {
+      .subscribe((result: ServiceResult<void>) => {
         this.formCallback.next(result.messages);
-        
+
         if (result.success === true) {
           this.notificationService.publish({
             message: 'Password updated',

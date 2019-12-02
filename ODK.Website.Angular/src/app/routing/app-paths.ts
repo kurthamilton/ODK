@@ -46,9 +46,6 @@ export const appPaths = {
             chapter: 'chapter'
         }
     },
-    forgottenPassword: {
-        path: 'fogotten-password'
-    },
     home: {
         path: ''
     },
@@ -60,6 +57,17 @@ export const appPaths = {
     },
     logout: {
         path: 'logout'
+    },
+    password: {
+        forgotten: {
+            path: 'password/forgotten'
+        },
+        reset: {
+            path: 'password/reset',
+            queryParams: {
+                token: 'token'
+            }
+        }
     },
     privacy: {
         path: 'privacy'

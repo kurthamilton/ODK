@@ -55,6 +55,7 @@ import { MemberProfileComponent } from './components/members/member-profile/memb
 import { PurchaseSubscriptionComponent } from './components/account/purchase-subscription/purchase-subscription.component';
 import { PaymentButtonComponent } from './components/payments/payment-button/payment-button.component';
 import { ForgottenPasswordComponent } from './components/account/forgotten-password/forgotten-password.component';
+import { ResetPasswordComponent } from './components/account/reset-password/reset-password.component';
 
 @NgModule({
   declarations: [    
@@ -106,7 +107,8 @@ import { ForgottenPasswordComponent } from './components/account/forgotten-passw
     MemberProfileComponent,
     PurchaseSubscriptionComponent,
     PaymentButtonComponent,
-    ForgottenPasswordComponent,    
+    ForgottenPasswordComponent,
+    ResetPasswordComponent,    
   ],
   imports: [
     AppRoutingModule,

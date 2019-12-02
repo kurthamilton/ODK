@@ -22,18 +22,21 @@ import { MemberComponent } from '../components/members/member/member.component';
 import { MembersComponent } from '../components/members/members/members.component';
 import { PrivacyComponent } from '../components/privacy/privacy.component';
 import { ProfileComponent } from '../components/account/profile/profile.component';
+import { ResetPasswordComponent } from '../components/account/reset-password/reset-password.component';
 import { SubscriptionComponent } from '../components/account/subscription/subscription.component';
 
 export const appRoutes: Routes = [
     {
       path: appPaths.home.path, component: HomeLayoutComponent, children: [
-      { path: '', component: HomeComponent },
-      { path: appPaths.forgottenPassword.path, component: ForgottenPasswordComponent },
-      { path: appPaths.join.path, component: JoinComponent },
-      { path: appPaths.login.path, component: LoginComponent },
-      { path: appPaths.logout.path, component: LogoutComponent },
-      { path: appPaths.privacy.path, component: PrivacyComponent },
-    ] },
+        { path: '', component: HomeComponent },
+        { path: appPaths.join.path, component: JoinComponent },
+        { path: appPaths.login.path, component: LoginComponent },
+        { path: appPaths.logout.path, component: LogoutComponent },
+        { path: appPaths.password.forgotten.path, component: ForgottenPasswordComponent },
+        { path: appPaths.password.reset.path, component: ResetPasswordComponent },
+        { path: appPaths.privacy.path, component: PrivacyComponent },
+      ]
+    },
     {
       path: appPaths.chapter.path, component: ChapterLayoutComponent, canActivate: [ChapterGuardService], children: [
         { path: '', component: ChapterComponent },
