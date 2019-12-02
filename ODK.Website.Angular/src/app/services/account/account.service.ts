@@ -8,11 +8,13 @@ import { AccountProfile } from 'src/app/core/account/account-profile';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { MemberProperty } from 'src/app/core/members/member-property';
+import { MemberSubscription } from 'src/app/core/members/member-subscription';
 
 const baseUrl = `${environment.baseUrl}/account`;
 
 const endpoints = {
   profile: `${baseUrl}/profile`,
+  subscription: `${baseUrl}/subscription`,
   updateImage: `${baseUrl}/image`
 };
 
@@ -26,6 +28,12 @@ export class AccountService {
   getProfile(): Observable<AccountProfile> {
     return this.http.get(endpoints.profile).pipe(
       map((response: any) => this.mapAccountProfile(response))
+    );
+  }
+
+  getSubscription(): Observable<MemberSubscription> {
+    return this.http.get(endpoints.subscription).pipe(
+      map((response: any) => this.mapSubscription(response))
     );
   }
 
@@ -74,6 +82,13 @@ export class AccountService {
     return {
       chapterPropertyId: response.chapterPropertyId,
       value: response.value
+    };
+  }
+
+  private mapSubscription(response: any): MemberSubscription {
+    return {
+      expiryDate: response.expiryDate ? new Date(response.expiryDate) : null,
+      type: response.type
     };
   }
 }

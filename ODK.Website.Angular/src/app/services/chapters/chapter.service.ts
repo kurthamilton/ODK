@@ -9,6 +9,7 @@ import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
 import { ChapterLinks } from 'src/app/core/chapters/chapter-links';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
+import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
 import { environment } from 'src/environments/environment';
 
 const baseUrl = `${environment.baseUrl}/chapters`;
@@ -18,7 +19,8 @@ const endpoints = {
   chapterLinks: (id: string) => `${baseUrl}/${id}/links`,
   chapterProperties: (id: string) => `${baseUrl}/${id}/properties`,
   chapterPropertyOptions: (id: string) => `${baseUrl}/${id}/propertyOptions`,
-  chapters: baseUrl
+  chapters: baseUrl,
+  chapterSubscriptions: (id: string) => `${baseUrl}/${id}/subscriptions`
 }
 
 @Injectable({
@@ -95,6 +97,12 @@ export class ChapterService {
       )
   }
 
+  getChapterSubscriptions(chapterId: string): Observable<ChapterSubscription[]> {
+    return this.http.get(endpoints.chapterSubscriptions(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapChapterSubscription(x)))
+    );
+  }
+
   setActiveChapter(chapter: Chapter): void {
     this.activeChapter = chapter;
   }
@@ -139,6 +147,18 @@ export class ChapterService {
       chapterPropertyId: response.chapterPropertyId,
       freeText: response.freeText === true,
       value: response.value
+    };
+  }
+
+  private mapChapterSubscription(response: any): ChapterSubscription {
+    return {
+      amount: response.amount,
+      chapterId: response.chapterId,
+      description: response.description,
+      id: response.id,
+      name: response.name,
+      subscriptionType: response.subscriptionType,
+      title: response.title
     };
   }
 }

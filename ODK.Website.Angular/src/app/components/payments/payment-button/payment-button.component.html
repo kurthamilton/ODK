@@ -1,0 +1,4 @@
+<ng-container *ngIf="payment">
+    <button class="btn btn-primary mr-1">Purchase</button>
+    <span>{{currencySymbol}}{{payment.amount | number:'1.2-2'}}</span>
+</ng-container>

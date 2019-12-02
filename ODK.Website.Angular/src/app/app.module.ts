@@ -52,6 +52,8 @@ import { JoinComponent } from './components/account/join/join.component';
 import { ChapterSidebarComponent } from './components/chapters/chapter-sidebar/chapter-sidebar.component';
 import { ListMemberComponent } from './components/members/list-member/list-member.component';
 import { MemberProfileComponent } from './components/members/member-profile/member-profile.component';
+import { PurchaseSubscriptionComponent } from './components/account/purchase-subscription/purchase-subscription.component';
+import { PaymentButtonComponent } from './components/payments/payment-button/payment-button.component';
 
 @NgModule({
   declarations: [    
@@ -100,7 +102,9 @@ import { MemberProfileComponent } from './components/members/member-profile/memb
     PageWithSidebarComponent,
     JoinComponent,
     ChapterSidebarComponent,
-    MemberProfileComponent,    
+    MemberProfileComponent,
+    PurchaseSubscriptionComponent,
+    PaymentButtonComponent,    
   ],
   imports: [
     AppRoutingModule,
