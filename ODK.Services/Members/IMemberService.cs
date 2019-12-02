@@ -19,6 +19,8 @@ namespace ODK.Services.Members
 
         Task<MemberSubscription> GetMemberSubscription(Guid memberId);
 
+        Task<MemberImage> RotateMemberImage(Guid memberId, int degrees);
+
         Task<MemberImage> UpdateMemberImage(Guid id, UpdateMemberImage image);
 
         Task<MemberProfile> UpdateMemberProfile(Guid id, UpdateMemberProfile profile);

@@ -58,14 +58,14 @@ namespace ODK.Web.Api.Admin.Members
             return MemberImageResult(updated);
         }
 
-        [HttpPut("{id}/Image/RotateRight")]
+        [HttpPut("{id}/Image/Rotate/Right")]
         public async Task<IActionResult> RotateImageRight(Guid id)
         {
             MemberImage rotated = await _memberAdminService.RotateMemberImage(GetMemberId(), id, 90);
             return MemberImageResult(rotated);
         }
 
-        [HttpPut("{id}/Image/RotateLeft")]
+        [HttpPut("{id}/Image/Rotate/Left")]
         public async Task<IActionResult> RotateImageLeft(Guid id)
         {
             MemberImage rotated = await _memberAdminService.RotateMemberImage(GetMemberId(), id, -90);

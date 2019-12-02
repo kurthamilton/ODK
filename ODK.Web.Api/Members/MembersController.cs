@@ -37,7 +37,7 @@ namespace ODK.Web.Api.Members
         {
             return await HandleVersionedRequest(
                 version => _memberService.GetMemberImage(version, GetMemberId(), id, size),
-                image => MemberImageResult(image));
+                MemberImageResult);
         }
 
         [HttpGet("Latest")]

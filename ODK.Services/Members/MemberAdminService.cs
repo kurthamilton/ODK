@@ -5,22 +5,19 @@ using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Services.Exceptions;
-using ODK.Services.Imaging;
 
 namespace ODK.Services.Members
 {
     public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
-        private readonly IImageService _imageService;
         private readonly IMemberGroupRepository _memberGroupRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly IMemberService _memberService;
 
         public MemberAdminService(IChapterRepository chapterRepository, IMemberRepository memberRepository,
-            IMemberGroupRepository memberGroupRepository, IMemberService memberService, IImageService imageService)
+            IMemberGroupRepository memberGroupRepository, IMemberService memberService)
             : base(chapterRepository)
         {
-            _imageService = imageService;
             _memberGroupRepository = memberGroupRepository;
             _memberRepository = memberRepository;
             _memberService = memberService;
@@ -109,18 +106,7 @@ namespace ODK.Services.Members
         {
             Member member = await GetMember(currentMemberId, id);
 
-            MemberImage image = await _memberRepository.GetMemberImage(member.Id, null);
-            if (image == null)
-            {
-                throw new OdkNotFoundException();
-            }
-
-            byte[] data = _imageService.Rotate(image.ImageData, degrees);
-
-            image = new MemberImage(image.MemberId, data, image.MimeType, image.Version);
-            await _memberRepository.UpdateMemberImage(image);
-
-            return await _memberRepository.GetMemberImage(id, null);
+            return await _memberService.RotateMemberImage(member.Id, degrees);
         }
 
         public async Task<MemberGroup> UpdateMemberGroup(Guid currentMemberId, Guid id, CreateMemberGroup memberGroup)

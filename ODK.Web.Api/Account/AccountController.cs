@@ -55,6 +55,20 @@ namespace ODK.Web.Api.Account
             return File(updated.ImageData, updated.MimeType);
         }
 
+        [HttpPut("Image/Rotate/Right")]
+        public async Task<IActionResult> MemberImageRotateRight()
+        {
+            MemberImage image = await _memberService.RotateMemberImage(GetMemberId(), 90);
+            return MemberImageResult(image);
+        }
+
+        [HttpPut("Image/Rotate/Left")]
+        public async Task<IActionResult> MemberImageRotateLeft()
+        {
+            MemberImage image = await _memberService.RotateMemberImage(GetMemberId(), -90);
+            return MemberImageResult(image);
+        }
+
         [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<ActionResult<AuthenticationTokenApiResponse>> Login([FromForm] LoginApiRequest request)

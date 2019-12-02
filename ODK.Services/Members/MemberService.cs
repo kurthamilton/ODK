@@ -112,14 +112,25 @@ namespace ODK.Services.Members
             return await _memberRepository.GetMemberSubscription(memberId);
         }
 
+        public async Task<MemberImage> RotateMemberImage(Guid memberId, int degrees)
+        {
+            Member member = await GetMember(memberId, memberId);
+
+            MemberImage image = await _memberRepository.GetMemberImage(memberId, null);
+            if (image == null)
+            {
+                return null;
+            }
+
+            byte[] data = _imageService.Rotate(image.ImageData, degrees);
+            return await UpdateMemberImage(member, data, image.MimeType);
+        }
+
         public async Task<MemberImage> UpdateMemberImage(Guid id, UpdateMemberImage image)
         {
-            await _authorizationService.AssertMemberIsCurrent(id);
+            Member member = await GetMember(id, id);
 
-            MemberImage update = CreateMemberImage(id, image.MimeType, image.ImageData);
-
-            await _memberRepository.UpdateMemberImage(update);
-            return await _memberRepository.GetMemberImage(id, null);
+            return await UpdateMemberImage(member, image.ImageData, image.MimeType);
         }
 
         public async Task<MemberProfile> UpdateMemberProfile(Guid id, UpdateMemberProfile profile)
@@ -194,6 +205,14 @@ namespace ODK.Services.Members
             }
         }
 
+        private static void ValidateMemberImage(string mimeType, byte[] data)
+        {
+            if (!ImageValidator.IsValidMimeType(mimeType) || !ImageValidator.IsValidData(data))
+            {
+                throw new OdkServiceException("File is not a valid image");
+            }
+        }
+
         private MemberImage CreateMemberImage(Guid memberId, string mimeType, byte[] imageData)
         {
             ValidateMemberImage(mimeType, imageData);
@@ -236,12 +255,12 @@ namespace ODK.Services.Members
             return await GetMember(memberId, memberId);
         }
 
-        private void ValidateMemberImage(string mimeType, byte[] data)
+        private async Task<MemberImage> UpdateMemberImage(Member member, byte[] imageData, string mimeType)
         {
-            if (!ImageValidator.IsValidMimeType(mimeType) || !ImageValidator.IsValidData(data))
-            {
-                throw new OdkServiceException("File is not a valid image");
-            }
+            MemberImage update = CreateMemberImage(member.Id, mimeType, imageData);
+
+            await _memberRepository.UpdateMemberImage(update);
+            return await _memberRepository.GetMemberImage(member.Id, null);
         }
 
         private async Task ValidateMemberProfile(Guid chapterId, UpdateMemberProfile profile)
