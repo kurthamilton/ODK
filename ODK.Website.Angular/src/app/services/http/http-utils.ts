@@ -12,7 +12,7 @@ export class HttpUtils {
                 values[key] = values[key] || ''
             }
         }
-        
+
         return new HttpParams({
             fromObject: values,
             encoder: new FormParameterEncoder()
@@ -20,16 +20,25 @@ export class HttpUtils {
     }
 
     static getBase64(http: HttpClient, url: string): Observable<string> {
-        return http.get(url, { observe: 'response', responseType: 'arraybuffer' })
-            .pipe(
-                map((response: HttpResponse<ArrayBuffer>) => {                    
-                    const contentType: string = response.headers.get('Content-Type');
+        const request: Observable<HttpResponse<ArrayBuffer>> = http.get(url, { observe: 'response', responseType: 'arraybuffer' });
+        return this.mapBase64Response(request);
+    }
 
-                    const bytes = new Uint8Array(response.body);
-                    const stringBytes: string = String.fromCharCode(...bytes)                    
-                    const base64: string = btoa(stringBytes);                    
-                    return base64 ? `data:${contentType};base64,${base64}` : '';
-                })
-            )
+    static putBase64(http: HttpClient, url: string, body?: any): Observable<string> {
+        const request: Observable<HttpResponse<ArrayBuffer>> = http.put(url, body || {}, { observe: 'response', responseType: 'arraybuffer' });
+        return this.mapBase64Response(request);
+    }
+
+    private static mapBase64Response(request: Observable<HttpResponse<ArrayBuffer>>): Observable<string> {
+        return request.pipe(
+            map((response: HttpResponse<ArrayBuffer>) => {
+                const contentType: string = response.headers.get('Content-Type');
+
+                const bytes = new Uint8Array(response.body);
+                const stringBytes: string = String.fromCharCode(...bytes)
+                const base64: string = btoa(stringBytes);
+                return base64 ? `data:${contentType};base64,${base64}` : '';
+            })
+        );
     }
 }

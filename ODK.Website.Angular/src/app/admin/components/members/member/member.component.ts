@@ -1,5 +1,7 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+
+import { Subject } from 'rxjs';
 
 import { adminPaths } from 'src/app/admin/routing/admin-paths';
 import { Chapter } from 'src/app/core/chapters/chapter';
@@ -12,16 +14,19 @@ import { MemberAdminService } from 'src/app/services/members/member-admin.servic
   templateUrl: './member.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MemberComponent implements OnInit {
+export class MemberComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private memberAdminService: MemberAdminService,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   member: Member;
+  updateImage: Subject<boolean> = new Subject<boolean>();
+
+  private destroyed: Subject<{}> = new Subject<{}>();
 
   ngOnInit(): void {
     const chapter: Chapter = this.chapterAdminService.getActiveChapter();
@@ -32,15 +37,13 @@ export class MemberComponent implements OnInit {
     });
   }
 
-  onRotate(): void {
-    this.memberAdminService.rotateMemberImage(this.member.id, 90).subscribe(() => {
-      // TODO: move into new admin member-image component
-      const member: Member = this.member;
-      this.member = null;
-      this.changeDetector.detectChanges();
+  ngOnDestroy(): void {
+    this.updateImage.complete();
+    this.destroyed.next({});
+  }
 
-      this.member = member;
-      this.changeDetector.detectChanges();
-    });
+  onRotate(): void {
+    this.memberAdminService.rotateMemberImage(this.member.id)
+      .subscribe(() => this.updateImage.next(true));
   }
 }

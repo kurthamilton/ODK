@@ -1,19 +1,19 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
+import { HttpUtils } from '../http/http-utils';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from './member.service';
-import { HttpUtils } from '../http/http-utils';
 
 const baseUrl: string = `${environment.baseUrl}/admin/members`;
 
 const endpoints = {
   members: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
-  rotateImage: (memberId: string) => `${baseUrl}/${memberId}/image/rotate`,
+  rotateImage: (memberId: string) => `${baseUrl}/${memberId}/image/rotate/right`,
   updateImage: (memberId: string) => `${baseUrl}/${memberId}/image`
 };
 
@@ -22,7 +22,7 @@ const endpoints = {
 })
 export class MemberAdminService extends MemberService {
 
-  constructor(http: HttpClient) { 
+  constructor(http: HttpClient) {
     super(http);
   }
 
@@ -32,23 +32,14 @@ export class MemberAdminService extends MemberService {
     );
   }
 
-  rotateMemberImage(memberId: string, degrees: number): Observable<boolean> {
-    const params: HttpParams = HttpUtils.createFormParams({
-      degrees: degrees.toString()
-    });
-
-    return this.http.put(endpoints.rotateImage(memberId), params).pipe(
-      map((response: any) => true)
-    );
+  rotateMemberImage(memberId: string): Observable<string> {
+    return HttpUtils.putBase64(this.http, endpoints.rotateImage(memberId));
   }
 
-  updateImage(memberId: string, file: File): Observable<boolean> {
+  updateImage(memberId: string, file: File): Observable<string> {
     const formData = new FormData();
     formData.append('file', file, file.name);
 
-    return this.http.put(endpoints.updateImage(memberId), formData)
-      .pipe(
-        map(() => true)
-      );
+    return HttpUtils.putBase64(this.http, endpoints.rotateImage(memberId), formData);
   }
 }

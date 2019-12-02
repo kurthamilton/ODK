@@ -13,9 +13,10 @@ import { MemberSubscription } from 'src/app/core/members/member-subscription';
 const baseUrl = `${environment.baseUrl}/account`;
 
 const endpoints = {
+  image: `${baseUrl}/image`,
   profile: `${baseUrl}/profile`,
-  subscription: `${baseUrl}/subscription`,
-  updateImage: `${baseUrl}/image`
+  rotateImage: `${baseUrl}/image/rotate/right`,
+  subscription: `${baseUrl}/subscription`
 };
 
 @Injectable({
@@ -23,7 +24,7 @@ const endpoints = {
 })
 export class AccountService {
 
-  constructor(private http: HttpClient) { }  
+  constructor(private http: HttpClient) { }
 
   getProfile(): Observable<AccountProfile> {
     return this.http.get(endpoints.profile).pipe(
@@ -37,14 +38,15 @@ export class AccountService {
     );
   }
 
-  updateImage(file: File): Observable<boolean> {
+  rotateImage(): Observable<string> {
+    return HttpUtils.putBase64(this.http, endpoints.rotateImage);
+  }
+
+  updateImage(file: File): Observable<string> {
     const formData = new FormData();
     formData.append('file', file, file.name);
 
-    return this.http.put(endpoints.updateImage, formData)
-      .pipe(
-        map(() => true)
-      );
+    return HttpUtils.putBase64(this.http, endpoints.image, formData);
   }
 
   updateProfile(profile: AccountProfile): Observable<boolean> {
@@ -55,16 +57,16 @@ export class AccountService {
       lastName: profile.lastName
     };
 
-    profile.properties.forEach((property: MemberProperty, i: number) => {      
+    profile.properties.forEach((property: MemberProperty, i: number) => {
       paramsObject[`properties[${i}].ChapterPropertyId`] = property.chapterPropertyId;
       paramsObject[`properties[${i}].Value`] = property.value;
     });
 
     const params: HttpParams = HttpUtils.createFormParams(paramsObject);
-        
+
     return this.http.put(endpoints.profile, params).pipe(
       map(() => true)
-    );    
+    );
   }
 
   private mapAccountProfile(response: any): AccountProfile {
