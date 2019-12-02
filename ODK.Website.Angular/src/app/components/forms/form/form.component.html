@@ -4,6 +4,7 @@
         <ng-container *ngIf="form.buttonText">
             <div class="d-flex align-items-center" [class.justify-content-end]="justifyButton === 'end'">
                 <button type="submit" class="btn btn-primary">{{form.buttonText}}</button>
+                <ng-content select="[app-button-row]"></ng-content>
             </div>
             <app-error-messages [messages]="messages"></app-error-messages>
         </ng-container>

@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
+import { appPaths } from 'src/app/routing/app-paths';
 import { AuthenticationService } from '../../../services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { FormControlViewModel } from '../../forms/form-control.view-model';
@@ -23,6 +24,9 @@ export class LoginComponent implements OnInit {
   }
 
   form: FormViewModel;
+  links = {
+    forgottenPassword: `/${appPaths.forgottenPassword.path}`
+  };
 
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
@@ -47,7 +51,7 @@ export class LoginComponent implements OnInit {
           required: true
         },
       }
-    };    
+    };
 
     this.form = {
       buttonText: 'Sign In',

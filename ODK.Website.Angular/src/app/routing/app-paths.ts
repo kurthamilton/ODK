@@ -23,14 +23,14 @@ export const appPaths = {
                 }
             },
             events: {
-                path: 'events'            
-            },            
+                path: 'events'
+            },
             member: {
                 path: 'knitwits/:id',
                 params: {
                     id: 'id'
                 }
-            },            
+            },
             members: {
                 path: 'knitwits'
             },
@@ -40,11 +40,14 @@ export const appPaths = {
             subscription: {
                 path: 'subscription'
             }
-        },        
+        },
         path: ':chapter',
         params: {
             chapter: 'chapter'
         }
+    },
+    forgottenPassword: {
+        path: 'fogotten-password'
     },
     home: {
         path: ''

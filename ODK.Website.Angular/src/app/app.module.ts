@@ -54,6 +54,7 @@ import { ListMemberComponent } from './components/members/list-member/list-membe
 import { MemberProfileComponent } from './components/members/member-profile/member-profile.component';
 import { PurchaseSubscriptionComponent } from './components/account/purchase-subscription/purchase-subscription.component';
 import { PaymentButtonComponent } from './components/payments/payment-button/payment-button.component';
+import { ForgottenPasswordComponent } from './components/account/forgotten-password/forgotten-password.component';
 
 @NgModule({
   declarations: [    
@@ -104,7 +105,8 @@ import { PaymentButtonComponent } from './components/payments/payment-button/pay
     ChapterSidebarComponent,
     MemberProfileComponent,
     PurchaseSubscriptionComponent,
-    PaymentButtonComponent,    
+    PaymentButtonComponent,
+    ForgottenPasswordComponent,    
   ],
   imports: [
     AppRoutingModule,

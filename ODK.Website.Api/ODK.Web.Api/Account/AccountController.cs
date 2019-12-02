@@ -37,14 +37,6 @@ namespace ODK.Web.Api.Account
             return Created();
         }
 
-        [AllowAnonymous]
-        [HttpPost("CompletePasswordReset")]
-        public async Task<IActionResult> CompleteResetPassword([FromForm] ResetPasswordApiRequest request)
-        {
-            await _authenticationService.ResetPassword(request.Token, request.Password);
-            return Created();
-        }
-
         [HttpPut("Image")]
         public async Task<IActionResult> UpdateImage([FromForm] IFormFile file)
         {
@@ -83,6 +75,22 @@ namespace ODK.Web.Api.Account
         {
             await _authenticationService.ChangePassword(GetMemberId(), request.CurrentPassword, request.NewPassword);
             return NoContent();
+        }
+
+        [AllowAnonymous]
+        [HttpPost("Password/Reset/Complete")]
+        public async Task<IActionResult> CompleteResetPassword([FromForm] ResetPasswordApiRequest request)
+        {
+            await _authenticationService.ResetPassword(request.Token, request.Password);
+            return Created();
+        }
+
+        [AllowAnonymous]
+        [HttpPost("Password/Reset/Request")]
+        public async Task<IActionResult> RequestPasswordReset([FromForm] RequestPasswordResetApiRequest request)
+        {
+            await _authenticationService.RequestPasswordReset(request.EmailAddress);
+            return Created();
         }
 
         [HttpGet("Profile")]
@@ -124,14 +132,6 @@ namespace ODK.Web.Api.Account
         {
             CreateMemberProfile profile = _mapper.Map<CreateMemberProfile>(request);
             await _memberService.CreateMember(request.ChapterId, profile);
-            return Created();
-        }
-
-        [AllowAnonymous]
-        [HttpPost("RequestPasswordReset")]
-        public async Task<IActionResult> RequestPasswordReset([FromForm] RequestPasswordResetApiRequest request)
-        {
-            await _authenticationService.RequestPasswordReset(request.Username);
             return Created();
         }
 

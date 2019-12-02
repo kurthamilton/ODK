@@ -17,7 +17,8 @@ const baseUrl = `${environment.baseUrl}/account`;
 const endpoints = {
   changePassword: `${baseUrl}/password`,
   login: `${baseUrl}/login`,
-  refreshToken: `${baseUrl}/refreshToken`
+  refreshToken: `${baseUrl}/refreshToken`,
+  requestPasswordReset: `${baseUrl}/password/reset/request`
 }
 
 const storageKeys = {
@@ -31,10 +32,10 @@ export class AuthenticationService {
 
   constructor(private http: HttpClient,
     private storageService: StorageService
-  ) { 
+  ) {
     const token: AuthenticationToken = this.getToken();
     this.tokenSubject = new BehaviorSubject<AuthenticationToken>(token);
-  }  
+  }
 
   private loginSubject: Subject<ServiceResult<AuthenticationToken>> = new Subject<ServiceResult<AuthenticationToken>>();
   private nextTokenSubject: Subject<AuthenticationToken> = new Subject<AuthenticationToken>();
@@ -140,11 +141,22 @@ export class AuthenticationService {
       .pipe(
         take(1)
       );
-  }      
+  }
+
+  requestPasswordReset(emailAddress: string): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      emailAddress
+    });
+
+    return this.http.post(endpoints.requestPasswordReset, params)
+      .pipe(
+        map(() => undefined)
+      );
+  }
 
   private mapToken(response: any): AuthenticationToken {
     const token: AuthenticationToken = {
-      accessToken: response.accessToken,      
+      accessToken: response.accessToken,
       chapterId: response.chapterId,
       memberId: response.memberId,
       refreshToken: response.refreshToken
@@ -186,7 +198,7 @@ export class AuthenticationService {
         this.setToken(result, options.subject);
       });
   }
-  
+
   private setStorageToken(token: AuthenticationToken): void {
     this.storageService.set(storageKeys.authToken, token);
   }

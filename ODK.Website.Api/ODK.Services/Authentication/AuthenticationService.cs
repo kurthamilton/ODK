@@ -120,9 +120,9 @@ namespace ODK.Services.Authentication
             return authenticationToken;
         }
 
-        public async Task RequestPasswordReset(string username)
+        public async Task RequestPasswordReset(string emailAddress)
         {
-            Member member = await _memberRepository.FindMemberByEmailAddress(username);
+            Member member = await _memberRepository.FindMemberByEmailAddress(emailAddress);
 
             DateTime created = DateTime.UtcNow;
             DateTime expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
