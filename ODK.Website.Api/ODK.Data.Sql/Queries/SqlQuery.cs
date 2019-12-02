@@ -16,7 +16,7 @@ namespace ODK.Data.Sql.Queries
         private readonly IList<ISqlComponent> _joins = new List<ISqlComponent>();
         private readonly IList<ISqlComponent> _orderByFields = new List<ISqlComponent>();
         private readonly IList<string> _selectColumns = new List<string>();
-        private int _top = 0;
+        private int _top;
         private readonly IList<(SqlColumn Column, object Value)> _updateColumns = new List<(SqlColumn, object)>();
 
         protected SqlQuery(SqlContext context)

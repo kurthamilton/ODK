@@ -37,17 +37,18 @@ namespace ODK.Data.Sql
 
         public SqlMap<T> GetMap<T>()
         {
-            string key = GetKey<T>();
-            if (!_maps.ContainsKey(key))
-            {
-                throw new InvalidOperationException($"Type {key} not mapped in sql context");
-            }
-            return _maps[key] as SqlMap<T>;
+            return GetMap(typeof(T)) as SqlMap<T>;
         }
 
         public string GetTableName<T>()
         {
             SqlMap<T> map = GetMap<T>();
+            return map.TableName;
+        }
+
+        public string GetTableName(Type type)
+        {
+            SqlMap map = (SqlMap)GetMap(type);
             return map.TableName;
         }
 
@@ -112,9 +113,9 @@ namespace ODK.Data.Sql
             _maps[key] = map;
         }
 
-        private static string GetKey<T>()
+        private static string GetKey(Type type)
         {
-            return typeof(T).FullName;
+            return type.FullName;
         }
 
         private async Task ExecuteQueryAsync<T>(SqlQuery<T> query, Func<DbCommand, Task> action, string appendSql = "")
@@ -132,6 +133,16 @@ namespace ODK.Data.Sql
 
             await connection.OpenAsync();
             await action(command);
+        }
+
+        private object GetMap(Type type)
+        {
+            string key = GetKey(type);
+            if (!_maps.ContainsKey(key))
+            {
+                throw new InvalidOperationException($"Type {key} not mapped in sql context");
+            }
+            return _maps[key];
         }
 
         private async Task<TResult> ReadQueryAsync<T, TResult>(SqlQuery<T> query, Func<DbDataReader, TResult> read, string appendSql = "")

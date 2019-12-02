@@ -14,7 +14,7 @@ namespace ODK.Data.Mapping
             Property(x => x.MemberId);
             Property(x => x.MemberEmailId);
             Property(x => x.ResponseToken);
-            Property(x => x.Sent).FromTable("MemberEmails");
+            Property(x => x.Sent).From<MemberEmail>();
 
             Join<MemberEmail, Guid>(x => x.MemberEmailId, x => x.Id);
         }

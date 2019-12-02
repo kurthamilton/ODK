@@ -13,7 +13,7 @@ namespace ODK.Data.Mapping
         {
             Property(x => x.ChapterId);
             Property(x => x.MemberId);
-            Property(x => x.SuperAdmin).FromTable("Members");
+            Property(x => x.SuperAdmin).From<Member>();
 
             Join<Member, Guid>(x => x.MemberId, x => x.Id);
         }
