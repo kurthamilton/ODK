@@ -26,8 +26,6 @@ export class MemberComponent implements OnInit, OnDestroy {
   member: Member;
   updateImage: Subject<boolean> = new Subject<boolean>();
 
-  private destroyed: Subject<{}> = new Subject<{}>();
-
   ngOnInit(): void {
     const chapter: Chapter = this.chapterAdminService.getActiveChapter();
     const id: string = this.route.snapshot.paramMap.get(adminPaths.members.member.params.id);
@@ -39,7 +37,6 @@ export class MemberComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.updateImage.complete();
-    this.destroyed.next({});
   }
 
   onRotate(): void {

@@ -1,8 +1,9 @@
 import { Component, ChangeDetectionStrategy, Input, ChangeDetectorRef, OnChanges, OnDestroy } from '@angular/core';
 
-import { Subject, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from 'src/app/services/members/member.service';
 
@@ -25,8 +26,6 @@ export class MemberImageComponent implements OnChanges, OnDestroy {
   image: string;
   loading = true;
 
-  private destroyed: Subject<{}> = new Subject<{}>();
-
   ngOnChanges(): void {
     if (!this.member) {
       return;
@@ -34,17 +33,14 @@ export class MemberImageComponent implements OnChanges, OnDestroy {
 
     if (this.update) {
       this.update.pipe(
-        takeUntil(this.destroyed)
+        takeUntil(componentDestroyed(this))
       ).subscribe(() => this.loadImage());
     }
 
     this.loadImage();
   }
 
-  ngOnDestroy(): void {
-    this.destroyed.next({});
-    this.destroyed.complete();
-  }
+  ngOnDestroy(): void {}
 
   private loadImage(): void {
     this.loading = true;

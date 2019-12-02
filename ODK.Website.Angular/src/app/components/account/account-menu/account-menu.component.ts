@@ -1,6 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
-import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { appUrls } from 'src/app/routing/app-urls';
@@ -8,6 +7,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 
 @Component({
   selector: 'app-account-menu',
@@ -19,7 +19,7 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
   constructor(private changeDetector: ChangeDetectorRef,
     private authenticationService: AuthenticationService,
     private chapterService: ChapterService
-  ) { 
+  ) {
   }
 
   authenticated: boolean;
@@ -35,17 +35,13 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
   joinLink: string;
   loginLink: string;
 
-  private destroyed: Subject<{}> = new Subject<{}>();
-
   ngOnInit(): void {
     this.authenticationService.isAuthenticated().pipe(
-      takeUntil(this.destroyed)
+      takeUntil(componentDestroyed(this))
     ).subscribe((token: AuthenticationToken) => this.onAuthenticationChange(token));
   }
 
-  ngOnDestroy(): void {
-    this.destroyed.next();
-  }
+  ngOnDestroy(): void {}
 
   private onAuthenticationChange(token: AuthenticationToken): void {
     if (!token) {
@@ -63,7 +59,7 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
       this.chapter = chapter;
       this.links = {
         admin: token.adminChapterIds && token.adminChapterIds.includes(chapter.id) ? appUrls.adminChapter(chapter) : null,
-        chapter: appUrls.chapter(chapter),        
+        chapter: appUrls.chapter(chapter),
         logout: `/${appUrls.logout}`,
         profile: appUrls.profile(chapter)
       };

@@ -1,8 +1,9 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
-import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
+import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 
 @Component({
   selector: 'app-form-control-validation',
@@ -18,17 +19,13 @@ export class FormControlValidationComponent implements OnInit, OnDestroy {
   @Input() label: string;
   @Input() validated: boolean;
 
-  private destroyed: Subject<{}> = new Subject<{}>();
-
   ngOnInit(): void {
     this.control.statusChanges
-      .pipe(takeUntil(this.destroyed))
+      .pipe(takeUntil(componentDestroyed(this)))
       .subscribe(() => this.onStatusChanged());
   }
 
-  ngOnDestroy(): void {
-    this.destroyed.next({});
-  }
+  ngOnDestroy(): void {}
 
   private onStatusChanged(): void {
     this.changeDetector.detectChanges();

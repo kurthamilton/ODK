@@ -1,9 +1,10 @@
 import { Component, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { FormGroup, AbstractControl, FormControl, ValidatorFn, Validators, FormBuilder } from '@angular/forms';
+import { FormGroup, AbstractControl, ValidatorFn, Validators, FormBuilder } from '@angular/forms';
 
-import { Subject, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 import { FormControlViewModel } from '../form-control.view-model';
 import { FormControlType } from '../form-control-type';
 
@@ -16,7 +17,7 @@ export class FormControlComponent implements OnChanges, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private formBuilder: FormBuilder
-  ) {     
+  ) {
   }
 
   @Input() formGroup: FormGroup;
@@ -34,18 +35,16 @@ export class FormControlComponent implements OnChanges, OnDestroy {
   showLabel: boolean;
   type: FormControlType;
 
-  private destroyed: Subject<{}> = new Subject<{}>();
-
   ngOnChanges(): void {
     if (!this.viewModel) {
       return;
     }
-    
+
     this.match = '';
     this.pattern = this.viewModel.validators ? this.viewModel.validators.pattern : '';
     this.required = !!this.viewModel.validators && this.viewModel.validators.required === true;
     this.type = this.viewModel.type || 'text';
-    
+
     this.showLabel = this.type !== 'checkbox';
 
     this.buildDropDown(this.viewModel.value);
@@ -59,9 +58,7 @@ export class FormControlComponent implements OnChanges, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.destroyed.next({});
-  }
+  ngOnDestroy(): void {}
 
   onChildControlValueChanged(viewModel: FormControlViewModel): void {
     if (this.type === 'dropdown') {
@@ -80,8 +77,8 @@ export class FormControlComponent implements OnChanges, OnDestroy {
       validators: this.viewModel.validators,
       value: value
     };
-    
-    this.childControls.push(viewModel);    
+
+    this.childControls.push(viewModel);
   }
 
   private bindValue(value: string): void {
@@ -89,14 +86,14 @@ export class FormControlComponent implements OnChanges, OnDestroy {
       value = this.childControls[0].value;
     }
     this.viewModel.value = value;
-    
+
     this.valueChange.emit(this.viewModel.value);
-    this.changeDetector.detectChanges();    
+    this.changeDetector.detectChanges();
   }
 
   private buildDropDown(value: string): void {
     if (this.viewModel.type !== 'dropdown') {
-      return;      
+      return;
     }
 
     this.childControls.length = 0;
@@ -108,13 +105,13 @@ export class FormControlComponent implements OnChanges, OnDestroy {
       }
       return;
     }
-    
+
     if (!value || !this.viewModel.dropDown.freeTextOption) {
       this.selectedOption = this.viewModel.dropDown.default;
       return;
     }
 
-    this.selectedOption = this.viewModel.dropDown.freeTextOption;    
+    this.selectedOption = this.viewModel.dropDown.freeTextOption;
     this.addDropDownFreeTextControl(value);
   }
 
@@ -124,22 +121,22 @@ export class FormControlComponent implements OnChanges, OnDestroy {
     if (this.required) {
       validators.push(Validators.required);
     }
-    
+
     if (this.pattern) {
       validators.push(Validators.pattern(this.pattern));
     }
-    
+
 
     let control: AbstractControl = this.formGroup.get(this.viewModel.id);
     if (!control) {
       control = this.formBuilder.control(value, validators);
     }
-    
+
     // bind value updates back to view models
     control.valueChanges
       .pipe(
         takeUntil(this.updated),
-        takeUntil(this.destroyed)
+        takeUntil(componentDestroyed(this))
       )
       .subscribe(x => this.onValueChanged(x));
 
@@ -154,7 +151,7 @@ export class FormControlComponent implements OnChanges, OnDestroy {
     return this.viewModel.value;
   }
 
-  private onValueChanged(value: string): void {            
+  private onValueChanged(value: string): void {
     this.buildDropDown(value);
     this.bindValue(value);
   }

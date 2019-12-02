@@ -4,6 +4,7 @@ import { FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 import { FormViewModel } from '../form.view-model';
 
 @Component({
@@ -13,17 +14,15 @@ import { FormViewModel } from '../form.view-model';
 })
 export class FormControlsComponent implements OnChanges, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef    
+  constructor(private changeDetector: ChangeDetectorRef
   ) {
   }
 
   @Input() form: FormViewModel;
   @Input() validated: boolean;
-  
+
   formGroup: FormGroup;
   updated: Subject<boolean> = new Subject<boolean>();
-
-  private destroyed: Subject<{}> = new Subject<{}>();
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['form']) {
@@ -34,7 +33,7 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroyed.next({});
+    this.updated.complete();
   }
 
   onValueChange(): void {
@@ -50,7 +49,7 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
     group.valueChanges
       .pipe(
         takeUntil(this.updated),
-        takeUntil(this.destroyed),
+        takeUntil(componentDestroyed(this)),
       )
       .subscribe(() => this.onGroupChanged(group));
 
@@ -60,5 +59,5 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
   private onGroupChanged(group: FormGroup): void {
     this.form.valid = group.valid;
     this.changeDetector.detectChanges();
-  }  
+  }
 }
