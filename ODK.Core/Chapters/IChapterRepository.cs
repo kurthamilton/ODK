@@ -32,6 +32,8 @@ namespace ODK.Core.Chapters
 
         Task<IReadOnlyCollection<Chapter>> GetChapters();
 
+        Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid chapterId);
+
         Task<long> GetChaptersVersion();
 
         Task UpdateChapterLinks(ChapterLinks links);

@@ -55,6 +55,11 @@ namespace ODK.Data.Sql.Mapping
             _joins.Add(new SqlJoin<T, TJoin, TValue>(thisField, targetField));
         }
 
+        protected void Join<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> thisField, Expression<Func<TTo, TValue>> targetField)
+        {
+            _joins.Add(new SqlJoin<TFrom, TTo, TValue>(thisField, targetField));
+        }
+
         protected SqlColumn Property<TValue>(Expression<Func<T, TValue>> expression)
         {
             SqlDbType type = SqlDbTypes.GetSqlDbType<TValue>();

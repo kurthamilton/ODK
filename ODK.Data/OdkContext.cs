@@ -8,7 +8,6 @@ namespace ODK.Data
         public OdkContext(string connectionString)
             : base(connectionString)
         {
-
             AddMap(new ChapterAdminMemberMap());
             AddMap(new ChapterEmailSettingsMap());
             AddMap(new ChapterLinksMap());
@@ -18,6 +17,7 @@ namespace ODK.Data
             AddMap(new ChapterPropertyOptionMap());
             AddMap(new ChapterSubscriptionMap());
             AddMap(new ContactRequestMap());
+            AddMap(new CountryMap());
             AddMap(new EmailMap());
             AddMap(new EventMap());
             AddMap(new EventResponseMap());
@@ -32,7 +32,7 @@ namespace ODK.Data
             AddMap(new MemberPasswordResetRequestMap());
             AddMap(new MemberPropertyMap());
             AddMap(new MemberRefreshTokenMap());
-            AddMap(new SubscriptionTypeMap());
+            AddMap(new MemberSubscriptionMap());
         }
     }
 }

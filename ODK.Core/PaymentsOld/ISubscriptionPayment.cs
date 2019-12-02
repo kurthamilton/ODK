@@ -6,6 +6,6 @@ namespace ODK.Core.Payments
     [Obsolete("TODO: Remove")]
     public interface ISubscriptionPayment : IPayment
     {
-        MemberTypes? SubscriptionType { get; }
+        SubscriptionType? SubscriptionType { get; }
     }
 }

@@ -119,6 +119,13 @@ namespace ODK.Web.Api.Account
         {
             await _authenticationService.RequestPasswordReset(request.Username);
             return Created();
-        }        
+        }
+
+        [HttpGet("Subscription")]
+        public async Task<SubscriptionApiResponse> Subscription()
+        {
+            MemberSubscription subscription = await _memberService.GetMemberSubscription(GetMemberId());
+            return _mapper.Map<SubscriptionApiResponse>(subscription);
+        }
     }
 }

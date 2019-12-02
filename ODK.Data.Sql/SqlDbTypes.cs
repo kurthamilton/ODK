@@ -24,8 +24,11 @@ namespace ODK.Data.Sql
 
         public static SqlDbType GetSqlDbType<T>()
         {
-            Type type = typeof(T);
+            return GetSqlDbType(typeof(T));
+        }
 
+        public static SqlDbType GetSqlDbType(Type type)
+        {
             if (type.IsEnum)
             {
                 type = type.GetEnumUnderlyingType();
@@ -36,7 +39,13 @@ namespace ODK.Data.Sql
                 return Types[type];
             }
 
-            throw new ArgumentException($"SqlDbType not found for C# type {type.Name}", nameof(T));
+            Type nullableType = Nullable.GetUnderlyingType(type);
+            if (nullableType != null)
+            {
+                return GetSqlDbType(nullableType);
+            }
+
+            throw new ArgumentException($"SqlDbType not found for C# type {type.Name}", nameof(type));
         }
     }
 }

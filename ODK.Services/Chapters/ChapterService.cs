@@ -67,6 +67,11 @@ namespace ODK.Services.Chapters
                 currentVersion);
         }
 
+        public async Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid chapterId)
+        {
+            return await _chapterRepository.GetChapterSubscriptions(chapterId);
+        }
+
         public async Task SendContactMessage(Guid chapterId, string fromAddress, string message)
         {
             if (string.IsNullOrWhiteSpace(fromAddress) || string.IsNullOrWhiteSpace(message))

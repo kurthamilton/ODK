@@ -15,7 +15,7 @@ namespace ODK.Web.Api
 {
     public abstract class OdkControllerBase : ControllerBase
     {
-        private static readonly Regex VersionRegex = new Regex(@"^""(?<version>\d+)""$");
+        private static readonly Regex VersionRegex = new Regex(@"^""(?<version>-?\d+)""$");
 
         protected static async Task<UpdateMemberImageApiRequest> FileToApiRequest(IFormFile file)
         {

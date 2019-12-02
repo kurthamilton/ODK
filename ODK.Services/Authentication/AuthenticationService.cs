@@ -193,6 +193,7 @@ namespace ODK.Services.Authentication
         private async Task<AuthenticationToken> GenerateAccessToken(Member member, DateTime? refreshTokenExpires = null)
         {
             IReadOnlyCollection<ChapterAdminMember> adminChapterMembers = await _chapterRepository.GetChapterAdminMembers(member.Id);
+            MemberSubscription subscription = await _memberRepository.GetMemberSubscription(member.Id);
 
             byte[] keyBytes = Encoding.ASCII.GetBytes(_settings.Key);
             SymmetricSecurityKey key = new SymmetricSecurityKey(keyBytes);
@@ -211,8 +212,10 @@ namespace ODK.Services.Authentication
             string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
             string refreshToken = await GenerateRefreshToken(member.Id, refreshTokenExpires);
 
-            return new AuthenticationToken(member.Id, member.ChapterId, accessToken, refreshToken, adminChapterMembers.Select(x => x.ChapterId),
-                adminChapterMembers.Any(x => x.SuperAdmin));
+            return new AuthenticationToken(member.Id, member.ChapterId, accessToken, refreshToken,
+                adminChapterMembers.Select(x => x.ChapterId),
+                adminChapterMembers.Any(x => x.SuperAdmin),
+                subscription.ExpiryDate);
         }
 
         private async Task<string> GenerateRefreshToken(Guid memberId, DateTime? expires = null)

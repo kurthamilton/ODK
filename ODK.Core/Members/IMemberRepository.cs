@@ -26,6 +26,7 @@ namespace ODK.Core.Members
         Task<MemberPassword> GetMemberPassword(Guid memberId);
         Task<IReadOnlyCollection<MemberProperty>> GetMemberProperties(Guid memberId);
         Task<IReadOnlyCollection<Member>> GetMembers(Guid chapterId);
+        Task<MemberSubscription> GetMemberSubscription(Guid memberId);
         Task<MemberPasswordResetRequest> GetPasswordResetRequest(string token);
         Task<MemberRefreshToken> GetRefreshToken(string refreshToken);
         Task UpdateMember(Guid memberId, string emailAddress, bool emailOptIn, string firstName, string lastName);

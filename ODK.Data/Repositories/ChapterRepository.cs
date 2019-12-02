@@ -121,6 +121,14 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
+        public async Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterSubscription>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .ToArrayAsync();
+        }
+
         public async Task<long> GetChaptersVersion()
         {
             return await Context

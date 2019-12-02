@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using ODK.Core.Payments;
+using ODK.Core.Chapters;
 using Stripe;
 using Stripe.Checkout;
 

@@ -1,5 +1,6 @@
 ﻿using System.Data;
-using ODK.Core.Payments;
+using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Mapping
@@ -11,7 +12,7 @@ namespace ODK.Data.Mapping
         {
             Property(x => x.Id).HasColumnName("ChapterSubscriptionId").IsIdentity();
             Property(x => x.ChapterId);
-            Property(x => x.SubscriptionTypeId);
+            Property(x => x.SubscriptionType).HasColumnName("SubscriptionTypeId");
             Property(x => x.Name);
             Property(x => x.Title);
             Property(x => x.Description);
@@ -24,7 +25,7 @@ namespace ODK.Data.Mapping
             (
                 id: reader.GetGuid(0),
                 chapterId: reader.GetGuid(1),
-                subscriptionTypeId: reader.GetGuid(2),
+                subscriptionType: (SubscriptionType)reader.GetInt32(2),
                 name: reader.GetString(3),
                 title: reader.GetString(4),
                 description: reader.GetString(5),

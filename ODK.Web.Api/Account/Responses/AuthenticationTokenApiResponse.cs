@@ -15,6 +15,8 @@ namespace ODK.Web.Api.Account.Responses
 
         public string RefreshToken { get; set; }
 
+        public DateTime? SubscriptionExpiryDate { get; set; }
+
         public bool? SuperAdmin { get; set; }
     }
 }

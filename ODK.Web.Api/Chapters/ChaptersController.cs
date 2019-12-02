@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Chapters;
 using ODK.Services.Chapters;
 using ODK.Web.Api.Chapters.Requests;
 using ODK.Web.Api.Chapters.Responses;
@@ -76,6 +77,14 @@ namespace ODK.Web.Api.Chapters
             return await HandleVersionedRequest(
                 version => _chapterService.GetChapterPropertyOptions(version, id),
                 x => x.Select(_mapper.Map<ChapterPropertyOptionApiResponse>));
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{id}/Subscriptions")]
+        public async Task<IEnumerable<ChapterSubscriptionApiResponse>> Subscriptions(Guid id)
+        {
+            IReadOnlyCollection<ChapterSubscription> chapters = await _chapterService.GetChapterSubscriptions(id);
+            return chapters.Select(_mapper.Map<ChapterSubscriptionApiResponse>);
         }
     }
 }

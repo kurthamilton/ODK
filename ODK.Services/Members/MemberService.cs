@@ -105,6 +105,13 @@ namespace ODK.Services.Members
             return await _memberRepository.GetMembers(chapterId);
         }
 
+        public async Task<MemberSubscription> GetMemberSubscription(Guid memberId)
+        {
+            await _authorizationService.AssertMemberIsCurrent(memberId);
+
+            return await _memberRepository.GetMemberSubscription(memberId);
+        }
+
         public async Task<MemberImage> UpdateMemberImage(Guid id, UpdateMemberImage image)
         {
             await _authorizationService.AssertMemberIsCurrent(id);

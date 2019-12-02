@@ -17,6 +17,8 @@ namespace ODK.Services.Members
 
         Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId);
 
+        Task<MemberSubscription> GetMemberSubscription(Guid memberId);
+
         Task<MemberImage> UpdateMemberImage(Guid id, UpdateMemberImage image);
 
         Task<MemberProfile> UpdateMemberProfile(Guid id, UpdateMemberProfile profile);

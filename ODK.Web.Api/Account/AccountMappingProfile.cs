@@ -38,6 +38,8 @@ namespace ODK.Web.Api.Account
                 .ForMember(x => x.Properties, opt => opt.MapFrom(x => x.MemberProperties));
 
             CreateMap<MemberProperty, AccountProfilePropertyApiResponse>();
+
+            CreateMap<MemberSubscription, SubscriptionApiResponse>();
         }
     }
 }

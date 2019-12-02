@@ -1,17 +1,19 @@
 ﻿using System;
+using ODK.Core.Members;
 
-namespace ODK.Core.Payments
+namespace ODK.Core.Chapters
 {
     public class ChapterSubscription
     {
-        public ChapterSubscription(Guid id, Guid chapterId, Guid subscriptionTypeId, string name, string title, string description, double amount)
+        public ChapterSubscription(Guid id, Guid chapterId, SubscriptionType subscriptionType, string name, string title,
+            string description, double amount)
         {
             Amount = amount;
             ChapterId = chapterId;
             Description = description;
             Id = id;
             Name = name;
-            SubscriptionTypeId = subscriptionTypeId;
+            SubscriptionType = subscriptionType;
             Title = title;
         }
 
@@ -25,7 +27,7 @@ namespace ODK.Core.Payments
 
         public string Name { get; }
 
-        public Guid SubscriptionTypeId { get; }
+        public SubscriptionType SubscriptionType { get; }
 
         public string Title { get; }
     }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Events;
 using ODK.Core.Mail;
 using ODK.Core.Members;
@@ -11,6 +12,7 @@ using ODK.Services.Authentication;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
+using ODK.Services.Countries;
 using ODK.Services.Events;
 using ODK.Services.Imaging;
 using ODK.Services.Mails;
@@ -35,6 +37,7 @@ namespace ODK.Web.Api.Config
             services.AddSingleton<SqlContext>(new OdkContext(connectionString));
 
             services.AddScoped<IChapterRepository, ChapterRepository>();
+            services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IMemberEmailRepository, MemberEmailRepository>();
             services.AddScoped<IMemberRepository, MemberRepository>();
@@ -48,6 +51,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<ICacheService, CacheService>();
             services.AddScoped<IChapterAdminService, ChapterAdminService>();
             services.AddScoped<IChapterService, ChapterService>();
+            services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<IEventAdminService, EventAdminService>();
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IImageService, ImageService>();

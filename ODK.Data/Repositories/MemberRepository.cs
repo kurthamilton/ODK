@@ -176,6 +176,14 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
+        public async Task<MemberSubscription> GetMemberSubscription(Guid memberId)
+        {
+            return await Context
+                .Select<MemberSubscription>()
+                .Where(x => x.MemberId).EqualTo(memberId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<MemberPasswordResetRequest> GetPasswordResetRequest(string token)
         {
             return await Context
