@@ -14,6 +14,8 @@ import { EventInvitesComponent } from './components/events/event-invites/event-i
 import { EventResponsesComponent } from './components/events/event-responses/event-responses.component';
 import { MembersComponent } from './components/members/members/members.component';
 import { MemberComponent } from './components/members/member/member.component';
+import { ChapterPaymentSettingsComponent } from './components/chapters/chapter-payment-settings/chapter-payment-settings.component';
+import { ChapterComponent } from './components/chapters/chapter/chapter.component';
 
 
 @NgModule({
@@ -29,6 +31,8 @@ import { MemberComponent } from './components/members/member/member.component';
     EventResponsesComponent,
     MembersComponent,
     MemberComponent,
+    ChapterPaymentSettingsComponent,
+    ChapterComponent,
   ],
   imports: [
     AdminRoutingModule,

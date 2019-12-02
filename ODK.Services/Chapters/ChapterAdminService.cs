@@ -35,6 +35,13 @@ namespace ODK.Services.Chapters
                 .ToArray();
         }
 
+        public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
+
+            return await _chapterRepository.GetChapterPaymentSettings(chapterId);
+        }
+
         public async Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);

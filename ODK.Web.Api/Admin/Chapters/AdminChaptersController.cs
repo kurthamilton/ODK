@@ -33,12 +33,19 @@ namespace ODK.Web.Api.Admin.Chapters
             return chapters.Select(_mapper.Map<ChapterApiResponse>);
         }
 
-        [HttpPut("{id}/links")]
+        [HttpPut("{id}/Links")]
         public async Task<IActionResult> UpdateLinks(Guid id, [FromForm] UpdateChapterLinksApiRequest request)
         {
             UpdateChapterLinks links = _mapper.Map<UpdateChapterLinks>(request);
             await _chapterAdminService.UpdateChapterLinks(GetMemberId(), id, links);
             return NoContent();
+        }
+
+        [HttpGet("{id}/PaymentSettings")]
+        public async Task<ChapterAdminPaymentSettingsApiResponse> PaymentSettings(Guid id)
+        {
+            ChapterPaymentSettings paymentSettings = await _chapterAdminService.GetChapterPaymentSettings(GetMemberId(), id);
+            return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(paymentSettings);
         }
     }
 }
