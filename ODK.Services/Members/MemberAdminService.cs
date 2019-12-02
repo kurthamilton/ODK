@@ -5,19 +5,22 @@ using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Services.Exceptions;
+using ODK.Services.Imaging;
 
 namespace ODK.Services.Members
 {
     public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
+        private readonly IImageService _imageService;
         private readonly IMemberGroupRepository _memberGroupRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly IMemberService _memberService;
 
         public MemberAdminService(IChapterRepository chapterRepository, IMemberRepository memberRepository,
-            IMemberGroupRepository memberGroupRepository, IMemberService memberService)
+            IMemberGroupRepository memberGroupRepository, IMemberService memberService, IImageService imageService)
             : base(chapterRepository)
         {
+            _imageService = imageService;
             _memberGroupRepository = memberGroupRepository;
             _memberRepository = memberRepository;
             _memberService = memberService;
@@ -102,11 +105,22 @@ namespace ODK.Services.Members
             await _memberGroupRepository.RemoveMemberFromGroup(memberId, memberGroup.Id);
         }
 
-        public async Task UpdateMemberImage(Guid currentMemberId, Guid id, UpdateMemberImage image)
+        public async Task<MemberImage> RotateMemberImage(Guid currentMemberId, Guid id, int degrees)
         {
-            Member member = await GetMember(currentMemberId, id, true);
+            Member member = await GetMember(currentMemberId, id);
 
-            await _memberService.UpdateMemberImage(member.Id, image);
+            MemberImage image = await _memberRepository.GetMemberImage(member.Id, null);
+            if (image == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            byte[] data = _imageService.Rotate(image.ImageData, degrees);
+
+            image = new MemberImage(image.MemberId, data, image.MimeType, image.Version);
+            await _memberRepository.UpdateMemberImage(image);
+
+            return await _memberRepository.GetMemberImage(id, null);
         }
 
         public async Task<MemberGroup> UpdateMemberGroup(Guid currentMemberId, Guid id, CreateMemberGroup memberGroup)
@@ -120,6 +134,13 @@ namespace ODK.Services.Members
             await _memberGroupRepository.UpdateMemberGroup(update);
 
             return update;
+        }
+
+        public async Task<MemberImage> UpdateMemberImage(Guid currentMemberId, Guid id, UpdateMemberImage image)
+        {
+            Member member = await GetMember(currentMemberId, id, true);
+
+            return await _memberService.UpdateMemberImage(member.Id, image);
         }
 
         private async Task<Member> GetMember(Guid currentMemberId, Guid id, bool superAdmin = false)

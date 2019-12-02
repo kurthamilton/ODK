@@ -8,12 +8,11 @@
         <tr>
             <th>Name</th>          
             <th>Picture</th>
-
         </tr>
     </thead>
     <tbody>
         <tr *ngFor="let member of members">
-            <td>{{member.fullName}}</td>
+            <td><a [routerLink]="getMemberUrl(member)">{{member.fullName}}</a></td>
             <td><app-member-image [maxWidth]="100" [member]="member"></app-member-image></td>
         </tr>
     </tbody>

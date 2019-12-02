@@ -54,8 +54,15 @@ namespace ODK.Web.Api.Admin.Members
             UpdateMemberImageApiRequest request = await FileToApiRequest(file);
             UpdateMemberImage image = _mapper.Map<UpdateMemberImage>(request);
 
-            await _memberAdminService.UpdateMemberImage(GetMemberId(), id, image);
-            return Ok();
+            MemberImage updated = await _memberAdminService.UpdateMemberImage(GetMemberId(), id, image);
+            return MemberImageResult(updated);
+        }
+
+        [HttpPut("{id}/Image/Rotate")]
+        public async Task<IActionResult> RotateImage(Guid id, [FromForm] RotateMemberImageApiRequest request)
+        {
+            MemberImage rotated = await _memberAdminService.RotateMemberImage(GetMemberId(), id, request.Degrees);
+            return MemberImageResult(rotated);
         }
     }
 }

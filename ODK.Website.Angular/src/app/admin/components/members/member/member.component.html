@@ -1,1 +1,4 @@
-<p>member works!</p>
+<app-member-image [member]="member" [maxWidth]="250"></app-member-image>
+<button *ngIf="member" (click)="onRotate()">
+    Rotate
+</button>

@@ -6,6 +6,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
+import { adminUrls } from 'src/app/admin/routing/admin-urls';
 
 @Component({
   selector: 'app-members',
@@ -24,17 +25,22 @@ export class MembersComponent implements OnInit {
   members: Member[];
   superAdmin: boolean;
 
+  private chapter: Chapter;
   private imageQueue: Member[];
 
   ngOnInit(): void {
-    const chapter: Chapter = this.chapterAdminService.getActiveChapter();
-    this.memberAdminService.getAdminMembers(chapter.id).subscribe((members: Member[]) => {
+    this.chapter = this.chapterAdminService.getActiveChapter();
+    this.memberAdminService.getAdminMembers(this.chapter.id).subscribe((members: Member[]) => {
       this.members = members.sort((a, b) => a.fullName.localeCompare(b.fullName));
       this.changeDetector.detectChanges();
     });
 
     const token: AuthenticationToken = this.authenticationService.getToken();
     this.superAdmin = token.superAdmin === true;
+  }
+
+  getMemberUrl(member: Member): string {
+    return adminUrls.member(this.chapter, member);
   }
 
   onUploadPicture(files: FileList): void {

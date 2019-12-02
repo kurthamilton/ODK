@@ -43,6 +43,14 @@ namespace ODK.Services.Imaging
             });
         }
 
+        public byte[] Rotate(byte[] data, int degrees)
+        {
+            return ProcessImage(data, image =>
+            {
+                image.Mutate(x => x.Rotate(degrees));
+            });
+        }
+
         private static Size GetRescaledSize(Size current, Size maxSize, Func<double, double, double> chooseRatio)
         {
             double widthRatio = (double)maxSize.Width / current.Width;
