@@ -9,7 +9,7 @@ namespace ODK.Core.Payments
 
         public string CurrencyCode { get; set; }
 
-        public string CurrencyString => PaymentsHelper.ToCurrencyString(CurrencyCode, Amount);
+        public string CurrencyString => "";
 
         public DateTime Date { get; set; }
     }

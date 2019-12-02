@@ -2,6 +2,7 @@
 
 namespace ODK.Core.Payments
 {
+    [Obsolete("TODO: replace")]
     public class PaymentDetail
     {
         public PaymentDetail(double amount, int nodeId, Guid paymentId)
