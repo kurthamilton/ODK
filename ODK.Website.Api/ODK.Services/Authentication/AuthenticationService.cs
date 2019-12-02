@@ -184,6 +184,14 @@ namespace ODK.Services.Authentication
                 throw new OdkNotFoundException();
             }
 
+            if (string.IsNullOrWhiteSpace(memberPassword.Password))
+            {
+                message = "Please use the forgotten password feature to reset your password. " +
+                          "The website has been moved to a new system. " +
+                          "Your password is stored securely and could not be moved across with the rest of your data.";
+                throw new OdkServiceException(message);
+            }
+
             if (PasswordHasher.ComputeHash(password, memberPassword.Salt) != memberPassword.Password)
             {
                 throw new OdkServiceException(message);
