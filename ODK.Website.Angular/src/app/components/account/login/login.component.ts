@@ -6,9 +6,9 @@ import { Subject } from 'rxjs';
 import { appPaths } from 'src/app/routing/app-paths';
 import { AuthenticationService } from '../../../services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
-import { FormControlViewModel } from '../../forms/form-control.view-model';
-import { FormViewModel } from '../../forms/form.view-model';
 import { ServiceResult } from 'src/app/services/service-result';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
 
 @Component({
   selector: 'app-login',
@@ -69,7 +69,7 @@ export class LoginComponent implements OnInit {
       .subscribe((result: ServiceResult<AuthenticationToken>) => {
         this.formCallback.next(result.messages);
 
-        if (result.success === true) {          
+        if (result.success === true) {
           const url: string = this.route.snapshot.queryParams[appPaths.login.queryParams.returnUrl] || appPaths.home.path;
           this.router.navigateByUrl(url);
         }

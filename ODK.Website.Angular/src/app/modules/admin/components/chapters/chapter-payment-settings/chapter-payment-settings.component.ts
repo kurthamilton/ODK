@@ -1,11 +1,12 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
+import { Subject } from 'rxjs';
+
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { FormViewModel } from 'src/app/components/forms/form.view-model';
-import { Subject } from 'rxjs';
-import { FormControlViewModel } from 'src/app/components/forms/form-control.view-model';
+import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 
 @Component({
   selector: 'app-chapter-payment-settings',
@@ -16,7 +17,7 @@ export class ChapterPaymentSettingsComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   form: FormViewModel;
@@ -26,7 +27,7 @@ export class ChapterPaymentSettingsComponent implements OnInit {
   private controls: {
     apiPublicKey: FormControlViewModel,
     apiSecretKey: FormControlViewModel,
-    provider: FormControlViewModel    
+    provider: FormControlViewModel
   };
   private formCallback: Subject<boolean> = new Subject<boolean>();
 
@@ -71,7 +72,7 @@ export class ChapterPaymentSettingsComponent implements OnInit {
         value: this.paymentSettings.provider
       }
     };
-    
+
     this.form = {
       buttonText: 'Update',
       callback: this.formCallback,

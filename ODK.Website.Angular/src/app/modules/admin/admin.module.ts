@@ -6,6 +6,8 @@ import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 import { AdminComponent } from './components/admin/admin.component';
 import { AdminMenuComponent } from './components/structure/admin-menu/admin-menu.component';
 import { AdminRoutingModule } from './routing/admin-routing.module';
+import { AppFormsModule } from '../forms/app-forms.module';
+import { AppSharedModule } from '../shared/app-shared.module';
 import { ChapterComponent } from './components/chapters/chapter/chapter.component';
 import { ChapterPaymentSettingsComponent } from './components/chapters/chapter-payment-settings/chapter-payment-settings.component';
 import { CreateEventComponent } from './components/events/create-event/create-event.component';
@@ -17,29 +19,29 @@ import { EventResponsesComponent } from './components/events/event-responses/eve
 import { EventsComponent } from './components/events/events/events.component';
 import { MemberComponent } from './components/members/member/member.component';
 import { MembersComponent } from './components/members/members/members.component';
-import { SharedModule } from '../modules/shared.module';
 
 @NgModule({
   declarations: [
     AdminComponent,
     AdminMenuComponent,
+    ChapterComponent,
+    ChapterPaymentSettingsComponent,
     CreateEventComponent,
     EditEventComponent,
-    EventsComponent,
     EventComponent,
     EventFormComponent,
     EventInvitesComponent,
     EventResponsesComponent,
-    MembersComponent,
+    EventsComponent,
     MemberComponent,
-    ChapterPaymentSettingsComponent,
-    ChapterComponent,
+    MembersComponent,
   ],
   imports: [
     AdminRoutingModule,
+    AppFormsModule,
+    AppSharedModule,
     CKEditorModule,
     CommonModule,
-    SharedModule
   ]
 })
 export class AdminModule { }

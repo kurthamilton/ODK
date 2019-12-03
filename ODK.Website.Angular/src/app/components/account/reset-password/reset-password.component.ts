@@ -5,8 +5,8 @@ import { Subject } from 'rxjs';
 
 import { appPaths } from 'src/app/routing/app-paths';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
-import { FormControlViewModel } from '../../forms/form-control.view-model';
-import { FormViewModel } from '../../forms/form.view-model';
+import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { ServiceResult } from 'src/app/services/service-result';
 
 @Component({

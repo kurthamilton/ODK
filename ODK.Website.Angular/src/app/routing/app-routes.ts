@@ -61,7 +61,7 @@ export const appRoutes: Routes = [
     {
       path: appPaths.admin.path,
       canLoad: [ChapterAdminGuardService],
-      loadChildren: () => import('../admin/admin.module').then(m => m.AdminModule)
+      loadChildren: () => import('../modules/admin/admin.module').then(m => m.AdminModule)
     }
   ];
 

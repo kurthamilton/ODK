@@ -8,8 +8,8 @@ import { ArrayUtils } from 'src/app/utils/array-utils';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { FormControlViewModel } from '../../forms/form-control.view-model';
-import { FormViewModel } from '../../forms/form.view-model';
+import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { MemberProfile } from 'src/app/core/members/member-profile';
 import { MemberProperty } from 'src/app/core/members/member-property';
 import { MemberService } from 'src/app/services/members/member.service';
@@ -25,15 +25,15 @@ export class MemberProfileComponent implements OnChanges {
     private datePipe: DatePipe,
     private chapterService: ChapterService,
     private memberService: MemberService
-  ) {     
+  ) {
   }
 
   @Input() memberId: string;
 
   form: FormViewModel;
-  
+
   private chapterProperties: ChapterProperty[];
-  private profile: MemberProfile;  
+  private profile: MemberProfile;
 
   ngOnChanges(): void {
     if (!this.memberId) {
@@ -48,8 +48,8 @@ export class MemberProfileComponent implements OnChanges {
       ),
       this.chapterService.getChapterProperties(chapter.id).pipe(
         tap((properties: ChapterProperty[]) => this.chapterProperties = properties)
-      )      
-    ]).subscribe(() => {            
+      )
+    ]).subscribe(() => {
       this.buildProfileForm();
       this.changeDetector.detectChanges();
     });
@@ -69,7 +69,7 @@ export class MemberProfileComponent implements OnChanges {
             value: memberPropertyMap.get(x.id).value,
             type: 'readonly'
           })),
-        { 
+        {
           id: 'joined',
           label: 'Date joined',
           value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy'),

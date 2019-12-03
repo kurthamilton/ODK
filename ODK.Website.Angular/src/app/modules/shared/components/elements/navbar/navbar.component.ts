@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, ChangeDetectorRef, OnChanges } from '@angular/core';
 
-import { MenuItem } from '../../../core/menus/menu-item';
+import { MenuItem } from '../../../../../core/menus/menu-item';
 
 @Component({
   selector: 'app-navbar',
@@ -8,7 +8,7 @@ import { MenuItem } from '../../../core/menus/menu-item';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavbarComponent implements OnChanges {
-  
+
   constructor(private changeDetector: ChangeDetectorRef) {
   }
 
@@ -30,7 +30,7 @@ export class NavbarComponent implements OnChanges {
       this.groups = this.menuItemGroups;
     } else {
       this.groups = [ this.menuItems ];
-    }    
+    }
   }
 
   collapse(): void {

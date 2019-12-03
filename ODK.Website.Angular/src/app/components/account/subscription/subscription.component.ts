@@ -1,18 +1,19 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
-import { AccountService } from 'src/app/services/account/account.service';
-import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
-import { FormControlViewModel } from '../../forms/form-control.view-model';
-import { FormViewModel } from '../../forms/form.view-model';
-import { MemberSubscription } from 'src/app/core/members/member-subscription';
-import { SubscriptionType } from 'src/app/core/account/subscription-type';
-import { tap } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
-import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { Chapter } from 'src/app/core/chapters/chapter';
-import { MenuItem } from 'src/app/core/menus/menu-item';
+import { tap } from 'rxjs/operators';
+
+import { AccountService } from 'src/app/services/account/account.service';
 import { appUrls } from 'src/app/routing/app-urls';
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
+import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { MemberSubscription } from 'src/app/core/members/member-subscription';
+import { MenuItem } from 'src/app/core/menus/menu-item';
+import { SubscriptionType } from 'src/app/core/account/subscription-type';
 
 @Component({
   selector: 'app-subscription',
@@ -25,7 +26,7 @@ export class SubscriptionComponent implements OnInit {
     private accountService: AccountService,
     private chapterService: ChapterService,
     private datePipe: DatePipe
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
@@ -39,7 +40,7 @@ export class SubscriptionComponent implements OnInit {
     this.breadcrumbs = [
       { link: appUrls.profile(chapter), text: 'Profile' }
     ];
-    
+
     forkJoin([
       this.accountService.getSubscription().pipe(
         tap((subscription: MemberSubscription) => this.subscription = subscription)

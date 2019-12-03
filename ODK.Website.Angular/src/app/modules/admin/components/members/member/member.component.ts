@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
-import { adminPaths } from 'src/app/admin/routing/admin-paths';
+import { adminPaths } from '../../../routing/admin-paths';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { Member } from 'src/app/core/members/member';

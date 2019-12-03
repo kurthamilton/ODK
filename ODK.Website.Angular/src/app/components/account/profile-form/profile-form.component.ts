@@ -13,9 +13,9 @@ import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-op
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { DataType } from 'src/app/core/data-types/data-type';
-import { FormControlType } from '../../forms/form-control-type';
-import { FormControlViewModel } from '../../forms/form-control.view-model';
-import { FormViewModel } from '../../forms/form.view-model';
+import { FormControlType } from 'src/app/modules/forms/components/form-control-type';
+import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { MemberProperty } from 'src/app/core/members/member-property';
 
 @Component({
@@ -30,17 +30,17 @@ export class ProfileFormComponent implements OnInit {
     private accountService: AccountService,
     private chapterService: ChapterService,
     private datePipe: DatePipe
-  ) {     
+  ) {
   }
 
-  form: FormViewModel;  
+  form: FormViewModel;
 
   private chapterId: string;
   private chapterProperties: Map<string, ChapterProperty>;
   private chapterPropertyOptions: Map<string, ChapterPropertyOption[]>;
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private profile: AccountProfile;
-  
+
   private formControls: {
     emailAddress: FormControlViewModel;
     emailOptIn: FormControlViewModel;
@@ -52,7 +52,7 @@ export class ProfileFormComponent implements OnInit {
 
   ngOnInit(): void {
     const authenticationToken: AuthenticationToken = this.authenticationService.getToken();
-    this.chapterId = authenticationToken.chapterId;    
+    this.chapterId = authenticationToken.chapterId;
 
     this.loadProfile();
   }
@@ -98,7 +98,7 @@ export class ProfileFormComponent implements OnInit {
         validators: {
           required: true
         },
-        value: this.profile.firstName        
+        value: this.profile.firstName
       },
       joined: {
         id: 'joined',
@@ -114,13 +114,13 @@ export class ProfileFormComponent implements OnInit {
         },
         value: this.profile.lastName
       },
-      properties: this.profile.properties.map((x): FormControlViewModel => this.mapFormControl(x))      
+      properties: this.profile.properties.map((x): FormControlViewModel => this.mapFormControl(x))
     }
 
     this.form = {
       buttonText: 'Update',
       callback: this.formCallback.asObservable(),
-      formControls: [ 
+      formControls: [
         this.formControls.emailAddress,
         this.formControls.emailOptIn,
         this.formControls.firstName,
@@ -152,7 +152,7 @@ export class ProfileFormComponent implements OnInit {
 
   private mapFormControl(property: MemberProperty): FormControlViewModel {
       const chapterProperty: ChapterProperty = this.chapterProperties.get(property.chapterPropertyId);
-      
+
       const formControl: FormControlViewModel = {
         helpText: chapterProperty.helpText,
         id: property.chapterPropertyId,
@@ -177,7 +177,7 @@ export class ProfileFormComponent implements OnInit {
       return formControl;
   }
 
-  private mapFormControlType(dataType: DataType): FormControlType {    
+  private mapFormControlType(dataType: DataType): FormControlType {
     switch (dataType) {
       case DataType.DropDown:
         return 'dropdown';

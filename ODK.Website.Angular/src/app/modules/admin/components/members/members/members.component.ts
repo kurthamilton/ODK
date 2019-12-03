@@ -1,12 +1,12 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
+import { adminUrls } from '../../../routing/admin-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
-import { adminUrls } from 'src/app/admin/routing/admin-urls';
 
 @Component({
   selector: 'app-members',
@@ -19,7 +19,7 @@ export class MembersComponent implements OnInit {
     private chapterAdminService: ChapterAdminService,
     private memberAdminService: MemberAdminService,
     private authenticationService: AuthenticationService
-  ) {     
+  ) {
   }
 
   members: Member[];
@@ -47,7 +47,7 @@ export class MembersComponent implements OnInit {
     if (files.length === 0) {
       return;
     }
-    
+
     this.imageQueue = [];
 
     for (let i = 0; i < files.length; i++) {
@@ -58,7 +58,7 @@ export class MembersComponent implements OnInit {
         this.imageQueue.push(member);
         this.uploadPicture(member, file);
       }
-    }    
+    }
   }
 
   private uploadPicture(member: Member, image: File): void {

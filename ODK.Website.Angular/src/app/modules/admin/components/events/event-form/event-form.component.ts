@@ -5,8 +5,8 @@ import { Observable } from 'rxjs';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { Event } from 'src/app/core/events/event';
-import { FormControlViewModel } from 'src/app/components/forms/form-control.view-model';
-import { FormViewModel } from 'src/app/components/forms/form.view-model';
+import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 
 @Component({
   selector: 'app-event-form',

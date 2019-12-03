@@ -1,18 +1,18 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { forkJoin, Observable } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 
 import { adminUrls } from '../../../routing/admin-urls';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { Event } from 'src/app/core/events/event';
+import { EventAdminService } from 'src/app/services/events/event-admin.service';
 import { EventInvites } from 'src/app/core/events/event-invites';
 import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 import { EventResponseType } from 'src/app/core/events/event-response-type';
 import { ListEventViewModel } from './list-event.view-model';
-import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { EventAdminService } from 'src/app/services/events/event-admin.service';
 
 @Component({
   selector: 'app-events',

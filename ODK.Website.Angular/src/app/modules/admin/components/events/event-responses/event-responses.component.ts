@@ -9,8 +9,8 @@ import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.ser
 import { EventAdminService } from 'src/app/services/events/event-admin.service';
 import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 import { EventResponseType } from 'src/app/core/events/event-response-type';
-import { MemberService } from 'src/app/services/members/member.service';
 import { Member } from 'src/app/core/members/member';
+import { MemberService } from 'src/app/services/members/member.service';
 
 @Component({
   selector: 'app-event-responses',
@@ -23,7 +23,7 @@ export class EventResponsesComponent implements OnChanges {
     private chapterAdminService: ChapterAdminService,
     private eventAdminService: EventAdminService,
     private memberService: MemberService
-  ) {     
+  ) {
   }
 
   @Input() eventId: string;
@@ -32,7 +32,7 @@ export class EventResponsesComponent implements OnChanges {
   going: Member[];
   maybe: Member[];
   responses: EventMemberResponse[];
-  
+
   private members: Member[];
 
   ngOnChanges(): void {
@@ -51,11 +51,11 @@ export class EventResponsesComponent implements OnChanges {
       )
     ).subscribe(() => {
       const memberMap: Map<string, Member> = ArrayUtils.toMap(this.members, x => x.id);
-    
+
       this.going = [];
       this.maybe = [];
       this.declined = [];
-      
+
       const responseMap: Map<EventResponseType, Member[]> = new Map<EventResponseType, Member[]>();
       responseMap.set(EventResponseType.Yes, this.going);
       responseMap.set(EventResponseType.Maybe, this.maybe);
@@ -71,7 +71,7 @@ export class EventResponsesComponent implements OnChanges {
       });
 
       this.changeDetector.detectChanges();
-    });    
+    });
   }
 
 }
