@@ -4,7 +4,7 @@
             {{viewModel.label}}
         </label>
         <span *ngIf="viewModel.helpText">
-            <i class="ml-1 icon--help fas fa-question-circle" [ngbTooltip]="viewModel.helpText">        
+            <i class="ml-1 icon--help fas fa-question-circle" [ngbTooltip]="viewModel.helpText">
             </i>
         </span>
         <span *ngIf="viewModel.subtitle" class="ml-1 text-muted">{{viewModel.subtitle}}</span>
@@ -12,19 +12,19 @@
 
     <!-- text / password / date -->
     <input *ngIf="type === 'text' || type === 'password' || type === 'date'"
-        [attr.type]="type" 
+        [attr.type]="type"
         [attr.match]="match"
         [attr.pattern]="pattern"
         [attr.required]="required ? 'required' : null"
-        class="form-control" 
+        class="form-control"
         [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
         (blur)="validate()" />
 
         <!-- textarea -->
     <textarea *ngIf="type === 'textarea'"
-        rows="3" 
+        rows="3"
         [attr.required]="required ? 'required' : null"
-        class="form-control" 
+        class="form-control"
         [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
         (blur)="validate()">
     </textarea>
@@ -34,7 +34,7 @@
         <select class="form-control"
             [attr.required]="required ? 'required' : null"
             [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id">
-            <option *ngIf="viewModel.dropDown.default" value="" 
+            <option *ngIf="viewModel.dropDown.default" value=""
                 [attr.selected]="selectedOption === viewModel.dropDown.default ? 'selected' : null">
                 {{viewModel.dropDown.default}}
             </option>
@@ -42,8 +42,8 @@
                 [attr.selected]="selectedOption === option ? 'selected' : null">
                 {{option}}
             </option>
-        </select>        
-    </ng-container>    
+        </select>
+    </ng-container>
 
     <!-- checkbox  -->
     <div *ngIf="type === 'checkbox'" class="form-check">
@@ -53,11 +53,11 @@
             {{viewModel.label}}
         </label>
         <span *ngIf="viewModel.helpText">
-            <i class="ml-1 icon--help fas fa-question-circle" [ngbTooltip]="viewModel.helpText">        
+            <i class="ml-1 icon--help fas fa-question-circle" [ngbTooltip]="viewModel.helpText">
             </i>
         </span>
         <span *ngIf="viewModel.subtitle" class="ml-1 text-muted">{{viewModel.subtitle}}</span>
-    </div>    
+    </div>
 
     <!-- readonly -->
     <div *ngIf="type === 'readonly'" class="form-control-plaintext">
@@ -69,5 +69,5 @@
 </div>
 
 <app-form-control *ngFor="let child of childControls" [formGroup]="formGroup" [viewModel]="child"
-    [validated]="validated" [updated]="updated" (valueChange)="onChildControlValueChanged(child)">    
+    [validated]="validated" [updated]="updated" (valueChange)="onChildControlValueChanged(child)">
 </app-form-control>

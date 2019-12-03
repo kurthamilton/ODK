@@ -58,7 +58,11 @@ export const appRoutes: Routes = [
         ] },
       ]
     },
-    { path: appPaths.admin.path, canLoad: [ChapterAdminGuardService], loadChildren: () => import('../admin/admin.module').then(m => m.AdminModule) }
+    {
+      path: appPaths.admin.path,
+      canLoad: [ChapterAdminGuardService],
+      loadChildren: () => import('../admin/admin.module').then(m => m.AdminModule)
+    }
   ];
 
   Object.freeze(appPaths);

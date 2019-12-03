@@ -33,7 +33,7 @@ export class EventAdminService {
 
   createEvent(event: Event): Observable<ServiceResult<Event>> {
     const params: HttpParams = this.createEventParams(event);
-    
+
     return this.http.post(endpoints.createEvent, params).pipe(
       map((response: any): ServiceResult<Event> => ({
         success: true,

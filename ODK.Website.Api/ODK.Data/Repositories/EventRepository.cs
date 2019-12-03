@@ -90,6 +90,7 @@ namespace ODK.Data.Repositories
                 .Set(x => x.MapQuery, @event.MapQuery)
                 .Set(x => x.Name, @event.Name)
                 .Set(x => x.Time, @event.Time)
+                .Where(x => x.Id).EqualTo(@event.Id)
                 .ExecuteAsync();
         }
 

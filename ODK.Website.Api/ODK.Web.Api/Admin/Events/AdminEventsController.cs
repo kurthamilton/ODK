@@ -59,7 +59,7 @@ namespace ODK.Web.Api.Admin.Events
         }
 
         [HttpPut("{id}")]
-        public async Task<EventApiResponse> UpdateEvent(Guid id, CreateEventApiRequest request)
+        public async Task<EventApiResponse> UpdateEvent(Guid id, [FromForm] CreateEventApiRequest request)
         {
             CreateEvent @event = _mapper.Map<CreateEvent>(request);
             Event updated = await _eventAdminService.UpdateEvent(GetMemberId(), id, @event);

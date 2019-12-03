@@ -22,7 +22,7 @@ export class EventFormComponent implements OnChanges {
   @Input() chapter: Chapter;
   @Input() event: Event;
   @Input() formCallback: Observable<string[]>;
-  @Output() submit: EventEmitter<Event> = new EventEmitter<Event>();
+  @Output() formSubmit: EventEmitter<Event> = new EventEmitter<Event>();
 
   form: FormViewModel;
 
@@ -51,7 +51,7 @@ export class EventFormComponent implements OnChanges {
       chapterId: this.chapter.id,
       date: new Date(this.formControls.date.value),
       description: this.formControls.description.value,
-      id: '',
+      id: this.event ? this.event.id : '',
       imageUrl: '',
       isPublic: this.formControls.isPublic.value === 'true',
       location: this.formControls.location.value,
@@ -60,7 +60,7 @@ export class EventFormComponent implements OnChanges {
       time: this.formControls.time.value
     };
 
-    this.submit.emit(event);
+    this.formSubmit.emit(event);
   }
 
   private buildForm(): void {
