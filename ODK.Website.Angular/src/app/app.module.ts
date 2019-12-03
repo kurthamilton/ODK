@@ -5,7 +5,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './components/app/app.component';
 import { AppFormsModule } from './modules/forms/app-forms.module';
-import { AppRoutingModule } from './modules/app-routing.module';
+import { AppRoutingModule } from './routing/app-routing.module';
 import { AppSharedModule } from './modules/shared/app-shared.module';
 import { BlogComponent } from './components/blogs/blog/blog.component';
 import { BodyComponent } from './components/structure/body/body.component';

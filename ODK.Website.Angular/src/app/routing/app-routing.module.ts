@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, UrlTree, DefaultUrlSerializer, UrlSerializer, PreloadAllModules } from '@angular/router';
 
-import { appRoutes } from '../routing/app-routes';
+import { appRoutes } from './app-routes';
 
 export class LowerCaseUrlSerializer extends DefaultUrlSerializer {
   parse(url: string): UrlTree {
