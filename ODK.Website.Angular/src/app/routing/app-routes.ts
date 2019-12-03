@@ -33,28 +33,28 @@ export const appRoutes: Routes = [
     {
       path: appPaths.home.path, component: HomeLayoutComponent, canActivate: [HomeGuardService], children: [
         { path: '', component: HomeComponent },
-        { path: appPaths.join.path, component: JoinComponent },
-        { path: appPaths.login.path, component: LoginComponent },
+        { path: appPaths.join.path, component: JoinComponent, data: { title: 'Join' } },
+        { path: appPaths.login.path, component: LoginComponent, data: { title: 'Login' } },
         { path: appPaths.logout.path, component: LogoutComponent },
-        { path: appPaths.password.forgotten.path, component: ForgottenPasswordComponent },
-        { path: appPaths.password.reset.path, component: ResetPasswordComponent },
-        { path: appPaths.privacy.path, component: PrivacyComponent },
+        { path: appPaths.password.forgotten.path, component: ForgottenPasswordComponent, data: { title: 'Forgotten password' } },
+        { path: appPaths.password.reset.path, component: ResetPasswordComponent, data: { title: 'Reset password' } },
+        { path: appPaths.privacy.path, component: PrivacyComponent, data: { title: 'Privacy' } },
       ]
     },
     {
       path: appPaths.chapter.path, component: ChapterLayoutComponent, canActivate: [ChapterGuardService], children: [
         { path: '', component: ChapterComponent },
-        { path: chapterPaths.blog.path, component: BlogComponent },
-        { path: chapterPaths.contact.path, component: ContactComponent },
-        { path: chapterPaths.events.path, component: EventsComponent },
+        { path: chapterPaths.about.path, component: FaqComponent, data: { title: 'Frequently asked questions' } },
+        { path: chapterPaths.blog.path, component: BlogComponent, data: { title: 'Blog' } },
+        { path: chapterPaths.contact.path, component: ContactComponent, data: { title: 'Send us a message' } },
+        { path: chapterPaths.events.path, component: EventsComponent, data: { title: 'Events' } },
         { path: chapterPaths.event.path, component: EventComponent },
-        { path: chapterPaths.about.path, component: FaqComponent },
         { path: chapterPaths.members.path, component: MembersComponent, canActivate: [ChapterMemberGuardService] },
         { path: chapterPaths.member.path, component: MemberComponent, canActivate: [ChapterMemberGuardService] },
         { path: chapterPaths.profile.path, canActivate: [AuthenticatedGuardService], children: [
-          { path: '', component: ProfileComponent },
-          { path: chapterPaths.profile.password.change.path, component: ChangePasswordComponent },
-          { path: chapterPaths.profile.subscription.path, component: SubscriptionComponent }
+          { path: '', component: ProfileComponent, data: { title: 'My profile' } },
+          { path: chapterPaths.profile.password.change.path, component: ChangePasswordComponent, data: { title: 'Change password' } },
+          { path: chapterPaths.profile.subscription.path, component: SubscriptionComponent, data: { title: 'My subscription' } }
         ] },
       ]
     },

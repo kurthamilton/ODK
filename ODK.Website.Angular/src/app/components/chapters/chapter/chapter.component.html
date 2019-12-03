@@ -1,18 +1,18 @@
-<app-body *ngIf="chapter" [title]="chapter.name">
+<app-body *ngIf="chapter">
     <app-page-with-sidebar>
-        <ng-container app-main> 
+        <ng-container app-main>
             <ng-container *ngIf="welcomeText">
                 <h3>Welcome!</h3>
                 <div [innerHtml]="welcomeText"></div>
             </ng-container>
             <ng-container *ngIf="latestMembers">
                 <h3>Latest members</h3>
-                <app-member-list [members]="latestMembers" [cols]="2"></app-member-list>        
+                <app-member-list [members]="latestMembers" [cols]="2"></app-member-list>
             </ng-container>
         </ng-container>
 
         <ng-container app-sidebar>
             <app-chapter-sidebar></app-chapter-sidebar>
         </ng-container>
-    </app-page-with-sidebar>        
+    </app-page-with-sidebar>
 </app-body>

@@ -37,7 +37,7 @@ export class ChapterComponent implements OnInit {
       this.loadMemberPage();
     } else {
       this.loadPublicPage();
-    }    
+    }
   }
 
   private loadMemberPage(): void {
@@ -52,5 +52,5 @@ export class ChapterComponent implements OnInit {
       this.welcomeText = this.sanitizer.bypassSecurityTrustHtml(details.welcomeText);
       this.changeDetector.detectChanges();
     });
-  }  
+  }
 }
