@@ -13,6 +13,6 @@
 </ng-container>
 
 <div *ngIf="authenticated === false" class="anonymous-links">
-    <a class="btn btn-primary anonymous-link" [routerLink]="loginLink">Sign in</a>
-    <a class="btn btn-success anonymous-link" [routerLink]="joinLink">Join</a>
+    <a class="btn btn-primary anonymous-link" [routerLink]="loginLink" [queryParams]="loginQueryParams">Sign in</a>
+    <a *ngIf="activeChapter" class="btn btn-success anonymous-link" [routerLink]="joinLink">Join</a>
 </div>

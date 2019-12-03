@@ -58,7 +58,10 @@ export const appPaths = {
         path: 'join'
     },
     login: {
-        path: 'login'
+        path: 'login',
+        queryParams: {
+            returnUrl: 'returnUrl'
+        }
     },
     logout: {
         path: 'logout'

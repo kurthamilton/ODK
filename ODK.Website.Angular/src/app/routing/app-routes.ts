@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { appPaths } from './app-paths';
 import { AuthenticatedGuardService } from '../routing/authenticated-guard.service';
 import { BlogComponent } from '../components/blogs/blog/blog.component';
+import { ChangePasswordComponent } from '../components/account/change-password/change-password.component';
 import { ChapterAdminGuardService } from '../routing/chapter-admin-guard.service';
 import { ChapterComponent } from '../components/chapters/chapter/chapter.component';
 import { ChapterGuardService } from '../routing/chapter-guard.service';
@@ -14,6 +15,7 @@ import { EventsComponent } from '../components/events/events/events.component';
 import { FaqComponent } from '../components/about/faq/faq.component';
 import { ForgottenPasswordComponent } from '../components/account/forgotten-password/forgotten-password.component';
 import { HomeComponent } from '../components/home/home/home.component';
+import { HomeGuardService } from './home-guard.service';
 import { HomeLayoutComponent } from '../components/layouts/home-layout/home-layout.component';
 import { JoinComponent } from '../components/account/join/join.component';
 import { LoginComponent } from '../components/account/login/login.component';
@@ -24,13 +26,12 @@ import { PrivacyComponent } from '../components/privacy/privacy.component';
 import { ProfileComponent } from '../components/account/profile/profile.component';
 import { ResetPasswordComponent } from '../components/account/reset-password/reset-password.component';
 import { SubscriptionComponent } from '../components/account/subscription/subscription.component';
-import { ChangePasswordComponent } from '../components/account/change-password/change-password.component';
 
 const chapterPaths = appPaths.chapter.childPaths;
 
 export const appRoutes: Routes = [
     {
-      path: appPaths.home.path, component: HomeLayoutComponent, children: [
+      path: appPaths.home.path, component: HomeLayoutComponent, canActivate: [HomeGuardService], children: [
         { path: '', component: HomeComponent },
         { path: appPaths.join.path, component: JoinComponent },
         { path: appPaths.login.path, component: LoginComponent },

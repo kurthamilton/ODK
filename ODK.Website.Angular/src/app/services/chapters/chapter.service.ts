@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject, ReplaySubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
@@ -31,9 +31,14 @@ export class ChapterService {
   constructor(protected http: HttpClient) { }
 
   private activeChapter: Chapter;
+  private activeChapterSubject: Subject<Chapter> = new ReplaySubject<Chapter>(1);
   private chapterDetails: Map<string, ChapterDetails> = new Map<string, ChapterDetails>();
   private chapterLinks: Map<string, ChapterLinks> = new Map<string, ChapterLinks>();
   private chapters: Chapter[];
+
+  activeChapterChange(): Observable<Chapter> {
+    return this.activeChapterSubject.asObservable();
+  }
 
   getActiveChapter(): Chapter {
     return this.activeChapter;
@@ -105,6 +110,7 @@ export class ChapterService {
 
   setActiveChapter(chapter: Chapter): void {
     this.activeChapter = chapter;
+    this.activeChapterSubject.next(chapter);
   }
 
   protected mapChapter(response: any): Chapter {

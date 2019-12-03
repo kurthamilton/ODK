@@ -1,17 +1,20 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef, OnDestroy } from '@angular/core';
+
+import { takeUntil } from 'rxjs/operators';
 
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
-import { Chapter } from 'src/app/core/chapters/chapter';
-import { MenuItem } from '../../../core/menus/menu-item';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { MenuItem } from '../../../core/menus/menu-item';
 
 @Component({
   selector: 'app-chapter-menu',
   templateUrl: './chapter-menu.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterMenuComponent implements OnInit, OnChanges {
+export class ChapterMenuComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private authenticationService: AuthenticationService
@@ -25,7 +28,9 @@ export class ChapterMenuComponent implements OnInit, OnChanges {
   private memberChapterId: string;
   
   ngOnInit(): void {
-    this.authenticationService.isAuthenticated().subscribe((token: AuthenticationToken) => {
+    this.authenticationService.isAuthenticated().pipe(
+      takeUntil(componentDestroyed(this))
+    ).subscribe((token: AuthenticationToken) => {
       this.memberChapterId = token ? token.chapterId : '';
       this.buildMenu();
       this.changeDetector.detectChanges();
@@ -35,6 +40,8 @@ export class ChapterMenuComponent implements OnInit, OnChanges {
   ngOnChanges(): void {
     this.buildMenu();
   }
+
+  ngOnDestroy(): void {}
 
   private buildMenu(): void {
     if (!this.chapter) {

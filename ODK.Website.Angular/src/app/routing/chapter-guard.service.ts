@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
 
 import { Observable, of } from 'rxjs';
-import { map, tap, switchMap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 
 import { appPaths } from './app-paths';
 import { Chapter } from '../core/chapters/chapter';
@@ -27,7 +27,7 @@ export class ChapterGuardService extends RouteGuardService {
         this.chapterService.setActiveChapter(chapter);
         return of(chapter);
       }),
-      map((chapter: Chapter) => !!chapter)
+      map((chapter: Chapter) => !!chapter && !chapter.redirectUrl)
     );
   }
 }

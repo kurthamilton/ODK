@@ -69,9 +69,9 @@ export class LoginComponent implements OnInit {
       .subscribe((result: ServiceResult<AuthenticationToken>) => {
         this.formCallback.next(result.messages);
 
-        if (result.success === true) {
-          // const url: string = this.route.snapshot.queryParams[appPaths.login.queryParams.returnUrl] || appPaths.home.path;
-          this.router.navigateByUrl('/');
+        if (result.success === true) {          
+          const url: string = this.route.snapshot.queryParams[appPaths.login.queryParams.returnUrl] || appPaths.home.path;
+          this.router.navigateByUrl(url);
         }
       });
   }
