@@ -100,7 +100,7 @@ namespace ODK.Services.Tests.Events
 
         private static Event CreateMockEvent(string name = null, DateTime? date = null, string location = null, string time = null)
         {
-            return new Event(Guid.NewGuid(), Guid.NewGuid(), name ?? "Name", date ?? DateTime.Today, location ?? "Location",
+            return new Event(Guid.NewGuid(), Guid.NewGuid(), "Admin Member", name ?? "Name", date ?? DateTime.Today, location ?? "Location",
                 time ?? "Time", null, "Address", "MapQuery", "Description", false);
         }
 

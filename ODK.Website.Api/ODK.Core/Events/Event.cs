@@ -4,11 +4,12 @@ namespace ODK.Core.Events
 {
     public class Event
     {
-        public Event(Guid id, Guid chapterId, string name, DateTime date, string location, string time, 
+        public Event(Guid id, Guid chapterId, string createdBy, string name, DateTime date, string location, string time, 
             string imageUrl, string address, string mapQuery, string description, bool isPublic)
         {
             Address = address;
             ChapterId = chapterId;
+            CreatedBy = createdBy;
             Date = date;
             Description = description;
             Id = id;
@@ -24,6 +25,8 @@ namespace ODK.Core.Events
 
         public Guid ChapterId { get; }
 
+        public string CreatedBy { get; }
+
         public DateTime Date { get; private set; }
 
         public string Description { get; private set; }
@@ -31,8 +34,6 @@ namespace ODK.Core.Events
         public Guid Id { get; }
 
         public string ImageUrl { get; private set; }
-
-        public DateTime? InviteSentDate { get; }
 
         public bool IsPublic { get; private set; }
 

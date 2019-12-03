@@ -40,7 +40,9 @@ namespace ODK.Services.Events
         {
             await AssertMemberIsChapterAdmin(memberId, createEvent.ChapterId);
 
-            Event @event = new Event(Guid.Empty, createEvent.ChapterId, createEvent.Name, createEvent.Date,
+            Member member = await _memberRepository.GetMember(memberId);
+
+            Event @event = new Event(Guid.Empty, createEvent.ChapterId, $"{member.FirstName} {member.LastName}", createEvent.Name, createEvent.Date,
                 createEvent.Location, createEvent.Time, null,
                 createEvent.Address, createEvent.MapQuery, createEvent.Description, createEvent.IsPublic);
 
