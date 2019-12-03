@@ -24,6 +24,9 @@ import { PrivacyComponent } from '../components/privacy/privacy.component';
 import { ProfileComponent } from '../components/account/profile/profile.component';
 import { ResetPasswordComponent } from '../components/account/reset-password/reset-password.component';
 import { SubscriptionComponent } from '../components/account/subscription/subscription.component';
+import { ChangePasswordComponent } from '../components/account/change-password/change-password.component';
+
+const chapterPaths = appPaths.chapter.childPaths;
 
 export const appRoutes: Routes = [
     {
@@ -40,15 +43,18 @@ export const appRoutes: Routes = [
     {
       path: appPaths.chapter.path, component: ChapterLayoutComponent, canActivate: [ChapterGuardService], children: [
         { path: '', component: ChapterComponent },
-        { path: appPaths.chapter.childPaths.blog.path, component: BlogComponent },
-        { path: appPaths.chapter.childPaths.contact.path, component: ContactComponent },
-        { path: appPaths.chapter.childPaths.events.path, component: EventsComponent },
-        { path: appPaths.chapter.childPaths.event.path, component: EventComponent },
-        { path: appPaths.chapter.childPaths.about.path, component: FaqComponent },
-        { path: appPaths.chapter.childPaths.members.path, component: MembersComponent, canActivate: [ChapterMemberGuardService] },
-        { path: appPaths.chapter.childPaths.member.path, component: MemberComponent, canActivate: [ChapterMemberGuardService] },
-        { path: appPaths.chapter.childPaths.profile.path, component: ProfileComponent, canActivate: [AuthenticatedGuardService] },
-        { path: appPaths.chapter.childPaths.subscription.path, component: SubscriptionComponent, canActivate: [AuthenticatedGuardService] }
+        { path: chapterPaths.blog.path, component: BlogComponent },
+        { path: chapterPaths.contact.path, component: ContactComponent },
+        { path: chapterPaths.events.path, component: EventsComponent },
+        { path: chapterPaths.event.path, component: EventComponent },
+        { path: chapterPaths.about.path, component: FaqComponent },
+        { path: chapterPaths.members.path, component: MembersComponent, canActivate: [ChapterMemberGuardService] },
+        { path: chapterPaths.member.path, component: MemberComponent, canActivate: [ChapterMemberGuardService] },
+        { path: chapterPaths.profile.path, canActivate: [AuthenticatedGuardService], children: [
+          { path: '', component: ProfileComponent },
+          { path: chapterPaths.profile.password.change.path, component: ChangePasswordComponent },
+          { path: chapterPaths.profile.subscription.path, component: SubscriptionComponent }
+        ] },
       ]
     },
     { path: appPaths.admin.path, canLoad: [ChapterAdminGuardService], loadChildren: () => import('../admin/admin.module').then(m => m.AdminModule) }

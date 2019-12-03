@@ -5,7 +5,7 @@
                 <a [routerLink]="links.subscription">My subscription</a>
             </div>
             <div>
-                <button class="btn btn-link p-0" (click)="onShowChangePasswordModal()">Change password</button>
+                <a [routerLink]="links.changePassword">Change password</a>
             </div>
         </div>
 
@@ -18,7 +18,3 @@
     
     <app-profile-form></app-profile-form>
 </app-body>
-
-<app-modal [show]="showChangePasswordModal" title="Change password">
-    <app-change-password (passwordUpdate)="onPasswordChanged()"></app-change-password>
-</app-modal>

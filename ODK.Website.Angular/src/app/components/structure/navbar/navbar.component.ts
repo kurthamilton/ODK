@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, ChangeDetectorRef, OnChanges } from '@angular/core';
 
-import { MenuItem } from './menu-item';
+import { MenuItem } from '../../../core/menus/menu-item';
 
 @Component({
   selector: 'app-navbar',

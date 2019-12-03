@@ -3,7 +3,7 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, OnChanges, ChangeDet
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { MenuItem } from '../navbar/menu-item';
+import { MenuItem } from '../../../core/menus/menu-item';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 
 @Component({

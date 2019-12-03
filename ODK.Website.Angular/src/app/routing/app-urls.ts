@@ -13,6 +13,7 @@ export const appUrls = {
     about: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.about.path),
     adminChapter: (chapter: Chapter) => chapterUrl(chapter, 'admin'),
     blog: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.blog.path),
+    changePassword: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.password.change.path}`),
     chapter: (chapter: Chapter) => chapterUrl(chapter),
     contact: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.contact.path),
     event: (chapter: Chapter, event: Event) => chapterUrl(chapter, `${chapterPaths.events.path}/${event.id}`),
@@ -23,7 +24,7 @@ export const appUrls = {
     member: (chapter: Chapter, member: Member) => chapterUrl(chapter, `${chapterPaths.members.path}/${member.id}`),
     members: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.members.path),
     profile: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.profile.path),
-    subscription: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.subscription.path)
+    subscription: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.subscription.path}`)
 };
 
 Object.freeze(appUrls);

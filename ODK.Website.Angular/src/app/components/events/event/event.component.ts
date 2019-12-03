@@ -10,6 +10,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { Event } from 'src/app/core/events/event';
 import { EventService } from 'src/app/services/events/event.service';
+import { MenuItem } from 'src/app/core/menus/menu-item';
 
 @Component({
   selector: 'app-event',
@@ -26,6 +27,7 @@ export class EventComponent implements OnInit {
   ) { 
   }
 
+  breadcrumbs: MenuItem[];
   chapter: Chapter;
   event: Event;
   eventId: string;
@@ -46,6 +48,9 @@ export class EventComponent implements OnInit {
     this.changeDetector.detectChanges();
 
     this.chapter = this.chapterService.getActiveChapter();
+    this.breadcrumbs = [
+      { link: appUrls.events(this.chapter), text: 'Events' }
+    ];
     return this.eventService.getEvent(this.eventId, this.chapter.id).pipe(
       tap((event: Event) => this.event = event)
     );

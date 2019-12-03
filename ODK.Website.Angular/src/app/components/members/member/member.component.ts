@@ -7,6 +7,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from 'src/app/services/members/member.service';
+import { MenuItem } from 'src/app/core/menus/menu-item';
 
 @Component({
   selector: 'app-member',
@@ -23,6 +24,7 @@ export class MemberComponent implements OnInit {
   ) {   
   }
 
+  breadcrumbs: MenuItem[];
   member: Member;
   memberId: string;
 
@@ -31,6 +33,9 @@ export class MemberComponent implements OnInit {
     this.changeDetector.detectChanges();
 
     const chapter: Chapter = this.chapterService.getActiveChapter();
+    this.breadcrumbs = [
+      { link: appUrls.members(chapter), text: `${chapter.name} Knitwits` }
+    ];
 
     this.memberService.getMember(this.memberId, chapter.id).subscribe((member: Member) => {      
       if (!member) {

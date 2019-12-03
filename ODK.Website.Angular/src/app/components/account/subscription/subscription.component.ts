@@ -11,6 +11,8 @@ import { tap } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
+import { MenuItem } from 'src/app/core/menus/menu-item';
+import { appUrls } from 'src/app/routing/app-urls';
 
 @Component({
   selector: 'app-subscription',
@@ -26,6 +28,7 @@ export class SubscriptionComponent implements OnInit {
   ) {     
   }
 
+  breadcrumbs: MenuItem[];
   chapterSubscriptions: ChapterSubscription[];
   form: FormViewModel;
   subscription: MemberSubscription;
@@ -33,6 +36,10 @@ export class SubscriptionComponent implements OnInit {
   ngOnInit(): void {
     const chapter: Chapter = this.chapterService.getActiveChapter();
 
+    this.breadcrumbs = [
+      { link: appUrls.profile(chapter), text: 'Profile' }
+    ];
+    
     forkJoin([
       this.accountService.getSubscription().pipe(
         tap((subscription: MemberSubscription) => this.subscription = subscription)

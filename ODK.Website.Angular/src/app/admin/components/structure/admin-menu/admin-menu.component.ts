@@ -3,7 +3,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { MenuItem } from 'src/app/components/structure/navbar/menu-item';
+import { MenuItem } from 'src/app/core/menus/menu-item';
 
 @Component({
   selector: 'app-admin-menu',

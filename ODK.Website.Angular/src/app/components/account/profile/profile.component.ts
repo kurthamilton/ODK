@@ -1,7 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
-import { Subject } from 'rxjs';
-
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
@@ -22,9 +20,9 @@ export class ProfileComponent implements OnInit {
   }
   
   links: {
+    changePassword: string,
     subscription: string
   };
-  showChangePasswordModal: Subject<boolean> = new Subject<boolean>();
 
   ngOnInit(): void {
     const authenticationToken: AuthenticationToken = this.authenticationService.getToken();
@@ -32,17 +30,10 @@ export class ProfileComponent implements OnInit {
 
     this.chapterService.getChapterById(chapterId).subscribe((chapter: Chapter) => {
       this.links = {
+        changePassword: appUrls.changePassword(chapter),
         subscription: appUrls.subscription(chapter)
       };
       this.changeDetector.detectChanges();
     });    
-  }  
-  
-  onPasswordChanged(): void {
-    this.showChangePasswordModal.next(false);
-  }
-
-  onShowChangePasswordModal(): void {
-    this.showChangePasswordModal.next(true);
-  }  
+  }    
 }

@@ -2,9 +2,13 @@ import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter } from
 
 import { Subject } from 'rxjs';
 
+import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { FormControlViewModel } from '../../forms/form-control.view-model';
 import { FormViewModel } from '../../forms/form.view-model';
+import { MenuItem } from 'src/app/core/menus/menu-item';
 import { NotificationService } from 'src/app/services/notifications/notification.service';
 import { ServiceResult } from 'src/app/services/service-result';
 
@@ -16,12 +20,14 @@ import { ServiceResult } from 'src/app/services/service-result';
 export class ChangePasswordComponent implements OnInit {
 
   constructor(private authenticationService: AuthenticationService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private chapterService: ChapterService
   ) {
   }
 
   @Output() passwordUpdate: EventEmitter<boolean> = new EventEmitter<boolean>();
 
+  breadcrumbs: MenuItem[];
   form: FormViewModel;
 
   private formCallback: Subject<string[]> = new Subject<string[]>();
@@ -32,6 +38,11 @@ export class ChangePasswordComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    const chapter: Chapter = this.chapterService.getActiveChapter();
+    this.breadcrumbs = [
+      { link: appUrls.profile(chapter), text: 'Profile' }
+    ];
+
     this.formControls = {
       confirmPassword: {
         id: 'confirmPassword',

@@ -12,7 +12,7 @@ export const appPaths = {
             },
             blog: {
                 path: 'blog'
-            },
+            },            
             contact: {
                 path: 'contact'
             },
@@ -35,11 +35,16 @@ export const appPaths = {
                 path: 'knitwits'
             },
             profile: {
-                path: 'profile'
-            },
-            subscription: {
-                path: 'subscription'
-            }
+                password: {
+                    change: {
+                        path: 'password/change'
+                    }                    
+                },
+                path: 'profile',
+                subscription: {
+                    path: 'subscription'
+                }
+            }            
         },
         path: ':chapter',
         params: {

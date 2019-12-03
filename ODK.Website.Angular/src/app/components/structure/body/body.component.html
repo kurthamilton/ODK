@@ -3,6 +3,9 @@
     <app-notifications></app-notifications>
     <section class="section section--main">
         <div class="container">
+            <ng-container *ngIf="breadcrumbs">
+                <app-breadcrumbs [breadcrumbs]="breadcrumbs" [active]="title"></app-breadcrumbs>
+            </ng-container>
             <ng-content></ng-content>
         </div>
     </section>

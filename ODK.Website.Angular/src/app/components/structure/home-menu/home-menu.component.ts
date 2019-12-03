@@ -4,7 +4,7 @@ import { appUrls } from 'src/app/routing/app-urls';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { MenuItem } from '../navbar/menu-item';
+import { MenuItem } from '../../../core/menus/menu-item';
 
 @Component({
   selector: 'app-home-menu',

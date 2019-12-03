@@ -1,4 +1,4 @@
-<app-body *ngIf="event" [title]="event.name">
+<app-body *ngIf="event" [title]="event.name" [breadcrumbs]="breadcrumbs">
     <app-page-with-sidebar>
         <ng-container app-main>
             <h2>{{event.location}}</h2>

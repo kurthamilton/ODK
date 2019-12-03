@@ -1,4 +1,4 @@
-<app-body *appLoading="!member" [title]="member.fullName">
+<app-body *appLoading="!member" [title]="member.fullName" [breadcrumbs]="breadcrumbs">
     <div class="row">
         <div class="col-md-7">
             <app-member-profile [memberId]="memberId"></app-member-profile>
