@@ -27,12 +27,21 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        public async Task ConfirmMemberEmailSent(Guid id)
+        public async Task ConfirmMemberEmailRead(Guid memberEmailId)
+        {
+            await Context
+                .Update<MemberEmail>()
+                .Set(x => x.Read, true)
+                .Where(x => x.Id).EqualTo(memberEmailId)
+                .ExecuteAsync();
+        }
+
+        public async Task ConfirmMemberEmailSent(Guid memberEmailId)
         {
             await Context
                 .Update<MemberEmail>()
                 .Set(x => x.Sent, true)
-                .Where(x => x.Id).EqualTo(id)
+                .Where(x => x.Id).EqualTo(memberEmailId)
                 .ExecuteAsync();
         }
 

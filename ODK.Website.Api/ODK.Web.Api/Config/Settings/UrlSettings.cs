@@ -6,6 +6,8 @@
 
         public string Base { get; set; }
 
+        public string EmailRead { get; set; }
+
         public string Event { get; set; }
 
         public string EventRsvp { get; set; }

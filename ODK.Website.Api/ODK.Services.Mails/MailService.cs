@@ -7,6 +7,7 @@ using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Mail;
 using ODK.Core.Members;
+using ODK.Core.Utils;
 
 namespace ODK.Services.Mails
 {
@@ -23,14 +24,20 @@ namespace ODK.Services.Mails
             _settings = settings;
         }
 
+        public async Task ConfirmEmailRead(Guid memberEmailId)
+        {
+            await _memberEmailRepository.ConfirmMemberEmailRead(memberEmailId);
+        }
+
         public async Task<MemberEmail> CreateMemberEmail(Member member, Email email, IDictionary<string, string> parameters)
         {
             email = email.Interpolate(parameters);
 
-            MemberEmail memberEmail = new MemberEmail(Guid.Empty, member.ChapterId, member.EmailAddress, email.Subject, DateTime.UtcNow, false);
+            MemberEmail memberEmail = new MemberEmail(Guid.Empty, member.ChapterId, member.EmailAddress, email.Subject, email.Body, DateTime.UtcNow,
+                false, false);
             Guid memberEmailId = await _memberEmailRepository.AddMemberEmail(memberEmail);
-
-            return new MemberEmail(memberEmailId, memberEmail.ChapterId, memberEmail.ToAddress, memberEmail.Subject, memberEmail.CreatedDate, memberEmail.Sent);
+            memberEmail.SetId(memberEmailId);
+            return memberEmail;
         }
 
         public async Task<bool> SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters)
@@ -41,7 +48,7 @@ namespace ODK.Services.Mails
 
             ChapterEmailSettings emailSettings = await GetChapterEmailSettings(chapter.Id);
 
-            MimeMessage message = CreateMessage(emailSettings.FromEmailAddress, emailSettings.ContactEmailAddress, email);
+            MimeMessage message = CreateMessage(emailSettings.FromEmailAddress, emailSettings.ContactEmailAddress, email, null);
 
             return await Send(message);
         }
@@ -50,7 +57,7 @@ namespace ODK.Services.Mails
         {
             ChapterEmailSettings emailSettings = await GetChapterEmailSettings(member.ChapterId);
 
-            if (await Send(emailSettings.FromEmailAddress, member, email))
+            if (await Send(emailSettings.FromEmailAddress, member, email, memberEmail))
             {
                 await _memberEmailRepository.ConfirmMemberEmailSent(memberEmail.Id);
             }
@@ -72,18 +79,18 @@ namespace ODK.Services.Mails
             return await SendMemberMail(member, email, parameters);
         }
 
-        private static MimeMessage CreateMessage(string from, Member member, Email email)
+        private MimeMessage CreateMessage(string from, Member member, Email email, MemberEmail memberEmail)
         {
-            return CreateMessage(from, member.EmailAddress, email);
+            return CreateMessage(from, member.EmailAddress, email, memberEmail);
         }
 
-        private static MimeMessage CreateMessage(string from, string to, Email email)
+        private MimeMessage CreateMessage(string from, string to, Email email, MemberEmail memberEmail)
         {
             MimeMessage message = new MimeMessage
             {
                 Body = new TextPart(TextFormat.Html)
                 {
-                    Text = email.Body
+                    Text = email.Body + GetReadImageHtml(memberEmail)
                 },
                 Subject = email.Subject
             };
@@ -99,9 +106,24 @@ namespace ODK.Services.Mails
             return await _chapterRepository.GetChapterEmailSettings(chapterId);
         }
 
-        private async Task<bool> Send(string from, Member member, Email email)
+        private string GetReadImageHtml(MemberEmail memberEmail)
         {
-            MimeMessage message = CreateMessage(from, member, email);
+            if (memberEmail == null)
+            {
+                return "";
+            }
+
+            string url = _settings.EmailReadUrl.Interpolate(new Dictionary<string, string>
+            {
+                {  "email.id", memberEmail.Id.ToString() }
+            });
+
+            return $"<img src=\"{url}\" />";
+        }
+
+        private async Task<bool> Send(string from, Member member, Email email, MemberEmail memberEmail)
+        {
+            MimeMessage message = CreateMessage(from, member, email, memberEmail);
             return await Send(message);
         }
 

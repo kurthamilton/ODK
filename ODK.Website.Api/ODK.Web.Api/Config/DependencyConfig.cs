@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.IO;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Events;
@@ -26,9 +28,15 @@ namespace ODK.Web.Api.Config
         public static void ConfigureDependencies(this IServiceCollection services, IConfiguration configuration,
             AppSettings appSettings)
         {
+            ConfigureApi(services);
             ConfigureServiceSettings(services, appSettings);
             ConfigureServices(services);
             ConfigureData(services, configuration);
+        }
+
+        private static void ConfigureApi(IServiceCollection services)
+        {
+            services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Directory.GetCurrentDirectory()));
         }
 
         private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
@@ -85,6 +93,7 @@ namespace ODK.Web.Api.Config
 
             services.AddSingleton(new MailServiceSettings
             {
+                EmailReadUrl = $"{urls.Base}{urls.EmailRead}",
                 Host = smtp.Host,
                 Password = smtp.Password,
                 Username = smtp.Username

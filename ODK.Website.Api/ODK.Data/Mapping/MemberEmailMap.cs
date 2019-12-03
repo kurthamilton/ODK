@@ -13,8 +13,10 @@ namespace ODK.Data.Mapping
             Property(x => x.ChapterId);
             Property(x => x.ToAddress);
             Property(x => x.Subject);
+            Property(x => x.Body);
             Property(x => x.CreatedDate);
             Property(x => x.Sent);
+            Property(x => x.Read);
         }
 
         public override MemberEmail Read(IDataReader reader)
@@ -25,8 +27,10 @@ namespace ODK.Data.Mapping
                 chapterId: reader.GetGuid(1),
                 toAddress: reader.GetString(2),
                 subject: reader.GetString(3),
-                createdDate: reader.GetDateTime(4),
-                sent: reader.GetBoolean(5)
+                body: reader.GetString(4),
+                createdDate: reader.GetDateTime(5),
+                sent: reader.GetBoolean(6),
+                read: reader.GetBoolean(7)
             );
         }
     }

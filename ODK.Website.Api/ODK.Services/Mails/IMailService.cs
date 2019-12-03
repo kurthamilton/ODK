@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Mail;
@@ -8,6 +9,8 @@ namespace ODK.Services.Mails
 {
     public interface IMailService
     {
+        Task ConfirmEmailRead(Guid memberEmailId);
+
         Task<MemberEmail> CreateMemberEmail(Member member, Email email, IDictionary<string, string> parameters);
 
         Task<bool> SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters);
