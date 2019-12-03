@@ -22,6 +22,7 @@ export class ChapterPaymentSettingsComponent implements OnInit {
   form: FormViewModel;
   paymentSettings: ChapterAdminPaymentSettings;
 
+  private chapter: Chapter;
   private controls: {
     apiPublicKey: FormControlViewModel,
     apiSecretKey: FormControlViewModel,
@@ -30,11 +31,24 @@ export class ChapterPaymentSettingsComponent implements OnInit {
   private formCallback: Subject<boolean> = new Subject<boolean>();
 
   ngOnInit(): void {
-    const chapter: Chapter = this.chapterAdminService.getActiveChapter();
-    this.chapterAdminService.getChapterAdminPaymentSettings(chapter.id).subscribe((paymentSettings: ChapterAdminPaymentSettings) => {
+    this.chapter = this.chapterAdminService.getActiveChapter();
+    this.chapterAdminService.getChapterAdminPaymentSettings(this.chapter.id).subscribe((paymentSettings: ChapterAdminPaymentSettings) => {
       this.paymentSettings = paymentSettings;
       this.buildForm();
       this.changeDetector.detectChanges();
+    });
+  }
+
+  onFormSubmit(): void {
+    this.paymentSettings.apiPublicKey = this.controls.apiPublicKey.value;
+    this.paymentSettings.apiSecretKey = this.controls.apiSecretKey.value;
+
+    this.chapterAdminService.updateChapterAdminPaymentSettings(this.chapter.id, this.paymentSettings).subscribe((paymentSettings: ChapterAdminPaymentSettings) => {
+      this.paymentSettings = paymentSettings;
+      this.buildForm();
+      this.changeDetector.detectChanges();
+
+      this.formCallback.next(true);
     });
   }
 

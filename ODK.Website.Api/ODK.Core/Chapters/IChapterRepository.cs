@@ -37,5 +37,7 @@ namespace ODK.Core.Chapters
         Task<long> GetChaptersVersion();
 
         Task UpdateChapterLinks(ChapterLinks links);
+
+        Task UpdateChapterPaymentSettings(ChapterPaymentSettings paymentSettings);
     }
 }

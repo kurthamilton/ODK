@@ -51,5 +51,18 @@ namespace ODK.Services.Chapters
 
             _cacheService.RemoveVersionedItem<ChapterLinks>(chapterId);
         }
+
+        public async Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, 
+            UpdateChapterPaymentSettings paymentSettings)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            ChapterPaymentSettings existing = await _chapterRepository.GetChapterPaymentSettings(chapterId);
+            ChapterPaymentSettings update = new ChapterPaymentSettings(chapterId, paymentSettings.ApiPublicKey, paymentSettings.ApiSecretKey, existing.Provider);
+
+            await _chapterRepository.UpdateChapterPaymentSettings(update);
+
+            return update;
+        }
     }
 }

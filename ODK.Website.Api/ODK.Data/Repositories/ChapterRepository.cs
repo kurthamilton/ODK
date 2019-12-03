@@ -158,5 +158,14 @@ namespace ODK.Data.Repositories
                     .ExecuteAsync();
             }
         }
+
+        public async Task UpdateChapterPaymentSettings(ChapterPaymentSettings paymentSettings)
+        {
+            await Context
+                .Update<ChapterPaymentSettings>()
+                .Set(x => x.ApiPublicKey, paymentSettings.ApiPublicKey)
+                .Set(x => x.ApiSecretKey, paymentSettings.ApiSecretKey)
+                .ExecuteAsync();
+        }
     }
 }

@@ -12,5 +12,7 @@ namespace ODK.Services.Chapters
         Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId);
 
         Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links);
+
+        Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings paymentSettings);
     }
 }

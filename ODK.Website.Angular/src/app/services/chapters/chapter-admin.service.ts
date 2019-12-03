@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { Observable, of } from 'rxjs';
@@ -8,12 +8,13 @@ import { environment } from 'src/environments/environment';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
 import { ChapterService } from './chapter.service';
+import { HttpUtils } from '../http/http-utils';
 
 const baseUrl = `${environment.baseUrl}/admin/chapters`;
 
 const endpoints = {
   chapters: baseUrl,
-  paymentSettings: (id: string) => `${baseUrl}/${id}/paymentsettings`
+  paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`
 };
 
 @Injectable({
@@ -41,6 +42,17 @@ export class ChapterAdminService extends ChapterService {
     return chapter ? this.getAdminChapters().pipe(
       map((chapters: Chapter[]) => !!chapters.find(x => x.id === chapter.id))
     ) : of(false);
+  }
+
+  updateChapterAdminPaymentSettings(chapterId: string, paymentSettings: ChapterAdminPaymentSettings): Observable<ChapterAdminPaymentSettings> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      apiPublicKey: paymentSettings.apiPublicKey,
+      apiSecretKey: paymentSettings.apiSecretKey
+    });
+
+    return this.http.put(endpoints.paymentSettings(chapterId), params).pipe(
+      map((response: any) => this.mapChapterAdminPaymentSettings(response))
+    );
   }
 
   private mapChapterAdminPaymentSettings(response: any): ChapterAdminPaymentSettings {

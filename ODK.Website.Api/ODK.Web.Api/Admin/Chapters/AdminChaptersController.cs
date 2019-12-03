@@ -41,10 +41,19 @@ namespace ODK.Web.Api.Admin.Chapters
             return NoContent();
         }
 
-        [HttpGet("{id}/PaymentSettings")]
+        [HttpGet("{id}/Payments/Settings")]
         public async Task<ChapterAdminPaymentSettingsApiResponse> PaymentSettings(Guid id)
         {
             ChapterPaymentSettings paymentSettings = await _chapterAdminService.GetChapterPaymentSettings(GetMemberId(), id);
+            return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(paymentSettings);
+        }
+
+        [HttpPut("{id}/Payments/Settings")]
+        public async Task<ChapterAdminPaymentSettingsApiResponse> UpdatePaymentSettings(Guid id, 
+            [FromForm] UpdateChapterPaymentSettingsApiRequest request)
+        {
+            UpdateChapterPaymentSettings update = _mapper.Map<UpdateChapterPaymentSettings>(request);
+            ChapterPaymentSettings paymentSettings = await _chapterAdminService.UpdateChapterPaymentSettings(GetMemberId(), id, update);
             return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(paymentSettings);
         }
     }

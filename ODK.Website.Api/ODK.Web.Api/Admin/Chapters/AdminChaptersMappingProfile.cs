@@ -16,6 +16,8 @@ namespace ODK.Web.Api.Admin.Chapters
         private void MapRequests()
         {
             CreateMap<UpdateChapterLinksApiRequest, UpdateChapterLinks>();
+
+            CreateMap<UpdateChapterPaymentSettingsApiRequest, UpdateChapterPaymentSettings>();
         }
 
         private void MapResponses()
