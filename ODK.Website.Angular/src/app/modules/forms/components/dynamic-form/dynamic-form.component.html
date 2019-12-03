@@ -1,0 +1,12 @@
+<form *ngIf="form" (ngSubmit)="onSubmit()" [class.was-validated]="form.validated" novalidate>
+  <fieldset [attr.disabled]="submitting ? 'disabled' : null" class="overlay-container">
+    <app-dynamic-form-controls [form]="form" [validated]="form.validated"></app-dynamic-form-controls>
+      <ng-container *ngIf="form.buttonText">
+          <div class="d-flex align-items-center">
+              <button type="submit" class="btn btn-primary">{{form.buttonText}}</button>
+              <ng-content select="[app-button-row]"></ng-content>
+          </div>
+          <app-error-messages [messages]="messages"></app-error-messages>
+      </ng-container>
+  </fieldset>
+</form>

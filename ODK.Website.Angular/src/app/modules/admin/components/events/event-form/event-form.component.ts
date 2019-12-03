@@ -5,8 +5,11 @@ import { Observable } from 'rxjs';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { Event } from 'src/app/core/events/event';
+import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
 import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { DynamicFormControlViewModel } from 'src/app/modules/forms/components/dynamic-form-control.view-model';
+import { TextInputComponent } from 'src/app/modules/forms/components/inputs/text-input/text-input.component';
 
 @Component({
   selector: 'app-event-form',
@@ -24,8 +27,12 @@ export class EventFormComponent implements OnChanges {
   @Input() formCallback: Observable<string[]>;
   @Output() formSubmit: EventEmitter<Event> = new EventEmitter<Event>();
 
+  dynamicForm: DynamicFormViewModel;
   form: FormViewModel;
 
+  private dynamicFormControls: {
+    name: DynamicFormControlViewModel;
+  };
   private formControls: {
     address: FormControlViewModel
     date: FormControlViewModel,
@@ -64,6 +71,21 @@ export class EventFormComponent implements OnChanges {
   }
 
   private buildForm(): void {
+    this.dynamicFormControls = {
+      name: {
+        componentFactory: TextInputComponent,
+        controlId: 'name',
+        label: {
+          controlId: 'name',
+          text: 'Name'
+        },
+        validators: {
+          required: true
+        },
+        value: this.event ? this.event.name : ''
+      }
+    };
+
     this.formControls = {
       address: {
         helpText: 'Additional location information, if required',
@@ -120,6 +142,14 @@ export class EventFormComponent implements OnChanges {
         label: 'Time',
         value: this.event ? this.event.time : ''
       }
+    };
+
+    this.dynamicForm = {
+      buttonText: this.buttonText,
+      callback: this.formCallback,
+      controls: [
+        this.dynamicFormControls.name
+      ]
     };
 
     this.form = {

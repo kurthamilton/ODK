@@ -8,14 +8,24 @@ import { FormComponent } from './components/form/form.component';
 import { FormControlComponent } from './components/form-control/form-control.component';
 import { FormControlsComponent } from './components/form-controls/form-controls.component';
 import { FormControlValidationComponent } from './components/form-control-validation/form-control-validation.component';
+import { TextInputComponent } from './components/inputs/text-input/text-input.component';
+import { DynamicFormControlsComponent } from './components/dynamic-form-controls/dynamic-form-controls.component';
+import { DynamicFormComponent } from './components/dynamic-form/dynamic-form.component';
+import { DynamicFormLabelComponent } from './components/dynamic-form-label/dynamic-form-label.component';
+import { DynamicFormControlComponent } from './components/dynamic-form-control/dynamic-form-control.component';
 
 @NgModule({
   declarations: [
+    DynamicFormControlsComponent,
     ErrorMessagesComponent,
     FormComponent,
     FormControlComponent,
     FormControlsComponent,
     FormControlValidationComponent,
+    TextInputComponent,
+    DynamicFormComponent,
+    DynamicFormLabelComponent,
+    DynamicFormControlComponent,
   ],
   imports: [
     AppSharedModule,
@@ -24,6 +34,8 @@ import { FormControlValidationComponent } from './components/form-control-valida
     ReactiveFormsModule,
   ],
   exports: [
+    DynamicFormComponent,
+    DynamicFormControlsComponent,
     ErrorMessagesComponent,
     FormComponent,
     FormControlComponent,
@@ -31,6 +43,10 @@ import { FormControlValidationComponent } from './components/form-control-valida
     FormControlValidationComponent,
     FormsModule,
     ReactiveFormsModule,
+    TextInputComponent,
   ],
+  entryComponents: [
+    TextInputComponent
+  ]
 })
 export class AppFormsModule { }

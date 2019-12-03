@@ -5,8 +5,8 @@ import { Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
-import { FormControlViewModel } from '../form-control.view-model';
 import { FormControlType } from '../form-control-type';
+import { FormControlViewModel } from '../form-control.view-model';
 
 @Component({
   selector: 'app-form-control',

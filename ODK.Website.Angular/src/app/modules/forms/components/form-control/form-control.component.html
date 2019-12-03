@@ -20,7 +20,7 @@
         [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
         (blur)="validate()" />
 
-        <!-- textarea -->
+    <!-- textarea -->
     <textarea *ngIf="type === 'textarea'"
         rows="3"
         [attr.required]="required ? 'required' : null"

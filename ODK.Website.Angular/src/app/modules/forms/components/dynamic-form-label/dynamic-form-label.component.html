@@ -1,0 +1,9 @@
+<ng-container *ngIf="viewModel">
+  <label [attr.for]="viewModel.controlId" class="form-control-label">
+    {{viewModel.text}}
+  </label>
+  <span *ngIf="viewModel.helpText">
+    <i class="ml-1 icon--help fas fa-question-circle" [ngbTooltip]="viewModel.helpText"></i>
+  </span>
+  <span *ngIf="viewModel.subtitle" class="ml-1 text-muted">{{viewModel.subtitle}}</span>
+</ng-container>

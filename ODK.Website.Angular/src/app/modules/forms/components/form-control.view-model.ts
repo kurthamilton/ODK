@@ -6,9 +6,9 @@ export interface FormControlViewModel {
     freeTextOption?: string;
     options: string[];
   };
-  helpText?: string;  
+  helpText?: string;
   id: string;
-  label: string;      
+  label: string;
   subtitle?: string;
   type?: FormControlType;
   value?: string;
@@ -17,4 +17,3 @@ export interface FormControlViewModel {
     required?: boolean;
   }
 }
-  
