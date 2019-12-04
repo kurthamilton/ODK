@@ -11,6 +11,7 @@ using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using ODK.Services.Mails;
+using ODK.Services.Payments;
 
 namespace ODK.Services.Members
 {
@@ -21,16 +22,18 @@ namespace ODK.Services.Members
         private readonly IImageService _imageService;
         private readonly IMailService _mailService;
         private readonly IMemberRepository _memberRepository;
+        private readonly IPaymentService _paymentService;
         private readonly MemberServiceSettings _settings;
 
         public MemberService(IMemberRepository memberRepository, IChapterRepository chapterRepository, IAuthorizationService authorizationService,
-            IMailService mailService, MemberServiceSettings settings, IImageService imageService)
+            IMailService mailService, MemberServiceSettings settings, IImageService imageService, IPaymentService paymentService)
         {
             _authorizationService = authorizationService;
             _chapterRepository = chapterRepository;
             _imageService = imageService;
             _mailService = mailService;
             _memberRepository = memberRepository;
+            _paymentService = paymentService;
             _settings = settings;
         }
 
@@ -110,6 +113,29 @@ namespace ODK.Services.Members
             await _authorizationService.AssertMemberIsCurrent(memberId);
 
             return await _memberRepository.GetMemberSubscription(memberId);
+        }
+
+        public async Task<MemberSubscription> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId, string token)
+        {
+            ChapterSubscription chapterSubscription = await _chapterRepository.GetChapterSubscription(chapterSubscriptionId);
+            if (chapterSubscription == null)
+            {
+                throw new OdkServiceException("Subscription not found");
+            }
+
+            Member member = await GetMember(memberId);
+            _authorizationService.AssertMemberIsChapterMember(member, chapterSubscription.ChapterId);
+
+            await _paymentService.MakePayment(member, chapterSubscription.Amount, token, "Subscription");
+
+            MemberSubscription memberSubscription = await _memberRepository.GetMemberSubscription(member.Id);
+
+            DateTime expiryDate = (memberSubscription?.ExpiryDate ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
+            memberSubscription = new MemberSubscription(member.Id, chapterSubscription.SubscriptionType, expiryDate);
+
+            await _memberRepository.UpdateMemberSubscription(memberSubscription);
+
+            return memberSubscription;
         }
 
         public async Task<MemberImage> RotateMemberImage(Guid memberId, int degrees)

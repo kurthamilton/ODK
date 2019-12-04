@@ -33,5 +33,6 @@ namespace ODK.Core.Members
         Task UpdateMemberImage(MemberImage image);
         Task UpdateMemberPassword(MemberPassword password);
         Task UpdateMemberProperties(Guid memberId, IEnumerable<MemberProperty> memberProperties);
+        Task UpdateMemberSubscription(MemberSubscription memberSubscription);
     }
 }

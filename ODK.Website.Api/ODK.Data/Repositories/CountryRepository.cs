@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Countries;
 using ODK.Data.Sql;
@@ -24,6 +25,14 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<Country>()
                 .VersionAsync();
+        }
+
+        public async Task<Country> GetCountry(Guid id)
+        {
+            return await Context
+                .Select<Country>()
+                .Where(x => x.Id).EqualTo(id)
+                .FirstOrDefaultAsync();
         }
     }
 }

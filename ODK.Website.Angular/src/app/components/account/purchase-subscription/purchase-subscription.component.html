@@ -3,9 +3,9 @@
         <div class="card-body">
             <h5 class="card-title">{{chapterSubscription.title}}</h5>
             <div class="card-text" [innerHtml]="description">
-            </div>    
+            </div>
             <div>
-                <app-payment-button [payment]="payment"></app-payment-button>
+                <app-payment-button [payment]="payment" [close]="close" (cardSubmit)="onCardSubmit($event)"></app-payment-button>
             </div>
         </div>
     </div>

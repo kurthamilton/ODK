@@ -3,7 +3,8 @@
     <ng-container *ngIf="chapterSubscriptions">
         <h2>Renew membership</h2>
         <div class="mb-3" *ngFor="let chapterSubscription of chapterSubscriptions">
-            <app-purchase-subscription [chapterSubscription]="chapterSubscription">
+            <app-purchase-subscription [chapterSubscription]="chapterSubscription" [close]="completedSubject"
+                (purchase)="onPurchase(chapterSubscription, $event)">
             </app-purchase-subscription>
         </div>
     </ng-container>

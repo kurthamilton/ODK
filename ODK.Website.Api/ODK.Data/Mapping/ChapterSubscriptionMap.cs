@@ -17,6 +17,7 @@ namespace ODK.Data.Mapping
             Property(x => x.Title);
             Property(x => x.Description);
             Property(x => x.Amount);
+            Property(x => x.Months);
         }
 
         public override ChapterSubscription Read(IDataReader reader)
@@ -29,7 +30,8 @@ namespace ODK.Data.Mapping
                 name: reader.GetString(3),
                 title: reader.GetString(4),
                 description: reader.GetString(5),
-                amount: reader.GetDouble(6)
+                amount: reader.GetDouble(6),
+                months: reader.GetInt32(7)
             );
         }
     }

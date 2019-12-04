@@ -7,5 +7,6 @@
     [currencyCode]="country.currencyCode"
     [currencySymbol]="country.currencySymbol"
     [name]="payment.name"
+    (cardSubmit)="onCardSubmit($event)"
     (close)="onFormClose()">
 </app-stripe-form>

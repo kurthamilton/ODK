@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input, ViewChild, ElementRef, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Input, ViewChild, ElementRef, ChangeDetectorRef, Output, EventEmitter, OnDestroy } from '@angular/core';
 
 import { ScriptService, appScripts } from 'src/app/services/scripts/script.service';
 
@@ -7,7 +7,7 @@ import { ScriptService, appScripts } from 'src/app/services/scripts/script.servi
   templateUrl: './stripe-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StripeFormComponent implements OnInit {
+export class StripeFormComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private scriptService: ScriptService
@@ -19,6 +19,7 @@ export class StripeFormComponent implements OnInit {
   @Input() currencySymbol: string;
   @Input() publicKey: string;
   @Input() name: string;
+  @Output() cardSubmit: EventEmitter<string> = new EventEmitter<string>();
   @Output() close: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   @ViewChild('card', { static: true }) card: ElementRef;
@@ -41,6 +42,8 @@ export class StripeFormComponent implements OnInit {
       });
   }
 
+  ngOnDestroy(): void {}
+
   onClose(): void {
     this.close.emit(true);
   }
@@ -51,9 +54,7 @@ export class StripeFormComponent implements OnInit {
         this.error = result.error.message;
         this.changeDetector.detectChanges();
       } else {
-        console.log('Token acquired!');
-        console.log(result.token);
-        console.log(result.token.id);
+        this.cardSubmit.emit(result.token.id);
       }
     });
   }

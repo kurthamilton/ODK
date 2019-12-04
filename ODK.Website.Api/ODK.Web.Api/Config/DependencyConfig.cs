@@ -7,6 +7,7 @@ using ODK.Core.Countries;
 using ODK.Core.Events;
 using ODK.Core.Mail;
 using ODK.Core.Members;
+using ODK.Core.Payments;
 using ODK.Data;
 using ODK.Data.Repositories;
 using ODK.Data.Sql;
@@ -19,6 +20,8 @@ using ODK.Services.Events;
 using ODK.Services.Imaging;
 using ODK.Services.Mails;
 using ODK.Services.Members;
+using ODK.Services.Payments;
+using ODK.Services.Payments.Stripe;
 using ODK.Web.Api.Config.Settings;
 
 namespace ODK.Web.Api.Config
@@ -50,6 +53,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IMemberEmailRepository, MemberEmailRepository>();
             services.AddScoped<IMemberRepository, MemberRepository>();
             services.AddScoped<IMemberGroupRepository, MemberGroupRepository>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
         }
 
         private static void ConfigureServices(this IServiceCollection services)
@@ -66,6 +70,9 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IMailService, MailService>();
             services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            // TODO: resolve via factory
+            services.AddScoped<IPaymentProvider, StripePaymentProvider>();
         }
 
         private static void ConfigureServiceSettings(IServiceCollection services, AppSettings appSettings)

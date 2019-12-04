@@ -21,7 +21,7 @@ namespace ODK.Data.Mapping
             (
                 memberId: reader.GetGuid(0),
                 type: (SubscriptionType)reader.GetInt32(1),
-                expiryDate: reader.GetDateTimeOrDefault(2)
+                expiryDate: reader.GetNullableDateTime(2)
             );
         }
     }
