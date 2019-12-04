@@ -26,7 +26,8 @@ export class PurchaseSubscriptionComponent implements OnChanges {
         
     this.description = this.sanitizer.bypassSecurityTrustHtml(this.chapterSubscription.description);
     this.payment = {
-      amount: this.chapterSubscription.amount
+      amount: this.chapterSubscription.amount,
+      name: this.chapterSubscription.title
     };
   }
 }

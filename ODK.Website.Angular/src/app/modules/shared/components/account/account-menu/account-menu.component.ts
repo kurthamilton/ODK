@@ -47,7 +47,7 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
       this.changeDetector.detectChanges();
     });
 
-    this.authenticationService.isAuthenticated().pipe(
+    this.authenticationService.authenticationTokenChange().pipe(
       takeUntil(componentDestroyed(this))
     ).subscribe((token: AuthenticationToken) => {
       this.onAuthenticationChange(token);

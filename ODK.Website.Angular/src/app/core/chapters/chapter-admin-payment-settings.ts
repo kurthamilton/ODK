@@ -1,5 +1,5 @@
-export interface ChapterAdminPaymentSettings {
-    apiPublicKey: string;
+import { ChapterPaymentSettings } from './chapter-payment-settings';
+
+export interface ChapterAdminPaymentSettings extends ChapterPaymentSettings {
     apiSecretKey: string;
-    provider: string;
 }

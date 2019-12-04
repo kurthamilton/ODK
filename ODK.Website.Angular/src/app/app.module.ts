@@ -56,6 +56,7 @@ import { ProfilePictureComponent } from './components/account/profile-picture/pr
 import { PurchaseSubscriptionComponent } from './components/account/purchase-subscription/purchase-subscription.component';
 import { ResetPasswordComponent } from './components/account/reset-password/reset-password.component';
 import { SectionComponent } from './components/elements/section/section.component';
+import { StripeFormComponent } from './components/payments/stripe-form/stripe-form.component';
 import { SubscriptionComponent } from './components/account/subscription/subscription.component';
 import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenets.component';
 
@@ -110,6 +111,7 @@ import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenet
     PurchaseSubscriptionComponent,
     ResetPasswordComponent,
     SectionComponent,
+    StripeFormComponent,
     SubscriptionComponent,
     ThreeTenetsComponent,
   ],

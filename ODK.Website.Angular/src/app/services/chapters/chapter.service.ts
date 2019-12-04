@@ -7,6 +7,7 @@ import { map, tap } from 'rxjs/operators';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
 import { ChapterLinks } from 'src/app/core/chapters/chapter-links';
+import { ChapterPaymentSettings } from 'src/app/core/chapters/chapter-payment-settings';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
@@ -17,6 +18,7 @@ const baseUrl = `${environment.baseUrl}/chapters`;
 const endpoints = {
   chapterDetails: (id: string) => `${baseUrl}/${id}`,
   chapterLinks: (id: string) => `${baseUrl}/${id}/links`,
+  chapterPaymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   chapterProperties: (id: string) => `${baseUrl}/${id}/properties`,
   chapterPropertyOptions: (id: string) => `${baseUrl}/${id}/propertyOptions`,
   chapters: baseUrl,
@@ -78,6 +80,12 @@ export class ChapterService {
     );
   }
 
+  getChapterPaymentSettings(chapterId: string): Observable<ChapterPaymentSettings> {
+    return this.http.get(endpoints.chapterPaymentSettings(chapterId)).pipe(
+      map((response: any) => this.mapChapterPaymentSettings(response))
+    );
+  }
+
   getChapterProperties(chapterId: string): Observable<ChapterProperty[]> {
     return this.http.get(endpoints.chapterProperties(chapterId)).pipe(
       map((response: any) => response.map(x => this.mapChapterProperty(x)))
@@ -134,6 +142,13 @@ export class ChapterService {
       facebook: response.facebook,
       instagram: response.instagram,
       twitter: response.twitter
+    };
+  }
+
+  private mapChapterPaymentSettings(response: any): ChapterPaymentSettings {
+    return {
+      apiPublicKey: response.apiPublicKey,
+      provider: response.provider
     };
   }
 
