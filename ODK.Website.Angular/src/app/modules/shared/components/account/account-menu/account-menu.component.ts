@@ -37,13 +37,19 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
 
   joinLink: string;
   loginLink: string;
-  loginQueryParams: {};
+  loginQueryParams: {
+    returnUrl: string;
+  };
+
+  private lastUrl: string;
 
   ngOnInit(): void {
+    this.lastUrl = this.router.url;
+
     this.chapterService.activeChapterChange().pipe(
       takeUntil(componentDestroyed(this))
     ).subscribe((chapter: Chapter) => {
-      this.activeChapter = chapter;
+      this.setActiveChapter(chapter);
       this.changeDetector.detectChanges();
     });
 
@@ -57,21 +63,19 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
       takeUntil(componentDestroyed(this)),
       filter((event) => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
-      this.setLoginLink(event.url);
+      this.lastUrl = event.url;
+      this.setLoginParams();
+
       this.changeDetector.detectChanges();
     });
   }
 
-
   ngOnDestroy(): void {}
 
   private onAuthenticationChange(token: AuthenticationToken): void {
-    this.setLoginLink(this.router.url);
-
     if (!token) {
       this.authenticated = false;
       this.links = null;
-      this.joinLink = appUrls.join;      
       this.changeDetector.detectChanges();
       return;
     }
@@ -91,14 +95,17 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
     });
   }
 
-  private setLoginLink(url: string): void {
-    if (this.authenticated) {
-      this.loginLink = null;
-    }
+  private setActiveChapter(chapter: Chapter): void {
+    this.activeChapter = chapter;
+    this.loginLink = appUrls.login(chapter);
+    this.joinLink = appUrls.join(chapter);
+    this.setLoginParams();
+  }
 
-    this.loginLink = appUrls.login;
+  private setLoginParams(): void {
+    const lastUrl: string = this.lastUrl.split('?')[0];
     this.loginQueryParams = {
-      returnUrl: url
+      returnUrl: lastUrl === appUrls.login(this.activeChapter) ? appUrls.home(this.activeChapter) : this.lastUrl
     };
   }
 }

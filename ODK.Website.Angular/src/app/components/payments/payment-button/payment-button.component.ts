@@ -20,16 +20,15 @@ export class PaymentButtonComponent implements OnChanges, OnDestroy {
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private countryService: CountryService,
-  ) {     
+  ) {
   }
 
   @Input() payment: Payment;
-  
+
+  country: Country;
   currencySymbol: string;
   paymentSettings: ChapterPaymentSettings;
   showForm = false;
-
-  private country: Country;  
 
   ngOnChanges(): void {
     if (!this.payment) {
@@ -50,7 +49,7 @@ export class PaymentButtonComponent implements OnChanges, OnDestroy {
       this.changeDetector.detectChanges();
     });
   }
-  
+
   ngOnDestroy() {}
 
   onPurchase(): void {

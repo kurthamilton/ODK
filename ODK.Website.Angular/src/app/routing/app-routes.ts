@@ -33,7 +33,6 @@ export const appRoutes: Routes = [
     {
       path: appPaths.home.path, component: HomeLayoutComponent, canActivate: [HomeGuardService], children: [
         { path: '', component: HomeComponent },
-        { path: appPaths.join.path, component: JoinComponent, data: { title: 'Join' } },
         { path: appPaths.login.path, component: LoginComponent, data: { title: 'Login' } },
         { path: appPaths.logout.path, component: LogoutComponent },
         { path: appPaths.password.forgotten.path, component: ForgottenPasswordComponent, data: { title: 'Forgotten password' } },
@@ -49,6 +48,8 @@ export const appRoutes: Routes = [
         { path: chapterPaths.contact.path, component: ContactComponent, data: { title: 'Send us a message' } },
         { path: chapterPaths.events.path, component: EventsComponent, data: { title: 'Events' } },
         { path: chapterPaths.event.path, component: EventComponent },
+        { path: chapterPaths.join.path, component: JoinComponent, data: { title: 'Join' } },
+        { path: chapterPaths.login.path, component: LoginComponent, data: { title: 'Login' } },
         { path: chapterPaths.members.path, component: MembersComponent, canActivate: [ChapterMemberGuardService] },
         { path: chapterPaths.member.path, component: MemberComponent, canActivate: [ChapterMemberGuardService] },
         { path: chapterPaths.profile.path, canActivate: [AuthenticatedGuardService], children: [
