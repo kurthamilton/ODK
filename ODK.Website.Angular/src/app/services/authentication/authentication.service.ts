@@ -179,7 +179,8 @@ export class AuthenticationService {
       accessToken: response.accessToken,
       chapterId: response.chapterId,
       memberId: response.memberId,
-      refreshToken: response.refreshToken
+      refreshToken: response.refreshToken,
+      subscriptionExpiryDate: response.subscriptionExpiryDate ? new Date(response.subscriptionExpiryDate) : null
     };
 
     if (response.adminChapterIds) {
