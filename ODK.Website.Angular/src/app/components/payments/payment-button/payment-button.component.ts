@@ -52,6 +52,11 @@ export class PaymentButtonComponent implements OnChanges, OnDestroy {
 
   ngOnDestroy() {}
 
+  onFormClose(): void {
+    this.showForm = false;
+    this.changeDetector.detectChanges();
+  }
+
   onPurchase(): void {
     this.showForm = true;
     this.changeDetector.detectChanges();
