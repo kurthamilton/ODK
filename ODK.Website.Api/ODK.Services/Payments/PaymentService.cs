@@ -23,13 +23,14 @@ namespace ODK.Services.Payments
             _paymentRepository = paymentRepository;
         }
 
-        public async Task<Guid> MakePayment(Member member, double amount, string token, string reference)
+        public async Task<Guid> MakePayment(Member member, double amount, string cardToken, string reference)
         {
             ChapterPaymentSettings paymentSettings = await _chapterRepository.GetChapterPaymentSettings(member.ChapterId);
             Chapter chapter = await _chapterRepository.GetChapter(member.ChapterId);
             Country country = await _countryRepository.GetCountry(chapter.CountryId);
 
-            await _paymentProvider.MakePayment(member.EmailAddress, paymentSettings.ApiSecretKey, country.CurrencyCode, amount, token);
+            await _paymentProvider.MakePayment(paymentSettings.ApiSecretKey, country.CurrencyCode, amount, cardToken, reference,
+                $"{member.FirstName} {member.LastName}");
 
             Payment payment = new Payment(Guid.Empty, member.Id, DateTime.UtcNow, country.CurrencyCode, amount, reference);
             return await _paymentRepository.CreatePayment(payment);

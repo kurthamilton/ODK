@@ -115,7 +115,7 @@ namespace ODK.Services.Members
             return await _memberRepository.GetMemberSubscription(memberId);
         }
 
-        public async Task<MemberSubscription> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId, string token)
+        public async Task<MemberSubscription> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId, string cardToken)
         {
             ChapterSubscription chapterSubscription = await _chapterRepository.GetChapterSubscription(chapterSubscriptionId);
             if (chapterSubscription == null)
@@ -126,7 +126,7 @@ namespace ODK.Services.Members
             Member member = await GetMember(memberId);
             _authorizationService.AssertMemberIsChapterMember(member, chapterSubscription.ChapterId);
 
-            await _paymentService.MakePayment(member, chapterSubscription.Amount, token, "Subscription");
+            await _paymentService.MakePayment(member, chapterSubscription.Amount, cardToken, chapterSubscription.Title);
 
             MemberSubscription memberSubscription = await _memberRepository.GetMemberSubscription(member.Id);
 

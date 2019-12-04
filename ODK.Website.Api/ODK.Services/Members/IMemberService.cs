@@ -19,7 +19,7 @@ namespace ODK.Services.Members
 
         Task<MemberSubscription> GetMemberSubscription(Guid memberId);
 
-        Task<MemberSubscription> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId, string token);
+        Task<MemberSubscription> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId, string cardToken);
 
         Task<MemberImage> RotateMemberImage(Guid memberId, int degrees);
 

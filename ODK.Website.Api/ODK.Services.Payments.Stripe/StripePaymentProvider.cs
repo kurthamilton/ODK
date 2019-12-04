@@ -6,7 +6,8 @@ namespace ODK.Services.Payments.Stripe
 {
     public class StripePaymentProvider : IPaymentProvider
     {
-        public async Task<string> MakePayment(string email, string apiSecretKey, string currencyCode, double amount, string token)
+        public async Task<string> MakePayment(string apiSecretKey, string currencyCode, double amount,
+            string cardToken, string description, string memberName)
         {
             StripeClient client = new StripeClient(apiSecretKey);
 
@@ -15,6 +16,7 @@ namespace ODK.Services.Payments.Stripe
             {
                 Amount = (int)(amount * 100),
                 Currency = currencyCode.ToLowerInvariant(),
+                Description = $"{memberName}: {description}",
                 ExtraParams = new Dictionary<string, object>
                 {
                     {
@@ -24,7 +26,7 @@ namespace ODK.Services.Payments.Stripe
                             {
                                 "card", new Dictionary<string, object>
                                 {
-                                    { "token", token }
+                                    { "token", cardToken }
                                 }
                             }
                         }
