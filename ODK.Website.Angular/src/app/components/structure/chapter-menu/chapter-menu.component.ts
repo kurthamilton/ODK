@@ -28,7 +28,7 @@ export class ChapterMenuComponent implements OnInit, OnChanges, OnDestroy {
   private memberChapterId: string;
   
   ngOnInit(): void {
-    this.authenticationService.isAuthenticated().pipe(
+    this.authenticationService.authenticationTokenChange().pipe(
       takeUntil(componentDestroyed(this))
     ).subscribe((token: AuthenticationToken) => {
       this.memberChapterId = token ? token.chapterId : '';
