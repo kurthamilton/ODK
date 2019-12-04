@@ -10,9 +10,6 @@ export const appPaths = {
             about: {
                 path: 'about'
             },
-            blog: {
-                path: 'blog'
-            },
             contact: {
                 path: 'contact'
             },

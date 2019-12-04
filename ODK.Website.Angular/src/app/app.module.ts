@@ -7,7 +7,6 @@ import { AppComponent } from './components/app/app.component';
 import { AppFormsModule } from './modules/forms/app-forms.module';
 import { AppRoutingModule } from './routing/app-routing.module';
 import { AppSharedModule } from './modules/shared/app-shared.module';
-import { BlogComponent } from './components/blogs/blog/blog.component';
 import { BodyComponent } from './components/structure/body/body.component';
 import { BreadcrumbsComponent } from './components/elements/breadcrumbs/breadcrumbs.component';
 import { ChangePasswordComponent } from './components/account/change-password/change-password.component';
@@ -24,7 +23,6 @@ import { EventResponseIconComponent } from './components/events/event-response-i
 import { EventsComponent } from './components/events/events/events.component';
 import { EventSidebarAttendeesComponent } from './components/events/event-sidebar-attendees/event-sidebar-attendees.component';
 import { EventSidebarComponent } from './components/events/event-sidebar/event-sidebar.component';
-import { FaqComponent } from './components/about/faq/faq.component';
 import { FooterComponent } from './components/structure/footer/footer.component';
 import { ForgottenPasswordComponent } from './components/account/forgotten-password/forgotten-password.component';
 import { HeaderComponent } from './components/structure/header/header.component';
@@ -60,11 +58,11 @@ import { StripeFormComponent } from './components/payments/stripe-form/stripe-fo
 import { SubscriptionAlertComponent } from './components/account/subscription-alert/subscription-alert.component';
 import { SubscriptionComponent } from './components/account/subscription/subscription.component';
 import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenets.component';
+import { AboutComponent } from './components/about/about/about.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    BlogComponent,
     BodyComponent,
     BreadcrumbsComponent,
     ChangePasswordComponent,
@@ -81,7 +79,6 @@ import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenet
     EventsComponent,
     EventSidebarAttendeesComponent,
     EventSidebarComponent,
-    FaqComponent,
     FooterComponent,
     ForgottenPasswordComponent,
     HeaderComponent,
@@ -116,6 +113,7 @@ import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenet
     SubscriptionComponent,
     ThreeTenetsComponent,
     SubscriptionAlertComponent,
+    AboutComponent,
   ],
   imports: [
     AppFormsModule,

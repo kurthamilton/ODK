@@ -12,7 +12,6 @@ const chapterPaths = appPaths.chapter.childPaths;
 export const appUrls = {
     about: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.about.path),
     adminChapter: (chapter: Chapter) => chapterUrl(chapter, 'admin'),
-    blog: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.blog.path),
     changePassword: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.password.change.path}`),
     chapter: (chapter: Chapter) => chapterUrl(chapter),
     contact: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.contact.path),
