@@ -33,6 +33,7 @@ namespace ODK.Data
             AddMap(new MemberPropertyMap());
             AddMap(new MemberRefreshTokenMap());
             AddMap(new MemberSubscriptionMap());
+            AddMap(new PaymentMap());
         }
     }
 }

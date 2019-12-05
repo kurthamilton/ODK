@@ -6,12 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Payments\**" />
-    <EmbeddedResource Remove="Payments\**" />
-    <None Remove="Payments\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="4.6.1" />
   </ItemGroup>
 

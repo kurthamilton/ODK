@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ODK.Core.Payments
 {
-    [Obsolete("TODO: Replace")]
     public interface IPaymentRepository
     {
+        Task<Guid> CreatePayment(Payment payment);
     }
 }

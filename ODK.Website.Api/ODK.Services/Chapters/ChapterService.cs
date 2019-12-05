@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
+using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Mails;
@@ -11,12 +12,15 @@ namespace ODK.Services.Chapters
 {
     public class ChapterService : IChapterService
     {
+        private readonly IAuthorizationService _authorizationService;
         private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IMailService _mailService;
 
-        public ChapterService(IChapterRepository chapterRepository, ICacheService cacheService, IMailService mailService)
+        public ChapterService(IChapterRepository chapterRepository, ICacheService cacheService, IMailService mailService,
+            IAuthorizationService authorizationService)
         {
+            _authorizationService = authorizationService;
             _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _mailService = mailService;
@@ -41,6 +45,12 @@ namespace ODK.Services.Chapters
         public async Task<VersionedServiceResult<ChapterLinks>> GetChapterLinks(long? currentVersion, Guid chapterId)
         {
             return await _cacheService.GetOrSetVersionedItem(() => GetChapterLinks(chapterId), chapterId, currentVersion);
+        }
+
+        public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
+        {
+            await _authorizationService.AssertMemberIsChapterMember(currentMemberId, chapterId);
+            return await _chapterRepository.GetChapterPaymentSettings(chapterId);
         }
 
         public async Task<VersionedServiceResult<IReadOnlyCollection<ChapterProperty>>> GetChapterProperties(long? currentVersion, Guid chapterId)

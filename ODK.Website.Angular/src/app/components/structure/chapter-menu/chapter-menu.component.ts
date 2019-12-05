@@ -28,7 +28,7 @@ export class ChapterMenuComponent implements OnInit, OnChanges, OnDestroy {
   private memberChapterId: string;
   
   ngOnInit(): void {
-    this.authenticationService.isAuthenticated().pipe(
+    this.authenticationService.authenticationTokenChange().pipe(
       takeUntil(componentDestroyed(this))
     ).subscribe((token: AuthenticationToken) => {
       this.memberChapterId = token ? token.chapterId : '';
@@ -58,9 +58,8 @@ export class ChapterMenuComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.menuItems.push(...[
-      { link: appUrls.blog(this.chapter), text: 'Blog' },
       { link: appUrls.contact(this.chapter), text: 'Contact' },
-      { link: appUrls.about(this.chapter), text: 'FAQ' }
+      { link: appUrls.about(this.chapter), text: 'About' }
     ]);
   }
 }

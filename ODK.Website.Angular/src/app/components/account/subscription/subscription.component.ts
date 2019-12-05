@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { AccountService } from 'src/app/services/account/account.service';
@@ -20,7 +20,7 @@ import { SubscriptionType } from 'src/app/core/account/subscription-type';
   templateUrl: './subscription.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SubscriptionComponent implements OnInit {
+export class SubscriptionComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private accountService: AccountService,
@@ -31,24 +31,40 @@ export class SubscriptionComponent implements OnInit {
 
   breadcrumbs: MenuItem[];
   chapterSubscriptions: ChapterSubscription[];
+  completedSubject: Subject<void> = new Subject<void>();
   form: FormViewModel;
   subscription: MemberSubscription;
 
+  private chapter: Chapter;
+
   ngOnInit(): void {
-    const chapter: Chapter = this.chapterService.getActiveChapter();
+    this.chapter = this.chapterService.getActiveChapter();
 
     this.breadcrumbs = [
-      { link: appUrls.profile(chapter), text: 'Profile' }
+      { link: appUrls.profile(this.chapter), text: 'Profile' }
     ];
 
     forkJoin([
       this.accountService.getSubscription().pipe(
         tap((subscription: MemberSubscription) => this.subscription = subscription)
       ),
-      this.chapterService.getChapterSubscriptions(chapter.id).pipe(
+      this.chapterService.getChapterSubscriptions(this.chapter.id).pipe(
         tap((chapterSubscriptions: ChapterSubscription[]) => this.chapterSubscriptions = chapterSubscriptions)
       )
     ]).subscribe(() => {
+      this.buildForm();
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.completedSubject.complete();
+  }
+
+  onPurchase(chapterSubscription: ChapterSubscription, token: string): void {
+    this.accountService.purchaseSubscription(chapterSubscription.id, token).subscribe((subscription: MemberSubscription) => {
+      this.subscription = subscription;
+      this.completedSubject.next();
       this.buildForm();
       this.changeDetector.detectChanges();
     });

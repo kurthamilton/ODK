@@ -10,9 +10,6 @@ export const appPaths = {
             about: {
                 path: 'about'
             },
-            blog: {
-                path: 'blog'
-            },            
             contact: {
                 path: 'contact'
             },
@@ -24,6 +21,12 @@ export const appPaths = {
             },
             events: {
                 path: 'events'
+            },
+            join: {
+                path: 'join'
+            },
+            login: {
+                path: 'login'
             },
             member: {
                 path: 'knitwits/:id',
@@ -38,13 +41,13 @@ export const appPaths = {
                 password: {
                     change: {
                         path: 'password/change'
-                    }                    
+                    }
                 },
                 path: 'profile',
                 subscription: {
                     path: 'subscription'
                 }
-            }            
+            }
         },
         path: ':chapter',
         params: {
@@ -53,9 +56,6 @@ export const appPaths = {
     },
     home: {
         path: ''
-    },
-    join: {
-        path: 'join'
     },
     login: {
         path: 'login',

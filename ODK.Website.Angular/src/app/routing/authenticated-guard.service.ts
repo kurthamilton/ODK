@@ -20,7 +20,7 @@ export class AuthenticatedGuardService extends RouteGuardService {
   }
 
   hasAccess(): Observable<boolean> {
-    return this.authenticationService.isAuthenticated().pipe(
+    return this.authenticationService.authenticationTokenChange().pipe(
       take(1),
       map((token: AuthenticationToken) => !!token)
     );

@@ -61,6 +61,13 @@ namespace ODK.Web.Api.Chapters
                 x => _mapper.Map<ChapterLinksApiResponse>(x));
         }
 
+        [HttpGet("{id}/Payments/Settings")]
+        public async Task<ChapterPaymentSettingsApiResponse> PaymentSettings(Guid id)
+        {
+            ChapterPaymentSettings paymentSettings = await _chapterService.GetChapterPaymentSettings(GetMemberId(), id);
+            return _mapper.Map<ChapterPaymentSettingsApiResponse>(paymentSettings);
+        }
+
         [AllowAnonymous]
         [HttpGet("{id}/Properties")]
         public async Task<ActionResult<IEnumerable<ChapterPropertyApiResponse>>> Properties(Guid id)

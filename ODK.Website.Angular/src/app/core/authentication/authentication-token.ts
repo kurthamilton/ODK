@@ -4,5 +4,6 @@ export interface AuthenticationToken {
     chapterId: string;
     memberId: string;
     refreshToken: string;
+    subscriptionExpiryDate: Date;
     superAdmin?: boolean;
 }

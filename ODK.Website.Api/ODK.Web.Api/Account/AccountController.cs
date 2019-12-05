@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -140,6 +141,13 @@ namespace ODK.Web.Api.Account
         {
             MemberSubscription subscription = await _memberService.GetMemberSubscription(GetMemberId());
             return _mapper.Map<SubscriptionApiResponse>(subscription);
+        }
+
+        [HttpPost("Subscriptions/{id}/Purchase")]
+        public async Task<SubscriptionApiResponse> PurchaseSubscription(Guid id, [FromForm] PurchaseSubscriptionApiRequest request)
+        {
+            MemberSubscription memberSubscription = await _memberService.PurchaseSubscription(GetMemberId(), id, request.Token);
+            return _mapper.Map<SubscriptionApiResponse>(memberSubscription);
         }
     }
 }

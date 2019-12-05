@@ -43,6 +43,10 @@ export class AuthenticationService {
   private refreshSubject: Subject<ServiceResult<AuthenticationToken>> = new Subject<ServiceResult<AuthenticationToken>>();
   private tokenSubject: Subject<AuthenticationToken>;
 
+  authenticationTokenChange(): Observable<AuthenticationToken> {
+    return this.tokenSubject.asObservable();
+  }
+  
   changePassword(currentPassword: string, newPassword: string): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
       currentPassword,
@@ -99,11 +103,7 @@ export class AuthenticationService {
 
   getToken(): AuthenticationToken {
     return this.storageService.get<AuthenticationToken>(storageKeys.authToken);
-  }
-
-  isAuthenticated(): Observable<AuthenticationToken> {
-    return this.tokenSubject.asObservable();
-  }
+  }  
 
   login(username: string, password: string): Observable<ServiceResult<AuthenticationToken>> {
     const params: HttpParams = HttpUtils.createFormParams({
@@ -179,7 +179,8 @@ export class AuthenticationService {
       accessToken: response.accessToken,
       chapterId: response.chapterId,
       memberId: response.memberId,
-      refreshToken: response.refreshToken
+      refreshToken: response.refreshToken,
+      subscriptionExpiryDate: response.subscriptionExpiryDate ? new Date(response.subscriptionExpiryDate) : null
     };
 
     if (response.adminChapterIds) {

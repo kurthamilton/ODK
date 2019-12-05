@@ -261,6 +261,16 @@ namespace ODK.Data.Repositories
             }
         }
 
+        public async Task UpdateMemberSubscription(MemberSubscription memberSubscription)
+        {
+            await Context
+                .Update<MemberSubscription>()
+                .Set(x => x.Type, memberSubscription.Type)
+                .Set(x => x.ExpiryDate, memberSubscription.ExpiryDate)
+                .Where(x => x.MemberId).EqualTo(memberSubscription.MemberId)
+                .ExecuteAsync();
+        }
+
         private async Task<bool> MemberHasImage(Guid memberId)
         {
             return await Context

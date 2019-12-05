@@ -15,6 +15,7 @@ const baseUrl = `${environment.baseUrl}/account`;
 const endpoints = {
   image: `${baseUrl}/image`,
   profile: `${baseUrl}/profile`,
+  purchaseSubscription: (id: string) => `${baseUrl}/subscriptions/${id}/purchase`,
   rotateImage: `${baseUrl}/image/rotate/right`,
   subscription: `${baseUrl}/subscription`
 };
@@ -34,7 +35,17 @@ export class AccountService {
 
   getSubscription(): Observable<MemberSubscription> {
     return this.http.get(endpoints.subscription).pipe(
-      map((response: any) => this.mapSubscription(response))
+      map((response: any) => this.mapMemberSubscription(response))
+    );
+  }
+
+  purchaseSubscription(chapterSubscriptionId: string, token: string): Observable<MemberSubscription> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      token
+    });
+
+    return this.http.post(endpoints.purchaseSubscription(chapterSubscriptionId), params).pipe(
+      map((response: any) => this.mapMemberSubscription(response))
     );
   }
 
@@ -87,7 +98,7 @@ export class AccountService {
     };
   }
 
-  private mapSubscription(response: any): MemberSubscription {
+  private mapMemberSubscription(response: any): MemberSubscription {
     return {
       expiryDate: response.expiryDate ? new Date(response.expiryDate) : null,
       type: response.type
