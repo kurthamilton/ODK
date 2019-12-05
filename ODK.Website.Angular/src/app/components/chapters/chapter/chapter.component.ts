@@ -1,5 +1,4 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
@@ -19,14 +18,13 @@ export class ChapterComponent implements OnInit {
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private memberService: MemberService,
-    private authenticationService: AuthenticationService,
-    private sanitizer: DomSanitizer
+    private authenticationService: AuthenticationService
   ) {
   }
 
   chapter: Chapter;
   latestMembers: Member[];
-  welcomeText: SafeHtml;
+  welcomeTextHtml: string;
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
@@ -49,7 +47,7 @@ export class ChapterComponent implements OnInit {
 
   private loadPublicPage(): void {
     this.chapterService.getChapterDetails(this.chapter.id).subscribe((details: ChapterDetails) => {
-      this.welcomeText = this.sanitizer.bypassSecurityTrustHtml(details.welcomeText);
+      this.welcomeTextHtml = details.welcomeText;
       this.changeDetector.detectChanges();
     });
   }

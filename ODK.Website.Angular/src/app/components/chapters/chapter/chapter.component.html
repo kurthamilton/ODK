@@ -1,9 +1,9 @@
 <app-body *ngIf="chapter">
     <app-page-with-sidebar>
         <ng-container app-main>
-            <ng-container *ngIf="welcomeText">
+            <ng-container *ngIf="welcomeTextHtml">
                 <h3>Welcome!</h3>
-                <div [innerHtml]="welcomeText"></div>
+                <app-raw-html [html]="welcomeTextHtml"></app-raw-html>
             </ng-container>
             <ng-container *ngIf="latestMembers">
                 <h3>Latest members</h3>

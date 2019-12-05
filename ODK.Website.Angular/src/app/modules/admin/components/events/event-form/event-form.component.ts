@@ -5,9 +5,9 @@ import { Observable } from 'rxjs';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { CheckBoxViewModel } from 'src/app/modules/forms/components/inputs/check-box/check-box.view-model';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { Event } from 'src/app/core/events/event';
-import { TextAreaViewModel } from 'src/app/modules/forms/components/inputs/text-area/text-area.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { HtmlEditorViewModel } from '../../forms/inputs/html-editor/html-editor.view-model';
 import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
 
 @Component({
@@ -31,7 +31,7 @@ export class EventFormComponent implements OnChanges {
   private formControls: {
     address: TextInputViewModel;
     date: TextInputViewModel;
-    description: TextAreaViewModel;
+    description: HtmlEditorViewModel;
     isPublic: CheckBoxViewModel;
     location: TextInputViewModel;
     mapQuery: TextInputViewModel;
@@ -86,7 +86,7 @@ export class EventFormComponent implements OnChanges {
         },
         value: this.datePipe.transform(this.event ? this.event.date : new Date(), 'yyyy-MM-dd')
       }),
-      description: new TextAreaViewModel({
+      description: new HtmlEditorViewModel({
         id: 'description',
         label: {
           text: 'Description'
@@ -146,9 +146,9 @@ export class EventFormComponent implements OnChanges {
         this.formControls.location,
         this.formControls.date,
         this.formControls.time,
+        this.formControls.description,
         this.formControls.address,
         this.formControls.mapQuery,
-        this.formControls.description,
         this.formControls.isPublic
       ]
     };

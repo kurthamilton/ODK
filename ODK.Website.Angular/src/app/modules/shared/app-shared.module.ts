@@ -9,6 +9,7 @@ import { LoadingDirective } from './directives/loading/loading.directive';
 import { LoadingSpinnerComponent } from './components/elements/loading-spinner/loading-spinner.component';
 import { MemberImageComponent } from './components/members/member-image/member-image.component';
 import { NavbarComponent } from './components/elements/navbar/navbar.component';
+import { RawHtmlComponent } from './components/elements/raw-html/raw-html.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { NavbarComponent } from './components/elements/navbar/navbar.component';
     MemberImageComponent,
     NavbarComponent,
     LoadingDirective,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    RawHtmlComponent
   ],
   imports: [
     CommonModule,
@@ -44,6 +46,7 @@ import { NavbarComponent } from './components/elements/navbar/navbar.component';
     NgbModalModule,
     NgbTabsetModule,
     NgbTooltipModule,
+    RawHtmlComponent
   ],
   entryComponents: [
     LoadingSpinnerComponent,

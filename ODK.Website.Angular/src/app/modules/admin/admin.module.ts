@@ -17,6 +17,7 @@ import { EventFormComponent } from './components/events/event-form/event-form.co
 import { EventInvitesComponent } from './components/events/event-invites/event-invites.component';
 import { EventResponsesComponent } from './components/events/event-responses/event-responses.component';
 import { EventsComponent } from './components/events/events/events.component';
+import { HtmlEditorComponent } from './components/forms/inputs/html-editor/html-editor.component';
 import { MemberComponent } from './components/members/member/member.component';
 import { MembersComponent } from './components/members/members/members.component';
 
@@ -33,6 +34,7 @@ import { MembersComponent } from './components/members/members/members.component
     EventInvitesComponent,
     EventResponsesComponent,
     EventsComponent,
+    HtmlEditorComponent,
     MemberComponent,
     MembersComponent,
   ],
@@ -42,6 +44,9 @@ import { MembersComponent } from './components/members/members/members.component
     AppSharedModule,
     CKEditorModule,
     CommonModule,
+  ],
+  entryComponents: [
+    HtmlEditorComponent
   ]
 })
 export class AdminModule { }

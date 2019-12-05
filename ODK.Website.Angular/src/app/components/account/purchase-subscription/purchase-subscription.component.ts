@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, Input, OnChanges, Output, EventEmitter } from '@angular/core';
-import { SafeHtml, DomSanitizer } from '@angular/platform-browser';
 
 import { Observable } from 'rxjs';
 
@@ -13,14 +12,10 @@ import { Payment } from 'src/app/core/payments/payment';
 })
 export class PurchaseSubscriptionComponent implements OnChanges {
 
-  constructor(private sanitizer: DomSanitizer) {
-  }
-
   @Input() chapterSubscription: ChapterSubscription;
   @Input() close: Observable<void>;
   @Output() purchase: EventEmitter<string> = new EventEmitter<string>();
 
-  description: SafeHtml;
   payment: Payment;
 
   ngOnChanges(): void {
@@ -28,7 +23,6 @@ export class PurchaseSubscriptionComponent implements OnChanges {
       return;
     }
 
-    this.description = this.sanitizer.bypassSecurityTrustHtml(this.chapterSubscription.description);
     this.payment = {
       amount: this.chapterSubscription.amount,
       name: this.chapterSubscription.title
