@@ -1,6 +1,6 @@
-<app-modal [title]="name">
+<app-modal [title]="name" (close)="onClose()">
     <form (ngSubmit)="onSubmit()">
-      <div class="form-group">        
+      <div class="form-group">
         <label for="card-element">Credit or debit card</label>
         <div id="card-element" #card></div>
         <app-error-messages [messages]="[error]"></app-error-messages>
@@ -9,6 +9,6 @@
           <button class="btn btn-primary" type="button" (click)="onSubmit()">
             Pay {{currencySymbol}}{{amount | number:'1.2-2'}}
           </button>
-      </div>      
+      </div>
     </form>
 </app-modal>

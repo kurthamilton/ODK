@@ -6,9 +6,10 @@ import { Subject } from 'rxjs';
 import { appPaths } from 'src/app/routing/app-paths';
 import { AuthenticationService } from '../../../services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
-import { ServiceResult } from 'src/app/services/service-result';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
 import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
+import { ServiceResult } from 'src/app/services/service-result';
+import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
 
 @Component({
   selector: 'app-login',
@@ -23,40 +24,44 @@ export class LoginComponent implements OnInit {
   ) {
   }
 
-  form: FormViewModel;
+  form: DynamicFormViewModel;
   links = {
     forgottenPassword: `/${appPaths.password.forgotten.path}`
   };
 
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
-    password: FormControlViewModel;
-    username: FormControlViewModel;
+    password: TextInputViewModel;
+    username: TextInputViewModel;
   };
 
   ngOnInit(): void {
     this.formControls = {
-      password: {
+      password: new TextInputViewModel({
         id: 'password',
-        label: 'Password',
+        inputType: 'password',
+        label: {
+          text: 'Password'
+        },
         validators: {
           required: true
-        },
-        type: 'password'
-      },
-      username: {
+        }    
+      }),
+      username: new TextInputViewModel({
         id: 'username',
-        label: 'Email',
+        label: {
+          text: 'Email'
+        },
         validators: {
           required: true
         },
-      }
+      })
     };
 
     this.form = {
       buttonText: 'Sign In',
       callback: this.formCallback.asObservable(),
-      formControls: [ this.formControls.username, this.formControls.password ]
+      controls: [ this.formControls.username, this.formControls.password ]
     };
   }
 

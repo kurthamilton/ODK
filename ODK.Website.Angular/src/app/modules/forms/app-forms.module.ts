@@ -11,8 +11,12 @@ import { FormControlValidationComponent } from './components/form-control-valida
 import { TextInputComponent } from './components/inputs/text-input/text-input.component';
 import { DynamicFormControlsComponent } from './components/dynamic-form-controls/dynamic-form-controls.component';
 import { DynamicFormComponent } from './components/dynamic-form/dynamic-form.component';
-import { DynamicFormLabelComponent } from './components/dynamic-form-label/dynamic-form-label.component';
 import { DynamicFormControlComponent } from './components/dynamic-form-control/dynamic-form-control.component';
+import { FormControlLabelComponent } from './components/form-control-label/form-control-label.component';
+import { CheckBoxComponent } from './components/inputs/check-box/check-box.component';
+import { TextAreaComponent } from './components/inputs/text-area/text-area.component';
+import { ReadOnlyFormControlComponent } from './components/inputs/read-only-form-control/read-only-form-control.component';
+import { DropDownFormControlComponent } from './components/inputs/drop-down-form-control/drop-down-form-control.component';
 
 @NgModule({
   declarations: [
@@ -24,8 +28,12 @@ import { DynamicFormControlComponent } from './components/dynamic-form-control/d
     FormControlValidationComponent,
     TextInputComponent,
     DynamicFormComponent,
-    DynamicFormLabelComponent,
     DynamicFormControlComponent,
+    FormControlLabelComponent,
+    CheckBoxComponent,
+    TextAreaComponent,
+    ReadOnlyFormControlComponent,
+    DropDownFormControlComponent,
   ],
   imports: [
     AppSharedModule,
@@ -44,9 +52,17 @@ import { DynamicFormControlComponent } from './components/dynamic-form-control/d
     FormsModule,
     ReactiveFormsModule,
     TextInputComponent,
+    TextAreaComponent,
+    CheckBoxComponent,
+    ReadOnlyFormControlComponent,
+    DropDownFormControlComponent
   ],
   entryComponents: [
-    TextInputComponent
+    TextInputComponent,
+    CheckBoxComponent,
+    TextAreaComponent,
+    ReadOnlyFormControlComponent,
+    DropDownFormControlComponent
   ]
 })
 export class AppFormsModule { }

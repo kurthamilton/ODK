@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Threading.Tasks;
 using ODK.Core.Payments;
 using ODK.Data.Sql;
 
@@ -11,6 +10,13 @@ namespace ODK.Data.Repositories
         public PaymentRepository(SqlContext context)
             : base(context)
         {
+        }
+
+        public async Task<Guid> CreatePayment(Payment payment)
+        {
+            return await Context
+                .Insert(payment)
+                .GetIdentityAsync();
         }
     }
 }

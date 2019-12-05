@@ -36,7 +36,9 @@ export class ModalComponent implements OnInit, OnDestroy {
       .subscribe((show: boolean) => show ? this.openModal() : this.closeModal());
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.closeModal();
+  }
 
   closeModal(): void {
     if (!this.modal) {

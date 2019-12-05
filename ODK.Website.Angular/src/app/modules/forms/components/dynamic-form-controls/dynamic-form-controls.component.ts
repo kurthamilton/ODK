@@ -1,11 +1,11 @@
-import { Component, ComponentFactoryResolver, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ComponentFactory, ComponentRef, ChangeDetectorRef, OnDestroy, SimpleChanges } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ChangeDetectorRef, OnDestroy, SimpleChanges } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { DynamicFormViewModel } from '../dynamic-form.view-model';
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { DynamicFormViewModel } from '../dynamic-form.view-model';
 
 @Component({
   selector: 'app-dynamic-form-controls',

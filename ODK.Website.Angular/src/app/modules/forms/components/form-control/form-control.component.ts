@@ -73,7 +73,9 @@ export class FormControlComponent implements OnChanges, OnDestroy {
   private addDropDownFreeTextControl(value: string): void {
     const viewModel: FormControlViewModel = {
       id: `${this.viewModel.id}-freetext`,
-      label: 'Please specify',
+      label: {
+        text: 'Please specify'
+      },
       validators: this.viewModel.validators,
       value: value
     };

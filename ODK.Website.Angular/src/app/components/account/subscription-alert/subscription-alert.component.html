@@ -1,0 +1,9 @@
+<div *ngIf="status" class="container mt-3 subscription-alerts">
+  <ngb-alert [dismissible]="false" *ngIf="status === 'expired'" type="danger">
+    Your subscription has expired. <a [routerLink]="links.subscription">Renew</a>
+  </ngb-alert>
+  
+  <ngb-alert type="warning" (close)="onClose()" *ngIf="status === 'expiring' && !hide">
+    Your subscription expires {{expiresIn}}. <a [routerLink]="links.subscription">Renew</a>
+  </ngb-alert>
+</div>

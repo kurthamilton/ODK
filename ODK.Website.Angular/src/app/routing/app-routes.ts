@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 
+import { AboutComponent } from '../components/about/about/about.component';
 import { appPaths } from './app-paths';
 import { AuthenticatedGuardService } from '../routing/authenticated-guard.service';
-import { BlogComponent } from '../components/blogs/blog/blog.component';
 import { ChangePasswordComponent } from '../components/account/change-password/change-password.component';
 import { ChapterAdminGuardService } from '../routing/chapter-admin-guard.service';
 import { ChapterComponent } from '../components/chapters/chapter/chapter.component';
@@ -12,7 +12,6 @@ import { ChapterMemberGuardService } from '../routing/chapter-member-guard.servi
 import { ContactComponent } from '../components/contact/contact/contact.component';
 import { EventComponent } from '../components/events/event/event.component';
 import { EventsComponent } from '../components/events/events/events.component';
-import { FaqComponent } from '../components/about/faq/faq.component';
 import { ForgottenPasswordComponent } from '../components/account/forgotten-password/forgotten-password.component';
 import { HomeComponent } from '../components/home/home/home.component';
 import { HomeGuardService } from './home-guard.service';
@@ -33,7 +32,6 @@ export const appRoutes: Routes = [
     {
       path: appPaths.home.path, component: HomeLayoutComponent, canActivate: [HomeGuardService], children: [
         { path: '', component: HomeComponent },
-        { path: appPaths.join.path, component: JoinComponent, data: { title: 'Join' } },
         { path: appPaths.login.path, component: LoginComponent, data: { title: 'Login' } },
         { path: appPaths.logout.path, component: LogoutComponent },
         { path: appPaths.password.forgotten.path, component: ForgottenPasswordComponent, data: { title: 'Forgotten password' } },
@@ -44,11 +42,12 @@ export const appRoutes: Routes = [
     {
       path: appPaths.chapter.path, component: ChapterLayoutComponent, canActivate: [ChapterGuardService], children: [
         { path: '', component: ChapterComponent },
-        { path: chapterPaths.about.path, component: FaqComponent, data: { title: 'Frequently asked questions' } },
-        { path: chapterPaths.blog.path, component: BlogComponent, data: { title: 'Blog' } },
+        { path: chapterPaths.about.path, component: AboutComponent, data: { title: 'About' } },
         { path: chapterPaths.contact.path, component: ContactComponent, data: { title: 'Send us a message' } },
         { path: chapterPaths.events.path, component: EventsComponent, data: { title: 'Events' } },
         { path: chapterPaths.event.path, component: EventComponent },
+        { path: chapterPaths.join.path, component: JoinComponent, data: { title: 'Join' } },
+        { path: chapterPaths.login.path, component: LoginComponent, data: { title: 'Login' } },
         { path: chapterPaths.members.path, component: MembersComponent, canActivate: [ChapterMemberGuardService] },
         { path: chapterPaths.member.path, component: MemberComponent, canActivate: [ChapterMemberGuardService] },
         { path: chapterPaths.profile.path, canActivate: [AuthenticatedGuardService], children: [

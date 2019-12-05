@@ -13,10 +13,14 @@ import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-op
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { DataType } from 'src/app/core/data-types/data-type';
-import { FormControlType } from 'src/app/modules/forms/components/form-control-type';
-import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { MemberProperty } from 'src/app/core/members/member-property';
+import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
+import { CheckBoxViewModel } from 'src/app/modules/forms/components/inputs/check-box/check-box.view-model';
+import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
+import { DynamicFormControlViewModel } from 'src/app/modules/forms/components/dynamic-form-control.view-model';
+import { TextAreaViewModel } from 'src/app/modules/forms/components/inputs/text-area/text-area.view-model';
+import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
+import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
 
 @Component({
   selector: 'app-profile-form',
@@ -33,7 +37,7 @@ export class ProfileFormComponent implements OnInit {
   ) {
   }
 
-  form: FormViewModel;
+  form: DynamicFormViewModel;
 
   private chapterId: string;
   private chapterProperties: Map<string, ChapterProperty>;
@@ -42,12 +46,12 @@ export class ProfileFormComponent implements OnInit {
   private profile: AccountProfile;
 
   private formControls: {
-    emailAddress: FormControlViewModel;
-    emailOptIn: FormControlViewModel;
-    firstName: FormControlViewModel;
-    joined: FormControlViewModel;
-    lastName: FormControlViewModel;
-    properties: FormControlViewModel[];
+    emailAddress: ReadOnlyFormControlViewModel;
+    emailOptIn: CheckBoxViewModel;
+    firstName: TextInputViewModel;
+    joined: ReadOnlyFormControlViewModel;
+    lastName: TextInputViewModel;
+    properties: DynamicFormControlViewModel[];
   };
 
   ngOnInit(): void {
@@ -60,7 +64,7 @@ export class ProfileFormComponent implements OnInit {
   onFormSubmit(): void {
     const profile: AccountProfile = {
       emailAddress: this.formControls.emailAddress.value,
-      emailOptIn: this.formControls.emailOptIn.value === 'true',
+      emailOptIn: this.formControls.emailOptIn.value,
       firstName: this.formControls.firstName.value,
       joined: null,
       lastName: this.formControls.lastName.value,
@@ -77,50 +81,55 @@ export class ProfileFormComponent implements OnInit {
 
   private buildForm(): void {
     this.formControls = {
-      emailAddress: {
+      emailAddress: new ReadOnlyFormControlViewModel({
         id: 'emailAddresss',
-        label: 'Email',
-        validators: {
-          required: true
+        label: {
+          text: 'Email'
         },
         value: this.profile.emailAddress
-      },
-      emailOptIn: {
+      }),
+      emailOptIn: new CheckBoxViewModel({
         id: 'emailOptIn',
-        label: 'Receive emails',
-        subtitle: 'Opt in to emails informing you of upcoming events',
-        type: 'checkbox',
-        value: this.profile.emailOptIn ? 'true' : 'false'
-      },
-      firstName: {
+        label: {
+          text: 'Receive emails',
+          subtitle: 'Opt in to emails informing you of upcoming events'
+        },
+        value: this.profile.emailOptIn
+      }),
+      firstName: new TextInputViewModel({
         id: 'firstName',
-        label: 'First Name',
+        label: {
+          text: 'First Name'
+        },
         validators: {
           required: true
         },
         value: this.profile.firstName
-      },
-      joined: {
+      }),
+      joined: new ReadOnlyFormControlViewModel({
         id: 'joined',
-        label: 'Date joined',
-        type: 'readonly',
+        label: {
+          text: 'Date joined'
+        },
         value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy')
-      },
-      lastName: {
+      }),
+      lastName: new TextInputViewModel({
         id: 'lastName',
-        label: 'Last Name',
+        label: {
+          text: 'Last Name'
+        },
         validators: {
           required: true
         },
         value: this.profile.lastName
-      },
-      properties: this.profile.properties.map((x): FormControlViewModel => this.mapFormControl(x))
+      }),
+      properties: this.profile.properties.map((x): DynamicFormControlViewModel => this.mapFormControl(x))
     }
 
     this.form = {
       buttonText: 'Update',
       callback: this.formCallback.asObservable(),
-      formControls: [
+      controls: [
         this.formControls.emailAddress,
         this.formControls.emailOptIn,
         this.formControls.firstName,
@@ -150,41 +159,35 @@ export class ProfileFormComponent implements OnInit {
     });
   }
 
-  private mapFormControl(property: MemberProperty): FormControlViewModel {
+  private mapFormControl(property: MemberProperty): DynamicFormControlViewModel {
       const chapterProperty: ChapterProperty = this.chapterProperties.get(property.chapterPropertyId);
 
-      const formControl: FormControlViewModel = {
-        helpText: chapterProperty.helpText,
-        id: property.chapterPropertyId,
-        label: chapterProperty.name,
-        subtitle: chapterProperty.subtitle,
-        type: this.mapFormControlType(chapterProperty.dataType),
-        value: property.value,
+      const options: any = {
+        id: chapterProperty.id,
+        label: {
+          helpText: chapterProperty.helpText,
+          subtitle: chapterProperty.subtitle,
+          text: chapterProperty.name  
+        },
         validators: {
           required: chapterProperty.required
         }
       };
 
+      if (chapterProperty.dataType === DataType.LongText) {
+        return new TextAreaViewModel(options);
+      }
+      
       if (chapterProperty.dataType === DataType.DropDown) {
         const chapterPropertyOptions: ChapterPropertyOption[] = this.chapterPropertyOptions.get(chapterProperty.id) || [];
-        formControl.dropDown = {
+        options.options = {
           default: 'Select...',
           freeTextOption: chapterPropertyOptions.find(x => x.freeText).value,
           options: chapterPropertyOptions.map(x => x.value)
         };
+        return new DropDownFormControlViewModel(options);
       }
-
-      return formControl;
-  }
-
-  private mapFormControlType(dataType: DataType): FormControlType {
-    switch (dataType) {
-      case DataType.DropDown:
-        return 'dropdown';
-      case DataType.LongText:
-        return 'textarea';
-      default:
-        return 'text';
-    }
+      
+      return new TextInputViewModel(options);
   }
 }

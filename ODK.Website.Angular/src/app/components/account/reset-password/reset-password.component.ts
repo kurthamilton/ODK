@@ -52,7 +52,9 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     this.controls = {
       password: {
         id: 'password',
-        label: 'New password',
+        label: {
+          text: 'New password'
+        },
         type: 'password',
         validators: {
           required: true

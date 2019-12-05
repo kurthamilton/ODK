@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { AccountService } from 'src/app/services/account/account.service';
@@ -9,10 +9,11 @@ import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
-import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { DynamicFormControlViewModel } from 'src/app/modules/forms/components/dynamic-form-control.view-model';
+import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { MenuItem } from 'src/app/core/menus/menu-item';
+import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 import { SubscriptionType } from 'src/app/core/account/subscription-type';
 
 @Component({
@@ -20,7 +21,7 @@ import { SubscriptionType } from 'src/app/core/account/subscription-type';
   templateUrl: './subscription.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SubscriptionComponent implements OnInit {
+export class SubscriptionComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private accountService: AccountService,
@@ -31,21 +32,24 @@ export class SubscriptionComponent implements OnInit {
 
   breadcrumbs: MenuItem[];
   chapterSubscriptions: ChapterSubscription[];
-  form: FormViewModel;
+  completedSubject: Subject<void> = new Subject<void>();
+  form: DynamicFormViewModel;
   subscription: MemberSubscription;
 
+  private chapter: Chapter;
+
   ngOnInit(): void {
-    const chapter: Chapter = this.chapterService.getActiveChapter();
+    this.chapter = this.chapterService.getActiveChapter();
 
     this.breadcrumbs = [
-      { link: appUrls.profile(chapter), text: 'Profile' }
+      { link: appUrls.profile(this.chapter), text: 'Profile' }
     ];
 
     forkJoin([
       this.accountService.getSubscription().pipe(
         tap((subscription: MemberSubscription) => this.subscription = subscription)
       ),
-      this.chapterService.getChapterSubscriptions(chapter.id).pipe(
+      this.chapterService.getChapterSubscriptions(this.chapter.id).pipe(
         tap((chapterSubscriptions: ChapterSubscription[]) => this.chapterSubscriptions = chapterSubscriptions)
       )
     ]).subscribe(() => {
@@ -54,28 +58,43 @@ export class SubscriptionComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.completedSubject.complete();
+  }
+
+  onPurchase(chapterSubscription: ChapterSubscription, token: string): void {
+    this.accountService.purchaseSubscription(chapterSubscription.id, token).subscribe((subscription: MemberSubscription) => {
+      this.subscription = subscription;
+      this.completedSubject.next();
+      this.buildForm();
+      this.changeDetector.detectChanges();
+    });
+  }
+
   private buildForm(): void {
-    const controls: FormControlViewModel[] = [
-      {
+    const controls: DynamicFormControlViewModel[] = [
+      new ReadOnlyFormControlViewModel({
         id: 'type',
-        label: 'Membership type',
-        type: 'readonly',
+        label: {
+          text: 'Membership type'
+        },
         value: SubscriptionType[this.subscription.type]
-      }
+      })
     ];
 
     if (this.subscription.expiryDate) {
-      controls.push({
-        id: 'expirydate',
-        label: 'End date',
-        type: 'readonly',
+      controls.push(new ReadOnlyFormControlViewModel({
+        id: 'end-date',
+        label: {
+          text: 'End date'
+        },
         value: this.datePipe.transform(this.subscription.expiryDate, 'dd MMMM yyyy')
-      });
+      }));
     }
     this.form = {
       buttonText: '',
       callback: null,
-      formControls: controls
+      controls
     };
   }
 }

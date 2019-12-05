@@ -32,6 +32,7 @@ export class DynamicFormControlComponent implements OnChanges, OnDestroy {
   match: string;
   pattern: string;
   required: boolean;
+  showLabel: boolean;
 
   ngOnChanges(): void {
     if (!this.viewModel) {
@@ -47,16 +48,12 @@ export class DynamicFormControlComponent implements OnChanges, OnDestroy {
     this.createInput();
     this.control = this.createFormControl(value);
 
-    if (!this.formGroup.get(this.viewModel.controlId)) {
-      this.formGroup.addControl(this.viewModel.controlId, this.control);
+    if (!this.formGroup.get(this.viewModel.id)) {
+      this.formGroup.addControl(this.viewModel.id, this.control);
     }
   }
 
-  ngOnDestroy(): void {}
-
-  validate(): void {
-    this.control.updateValueAndValidity();
-  }
+  ngOnDestroy(): void {}  
 
   private bindValue(value: string): void {
     this.viewModel.value = value;
@@ -76,8 +73,7 @@ export class DynamicFormControlComponent implements OnChanges, OnDestroy {
       validators.push(Validators.pattern(this.pattern));
     }
 
-
-    let control: AbstractControl = this.formGroup.get(this.viewModel.controlId);
+    let control: AbstractControl = this.formGroup.get(this.viewModel.id);
     if (!control) {
       control = this.formBuilder.control(value, validators);
     }
@@ -87,8 +83,7 @@ export class DynamicFormControlComponent implements OnChanges, OnDestroy {
       .pipe(
         takeUntil(this.updated),
         takeUntil(componentDestroyed(this))
-      )
-      .subscribe(x => this.onValueChanged(x));
+      ).subscribe(x => this.onValueChanged(x));
 
     return control;
   }
@@ -96,16 +91,26 @@ export class DynamicFormControlComponent implements OnChanges, OnDestroy {
   private createInput(): void {
     this.inputContainer.clear();
 
-    const factory: ComponentFactory<InputBase> = this.resolver.resolveComponentFactory(this.viewModel.componentFactory);
+    const factory: ComponentFactory<InputBase> = this.resolver.resolveComponentFactory(this.viewModel.type);
     const componentRef: ComponentRef<InputBase> = this.inputContainer.createComponent(factory);
 
-    const instance: InputBase = componentRef.instance;
-    instance.controlId = this.viewModel.controlId;
-    instance.formGroup = this.formGroup;
+    const instance: InputBase = componentRef.instance; 
+    instance.formGroup = this.formGroup
+    instance.viewModel = this.viewModel;
+
+    instance.validate.pipe(
+      takeUntil(componentDestroyed(this))
+    ).subscribe(() => this.onValidate());
+
+    this.showLabel = instance.showLabel;
   }
 
   private getValue(): string {
     return this.viewModel.value;
+  }
+
+  private onValidate(): void {
+    this.control.updateValueAndValidity();
   }
 
   private onValueChanged(value: string): void {

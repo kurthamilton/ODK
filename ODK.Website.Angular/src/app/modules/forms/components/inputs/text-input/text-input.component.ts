@@ -1,6 +1,7 @@
-import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 import { InputBase } from '../input-base';
+import { TextInputViewModel } from './text-input.view-model';
 
 @Component({
   selector: 'app-text-input',
@@ -9,6 +10,13 @@ import { InputBase } from '../input-base';
 })
 export class TextInputComponent extends InputBase {
 
-  @Input() type: string;
+  constructor() {
+    super();
+  }
 
+  get type(): string {
+    return this.viewModel 
+      ? (<TextInputViewModel>this.viewModel).inputType || 'text'
+      : 'text';
+  }
 }

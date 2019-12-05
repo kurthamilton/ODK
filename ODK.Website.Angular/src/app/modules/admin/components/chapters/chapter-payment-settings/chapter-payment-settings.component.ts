@@ -57,17 +57,23 @@ export class ChapterPaymentSettingsComponent implements OnInit {
     this.controls = {
       apiPublicKey: {
         id: 'apipublickey',
-        label: 'Public key',
+        label: {
+          text: 'Public key'
+        },
         value: this.paymentSettings.apiPublicKey
       },
       apiSecretKey: {
         id: 'apisecretkey',
-        label: 'Secret key',
+        label: {
+          text: 'Secret key'
+        },
         value: this.paymentSettings.apiSecretKey
       },
       provider: {
         id: 'provider',
-        label: 'Provider',
+        label: {
+          text: 'Provider'
+        },
         type: 'readonly',
         value: this.paymentSettings.provider
       }

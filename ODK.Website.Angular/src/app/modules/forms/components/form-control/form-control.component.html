@@ -1,15 +1,7 @@
 <div *ngIf="viewModel" class="form-group" [class.required]="required" [formGroup]="formGroup">
-    <ng-container *ngIf="showLabel">
-        <label [attr.for]="viewModel.id" class="form-control-label">
-            {{viewModel.label}}
-        </label>
-        <span *ngIf="viewModel.helpText">
-            <i class="ml-1 icon--help fas fa-question-circle" [ngbTooltip]="viewModel.helpText">
-            </i>
-        </span>
-        <span *ngIf="viewModel.subtitle" class="ml-1 text-muted">{{viewModel.subtitle}}</span>
-    </ng-container>
-
+    <app-form-control-label *ngIf="showLabel" [controlId]="viewModel.id" [viewModel]="viewModel.label">      
+    </app-form-control-label>
+    
     <!-- text / password / date -->
     <input *ngIf="type === 'text' || type === 'password' || type === 'date'"
         [attr.type]="type"
@@ -49,14 +41,7 @@
     <div *ngIf="type === 'checkbox'" class="form-check">
         <input class="form-check-input" type="checkbox"
             [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id" />
-        <label class="form-control-label form-check-label" [attr.for]="viewModel.id">
-            {{viewModel.label}}
-        </label>
-        <span *ngIf="viewModel.helpText">
-            <i class="ml-1 icon--help fas fa-question-circle" [ngbTooltip]="viewModel.helpText">
-            </i>
-        </span>
-        <span *ngIf="viewModel.subtitle" class="ml-1 text-muted">{{viewModel.subtitle}}</span>
+        <app-form-control-label [controlId]="viewModel.id" [viewModel]="viewModel.label"></app-form-control-label>
     </div>
 
     <!-- readonly -->
