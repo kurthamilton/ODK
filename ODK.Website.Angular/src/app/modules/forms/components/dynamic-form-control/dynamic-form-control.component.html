@@ -1,5 +1,5 @@
 <div class="form-group" [class.required]="required" [formGroup]="formGroup">
-  <app-form-control-label *ngIf="viewModel" [controlId]="viewModel.id" [viewModel]="viewModel.label">
+  <app-form-control-label *ngIf="showLabel" [controlId]="viewModel.id" [viewModel]="viewModel.label">
   </app-form-control-label>
   <div #inputcontainer>
   </div>

@@ -1,4 +1,4 @@
-import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 import { InputBase } from '../input-base';
 
@@ -9,6 +9,9 @@ import { InputBase } from '../input-base';
 })
 export class TextInputComponent extends InputBase {
 
-  @Input() type: string;
+  constructor() {
+    super();
+  }
 
+  @Input() type: string;
 }

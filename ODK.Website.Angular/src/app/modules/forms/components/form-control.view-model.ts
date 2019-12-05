@@ -1,5 +1,5 @@
-import { FormControlType } from './form-control-type';
 import { FormControlLabelViewModel } from './form-control-label.view-model';
+import { FormControlType } from './form-control-type';
 import { FormControlValidatorsViewModel } from './form-control-validators.view-model';
 
 export interface FormControlViewModel {
@@ -11,6 +11,6 @@ export interface FormControlViewModel {
   id: string;
   label: FormControlLabelViewModel;
   type?: FormControlType;
-  value?: string;
   validators?: FormControlValidatorsViewModel;
+  value?: string;
 }

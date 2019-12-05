@@ -1,22 +1,41 @@
-import { Input, OnInit, OnDestroy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
-import { AbstractControl, ValidatorFn, Validators, FormGroup, FormBuilder } from '@angular/forms';
+import { Input, Output, EventEmitter } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 
-import { Observable } from 'rxjs';
+import { DynamicFormControlViewModel } from '../dynamic-form-control.view-model';
 
 export abstract class InputBase {
 
-  @Input() control: AbstractControl;
-  @Input() controlId: string;
-  @Input() formGroup: FormGroup;
-  @Input() match: string;
-  @Input() pattern: string;
-  @Input() required: boolean;
+  private _viewModel: DynamicFormControlViewModel;
 
-  validate(): void {
-    console.log('validate');
+  protected constructor(showLabel?: boolean) {
+    this.showLabel = showLabel !== false;
   }
 
-  private onValueChanged(value: string): void {
-    console.log('value changed', value);
+  @Input() formGroup: FormGroup;
+  @Input() set viewModel(value: DynamicFormControlViewModel) {
+    this._viewModel = value;
+    this.controlId = value.id;
+    if (value.validators) {
+      this.pattern = value.validators.pattern;
+      this.required = value.validators.required;
+    }
+  }
+
+  @Output() validate: EventEmitter<void> = new EventEmitter<void>();
+
+  get viewModel(): DynamicFormControlViewModel {
+    return this._viewModel;
+  }
+
+
+
+  controlId: string;  
+  match: string;
+  pattern: string;
+  required: boolean;
+  showLabel: boolean;
+
+  onValidate(): void {
+    this.validate.emit();
   }
 }

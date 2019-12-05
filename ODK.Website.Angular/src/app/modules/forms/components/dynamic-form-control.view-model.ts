@@ -5,9 +5,9 @@ import { FormControlLabelViewModel } from './form-control-label.view-model';
 import { FormControlValidatorsViewModel } from './form-control-validators.view-model';
 
 export interface DynamicFormControlViewModel {
-  componentFactory: Type<InputBase>;
   id: string;
   label: FormControlLabelViewModel;
+  type: Type<InputBase>;
   validators?: FormControlValidatorsViewModel;
-  value: string;
+  value?: string;
 }

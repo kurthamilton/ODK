@@ -73,7 +73,7 @@ export class EventFormComponent implements OnChanges {
   private buildForm(): void {
     this.dynamicFormControls = {
       name: {
-        componentFactory: TextInputComponent,
+        type: TextInputComponent,
         id: 'name',
         label: {
           text: 'Name'
