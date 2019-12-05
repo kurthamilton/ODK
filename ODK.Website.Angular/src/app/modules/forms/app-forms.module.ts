@@ -16,6 +16,7 @@ import { FormControlLabelComponent } from './components/form-control-label/form-
 import { CheckBoxComponent } from './components/inputs/check-box/check-box.component';
 import { TextAreaComponent } from './components/inputs/text-area/text-area.component';
 import { ReadOnlyFormControlComponent } from './components/inputs/read-only-form-control/read-only-form-control.component';
+import { DropDownFormControlComponent } from './components/inputs/drop-down-form-control/drop-down-form-control.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { ReadOnlyFormControlComponent } from './components/inputs/read-only-form
     CheckBoxComponent,
     TextAreaComponent,
     ReadOnlyFormControlComponent,
+    DropDownFormControlComponent,
   ],
   imports: [
     AppSharedModule,
@@ -52,13 +54,15 @@ import { ReadOnlyFormControlComponent } from './components/inputs/read-only-form
     TextInputComponent,
     TextAreaComponent,
     CheckBoxComponent,
-    ReadOnlyFormControlComponent
+    ReadOnlyFormControlComponent,
+    DropDownFormControlComponent
   ],
   entryComponents: [
     TextInputComponent,
     CheckBoxComponent,
     TextAreaComponent,
-    ReadOnlyFormControlComponent
+    ReadOnlyFormControlComponent,
+    DropDownFormControlComponent
   ]
 })
 export class AppFormsModule { }
