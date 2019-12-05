@@ -1,4 +1,6 @@
 import { FormControlType } from './form-control-type';
+import { FormControlLabelViewModel } from './form-control-label.view-model';
+import { FormControlValidatorsViewModel } from './form-control-validators.view-model';
 
 export interface FormControlViewModel {
   dropDown?: {
@@ -6,14 +8,9 @@ export interface FormControlViewModel {
     freeTextOption?: string;
     options: string[];
   };
-  helpText?: string;
   id: string;
-  label: string;
-  subtitle?: string;
+  label: FormControlLabelViewModel;
   type?: FormControlType;
   value?: string;
-  validators?: {
-    pattern?: string;
-    required?: boolean;
-  }
+  validators?: FormControlValidatorsViewModel;
 }

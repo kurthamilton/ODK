@@ -79,7 +79,9 @@ export class ProfileFormComponent implements OnInit {
     this.formControls = {
       emailAddress: {
         id: 'emailAddresss',
-        label: 'Email',
+        label: {
+          text: 'Email'
+        },
         validators: {
           required: true
         },
@@ -87,14 +89,18 @@ export class ProfileFormComponent implements OnInit {
       },
       emailOptIn: {
         id: 'emailOptIn',
-        label: 'Receive emails',
-        subtitle: 'Opt in to emails informing you of upcoming events',
+        label: {
+          text: 'Receive emails',
+          subtitle: 'Opt in to emails informing you of upcoming events'
+        },
         type: 'checkbox',
         value: this.profile.emailOptIn ? 'true' : 'false'
       },
       firstName: {
         id: 'firstName',
-        label: 'First Name',
+        label: {
+          text: 'First Name'
+        },
         validators: {
           required: true
         },
@@ -102,13 +108,17 @@ export class ProfileFormComponent implements OnInit {
       },
       joined: {
         id: 'joined',
-        label: 'Date joined',
+        label: {
+          text: 'Date joined'
+        },
         type: 'readonly',
         value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy')
       },
       lastName: {
         id: 'lastName',
-        label: 'Last Name',
+        label: {
+          text: 'Last Name'
+        },
         validators: {
           required: true
         },
@@ -153,11 +163,13 @@ export class ProfileFormComponent implements OnInit {
   private mapFormControl(property: MemberProperty): FormControlViewModel {
       const chapterProperty: ChapterProperty = this.chapterProperties.get(property.chapterPropertyId);
 
-      const formControl: FormControlViewModel = {
-        helpText: chapterProperty.helpText,
+      const formControl: FormControlViewModel = {        
         id: property.chapterPropertyId,
-        label: chapterProperty.name,
-        subtitle: chapterProperty.subtitle,
+        label: {
+          helpText: chapterProperty.helpText,
+          subtitle: chapterProperty.subtitle,
+          text: chapterProperty.name
+        },        
         type: this.mapFormControlType(chapterProperty.dataType),
         value: property.value,
         validators: {

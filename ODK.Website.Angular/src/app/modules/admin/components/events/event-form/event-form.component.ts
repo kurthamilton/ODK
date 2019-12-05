@@ -74,9 +74,8 @@ export class EventFormComponent implements OnChanges {
     this.dynamicFormControls = {
       name: {
         componentFactory: TextInputComponent,
-        controlId: 'name',
+        id: 'name',
         label: {
-          controlId: 'name',
           text: 'Name'
         },
         validators: {
@@ -87,15 +86,19 @@ export class EventFormComponent implements OnChanges {
     };
 
     this.formControls = {
-      address: {
-        helpText: 'Additional location information, if required',
+      address: {        
         id: 'address',
-        label: 'Address',
+        label: {
+          helpText: 'Additional location information, if required',
+          text: 'Address'
+        },
         value: this.event ? this.event.address : ''
       },
       date: {
         id: 'date',
-        label: 'Date',
+        label: {
+          text: 'Date'
+        },
         type: 'date',
         validators: {
           required: true
@@ -104,34 +107,44 @@ export class EventFormComponent implements OnChanges {
       },
       description: {
         id: 'description',
-        label: 'Description',
+        label: {
+          text: 'Description'
+        },
         type: 'textarea',
         value: this.event ? this.event.description : ''
       },
       isPublic: {
         id: 'ispublic',
-        label: 'Public',
+        label: {
+          text: 'Public'
+        },
         type: 'checkbox',
         value: this.event && this.event.isPublic ? 'true'  : 'false'
       },
-      location: {
-        helpText: 'The main description for where the event is happening',
+      location: {        
         id: 'location',
-        label: 'Location',
+        label: {
+          helpText: 'The main description for where the event is happening',
+          text: 'Location'
+        },
         validators: {
           required: true
         },
         value: this.event ? this.event.location : ''
       },
-      mapQuery: {
-        helpText: 'The search term used if displaying a map. Be as specific as possible',
+      mapQuery: {        
         id: 'mapquery',
-        label: 'Map search',
+        label: {
+          helpText: 'The search term used if displaying a map. Be as specific as possible',
+          text: 'Map search'
+        },
         value: this.event ? this.event.mapQuery : ''
       },
       name: {
         id: 'name',
-        label: 'Name',
+        label: {
+          text: 'Name'
+        },
         validators: {
           required: true
         },
@@ -139,7 +152,9 @@ export class EventFormComponent implements OnChanges {
       },
       time: {
         id: 'time',
-        label: 'Time',
+        label: {
+          text: 'Time'
+        },
         value: this.event ? this.event.time : ''
       }
     };

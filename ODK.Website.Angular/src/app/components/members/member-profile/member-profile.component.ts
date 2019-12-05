@@ -65,13 +65,17 @@ export class MemberProfileComponent implements OnChanges {
           .filter(x => memberPropertyMap.has(x.id) && !!memberPropertyMap.get(x.id).value)
           .map((x): FormControlViewModel => ({
             id: x.id,
-            label: x.name,
+            label: {
+              text: x.name
+            },
             value: memberPropertyMap.get(x.id).value,
             type: 'readonly'
           })),
         {
           id: 'joined',
-          label: 'Date joined',
+          label: {
+            text: 'Date joined'
+          },
           value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy'),
           type: 'readonly'
         }

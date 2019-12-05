@@ -38,7 +38,9 @@ export class LoginComponent implements OnInit {
     this.formControls = {
       password: {
         id: 'password',
-        label: 'Password',
+        label: {
+          text: 'Password'
+        },
         validators: {
           required: true
         },
@@ -46,7 +48,9 @@ export class LoginComponent implements OnInit {
       },
       username: {
         id: 'username',
-        label: 'Email',
+        label: {
+          text: 'Email'
+        },
         validators: {
           required: true
         },

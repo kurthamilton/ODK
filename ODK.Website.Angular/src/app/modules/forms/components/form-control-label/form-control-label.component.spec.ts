@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DynamicFormLabelComponent } from './dynamic-form-label.component';
+import { FormControlLabelComponent } from './form-control-label.component';
 
-describe('DynamicFormLabelComponent', () => {
-  let component: DynamicFormLabelComponent;
-  let fixture: ComponentFixture<DynamicFormLabelComponent>;
+describe('FormControlLabelComponent', () => {
+  let component: FormControlLabelComponent;
+  let fixture: ComponentFixture<FormControlLabelComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DynamicFormLabelComponent ]
+      declarations: [ FormControlLabelComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DynamicFormLabelComponent);
+    fixture = TestBed.createComponent(FormControlLabelComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

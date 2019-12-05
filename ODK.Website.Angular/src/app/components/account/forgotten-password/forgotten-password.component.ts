@@ -30,7 +30,9 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
   } = {
     email: {
       id: 'email',
-      label: 'Email address',
+      label: {
+        text: 'Email address'
+      },
       value: '',
       validators: {
         required: true

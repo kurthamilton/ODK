@@ -11,8 +11,8 @@ import { FormControlValidationComponent } from './components/form-control-valida
 import { TextInputComponent } from './components/inputs/text-input/text-input.component';
 import { DynamicFormControlsComponent } from './components/dynamic-form-controls/dynamic-form-controls.component';
 import { DynamicFormComponent } from './components/dynamic-form/dynamic-form.component';
-import { DynamicFormLabelComponent } from './components/dynamic-form-label/dynamic-form-label.component';
 import { DynamicFormControlComponent } from './components/dynamic-form-control/dynamic-form-control.component';
+import { FormControlLabelComponent } from './components/form-control-label/form-control-label.component';
 
 @NgModule({
   declarations: [
@@ -24,8 +24,8 @@ import { DynamicFormControlComponent } from './components/dynamic-form-control/d
     FormControlValidationComponent,
     TextInputComponent,
     DynamicFormComponent,
-    DynamicFormLabelComponent,
     DynamicFormControlComponent,
+    FormControlLabelComponent,
   ],
   imports: [
     AppSharedModule,

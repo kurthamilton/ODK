@@ -47,8 +47,8 @@ export class DynamicFormControlComponent implements OnChanges, OnDestroy {
     this.createInput();
     this.control = this.createFormControl(value);
 
-    if (!this.formGroup.get(this.viewModel.controlId)) {
-      this.formGroup.addControl(this.viewModel.controlId, this.control);
+    if (!this.formGroup.get(this.viewModel.id)) {
+      this.formGroup.addControl(this.viewModel.id, this.control);
     }
   }
 
@@ -77,7 +77,7 @@ export class DynamicFormControlComponent implements OnChanges, OnDestroy {
     }
 
 
-    let control: AbstractControl = this.formGroup.get(this.viewModel.controlId);
+    let control: AbstractControl = this.formGroup.get(this.viewModel.id);
     if (!control) {
       control = this.formBuilder.control(value, validators);
     }
@@ -100,7 +100,7 @@ export class DynamicFormControlComponent implements OnChanges, OnDestroy {
     const componentRef: ComponentRef<InputBase> = this.inputContainer.createComponent(factory);
 
     const instance: InputBase = componentRef.instance;
-    instance.controlId = this.viewModel.controlId;
+    instance.controlId = this.viewModel.id;
     instance.formGroup = this.formGroup;
   }
 

@@ -74,7 +74,9 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
     const controls: FormControlViewModel[] = [
       {
         id: 'type',
-        label: 'Membership type',
+        label: {
+          text: 'Membership type'
+        },
         type: 'readonly',
         value: SubscriptionType[this.subscription.type]
       }
@@ -83,7 +85,9 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
     if (this.subscription.expiryDate) {
       controls.push({
         id: 'expirydate',
-        label: 'End date',
+        label: {
+          text: 'End date'
+        },
         type: 'readonly',
         value: this.datePipe.transform(this.subscription.expiryDate, 'dd MMMM yyyy')
       });

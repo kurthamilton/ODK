@@ -46,7 +46,9 @@ export class ChangePasswordComponent implements OnInit {
     this.formControls = {
       confirmPassword: {
         id: 'confirmPassword',
-        label: 'Confirm password',
+        label: {
+          text: 'Confirm password'
+        },
         validators: {
           required: true
         },
@@ -54,7 +56,9 @@ export class ChangePasswordComponent implements OnInit {
       },
       currentPassword: {
         id: 'password',
-        label: 'Current password',
+        label: {
+          text: 'Current password'
+        },
         validators: {
           required: true
         },
@@ -62,7 +66,9 @@ export class ChangePasswordComponent implements OnInit {
       },
       newPassword: {
         id: 'newPassword',
-        label: 'New password',
+        label: {
+          text: 'New password'
+        },
         validators: {
           required: true
         },
