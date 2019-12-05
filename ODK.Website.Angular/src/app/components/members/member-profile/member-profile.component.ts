@@ -8,11 +8,12 @@ import { ArrayUtils } from 'src/app/utils/array-utils';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { DynamicFormControlViewModel } from 'src/app/modules/forms/components/dynamic-form-control.view-model';
+import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
 import { MemberProfile } from 'src/app/core/members/member-profile';
 import { MemberProperty } from 'src/app/core/members/member-property';
 import { MemberService } from 'src/app/services/members/member.service';
+import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 
 @Component({
   selector: 'app-member-profile',
@@ -30,7 +31,7 @@ export class MemberProfileComponent implements OnChanges {
 
   @Input() memberId: string;
 
-  form: FormViewModel;
+  form: DynamicFormViewModel;
 
   private chapterProperties: ChapterProperty[];
   private profile: MemberProfile;
@@ -60,25 +61,23 @@ export class MemberProfileComponent implements OnChanges {
     this.form = {
       buttonText: '',
       callback: null,
-      formControls: [
+      controls: [
         ... this.chapterProperties
           .filter(x => memberPropertyMap.has(x.id) && !!memberPropertyMap.get(x.id).value)
-          .map((x): FormControlViewModel => ({
+          .map((x): DynamicFormControlViewModel => (new ReadOnlyFormControlViewModel({
             id: x.id,
             label: {
               text: x.name
             },
-            value: memberPropertyMap.get(x.id).value,
-            type: 'readonly'
-          })),
-        {
+            value: memberPropertyMap.get(x.id).value
+          }))),
+        new ReadOnlyFormControlViewModel({
           id: 'joined',
           label: {
             text: 'Date joined'
           },
-          value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy'),
-          type: 'readonly'
-        }
+          value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy')
+        })
       ]
     };
   }

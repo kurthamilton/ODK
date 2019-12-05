@@ -1,22 +1,24 @@
-import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { Subject } from 'rxjs';
 
 import { FormViewModel } from '../form.view-model';
+import { takeUntil } from 'rxjs/operators';
+import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 
 @Component({
   selector: 'app-form',
   templateUrl: './form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FormComponent implements OnInit {
+export class FormComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef) {
   }
 
   @Input() form: FormViewModel;
   @Input() justifyButton: 'end';
-  @Output() formSubmit: EventEmitter<{}> = new EventEmitter<{}>();
+  @Output() formSubmit: EventEmitter<void> = new EventEmitter<void>();
 
   messages: string[] = [];
   submitting = false;
@@ -28,7 +30,9 @@ export class FormComponent implements OnInit {
       return;
     }
 
-    this.form.callback.subscribe((result: boolean | string[]) => {
+    this.form.callback.pipe(
+      takeUntil(componentDestroyed(this))
+    ).subscribe((result: boolean | string[]) => {
       let success: boolean;
       if (typeof(result) === 'boolean') {
         success = result;
@@ -39,6 +43,10 @@ export class FormComponent implements OnInit {
       
       this.onFormCallback(success);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.update.complete();
   }
 
   onSubmit(): void {

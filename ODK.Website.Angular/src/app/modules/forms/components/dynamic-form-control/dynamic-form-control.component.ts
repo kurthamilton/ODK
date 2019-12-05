@@ -94,10 +94,10 @@ export class DynamicFormControlComponent implements OnChanges, OnDestroy {
     const factory: ComponentFactory<InputBase> = this.resolver.resolveComponentFactory(this.viewModel.type);
     const componentRef: ComponentRef<InputBase> = this.inputContainer.createComponent(factory);
 
-    const instance: InputBase = componentRef.instance;
+    const instance: InputBase = componentRef.instance; 
     instance.formGroup = this.formGroup
     instance.viewModel = this.viewModel;
-    
+
     instance.validate.pipe(
       takeUntil(componentDestroyed(this))
     ).subscribe(() => this.onValidate());

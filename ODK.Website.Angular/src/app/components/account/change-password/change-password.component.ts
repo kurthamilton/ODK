@@ -6,11 +6,11 @@ import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
 import { MenuItem } from 'src/app/core/menus/menu-item';
 import { NotificationService } from 'src/app/services/notifications/notification.service';
 import { ServiceResult } from 'src/app/services/service-result';
+import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
 
 @Component({
   selector: 'app-change-password',
@@ -28,13 +28,13 @@ export class ChangePasswordComponent implements OnInit {
   @Output() passwordUpdate: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   breadcrumbs: MenuItem[];
-  form: FormViewModel;
+  form: DynamicFormViewModel;
 
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
-    confirmPassword: FormControlViewModel;
-    currentPassword: FormControlViewModel;
-    newPassword: FormControlViewModel;
+    confirmPassword: TextInputViewModel;
+    currentPassword: TextInputViewModel;
+    newPassword: TextInputViewModel;
   };
 
   ngOnInit(): void {
@@ -44,42 +44,42 @@ export class ChangePasswordComponent implements OnInit {
     ];
 
     this.formControls = {
-      confirmPassword: {
+      confirmPassword: new TextInputViewModel({
         id: 'confirmPassword',
+        inputType: 'password',
         label: {
           text: 'Confirm password'
         },
         validators: {
           required: true
-        },
-        type: 'password'
-      },
-      currentPassword: {
+        }        
+      }),
+      currentPassword: new TextInputViewModel({
         id: 'password',
+        inputType: 'password',
         label: {
           text: 'Current password'
         },
         validators: {
           required: true
-        },
-        type: 'password'
-      },
-      newPassword: {
+        }        
+      }),
+      newPassword: new TextInputViewModel({
         id: 'newPassword',
+        inputType: 'password',
         label: {
           text: 'New password'
         },
         validators: {
           required: true
-        },
-        type: 'password'
-      }
+        }        
+      })
     };
 
     this.form = {
       buttonText: 'Update',
       callback: this.formCallback.asObservable(),
-      formControls: [
+      controls: [
         this.formControls.currentPassword,
         this.formControls.newPassword,
         // this.formControls.confirmPassword

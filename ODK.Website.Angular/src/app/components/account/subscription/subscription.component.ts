@@ -9,10 +9,11 @@ import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
-import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { DynamicFormControlViewModel } from 'src/app/modules/forms/components/dynamic-form-control.view-model';
+import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { MenuItem } from 'src/app/core/menus/menu-item';
+import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 import { SubscriptionType } from 'src/app/core/account/subscription-type';
 
 @Component({
@@ -32,7 +33,7 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
   breadcrumbs: MenuItem[];
   chapterSubscriptions: ChapterSubscription[];
   completedSubject: Subject<void> = new Subject<void>();
-  form: FormViewModel;
+  form: DynamicFormViewModel;
   subscription: MemberSubscription;
 
   private chapter: Chapter;
@@ -71,31 +72,29 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
   }
 
   private buildForm(): void {
-    const controls: FormControlViewModel[] = [
-      {
+    const controls: DynamicFormControlViewModel[] = [
+      new ReadOnlyFormControlViewModel({
         id: 'type',
         label: {
           text: 'Membership type'
         },
-        type: 'readonly',
         value: SubscriptionType[this.subscription.type]
-      }
+      })
     ];
 
     if (this.subscription.expiryDate) {
-      controls.push({
-        id: 'expirydate',
+      controls.push(new ReadOnlyFormControlViewModel({
+        id: 'end-date',
         label: {
           text: 'End date'
         },
-        type: 'readonly',
         value: this.datePipe.transform(this.subscription.expiryDate, 'dd MMMM yyyy')
-      });
+      }));
     }
     this.form = {
       buttonText: '',
       callback: null,
-      formControls: controls
+      controls
     };
   }
 }

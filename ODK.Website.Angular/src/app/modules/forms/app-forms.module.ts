@@ -13,6 +13,9 @@ import { DynamicFormControlsComponent } from './components/dynamic-form-controls
 import { DynamicFormComponent } from './components/dynamic-form/dynamic-form.component';
 import { DynamicFormControlComponent } from './components/dynamic-form-control/dynamic-form-control.component';
 import { FormControlLabelComponent } from './components/form-control-label/form-control-label.component';
+import { CheckBoxComponent } from './components/inputs/check-box/check-box.component';
+import { TextAreaComponent } from './components/inputs/text-area/text-area.component';
+import { ReadOnlyFormControlComponent } from './components/inputs/read-only-form-control/read-only-form-control.component';
 
 @NgModule({
   declarations: [
@@ -26,6 +29,9 @@ import { FormControlLabelComponent } from './components/form-control-label/form-
     DynamicFormComponent,
     DynamicFormControlComponent,
     FormControlLabelComponent,
+    CheckBoxComponent,
+    TextAreaComponent,
+    ReadOnlyFormControlComponent,
   ],
   imports: [
     AppSharedModule,
@@ -44,9 +50,15 @@ import { FormControlLabelComponent } from './components/form-control-label/form-
     FormsModule,
     ReactiveFormsModule,
     TextInputComponent,
+    TextAreaComponent,
+    CheckBoxComponent,
+    ReadOnlyFormControlComponent
   ],
   entryComponents: [
-    TextInputComponent
+    TextInputComponent,
+    CheckBoxComponent,
+    TextAreaComponent,
+    ReadOnlyFormControlComponent
   ]
 })
 export class AppFormsModule { }

@@ -1,0 +1,8 @@
+<div [formGroup]="formGroup">
+  <textarea [attr.rows]="rows"
+      [attr.required]="required ? 'required' : null"
+      class="form-control"
+      [id]="viewModel.id" [name]="viewModel.id" [formControlName]="viewModel.id"
+      (blur)="onValidate()">
+  </textarea>
+</div>

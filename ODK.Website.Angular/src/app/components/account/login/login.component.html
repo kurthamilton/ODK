@@ -1,7 +1,7 @@
 <app-body>
-    <app-form [form]="form" (formSubmit)="onFormSubmit()">
+    <app-dynamic-form [form]="form" (formSubmit)="onFormSubmit()">
         <div app-button-row class="ml-auto">
             <a [routerLink]="links.forgottenPassword">Forgotten password?</a>
         </div>
-    </app-form>
+    </app-dynamic-form>
 </app-body>
