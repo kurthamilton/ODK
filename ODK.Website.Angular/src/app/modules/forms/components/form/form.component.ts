@@ -1,10 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { Subject } from 'rxjs';
-
-import { FormViewModel } from '../form.view-model';
 import { takeUntil } from 'rxjs/operators';
+
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { FormViewModel } from '../form.view-model';
 
 @Component({
   selector: 'app-form',
@@ -17,15 +17,14 @@ export class FormComponent implements OnInit, OnDestroy {
   }
 
   @Input() form: FormViewModel;
-  @Input() justifyButton: 'end';
   @Output() formSubmit: EventEmitter<void> = new EventEmitter<void>();
 
-  messages: string[] = [];
+  messages: string[];
   submitting = false;
+
   update: Subject<boolean> = new Subject<boolean>();
 
   ngOnInit(): void {
-
     if (!this.form.callback) {
       return;
     }
@@ -40,7 +39,7 @@ export class FormComponent implements OnInit, OnDestroy {
         this.messages = result;
         this.changeDetector.detectChanges();
       }
-      
+
       this.onFormCallback(success);
     });
   }

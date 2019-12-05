@@ -1,23 +1,25 @@
 import { DropDownFormControlComponent } from './drop-down-form-control.component';
-import { DynamicFormControlViewModel } from '../../dynamic-form-control.view-model';
-import { FormControlLabelViewModel } from '../../form-control-label.view-model';
-import { FormControlValidatorsViewModel } from '../../form-control-validators.view-model';
+import { DropDownFormControlOption } from './drop-down-form-control-option';
+import { DropDownFormControlOptions } from './drop-down-form-control-options';
+import { FormControlViewModel } from '../../form-control.view-model';
 
-export class DropDownFormControlViewModel extends DynamicFormControlViewModel {
-  
-  constructor(options: { 
-    id: string, 
-    label: FormControlLabelViewModel,
-    validators: FormControlValidatorsViewModel,
-    options: {
-      default: string,
-      freeTextOption: string,
-      options: string[]
-    }
-  }) {
+export class DropDownFormControlViewModel extends FormControlViewModel {
+
+  constructor(options: DropDownFormControlOptions) {
     super(options);
+    this.options = options.options;
+    this.value = options.value;
   }
 
+  options: DropDownFormControlOption[];
   get type() { return DropDownFormControlComponent; }
   value: string;
+
+  setValue(option: DropDownFormControlOption, freeText: string): void {
+    if (!option) {
+      return;
+    }
+
+    this.value = option.freeText ? freeText : option.value;
+  }
 }

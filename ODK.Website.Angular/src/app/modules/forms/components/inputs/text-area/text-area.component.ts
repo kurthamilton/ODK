@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { InputBase } from '../input-base';
 import { TextAreaViewModel } from './text-area.view-model';
@@ -9,13 +9,16 @@ import { TextAreaViewModel } from './text-area.view-model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TextAreaComponent extends InputBase {
-  constructor() {
-    super();
+
+  private _rows: number;
+
+  constructor(changeDetector: ChangeDetectorRef) {
+    super(changeDetector);
   }
 
-  get rows(): number {
-    return this.viewModel 
-      ? (<TextAreaViewModel>this.viewModel).rows || 3 
-      : 3;
+  get rows(): number { return this._rows; }
+
+  protected onInit(): void {
+    this._rows = (<TextAreaViewModel>this.viewModel).rows || 3;
   }
 }

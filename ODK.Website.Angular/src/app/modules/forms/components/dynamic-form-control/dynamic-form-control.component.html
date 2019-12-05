@@ -1,9 +1,0 @@
-<div class="form-group" [class.required]="required" [formGroup]="formGroup">
-  <app-form-control-label *ngIf="showLabel" [controlId]="viewModel.id" [viewModel]="viewModel.label">
-  </app-form-control-label>
-  <div #inputcontainer>
-  </div>
-  <app-form-control-validation *ngIf="control" [control]="control" [label]="viewModel.label.text" 
-    [validated]="validated">
-  </app-form-control-validation>
-</div>

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { InputBase } from '../input-base';
 
@@ -8,7 +8,7 @@ import { InputBase } from '../input-base';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ReadOnlyFormControlComponent extends InputBase {
-  constructor() {
-    super();
+  constructor(changeDetector: ChangeDetectorRef) {
+    super(changeDetector);
   }
 }

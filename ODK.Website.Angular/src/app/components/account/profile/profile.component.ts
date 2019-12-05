@@ -12,21 +12,23 @@ import { ChapterService } from 'src/app/services/chapters/chapter.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfileComponent implements OnInit {
-  
+
   constructor(private changeDetector: ChangeDetectorRef,
     private authenticationService: AuthenticationService,
     private chapterService: ChapterService
   ) {
   }
-  
+
   links: {
     changePassword: string,
     subscription: string
   };
 
+  successMessage: string;
+
   ngOnInit(): void {
     const authenticationToken: AuthenticationToken = this.authenticationService.getToken();
-    const chapterId: string = authenticationToken.chapterId;    
+    const chapterId: string = authenticationToken.chapterId;
 
     this.chapterService.getChapterById(chapterId).subscribe((chapter: Chapter) => {
       this.links = {
@@ -34,6 +36,10 @@ export class ProfileComponent implements OnInit {
         subscription: appUrls.subscription(chapter)
       };
       this.changeDetector.detectChanges();
-    });    
-  }    
+    });
+  }
+
+  onProfileUpdated(): void {
+    this.successMessage = 'Your profile has been updated';
+  }
 }

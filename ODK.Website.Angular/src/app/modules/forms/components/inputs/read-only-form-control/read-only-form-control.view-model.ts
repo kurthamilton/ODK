@@ -1,9 +1,9 @@
-import { DynamicFormControlViewModel } from '../../dynamic-form-control.view-model';
-import { FormControlLabelViewModel } from '../../form-control-label.view-model';
+import { FormControlViewModel } from '../../form-control.view-model';
 import { ReadOnlyFormControlComponent } from './read-only-form-control.component';
+import { ReadOnlyFormControlOptions } from './read-only-form-control-options';
 
-export class ReadOnlyFormControlViewModel extends DynamicFormControlViewModel {
-  constructor(options: { id: string, label: FormControlLabelViewModel, value: string }) {
+export class ReadOnlyFormControlViewModel extends FormControlViewModel {
+  constructor(options: ReadOnlyFormControlOptions) {
     super(options);
     this.value = options.value;
   }

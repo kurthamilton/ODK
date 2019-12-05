@@ -4,8 +4,8 @@ import { Subject } from 'rxjs';
 
 import { appPaths } from 'src/app/routing/app-paths';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
-import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
 
 @Component({
   selector: 'app-forgotten-password',
@@ -26,18 +26,18 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
   message: string;
 
   private controls: {
-    email: FormControlViewModel
+    email: TextInputViewModel
   } = {
-    email: {
+    email: new TextInputViewModel({
       id: 'email',
       label: {
         text: 'Email address'
       },
       value: '',
-      validators: {
+      validation: {
         required: true
       }
-    }
+    })
   };
   private formCallback: Subject<boolean> = new Subject<boolean>();
 
@@ -45,7 +45,7 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
     this.form = {
       buttonText: 'Submit',
       callback: this.formCallback,
-      formControls: [
+      controls: [
         this.controls.email
       ]
     };

@@ -6,7 +6,7 @@ import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { MenuItem } from 'src/app/core/menus/menu-item';
 import { NotificationService } from 'src/app/services/notifications/notification.service';
 import { ServiceResult } from 'src/app/services/service-result';
@@ -28,7 +28,7 @@ export class ChangePasswordComponent implements OnInit {
   @Output() passwordUpdate: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   breadcrumbs: MenuItem[];
-  form: DynamicFormViewModel;
+  form: FormViewModel;
 
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
@@ -50,9 +50,9 @@ export class ChangePasswordComponent implements OnInit {
         label: {
           text: 'Confirm password'
         },
-        validators: {
+        validation: {
           required: true
-        }        
+        }
       }),
       currentPassword: new TextInputViewModel({
         id: 'password',
@@ -60,9 +60,9 @@ export class ChangePasswordComponent implements OnInit {
         label: {
           text: 'Current password'
         },
-        validators: {
+        validation: {
           required: true
-        }        
+        }
       }),
       newPassword: new TextInputViewModel({
         id: 'newPassword',
@@ -70,9 +70,9 @@ export class ChangePasswordComponent implements OnInit {
         label: {
           text: 'New password'
         },
-        validators: {
+        validation: {
           required: true
-        }        
+        }
       })
     };
 

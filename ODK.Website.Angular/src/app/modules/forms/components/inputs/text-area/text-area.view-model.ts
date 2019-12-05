@@ -1,17 +1,11 @@
-import { DynamicFormControlViewModel } from '../../dynamic-form-control.view-model';
-import { FormControlLabelViewModel } from '../../form-control-label.view-model';
-import { FormControlValidatorsViewModel } from '../../form-control-validators.view-model';
+import { FormControlViewModel } from '../../form-control.view-model';
 import { TextAreaComponent } from './text-area.component';
+import { TextAreaFormControlOptions } from './text-area-form-control-options';
 
-export class TextAreaViewModel extends DynamicFormControlViewModel {
-  constructor(options: { 
-    id: string, 
-    label: FormControlLabelViewModel, 
-    rows?: number,
-    validators?: FormControlValidatorsViewModel,
-    value?: string
-  }) {
+export class TextAreaViewModel extends FormControlViewModel {
+  constructor(options: TextAreaFormControlOptions) {
     super(options);
+
     this.rows = options.rows || 3;
     this.value = options.value;
   }

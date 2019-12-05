@@ -1,4 +1,4 @@
-import { Component, OnChanges, ChangeDetectionStrategy, Input, ChangeDetectorRef, SimpleChanges, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ChangeDetectorRef, OnDestroy, SimpleChanges } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
 import { Subject } from 'rxjs';
@@ -14,12 +14,13 @@ import { FormViewModel } from '../form.view-model';
 })
 export class FormControlsComponent implements OnChanges, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef
-  ) {
+  constructor(private changeDetector: ChangeDetectorRef) {
   }
 
   @Input() form: FormViewModel;
   @Input() validated: boolean;
+
+  @ViewChild('container', { read: ViewContainerRef, static: true }) container;
 
   formGroup: FormGroup;
   updated: Subject<boolean> = new Subject<boolean>();
@@ -27,8 +28,7 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['form']) {
       this.formGroup = this.createFormGroup();
-      // initialise subject with initial status
-      this.onGroupChanged(this.formGroup);
+      this.onFormGroupChanged(this.formGroup);
     }
   }
 
@@ -37,27 +37,29 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
   }
 
   onValueChange(): void {
-    this.form.valid = this.formGroup.valid;
+    this.onFormGroupChanged(this.formGroup);
   }
 
   private createFormGroup(): FormGroup {
     // close any open form group subscriptions
     this.updated.next();
 
-    const group: FormGroup = new FormGroup({});
+    const formGroup: FormGroup = new FormGroup({});
 
-    group.valueChanges
+    formGroup.valueChanges
       .pipe(
         takeUntil(this.updated),
         takeUntil(componentDestroyed(this)),
       )
-      .subscribe(() => this.onGroupChanged(group));
+      .subscribe(() => {
+        this.onFormGroupChanged(formGroup);
+        this.changeDetector.detectChanges();
+      });
 
-    return group;
+    return formGroup;
   }
 
-  private onGroupChanged(group: FormGroup): void {
-    this.form.valid = group.valid;
-    this.changeDetector.detectChanges();
+  private onFormGroupChanged(formGroup: FormGroup): void {
+    this.form.valid = formGroup.valid;
   }
 }

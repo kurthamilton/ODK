@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 
 import { Subject, forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -9,18 +9,23 @@ import { AccountService } from 'src/app/services/account/account.service';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
-import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
+import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { CheckBoxViewModel } from 'src/app/modules/forms/components/inputs/check-box/check-box.view-model';
 import { DataType } from 'src/app/core/data-types/data-type';
+import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
+import { DropDownFormControlOptions } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-options';
+import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
+import { FormControlOptions } from 'src/app/modules/forms/components/form-control-options';
+import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { MemberProperty } from 'src/app/core/members/member-property';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
-import { CheckBoxViewModel } from 'src/app/modules/forms/components/inputs/check-box/check-box.view-model';
-import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
-import { DynamicFormControlViewModel } from 'src/app/modules/forms/components/dynamic-form-control.view-model';
+import { TextAreaFormControlOptions } from 'src/app/modules/forms/components/inputs/text-area/text-area-form-control-options';
 import { TextAreaViewModel } from 'src/app/modules/forms/components/inputs/text-area/text-area.view-model';
-import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
-import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
+import { TextInputFormControlOptions } from 'src/app/modules/forms/components/inputs/text-input/text-input-form-control-options';
+import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
 
 @Component({
   selector: 'app-profile-form',
@@ -37,7 +42,9 @@ export class ProfileFormComponent implements OnInit {
   ) {
   }
 
-  form: DynamicFormViewModel;
+  @Output() updated: EventEmitter<boolean> = new EventEmitter<boolean>();
+
+  form: FormViewModel;
 
   private chapterId: string;
   private chapterProperties: Map<string, ChapterProperty>;
@@ -51,7 +58,7 @@ export class ProfileFormComponent implements OnInit {
     firstName: TextInputViewModel;
     joined: ReadOnlyFormControlViewModel;
     lastName: TextInputViewModel;
-    properties: DynamicFormControlViewModel[];
+    properties: FormControlViewModel[];
   };
 
   ngOnInit(): void {
@@ -74,6 +81,7 @@ export class ProfileFormComponent implements OnInit {
       }))
     };
     this.accountService.updateProfile(profile).subscribe(() => {
+      this.updated.emit(true);
       this.formCallback.next(true);
       this.loadProfile();
     });
@@ -101,7 +109,7 @@ export class ProfileFormComponent implements OnInit {
         label: {
           text: 'First Name'
         },
-        validators: {
+        validation: {
           required: true
         },
         value: this.profile.firstName
@@ -118,12 +126,12 @@ export class ProfileFormComponent implements OnInit {
         label: {
           text: 'Last Name'
         },
-        validators: {
+        validation: {
           required: true
         },
         value: this.profile.lastName
       }),
-      properties: this.profile.properties.map((x): DynamicFormControlViewModel => this.mapFormControl(x))
+      properties: this.profile.properties.map((x): FormControlViewModel => this.mapFormControl(x))
     }
 
     this.form = {
@@ -159,35 +167,45 @@ export class ProfileFormComponent implements OnInit {
     });
   }
 
-  private mapFormControl(property: MemberProperty): DynamicFormControlViewModel {
+  private mapFormControl(property: MemberProperty): FormControlViewModel {
       const chapterProperty: ChapterProperty = this.chapterProperties.get(property.chapterPropertyId);
 
-      const options: any = {
+      const options: FormControlOptions = {
         id: chapterProperty.id,
         label: {
           helpText: chapterProperty.helpText,
           subtitle: chapterProperty.subtitle,
-          text: chapterProperty.name  
+          text: chapterProperty.name
         },
-        validators: {
+        validation: {
           required: chapterProperty.required
         }
       };
 
       if (chapterProperty.dataType === DataType.LongText) {
-        return new TextAreaViewModel(options);
+        const textAreaOptions = <TextAreaFormControlOptions>options;
+        textAreaOptions.value = property.value;
+        return new TextAreaViewModel(textAreaOptions);
       }
-      
+
       if (chapterProperty.dataType === DataType.DropDown) {
         const chapterPropertyOptions: ChapterPropertyOption[] = this.chapterPropertyOptions.get(chapterProperty.id) || [];
-        options.options = {
-          default: 'Select...',
-          freeTextOption: chapterPropertyOptions.find(x => x.freeText).value,
-          options: chapterPropertyOptions.map(x => x.value)
-        };
-        return new DropDownFormControlViewModel(options);
+        const dropDownOptions = <DropDownFormControlOptions>options;
+        dropDownOptions.options = [
+          { default: true, text: 'Select...', value: '' },
+          ...chapterPropertyOptions.map((x): DropDownFormControlOption => ({
+            freeText: x.freeText,
+            selected: property.value === x.value,
+            text: x.value,
+            value: x.value
+          }))
+        ];
+        dropDownOptions.value = property.value;
+        return new DropDownFormControlViewModel(dropDownOptions);
       }
-      
-      return new TextInputViewModel(options);
+
+      const textInputOptions = <TextInputFormControlOptions>options;
+      textInputOptions.value = property.value;
+      return new TextInputViewModel(textInputOptions);
   }
 }

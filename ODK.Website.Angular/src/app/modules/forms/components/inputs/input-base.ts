@@ -1,41 +1,78 @@
-import { Input, Output, EventEmitter } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { FormGroup, AbstractControl } from '@angular/forms';
 
-import { DynamicFormControlViewModel } from '../dynamic-form-control.view-model';
+import { takeUntil } from 'rxjs/operators';
 
-export abstract class InputBase {
+import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { FormControlViewModel } from '../form-control.view-model';
+import { FormUtils } from '../../utils/form-utils';
 
-  private _viewModel: DynamicFormControlViewModel;
+export abstract class InputBase implements OnDestroy {
 
-  protected constructor(showLabel?: boolean) {
+  private _viewModel: FormControlViewModel;
+
+  protected constructor(protected changeDetector: ChangeDetectorRef,
+    showLabel?: boolean
+  ) {
     this.showLabel = showLabel !== false;
   }
 
   @Input() formGroup: FormGroup;
-  @Input() set viewModel(value: DynamicFormControlViewModel) {
+  @Input() set viewModel(value: FormControlViewModel) {
+    if (this._viewModel) {
+      return;
+    }
+
     this._viewModel = value;
     this.controlId = value.id;
-    if (value.validators) {
-      this.pattern = value.validators.pattern;
-      this.required = value.validators.required;
+    if (value.validation) {
+      this.pattern = value.validation.pattern;
+      this.required = value.validation.required;
     }
+
+    this.control = FormUtils.createControl(this.formGroup, value);
+    this.init();
   }
 
-  @Output() validate: EventEmitter<void> = new EventEmitter<void>();
+  @Output() valueChange: EventEmitter<void> = new EventEmitter<void>();
 
-  get viewModel(): DynamicFormControlViewModel {
+  get viewModel(): FormControlViewModel {
     return this._viewModel;
   }
 
-
-
-  controlId: string;  
+  control: AbstractControl;
+  controlId: string;
   match: string;
   pattern: string;
+  ready = false
   required: boolean;
   showLabel: boolean;
 
+  ngOnDestroy(): void {}
+
   onValidate(): void {
-    this.validate.emit();
+    this.control.updateValueAndValidity();
+  }
+
+  protected setValue(value: string): void {
+    this.viewModel.value = value;
+  }
+
+  protected onInit(): void {
+  }
+
+  private init(): void {
+    // bind value updates back to view models
+    this.control.valueChanges
+      .pipe(
+        takeUntil(componentDestroyed(this))
+      ).subscribe(x => this.onValueChanged(x));
+
+    this.onInit();
+  }
+
+  private onValueChanged(value: string): void {
+    this.setValue(value);
+    this.valueChange.emit();
   }
 }

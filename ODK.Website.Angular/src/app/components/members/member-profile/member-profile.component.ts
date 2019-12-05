@@ -8,8 +8,8 @@ import { ArrayUtils } from 'src/app/utils/array-utils';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { DynamicFormControlViewModel } from 'src/app/modules/forms/components/dynamic-form-control.view-model';
-import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
+import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { MemberProfile } from 'src/app/core/members/member-profile';
 import { MemberProperty } from 'src/app/core/members/member-property';
 import { MemberService } from 'src/app/services/members/member.service';
@@ -31,7 +31,7 @@ export class MemberProfileComponent implements OnChanges {
 
   @Input() memberId: string;
 
-  form: DynamicFormViewModel;
+  form: FormViewModel;
 
   private chapterProperties: ChapterProperty[];
   private profile: MemberProfile;
@@ -64,7 +64,7 @@ export class MemberProfileComponent implements OnChanges {
       controls: [
         ... this.chapterProperties
           .filter(x => memberPropertyMap.has(x.id) && !!memberPropertyMap.get(x.id).value)
-          .map((x): DynamicFormControlViewModel => (new ReadOnlyFormControlViewModel({
+          .map((x): FormControlViewModel => (new ReadOnlyFormControlViewModel({
             id: x.id,
             label: {
               text: x.name

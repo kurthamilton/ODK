@@ -6,8 +6,7 @@ import { Subject } from 'rxjs';
 import { appPaths } from 'src/app/routing/app-paths';
 import { AuthenticationService } from '../../../services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
-import { DynamicFormViewModel } from 'src/app/modules/forms/components/dynamic-form.view-model';
-import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { ServiceResult } from 'src/app/services/service-result';
 import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
 
@@ -24,7 +23,7 @@ export class LoginComponent implements OnInit {
   ) {
   }
 
-  form: DynamicFormViewModel;
+  form: FormViewModel;
   links = {
     forgottenPassword: `/${appPaths.password.forgotten.path}`
   };
@@ -43,16 +42,16 @@ export class LoginComponent implements OnInit {
         label: {
           text: 'Password'
         },
-        validators: {
+        validation: {
           required: true
-        }    
+        }
       }),
       username: new TextInputViewModel({
         id: 'username',
         label: {
           text: 'Email'
         },
-        validators: {
+        validation: {
           required: true
         },
       })

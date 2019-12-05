@@ -1,1 +1,14 @@
-<p>drop-down-form-control works!</p>
+<div [formGroup]="formGroup">
+  <select class="form-control" [attr.required]="required ? 'required' : null" [id]="viewModel.id" [name]="viewModel.id"
+    [formControlName]="viewModel.id">
+    <option *ngFor="let option of options" [attr.value]="option.value"
+        [attr.selected]="option.selected ? 'selected' : null">
+        {{option.text}}
+    </option>
+  </select>
+</div>
+
+<div *ngIf="freeTextViewModel">
+  <app-form-control [formGroup]="formGroup" [viewModel]="freeTextViewModel" (valueChange)="onFreeTextValueChange()">
+  </app-form-control>
+</div>

@@ -1,7 +1,0 @@
-<ng-container *ngIf="form && form.controls && formGroup">
-  <ng-container *ngFor="let control of form.controls">
-      <app-dynamic-form-control [formGroup]="formGroup" [updated]="updated" [validated]="validated" [viewModel]="control"
-        (valueChange)="onValueChange()">
-      </app-dynamic-form-control>
-  </ng-container>
-</ng-container>

@@ -5,8 +5,9 @@ import { Subject } from 'rxjs';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
+import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
 
 @Component({
   selector: 'app-chapter-payment-settings',
@@ -25,9 +26,9 @@ export class ChapterPaymentSettingsComponent implements OnInit {
 
   private chapter: Chapter;
   private controls: {
-    apiPublicKey: FormControlViewModel,
-    apiSecretKey: FormControlViewModel,
-    provider: FormControlViewModel
+    apiPublicKey: TextInputViewModel,
+    apiSecretKey: TextInputViewModel,
+    provider: ReadOnlyFormControlViewModel
   };
   private formCallback: Subject<boolean> = new Subject<boolean>();
 
@@ -55,34 +56,33 @@ export class ChapterPaymentSettingsComponent implements OnInit {
 
   private buildForm(): void {
     this.controls = {
-      apiPublicKey: {
+      apiPublicKey: new TextInputViewModel({
         id: 'apipublickey',
         label: {
           text: 'Public key'
         },
         value: this.paymentSettings.apiPublicKey
-      },
-      apiSecretKey: {
+      }),
+      apiSecretKey: new TextInputViewModel({
         id: 'apisecretkey',
         label: {
           text: 'Secret key'
         },
         value: this.paymentSettings.apiSecretKey
-      },
-      provider: {
+      }),
+      provider: new ReadOnlyFormControlViewModel({
         id: 'provider',
         label: {
           text: 'Provider'
         },
-        type: 'readonly',
         value: this.paymentSettings.provider
-      }
+      })
     };
 
     this.form = {
       buttonText: 'Update',
       callback: this.formCallback,
-      formControls: [
+      controls: [
         this.controls.provider,
         this.controls.apiPublicKey,
         this.controls.apiSecretKey

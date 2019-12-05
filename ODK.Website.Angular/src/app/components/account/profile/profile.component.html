@@ -1,4 +1,7 @@
 <app-body>
+    <ngb-alert *ngIf="successMessage" type="success">
+        {{successMessage}}
+    </ngb-alert>
     <div class="row">
         <div class="col-6">
             <div *ngIf="links">
@@ -16,5 +19,5 @@
         </div>
     </div>
 
-    <app-profile-form></app-profile-form>
+    <app-profile-form (updated)="onProfileUpdated()"></app-profile-form>
 </app-body>
