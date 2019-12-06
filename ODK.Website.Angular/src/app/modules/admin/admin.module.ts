@@ -20,7 +20,7 @@ import { EventsComponent } from './components/events/events/events.component';
 import { HtmlEditorComponent } from './components/forms/inputs/html-editor/html-editor.component';
 import { MemberComponent } from './components/members/member/member.component';
 import { MembersComponent } from './components/members/members/members.component';
-import { GoogleMapsTextInputComponent } from './components/forms/inputs/google-maps-text-input/google-maps-text-input.component';
+import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +38,7 @@ import { GoogleMapsTextInputComponent } from './components/forms/inputs/google-m
     HtmlEditorComponent,
     MemberComponent,
     MembersComponent,
-    GoogleMapsTextInputComponent,
+    GoogleMapsTextInputFormControlComponent,
   ],
   imports: [
     AdminRoutingModule,
@@ -48,7 +48,7 @@ import { GoogleMapsTextInputComponent } from './components/forms/inputs/google-m
     CommonModule,
   ],
   entryComponents: [
-    GoogleMapsTextInputComponent,
+    GoogleMapsTextInputFormControlComponent,
     HtmlEditorComponent
   ]
 })

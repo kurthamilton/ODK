@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 import { appPaths } from 'src/app/routing/app-paths';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
-import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
+import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-forgotten-password',
@@ -26,9 +26,9 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
   message: string;
 
   private controls: {
-    email: TextInputViewModel
+    email: TextInputFormControlViewModel
   } = {
-    email: new TextInputViewModel({
+    email: new TextInputFormControlViewModel({
       id: 'email',
       label: {
         text: 'Email address'

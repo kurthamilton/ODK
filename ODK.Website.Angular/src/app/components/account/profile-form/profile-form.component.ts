@@ -12,7 +12,7 @@ import { AuthenticationToken } from 'src/app/core/authentication/authentication-
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { CheckBoxViewModel } from 'src/app/modules/forms/components/inputs/check-box/check-box.view-model';
+import { CheckBoxFormControlViewModel } from 'src/app/modules/forms/components/inputs/check-box-form-control/check-box-form-control.view-model';
 import { DataType } from 'src/app/core/data-types/data-type';
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
 import { DropDownFormControlOptions } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-options';
@@ -22,10 +22,10 @@ import { FormControlViewModel } from 'src/app/modules/forms/components/form-cont
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { MemberProperty } from 'src/app/core/members/member-property';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
-import { TextAreaFormControlOptions } from 'src/app/modules/forms/components/inputs/text-area/text-area-form-control-options';
-import { TextAreaViewModel } from 'src/app/modules/forms/components/inputs/text-area/text-area.view-model';
-import { TextInputFormControlOptions } from 'src/app/modules/forms/components/inputs/text-input/text-input-form-control-options';
-import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
+import { TextAreaFormControlOptions } from 'src/app/modules/forms/components/inputs/text-area-form-control/text-area-form-control-options';
+import { TextAreaFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-area-form-control/text-area-form-control.view-model';
+import { TextInputFormControlOptions } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control-options';
+import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-profile-form',
@@ -54,10 +54,10 @@ export class ProfileFormComponent implements OnInit {
 
   private formControls: {
     emailAddress: ReadOnlyFormControlViewModel;
-    emailOptIn: CheckBoxViewModel;
-    firstName: TextInputViewModel;
+    emailOptIn: CheckBoxFormControlViewModel;
+    firstName: TextInputFormControlViewModel;
     joined: ReadOnlyFormControlViewModel;
-    lastName: TextInputViewModel;
+    lastName: TextInputFormControlViewModel;
     properties: FormControlViewModel[];
   };
 
@@ -96,7 +96,7 @@ export class ProfileFormComponent implements OnInit {
         },
         value: this.profile.emailAddress
       }),
-      emailOptIn: new CheckBoxViewModel({
+      emailOptIn: new CheckBoxFormControlViewModel({
         id: 'emailOptIn',
         label: {
           text: 'Receive emails',
@@ -104,7 +104,7 @@ export class ProfileFormComponent implements OnInit {
         },
         value: this.profile.emailOptIn
       }),
-      firstName: new TextInputViewModel({
+      firstName: new TextInputFormControlViewModel({
         id: 'firstName',
         label: {
           text: 'First Name'
@@ -121,7 +121,7 @@ export class ProfileFormComponent implements OnInit {
         },
         value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy')
       }),
-      lastName: new TextInputViewModel({
+      lastName: new TextInputFormControlViewModel({
         id: 'lastName',
         label: {
           text: 'Last Name'
@@ -185,7 +185,7 @@ export class ProfileFormComponent implements OnInit {
       if (chapterProperty.dataType === DataType.LongText) {
         const textAreaOptions = <TextAreaFormControlOptions>options;
         textAreaOptions.value = property.value;
-        return new TextAreaViewModel(textAreaOptions);
+        return new TextAreaFormControlViewModel(textAreaOptions);
       }
 
       if (chapterProperty.dataType === DataType.DropDown) {
@@ -206,6 +206,6 @@ export class ProfileFormComponent implements OnInit {
 
       const textInputOptions = <TextInputFormControlOptions>options;
       textInputOptions.value = property.value;
-      return new TextInputViewModel(textInputOptions);
+      return new TextInputFormControlViewModel(textInputOptions);
   }
 }

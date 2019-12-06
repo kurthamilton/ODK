@@ -6,7 +6,7 @@ import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 import { DropDownFormControlOption } from './drop-down-form-control-option';
 import { DropDownFormControlViewModel } from './drop-down-form-control.view-model';
 import { InputBase } from '../input-base';
-import { TextInputViewModel } from '../text-input/text-input.view-model';
+import { TextInputFormControlViewModel } from '../text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-drop-down-form-control',
@@ -21,7 +21,7 @@ export class DropDownFormControlComponent extends InputBase implements OnDestroy
     super(changeDetector);
   }
 
-  freeTextViewModel: TextInputViewModel;
+  freeTextViewModel: TextInputFormControlViewModel;
   get options(): DropDownFormControlOption[] { return this._options; }
 
   private defaultOption: DropDownFormControlOption;
@@ -85,7 +85,7 @@ export class DropDownFormControlComponent extends InputBase implements OnDestroy
     this.selectedOption = selectedOption;
 
     if (selectedOption.freeText) {
-      this.freeTextViewModel = new TextInputViewModel({
+      this.freeTextViewModel = new TextInputFormControlViewModel({
         id: `${this.viewModel.id}-freetext`,
         label: {
           text: ''

@@ -8,7 +8,7 @@ import { AuthenticationService } from '../../../services/authentication/authenti
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { ServiceResult } from 'src/app/services/service-result';
-import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
+import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-login',
@@ -30,13 +30,13 @@ export class LoginComponent implements OnInit {
 
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
-    password: TextInputViewModel;
-    username: TextInputViewModel;
+    password: TextInputFormControlViewModel;
+    username: TextInputFormControlViewModel;
   };
 
   ngOnInit(): void {
     this.formControls = {
-      password: new TextInputViewModel({
+      password: new TextInputFormControlViewModel({
         id: 'password',
         inputType: 'password',
         label: {
@@ -46,7 +46,7 @@ export class LoginComponent implements OnInit {
           required: true
         }
       }),
-      username: new TextInputViewModel({
+      username: new TextInputFormControlViewModel({
         id: 'username',
         label: {
           text: 'Email'

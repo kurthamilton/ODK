@@ -10,7 +10,7 @@ import { FormViewModel } from 'src/app/modules/forms/components/form.view-model'
 import { MenuItem } from 'src/app/core/menus/menu-item';
 import { NotificationService } from 'src/app/services/notifications/notification.service';
 import { ServiceResult } from 'src/app/services/service-result';
-import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
+import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-change-password',
@@ -32,9 +32,9 @@ export class ChangePasswordComponent implements OnInit {
 
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
-    confirmPassword: TextInputViewModel;
-    currentPassword: TextInputViewModel;
-    newPassword: TextInputViewModel;
+    confirmPassword: TextInputFormControlViewModel;
+    currentPassword: TextInputFormControlViewModel;
+    newPassword: TextInputFormControlViewModel;
   };
 
   ngOnInit(): void {
@@ -44,7 +44,7 @@ export class ChangePasswordComponent implements OnInit {
     ];
 
     this.formControls = {
-      confirmPassword: new TextInputViewModel({
+      confirmPassword: new TextInputFormControlViewModel({
         id: 'confirmPassword',
         inputType: 'password',
         label: {
@@ -54,7 +54,7 @@ export class ChangePasswordComponent implements OnInit {
           required: true
         }
       }),
-      currentPassword: new TextInputViewModel({
+      currentPassword: new TextInputFormControlViewModel({
         id: 'password',
         inputType: 'password',
         label: {
@@ -64,7 +64,7 @@ export class ChangePasswordComponent implements OnInit {
           required: true
         }
       }),
-      newPassword: new TextInputViewModel({
+      newPassword: new TextInputFormControlViewModel({
         id: 'newPassword',
         inputType: 'password',
         label: {

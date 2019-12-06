@@ -3,11 +3,11 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/
 import { InputBase } from '../input-base';
 
 @Component({
-  selector: 'app-check-box',
-  templateUrl: './check-box.component.html',
+  selector: 'app-check-box-form-control',
+  templateUrl: './check-box-form-control.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CheckBoxComponent extends InputBase {
+export class CheckBoxFormControlComponent extends InputBase {
   constructor(changeDetector: ChangeDetectorRef) {
     super(changeDetector, false);
   }

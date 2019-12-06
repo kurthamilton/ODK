@@ -3,11 +3,11 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/
 import { InputBase } from 'src/app/modules/forms/components/inputs/input-base';
 
 @Component({
-  selector: 'app-google-maps-text-input',
-  templateUrl: './google-maps-text-input.component.html',
+  selector: 'app-google-maps-text-input-form-control',
+  templateUrl: './google-maps-text-input-form-control.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GoogleMapsTextInputComponent extends InputBase {
+export class GoogleMapsTextInputFormControlComponent extends InputBase {
 
   constructor(changeDetector: ChangeDetectorRef) { 
     super(changeDetector);

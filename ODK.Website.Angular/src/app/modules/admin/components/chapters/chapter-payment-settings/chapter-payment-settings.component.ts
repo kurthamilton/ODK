@@ -7,7 +7,7 @@ import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
-import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
+import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-chapter-payment-settings',
@@ -26,8 +26,8 @@ export class ChapterPaymentSettingsComponent implements OnInit {
 
   private chapter: Chapter;
   private controls: {
-    apiPublicKey: TextInputViewModel,
-    apiSecretKey: TextInputViewModel,
+    apiPublicKey: TextInputFormControlViewModel,
+    apiSecretKey: TextInputFormControlViewModel,
     provider: ReadOnlyFormControlViewModel
   };
   private formCallback: Subject<boolean> = new Subject<boolean>();
@@ -56,14 +56,14 @@ export class ChapterPaymentSettingsComponent implements OnInit {
 
   private buildForm(): void {
     this.controls = {
-      apiPublicKey: new TextInputViewModel({
+      apiPublicKey: new TextInputFormControlViewModel({
         id: 'apipublickey',
         label: {
           text: 'Public key'
         },
         value: this.paymentSettings.apiPublicKey
       }),
-      apiSecretKey: new TextInputViewModel({
+      apiSecretKey: new TextInputFormControlViewModel({
         id: 'apisecretkey',
         label: {
           text: 'Secret key'

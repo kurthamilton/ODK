@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppSharedModule } from '../shared/app-shared.module';
-import { CheckBoxComponent } from './components/inputs/check-box/check-box.component';
+import { CheckBoxFormControlComponent } from './components/inputs/check-box-form-control/check-box-form-control.component';
 import { DropDownFormControlComponent } from './components/inputs/drop-down-form-control/drop-down-form-control.component';
 import { FormComponent } from './components/form/form.component';
 import { ErrorMessagesComponent } from './components/error-messages/error-messages.component';
@@ -12,12 +12,12 @@ import { FormControlLabelComponent } from './components/form-control-label/form-
 import { FormControlsComponent } from './components/form-controls/form-controls.component';
 import { FormControlValidationComponent } from './components/form-control-validation/form-control-validation.component';
 import { ReadOnlyFormControlComponent } from './components/inputs/read-only-form-control/read-only-form-control.component';
-import { TextAreaComponent } from './components/inputs/text-area/text-area.component';
-import { TextInputComponent } from './components/inputs/text-input/text-input.component';
+import { TextAreaComponent } from './components/inputs/text-area-form-control/text-area-form-control.component';
+import { TextInputFormControlComponent } from './components/inputs/text-input-form-control/text-input-form-control.component';
 
 @NgModule({
   declarations: [
-    CheckBoxComponent,
+    CheckBoxFormControlComponent,
     DropDownFormControlComponent,
     FormComponent,
     FormControlComponent,
@@ -27,7 +27,7 @@ import { TextInputComponent } from './components/inputs/text-input/text-input.co
     FormControlValidationComponent,
     ReadOnlyFormControlComponent,
     TextAreaComponent,
-    TextInputComponent,
+    TextInputFormControlComponent,
   ],
   imports: [
     AppSharedModule,
@@ -36,7 +36,7 @@ import { TextInputComponent } from './components/inputs/text-input/text-input.co
     ReactiveFormsModule,
   ],
   exports: [
-    CheckBoxComponent,
+    CheckBoxFormControlComponent,
     DropDownFormControlComponent,
     FormComponent,
     FormControlsComponent,
@@ -46,14 +46,14 @@ import { TextInputComponent } from './components/inputs/text-input/text-input.co
     ReactiveFormsModule,
     ReadOnlyFormControlComponent,
     TextAreaComponent,
-    TextInputComponent,
+    TextInputFormControlComponent,
   ],
   entryComponents: [
-    CheckBoxComponent,
+    CheckBoxFormControlComponent,
     DropDownFormControlComponent,
     ReadOnlyFormControlComponent,
     TextAreaComponent,
-    TextInputComponent,
+    TextInputFormControlComponent,
   ]
 })
 export class AppFormsModule { }

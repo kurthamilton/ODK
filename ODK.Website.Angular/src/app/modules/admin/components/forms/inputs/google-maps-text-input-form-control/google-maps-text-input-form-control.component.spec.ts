@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GoogleMapsTextInputComponent } from './google-maps-text-input.component';
+import { GoogleMapsTextInputFormControlComponent } from './google-maps-text-input-form-control.component';
 
 describe('GoogleMapsTextInputComponent', () => {
-  let component: GoogleMapsTextInputComponent;
-  let fixture: ComponentFixture<GoogleMapsTextInputComponent>;
+  let component: GoogleMapsTextInputFormControlComponent;
+  let fixture: ComponentFixture<GoogleMapsTextInputFormControlComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ GoogleMapsTextInputComponent ]
+      declarations: [ GoogleMapsTextInputFormControlComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(GoogleMapsTextInputComponent);
+    fixture = TestBed.createComponent(GoogleMapsTextInputFormControlComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

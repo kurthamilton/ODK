@@ -7,7 +7,7 @@ import { appPaths } from 'src/app/routing/app-paths';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { ServiceResult } from 'src/app/services/service-result';
-import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
+import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-reset-password',
@@ -26,7 +26,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   form: FormViewModel;
 
   private controls: {
-    password: TextInputViewModel;
+    password: TextInputFormControlViewModel;
   };
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private token: string;
@@ -50,7 +50,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
   private buildForm(): void {
     this.controls = {
-      password: new TextInputViewModel({
+      password: new TextInputFormControlViewModel({
         id: 'password',
         inputType: 'password',
         label: {

@@ -1,14 +1,14 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 
 import { InputBase } from '../input-base';
-import { TextInputViewModel } from './text-input.view-model';
+import { TextInputFormControlViewModel } from './text-input-form-control.view-model';
 
 @Component({
-  selector: 'app-text-input',
-  templateUrl: './text-input.component.html',
+  selector: 'app-text-input-form-control',
+  templateUrl: './text-input-form-control.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TextInputComponent extends InputBase {
+export class TextInputFormControlComponent extends InputBase {
 
   constructor(changeDetector: ChangeDetectorRef) {
     super(changeDetector);
@@ -18,7 +18,7 @@ export class TextInputComponent extends InputBase {
 
   get type(): string {
     return this.viewModel
-      ? (<TextInputViewModel>this.viewModel).inputType || 'text'
+      ? (<TextInputFormControlViewModel>this.viewModel).inputType || 'text'
       : 'text';
   }
 

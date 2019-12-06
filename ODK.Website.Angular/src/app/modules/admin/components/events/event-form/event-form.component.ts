@@ -4,12 +4,12 @@ import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChan
 import { Observable } from 'rxjs';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { CheckBoxViewModel } from 'src/app/modules/forms/components/inputs/check-box/check-box.view-model';
+import { CheckBoxFormControlViewModel } from 'src/app/modules/forms/components/inputs/check-box-form-control/check-box-form-control.view-model';
 import { Event } from 'src/app/core/events/event';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
-import { GoogleMapsTextInputViewModel } from '../../forms/inputs/google-maps-text-input/google-maps-text-input.view-model';
+import { GoogleMapsTextInputFormControlViewModel } from '../../forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.view-model';
 import { HtmlEditorViewModel } from '../../forms/inputs/html-editor/html-editor.view-model';
-import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
+import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-event-form',
@@ -30,14 +30,14 @@ export class EventFormComponent implements OnChanges {
   form: FormViewModel;
 
   private formControls: {
-    address: TextInputViewModel;
-    date: TextInputViewModel;
+    address: TextInputFormControlViewModel;
+    date: TextInputFormControlViewModel;
     description: HtmlEditorViewModel;
-    isPublic: CheckBoxViewModel;
-    location: TextInputViewModel;
-    mapQuery: GoogleMapsTextInputViewModel;
-    name: TextInputViewModel;
-    time: TextInputViewModel;
+    isPublic: CheckBoxFormControlViewModel;
+    location: TextInputFormControlViewModel;
+    mapQuery: GoogleMapsTextInputFormControlViewModel;
+    name: TextInputFormControlViewModel;
+    time: TextInputFormControlViewModel;
   };
 
   ngOnChanges(): void {
@@ -68,7 +68,7 @@ export class EventFormComponent implements OnChanges {
 
   private buildForm(): void {
     this.formControls = {
-      address: new TextInputViewModel({
+      address: new TextInputFormControlViewModel({
         id: 'address',
         label: {
           helpText: 'Additional location information, if required',
@@ -76,7 +76,7 @@ export class EventFormComponent implements OnChanges {
         },
         value: this.event ? this.event.address : ''
       }),
-      date: new TextInputViewModel({
+      date: new TextInputFormControlViewModel({
         id: 'date',
         inputType: 'date',
         label: {
@@ -94,14 +94,14 @@ export class EventFormComponent implements OnChanges {
         },
         value: this.event ? this.event.description : ''
       }),
-      isPublic: new CheckBoxViewModel({
+      isPublic: new CheckBoxFormControlViewModel({
         id: 'ispublic',
         label: {
           text: 'Public'
         },
         value: this.event && this.event.isPublic
       }),
-      location: new TextInputViewModel({
+      location: new TextInputFormControlViewModel({
         id: 'location',
         label: {
           helpText: 'The main description for where the event is happening',
@@ -112,7 +112,7 @@ export class EventFormComponent implements OnChanges {
         },
         value: this.event ? this.event.location : ''
       }),
-      mapQuery: new GoogleMapsTextInputViewModel({
+      mapQuery: new GoogleMapsTextInputFormControlViewModel({
         id: 'mapquery',
         label: {
           helpText: 'The search term used if displaying a map. Be as specific as possible',
@@ -120,7 +120,7 @@ export class EventFormComponent implements OnChanges {
         },
         value: this.event ? this.event.mapQuery : ''
       }),
-      name: new TextInputViewModel({
+      name: new TextInputFormControlViewModel({
         id: 'name',
         label: {
           text: 'Name'
@@ -130,7 +130,7 @@ export class EventFormComponent implements OnChanges {
         },
         value: this.event ? this.event.name : ''
       }),
-      time: new TextInputViewModel({
+      time: new TextInputFormControlViewModel({
         id: 'time',
         label: {
           text: 'Time'

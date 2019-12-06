@@ -1,8 +1,8 @@
 import { FormControlViewModel } from '../../form-control.view-model';
-import { TextAreaComponent } from './text-area.component';
+import { TextAreaComponent } from './text-area-form-control.component';
 import { TextAreaFormControlOptions } from './text-area-form-control-options';
 
-export class TextAreaViewModel extends FormControlViewModel {
+export class TextAreaFormControlViewModel extends FormControlViewModel {
   constructor(options: TextAreaFormControlOptions) {
     super(options);
 
