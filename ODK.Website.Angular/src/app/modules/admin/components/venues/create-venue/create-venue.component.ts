@@ -6,19 +6,19 @@ import { Subject } from 'rxjs';
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { Event } from 'src/app/core/events/event';
-import { EventAdminService } from 'src/app/services/events/event-admin.service';
 import { ServiceResult } from 'src/app/services/service-result';
+import { Venue } from 'src/app/core/venues/venue';
+import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 
 @Component({
-  selector: 'app-create-event',
-  templateUrl: './create-event.component.html',
+  selector: 'app-create-venue',
+  templateUrl: './create-venue.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CreateEventComponent implements OnInit {
+export class CreateVenueComponent implements OnInit {
 
   constructor(private chapterAdminService: ChapterAdminService,
-    private eventAdminService: EventAdminService,
+    private venueAdminService: VenueAdminService,
     private router: Router
   ) {
   }
@@ -30,12 +30,12 @@ export class CreateEventComponent implements OnInit {
   chapter: Chapter;
   formCallback: Subject<string[]> = new Subject<string[]>();
 
-  onFormSubmit(event: Event): void {
-    this.eventAdminService.createEvent(event).subscribe((result: ServiceResult<Event>) => {
+  onFormSubmit(venue: Venue): void {
+    this.venueAdminService.createVenue(venue).subscribe((result: ServiceResult<Venue>) => {
       this.formCallback.next(result.messages);
 
       if (result.success) {
-        this.router.navigateByUrl(adminUrls.events(this.chapter));
+        this.router.navigateByUrl(adminUrls.venues(this.chapter));
       }
     });
   }

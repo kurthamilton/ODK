@@ -51,5 +51,16 @@ namespace ODK.Data.Repositories
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .VersionAsync();
         }
+
+        public async Task UpdateVenue(Venue venue)
+        {
+            await Context
+                .Update<Venue>()
+                .Set(x => x.Name, venue.Name)
+                .Set(x => x.Address, venue.Address)
+                .Set(x => x.MapQuery, venue.MapQuery)
+                .Where(x => x.Id).EqualTo(venue.Id)
+                .ExecuteAsync();
+        }
     }
 }

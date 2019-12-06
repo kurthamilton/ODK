@@ -21,6 +21,7 @@ export class AdminMenuComponent implements OnInit {
     this.menuItems = [
       { link: adminUrls.chapter(chapter), text: chapter.name },
       { link: adminUrls.events(chapter), text: 'Events' },
+      { link: adminUrls.venues(chapter), text: 'Venues' },
       { link: adminUrls.members(chapter), text: 'Members' }
     ];
   }

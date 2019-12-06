@@ -114,7 +114,7 @@ namespace ODK.Services.Events
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             return await _eventRepository.GetEvents(chapterId, null);
-        }        
+        }
 
         public async Task SendEventInvites(Guid currentMemberId, Guid eventId)
         {

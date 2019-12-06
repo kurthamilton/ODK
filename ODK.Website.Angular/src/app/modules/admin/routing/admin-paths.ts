@@ -22,6 +22,18 @@ export const adminPaths = {
                 id: 'id'
             }
         }
+    },
+    venues: {
+        create: {
+            path: 'create'
+        },
+        path: 'venues',
+        venue: {
+            path: ':id',
+            params: {
+                id: 'id'
+            }
+        }
     }
 };
 

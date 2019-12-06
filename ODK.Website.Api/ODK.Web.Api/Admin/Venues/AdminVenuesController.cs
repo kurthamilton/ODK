@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,21 @@ namespace ODK.Web.Api.Admin.Venues
             CreateVenue venue = _mapper.Map<CreateVenue>(request);
             Venue created = await _venueAdminService.CreateVenue(GetMemberId(), venue);
             return _mapper.Map<VenueApiResponse>(created);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<VenueApiResponse> Get(Guid id)
+        {
+            Venue venue = await _venueAdminService.GetVenue(GetMemberId(), id);
+            return _mapper.Map<VenueApiResponse>(venue);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<VenueApiResponse> Update(Guid id, [FromForm] CreateVenueApiRequest request)
+        {
+            CreateVenue update = _mapper.Map<CreateVenue>(request);
+            Venue venue = await _venueAdminService.UpdateVenue(GetMemberId(), id, update);
+            return _mapper.Map<VenueApiResponse>(venue);
         }
     }
 }

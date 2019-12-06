@@ -24,7 +24,7 @@ namespace ODK.Services.Events
 
         Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid currentMemberId, Guid eventId);
 
-        Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId);        
+        Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId);
 
         Task SendEventInvites(Guid currentMemberId, Guid eventId);
 

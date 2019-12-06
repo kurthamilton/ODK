@@ -13,14 +13,21 @@ namespace ODK.Core.Venues
             Name = name;
         }
 
-        public string Address { get; }
+        public string Address { get; private set; }
 
         public Guid ChapterId { get; }
 
         public Guid Id { get; }
 
-        public string MapQuery { get; }
+        public string MapQuery { get; private set; }
 
-        public string Name { get; }
+        public string Name { get; private set; }
+
+        public void Update(string name, string address, string mapQuery)
+        {
+            Address = address;
+            MapQuery = mapQuery;
+            Name = name;
+        }
     }
 }

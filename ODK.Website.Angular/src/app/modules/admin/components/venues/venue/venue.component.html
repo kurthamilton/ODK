@@ -1,0 +1,11 @@
+<ng-container *ngIf="venue">
+  <h2>{{venue.name}}</h2>
+
+  <ngb-tabset type="pills">
+      <ngb-tab title="Edit">
+          <ng-template ngbTabContent>
+              <app-edit-venue [chapter]="chapter" [venue]="venue"></app-edit-venue>
+          </ng-template>
+      </ngb-tab>
+  </ngb-tabset>
+</ng-container>

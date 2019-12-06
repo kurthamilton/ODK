@@ -34,6 +34,34 @@ namespace ODK.Services.Venues
             return await _venueRepository.GetVenue(id);
         }
 
+        public async Task<Venue> GetVenue(Guid currentMemberId, Guid venueId)
+        {
+            Venue venue = await _venueRepository.GetVenue(venueId);
+            if (venue == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, venue.ChapterId);
+
+            return venue;
+        }
+
+        public async Task<Venue> UpdateVenue(Guid memberId, Guid id, CreateVenue venue)
+        {
+            Venue update = await GetVenue(memberId, id);
+
+            update.Update(venue.Name, venue.Address, venue.MapQuery);
+
+            await ValidateVenue(update);
+
+            await _venueRepository.UpdateVenue(update);
+
+            _cacheService.RemoveVersionedCollection<Venue>();
+
+            return update;
+        }
+
         private async Task ValidateVenue(Venue venue)
         {
             if (string.IsNullOrWhiteSpace(venue.Name))

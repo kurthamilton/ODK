@@ -1,0 +1,22 @@
+<ng-container *ngIf="venues">
+  <p>
+      <a class="btn btn-primary" [routerLink]="links.createVenue">Create</a>
+  </p>
+
+  <table class="table table-striped">
+      <thead>
+          <tr>
+              <th>Name</th>
+              <th>Address</th>
+              <th>MapQuery</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr *ngFor="let venue of venues">
+              <td><a [routerLink]="getVenueLink(venue)">{{venue.name}}</a></td>
+              <td>{{venue.address}}</td>
+              <td>{{venue.mapQuery}}</td>
+          </tr>
+      </tbody>
+  </table>
+</ng-container>

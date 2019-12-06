@@ -6,6 +6,8 @@ namespace ODK.Web.Api.Venues.Responses
     {
         public string Address { get; set; }
 
+        public Guid ChapterId { get; set; }
+
         public Guid Id { get; set; }
 
         public string MapQuery { get; set; }

@@ -5,24 +5,24 @@ import { Subject } from 'rxjs';
 
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { Event } from 'src/app/core/events/event';
-import { EventAdminService } from 'src/app/services/events/event-admin.service';
 import { ServiceResult } from 'src/app/services/service-result';
+import { Venue } from 'src/app/core/venues/venue';
+import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 
 @Component({
-  selector: 'app-edit-event',
-  templateUrl: './edit-event.component.html',
+  selector: 'app-edit-venue',
+  templateUrl: './edit-venue.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EditEventComponent implements OnDestroy {
+export class EditVenueComponent implements OnDestroy {
 
   constructor(private router: Router,
-    private eventAdminService: EventAdminService
+    private venueAdminService: VenueAdminService
   ) {
   }
 
   @Input() chapter: Chapter;
-  @Input() event: Event;
+  @Input() venue: Venue;
 
   formCallback: Subject<string[]> = new Subject<string[]>();
 
@@ -30,11 +30,11 @@ export class EditEventComponent implements OnDestroy {
     this.formCallback.complete();
   }
 
-  onFormSubmit(event: Event): void {
-    this.eventAdminService.updateEvent(event).subscribe((result: ServiceResult<Event>) => {
+  onFormSubmit(venue: Venue): void {
+    this.venueAdminService.updateVenue(venue).subscribe((result: ServiceResult<Venue>) => {
       this.formCallback.next(result.messages);
       if (result.success) {
-        this.router.navigateByUrl(adminUrls.events(this.chapter));
+        this.router.navigateByUrl(adminUrls.venues(this.chapter));
       }
     });
   }
