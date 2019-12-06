@@ -16,7 +16,7 @@ namespace ODK.Web.Api.Admin.Events
 {
     [Authorize]
     [ApiController]
-    [Route("admin/events")]
+    [Route("Admin/Events")]
     public class AdminEventsController : OdkControllerBase
     {
         private readonly IEventAdminService _eventAdminService;

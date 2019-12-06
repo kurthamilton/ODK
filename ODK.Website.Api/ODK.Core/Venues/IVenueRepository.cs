@@ -1,0 +1,19 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace ODK.Core.Venues
+{
+    public interface IVenueRepository
+    {
+        Task<Guid> CreateVenue(Venue venue);
+
+        Task<Venue> GetVenue(Guid id);
+
+        Task<Venue> GetVenueByName(string name);
+
+        Task<IReadOnlyCollection<Venue>> GetVenues(Guid chapterId);
+
+        Task<long> GetVenuesVersion(Guid chapterId);
+    }
+}

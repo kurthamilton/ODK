@@ -4,9 +4,9 @@ using ODK.Web.Api.Maps.Responses;
 
 namespace ODK.Web.Api.Maps
 {
-    public class MapsProfile : Profile
+    public class MapsMappingProfile : Profile
     {
-        public MapsProfile()
+        public MapsMappingProfile()
         {
             CreateMap<SiteSettings, GoogleMapsApiKeyApiResponse>()
                 .ForMember(x => x.ApiKey, opt => opt.MapFrom(x => x.GoogleMapsApiKey));

@@ -15,7 +15,7 @@ namespace ODK.Web.Api.Admin.Members
 {
     [Authorize]
     [ApiController]
-    [Route("admin/members")]
+    [Route("Admin/Members")]
     public class AdminMembersController : OdkControllerBase
     {
         private readonly IMapper _mapper;

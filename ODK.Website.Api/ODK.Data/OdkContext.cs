@@ -35,6 +35,7 @@ namespace ODK.Data
             AddMap(new MemberSubscriptionMap());
             AddMap(new PaymentMap());
             AddMap(new SiteSettingsMap());
+            AddMap(new VenueMap());
         }
     }
 }
