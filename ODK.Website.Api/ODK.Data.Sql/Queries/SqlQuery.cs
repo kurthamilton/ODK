@@ -90,8 +90,9 @@ namespace ODK.Data.Sql.Queries
 
         public async Task<int> VersionAsync()
         {
+            string columnSql = string.Join(",", _selectColumns);
             _selectColumns.Clear();
-            AddSelectColumn("ISNULL(CHECKSUM_AGG(CHECKSUM(*)),0)");
+            AddSelectColumn($"ISNULL(CHECKSUM_AGG(CHECKSUM({columnSql})),0)");
             return await Context.ReadRecordAsync(this, reader => reader.GetInt32(0));
         }
 
