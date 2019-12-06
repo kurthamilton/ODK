@@ -23,7 +23,7 @@ namespace ODK.Services.Venues
         {
             await AssertMemberIsChapterAdmin(currentMemberId, venue.ChapterId);
 
-            Venue create = new Venue(Guid.Empty, venue.ChapterId, venue.Name, venue.Address, venue.MapQuery);
+            Venue create = new Venue(Guid.Empty, venue.ChapterId, venue.Name, venue.Address, venue.MapQuery, 0);
 
             await ValidateVenue(create);
 
@@ -57,6 +57,7 @@ namespace ODK.Services.Venues
 
             await _venueRepository.UpdateVenue(update);
 
+            _cacheService.RemoveVersionedItem<Venue>(id);
             _cacheService.RemoveVersionedCollection<Venue>();
 
             return update;

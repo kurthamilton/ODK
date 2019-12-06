@@ -48,6 +48,14 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid eventId)
+        {
+            return await Context
+                .Select<EventMemberResponse>()
+                .Where(x => x.EventId).EqualTo(eventId)
+                .ToArrayAsync();
+        }
+
         public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime? after)
         {
             return await Context
@@ -58,11 +66,11 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid eventId)
+        public async Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid venueId)
         {
             return await Context
-                .Select<EventMemberResponse>()
-                .Where(x => x.EventId).EqualTo(eventId)
+                .Select<Event>()
+                .Where(x => x.VenueId).EqualTo(venueId)
                 .ToArrayAsync();
         }
 
@@ -81,15 +89,13 @@ namespace ODK.Data.Repositories
         {
             await Context
                 .Update<Event>()
-                .Set(x => x.Address, @event.Address)
                 .Set(x => x.Date, @event.Date)
                 .Set(x => x.Description, @event.Description)
                 .Set(x => x.ImageUrl, @event.ImageUrl)
                 .Set(x => x.IsPublic, @event.IsPublic)
-                .Set(x => x.Location, @event.Location)
-                .Set(x => x.MapQuery, @event.MapQuery)
                 .Set(x => x.Name, @event.Name)
                 .Set(x => x.Time, @event.Time)
+                .Set(x => x.VenueId, @event.VenueId)
                 .Where(x => x.Id).EqualTo(@event.Id)
                 .ExecuteAsync();
         }

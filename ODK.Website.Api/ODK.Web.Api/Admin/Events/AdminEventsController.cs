@@ -37,13 +37,6 @@ namespace ODK.Web.Api.Admin.Events
             return Created(response);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEvent(Guid id)
-        {
-            await _eventAdminService.DeleteEvent(GetMemberId(), id);
-            return Ok();
-        }
-
         [HttpGet]
         public async Task<IEnumerable<EventApiResponse>> Get(Guid chapterId)
         {
@@ -66,46 +59,60 @@ namespace ODK.Web.Api.Admin.Events
             return _mapper.Map<EventApiResponse>(updated);
         }
 
-        [HttpGet("{id}/email")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteEvent(Guid id)
+        {
+            await _eventAdminService.DeleteEvent(GetMemberId(), id);
+            return Ok();
+        }
+
+        [HttpGet("{id}/Email")]
         public async Task<EventEmailApiResponse> EventEmail(Guid id)
         {
             Email email = await _eventAdminService.GetEventEmail(GetMemberId(), id);
             return _mapper.Map<EventEmailApiResponse>(email);
         }
 
-        [HttpGet("{id}/invites")]
+        [HttpGet("{id}/Invites")]
         public async Task<EventInvitesApiResponse> EventInvites(Guid id)
         {
             EventInvites invites = await _eventAdminService.GetEventInvites(GetMemberId(), id);
             return _mapper.Map<EventInvitesApiResponse>(invites);
         }
 
-        [HttpGet("{id}/responses")]
+        [HttpGet("{id}/Responses")]
         public async Task<IEnumerable<EventMemberResponseApiResponse>> EventResponses(Guid id)
         {
             IReadOnlyCollection<EventMemberResponse> responses = await _eventAdminService.GetEventResponses(GetMemberId(), id);
             return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
         }
 
-        [HttpPost("{id}/sendinvites")]
-        public async Task<IActionResult> SendEventInvites(Guid id)
-        {
-            await _eventAdminService.SendEventInvites(GetMemberId(), id);
-            return Created();
-        }
-
-        [HttpGet("invites")]
+        [HttpGet("Invites")]
         public async Task<IEnumerable<EventInvitesApiResponse>> Invites(Guid chapterId)
         {
             IReadOnlyCollection<EventInvites> invites = await _eventAdminService.GetChapterInvites(GetMemberId(), chapterId);
             return invites.Select(_mapper.Map<EventInvitesApiResponse>);
         }
 
-        [HttpGet("responses")]
+        [HttpPost("{id}/Invites/Send")]
+        public async Task<IActionResult> SendEventInvites(Guid id)
+        {
+            await _eventAdminService.SendEventInvites(GetMemberId(), id);
+            return Created();
+        }
+
+        [HttpGet("Responses")]
         public async Task<IEnumerable<EventMemberResponseApiResponse>> ChapterResponses(Guid chapterId)
         {
             IReadOnlyCollection<EventMemberResponse> responses = await _eventAdminService.GetChapterResponses(GetMemberId(), chapterId);
             return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
+        }
+
+        [HttpGet("Venues/{id}")]
+        public async Task<IEnumerable<EventApiResponse>> GetByVenue(Guid id)
+        {
+            IReadOnlyCollection<Event> events = await _eventAdminService.GetEventsByVenue(GetMemberId(), id);
+            return events.Select(_mapper.Map<EventApiResponse>);
         }
     }
 }

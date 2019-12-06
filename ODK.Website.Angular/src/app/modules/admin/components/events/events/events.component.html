@@ -8,7 +8,7 @@
             <tr>
                 <th>Name</th>
                 <th>Date</th>
-                <th>Location</th>
+                <th>Venue</th>
                 <th><i class="fas fa-envelope"></i></th>
                 <th><i class="fas fa-check-circle text-success"></i></th>
                 <th><i class="fas fa-question-circle text-warning"></i></th>
@@ -19,7 +19,7 @@
             <tr *ngFor="let viewModel of viewModels">
                 <td><a [routerLink]="getEventLink(viewModel.event)">{{viewModel.event.name}}</a></td>
                 <td>{{viewModel.event.date | date:'dd MMM yyyy'}}</td>
-                <td>{{viewModel.event.location}}</td>                
+                <td><a [routerLink]="getVenueLink(viewModel.venue)">{{viewModel.venue.name}}</a></td>
                 <td>
                     {{viewModel.invitesSent}}
                     <span *ngIf="viewModel.invitesFailed" class="text-danger"> ({{viewModel.invitesFailed}})</span>

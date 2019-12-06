@@ -7,6 +7,8 @@ namespace ODK.Services.Venues
 {
     public interface IVenueService
     {
+        Task<VersionedServiceResult<Venue>> GetVenue(long? currentVersion, Guid currentMemberId, Guid id);
+
         Task<VersionedServiceResult<IReadOnlyCollection<Venue>>> GetVenues(long? currentVersion, Guid currentMemberId, Guid chapterId);
     }
 }

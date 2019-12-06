@@ -25,11 +25,19 @@ namespace ODK.Web.Api.Venues
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<VenueApiResponse>>> Get(Guid chapterId)
+        public async Task<ActionResult<IEnumerable<VenueApiResponse>>> GetVenues(Guid chapterId)
         {
             return await HandleVersionedRequest(
                 version => _venueService.GetVenues(version, GetMemberId(), chapterId),
                 x => x.Select(_mapper.Map<VenueApiResponse>));
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<VenueApiResponse>> Get(Guid id)
+        {
+            return await HandleVersionedRequest(
+                version => _venueService.GetVenue(version, GetMemberId(), id),
+                _mapper.Map<VenueApiResponse>);
         }
     }
 }

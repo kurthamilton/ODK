@@ -25,9 +25,9 @@ const endpoints = {
 })
 export class EventService {
 
-  constructor(private http: HttpClient,
+  constructor(protected http: HttpClient,
     private authenticationService: AuthenticationService
-  ) {     
+  ) {
   }
 
   getEvent(id: string, chapterId: string): Observable<Event> {
@@ -67,23 +67,21 @@ export class EventService {
     )
   }
 
-  private mapEvent(response: any): Event {
+  protected mapEvent(response: any): Event {
     return {
-      address: response.address,
       chapterId: response.chapterId,
       date: new Date(response.date),
       description: response.description,
       id: response.id,
       imageUrl: response.imageUrl,
       isPublic: response.isPublic,
-      location: response.location,
-      mapQuery: response.mapQuery,
       name: response.name,
-      time: response.time
+      time: response.time,
+      venueId: response.venueId
     };
   }
 
-  private mapEventMemberResponse(response: any): EventMemberResponse {
+  protected mapEventMemberResponse(response: any): EventMemberResponse {
     return {
       eventId: response.eventId,
       memberId: response.memberId,

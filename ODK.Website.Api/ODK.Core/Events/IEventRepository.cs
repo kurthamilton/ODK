@@ -10,8 +10,9 @@ namespace ODK.Core.Events
         Task DeleteEvent(Guid id);
         Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid chapterId);
         Task<Event> GetEvent(Guid id);
+        Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid eventId);
         Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime? after);
-        Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid eventId);        
+        Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid venueId);
         Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId, DateTime after);
         Task UpdateEvent(Event @event);
         Task UpdateEventResponse(EventMemberResponse response);

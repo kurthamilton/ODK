@@ -8,6 +8,7 @@ using ODK.Core.Events;
 using ODK.Core.Mail;
 using ODK.Core.Members;
 using ODK.Core.Utils;
+using ODK.Core.Venues;
 using ODK.Services.Exceptions;
 using ODK.Services.Mails;
 
@@ -21,11 +22,11 @@ namespace ODK.Services.Events
         private readonly IMemberEmailRepository _memberEmailRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly EventAdminServiceSettings _settings;
+        private readonly IVenueRepository _venueRepository;
 
         public EventAdminService(IEventRepository eventRepository, IChapterRepository chapterRepository,
             IMemberEmailRepository memberEmailRepository, EventAdminServiceSettings settings,
-            IMemberRepository memberRepository,
-            IMailService mailService)
+            IMemberRepository memberRepository, IMailService mailService, IVenueRepository venueRepository)
             : base(chapterRepository)
         {
             _chapterRepository = chapterRepository;
@@ -34,6 +35,7 @@ namespace ODK.Services.Events
             _memberEmailRepository = memberEmailRepository;
             _memberRepository = memberRepository;
             _settings = settings;
+            _venueRepository = venueRepository;
         }
 
         public async Task<Event> CreateEvent(Guid memberId, CreateEvent createEvent)
@@ -43,10 +45,10 @@ namespace ODK.Services.Events
             Member member = await _memberRepository.GetMember(memberId);
 
             Event @event = new Event(Guid.Empty, createEvent.ChapterId, $"{member.FirstName} {member.LastName}", createEvent.Name, createEvent.Date,
-                createEvent.Location, createEvent.Time, null,
-                createEvent.Address, createEvent.MapQuery, createEvent.Description, createEvent.IsPublic);
+                createEvent.VenueId, createEvent.Time, null,
+                createEvent.Description, createEvent.IsPublic);
 
-            ValidateEvent(@event);
+            await ValidateEvent(@event);
 
             return await _eventRepository.CreateEvent(@event);
         }
@@ -91,8 +93,9 @@ namespace ODK.Services.Events
         {
             Event @event = await GetEvent(currentMemberId, eventId);
             Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
+            Venue venue = await _venueRepository.GetVenue(@event.VenueId);
             Email email = await GetEventEmail();
-            IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event);
+            IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
             return email.Interpolate(parameters);
         }
 
@@ -116,6 +119,19 @@ namespace ODK.Services.Events
             return await _eventRepository.GetEvents(chapterId, null);
         }
 
+        public async Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId)
+        {
+            Venue venue = await _venueRepository.GetVenue(venueId);
+            if (venue == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, venue.ChapterId);
+
+            return await _eventRepository.GetEventsByVenue(venueId);
+        }
+
         public async Task SendEventInvites(Guid currentMemberId, Guid eventId)
         {
             Event @event = await GetEvent(currentMemberId, eventId);
@@ -125,9 +141,9 @@ namespace ODK.Services.Events
             }
 
             Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
-
+            Venue venue = await _venueRepository.GetVenue(@event.VenueId);
             Email email = await GetEventEmail();
-            IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event);
+            IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
             email = email.Interpolate(parameters);
 
             IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(@event.ChapterId);
@@ -143,10 +159,10 @@ namespace ODK.Services.Events
         {
             Event update = await GetEvent(memberId, id);
 
-            update.Update(@event.Address, @event.Date, @event.Description, null, @event.IsPublic, @event.Location,
-                @event.MapQuery, @event.Name, @event.Time);
+            update.Update(@event.Date, @event.Description, null, @event.IsPublic,
+                @event.Name, @event.Time, @event.VenueId);
 
-            ValidateEvent(update);
+            await ValidateEvent(update);
 
             await _eventRepository.UpdateEvent(update);
 
@@ -175,13 +191,20 @@ namespace ODK.Services.Events
             }).ToArray();
         }
 
-        private static void ValidateEvent(Event @event)
+        private async Task ValidateEvent(Event @event)
         {
+            Venue venue = await _venueRepository.GetVenue(@event.VenueId);
+
             if (string.IsNullOrWhiteSpace(@event.Name) ||
-                string.IsNullOrWhiteSpace(@event.Location) ||
+                venue == null ||
                 @event.Date == DateTime.MinValue)
             {
                 throw new OdkServiceException("Some required fields are missing");
+            }
+
+            if (venue.ChapterId != @event.ChapterId)
+            {
+                throw new OdkServiceException("Events cannot be created for venues from other chapters");
             }
         }
 
@@ -201,14 +224,14 @@ namespace ODK.Services.Events
             return await _memberEmailRepository.GetEmail(EmailType.EventInvite);
         }
 
-        private IDictionary<string, string> GetEventEmailParameters(Chapter chapter, Event @event)
+        private IDictionary<string, string> GetEventEmailParameters(Chapter chapter, Event @event, Venue venue)
         {
             IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 {"chapter.name", chapter.Name},
                 {"event.date", @event.Date.ToString("dddd dd MMMM, yyyy")},
                 {"event.id", @event.Id.ToString()},
-                {"event.location", @event.Location},
+                {"event.location", venue.Name},
                 {"event.name", @event.Name},
                 {"event.time", @event.Time}
             };

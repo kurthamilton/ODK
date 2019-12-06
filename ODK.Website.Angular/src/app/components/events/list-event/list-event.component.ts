@@ -3,7 +3,7 @@ import { Component, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef
 import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { Event } from 'src/app/core/events/event';
+import { AdminListEventViewModel } from 'src/app/modules/admin/components/events/events/admin-list-event.view-model';
 
 @Component({
   selector: 'app-list-event',
@@ -11,23 +11,23 @@ import { Event } from 'src/app/core/events/event';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListEventComponent implements OnChanges {
-  
+
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService
   ) {
   }
 
-  @Input() event: Event;
+  @Input() viewModel: AdminListEventViewModel;
 
   link: string;
 
   ngOnChanges(): void {
-    if (!this.event) {
+    if (!this.viewModel) {
       return;
     }
 
-    this.chapterService.getChapterById(this.event.chapterId).subscribe((chapter: Chapter) => {
-      this.link = appUrls.event(chapter, this.event);
+    this.chapterService.getChapterById(this.viewModel.event.chapterId).subscribe((chapter: Chapter) => {
+      this.link = appUrls.event(chapter, this.viewModel.event);
       this.changeDetector.detectChanges();
     });
   }

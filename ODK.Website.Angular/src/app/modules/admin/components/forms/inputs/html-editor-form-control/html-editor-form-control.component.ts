@@ -44,13 +44,11 @@ export class HtmlEditorFormControlComponent extends InputBase implements OnInit,
   }
 
   private validate(): void {
-    console.log('validate');
     if (!this.submitted) {
       return;
     }
 
     this.isInvalid = this.control.invalid;
     this.isValid = this.control.valid;
-    console.log(this.isInvalid, this.isValid);
   }
 }

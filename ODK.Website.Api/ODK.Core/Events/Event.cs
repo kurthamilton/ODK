@@ -4,10 +4,9 @@ namespace ODK.Core.Events
 {
     public class Event
     {
-        public Event(Guid id, Guid chapterId, string createdBy, string name, DateTime date, string location, string time, 
-            string imageUrl, string address, string mapQuery, string description, bool isPublic)
+        public Event(Guid id, Guid chapterId, string createdBy, string name, DateTime date, Guid venueId, string time, 
+            string imageUrl, string description, bool isPublic)
         {
-            Address = address;
             ChapterId = chapterId;
             CreatedBy = createdBy;
             Date = date;
@@ -15,13 +14,10 @@ namespace ODK.Core.Events
             Id = id;
             ImageUrl = imageUrl;
             IsPublic = isPublic;
-            Location = location;
-            MapQuery = mapQuery;
             Name = name;
             Time = time;
+            VenueId = venueId;
         }
-
-        public string Address { get; private set; }
 
         public Guid ChapterId { get; }
 
@@ -37,10 +33,6 @@ namespace ODK.Core.Events
 
         public bool IsPublic { get; private set; }
 
-        public string Location { get; private set; }
-
-        public string MapQuery { get; private set; }
-
         public string Name { get; private set; }        
 
         public double? TicketCost => throw new NotImplementedException();
@@ -51,18 +43,18 @@ namespace ODK.Core.Events
 
         public string Time { get; private set; }
 
-        public void Update(string address, DateTime date, string description, string imageUrl, bool isPublic,
-            string location, string mapQuery, string name, string time)
+        public Guid VenueId { get; private set; }
+
+        public void Update(DateTime date, string description, string imageUrl, bool isPublic,
+            string name, string time, Guid venueId)
         {
-            Address = address;
             Date = date;
             Description = description;
             ImageUrl = imageUrl;
             IsPublic = isPublic;
-            Location = location;
-            MapQuery = mapQuery;
             Name = name;
             Time = time;
+            VenueId = venueId;
         }
     }
 }

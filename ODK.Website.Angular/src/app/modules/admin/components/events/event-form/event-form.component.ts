@@ -1,15 +1,18 @@
 import { DatePipe } from '@angular/common';
-import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges, ChangeDetectorRef } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { CheckBoxFormControlViewModel } from 'src/app/modules/forms/components/inputs/check-box-form-control/check-box-form-control.view-model';
+import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
+import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
 import { Event } from 'src/app/core/events/event';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
-import { GoogleMapsTextInputFormControlViewModel } from '../../forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.view-model';
 import { HtmlEditorFormControlViewModel } from '../../forms/inputs/html-editor-form-control/html-editor-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
+import { Venue } from 'src/app/core/venues/venue';
+import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 
 @Component({
   selector: 'app-event-form',
@@ -18,7 +21,10 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class EventFormComponent implements OnChanges {
 
-  constructor(private datePipe: DatePipe) {
+  constructor(private changeDetector: ChangeDetectorRef,
+    private datePipe: DatePipe,
+    private venueAdminService: VenueAdminService
+  ) {
   }
 
   @Input() buttonText: string;
@@ -28,16 +34,15 @@ export class EventFormComponent implements OnChanges {
   @Output() formSubmit: EventEmitter<Event> = new EventEmitter<Event>();
 
   form: FormViewModel;
+  private venues: Venue[];
 
   private formControls: {
-    address: TextInputFormControlViewModel;
     date: TextInputFormControlViewModel;
     description: HtmlEditorFormControlViewModel;
     isPublic: CheckBoxFormControlViewModel;
-    location: TextInputFormControlViewModel;
-    mapQuery: GoogleMapsTextInputFormControlViewModel;
     name: TextInputFormControlViewModel;
     time: TextInputFormControlViewModel;
+    venue: DropDownFormControlViewModel;
   };
 
   ngOnChanges(): void {
@@ -45,22 +50,24 @@ export class EventFormComponent implements OnChanges {
       return;
     }
 
-    this.buildForm();
+    this.venueAdminService.getVenues(this.chapter.id).subscribe((venues: Venue[]) => {
+      this.venues = venues.sort((a, b) => a.name.localeCompare(b.name));
+      this.buildForm();
+      this.changeDetector.detectChanges();
+    });
   }
 
   onFormSubmit(): void {
     const event: Event = {
-      address: this.formControls.address.value,
       chapterId: this.chapter.id,
       date: new Date(this.formControls.date.value),
       description: this.formControls.description.value,
       id: this.event ? this.event.id : '',
       imageUrl: '',
       isPublic: this.formControls.isPublic.value,
-      location: this.formControls.location.value,
-      mapQuery: this.formControls.mapQuery.value,
       name: this.formControls.name.value,
-      time: this.formControls.time.value
+      time: this.formControls.time.value,
+      venueId: this.formControls.venue.value
     };
 
     this.formSubmit.emit(event);
@@ -68,14 +75,6 @@ export class EventFormComponent implements OnChanges {
 
   private buildForm(): void {
     this.formControls = {
-      address: new TextInputFormControlViewModel({
-        id: 'address',
-        label: {
-          helpText: 'Additional location information, if required',
-          text: 'Address'
-        },
-        value: this.event ? this.event.address : ''
-      }),
       date: new TextInputFormControlViewModel({
         id: 'date',
         inputType: 'date',
@@ -101,25 +100,6 @@ export class EventFormComponent implements OnChanges {
         },
         value: this.event && this.event.isPublic
       }),
-      location: new TextInputFormControlViewModel({
-        id: 'location',
-        label: {
-          helpText: 'The main description for where the event is happening',
-          text: 'Location'
-        },
-        validation: {
-          required: true
-        },
-        value: this.event ? this.event.location : ''
-      }),
-      mapQuery: new GoogleMapsTextInputFormControlViewModel({
-        id: 'mapquery',
-        label: {
-          helpText: 'The search term used if displaying a map. Be as specific as possible',
-          text: 'Map search'
-        },
-        value: this.event ? this.event.mapQuery : ''
-      }),
       name: new TextInputFormControlViewModel({
         id: 'name',
         label: {
@@ -136,6 +116,20 @@ export class EventFormComponent implements OnChanges {
           text: 'Time'
         },
         value: this.event ? this.event.time : ''
+      }),
+      venue: new DropDownFormControlViewModel({
+        id: 'venue',
+        label: {
+          text: 'Venue'
+        },
+        options: this.venues.map((venue: Venue): DropDownFormControlOption => ({
+          text: venue.name,
+          value: venue.id
+        })),
+        validation: {
+          required: true
+        },
+        value: this.event ? this.event.venueId : ''
       })
     };
 
@@ -145,12 +139,10 @@ export class EventFormComponent implements OnChanges {
       controls: [
         this.formControls.isPublic,
         this.formControls.name,
-        this.formControls.location,
+        this.formControls.venue,
         this.formControls.date,
         this.formControls.time,
         this.formControls.description,
-        this.formControls.address,
-        this.formControls.mapQuery,
       ]
     };
   }

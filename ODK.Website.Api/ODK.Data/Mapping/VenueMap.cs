@@ -15,6 +15,7 @@ namespace ODK.Data.Mapping
             Property(x => x.Name);
             Property(x => x.Address);
             Property(x => x.MapQuery);
+            Property(x => x.Version).IsRowVersion();
         }
 
         public override Venue Read(IDataReader reader)
@@ -25,7 +26,8 @@ namespace ODK.Data.Mapping
                 chapterId: reader.GetGuid(1),
                 name: reader.GetString(2),
                 address: reader.GetStringOrDefault(3),
-                mapQuery: reader.GetStringOrDefault(4)
+                mapQuery: reader.GetStringOrDefault(4),
+                version: reader.GetInt64(5)
             );
         }
     }

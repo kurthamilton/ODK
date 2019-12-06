@@ -15,11 +15,9 @@ namespace ODK.Data.Mapping
             Property(x => x.CreatedBy);
             Property(x => x.Name);
             Property(x => x.Date);
-            Property(x => x.Location);
+            Property(x => x.VenueId);
             Property(x => x.Time);
             Property(x => x.ImageUrl);
-            Property(x => x.Address);
-            Property(x => x.MapQuery);
             Property(x => x.Description);
             Property(x => x.IsPublic);
         }
@@ -33,13 +31,11 @@ namespace ODK.Data.Mapping
                 createdBy: reader.GetString(2),
                 name: reader.GetString(3),
                 date: reader.GetDateTime(4),
-                location: reader.GetString(5),
+                venueId: reader.GetGuid(5),
                 time: reader.GetStringOrDefault(6),
                 imageUrl: reader.GetStringOrDefault(7),
-                address: reader.GetStringOrDefault(8),
-                mapQuery: reader.GetStringOrDefault(9),
-                description: reader.GetStringOrDefault(10),
-                isPublic: reader.GetBoolean(11)
+                description: reader.GetStringOrDefault(8),
+                isPublic: reader.GetBoolean(9)
             );
         }
     }

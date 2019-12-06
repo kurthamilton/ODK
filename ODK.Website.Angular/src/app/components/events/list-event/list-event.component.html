@@ -1,5 +1,5 @@
 <h2>
-    <a *ngIf="link" [routerLink]="link">{{event.name}}</a>
+    <a *ngIf="link" [routerLink]="link">{{viewModel.event.name}}</a>
 </h2>
-<h3>{{event.date | date:'fullDate'}}</h3>
-<div>{{event.location}}</div>
+<h3>{{viewModel.event.date | date:'fullDate'}}</h3>
+<div>{{viewModel.venue.name}}</div>
