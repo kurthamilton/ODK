@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
@@ -10,9 +10,7 @@ import { AuthenticationToken } from 'src/app/core/authentication/authentication-
 })
 export class ChapterComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
-    private authenticationService: AuthenticationService
-  ) {     
+  constructor(private authenticationService: AuthenticationService) {     
   }
 
   superAdmin: boolean;
@@ -21,5 +19,4 @@ export class ChapterComponent implements OnInit {
     const token: AuthenticationToken = this.authenticationService.getToken();
     this.superAdmin = token.superAdmin === true;
   }
-
 }

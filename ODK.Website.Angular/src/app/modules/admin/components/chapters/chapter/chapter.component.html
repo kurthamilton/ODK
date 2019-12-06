@@ -1,7 +1,13 @@
 <ngb-tabset type="pills">
-    <ngb-tab *ngIf="superAdmin" title="Payments">
-        <ng-template ngbTabContent>
-            <app-chapter-payment-settings></app-chapter-payment-settings>
-        </ng-template>
-    </ngb-tab>        
+  <ngb-tab title="Settings">
+    <ng-template ngbTabContent>
+      
+    </ng-template>
+  </ngb-tab>
+
+  <ngb-tab *ngIf="superAdmin" title="Payments">
+    <ng-template ngbTabContent>
+      <app-chapter-payment-settings></app-chapter-payment-settings>
+    </ng-template>
+  </ngb-tab>        
 </ngb-tabset>
