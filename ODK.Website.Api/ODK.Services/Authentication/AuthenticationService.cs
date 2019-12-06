@@ -75,7 +75,7 @@ namespace ODK.Services.Authentication
 
             Member member = await _memberRepository.FindMemberByEmailAddress(username);
 
-            await AssertMemberPasswordMatches(member.Id, password, message);
+            await AssertMemberPasswordMatches(member?.Id, password, message);
 
             try
             {
@@ -176,12 +176,17 @@ namespace ODK.Services.Authentication
             }
         }
 
-        private async Task AssertMemberPasswordMatches(Guid memberId, string password, string message)
+        private async Task AssertMemberPasswordMatches(Guid? memberId, string password, string message)
         {
-            MemberPassword memberPassword = await _memberRepository.GetMemberPassword(memberId);
+            if (memberId == null)
+            {
+                throw new OdkServiceException(message);
+            }
+
+            MemberPassword memberPassword = await _memberRepository.GetMemberPassword(memberId.Value);
             if (memberPassword == null)
             {
-                throw new OdkNotFoundException();
+                throw new OdkServiceException(message);
             }
 
             if (string.IsNullOrWhiteSpace(memberPassword.Password))
