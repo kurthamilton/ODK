@@ -87,7 +87,7 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
       this.links = {
         admin: token.adminChapterIds && token.adminChapterIds.includes(chapter.id) ? appUrls.adminChapter(chapter) : null,
         chapter: appUrls.chapter(chapter),
-        logout: `/${appUrls.logout}`,
+        logout: appUrls.logout(chapter),
         profile: appUrls.profile(chapter)
       };
 

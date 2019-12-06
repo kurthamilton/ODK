@@ -12,7 +12,6 @@ const chapterPaths = appPaths.chapter.childPaths;
 export const appUrls = {
     about: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.about.path),
     adminChapter: (chapter: Chapter) => chapterUrl(chapter, 'admin'),
-    changePassword: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.password.change.path}`),
     chapter: (chapter: Chapter) => chapterUrl(chapter),
     contact: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.contact.path),
     event: (chapter: Chapter, event: Event) => chapterUrl(chapter, `${chapterPaths.events.path}/${event.id}`),
@@ -20,9 +19,15 @@ export const appUrls = {
     home: (chapter: Chapter) => chapter ? chapterUrl(chapter, '') : `/${appPaths.home.path}`,
     join: (chapter: Chapter) => chapter ? chapterUrl(chapter, chapterPaths.join.path) : '',
     login: (chapter: Chapter) => chapter ? chapterUrl(chapter, chapterPaths.login.path) : `/${appPaths.login.path}`,
-    logout: `/${appPaths.logout.path}`,
+    logout: (chapter: Chapter) => chapter ? chapterUrl(chapter, chapterPaths.logout.path) : `/${appPaths.logout.path}`,
     member: (chapter: Chapter, member: Member) => chapterUrl(chapter, `${chapterPaths.members.path}/${member.id}`),
     members: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.members.path),
+    password: {
+        change: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.password.change.path}`),
+        forgotten: (chapter: Chapter) => chapter ? chapterUrl(chapter, chapterPaths.password.forgotten.path) : `/${appPaths.password.forgotten.path}`,
+        reset: (chapter: Chapter) => chapter ? chapterUrl(chapter, chapterPaths.password.reset.path) : `/${appPaths.password.reset.path}`,
+    },
+    privacy: `/${appPaths.privacy.path}`,
     profile: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.profile.path),
     subscription: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.subscription.path}`)
 };

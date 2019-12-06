@@ -83,7 +83,7 @@ namespace ODK.Services.Authentication
             }
             catch
             {
-                if (member.Disabled)
+                if (member?.Disabled == true)
                 {
                     throw new OdkServiceException("This account has been disabled");
                 }
@@ -137,9 +137,15 @@ namespace ODK.Services.Authentication
                 return;
             }
 
+            Chapter chapter = await _chapterRepository.GetChapter(member.ChapterId);
+
             await _memberRepository.AddPasswordResetRequest(member.Id, created, expires, token);
 
-            string url = _settings.PasswordResetUrl.Interpolate(new Dictionary<string, string> { { "token", token } });
+            string url = _settings.PasswordResetUrl.Interpolate(new Dictionary<string, string>
+            {
+                { "chapter.name", chapter.Name },
+                { "token", token }
+            });
 
             await _mailService.SendMemberMail(member, EmailType.PasswordReset, new Dictionary<string, string>
             {

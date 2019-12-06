@@ -7,6 +7,7 @@ using ODK.Core.Cryptography;
 using ODK.Core.Images;
 using ODK.Core.Mail;
 using ODK.Core.Members;
+using ODK.Core.Utils;
 using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
@@ -64,7 +65,13 @@ namespace ODK.Services.Members
 
             await _memberRepository.AddActivationToken(new MemberActivationToken(id, activationToken));
 
-            string url = _settings.ActivateAccountUrl.Replace("{token}", activationToken);
+            Chapter chapter = await _chapterRepository.GetChapter(chapterId);
+
+            string url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
+            {
+                { "chapter.name", chapter.Name },
+                { "token", activationToken }
+            });
 
             await _mailService.SendMemberMail(create, EmailType.ActivateAccount, new Dictionary<string, string>
             {

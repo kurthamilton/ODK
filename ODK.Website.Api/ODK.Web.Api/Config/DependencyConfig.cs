@@ -104,7 +104,7 @@ namespace ODK.Web.Api.Config
 
             services.AddSingleton(new MailServiceSettings
             {
-                EmailReadUrl = $"{urls.Base}{urls.EmailRead}",
+                EmailReadUrl = $"{urls.ApiBase}{urls.ApiEmailRead}",
                 Host = smtp.Host,
                 Password = smtp.Password,
                 Username = smtp.Username

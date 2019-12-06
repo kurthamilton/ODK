@@ -48,8 +48,11 @@ export const appRoutes: Routes = [
         { path: chapterPaths.event.path, component: EventComponent },
         { path: chapterPaths.join.path, component: JoinComponent, data: { title: 'Join' } },
         { path: chapterPaths.login.path, component: LoginComponent, data: { title: 'Login' } },
+        { path: chapterPaths.logout.path, component: LogoutComponent },
         { path: chapterPaths.members.path, component: MembersComponent, canActivate: [ChapterMemberGuardService] },
         { path: chapterPaths.member.path, component: MemberComponent, canActivate: [ChapterMemberGuardService] },
+        { path: chapterPaths.password.forgotten.path, component: ForgottenPasswordComponent, data: { title: 'Forgotten password' } },
+        { path: chapterPaths.password.reset.path, component: ResetPasswordComponent, data: { title: 'Reset password' } },
         { path: chapterPaths.profile.path, canActivate: [AuthenticatedGuardService], children: [
           { path: '', component: ProfileComponent, data: { title: 'My profile' } },
           { path: chapterPaths.profile.password.change.path, component: ChangePasswordComponent, data: { title: 'Change password' } },

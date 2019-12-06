@@ -2,8 +2,10 @@ import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, ChangeDetectorRe
 
 import { Subject } from 'rxjs';
 
-import { appPaths } from 'src/app/routing/app-paths';
+import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
@@ -15,16 +17,18 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 export class ForgottenPasswordComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private authenticationService: AuthenticationService
+    private authenticationService: AuthenticationService,
+    private chapterService: ChapterService
   ) {
   }
 
   form: FormViewModel;
-  links = {
-    login: `/${appPaths.login.path}`
-  }
+  links: {
+    login: string;
+  };
   message: string;
 
+  private chapter: Chapter;
   private controls: {
     email: TextInputFormControlViewModel
   } = {
@@ -42,6 +46,11 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
   private formCallback: Subject<boolean> = new Subject<boolean>();
 
   ngOnInit(): void {
+    this.chapter = this.chapterService.getActiveChapter();
+    this.links = {
+      login: appUrls.login(this.chapter)
+    };
+
     this.form = {
       buttonText: 'Submit',
       callback: this.formCallback,

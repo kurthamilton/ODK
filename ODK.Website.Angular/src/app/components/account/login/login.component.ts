@@ -4,8 +4,11 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 
 import { appPaths } from 'src/app/routing/app-paths';
+import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from '../../../services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { ServiceResult } from 'src/app/services/service-result';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
@@ -19,15 +22,17 @@ export class LoginComponent implements OnInit {
 
   constructor(private authenticationService: AuthenticationService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private chapterService: ChapterService
   ) {
   }
 
   form: FormViewModel;
-  links = {
-    forgottenPassword: `/${appPaths.password.forgotten.path}`
+  links: {
+    forgottenPassword: string
   };
 
+  private chapter: Chapter;
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
     password: TextInputFormControlViewModel;
@@ -35,6 +40,11 @@ export class LoginComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    this.chapter = this.chapterService.getActiveChapter();
+    this.links = {
+      forgottenPassword: appUrls.password.forgotten(this.chapter)
+    };
+
     this.formControls = {
       password: new TextInputFormControlViewModel({
         id: 'password',

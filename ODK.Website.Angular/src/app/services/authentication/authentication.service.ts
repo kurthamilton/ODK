@@ -46,7 +46,7 @@ export class AuthenticationService {
   authenticationTokenChange(): Observable<AuthenticationToken> {
     return this.tokenSubject.asObservable();
   }
-  
+
   changePassword(currentPassword: string, newPassword: string): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
       currentPassword,
@@ -103,7 +103,7 @@ export class AuthenticationService {
 
   getToken(): AuthenticationToken {
     return this.storageService.get<AuthenticationToken>(storageKeys.authToken);
-  }  
+  }
 
   login(username: string, password: string): Observable<ServiceResult<AuthenticationToken>> {
     const params: HttpParams = HttpUtils.createFormParams({
@@ -122,10 +122,10 @@ export class AuthenticationService {
       );
   }
 
-  logout(): Observable<{}> {
+  logout(): Observable<void> {
     const token: AuthenticationToken = this.getToken();
     if (!token) {
-      return;
+      return of();
     }
 
     const params: HttpParams = HttpUtils.createFormParams({
@@ -134,7 +134,7 @@ export class AuthenticationService {
 
     return this.http.delete(endpoints.refreshToken, { params }).pipe(
       tap(() => this.setToken({ success: false })),
-      map(() => ({}))
+      map(() => undefined)
     );
   }
 

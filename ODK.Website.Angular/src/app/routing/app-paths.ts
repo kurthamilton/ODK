@@ -28,6 +28,9 @@ export const appPaths = {
             login: {
                 path: 'login'
             },
+            logout: {
+                path: 'logout'
+            },
             member: {
                 path: 'knitwits/:id',
                 params: {
@@ -36,6 +39,17 @@ export const appPaths = {
             },
             members: {
                 path: 'knitwits'
+            },
+            password: {
+                forgotten: {
+                    path: 'password/forgotten'
+                },
+                reset: {
+                    path: 'password/reset',
+                    queryParams: {
+                        token: 'token'
+                    }
+                }
             },
             profile: {
                 password: {

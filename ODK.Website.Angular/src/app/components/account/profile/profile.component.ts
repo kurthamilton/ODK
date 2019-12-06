@@ -32,7 +32,7 @@ export class ProfileComponent implements OnInit {
 
     this.chapterService.getChapterById(chapterId).subscribe((chapter: Chapter) => {
       this.links = {
-        changePassword: appUrls.changePassword(chapter),
+        changePassword: appUrls.password.change(chapter),
         subscription: appUrls.subscription(chapter)
       };
       this.changeDetector.detectChanges();
