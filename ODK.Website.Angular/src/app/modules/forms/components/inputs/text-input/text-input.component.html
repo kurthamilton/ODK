@@ -4,5 +4,5 @@
       class="form-control"
       [id]="controlId" [name]="controlId"
       [formControlName]="controlId"
-      (blur)="onValidate()" />
+      (blur)="onValidate();onBlur();" />
 </div>

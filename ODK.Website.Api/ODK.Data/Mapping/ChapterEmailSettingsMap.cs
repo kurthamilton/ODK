@@ -7,7 +7,7 @@ namespace ODK.Data.Mapping
     public class ChapterEmailSettingsMap : SqlMap<ChapterEmailSettings>
     {
         public ChapterEmailSettingsMap()
-            : base("ChapterAdmin")
+            : base("ChapterSettings")
         {
             Property(x => x.ChapterId);
             Property(x => x.ContactEmailAddress);

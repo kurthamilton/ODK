@@ -7,6 +7,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { CheckBoxViewModel } from 'src/app/modules/forms/components/inputs/check-box/check-box.view-model';
 import { Event } from 'src/app/core/events/event';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { GoogleMapsTextInputViewModel } from '../../forms/inputs/google-maps-text-input/google-maps-text-input.view-model';
 import { HtmlEditorViewModel } from '../../forms/inputs/html-editor/html-editor.view-model';
 import { TextInputViewModel } from 'src/app/modules/forms/components/inputs/text-input/text-input.view-model';
 
@@ -34,7 +35,7 @@ export class EventFormComponent implements OnChanges {
     description: HtmlEditorViewModel;
     isPublic: CheckBoxViewModel;
     location: TextInputViewModel;
-    mapQuery: TextInputViewModel;
+    mapQuery: GoogleMapsTextInputViewModel;
     name: TextInputViewModel;
     time: TextInputViewModel;
   };
@@ -111,7 +112,7 @@ export class EventFormComponent implements OnChanges {
         },
         value: this.event ? this.event.location : ''
       }),
-      mapQuery: new TextInputViewModel({
+      mapQuery: new GoogleMapsTextInputViewModel({
         id: 'mapquery',
         label: {
           helpText: 'The search term used if displaying a map. Be as specific as possible',
@@ -142,14 +143,14 @@ export class EventFormComponent implements OnChanges {
       buttonText: this.buttonText,
       callback: this.formCallback,
       controls: [
+        this.formControls.isPublic,
         this.formControls.name,
         this.formControls.location,
         this.formControls.date,
         this.formControls.time,
         this.formControls.description,
         this.formControls.address,
-        this.formControls.mapQuery,
-        this.formControls.isPublic
+        this.formControls.mapQuery,        
       ]
     };
   }

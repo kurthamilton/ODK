@@ -8,7 +8,7 @@ namespace ODK.Data.Mapping
     public class ChapterPaymentSettingsMap : SqlMap<ChapterPaymentSettings>
     {
         public ChapterPaymentSettingsMap()
-            : base("ChapterAdmin")
+            : base("ChapterSettings")
         {
             Property(x => x.ChapterId);
             Property(x => x.ApiPublicKey).HasColumnName("PaymentApiPublicKey");

@@ -5,6 +5,9 @@
             <h2>{{event.date | date:'fullDate'}}</h2>
             <h3 *ngIf="event.time">{{event.time}}</h3>
             <app-raw-html *ngIf="event.description" [html]="event.description"></app-raw-html>
+            <div *ngIf="event.mapQuery" class="d-none d-md-block">
+              <app-google-map [query]="event.mapQuery"></app-google-map>
+            </div>
         </ng-container>
 
         <ng-container app-sidebar>

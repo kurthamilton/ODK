@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 
 import { InputBase } from '../input-base';
 import { TextInputViewModel } from './text-input.view-model';
@@ -14,9 +14,15 @@ export class TextInputComponent extends InputBase {
     super(changeDetector);
   }
 
+  @Output() blur: EventEmitter<void> = new EventEmitter<void>();
+
   get type(): string {
     return this.viewModel
       ? (<TextInputViewModel>this.viewModel).inputType || 'text'
       : 'text';
+  }
+
+  onBlur(): void {
+    this.blur.emit();
   }
 }
