@@ -8,6 +8,8 @@ namespace ODK.Services.Caching
 {
     public class CacheService : ICacheService
     {
+        private const string CollectionInstanceKey = "";
+
         private readonly IMemoryCache _cache;
 
         public CacheService(IMemoryCache cache)
@@ -18,13 +20,11 @@ namespace ODK.Services.Caching
         public async Task<VersionedServiceResult<IReadOnlyCollection<T>>> GetOrSetVersionedCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter,
             Func<Task<long>> getVersion, long? currentVersion)
         {
-            object instanceKey = "";
-
-            long? version = TryGetCachedVersion<T>(instanceKey);
+            long? version = TryGetCachedVersion<T>(CollectionInstanceKey);
             if (version == null)
             {
                 version = await getVersion();
-                SetVersion<T>(version.Value, instanceKey);
+                SetVersion<T>(version.Value, CollectionInstanceKey);
             }
 
             if (currentVersion == version)
@@ -32,7 +32,7 @@ namespace ODK.Services.Caching
                 return new VersionedServiceResult<IReadOnlyCollection<T>>(version.Value);
             }
 
-            IReadOnlyCollection<T> collection = await GetOrSet(getter, instanceKey, version, null);
+            IReadOnlyCollection<T> collection = await GetOrSet(getter, CollectionInstanceKey, version, null);
             return new VersionedServiceResult<IReadOnlyCollection<T>>(version.Value, collection);
         }
 
@@ -56,6 +56,11 @@ namespace ODK.Services.Caching
             item ??= await GetOrSet(getter, instanceKey, version.Value, null);
 
             return new VersionedServiceResult<T>(version.Value, item);
+        }
+
+        public void RemoveVersionedCollection<T>()
+        {
+            RemoveVersionedItem<T>(CollectionInstanceKey);
         }
 
         public void RemoveVersionedItem<T>(object instanceKey)

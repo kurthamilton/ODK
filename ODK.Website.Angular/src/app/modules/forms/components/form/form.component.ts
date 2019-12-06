@@ -1,9 +1,9 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
-import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { FormStateViewModel } from '../form-state.view-model';
 import { FormViewModel } from '../form.view-model';
 
 @Component({
@@ -20,9 +20,8 @@ export class FormComponent implements OnInit, OnDestroy {
   @Output() formSubmit: EventEmitter<void> = new EventEmitter<void>();
 
   messages: string[];
+  state: FormStateViewModel = {};
   submitting = false;
-
-  update: Subject<boolean> = new Subject<boolean>();
 
   ngOnInit(): void {
     if (!this.form.callback) {
@@ -44,20 +43,18 @@ export class FormComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
-    this.update.complete();
-  }
+  ngOnDestroy(): void {}
 
   onSubmit(): void {
-    this.form.validated = true;
+    this.state.validated = true;
+    this.formSubmit.next();
 
     // form validity is set in form controls component
-    if (!this.form.valid) {
+    if (!this.state.valid) {
       this.changeDetector.detectChanges();
       return;
     }
 
-    this.update.next(true);
     this.submitting = true;
     this.changeDetector.detectChanges();
 
@@ -65,9 +62,8 @@ export class FormComponent implements OnInit, OnDestroy {
   }
 
   private onFormCallback(success: boolean) {
-    this.update.next(false);
     this.submitting = false;
-    this.form.validated = !success;
+    this.state.validated = !success;
     this.changeDetector.detectChanges();
   }
 }

@@ -33,6 +33,14 @@ namespace ODK.Web.Api.Admin.Chapters
             return chapters.Select(_mapper.Map<ChapterApiResponse>);
         }
 
+        [HttpPut("{id}/Details")]
+        public async Task<ActionResult<ChapterDetailsApiResponse>> UpdateChapterDetails(Guid id, [FromForm] UpdateChapterDetailsApiRequest request)
+        {
+            UpdateChapterDetails details = _mapper.Map<UpdateChapterDetails>(request);
+            Chapter chapter = await _chapterAdminService.UpdateChapterDetails( GetMemberId(), id, details);
+            return _mapper.Map<ChapterDetailsApiResponse>(chapter);
+        }
+
         [HttpPut("{id}/Links")]
         public async Task<IActionResult> UpdateLinks(Guid id, [FromForm] UpdateChapterLinksApiRequest request)
         {
@@ -49,7 +57,7 @@ namespace ODK.Web.Api.Admin.Chapters
         }
 
         [HttpPut("{id}/Payments/Settings")]
-        public async Task<ChapterAdminPaymentSettingsApiResponse> UpdatePaymentSettings(Guid id, 
+        public async Task<ChapterAdminPaymentSettingsApiResponse> UpdatePaymentSettings(Guid id,
             [FromForm] UpdateChapterPaymentSettingsApiRequest request)
         {
             UpdateChapterPaymentSettings update = _mapper.Map<UpdateChapterPaymentSettings>(request);

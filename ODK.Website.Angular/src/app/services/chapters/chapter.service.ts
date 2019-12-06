@@ -46,7 +46,7 @@ export class ChapterService {
     return this.activeChapter;
   }
 
-  getChapter(name: string): Observable<Chapter> {    
+  getChapter(name: string): Observable<Chapter> {
     return this.getChapters().pipe(
       map((chapters: Chapter[]) => chapters.find(x => x.name.toLocaleLowerCase() === name.toLocaleLowerCase()))
     );
@@ -130,9 +130,9 @@ export class ChapterService {
     }
   }
 
-  private mapChapterDetails(response: any): ChapterDetails {
+  protected mapChapterDetails(response: any): ChapterDetails {
     return {
-      bannerImageUrl: response.bannerImageUrl,      
+      bannerImageUrl: response.bannerImageUrl,
       welcomeText: response.welcomeText
     };
   }

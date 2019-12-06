@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
+import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
 import { ChapterService } from './chapter.service';
 import { HttpUtils } from '../http/http-utils';
 
@@ -14,6 +15,7 @@ const baseUrl = `${environment.baseUrl}/admin/chapters`;
 
 const endpoints = {
   chapters: baseUrl,
+  details: (id: string) => `${baseUrl}/${id}/Details`,
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`
 };
 
@@ -22,9 +24,9 @@ const endpoints = {
 })
 export class ChapterAdminService extends ChapterService {
 
-  constructor(http: HttpClient) { 
+  constructor(http: HttpClient) {
     super(http);
-  }  
+  }
 
   getAdminChapters(): Observable<Chapter[]> {
     return this.http.get(endpoints.chapters).pipe(
@@ -52,6 +54,16 @@ export class ChapterAdminService extends ChapterService {
 
     return this.http.put(endpoints.paymentSettings(chapterId), params).pipe(
       map((response: any) => this.mapChapterAdminPaymentSettings(response))
+    );
+  }
+
+  updateChapterDetails(chapterId: string, details: ChapterDetails): Observable<ChapterDetails> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      welcomeText: details.welcomeText
+    });
+
+    return this.http.put(endpoints.details(chapterId), params).pipe(
+      map((response: any) => this.mapChapterDetails(response))
     );
   }
 

@@ -8,7 +8,7 @@ import { CheckBoxFormControlViewModel } from 'src/app/modules/forms/components/i
 import { Event } from 'src/app/core/events/event';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { GoogleMapsTextInputFormControlViewModel } from '../../forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.view-model';
-import { HtmlEditorViewModel } from '../../forms/inputs/html-editor/html-editor.view-model';
+import { HtmlEditorFormControlViewModel } from '../../forms/inputs/html-editor-form-control/html-editor-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
@@ -32,7 +32,7 @@ export class EventFormComponent implements OnChanges {
   private formControls: {
     address: TextInputFormControlViewModel;
     date: TextInputFormControlViewModel;
-    description: HtmlEditorViewModel;
+    description: HtmlEditorFormControlViewModel;
     isPublic: CheckBoxFormControlViewModel;
     location: TextInputFormControlViewModel;
     mapQuery: GoogleMapsTextInputFormControlViewModel;
@@ -87,7 +87,7 @@ export class EventFormComponent implements OnChanges {
         },
         value: this.datePipe.transform(this.event ? this.event.date : new Date(), 'yyyy-MM-dd')
       }),
-      description: new HtmlEditorViewModel({
+      description: new HtmlEditorFormControlViewModel({
         id: 'description',
         label: {
           text: 'Description'
@@ -150,7 +150,7 @@ export class EventFormComponent implements OnChanges {
         this.formControls.time,
         this.formControls.description,
         this.formControls.address,
-        this.formControls.mapQuery,        
+        this.formControls.mapQuery,
       ]
     };
   }

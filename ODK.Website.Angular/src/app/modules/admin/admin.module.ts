@@ -10,6 +10,7 @@ import { AppFormsModule } from '../forms/app-forms.module';
 import { AppSharedModule } from '../shared/app-shared.module';
 import { ChapterComponent } from './components/chapters/chapter/chapter.component';
 import { ChapterPaymentSettingsComponent } from './components/chapters/chapter-payment-settings/chapter-payment-settings.component';
+import { ChapterSettingsComponent } from './components/chapters/chapter-settings/chapter-settings.component';
 import { CreateEventComponent } from './components/events/create-event/create-event.component';
 import { EditEventComponent } from './components/events/edit-event/edit-event.component';
 import { EventComponent } from './components/events/event/event.component';
@@ -17,10 +18,10 @@ import { EventFormComponent } from './components/events/event-form/event-form.co
 import { EventInvitesComponent } from './components/events/event-invites/event-invites.component';
 import { EventResponsesComponent } from './components/events/event-responses/event-responses.component';
 import { EventsComponent } from './components/events/events/events.component';
-import { HtmlEditorComponent } from './components/forms/inputs/html-editor/html-editor.component';
+import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
+import { HtmlEditorFormControlComponent } from './components/forms/inputs/html-editor-form-control/html-editor-form-control.component';
 import { MemberComponent } from './components/members/member/member.component';
 import { MembersComponent } from './components/members/members/members.component';
-import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { GoogleMapsTextInputFormControlComponent } from './components/forms/inpu
     AdminMenuComponent,
     ChapterComponent,
     ChapterPaymentSettingsComponent,
+    ChapterSettingsComponent,
     CreateEventComponent,
     EditEventComponent,
     EventComponent,
@@ -35,10 +37,10 @@ import { GoogleMapsTextInputFormControlComponent } from './components/forms/inpu
     EventInvitesComponent,
     EventResponsesComponent,
     EventsComponent,
-    HtmlEditorComponent,
+    GoogleMapsTextInputFormControlComponent,
+    HtmlEditorFormControlComponent,
     MemberComponent,
     MembersComponent,
-    GoogleMapsTextInputFormControlComponent,
   ],
   imports: [
     AdminRoutingModule,
@@ -49,7 +51,7 @@ import { GoogleMapsTextInputFormControlComponent } from './components/forms/inpu
   ],
   entryComponents: [
     GoogleMapsTextInputFormControlComponent,
-    HtmlEditorComponent
+    HtmlEditorFormControlComponent
   ]
 })
 export class AdminModule { }

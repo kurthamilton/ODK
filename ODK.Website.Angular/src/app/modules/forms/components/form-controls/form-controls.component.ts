@@ -1,10 +1,11 @@
-import { Component, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ChangeDetectorRef, OnDestroy, SimpleChanges } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ChangeDetectorRef, OnDestroy, SimpleChanges, EventEmitter } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { FormStateViewModel } from '../form-state.view-model';
 import { FormViewModel } from '../form.view-model';
 
 @Component({
@@ -18,6 +19,8 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
   }
 
   @Input() form: FormViewModel;
+  @Input() formSubmit: EventEmitter<void>;
+  @Input() state: FormStateViewModel;
   @Input() validated: boolean;
 
   @ViewChild('container', { read: ViewContainerRef, static: true }) container;
@@ -60,6 +63,6 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
   }
 
   private onFormGroupChanged(formGroup: FormGroup): void {
-    this.form.valid = formGroup.valid;
+    this.state.valid = formGroup.valid;
   }
 }

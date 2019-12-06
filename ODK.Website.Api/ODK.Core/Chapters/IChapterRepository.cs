@@ -41,5 +41,7 @@ namespace ODK.Core.Chapters
         Task UpdateChapterLinks(ChapterLinks links);
 
         Task UpdateChapterPaymentSettings(ChapterPaymentSettings paymentSettings);
+
+        Task UpdateChapterWelcomeText(Guid chapterId, string welcomeText);
     }
 }

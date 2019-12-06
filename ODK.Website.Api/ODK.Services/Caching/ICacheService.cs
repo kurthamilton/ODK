@@ -11,6 +11,8 @@ namespace ODK.Services.Caching
 
         Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T>> getter, object instanceKey, long? currentVersion) where T : class, IVersioned;
 
+        void RemoveVersionedCollection<T>();
+
         void RemoveVersionedItem<T>(object instanceKey);
     }
 }

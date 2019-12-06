@@ -10,7 +10,7 @@ import { AuthenticationToken } from 'src/app/core/authentication/authentication-
 })
 export class ChapterComponent implements OnInit {
 
-  constructor(private authenticationService: AuthenticationService) {     
+  constructor(private authenticationService: AuthenticationService) {
   }
 
   superAdmin: boolean;

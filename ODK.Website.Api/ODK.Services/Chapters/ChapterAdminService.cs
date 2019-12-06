@@ -42,6 +42,22 @@ namespace ODK.Services.Chapters
             return await _chapterRepository.GetChapterPaymentSettings(chapterId);
         }
 
+        public async Task<Chapter> UpdateChapterDetails(Guid currentMemberId, Guid chapterId, UpdateChapterDetails details)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            if (string.IsNullOrWhiteSpace(details.WelcomeText))
+            {
+                throw new OdkServiceException("Welcome text is required");
+            }
+
+            await _chapterRepository.UpdateChapterWelcomeText(chapterId, details.WelcomeText);
+
+            _cacheService.RemoveVersionedCollection<Chapter>();
+
+            return await _chapterRepository.GetChapter(chapterId);
+        }
+
         public async Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);

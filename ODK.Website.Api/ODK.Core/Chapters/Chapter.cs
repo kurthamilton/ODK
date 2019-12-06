@@ -4,7 +4,7 @@ namespace ODK.Core.Chapters
 {
     public class Chapter
     {
-        public Chapter(Guid id, Guid countryId, string name, string bannerImageUrl, string welcomeText, 
+        public Chapter(Guid id, Guid countryId, string name, string bannerImageUrl, string welcomeText,
             string redirectUrl, int displayOrder)
         {
             BannerImageUrl = bannerImageUrl;
@@ -18,7 +18,7 @@ namespace ODK.Core.Chapters
 
         public string BannerImageUrl { get; }
 
-        public Guid CountryId { get; }        
+        public Guid CountryId { get; }
 
         public int DisplayOrder { get; }
 
@@ -28,6 +28,11 @@ namespace ODK.Core.Chapters
 
         public string RedirectUrl { get; }
 
-        public string WelcomeText { get; }
+        public string WelcomeText { get; private set; }
+
+        public void Update(string welcomeText)
+        {
+            WelcomeText = welcomeText;
+        }
     }
 }

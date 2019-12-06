@@ -1,14 +1,10 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { forkJoin } from 'rxjs';
-import { tap } from 'rxjs/operators';
-
 import { adminPaths } from '../../../routing/admin-paths';
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { Event } from 'src/app/core/events/event';
-import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { EventAdminService } from 'src/app/services/events/event-admin.service';
 
@@ -28,7 +24,7 @@ export class EventComponent implements OnInit {
   }
 
   chapter: Chapter;
-  event: Event;  
+  event: Event;
 
   ngOnInit(): void {
     const id: string = this.route.snapshot.paramMap.get(adminPaths.events.event.params.id);
@@ -42,5 +38,5 @@ export class EventComponent implements OnInit {
       this.event = event;
       this.changeDetector.detectChanges();
     });
-  }  
+  }
 }

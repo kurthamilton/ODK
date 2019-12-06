@@ -1,6 +1,7 @@
-<form *ngIf="form" (ngSubmit)="onSubmit()" [class.was-validated]="form.validated" novalidate>
+<form *ngIf="form" (ngSubmit)="onSubmit()" [class.was-validated]="state.validated" novalidate>
   <fieldset [attr.disabled]="submitting ? 'disabled' : null" class="overlay-container">
-    <app-form-controls [form]="form" [validated]="form.validated"></app-form-controls>
+    <app-form-controls [form]="form" [state]="state" [validated]="state.validated" [formSubmit]="formSubmit">
+    </app-form-controls>
     <ng-container *ngIf="form.buttonText">
         <div class="d-flex align-items-center">
             <button type="submit" class="btn btn-primary">{{form.buttonText}}</button>

@@ -1,16 +1,15 @@
-.col-form-label,
 .form-control-label {
 	font-weight: 700;
 }
 
 .form-group.required {
-	.form-control-label:after,
-	.col-form-label:after {
+	.form-control-label:after {
 		content: " *";
 		color: $danger;
 	}
 }
 
-.field-validation-error {
-    color: $danger;
+.form-control-custom {
+	height: 100%;
+	padding: 0;
 }

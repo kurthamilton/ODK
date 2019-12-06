@@ -18,6 +18,7 @@ export abstract class InputBase implements OnDestroy {
   }
 
   @Input() formGroup: FormGroup;
+  @Input() formSubmit: EventEmitter<void>;
   @Input() set viewModel(value: FormControlViewModel) {
     if (this._viewModel) {
       return;

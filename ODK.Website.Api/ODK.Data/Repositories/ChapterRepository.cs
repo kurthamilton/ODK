@@ -175,5 +175,14 @@ namespace ODK.Data.Repositories
                 .Set(x => x.ApiSecretKey, paymentSettings.ApiSecretKey)
                 .ExecuteAsync();
         }
+
+        public async Task UpdateChapterWelcomeText(Guid chapterId, string welcomeText)
+        {
+            await Context
+                .Update<Chapter>()
+                .Set(x => x.WelcomeText, welcomeText)
+                .Where(x => x.Id).EqualTo(chapterId)
+                .ExecuteAsync();
+        }
     }
 }
