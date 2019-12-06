@@ -1,3 +1,5 @@
-<app-chapter-header></app-chapter-header>
-<router-outlet></router-outlet>
-<app-chapter-footer></app-chapter-footer>
+<div [ngClass]="'chapter-theme--' + chapter.name.toLocaleLowerCase()">
+  <app-chapter-header></app-chapter-header>
+  <router-outlet></router-outlet>
+  <app-chapter-footer></app-chapter-footer>
+</div>

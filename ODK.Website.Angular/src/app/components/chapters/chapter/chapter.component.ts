@@ -7,6 +7,7 @@ import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from 'src/app/services/members/member.service';
+import { TitleService } from 'src/app/services/title/title.service';
 
 @Component({
   selector: 'app-chapter',
@@ -18,7 +19,8 @@ export class ChapterComponent implements OnInit {
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private memberService: MemberService,
-    private authenticationService: AuthenticationService
+    private authenticationService: AuthenticationService,
+    private titleService: TitleService
   ) {
   }
 
@@ -28,7 +30,8 @@ export class ChapterComponent implements OnInit {
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
-
+    this.titleService.setRouteTitle(this.chapter.name);
+    
     const token: AuthenticationToken = this.authenticationService.getToken();
 
     if (token) {
