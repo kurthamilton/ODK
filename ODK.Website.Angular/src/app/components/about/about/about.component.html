@@ -1,4 +1,5 @@
 <app-body>
+  <h3>Frequently asked questions</h3>
   <ngb-accordion *appLoading="!questions" [closeOthers]="true" activeIds="question-0">
     <ngb-panel *ngFor="let question of questions; let i = index" [title]="question.name" [id]="'question-' + i">
       <ng-template ngbPanelContent>
