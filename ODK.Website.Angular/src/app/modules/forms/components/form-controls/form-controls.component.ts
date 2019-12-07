@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ChangeDetectorRef, OnDestroy, SimpleChanges, EventEmitter } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
@@ -22,11 +22,12 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
   @Input() formSubmit: EventEmitter<void>;
   @Input() state: FormStateViewModel;
   @Input() validated: boolean;
+  @Input() validateForm: Observable<void>;
 
   @ViewChild('container', { read: ViewContainerRef, static: true }) container;
 
   formGroup: FormGroup;
-  updated: Subject<boolean> = new Subject<boolean>();
+  updated: Subject<boolean> = new Subject<boolean>();  
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['form']) {

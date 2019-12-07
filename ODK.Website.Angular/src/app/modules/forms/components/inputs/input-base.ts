@@ -1,6 +1,7 @@
 import { Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormGroup, AbstractControl } from '@angular/forms';
 
+import { Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
@@ -18,7 +19,7 @@ export abstract class InputBase implements OnDestroy {
   }
 
   @Input() formGroup: FormGroup;
-  @Input() formSubmit: EventEmitter<void>;
+  @Input() validateForm: Observable<void>;
   @Input() set viewModel(value: FormControlViewModel) {
     if (this._viewModel) {
       return;
@@ -48,7 +49,7 @@ export abstract class InputBase implements OnDestroy {
   ready = false
   required: boolean;
   showLabel: boolean;
-
+  
   ngOnDestroy(): void {}
 
   onValidate(): void {

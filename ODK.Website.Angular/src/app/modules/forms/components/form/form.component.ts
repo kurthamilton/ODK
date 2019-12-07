@@ -2,6 +2,8 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter
 
 import { takeUntil } from 'rxjs/operators';
 
+import { Subject } from 'rxjs';
+
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 import { FormStateViewModel } from '../form-state.view-model';
 import { FormViewModel } from '../form.view-model';
@@ -22,6 +24,7 @@ export class FormComponent implements OnInit, OnDestroy {
   messages: string[];
   state: FormStateViewModel = {};
   submitting = false;
+  validateForm: Subject<void> = new Subject<void>();
 
   ngOnInit(): void {
     if (!this.form.callback) {
@@ -43,11 +46,13 @@ export class FormComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.validateForm.complete();
+  }
 
   onSubmit(): void {
     this.state.validated = true;
-    this.formSubmit.next();
+    this.validateForm.next();
 
     // form validity is set in form controls component
     if (!this.state.valid) {

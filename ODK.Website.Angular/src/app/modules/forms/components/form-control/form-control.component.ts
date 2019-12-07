@@ -21,9 +21,9 @@ export class FormControlComponent implements OnChanges, OnDestroy {
   }
 
   @Input() formGroup: FormGroup;
-  @Input() formSubmit: EventEmitter<void>;
   @Input() updated: Observable<boolean>;
   @Input() validated: boolean;
+  @Input() validateForm: Observable<void>;
   @Input() viewModel: FormControlViewModel;
   @Output() valueChange: EventEmitter<void> = new EventEmitter<void>();
   @ViewChild('inputcontainer', { read: ViewContainerRef, static: true }) inputContainer: any;
@@ -63,7 +63,7 @@ export class FormControlComponent implements OnChanges, OnDestroy {
 
     const instance: InputBase = componentRef.instance;
     instance.formGroup = this.formGroup;
-    instance.formSubmit = this.formSubmit;
+    instance.validateForm = this.validateForm;
     instance.viewModel = this.viewModel;
 
     this.showLabel = instance.showLabel;

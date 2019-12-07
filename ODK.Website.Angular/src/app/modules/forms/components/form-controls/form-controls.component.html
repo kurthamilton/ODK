@@ -1,6 +1,6 @@
 <ng-container *ngIf="form && form.controls && formGroup">
   <ng-container *ngFor="let control of form.controls">
-      <app-form-control [formGroup]="formGroup" [formSubmit]="formSubmit" [updated]="updated"
+      <app-form-control [formGroup]="formGroup" [validateForm]="validateForm" [updated]="updated"
         [validated]="validated" [viewModel]="control"
         (valueChange)="onValueChange()">
       </app-form-control>

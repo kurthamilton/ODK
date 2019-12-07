@@ -25,7 +25,7 @@ export class HtmlEditorFormControlComponent extends InputBase implements OnInit,
   private submitted = false;
 
   ngOnInit(): void {
-    this.formSubmit.pipe(
+    this.validateForm.pipe(
       takeUntil(componentDestroyed(this))
     ).subscribe(() => {
       this.submitted = true;
