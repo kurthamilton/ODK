@@ -1,7 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 
-import { takeUntil, filter } from 'rxjs/operators';
+import { takeUntil, filter, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
@@ -57,6 +58,12 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
       takeUntil(componentDestroyed(this))
     ).subscribe((token: AuthenticationToken) => {
       this.onAuthenticationChange(token);
+    });
+
+    this.authenticationService.authenticationExpired().pipe(
+      takeUntil(componentDestroyed(this))
+    ).subscribe(() => {
+      this.router.navigate([this.loginLink], { queryParams: this.loginQueryParams });
     });
 
     this.router.events.pipe(

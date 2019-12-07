@@ -41,7 +41,12 @@ export class AuthenticationService {
   private loginSubject: Subject<ServiceResult<AuthenticationToken>> = new Subject<ServiceResult<AuthenticationToken>>();
   private nextTokenSubject: Subject<AuthenticationToken> = new Subject<AuthenticationToken>();
   private refreshSubject: Subject<ServiceResult<AuthenticationToken>> = new Subject<ServiceResult<AuthenticationToken>>();
+  private tokenExpiredSubject: Subject<AuthenticationToken> = new Subject<AuthenticationToken>();
   private tokenSubject: Subject<AuthenticationToken>;
+
+  authenticationExpired(): Observable<AuthenticationToken> {
+    return this.tokenExpiredSubject.asObservable();
+  }
 
   authenticationTokenChange(): Observable<AuthenticationToken> {
     return this.tokenSubject.asObservable();
@@ -85,7 +90,7 @@ export class AuthenticationService {
       })
     )
   }
-
+  
   getAccountDetails(): AccountDetails {
     const token: AuthenticationToken = this.getToken();
     return token ? {
@@ -118,7 +123,13 @@ export class AuthenticationService {
 
     return this.loginSubject
       .pipe(
-        take(1)
+        take(1),
+        map((result: ServiceResult<AuthenticationToken>) => {
+          return result.success ? result : {
+            messages: result.messages,
+            success: false
+          };
+        })
       );
   }
 
@@ -159,7 +170,19 @@ export class AuthenticationService {
 
     return this.refreshSubject
       .pipe(
-        take(1)
+        take(1),        
+        map((result: ServiceResult<AuthenticationToken>) => {
+          return result.success ? result : {
+            messages: result.messages,
+            success: false            
+          };
+        }),
+        tap((result: ServiceResult<AuthenticationToken>) => {
+          if (!result.success) {
+            this.setToken(result);
+            this.tokenExpiredSubject.next(result.value);
+          }
+        })
       );
   }
 
@@ -211,7 +234,8 @@ export class AuthenticationService {
           const response = err.error;
           const result: ServiceResult<AuthenticationToken> = {
             messages: response.messages,
-            success: false
+            success: false,
+            value: this.getToken()
           };
           return of(result);
         })
@@ -225,7 +249,7 @@ export class AuthenticationService {
   }
 
   private setToken(result: ServiceResult<AuthenticationToken>, subject?: Subject<ServiceResult<AuthenticationToken>>): void {
-    const token: AuthenticationToken = result.value;
+    const token: AuthenticationToken = result.success ? result.value : null;
     this.setStorageToken(token);
 
     if (subject) {

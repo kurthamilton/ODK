@@ -28,6 +28,7 @@ export class LogoutComponent implements OnInit {
     const token: AuthenticationToken = this.authenticationService.getToken();
     if (!token) {
       this.router.navigateByUrl(appUrls.home(null));
+      return;
     }
 
     this.chapterService.getChapterById(token.chapterId).pipe(
