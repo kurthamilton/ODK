@@ -27,6 +27,7 @@ import { MembersComponent } from './components/members/members/members.component
 import { VenueComponent } from './components/venues/venue/venue.component';
 import { VenueFormComponent } from './components/venues/venue-form/venue-form.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
+import { ChapterQuestionsComponent } from './components/chapters/chapter-questions/chapter-questions.component';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     VenueComponent,
     VenueFormComponent,
     EditVenueComponent,
+    ChapterQuestionsComponent,
   ],
   imports: [
     AdminRoutingModule,

@@ -29,6 +29,13 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task<Guid> CreateChapterQuestion(ChapterQuestion question)
+        {
+            return await Context
+                .Insert(question)
+                .GetIdentityAsync();
+        }
+
         public async Task<Chapter> GetChapter(Guid id)
         {
             return await Context
@@ -109,6 +116,23 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<ChapterPropertyOption>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .VersionAsync();
+        }
+
+        public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterQuestion>()
+                .OrderBy(x => x.DisplayOrder)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .ToArrayAsync();
+        }
+
+        public async Task<long> GetChapterQuestionsVersion(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterQuestion>()
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .VersionAsync();
         }

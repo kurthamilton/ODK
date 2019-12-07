@@ -87,6 +87,15 @@ namespace ODK.Web.Api.Chapters
         }
 
         [AllowAnonymous]
+        [HttpGet("{id}/Questions")]
+        public async Task<ActionResult<IEnumerable<ChapterQuestionApiResponse>>> Questions(Guid id)
+        {
+            return await HandleVersionedRequest(
+                version => _chapterService.GetChapterQuestions(version, id),
+                x => x.Select(_mapper.Map<ChapterQuestionApiResponse>));
+        }
+
+        [AllowAnonymous]
         [HttpGet("{id}/Subscriptions")]
         public async Task<IEnumerable<ChapterSubscriptionApiResponse>> Subscriptions(Guid id)
         {

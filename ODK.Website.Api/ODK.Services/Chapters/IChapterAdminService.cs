@@ -7,6 +7,8 @@ namespace ODK.Services.Chapters
 {
     public interface IChapterAdminService
     {
+        Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question);
+
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
 
         Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId);

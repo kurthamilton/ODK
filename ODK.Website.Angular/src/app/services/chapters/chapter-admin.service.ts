@@ -10,13 +10,15 @@ import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin
 import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
 import { ChapterService } from './chapter.service';
 import { HttpUtils } from '../http/http-utils';
+import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 
 const baseUrl = `${environment.baseUrl}/admin/chapters`;
 
 const endpoints = {
   chapters: baseUrl,
   details: (id: string) => `${baseUrl}/${id}/Details`,
-  paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`
+  paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
+  questions: (id: string) => `${baseUrl}/${id}/Questions`
 };
 
 @Injectable({
@@ -26,6 +28,17 @@ export class ChapterAdminService extends ChapterService {
 
   constructor(http: HttpClient) {
     super(http);
+  }
+
+  createChapterQuestion(chapterId: string, chapterQuestion: ChapterQuestion): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      answer: chapterQuestion.answer,
+      name: chapterQuestion.name
+    });
+
+    return this.http.post(endpoints.questions(chapterId), params).pipe(
+      map(() => undefined)
+    );
   }
 
   getAdminChapters(): Observable<Chapter[]> {

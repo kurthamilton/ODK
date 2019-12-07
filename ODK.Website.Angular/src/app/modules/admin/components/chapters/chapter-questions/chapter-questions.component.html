@@ -1,0 +1,6 @@
+<ul *appLoading="!questions" class="list-group mb-3">
+  <li *ngFor="let question of questions" class="list-group-item">{{question.name}}</li>
+</ul>
+
+<h3>Add new question</h3>
+<app-form *ngIf="form" [form]="form" (formSubmit)="onFormSubmit()"></app-form>

@@ -5,6 +5,12 @@
     </ng-template>
   </ngb-tab>
 
+  <ngb-tab title="About">
+    <ng-template ngbTabContent>
+      <app-chapter-questions></app-chapter-questions>
+    </ng-template>
+  </ngb-tab>
+
   <ngb-tab *ngIf="superAdmin" title="Payments">
     <ng-template ngbTabContent>
       <app-chapter-payment-settings></app-chapter-payment-settings>

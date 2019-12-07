@@ -10,6 +10,7 @@ import { ChapterLinks } from 'src/app/core/chapters/chapter-links';
 import { ChapterPaymentSettings } from 'src/app/core/chapters/chapter-payment-settings';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
+import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
 import { environment } from 'src/environments/environment';
 
@@ -21,6 +22,7 @@ const endpoints = {
   chapterPaymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   chapterProperties: (id: string) => `${baseUrl}/${id}/properties`,
   chapterPropertyOptions: (id: string) => `${baseUrl}/${id}/propertyOptions`,
+  chapterQuestions: (id: string) => `${baseUrl}/${id}/questions`,
   chapters: baseUrl,
   chapterSubscriptions: (id: string) => `${baseUrl}/${id}/subscriptions`
 }
@@ -98,6 +100,12 @@ export class ChapterService {
     );
   }
 
+  getChapterQuestions(chapterId: string): Observable<ChapterQuestion[]> {
+    return this.http.get(endpoints.chapterQuestions(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapChapterQuestion(x)))
+    );
+  }
+
   getChapters(): Observable<Chapter[]> {
     if (this.chapters) {
       return of(this.chapters);
@@ -168,6 +176,13 @@ export class ChapterService {
       chapterPropertyId: response.chapterPropertyId,
       freeText: response.freeText === true,
       value: response.value
+    };
+  }
+
+  private mapChapterQuestion(response: any): ChapterQuestion {
+    return {
+      answer: response.answer,
+      name: response.name
     };
   }
 

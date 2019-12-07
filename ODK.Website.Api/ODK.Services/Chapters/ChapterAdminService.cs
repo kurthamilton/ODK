@@ -22,6 +22,33 @@ namespace ODK.Services.Chapters
             _chapterService = chapterService;
         }
 
+        public async Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            int? displayOrder = question.DisplayOrder;
+            if (displayOrder == null)
+            {
+                IReadOnlyCollection<ChapterQuestion> existing = await _chapterRepository.GetChapterQuestions(chapterId);
+                displayOrder = existing.Count + 1;
+            }
+
+            ChapterQuestion create = new ChapterQuestion(Guid.Empty, chapterId, question.Name, question.Answer, displayOrder.Value);
+
+            ValidateChapterQuestion(create);
+
+            await _chapterRepository.CreateChapterQuestion(create);
+
+            _cacheService.RemoveVersionedCollection<ChapterQuestion>();
+        }
+
+        public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
+
+            return await _chapterRepository.GetChapterPaymentSettings(chapterId);
+        }
+
         public async Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId)
         {
             IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(memberId);
@@ -33,13 +60,6 @@ namespace ODK.Services.Chapters
             return chapterAdminMembers
                 .Select(x => chapters.Value.Single(chapter => chapter.Id == x.ChapterId))
                 .ToArray();
-        }
-
-        public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
-        {
-            await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
-
-            return await _chapterRepository.GetChapterPaymentSettings(chapterId);
         }
 
         public async Task<Chapter> UpdateChapterDetails(Guid currentMemberId, Guid chapterId, UpdateChapterDetails details)
@@ -68,7 +88,7 @@ namespace ODK.Services.Chapters
             _cacheService.RemoveVersionedItem<ChapterLinks>(chapterId);
         }
 
-        public async Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, 
+        public async Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId,
             UpdateChapterPaymentSettings paymentSettings)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
@@ -79,6 +99,15 @@ namespace ODK.Services.Chapters
             await _chapterRepository.UpdateChapterPaymentSettings(update);
 
             return update;
+        }
+
+        private void ValidateChapterQuestion(ChapterQuestion question)
+        {
+            if (string.IsNullOrWhiteSpace(question.Name) ||
+                string.IsNullOrWhiteSpace(question.Answer))
+            {
+                throw new OdkServiceException("Some required fields are missing");
+            }
         }
     }
 }

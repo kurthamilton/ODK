@@ -21,7 +21,6 @@ export class FormControlComponent implements OnChanges, OnDestroy {
   }
 
   @Input() formGroup: FormGroup;
-  @Input() updated: Observable<boolean>;
   @Input() validated: boolean;
   @Input() validateForm: Observable<void>;
   @Input() viewModel: FormControlViewModel;
@@ -39,8 +38,8 @@ export class FormControlComponent implements OnChanges, OnDestroy {
 
     if (changes['viewModel']) {
       const instance: InputBase = this.createInput();
-      this.required = instance.required;
       this.control = instance.control;
+      this.required = instance.required;
 
       instance.valueChange.pipe(
         takeUntil(componentDestroyed(this))
@@ -61,7 +60,7 @@ export class FormControlComponent implements OnChanges, OnDestroy {
     const factory: ComponentFactory<InputBase> = this.resolver.resolveComponentFactory(this.viewModel.type);
     const componentRef: ComponentRef<InputBase> = this.inputContainer.createComponent(factory);
 
-    const instance: InputBase = componentRef.instance;
+    const instance: InputBase = componentRef.instance;    
     instance.formGroup = this.formGroup;
     instance.validateForm = this.validateForm;
     instance.viewModel = this.viewModel;

@@ -64,5 +64,13 @@ namespace ODK.Web.Api.Admin.Chapters
             ChapterPaymentSettings paymentSettings = await _chapterAdminService.UpdateChapterPaymentSettings(GetMemberId(), id, update);
             return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(paymentSettings);
         }
+
+        [HttpPost("{id}/Questions")]
+        public async Task<IActionResult> CreateQuestion(Guid id, [FromForm] CreateChapterQuestionApiRequest request)
+        {
+            CreateChapterQuestion question = _mapper.Map<CreateChapterQuestion>(request);
+            await _chapterAdminService.CreateChapterQuestion(GetMemberId(), id, question);
+            return Created();
+        }
     }
 }

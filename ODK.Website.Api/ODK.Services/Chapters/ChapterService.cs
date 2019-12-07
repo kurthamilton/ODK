@@ -69,6 +69,14 @@ namespace ODK.Services.Chapters
                 currentVersion);
         }
 
+        public async Task<VersionedServiceResult<IReadOnlyCollection<ChapterQuestion>>> GetChapterQuestions(long? currentVersion, Guid chapterId)
+        {
+            return await _cacheService.GetOrSetVersionedCollection(
+                () => _chapterRepository.GetChapterQuestions(chapterId),
+                () => _chapterRepository.GetChapterQuestionsVersion(chapterId),
+                currentVersion);
+        }
+
         public async Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(long? currentVersion)
         {
             return await _cacheService.GetOrSetVersionedCollection(

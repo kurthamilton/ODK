@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ChangeDetectorRef, OnDestroy, SimpleChanges, EventEmitter } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
-import { Subject, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
@@ -27,7 +27,6 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
   @ViewChild('container', { read: ViewContainerRef, static: true }) container;
 
   formGroup: FormGroup;
-  updated: Subject<boolean> = new Subject<boolean>();  
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['form']) {
@@ -36,23 +35,17 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.updated.complete();
-  }
+  ngOnDestroy(): void {}
 
   onValueChange(): void {
     this.onFormGroupChanged(this.formGroup);
   }
 
   private createFormGroup(): FormGroup {
-    // close any open form group subscriptions
-    this.updated.next();
-
     const formGroup: FormGroup = new FormGroup({});
 
     formGroup.valueChanges
       .pipe(
-        takeUntil(this.updated),
         takeUntil(componentDestroyed(this)),
       )
       .subscribe(() => {

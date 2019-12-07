@@ -32,6 +32,8 @@ namespace ODK.Web.Api.Chapters
             CreateMap<ChapterPropertyOption, ChapterPropertyOptionApiResponse>()
                 .ForMember(x => x.FreeText, opt => opt.MapFrom(x => x.Value.Equals("Other", StringComparison.OrdinalIgnoreCase) ? true : new bool?()));
 
+            CreateMap<ChapterQuestion, ChapterQuestionApiResponse>();
+
             CreateMap<ChapterSubscription, ChapterSubscriptionApiResponse>();
         }
     }
