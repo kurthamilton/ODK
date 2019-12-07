@@ -1,14 +1,14 @@
 <div class="sidebar">
-    <div class="card sidebar-card" *ngIf="events">
+    <div class="card sidebar-card" *ngIf="eventViewModels && eventViewModels.length">
         <div class="card-header">Upcoming events</div>
         
-        <div class="card-body" *ngFor="let event of events">
+        <div class="card-body" *ngFor="let viewModel of eventViewModels">
             <h5 class="card-title">
-                <a [routerLink]="getEventLink(event)">{{event.name}}</a>
+                <a [routerLink]="getEventLink(viewModel.event)">{{viewModel.event.name}}</a>
             </h5>
-            <h6 class="d-inline-block d-md-block">{{event.date | date:'fullDate'}}</h6>
+            <h6 class="d-inline-block d-md-block">{{viewModel.event.date | date:'fullDate'}}</h6>
             <span class="d-md-none">&nbsp;|&nbsp;</span>            
-            <div class="d-inline-block d-md-block">{{event.location}}</div>
+            <div class="d-inline-block d-md-block">{{viewModel.venue.name}}</div>
         </div>
     </div>
 </div>

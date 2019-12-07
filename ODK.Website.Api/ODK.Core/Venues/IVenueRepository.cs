@@ -8,6 +8,12 @@ namespace ODK.Core.Venues
     {
         Task<Guid> CreateVenue(Venue venue);
 
+        Task<Venue> GetPublicVenue(Guid id);
+
+        Task<IReadOnlyCollection<Venue>> GetPublicVenues(Guid chapterId);
+
+        Task<long> GetPublicVenuesVersion(Guid chapterId);
+
         Task<Venue> GetVenue(Guid id);
 
         Task<Venue> GetVenueByName(string name);

@@ -21,15 +21,36 @@ namespace ODK.Services.Venues
             _venueRepository = venueRepository;
         }
 
-        public async Task<VersionedServiceResult<Venue>> GetVenue(long? currentVersion, Guid currentMemberId, Guid id)
+        public async Task<VersionedServiceResult<IReadOnlyCollection<Venue>>> GetPublicVenues(long? currentVersion, Guid chapterId)
         {
-            Venue venue = await _venueRepository.GetVenue(id);
+            return await _cacheService.GetOrSetVersionedCollection(
+                () => _venueRepository.GetVenues(chapterId),
+                () => _venueRepository.GetVenuesVersion(chapterId),
+                currentVersion);
+        }
+
+        public async Task<VersionedServiceResult<Venue>> GetVenue(long? currentVersion, Guid? currentMemberId, Guid id)
+        {
+            Venue venue;
+
+            if (currentMemberId != null)
+            {
+                venue = await _venueRepository.GetVenue(id);
+            }
+            else
+            {
+                venue = await _venueRepository.GetPublicVenue(id);
+            }
+
             if (venue == null)
             {
                 throw new OdkNotFoundException();
             }
 
-            await _authorizationService.AssertMemberIsChapterMember(currentMemberId, venue.ChapterId);
+            if (currentMemberId != null)
+            {
+                await _authorizationService.AssertMemberIsChapterMember(currentMemberId.Value, venue.ChapterId);
+            }
 
             return await _cacheService.GetOrSetVersionedItem(
                 () => _venueRepository.GetVenue(id),

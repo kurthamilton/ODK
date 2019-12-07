@@ -1,3 +1,12 @@
 <app-body>
-    <app-event-list [viewModels]="viewModels"></app-event-list>
+    <app-event-list *ngIf="viewModels && viewModels.length" [viewModels]="viewModels"></app-event-list>
+    <ng-container *ngIf="viewModels && viewModels.length === 0">
+      <p *ngIf="authenticated">
+        There are no upcoming events
+      </p>
+      <p *ngIf="!authenticated">
+        There are no upcoming public events. 
+        <a [routerLink]="links.login" [queryParams]="links.loginQueryParams">Sign in</a>
+      </p>
+    </ng-container>    
 </app-body>

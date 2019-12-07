@@ -10,6 +10,7 @@ import { Venue } from 'src/app/core/venues/venue';
 const baseUrl = `${environment.baseUrl}/venues`;
 
 const endpoints = {
+  publicVenues: (chapterId: string) => `${baseUrl}/public?chapterId=${chapterId}`,
   venue: (id: string) => `${baseUrl}/${id}`,
   venues: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`
 };
@@ -20,6 +21,12 @@ const endpoints = {
 export class VenueService {
 
   constructor(protected http: HttpClient) { }
+
+  getPublicVenues(chapterId: string): Observable<Venue[]> {
+    return this.http.get(endpoints.publicVenues(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapVenue(x)))
+    );
+  }
 
   getVenue(id: string): Observable<Venue> {
     return this.http.get(endpoints.venue(id)).pipe(

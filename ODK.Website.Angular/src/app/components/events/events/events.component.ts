@@ -3,7 +3,10 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
+import { appUrls } from 'src/app/routing/app-urls';
 import { ArrayUtils } from 'src/app/utils/array-utils';
+import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
+import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { Event } from 'src/app/core/events/event';
@@ -22,10 +25,16 @@ export class EventsComponent implements OnInit {
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private eventService: EventService,
-    private venueService: VenueService
+    private venueService: VenueService,
+    private authenticationService: AuthenticationService
   ) {
   }
 
+  authenticated: boolean;
+  links: {
+    login: string;
+    loginQueryParams: {};
+  };
   viewModels: ListEventViewModel[];
 
   private chapter: Chapter;
@@ -34,12 +43,21 @@ export class EventsComponent implements OnInit {
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
+    this.links = {
+      login: appUrls.login(this.chapter),
+      loginQueryParams: {
+        returnUrl: appUrls.events(this.chapter)
+      }
+    };
+
+    const token: AuthenticationToken = this.authenticationService.getToken();
+    this.authenticated = !!token;
 
     forkJoin([
       this.eventService.getEvents(this.chapter.id).pipe(
         tap((events: Event[]) => this.events = events)
       ),
-      this.venueService.getVenues(this.chapter.id).pipe(
+      (token ? this.venueService.getVenues(this.chapter.id) : this.venueService.getPublicVenues(this.chapter.id)).pipe(
         tap((venues: Venue[]) => this.venues = venues)
       )
     ]).subscribe(() => {

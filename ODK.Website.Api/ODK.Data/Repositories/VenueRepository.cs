@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ODK.Core.Events;
 using ODK.Core.Venues;
 using ODK.Data.Sql;
 
@@ -18,6 +19,34 @@ namespace ODK.Data.Repositories
             return await Context
                 .Insert(venue)
                 .GetIdentityAsync();
+        }
+
+        public async Task<Venue> GetPublicVenue(Guid id)
+        {
+            return await Context
+                .Select<Venue>()
+                .Join<Event, Guid>(x => x.Id, x => x.VenueId)
+                .Where(x => x.ChapterId).EqualTo(id)
+                .Where<Event, bool>(x => x.IsPublic).EqualTo(true)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<IReadOnlyCollection<Venue>> GetPublicVenues(Guid chapterId)
+        {
+            return await Context
+                .Select<Venue>()
+                .Join<Event, Guid>(x => x.Id, x => x.VenueId)
+                .Where<Event, bool>(x => x.IsPublic).EqualTo(true)
+                .ToArrayAsync();
+        }
+
+        public async Task<long> GetPublicVenuesVersion(Guid chapterId)
+        {
+            return await Context
+                .Select<Venue>()
+                .Join<Event, Guid>(x => x.Id, x => x.VenueId)
+                .Where<Event, bool>(x => x.IsPublic).EqualTo(true)
+                .VersionAsync();
         }
 
         public async Task<Venue> GetVenue(Guid id)

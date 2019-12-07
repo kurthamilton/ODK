@@ -32,12 +32,22 @@ namespace ODK.Web.Api.Venues
                 x => x.Select(_mapper.Map<VenueApiResponse>));
         }
 
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<VenueApiResponse>> Get(Guid id)
         {
             return await HandleVersionedRequest(
-                version => _venueService.GetVenue(version, GetMemberId(), id),
+                version => _venueService.GetVenue(version, TryGetMemberId(), id),
                 _mapper.Map<VenueApiResponse>);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("Public")]
+        public async Task<ActionResult<IEnumerable<VenueApiResponse>>> GetPublicVenues(Guid chapterId)
+        {
+            return await HandleVersionedRequest(
+                version => _venueService.GetPublicVenues(version, chapterId),
+                x => x.Select(_mapper.Map<VenueApiResponse>));
         }
     }
 }
