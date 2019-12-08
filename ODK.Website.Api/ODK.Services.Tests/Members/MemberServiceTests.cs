@@ -11,6 +11,7 @@ using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using ODK.Services.Mails;
 using ODK.Services.Members;
+using ODK.Services.Payments;
 
 namespace ODK.Services.Tests.Members
 {
@@ -74,7 +75,8 @@ namespace ODK.Services.Tests.Members
                 CreateMockAuthorizationService(),
                 CreateMockMailService(),
                 new MemberServiceSettings(),
-                CreateMockImageService());
+                CreateMockImageService(),
+                Mock.Of<IPaymentService>());
         }
 
         private static IAuthorizationService CreateMockAuthorizationService()

@@ -6,6 +6,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Mail;
 using ODK.Core.Members;
+using ODK.Core.Venues;
 using ODK.Services.Events;
 using ODK.Services.Mails;
 
@@ -37,7 +38,8 @@ namespace ODK.Services.Tests.Events
         [Test]
         public static async Task GetEventEmail_ReplacesEventProperties()
         {
-            Event @event = CreateMockEvent("Name", new DateTime(2015, 6, 7), "Location", "Time");
+            Venue venue = new Venue(Guid.Empty, Guid.NewGuid(), "Location", "", "", 0);
+            Event @event = CreateMockEvent("Name", new DateTime(2015, 6, 7), "Time");
             IEventRepository eventRepository = CreateMockEventRepository(@event);
 
             Email email = new Email(EmailType.EventInvite, "Subject: {event.name}", "Name: {event.name}, Date: {event.date}, Location: {event.location}, Time: {event.time}");
@@ -54,7 +56,8 @@ namespace ODK.Services.Tests.Events
         [Test]
         public static async Task GetEventEmail_ReplacesEventUrlProperties()
         {
-            Event @event = CreateMockEvent("Name", new DateTime(2015, 6, 7), "Location", "Time");
+            Venue venue = new Venue(Guid.Empty, Guid.NewGuid(), "Location", "", "", 0);
+            Event @event = CreateMockEvent("Name", new DateTime(2015, 6, 7), "Time");
             IEventRepository eventRepository = CreateMockEventRepository(@event);
 
             Email email = new Email(EmailType.EventInvite, "Subject: {event.url}", "RSVP: {event.rsvpurl}, Url: {event.url}");
@@ -77,7 +80,8 @@ namespace ODK.Services.Tests.Events
                 memberEmailRepository ?? CreateMockMemberEmailRepository(new Email(EmailType.EventInvite, "Subject", "Body")),
                 new EventAdminServiceSettings { BaseUrl = BaseUrl, EventRsvpUrlFormat = EventRsvpUrlFormat, EventUrlFormat = EventUrlFormat },
                 GetMockMemberRepository(),
-                GetMockMailService());
+                GetMockMailService(),
+                Mock.Of<IVenueRepository>());
         }
 
         private static Chapter CreateMockChapter(string name = null)
@@ -98,10 +102,10 @@ namespace ODK.Services.Tests.Events
             return mock.Object;
         }
 
-        private static Event CreateMockEvent(string name = null, DateTime? date = null, string location = null, string time = null)
+        private static Event CreateMockEvent(string name = null, DateTime? date = null, string time = null)
         {
-            return new Event(Guid.NewGuid(), Guid.NewGuid(), "Admin Member", name ?? "Name", date ?? DateTime.Today, location ?? "Location",
-                time ?? "Time", null, "Address", "MapQuery", "Description", false);
+            return new Event(Guid.NewGuid(), Guid.NewGuid(), "Admin Member", name ?? "Name", date ?? DateTime.Today, Guid.NewGuid(),
+                time ?? "Time", null, "Description", false);
         }
 
         private static IEventRepository CreateMockEventRepository(Event @event = null)
