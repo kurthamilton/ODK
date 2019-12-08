@@ -49,6 +49,7 @@ export class ContactComponent implements OnInit, OnDestroy {
 
   onAlertClose(): void {
     this.buildForm();
+    this.submitted = false;
     this.changeDetector.detectChanges();
   }
 
