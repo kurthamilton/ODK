@@ -41,6 +41,9 @@ yarn-error.log
 testem.log
 /typings
 
+# sensitive data
+/src/environments/environment.prod.ts
+
 # System Files
 .DS_Store
 Thumbs.db
