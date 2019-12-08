@@ -14,7 +14,7 @@ namespace ODK.Web.Api.Config
                 {
                     builder.WithHeaders(settings.AllowedHeaders.Split(','));
                     builder.WithMethods(settings.AllowedMethods.Split(','));
-                    builder.WithOrigins(settings.AllowedOrigins.Split('.'));
+                    builder.WithOrigins(settings.AllowedOrigins.Split(','));
                 });
             });
         }
