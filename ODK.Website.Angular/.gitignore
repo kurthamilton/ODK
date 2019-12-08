@@ -43,6 +43,7 @@ testem.log
 
 # sensitive data
 /src/environments/environment.prod.ts
+/src/environments/environment.staging.ts
 
 # System Files
 .DS_Store
