@@ -16,7 +16,7 @@ namespace ODK.Web.Api.Chapters
         {
             CreateMap<Chapter, ChapterApiResponse>();
 
-            CreateMap<Chapter, ChapterDetailsApiResponse>();
+            CreateMap<Chapter, ChapterDetailsApiResponse>();            
 
             CreateMap<ChapterLinks, ChapterLinksApiResponse>()
                 .ForMember(x => x.Facebook, opt => opt.MapFrom(x => x.FacebookName))

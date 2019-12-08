@@ -9,11 +9,15 @@ namespace ODK.Services.Chapters
     {
         Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question);
 
+        Task<ChapterEmailSettings> GetChapterEmailSettings(Guid currentMemberId, Guid chapterId);
+
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
 
         Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId);
 
         Task<Chapter> UpdateChapterDetails(Guid currentMemberId, Guid chapterId, UpdateChapterDetails details);
+
+        Task UpdateChapterEmailSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailSettings emailSettings);
 
         Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links);
 

@@ -42,6 +42,13 @@ namespace ODK.Services.Chapters
             _cacheService.RemoveVersionedCollection<ChapterQuestion>();
         }
 
+        public async Task<ChapterEmailSettings> GetChapterEmailSettings(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _chapterRepository.GetChapterEmailSettings(chapterId);
+        }
+
         public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
@@ -78,6 +85,18 @@ namespace ODK.Services.Chapters
             return await _chapterRepository.GetChapter(chapterId);
         }
 
+        public async Task UpdateChapterEmailSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailSettings emailSettings)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            ChapterEmailSettings update = new ChapterEmailSettings(chapterId, emailSettings.AdminEmailAddress, emailSettings.ContactEmailAddress,
+                emailSettings.FromEmailAddress);
+
+            ValidateChapterEmailSettings(update);
+
+            await _chapterRepository.UpdateChapterEmailSettings(update);
+        }
+
         public async Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
@@ -99,6 +118,16 @@ namespace ODK.Services.Chapters
             await _chapterRepository.UpdateChapterPaymentSettings(update);
 
             return update;
+        }
+
+        private void ValidateChapterEmailSettings(ChapterEmailSettings emailSettings)
+        {
+            if (string.IsNullOrWhiteSpace(emailSettings.AdminEmailAddress) ||
+                string.IsNullOrWhiteSpace(emailSettings.ContactEmailAddress) ||
+                string.IsNullOrWhiteSpace(emailSettings.FromEmailAddress))
+            {
+                throw new OdkServiceException("Some required fields are missing");
+            }
         }
 
         private void ValidateChapterQuestion(ChapterQuestion question)

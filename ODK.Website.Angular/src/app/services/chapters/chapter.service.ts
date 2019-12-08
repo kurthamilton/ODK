@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { Observable, of, Subject, ReplaySubject } from 'rxjs';
@@ -13,10 +13,12 @@ import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-op
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
 import { environment } from 'src/environments/environment';
+import { HttpUtils } from '../http/http-utils';
 
 const baseUrl = `${environment.baseUrl}/chapters`;
 
 const endpoints = {
+  chapterContact: (id: string) => `${baseUrl}/${id}/contact`,
   chapterDetails: (id: string) => `${baseUrl}/${id}`,
   chapterLinks: (id: string) => `${baseUrl}/${id}/links`,
   chapterPaymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
@@ -42,6 +44,17 @@ export class ChapterService {
 
   activeChapterChange(): Observable<Chapter> {
     return this.activeChapterSubject.asObservable();
+  }
+
+  contact(chapterId: string, email: string, message: string): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      emailAddress: email,
+      message: message
+    });
+
+    return this.http.post(endpoints.chapterContact(chapterId), params).pipe(
+      map(() => undefined)
+    );
   }
 
   getActiveChapter(): Chapter {

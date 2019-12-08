@@ -44,6 +44,8 @@ namespace ODK.Core.Chapters
 
         Task<long> GetChaptersVersion();
 
+        Task UpdateChapterEmailSettings(ChapterEmailSettings emailSettings);
+
         Task UpdateChapterLinks(ChapterLinks links);
 
         Task UpdateChapterPaymentSettings(ChapterPaymentSettings paymentSettings);

@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Services.Chapters;
 using ODK.Web.Api.Admin.Chapters.Requests;
+using ODK.Web.Api.Admin.Chapters.Responses;
 
 namespace ODK.Web.Api.Admin.Chapters
 {
@@ -19,6 +20,8 @@ namespace ODK.Web.Api.Admin.Chapters
 
             CreateMap<UpdateChapterDetailsApiRequest, UpdateChapterDetails>();
 
+            CreateMap<UpdateChapterEmailSettingsApiRequest, UpdateChapterEmailSettings>();
+
             CreateMap<UpdateChapterLinksApiRequest, UpdateChapterLinks>();
 
             CreateMap<UpdateChapterPaymentSettingsApiRequest, UpdateChapterPaymentSettings>();
@@ -26,6 +29,8 @@ namespace ODK.Web.Api.Admin.Chapters
 
         private void MapResponses()
         {
+            CreateMap<ChapterEmailSettings, ChapterEmailSettingsApiResponse>();
+
             CreateMap<ChapterPaymentSettings, ChapterAdminPaymentSettingsApiResponse>();
         }
     }

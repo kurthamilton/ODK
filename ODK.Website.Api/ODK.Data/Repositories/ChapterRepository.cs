@@ -168,6 +168,17 @@ namespace ODK.Data.Repositories
                 .VersionAsync();
         }
 
+        public async Task UpdateChapterEmailSettings(ChapterEmailSettings emailSettings)
+        {
+            await Context
+                .Update<ChapterEmailSettings>()
+                .Set(x => x.AdminEmailAddress, emailSettings.AdminEmailAddress)
+                .Set(x => x.ContactEmailAddress, emailSettings.ContactEmailAddress)
+                .Set(x => x.FromEmailAddress, emailSettings.FromEmailAddress)
+                .Where(x => x.ChapterId).EqualTo(emailSettings.ChapterId)
+                .ExecuteAsync();
+        }
+
         public async Task UpdateChapterLinks(ChapterLinks links)
         {
             int count = await Context

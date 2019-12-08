@@ -4,19 +4,21 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { environment } from 'src/environments/environment';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
 import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
-import { ChapterService } from './chapter.service';
-import { HttpUtils } from '../http/http-utils';
+import { ChapterEmailSettings } from 'src/app/core/chapters/chapter-email-settings';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
+import { ChapterService } from './chapter.service';
+import { environment } from 'src/environments/environment';
+import { HttpUtils } from '../http/http-utils';
 
 const baseUrl = `${environment.baseUrl}/admin/chapters`;
 
 const endpoints = {
   chapters: baseUrl,
-  details: (id: string) => `${baseUrl}/${id}/Details`,
+  details: (id: string) => `${baseUrl}/${id}/details`,
+  emailSettings: (id: string) => `${baseUrl}/${id}/emails/settings`,
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   questions: (id: string) => `${baseUrl}/${id}/Questions`
 };
@@ -44,6 +46,12 @@ export class ChapterAdminService extends ChapterService {
   getAdminChapters(): Observable<Chapter[]> {
     return this.http.get(endpoints.chapters).pipe(
       map((response: any) => response.map(x => this.mapChapter(x)))
+    );
+  }
+
+  getChapterAdminEmailSettings(chapterId: string): Observable<ChapterEmailSettings> {
+    return this.http.get(endpoints.emailSettings(chapterId)).pipe(
+      map((response: any) => this.mapChapterEmailSettings(response))
     );
   }
 
@@ -80,11 +88,31 @@ export class ChapterAdminService extends ChapterService {
     );
   }
 
+  updateChapterEmailSettings(chapterId: string, emailSettings: ChapterEmailSettings): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      adminEmailAddress: emailSettings.adminEmailAddress,
+      contactEmailAddress: emailSettings.contactEmailAddress,
+      fromEmailAddress: emailSettings.fromEmailAddress,
+    });
+
+    return this.http.put(endpoints.emailSettings(chapterId), params).pipe(
+      map(() => undefined)
+    );
+  }
+
   private mapChapterAdminPaymentSettings(response: any): ChapterAdminPaymentSettings {
     return {
       apiPublicKey: response.apiPublicKey,
       apiSecretKey: response.apiSecretKey,
       provider: response.provider
+    };
+  }
+
+  private mapChapterEmailSettings(response: any): ChapterEmailSettings {
+    return {
+      adminEmailAddress: response.adminEmailAddress,
+      contactEmailAddress: response.contactEmailAddress,
+      fromEmailAddress: response.fromEmailAddress
     };
   }
 }

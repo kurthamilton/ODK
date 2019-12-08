@@ -28,6 +28,7 @@ import { VenueComponent } from './components/venues/venue/venue.component';
 import { VenueFormComponent } from './components/venues/venue-form/venue-form.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
 import { ChapterQuestionsComponent } from './components/chapters/chapter-questions/chapter-questions.component';
+import { ChapterEmailsComponent } from './components/chapters/chapter-emails/chapter-emails.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import { ChapterQuestionsComponent } from './components/chapters/chapter-questio
     VenueFormComponent,
     EditVenueComponent,
     ChapterQuestionsComponent,
+    ChapterEmailsComponent,
   ],
   imports: [
     AdminRoutingModule,

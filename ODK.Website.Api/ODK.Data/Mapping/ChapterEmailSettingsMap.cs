@@ -10,6 +10,7 @@ namespace ODK.Data.Mapping
             : base("ChapterSettings")
         {
             Property(x => x.ChapterId);
+            Property(x => x.AdminEmailAddress);
             Property(x => x.ContactEmailAddress);
             Property(x => x.FromEmailAddress);
         }
@@ -19,8 +20,9 @@ namespace ODK.Data.Mapping
             return new ChapterEmailSettings
             (
                 chapterId: reader.GetGuid(0),
-                contactEmailAddress: reader.GetString(1),
-                fromEmailAddress: reader.GetString(2)
+                adminEmailAddress: reader.GetString(1),
+                contactEmailAddress: reader.GetString(2),
+                fromEmailAddress: reader.GetString(3)
             );
         }
     }

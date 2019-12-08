@@ -1,4 +1,4 @@
-﻿namespace ODK.Web.Api.Admin.Chapters
+﻿namespace ODK.Web.Api.Admin.Chapters.Responses
 {
     public class ChapterAdminPaymentSettingsApiResponse
     {

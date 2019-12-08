@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
 using ODK.Services.Chapters;
 using ODK.Web.Api.Admin.Chapters.Requests;
+using ODK.Web.Api.Admin.Chapters.Responses;
 using ODK.Web.Api.Chapters.Responses;
 
 namespace ODK.Web.Api.Admin.Chapters
@@ -39,6 +40,21 @@ namespace ODK.Web.Api.Admin.Chapters
             UpdateChapterDetails details = _mapper.Map<UpdateChapterDetails>(request);
             Chapter chapter = await _chapterAdminService.UpdateChapterDetails( GetMemberId(), id, details);
             return _mapper.Map<ChapterDetailsApiResponse>(chapter);
+        }
+
+        [HttpGet("{id}/Emails/Settings")]
+        public async Task<ChapterEmailSettingsApiResponse> GetChapterEmailSettings(Guid id)
+        {
+            ChapterEmailSettings settings = await _chapterAdminService.GetChapterEmailSettings(GetMemberId(), id);
+            return _mapper.Map<ChapterEmailSettingsApiResponse>(settings);
+        }
+
+        [HttpPut("{id}/Emails/Settings")]
+        public async Task<IActionResult> UpdateChapterEmailSettings(Guid id, [FromForm] UpdateChapterEmailSettingsApiRequest request)
+        {
+            UpdateChapterEmailSettings emailSettings = _mapper.Map<UpdateChapterEmailSettings>(request);
+            await _chapterAdminService.UpdateChapterEmailSettings(GetMemberId(), id, emailSettings);
+            return NoContent();
         }
 
         [HttpPut("{id}/Links")]
