@@ -2,3 +2,5 @@
 *.user
 bin
 obj
+/ODK.Web.Api/appsettings.Production.json
+/ODK.Web.Api/Logs
