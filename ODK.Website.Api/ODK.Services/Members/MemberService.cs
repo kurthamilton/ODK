@@ -9,6 +9,7 @@ using ODK.Core.Mail;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Services.Authorization;
+using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using ODK.Services.Mails;
@@ -19,6 +20,7 @@ namespace ODK.Services.Members
     public class MemberService : IMemberService
     {
         private readonly IAuthorizationService _authorizationService;
+        private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IImageService _imageService;
         private readonly IMailService _mailService;
@@ -27,9 +29,11 @@ namespace ODK.Services.Members
         private readonly MemberServiceSettings _settings;
 
         public MemberService(IMemberRepository memberRepository, IChapterRepository chapterRepository, IAuthorizationService authorizationService,
-            IMailService mailService, MemberServiceSettings settings, IImageService imageService, IPaymentService paymentService)
+            IMailService mailService, MemberServiceSettings settings, IImageService imageService, IPaymentService paymentService,
+            ICacheService cacheService)
         {
             _authorizationService = authorizationService;
+            _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _imageService = imageService;
             _mailService = mailService;
@@ -49,7 +53,8 @@ namespace ODK.Services.Members
                 return;
             }
 
-            Member create = new Member(Guid.Empty, chapterId, profile.EmailAddress, profile.EmailOptIn, profile.FirstName, profile.LastName, DateTime.UtcNow, false, false);
+            Member create = new Member(Guid.Empty, chapterId, profile.EmailAddress, profile.EmailOptIn, profile.FirstName, profile.LastName,
+                DateTime.UtcNow, false, false, 0);
 
             Guid id = await _memberRepository.CreateMember(create);
 
@@ -177,6 +182,8 @@ namespace ODK.Services.Members
             await _memberRepository.UpdateMember(id, existing.EmailAddress, existing.EmailOptIn, existing.FirstName, existing.LastName);
             await _memberRepository.UpdateMemberProperties(id, existing.MemberProperties);
 
+            _cacheService.RemoveVersionedItem<Member>(id);
+
             return existing;
         }
 
@@ -261,9 +268,9 @@ namespace ODK.Services.Members
 
         private async Task<Member> GetMember(Guid currentMemberId, Guid memberId)
         {
-            Member member = await _memberRepository.GetMember(memberId);
-            await _authorizationService.AssertMemberIsChapterMember(currentMemberId, member.ChapterId);
-            return member;
+            VersionedServiceResult<Member> member = await _cacheService.GetOrSetVersionedItem(() => _memberRepository.GetMember(memberId), memberId, null);
+            await _authorizationService.AssertMemberIsChapterMember(currentMemberId, member.Value.ChapterId);
+            return member.Value;
         }
 
         private async Task<MemberProfile> GetMemberProfile(Guid memberId)

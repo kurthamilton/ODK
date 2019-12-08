@@ -1,5 +1,5 @@
 export const environment = {
-  baseUrl: 'https://localhost:5001',
+  baseUrl: '/api',
   production: true,
   title: 'Drunken Knitwits'
 };

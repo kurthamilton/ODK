@@ -129,7 +129,8 @@ namespace ODK.Services.Tests.Members
                 lastName ?? "last",
                 DateTime.Now,
                 true,
-                false);
+                false,
+                0);
         }
 
         private static MemberProperty CreateMockMemberProperty(Guid? chapterPropertyId = null,

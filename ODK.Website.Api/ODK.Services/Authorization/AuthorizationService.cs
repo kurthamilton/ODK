@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ODK.Core.Members;
+using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 
 namespace ODK.Services.Authorization
 {
     public class AuthorizationService : IAuthorizationService
     {
+        private readonly ICacheService _cacheService;
         private readonly IMemberRepository _memberRepository;
 
-        public AuthorizationService(IMemberRepository memberRepository)
+        public AuthorizationService(IMemberRepository memberRepository, ICacheService cacheService)
         {
+            _cacheService = cacheService;
             _memberRepository = memberRepository;
         }
 
@@ -45,9 +48,9 @@ namespace ODK.Services.Authorization
 
         private async Task<Member> GetMember(Guid id)
         {
-            Member member = await _memberRepository.GetMember(id);
-            AssertMemberIsCurrent(member);
-            return member;
+            VersionedServiceResult<Member> member = await _cacheService.GetOrSetVersionedItem(() => _memberRepository.GetMember(id), id, null);
+            AssertMemberIsCurrent(member.Value);
+            return member.Value;
         }
     }
 }

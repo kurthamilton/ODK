@@ -2,10 +2,11 @@
 
 namespace ODK.Core.Members
 {
-    public class Member
+    public class Member : IVersioned
     {
         public Member(Guid id, Guid chapterId, string emailAddress, bool emailOptIn,
-            string firstName, string lastName, DateTime createdDate, bool activated, bool disabled)
+            string firstName, string lastName, DateTime createdDate, bool activated, bool disabled,
+            long version)
         {
             Activated = activated;
             ChapterId = chapterId;
@@ -16,6 +17,7 @@ namespace ODK.Core.Members
             FirstName = firstName;
             Id = id;
             LastName = lastName;
+            Version = version;
         }
 
         public bool Activated { get; }
@@ -35,5 +37,7 @@ namespace ODK.Core.Members
         public Guid Id { get; }
 
         public string LastName { get; }
+
+        public long Version { get; }
     }
 }

@@ -184,6 +184,16 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<long> GetMembersVersion(Guid chapterId)
+        {
+            return await Context
+                .Select<Member>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .Where(x => x.Activated).EqualTo(true)
+                .Where(x => x.Disabled).EqualTo(false)
+                .VersionAsync();
+        }
+
         public async Task<MemberPasswordResetRequest> GetPasswordResetRequest(string token)
         {
             return await Context

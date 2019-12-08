@@ -18,6 +18,7 @@ namespace ODK.Data.Mapping
             Property(x => x.CreatedDate);
             Property(x => x.Activated);
             Property(x => x.Disabled);
+            Property(x => x.Version).IsRowVersion();
         }
 
         public override Member Read(IDataReader reader)
@@ -32,8 +33,8 @@ namespace ODK.Data.Mapping
                 lastName: reader.GetString(5),
                 createdDate: reader.GetDateTime(6),
                 activated: reader.GetBoolean(7),
-                disabled: reader.GetBoolean(8)
-
+                disabled: reader.GetBoolean(8),
+                version: reader.GetInt64(9)
             );
         }
     }
