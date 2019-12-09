@@ -1,4 +1,4 @@
-<app-body *ngIf="event" [breadcrumbs]="breadcrumbs">
+<app-body *appLoading="!event" [breadcrumbs]="breadcrumbs">
     <app-page-with-sidebar>
         <ng-container app-main>
             <h2>{{venue.name}}</h2>
