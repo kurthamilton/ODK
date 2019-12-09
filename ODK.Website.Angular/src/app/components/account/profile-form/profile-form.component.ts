@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, Input, OnChanges } from '@angular/core';
 
-import { Subject, forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { AccountProfile } from 'src/app/core/account/account-profile';
@@ -32,7 +32,7 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
   templateUrl: './profile-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProfileFormComponent implements OnInit {
+export class ProfileFormComponent implements OnInit, OnChanges {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private authenticationService: AuthenticationService,
@@ -42,15 +42,16 @@ export class ProfileFormComponent implements OnInit {
   ) {
   }
 
+  @Input() formCallback: Observable<boolean>;
+  @Input() profile: AccountProfile;
+  @Output() formSubmit: EventEmitter<AccountProfile> = new EventEmitter<AccountProfile>();
   @Output() updated: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   form: FormViewModel;
 
   private chapterId: string;
   private chapterProperties: Map<string, ChapterProperty>;
-  private chapterPropertyOptions: Map<string, ChapterPropertyOption[]>;
-  private formCallback: Subject<boolean> = new Subject<boolean>();
-  private profile: AccountProfile;
+  private chapterPropertyOptions: Map<string, ChapterPropertyOption[]>;  
 
   private formControls: {
     emailAddress: ReadOnlyFormControlViewModel;
@@ -65,7 +66,25 @@ export class ProfileFormComponent implements OnInit {
     const authenticationToken: AuthenticationToken = this.authenticationService.getToken();
     this.chapterId = authenticationToken.chapterId;
 
-    this.loadProfile();
+    forkJoin([
+      this.chapterService.getChapterProperties(this.chapterId).pipe(
+        tap((properties: ChapterProperty[]) => this.chapterProperties = ArrayUtils.toMap(properties, x => x.id))
+      ),
+      this.chapterService.getChapterPropertyOptions(this.chapterId).pipe(
+        tap((options: ChapterPropertyOption[]) => this.chapterPropertyOptions = ArrayUtils.groupValues(options, x => x.chapterPropertyId, x => x))
+      )
+    ]).subscribe(() => {
+      this.buildForm();
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  ngOnChanges(): void {
+    if (!this.profile) {
+      return;
+    }        
+
+    this.buildForm();
   }
 
   onFormSubmit(): void {
@@ -80,21 +99,21 @@ export class ProfileFormComponent implements OnInit {
         value: x.value
       }))
     };
-    this.accountService.updateProfile(profile).subscribe(() => {
-      this.updated.emit(true);
-      this.formCallback.next(true);
-      this.loadProfile();
-    });
+    this.formSubmit.next(profile);
   }
 
   private buildForm(): void {
+    if (!this.chapterProperties || !this.profile) {
+      return;
+    }
+
     this.formControls = {
       emailAddress: new ReadOnlyFormControlViewModel({
         id: 'emailAddresss',
         label: {
           text: 'Email'
         },
-        value: this.profile.emailAddress
+        value: this.profile ? this.profile.emailAddress : ''
       }),
       emailOptIn: new CheckBoxFormControlViewModel({
         id: 'emailOptIn',
@@ -102,7 +121,7 @@ export class ProfileFormComponent implements OnInit {
           text: 'Receive emails',
           subtitle: 'Opt in to emails informing you of upcoming events'
         },
-        value: this.profile.emailOptIn
+        value: this.profile ? this.profile.emailOptIn : true
       }),
       firstName: new TextInputFormControlViewModel({
         id: 'firstName',
@@ -112,15 +131,15 @@ export class ProfileFormComponent implements OnInit {
         validation: {
           required: true
         },
-        value: this.profile.firstName
+        value: this.profile ? this.profile.firstName : ''
       }),
-      joined: new ReadOnlyFormControlViewModel({
+      joined: this.profile ? new ReadOnlyFormControlViewModel({
         id: 'joined',
         label: {
           text: 'Date joined'
         },
         value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy')
-      }),
+      }) : null,
       lastName: new TextInputFormControlViewModel({
         id: 'lastName',
         label: {
@@ -129,42 +148,26 @@ export class ProfileFormComponent implements OnInit {
         validation: {
           required: true
         },
-        value: this.profile.lastName
+        value: this.profile ? this.profile.lastName : ''
       }),
       properties: this.profile.properties.map((x): FormControlViewModel => this.mapFormControl(x))
     }
 
     this.form = {
-      buttonText: 'Update',
-      callback: this.formCallback.asObservable(),
+      buttonText: this.profile ? 'Update' : 'Create',
+      callback: this.formCallback,
       controls: [
         this.formControls.emailAddress,
         this.formControls.emailOptIn,
         this.formControls.firstName,
         this.formControls.lastName,
-        ...this.formControls.properties,
-        this.formControls.joined
+        ...this.formControls.properties,        
       ]
     };
-  }
 
-  private loadProfile(): void {
-    this.form = null;
-    this.changeDetector.detectChanges();
-    forkJoin([
-      this.accountService.getProfile().pipe(
-        tap((profile: AccountProfile) => this.profile = profile)
-      ),
-      this.chapterService.getChapterProperties(this.chapterId).pipe(
-        tap((properties: ChapterProperty[]) => this.chapterProperties = ArrayUtils.toMap(properties, x => x.id))
-      ),
-      this.chapterService.getChapterPropertyOptions(this.chapterId).pipe(
-        tap((options: ChapterPropertyOption[]) => this.chapterPropertyOptions = ArrayUtils.groupValues(options, x => x.chapterPropertyId, x => x))
-      )
-    ]).subscribe(() => {
-      this.buildForm();
-      this.changeDetector.detectChanges();
-    });
+    if (this.formControls.joined) {
+      this.form.controls.push(this.formControls.joined);
+    }
   }
 
   private mapFormControl(property: MemberProperty): FormControlViewModel {

@@ -3,8 +3,8 @@
         {{successMessage}}
     </ngb-alert>
     <div class="row">
-        <div class="col-6">
-            <div *ngIf="links">
+        <div class="col-6" *ngIf="links">
+            <div>
                 <a [routerLink]="links.subscription">My subscription</a>
             </div>
             <div>
@@ -19,5 +19,6 @@
         </div>
     </div>
 
-    <app-profile-form (updated)="onProfileUpdated()"></app-profile-form>
+    <app-profile-form [formCallback]="formCallback" [profile]="profile" (formSubmit)="onFormSubmit($event)">      
+    </app-profile-form>
 </app-body>
