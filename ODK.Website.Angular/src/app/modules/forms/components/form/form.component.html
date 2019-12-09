@@ -1,5 +1,7 @@
 <form *ngIf="form" (ngSubmit)="onSubmit()" [class.was-validated]="state.validated" novalidate>
   <fieldset [attr.disabled]="submitting ? 'disabled' : null" class="overlay-container">
+    <app-loading-spinner *ngIf="submitting" [options]="loadingOptions">      
+    </app-loading-spinner>
     <app-form-controls [form]="form" [state]="state" [validated]="state.validated" [validateForm]="validateForm">
     </app-form-controls>
     <ng-container *ngIf="form.buttonText">

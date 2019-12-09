@@ -7,6 +7,7 @@ import { Subject } from 'rxjs';
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 import { FormStateViewModel } from '../form-state.view-model';
 import { FormViewModel } from '../form.view-model';
+import { LoadingSpinnerOptions } from 'src/app/modules/shared/components/elements/loading-spinner/loading-spinner-options';
 
 @Component({
   selector: 'app-form',
@@ -21,6 +22,9 @@ export class FormComponent implements OnInit, OnDestroy {
   @Input() form: FormViewModel;
   @Output() formSubmit: EventEmitter<void> = new EventEmitter<void>();
 
+  loadingOptions: LoadingSpinnerOptions = {
+    overlay: true
+  };
   messages: string[];
   state: FormStateViewModel = {};
   submitting = false;
