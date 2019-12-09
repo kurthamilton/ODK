@@ -18,13 +18,18 @@ namespace ODK.Services.Caching
         }
 
         public async Task<VersionedServiceResult<IReadOnlyCollection<T>>> GetOrSetVersionedCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter,
-            Func<Task<long>> getVersion, long? currentVersion)
+            Func<Task<long>> getVersion, long? currentVersion, object key = null)
         {
-            long? version = TryGetCachedVersion<T>(CollectionInstanceKey);
+            if (key == null)
+            {
+                key = CollectionInstanceKey;
+            }
+
+            long? version = TryGetCachedVersion<T>(key);
             if (version == null)
             {
                 version = await getVersion();
-                SetVersion<T>(version.Value, CollectionInstanceKey);
+                SetVersion<T>(version.Value, key);
             }
 
             if (currentVersion == version)
@@ -32,20 +37,21 @@ namespace ODK.Services.Caching
                 return new VersionedServiceResult<IReadOnlyCollection<T>>(version.Value);
             }
 
-            IReadOnlyCollection<T> collection = await GetOrSet(getter, CollectionInstanceKey, version, null);
+            IReadOnlyCollection<T> collection = await GetOrSet(getter, key, version, null);
             return new VersionedServiceResult<IReadOnlyCollection<T>>(version.Value, collection);
         }
 
-        public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T>> getter, object instanceKey, long? currentVersion) where T : class, IVersioned
+        public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T>> getter, object key,
+            long? currentVersion) where T : class, IVersioned
         {
-            long? version = TryGetCachedVersion<T>(instanceKey);
+            long? version = TryGetCachedVersion<T>(key);
 
             T item = null;
             if (version == null)
             {
                 item = await getter();
                 version = item.Version;
-                SetVersion<T>(version.Value, instanceKey);
+                SetVersion<T>(version.Value, key);
             }
 
             if (currentVersion == version)
@@ -53,14 +59,14 @@ namespace ODK.Services.Caching
                 return new VersionedServiceResult<T>(version.Value);
             }
 
-            item ??= await GetOrSet(getter, instanceKey, version.Value, null);
+            item ??= await GetOrSet(getter, key, version.Value, null);
 
             return new VersionedServiceResult<T>(version.Value, item);
         }
 
-        public void RemoveVersionedCollection<T>()
+        public void RemoveVersionedCollection<T>(object key = null)
         {
-            RemoveVersionedItem<T>(CollectionInstanceKey);
+            RemoveVersionedItem<T>(key ?? CollectionInstanceKey);
         }
 
         public void RemoveVersionedItem<T>(object instanceKey)
@@ -70,6 +76,12 @@ namespace ODK.Services.Caching
 
             _cache.Remove(versionKey);
             _cache.Remove(key);
+        }
+
+        public void UpdatedVersionedCollection<T>(IReadOnlyCollection<T> collection, long version, object key = null)
+        {
+            SetVersion<T>(version, key ?? CollectionInstanceKey);
+            Set(collection, key ?? CollectionInstanceKey, version, null);
         }
 
         private static string GetKey<T>(object instanceKey)

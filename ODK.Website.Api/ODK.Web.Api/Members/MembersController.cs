@@ -26,10 +26,11 @@ namespace ODK.Web.Api.Members
         }
 
         [HttpGet]
-        public async Task<IEnumerable<MemberApiResponse>> Get(Guid chapterId)
+        public async Task<ActionResult<IEnumerable<MemberApiResponse>>> Get(Guid chapterId)
         {
-            IReadOnlyCollection<Member> members = await _memberService.GetMembers(GetMemberId(), chapterId);
-            return members.Select(_mapper.Map<MemberApiResponse>);
+            return await HandleVersionedRequest(
+                version => _memberService.GetMembers(version, GetMemberId(), chapterId),
+                x => x.Select(_mapper.Map<MemberApiResponse>));
         }
 
         [HttpGet("{id}/Image")]
@@ -41,10 +42,11 @@ namespace ODK.Web.Api.Members
         }
 
         [HttpGet("Latest")]
-        public async Task<IEnumerable<MemberApiResponse>> Latest(Guid chapterId)
+        public async Task<ActionResult<IEnumerable<MemberApiResponse>>> Latest(Guid chapterId)
         {
-            IReadOnlyCollection<Member> members = await _memberService.GetLatestMembers(GetMemberId(), chapterId);
-            return members.Select(_mapper.Map<MemberApiResponse>);
+            return await HandleVersionedRequest(
+                version => _memberService.GetLatestMembers(version, GetMemberId(), chapterId),
+                x => x.Select(_mapper.Map<MemberApiResponse>));
         }
 
         [HttpGet("{id}/Profile")]

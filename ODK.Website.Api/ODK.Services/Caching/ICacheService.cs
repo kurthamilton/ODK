@@ -7,12 +7,15 @@ namespace ODK.Services.Caching
 {
     public interface ICacheService
     {
-        Task<VersionedServiceResult<IReadOnlyCollection<T>>> GetOrSetVersionedCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter, Func<Task<long>> getVersion, long? currentVersion);
+        Task<VersionedServiceResult<IReadOnlyCollection<T>>> GetOrSetVersionedCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter, 
+            Func<Task<long>> getVersion, long? currentVersion, object key = null);
 
         Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T>> getter, object instanceKey, long? currentVersion) where T : class, IVersioned;
 
-        void RemoveVersionedCollection<T>();
+        void RemoveVersionedCollection<T>(object key = null);
 
         void RemoveVersionedItem<T>(object instanceKey);
+
+        void UpdatedVersionedCollection<T>(IReadOnlyCollection<T> collection, long version, object key = null);
     }
 }

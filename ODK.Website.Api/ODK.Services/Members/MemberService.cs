@@ -84,10 +84,24 @@ namespace ODK.Services.Members
             });
         }
 
-        public async Task<IReadOnlyCollection<Member>> GetLatestMembers(Guid currentMemberId, Guid chapterId)
+        public async Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetLatestMembers(long? currentVersion,
+            Guid currentMemberId, Guid chapterId)
         {
             await _authorizationService.AssertMemberIsChapterMember(currentMemberId, chapterId);
-            return await _memberRepository.GetLatestMembers(chapterId, 8);
+
+            VersionedServiceResult<IReadOnlyCollection<Member>> members = await GetMembers(currentVersion, currentMemberId, chapterId);
+            if (members.Value == null)
+            {
+                return members;
+            }
+
+            IReadOnlyCollection<Member> latestMembers = members
+                .Value
+                .OrderByDescending(x => x.CreatedDate)
+                .Take(8)
+                .ToArray();
+
+            return new VersionedServiceResult<IReadOnlyCollection<Member>>(members.Version, latestMembers);
         }
 
         public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? version, Guid currentMemberId, Guid memberId, int? size)
@@ -114,10 +128,16 @@ namespace ODK.Services.Members
             return await GetMemberProfile(member);
         }
 
-        public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId)
+        public async Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetMembers(long? currentVersion, Guid currentMemberId,
+            Guid chapterId)
         {
             await _authorizationService.AssertMemberIsChapterMember(currentMemberId, chapterId);
-            return await _memberRepository.GetMembers(chapterId);
+
+            return await _cacheService.GetOrSetVersionedCollection(
+                () => _memberRepository.GetMembers(chapterId),
+                () => _memberRepository.GetMembersVersion(chapterId),
+                currentVersion,
+                chapterId);
         }
 
         public async Task<MemberSubscription> GetMemberSubscription(Guid memberId)
@@ -182,7 +202,11 @@ namespace ODK.Services.Members
             await _memberRepository.UpdateMember(id, existing.EmailAddress, existing.EmailOptIn, existing.FirstName, existing.LastName);
             await _memberRepository.UpdateMemberProperties(id, existing.MemberProperties);
 
-            _cacheService.RemoveVersionedItem<Member>(id);
+            IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(member.ChapterId);
+            long version = await _memberRepository.GetMembersVersion(member.ChapterId);
+            _cacheService.UpdatedVersionedCollection(members, version, member.ChapterId);
+
+            _cacheService.RemoveVersionedItem<Member>(member.Id);
 
             return existing;
         }
