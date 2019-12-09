@@ -25,6 +25,7 @@ export class ChapterComponent implements OnInit {
   }
 
   chapter: Chapter;
+  isMember: boolean;
   latestMembers: Member[];
   welcomeTextHtml: string;
 
@@ -33,8 +34,9 @@ export class ChapterComponent implements OnInit {
     this.titleService.setRouteTitle(this.chapter.name);
     
     const token: AuthenticationToken = this.authenticationService.getToken();
+    this.isMember = !!token && token.chapterId === this.chapter.id;
 
-    if (token) {
+    if (this.isMember) {
       this.loadMemberPage();
     } else {
       this.loadPublicPage();

@@ -1,13 +1,15 @@
 <app-body *ngIf="chapter">
     <app-page-with-sidebar>
         <ng-container app-main>
-            <ng-container *ngIf="welcomeTextHtml">
+            <ng-container *ngIf="!isMember">
                 <h3>Welcome!</h3>
-                <app-raw-html [html]="welcomeTextHtml"></app-raw-html>
+                <app-raw-html *appLoading="!welcomeTextHtml" [html]="welcomeTextHtml">                  
+                </app-raw-html>
             </ng-container>
-            <ng-container *ngIf="latestMembers">
+            <ng-container *ngIf="isMember">
                 <h3>Latest members</h3>
-                <app-member-list [members]="latestMembers" [cols]="2"></app-member-list>
+                <app-member-list *appLoading="!latestMembers" [members]="latestMembers" [cols]="2">                  
+                </app-member-list>
             </ng-container>
         </ng-container>
 
