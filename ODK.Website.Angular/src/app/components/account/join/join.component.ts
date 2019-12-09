@@ -1,37 +1,43 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
-import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { Subject } from 'rxjs';
+
+import { AccountProfile } from 'src/app/core/account/account-profile';
+import { AccountService } from 'src/app/services/account/account.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { ServiceResult } from 'src/app/services/service-result';
 
 @Component({
   selector: 'app-join',
   templateUrl: './join.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class JoinComponent implements OnInit {
+export class JoinComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private chapterService: ChapterService
+    private chapterService: ChapterService,
+    private accountService: AccountService
   ) {     
   }
 
-  form: FormViewModel;
-
-  private chapter: Chapter;
-  private formControls: {
-    emailAddress: TextInputFormControlViewModel;
-    firstName: TextInputFormControlViewModel;
-    lastName: TextInputFormControlViewModel;
-  };
+  chapter: Chapter;
+  formCallback: Subject<string[]> = new Subject<string[]>();
+  submitted = false;
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
-
   }
 
-  private buildForm(): void {
+  ngOnDestroy(): void {
+    this.formCallback.complete();
+  }
 
+  onFormSubmit(profile: AccountProfile): void {
+    this.accountService.register(this.chapter.id, profile).subscribe((result: ServiceResult<void>) => {
+      this.formCallback.next(result.messages);
+      this.submitted = result.success === true;
+      this.changeDetector.detectChanges();
+    });
   }
 }

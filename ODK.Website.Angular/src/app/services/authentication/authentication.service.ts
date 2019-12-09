@@ -2,10 +2,11 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { Observable, of, Subject, BehaviorSubject } from 'rxjs';
-import { map, catchError, take, tap } from 'rxjs/operators';
+import { map, take, tap } from 'rxjs/operators';
 
 import { AccountDetails } from 'src/app/core/account/account-details';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
+import { catchApiError } from '../http/catchApiError';
 import { environment } from 'src/environments/environment';
 import { HttpAuthInterceptorHeaders } from '../http/http-auth-interceptor-headers';
 import { HttpUtils } from '../http/http-utils';
@@ -61,14 +62,7 @@ export class AuthenticationService {
     return this.http.put(endpoints.changePassword, params)
       .pipe(
         map((): ServiceResult<void> => ({ success: true })),
-        catchError((err: any): Observable<ServiceResult<void>> => {
-          const response = err.error;
-          const result: ServiceResult<void> = {
-            messages: response.messages,
-            success: false
-          };
-          return of(result);
-        })
+        catchApiError()
       );
   }
 
@@ -80,14 +74,7 @@ export class AuthenticationService {
 
     return this.http.post(endpoints.completePasswordReset, params).pipe(
       map((): ServiceResult<void> => ({ success: true })),
-      catchError((err: any): Observable<ServiceResult<void>> => {
-        const response = err.error;
-        const result: ServiceResult<void> = {
-          messages: response.messages,
-          success: false
-        };
-        return of(result);
-      })
+      catchApiError()
     )
   }
   
@@ -230,15 +217,7 @@ export class AuthenticationService {
           success: true,
           value: token
         })),
-        catchError((err: any): Observable<ServiceResult<AuthenticationToken>> => {
-          const response = err.error;
-          const result: ServiceResult<AuthenticationToken> = {
-            messages: response.messages,
-            success: false,
-            value: this.getToken()
-          };
-          return of(result);
-        })
+        catchApiError(this.getToken())
       ).subscribe((result: ServiceResult<AuthenticationToken>) => {
         this.setToken(result, options.subject);
       });

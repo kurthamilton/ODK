@@ -1,9 +1,10 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
+import { catchApiError } from '../http/catchApiError';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { ServiceResult } from '../service-result';
@@ -34,14 +35,7 @@ export class VenueAdminService extends VenueService {
         success: true,
         value: this.mapVenue(response)
       })),
-      catchError((err: any): Observable<ServiceResult<Venue>> => {
-        const response = err.error;
-        const result: ServiceResult<Venue> = {
-          messages: response.messages,
-          success: false
-        };
-        return of(result);
-      })
+      catchApiError()
     );
   }
 
@@ -59,14 +53,7 @@ export class VenueAdminService extends VenueService {
         success: true,
         value: this.mapVenue(response)
       })),
-      catchError((err: any): Observable<ServiceResult<Venue>> => {
-        const response = err.error;
-        const result: ServiceResult<Venue> = {
-          messages: response.messages,
-          success: false
-        };
-        return of(result);
-      })
+      catchApiError()
     );
   }
 

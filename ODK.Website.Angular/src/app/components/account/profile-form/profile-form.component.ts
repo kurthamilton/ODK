@@ -1,14 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, Input, OnChanges } from '@angular/core';
 
 import { forkJoin, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { AccountProfile } from 'src/app/core/account/account-profile';
-import { AccountService } from 'src/app/services/account/account.service';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
-import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
@@ -32,29 +30,29 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
   templateUrl: './profile-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProfileFormComponent implements OnInit, OnChanges {
+export class ProfileFormComponent implements OnChanges {
+
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private authenticationService: AuthenticationService,
-    private accountService: AccountService,
     private chapterService: ChapterService,
     private datePipe: DatePipe
   ) {
   }
 
-  @Input() formCallback: Observable<boolean>;
+  @Input() chapterId: string;
+  @Input() formCallback: Observable<boolean | string[]>;
   @Input() profile: AccountProfile;
   @Output() formSubmit: EventEmitter<AccountProfile> = new EventEmitter<AccountProfile>();
   @Output() updated: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   form: FormViewModel;
 
-  private chapterId: string;
-  private chapterProperties: Map<string, ChapterProperty>;
-  private chapterPropertyOptions: Map<string, ChapterPropertyOption[]>;  
+  private chapterProperties: ChapterProperty[];
+  private chapterPropertyOptions: Map<string, ChapterPropertyOption[]>;
+  private memberPropertyMap: Map<string, MemberProperty>;
 
   private formControls: {
-    emailAddress: ReadOnlyFormControlViewModel;
+    emailAddress: FormControlViewModel;
     emailOptIn: CheckBoxFormControlViewModel;
     firstName: TextInputFormControlViewModel;
     joined: ReadOnlyFormControlViewModel;
@@ -62,29 +60,26 @@ export class ProfileFormComponent implements OnInit, OnChanges {
     properties: FormControlViewModel[];
   };
 
-  ngOnInit(): void {
-    const authenticationToken: AuthenticationToken = this.authenticationService.getToken();
-    this.chapterId = authenticationToken.chapterId;
+  ngOnChanges(): void {
+    if (!this.chapterId) {
+      return;
+    }        
 
     forkJoin([
       this.chapterService.getChapterProperties(this.chapterId).pipe(
-        tap((properties: ChapterProperty[]) => this.chapterProperties = ArrayUtils.toMap(properties, x => x.id))
+        tap((properties: ChapterProperty[]) => this.chapterProperties = properties)
       ),
       this.chapterService.getChapterPropertyOptions(this.chapterId).pipe(
         tap((options: ChapterPropertyOption[]) => this.chapterPropertyOptions = ArrayUtils.groupValues(options, x => x.chapterPropertyId, x => x))
       )
     ]).subscribe(() => {
+      if (this.profile) {
+        this.memberPropertyMap = ArrayUtils.toMap(this.profile.properties, x => x.chapterPropertyId);
+      }
+
       this.buildForm();
       this.changeDetector.detectChanges();
-    });
-  }
-
-  ngOnChanges(): void {
-    if (!this.profile) {
-      return;
-    }        
-
-    this.buildForm();
+    });    
   }
 
   onFormSubmit(): void {
@@ -103,17 +98,22 @@ export class ProfileFormComponent implements OnInit, OnChanges {
   }
 
   private buildForm(): void {
-    if (!this.chapterProperties || !this.profile) {
-      return;
-    }
-
     this.formControls = {
-      emailAddress: new ReadOnlyFormControlViewModel({
+      emailAddress: this.profile ? new ReadOnlyFormControlViewModel({
         id: 'emailAddresss',
         label: {
           text: 'Email'
         },
-        value: this.profile ? this.profile.emailAddress : ''
+        value: this.profile.emailAddress
+      }) : new TextInputFormControlViewModel({
+        id: 'emailAddress',
+        label: {
+          text: 'Email'
+        },
+        validation: {
+          required: true
+        },
+        value: ''
       }),
       emailOptIn: new CheckBoxFormControlViewModel({
         id: 'emailOptIn',
@@ -150,7 +150,7 @@ export class ProfileFormComponent implements OnInit, OnChanges {
         },
         value: this.profile ? this.profile.lastName : ''
       }),
-      properties: this.profile.properties.map((x): FormControlViewModel => this.mapFormControl(x))
+      properties: this.chapterProperties.map(x => this.mapFormControl(x))
     }
 
     this.form = {
@@ -170,45 +170,47 @@ export class ProfileFormComponent implements OnInit, OnChanges {
     }
   }
 
-  private mapFormControl(property: MemberProperty): FormControlViewModel {
-      const chapterProperty: ChapterProperty = this.chapterProperties.get(property.chapterPropertyId);
+  private mapFormControl(chapterProperty: ChapterProperty): FormControlViewModel {
+    const memberProperty: MemberProperty = this.memberPropertyMap
+      ? this.memberPropertyMap.get(chapterProperty.id)
+      : null;
 
-      const options: FormControlOptions = {
-        id: chapterProperty.id,
-        label: {
-          helpText: chapterProperty.helpText,
-          subtitle: chapterProperty.subtitle,
-          text: chapterProperty.name
-        },
-        validation: {
-          required: chapterProperty.required
-        }
-      };
-
-      if (chapterProperty.dataType === DataType.LongText) {
-        const textAreaOptions = <TextAreaFormControlOptions>options;
-        textAreaOptions.value = property.value;
-        return new TextAreaFormControlViewModel(textAreaOptions);
+    const options: FormControlOptions = {
+      id: chapterProperty.id,
+      label: {
+        helpText: chapterProperty.helpText,
+        subtitle: chapterProperty.subtitle,
+        text: chapterProperty.name
+      },
+      validation: {
+        required: chapterProperty.required
       }
+    };
 
-      if (chapterProperty.dataType === DataType.DropDown) {
-        const chapterPropertyOptions: ChapterPropertyOption[] = this.chapterPropertyOptions.get(chapterProperty.id) || [];
-        const dropDownOptions = <DropDownFormControlOptions>options;
-        dropDownOptions.options = [
-          { default: true, text: 'Select...', value: '' },
-          ...chapterPropertyOptions.map((x): DropDownFormControlOption => ({
-            freeText: x.freeText,
-            selected: property.value === x.value,
-            text: x.value,
-            value: x.value
-          }))
-        ];
-        dropDownOptions.value = property.value;
-        return new DropDownFormControlViewModel(dropDownOptions);
-      }
+    if (chapterProperty.dataType === DataType.LongText) {
+      const textAreaOptions = <TextAreaFormControlOptions>options;
+      textAreaOptions.value = memberProperty ? memberProperty.value : '';
+      return new TextAreaFormControlViewModel(textAreaOptions);
+    }
 
-      const textInputOptions = <TextInputFormControlOptions>options;
-      textInputOptions.value = property.value;
-      return new TextInputFormControlViewModel(textInputOptions);
+    if (chapterProperty.dataType === DataType.DropDown) {
+      const chapterPropertyOptions: ChapterPropertyOption[] = this.chapterPropertyOptions.get(chapterProperty.id) || [];
+      const dropDownOptions = <DropDownFormControlOptions>options;
+      dropDownOptions.options = [
+        { default: true, text: 'Select...', value: '' },
+        ...chapterPropertyOptions.map((x): DropDownFormControlOption => ({
+          freeText: x.freeText,
+          selected: memberProperty ? memberProperty.value === x.value : false,
+          text: x.value,
+          value: x.value
+        }))
+      ];
+      dropDownOptions.value = memberProperty ? memberProperty.value : '';
+      return new DropDownFormControlViewModel(dropDownOptions);
+    }
+
+    const textInputOptions = <TextInputFormControlOptions>options;
+    textInputOptions.value = memberProperty ? memberProperty.value : '';
+    return new TextInputFormControlViewModel(textInputOptions);
   }
 }

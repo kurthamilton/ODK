@@ -1,1 +1,13 @@
-<app-body></app-body>
+<app-body>
+  <ng-container *ngIf="!submitted">
+    <app-profile-form *appLoading="!chapter" [chapterId]="chapter.id" [formCallback]="formCallback"
+      (formSubmit)="onFormSubmit($event)">      
+    </app-profile-form>
+  </ng-container>
+  <ng-container *ngIf="submitted">
+    <ngb-alert type="success" [dismissible]="false">
+      Thank you for signing up.
+      An email has been sent to your email address containing a link to activate your account.
+    </ngb-alert>
+  </ng-container>
+</app-body>

@@ -5,10 +5,12 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { AccountProfile } from 'src/app/core/account/account-profile';
+import { catchApiError } from '../http/catchApiError';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { MemberProperty } from 'src/app/core/members/member-property';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
+import { ServiceResult } from '../service-result';
 
 const baseUrl = `${environment.baseUrl}/account`;
 
@@ -16,6 +18,7 @@ const endpoints = {
   image: `${baseUrl}/image`,
   profile: `${baseUrl}/profile`,
   purchaseSubscription: (id: string) => `${baseUrl}/subscriptions/${id}/purchase`,
+  register: `${baseUrl}/register`,
   rotateImage: `${baseUrl}/image/rotate/right`,
   subscription: `${baseUrl}/subscription`
 };
@@ -25,7 +28,7 @@ const endpoints = {
 })
 export class AccountService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) { }  
 
   getProfile(): Observable<AccountProfile> {
     return this.http.get(endpoints.profile).pipe(
@@ -49,6 +52,20 @@ export class AccountService {
     );
   }
 
+  register(chapterId: string, profile: AccountProfile): Observable<ServiceResult<void>> {
+    const paramsObject: any = this.createProfileParams(profile);
+    paramsObject.chapterId = chapterId;
+
+    const params: HttpParams = HttpUtils.createFormParams(paramsObject);
+
+    return this.http.post(endpoints.register, params).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
+    );
+  }
+
   rotateImage(): Observable<string> {
     return HttpUtils.putBase64(this.http, endpoints.rotateImage);
   }
@@ -61,6 +78,16 @@ export class AccountService {
   }
 
   updateProfile(profile: AccountProfile): Observable<boolean> {
+    const paramsObject = this.createProfileParams(profile);
+
+    const params: HttpParams = HttpUtils.createFormParams(paramsObject);
+
+    return this.http.put(endpoints.profile, params).pipe(
+      map(() => true)
+    );
+  }
+
+  private createProfileParams(profile: AccountProfile): {} {
     const paramsObject = {
       emailAddress: profile.emailAddress,
       emailOptIn: profile.emailOptIn ? 'true' : 'false',
@@ -73,11 +100,7 @@ export class AccountService {
       paramsObject[`properties[${i}].Value`] = property.value;
     });
 
-    const params: HttpParams = HttpUtils.createFormParams(paramsObject);
-
-    return this.http.put(endpoints.profile, params).pipe(
-      map(() => true)
-    );
+    return paramsObject;
   }
 
   private mapAccountProfile(response: any): AccountProfile {

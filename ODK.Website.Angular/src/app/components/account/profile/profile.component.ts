@@ -25,6 +25,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ) {
   }
 
+  chapterId: string;
   formCallback: Subject<boolean> = new Subject<boolean>();
   profile: AccountProfile;
   links: {
@@ -38,13 +39,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const authenticationToken: AuthenticationToken = this.authenticationService.getToken();
-    const chapterId: string = authenticationToken.chapterId;
+    this.chapterId = authenticationToken.chapterId;
 
     forkJoin([
       this.accountService.getProfile().pipe(
         tap((profile: AccountProfile) => this.profile = profile)
       ),
-      this.chapterService.getChapterById(chapterId).pipe(
+      this.chapterService.getChapterById(this.chapterId).pipe(
         tap((chapter: Chapter) => this.chapter = chapter)
       )
     ]).subscribe(() => {

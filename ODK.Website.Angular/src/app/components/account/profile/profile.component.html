@@ -19,6 +19,7 @@
         </div>
     </div>
 
-    <app-profile-form [formCallback]="formCallback" [profile]="profile" (formSubmit)="onFormSubmit($event)">      
+    <app-profile-form *appLoading="!profile" [chapterId]="chapterId" [formCallback]="formCallback" [profile]="profile" 
+      (formSubmit)="onFormSubmit($event)">      
     </app-profile-form>
 </app-body>

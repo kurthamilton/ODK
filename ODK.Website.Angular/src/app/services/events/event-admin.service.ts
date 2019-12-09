@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
+import { catchApiError } from '../http/catchApiError';
 import { environment } from 'src/environments/environment';
 import { Event } from 'src/app/core/events/event';
 import { EventInvites } from 'src/app/core/events/event-invites';
@@ -46,14 +47,7 @@ export class EventAdminService extends EventService {
         success: true,
         value: this.mapEvent(response)
       })),
-      catchError((err: any): Observable<ServiceResult<Event>> => {
-        const response = err.error;
-        const result: ServiceResult<Event> = {
-          messages: response.messages,
-          success: false
-        };
-        return of(result);
-      })
+      catchApiError()
     );
   }
 
@@ -112,14 +106,7 @@ export class EventAdminService extends EventService {
         success: true,
         value: this.mapEvent(response)
       })),
-      catchError((err: any): Observable<ServiceResult<Event>> => {
-        const response = err.error;
-        const result: ServiceResult<Event> = {
-          messages: response.messages,
-          success: false
-        };
-        return of(result);
-      })
+      catchApiError()
     );
   }
 
