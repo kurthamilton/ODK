@@ -28,6 +28,9 @@
               "src/environments/web.config"
             ],
             "styles": [
+              "node_modules/@fortawesome/fontawesome-free/css/solid.min.css",
+              "node_modules/@fortawesome/fontawesome-free/css/brands.min.css",
+              "node_modules/@fortawesome/fontawesome-free/css/fontawesome.min.css",
               "src/css/main.scss"
             ],
             "scripts": []
