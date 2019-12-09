@@ -4,6 +4,8 @@ namespace ODK.Web.Api.Countries.Responses
 {
     public class CountryApiResponse
     {
+        public string Continent { get; set; }
+
         public string CurrencyCode { get; set; }
 
         public string CurrencySymbol { get; set; }

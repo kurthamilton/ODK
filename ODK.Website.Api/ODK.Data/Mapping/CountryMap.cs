@@ -11,6 +11,7 @@ namespace ODK.Data.Mapping
         {
             Property(x => x.Id).HasColumnName("CountryId");
             Property(x => x.Name);
+            Property(x => x.Continent);
             Property(x => x.CurrencyCode);
             Property(x => x.CurrencySymbol);
         }
@@ -21,8 +22,9 @@ namespace ODK.Data.Mapping
             (
                 id: reader.GetGuid(0),
                 name: reader.GetString(1),
-                currencyCode: reader.GetString(2),
-                currencySymbol: reader.GetString(3)
+                continent: reader.GetString(2),
+                currencyCode: reader.GetString(3),
+                currencySymbol: reader.GetString(4)
             );
         }
     }

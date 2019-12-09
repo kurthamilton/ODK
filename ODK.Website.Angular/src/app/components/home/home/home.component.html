@@ -22,7 +22,7 @@
         <p>
             Most of our members will agree that the Drunken Knitwits are hands-down the best knitting clubs in existence today, and probably ever. 
             The first chapter was established in Oxford, UK in 2012 to fill a desperate need for old-fashioned drunken knitting get-togethers. 
-            Break-out chapters have been popping up ever since and now we're in 3 continents, 
+            Break-out chapters have been popping up ever since and now we're in <span *ngIf="continents">{{continents.length}}</span> continents, 
             <span *ngIf="countries">{{countries.length}}</span> countries, and <span *ngIf="chapters">{{chapters.length}}</span> cities. 
             There's no looking back! Whether you're a knitter who needs to add a social aspect to your hobby, someone who's always wanted to learn to knit, 
             or someone who's new to town and wants to take on a new hobby while making friends, then the Drunken Knitwits are the people you’ve been looking for.

@@ -34,6 +34,7 @@ export class CountryService {
 
   private mapCountry(response: any): Country {
     return {
+      continent: response.continent,
       currencyCode: response.currencyCode,
       currencySymbol: response.currencySymbol,
       id: response.id,
