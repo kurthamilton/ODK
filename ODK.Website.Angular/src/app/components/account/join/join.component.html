@@ -1,7 +1,7 @@
 <app-body>
   <ng-container *ngIf="!submitted">
     <app-profile-form *appLoading="!chapter" [chapterId]="chapter.id" [formCallback]="formCallback"
-      (formSubmit)="onFormSubmit($event)">      
+      (imageUpload)="onImageUpload($event)" (formSubmit)="onFormSubmit($event)">
     </app-profile-form>
   </ng-container>
   <ng-container *ngIf="submitted">

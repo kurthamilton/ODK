@@ -132,6 +132,10 @@ namespace ODK.Web.Api.Account
         public async Task<IActionResult> Register([FromForm] CreateMemberProfileApiRequest request)
         {
             CreateMemberProfile profile = _mapper.Map<CreateMemberProfile>(request);
+
+            UpdateMemberImageApiRequest requestImage = await FileToApiRequest(request.Image);
+            profile.Image = _mapper.Map<UpdateMemberImage>(requestImage);
+
             await _memberService.CreateMember(request.ChapterId, profile);
             return Created();
         }

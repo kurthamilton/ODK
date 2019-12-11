@@ -25,7 +25,8 @@ namespace ODK.Web.Api.Account
             CreateMap<UpdateMemberProfileApiRequest, UpdateMemberProfile>();
 
             CreateMap<CreateMemberProfileApiRequest, CreateMemberProfile>()
-                .IncludeBase<UpdateMemberProfileApiRequest, UpdateMemberProfile>();
+                .IncludeBase<UpdateMemberProfileApiRequest, UpdateMemberProfile>()
+                .ForMember(x => x.Image, opt => opt.Ignore());
         }
 
         private void CreateResponseMaps()

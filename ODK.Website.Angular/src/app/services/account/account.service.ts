@@ -52,13 +52,14 @@ export class AccountService {
     );
   }
 
-  register(chapterId: string, profile: AccountProfile): Observable<ServiceResult<void>> {
+  register(chapterId: string, profile: AccountProfile, image: File): Observable<ServiceResult<void>> {
     const paramsObject: any = this.createProfileParams(profile);
     paramsObject.chapterId = chapterId;
+    paramsObject.image = image;    
 
-    const params: HttpParams = HttpUtils.createFormParams(paramsObject);
+    const formData: FormData = HttpUtils.createFormData(paramsObject);
 
-    return this.http.post(endpoints.register, params).pipe(
+    return this.http.post(endpoints.register, formData).pipe(
       map((): ServiceResult<void> => ({
         success: true
       })),

@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNetCore.Http;
 
 namespace ODK.Web.Api.Account.Requests
 {
@@ -7,5 +8,7 @@ namespace ODK.Web.Api.Account.Requests
         public Guid ChapterId { get; set; }
 
         public string EmailAddress { get; set; }
+
+        public IFormFile Image { get; set; }
     }
 }

@@ -6,7 +6,6 @@ import { tap } from 'rxjs/operators';
 
 import { AccountProfile } from 'src/app/core/account/account-profile';
 import { ArrayUtils } from 'src/app/utils/array-utils';
-import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
@@ -15,6 +14,7 @@ import { DataType } from 'src/app/core/data-types/data-type';
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
 import { DropDownFormControlOptions } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-options';
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
+import { FileInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/file-input-form-control/file-input-form-control.view-model';
 import { FormControlOptions } from 'src/app/modules/forms/components/form-control-options';
 import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
@@ -32,7 +32,6 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class ProfileFormComponent implements OnChanges {
 
-
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private datePipe: DatePipe
@@ -43,6 +42,7 @@ export class ProfileFormComponent implements OnChanges {
   @Input() formCallback: Observable<boolean | string[]>;
   @Input() profile: AccountProfile;
   @Output() formSubmit: EventEmitter<AccountProfile> = new EventEmitter<AccountProfile>();
+  @Output() imageUpload: EventEmitter<File> = new EventEmitter<File>();
   @Output() updated: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   form: FormViewModel;
@@ -55,6 +55,7 @@ export class ProfileFormComponent implements OnChanges {
     emailAddress: FormControlViewModel;
     emailOptIn: CheckBoxFormControlViewModel;
     firstName: TextInputFormControlViewModel;
+    image: FileInputFormControlViewModel;
     joined: ReadOnlyFormControlViewModel;
     lastName: TextInputFormControlViewModel;
     properties: FormControlViewModel[];
@@ -94,7 +95,10 @@ export class ProfileFormComponent implements OnChanges {
         value: x.value
       }))
     };
-    this.formSubmit.next(profile);
+    if (this.formControls.image.value && this.formControls.image.value.length >= 1) {
+      this.imageUpload.emit(this.formControls.image.value[0]);
+    }
+    this.formSubmit.emit(profile);
   }
 
   private buildForm(): void {
@@ -133,6 +137,16 @@ export class ProfileFormComponent implements OnChanges {
         },
         value: this.profile ? this.profile.firstName : ''
       }),
+      image: !this.profile ? new FileInputFormControlViewModel({
+        fileType: 'image',
+        id: 'image',
+        label: {
+          text: 'Picture'
+        },
+        validation: {
+          required: true
+        }
+      }) : null,
       joined: this.profile ? new ReadOnlyFormControlViewModel({
         id: 'joined',
         label: {
@@ -153,21 +167,29 @@ export class ProfileFormComponent implements OnChanges {
       properties: this.chapterProperties.map(x => this.mapFormControl(x))
     }
 
+    const controls: FormControlViewModel[] = [];
+    
+    if (this.formControls.image) {
+      controls.push(this.formControls.image);
+    }
+
+    controls.push(...[
+      this.formControls.emailAddress,
+      this.formControls.emailOptIn,
+      this.formControls.firstName,
+      this.formControls.lastName,
+      ...this.formControls.properties,        
+    ]);
+
+    if (this.formControls.joined) {
+      controls.push(this.formControls.joined);
+    }
+
     this.form = {
       buttonText: this.profile ? 'Update' : 'Create',
       callback: this.formCallback,
-      controls: [
-        this.formControls.emailAddress,
-        this.formControls.emailOptIn,
-        this.formControls.firstName,
-        this.formControls.lastName,
-        ...this.formControls.properties,        
-      ]
+      controls: controls
     };
-
-    if (this.formControls.joined) {
-      this.form.controls.push(this.formControls.joined);
-    }
   }
 
   private mapFormControl(chapterProperty: ChapterProperty): FormControlViewModel {

@@ -40,6 +40,6 @@ export class EventResponseIconComponent implements OnChanges {
   }
 
   onClick(): void {
-    this.respond.next(this.type);
+    this.respond.emit(this.type);
   }
 }

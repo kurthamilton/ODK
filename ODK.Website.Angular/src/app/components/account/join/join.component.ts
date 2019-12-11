@@ -25,6 +25,8 @@ export class JoinComponent implements OnInit, OnDestroy {
   formCallback: Subject<string[]> = new Subject<string[]>();
   submitted = false;
 
+  private image: File;
+
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
   }
@@ -34,10 +36,14 @@ export class JoinComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(profile: AccountProfile): void {
-    this.accountService.register(this.chapter.id, profile).subscribe((result: ServiceResult<void>) => {
+    this.accountService.register(this.chapter.id, profile, this.image).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
       this.submitted = result.success === true;
       this.changeDetector.detectChanges();
     });
+  }
+
+  onImageUpload(image: File): void {
+    this.image = image;
   }
 }

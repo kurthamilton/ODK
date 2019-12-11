@@ -175,7 +175,7 @@ namespace ODK.Data.Sql.Queries
             {
                 SqlMap<T> map = context.GetMap<T>();
                 IReadOnlyCollection<SqlColumn> columns = map.InsertColumns;
-                return $"INSERT INTO {context.GetTableName<T>()} ({string.Join(",", columns.Select(x => x.ColumnName))}) " +
+                return $"INSERT INTO {context.GetTableName<T>()} ({string.Join(",", columns.Select(x => $"[{x.ColumnName}]"))}) " +
                        (_insertOutputColumn != null ? $"OUTPUT inserted.{_insertOutputColumn.ColumnName} " : "") +
                        $"VALUES ({ string.Join(",", columns.Select(x => x.ParameterName))})";
             }
