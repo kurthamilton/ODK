@@ -3,6 +3,8 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
+import { AboutComponent } from './components/about/about/about.component';
+import { ActivateAccountComponent } from './components/account/activate/activate-account.component';
 import { AppComponent } from './components/app/app.component';
 import { AppFormsModule } from './modules/forms/app-forms.module';
 import { AppRoutingModule } from './routing/app-routing.module';
@@ -58,7 +60,6 @@ import { StripeFormComponent } from './components/payments/stripe-form/stripe-fo
 import { SubscriptionAlertComponent } from './components/account/subscription-alert/subscription-alert.component';
 import { SubscriptionComponent } from './components/account/subscription/subscription.component';
 import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenets.component';
-import { AboutComponent } from './components/about/about/about.component';
 
 @NgModule({
   declarations: [
@@ -114,6 +115,7 @@ import { AboutComponent } from './components/about/about/about.component';
     ThreeTenetsComponent,
     SubscriptionAlertComponent,
     AboutComponent,
+    ActivateAccountComponent,
   ],
   imports: [
     AppFormsModule,

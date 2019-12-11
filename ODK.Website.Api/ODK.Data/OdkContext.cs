@@ -17,6 +17,7 @@ namespace ODK.Data
             AddMap(new ChapterPropertyOptionMap());
             AddMap(new ChapterQuestionMap());
             AddMap(new ChapterSubscriptionMap());
+            AddMap(new ChapterTrialSettingsMap());
             AddMap(new ContactRequestMap());
             AddMap(new CountryMap());
             AddMap(new EmailMap());

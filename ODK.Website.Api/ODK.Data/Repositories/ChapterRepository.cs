@@ -168,6 +168,14 @@ namespace ODK.Data.Repositories
                 .VersionAsync();
         }
 
+        public async Task<ChapterTrialSettings> GetChapterTrialSettings(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterTrialSettings>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task UpdateChapterEmailSettings(ChapterEmailSettings emailSettings)
         {
             await Context

@@ -25,6 +25,7 @@ import { PrivacyComponent } from '../components/privacy/privacy.component';
 import { ProfileComponent } from '../components/account/profile/profile.component';
 import { ResetPasswordComponent } from '../components/account/reset-password/reset-password.component';
 import { SubscriptionComponent } from '../components/account/subscription/subscription.component';
+import { ActivateAccountComponent } from '../components/account/activate/activate-account.component';
 
 const chapterPaths = appPaths.chapter.childPaths;
 
@@ -43,6 +44,7 @@ export const appRoutes: Routes = [
       path: appPaths.chapter.path, component: ChapterLayoutComponent, canActivate: [ChapterGuardService], children: [
         { path: '', component: ChapterComponent },
         { path: chapterPaths.about.path, component: AboutComponent, data: { title: 'About' } },
+        { path: chapterPaths.activateAccount.path, component: ActivateAccountComponent, data: { title: 'Activate account' } },
         { path: chapterPaths.contact.path, component: ContactComponent, data: { title: 'Send us a message' } },
         { path: chapterPaths.events.path, component: EventsComponent, data: { title: 'Events' } },
         { path: chapterPaths.event.path, component: EventComponent },

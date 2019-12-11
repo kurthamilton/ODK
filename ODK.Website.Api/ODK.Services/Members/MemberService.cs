@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Images;
@@ -58,6 +59,11 @@ namespace ODK.Services.Members
 
             Guid id = await _memberRepository.CreateMember(create);
 
+            ChapterTrialSettings trialSettings = await _chapterRepository.GetChapterTrialSettings(chapterId);
+
+            MemberSubscription subscription = new MemberSubscription(id, SubscriptionType.Trial, create.CreatedDate.AddMonths(trialSettings.TrialPeriodMonths));
+            await _memberRepository.UpdateMemberSubscription(subscription);
+
             MemberImage image = CreateMemberImage(id, profile.Image.MimeType, profile.Image.ImageData);
             await _memberRepository.AddMemberImage(image);
 
@@ -75,7 +81,7 @@ namespace ODK.Services.Members
             string url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
-                { "token", activationToken }
+                { "token", HttpUtility.UrlEncode(activationToken) }
             });
 
             await _mailService.SendMemberMail(create, EmailType.ActivateAccount, new Dictionary<string, string>

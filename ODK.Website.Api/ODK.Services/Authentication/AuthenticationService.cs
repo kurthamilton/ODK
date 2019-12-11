@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.IdentityModel.Tokens;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
@@ -144,7 +145,7 @@ namespace ODK.Services.Authentication
             string url = _settings.PasswordResetUrl.Interpolate(new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
-                { "token", token }
+                { "token", HttpUtility.UrlEncode(token) }
             });
 
             await _mailService.SendMemberMail(member, EmailType.PasswordReset, new Dictionary<string, string>

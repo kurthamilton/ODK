@@ -15,6 +15,7 @@ import { ServiceResult } from '../service-result';
 const baseUrl = `${environment.baseUrl}/account`;
 
 const endpoints = {
+  activate: `${baseUrl}/activate`,
   image: `${baseUrl}/image`,
   profile: `${baseUrl}/profile`,
   purchaseSubscription: (id: string) => `${baseUrl}/subscriptions/${id}/purchase`,
@@ -29,6 +30,20 @@ const endpoints = {
 export class AccountService {
 
   constructor(private http: HttpClient) { }  
+
+  activateAccount(password: string, token: string): Observable<ServiceResult<void>> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      password: password,
+      activationToken: token
+    });
+
+    return this.http.post(endpoints.activate, params).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
+    )
+  }
 
   getProfile(): Observable<AccountProfile> {
     return this.http.get(endpoints.profile).pipe(
