@@ -46,7 +46,6 @@ export class ActivateAccountComponent implements OnInit, OnDestroy {
     this.links = {
       login: appUrls.login(this.chapter)
     };
-    console.log(this.token);
     this.buildForm();    
   }
 
