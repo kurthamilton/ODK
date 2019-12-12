@@ -34,6 +34,7 @@ export abstract class InputBase implements OnDestroy {
 
     this.control = FormUtils.createControl(this.formGroup, value);
     this.init();
+    this.changeDetector.detectChanges();
   }
 
   @Output() valueChange: EventEmitter<void> = new EventEmitter<void>();
