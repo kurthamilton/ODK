@@ -2,13 +2,18 @@
 	border: none;
 	margin: 5px;
 	padding: 5px;
-    text-align: center;
-    
-    .card-img-top {
-        background-color: #eee;
-        border-radius: calc(.5rem - 1px);
-        max-height: 150px;
-        line-height: 150px;
-        width: inherit;
-    }
+  text-align: center;
+  
+  .card-img-top {
+    background-color: #eee;
+    border-radius: calc(.5rem - 1px);
+    max-height: 150px;
+    line-height: 150px;
+    width: inherit;
+  }
+}
+
+.member-tile-sm {
+  padding: 0;
+  margin: 2px;
 }

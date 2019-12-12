@@ -16,8 +16,8 @@ export class MemberListComponent implements OnInit {
   }
 
   @Input() cols: number;
-  @Input() hideName: boolean;
   @Input() members: Member[];
+  @Input() size: 'sm';
   
   private chapter: Chapter;
 

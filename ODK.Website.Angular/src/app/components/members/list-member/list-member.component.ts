@@ -9,8 +9,8 @@ import { Member } from 'src/app/core/members/member';
 })
 export class ListMemberComponent {
   
-  @Input() hideName: boolean;
   @Input() link: string;
   @Input() maxWidth: number;
-  @Input() member: Member;    
+  @Input() member: Member;   
+  @Input() size: 'sm';
 }

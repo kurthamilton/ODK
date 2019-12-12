@@ -1,6 +1,6 @@
 <div *ngIf="members && members.length > 0" class="card sidebar-card">
     <div class="card-header">{{title}}</div>
-    <div class="card-body">        
-        <app-member-list [hideName]="true" [members]="members" [cols]="4"></app-member-list>
+    <div class="card-body card-body-sm">        
+        <app-member-list size="sm" [members]="members" [cols]="4"></app-member-list>
     </div>
 </div>

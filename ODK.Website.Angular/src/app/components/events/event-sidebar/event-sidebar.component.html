@@ -2,7 +2,7 @@
   <ng-container *ngIf="authenticated">
     <div *appLoading="!going" class="card sidebar-card">
       <div class="card-header">RSVP</div>
-      <div class="card-body">                
+      <div class="card-body card-body-sm">                
         <div class="d-flex justify-content-around">
           <app-event-response-icon [type]="1" [active]="memberResponse === 1" (respond)="onRespond($event)">                                
           </app-event-response-icon>
