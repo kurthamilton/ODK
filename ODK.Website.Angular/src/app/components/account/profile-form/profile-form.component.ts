@@ -95,9 +95,11 @@ export class ProfileFormComponent implements OnChanges {
         value: x.value
       }))
     };
-    if (this.formControls.image.value && this.formControls.image.value.length >= 1) {
+
+    if (this.formControls.image && this.formControls.image.value && this.formControls.image.value.length >= 1) {
       this.imageUpload.emit(this.formControls.image.value[0]);
     }
+
     this.formSubmit.emit(profile);
   }
 
