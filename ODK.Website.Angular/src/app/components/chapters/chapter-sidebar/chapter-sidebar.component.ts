@@ -10,6 +10,7 @@ import { AuthenticationToken } from 'src/app/core/authentication/authentication-
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { Event } from 'src/app/core/events/event';
+import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 import { EventService } from 'src/app/services/events/event.service';
 import { ListEventViewModel } from '../../events/list-event/list-event.view-model';
 import { Venue } from 'src/app/core/venues/venue';
@@ -34,6 +35,7 @@ export class ChapterSidebarComponent implements OnInit {
 
   private chapter: Chapter;
   private events: Event[];
+  private memberResponses: EventMemberResponse[];
   private venues: Venue[];
 
   ngOnInit(): void {
@@ -55,6 +57,9 @@ export class ChapterSidebarComponent implements OnInit {
     forkJoin([
       this.eventService.getEvents(this.chapter.id).pipe(
         tap((events: Event[]) => this.events = events)
+      ),
+      this.eventService.getMemberResponses().pipe(
+        tap((responses: EventMemberResponse[]) => this.memberResponses = responses)
       ),
       this.venueService.getVenues(this.chapter.id).pipe(
         tap((venues: Venue[]) => this.venues = venues)
@@ -81,8 +86,11 @@ export class ChapterSidebarComponent implements OnInit {
   
   private setEvents(): void {
     const venueMap: Map<string, Venue> = ArrayUtils.toMap(this.venues, x => x.id);
+    const responseMap: Map<string, EventMemberResponse> = ArrayUtils.toMap(this.memberResponses || [], x => x.eventId);
+
     this.eventViewModels = this.events.map((event: Event): ListEventViewModel => ({
       event: event,
+      memberResponse: responseMap.get(event.id),
       venue: venueMap.get(event.venueId)
     }));
   }

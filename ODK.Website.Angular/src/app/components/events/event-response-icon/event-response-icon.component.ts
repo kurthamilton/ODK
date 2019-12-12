@@ -12,6 +12,7 @@ export class EventResponseIconComponent implements OnChanges {
   constructor() { }
 
   @Input() active: boolean;
+  @Input() readOnly: boolean;
   @Input() type: EventResponseType;
   @Output() respond: EventEmitter<EventResponseType> = new EventEmitter<EventResponseType>();
 
@@ -27,15 +28,15 @@ export class EventResponseIconComponent implements OnChanges {
     if (this.type === EventResponseType.Yes) {
       this.buttonClass = 'yes';
       this.iconClass = 'fa-check-circle';
-      this.tooltip = 'Yes';
+      this.tooltip = this.readOnly ? 'Going' : 'Yes';
     } else if (this.type === EventResponseType.Maybe) {
       this.buttonClass = 'maybe';
       this.iconClass = 'fa-question-circle';
-      this.tooltip = 'Maybe';
+      this.tooltip = this.readOnly ? 'Maybe going' : 'Maybe';
     } else if (this.type === EventResponseType.No) {
       this.buttonClass = 'no';
       this.iconClass = 'fa-times-circle';
-      this.tooltip = 'No';
+      this.tooltip = this.readOnly ? 'Not going' : 'No';
     }
   }
 

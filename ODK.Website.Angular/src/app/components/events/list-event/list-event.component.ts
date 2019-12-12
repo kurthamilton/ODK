@@ -3,7 +3,7 @@ import { Component, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef
 import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { AdminListEventViewModel } from 'src/app/modules/admin/components/events/events/admin-list-event.view-model';
+import { ListEventViewModel } from './list-event.view-model';
 
 @Component({
   selector: 'app-list-event',
@@ -17,7 +17,7 @@ export class ListEventComponent implements OnChanges {
   ) {
   }
 
-  @Input() viewModel: AdminListEventViewModel;
+  @Input() viewModel: ListEventViewModel;
 
   link: string;
 
@@ -26,9 +26,7 @@ export class ListEventComponent implements OnChanges {
       return;
     }
 
-    this.chapterService.getChapterById(this.viewModel.event.chapterId).subscribe((chapter: Chapter) => {
-      this.link = appUrls.event(chapter, this.viewModel.event);
-      this.changeDetector.detectChanges();
-    });
+    const chapter: Chapter = this.chapterService.getActiveChapter();
+    this.link = appUrls.event(chapter, this.viewModel.event);    
   }
 }

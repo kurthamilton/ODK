@@ -26,7 +26,7 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<Venue>()
                 .Join<Event, Guid>(x => x.Id, x => x.VenueId)
-                .Where(x => x.ChapterId).EqualTo(id)
+                .Where(x => x.Id).EqualTo(id)
                 .Where<Event, bool>(x => x.IsPublic).EqualTo(true)
                 .FirstOrDefaultAsync();
         }

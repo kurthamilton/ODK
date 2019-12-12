@@ -16,6 +16,7 @@ const baseUrl = `${environment.baseUrl}/events`;
 const endpoints = {
   eventResponses: (eventId: string) => `${baseUrl}/${eventId}/responses`,
   events: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
+  memberResponses: `${baseUrl}/responses`,
   publicEvents: (chapterId: string) => `${baseUrl}/public?chapterId=${chapterId}`,
   respond: (eventId: string, type: number) => `${baseUrl}/${eventId}/respond?type=${type}`
 }
@@ -54,12 +55,18 @@ export class EventService {
       )
   }
 
+  getMemberResponses(): Observable<EventMemberResponse[]> {
+    return this.http.get(endpoints.memberResponses).pipe(
+      map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
+    );
+  }
+  
   getPublicEvents(chapterId: string): Observable<Event[]> {
     return this.http.get(endpoints.publicEvents(chapterId))
       .pipe(
         map((response: any) => response.map(x => this.mapEvent(x)))
       )
-  }
+  }  
 
   respond(eventId: string, responseType: EventResponseType): Observable<EventMemberResponse> {
     return this.http.put(endpoints.respond(eventId, responseType), null).pipe(

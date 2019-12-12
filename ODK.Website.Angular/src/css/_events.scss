@@ -1,7 +1,9 @@
 .event-response-option {
 	font-size: 1.2em;
 	height: 50px;
-	line-height: 50px;
+  line-height: 50px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .event-response-option:not(.active) {
@@ -22,4 +24,8 @@
 
 .icon--event-response {
 	font-size: 1.2rem;
+}
+
+.icon--event-response--sm {
+	font-size: 0.8rem;
 }

@@ -53,5 +53,12 @@ namespace ODK.Web.Api.Events
             IReadOnlyCollection<EventMemberResponse> responses = await _eventService.GetEventResponses(GetMemberId(), id);
             return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
         }
+
+        [HttpGet("responses")]
+        public async Task<IEnumerable<EventMemberResponseApiResponse>> MemberResponses()
+        {
+            IReadOnlyCollection<EventMemberResponse> responses = await _eventService.GetMemberResponses(GetMemberId());
+            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
+        }
     }
 }

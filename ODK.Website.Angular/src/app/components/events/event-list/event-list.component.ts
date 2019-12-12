@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, OnChanges } from '@angular/core';
 
-import { AdminListEventViewModel } from 'src/app/modules/admin/components/events/events/admin-list-event.view-model';
+import { ListEventViewModel } from '../list-event/list-event.view-model';
 
 @Component({
   selector: 'app-event-list',
@@ -8,5 +8,5 @@ import { AdminListEventViewModel } from 'src/app/modules/admin/components/events
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EventListComponent {
-  @Input() viewModels: AdminListEventViewModel[];
+  @Input() viewModels: ListEventViewModel[];
 }

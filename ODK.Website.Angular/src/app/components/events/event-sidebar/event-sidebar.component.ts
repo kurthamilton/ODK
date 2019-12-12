@@ -28,6 +28,7 @@ export class EventSidebarComponent implements OnInit, OnChanges {
 
   @Input() eventId: string;
 
+  authenticated: boolean;
   declined: Member[];
   going: Member[];
   maybe: Member[];
@@ -39,7 +40,8 @@ export class EventSidebarComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     const token: AuthenticationToken = this.authenticationService.getToken();
-    if (!token) {
+    this.authenticated = !!token;
+    if (!token) {      
       return;
     }
   
@@ -54,14 +56,9 @@ export class EventSidebarComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(): void {
-    if (!this.eventId) {
+    if (!this.eventId || !this.authenticated) {
       return;
-    }
-
-    const token: AuthenticationToken = this.authenticationService.getToken();
-    if (!token) {
-      return;
-    }        
+    }    
     
     this.loadResponses(this.eventId).subscribe(() => {
       this.setResponses();

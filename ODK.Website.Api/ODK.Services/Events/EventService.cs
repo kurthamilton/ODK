@@ -30,6 +30,11 @@ namespace ODK.Services.Events
             return await _eventRepository.GetEvents(chapterId, DateTime.Today);
         }
 
+        public async Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId)
+        {
+            return await _eventRepository.GetMemberResponses(memberId);
+        }
+
         public async Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId)
         {
             return await _eventRepository.GetPublicEvents(chapterId, DateTime.Today);

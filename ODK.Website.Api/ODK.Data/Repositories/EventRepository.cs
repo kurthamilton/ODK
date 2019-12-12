@@ -74,6 +74,16 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
+        public async Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId)
+        {
+            return await Context
+                .Select<EventMemberResponse>()
+                .Join<Event, Guid>(x => x.EventId, x => x.Id)
+                .Where(x => x.MemberId).EqualTo(memberId)
+                .Where<Event, DateTime>(x => x.Date).GreaterThanOrEqualTo(DateTime.UtcNow.Date)
+                .ToArrayAsync();
+        }
+
         public async Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId, DateTime after)
         {
             return await Context
