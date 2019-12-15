@@ -1,12 +1,20 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
+import { forkJoin } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+import { AdminListMemberViewModel } from './admin-list-member.view-model';
 import { adminUrls } from '../../../routing/admin-urls';
+import { ArrayUtils } from 'src/app/utils/array-utils';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
+import { MemberSubscription } from 'src/app/core/members/member-subscription';
+import { SubscriptionType } from 'src/app/core/account/subscription-type';
+import { DateUtils } from 'src/app/utils/date-utils';
 
 @Component({
   selector: 'app-members',
@@ -22,16 +30,37 @@ export class MembersComponent implements OnInit {
   ) {
   }
 
-  members: Member[];
+  subscriptionTypes = SubscriptionType;
+  subscriptionWarningDate: Date = DateUtils.addDays(DateUtils.today(), 7);
   superAdmin: boolean;
-
+  today: Date = DateUtils.today();
+  viewModels: AdminListMemberViewModel[];
+  
   private chapter: Chapter;
   private imageQueue: Member[];
+  private members: Member[];
+  private memberSubscriptions: MemberSubscription[];
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
-    this.memberAdminService.getAdminMembers(this.chapter.id).subscribe((members: Member[]) => {
-      this.members = members.sort((a, b) => a.fullName.localeCompare(b.fullName));
+    forkJoin([
+      this.memberAdminService.getAdminMembers(this.chapter.id).pipe(
+        tap((members: Member[]) => this.members = members)
+      ),
+      this.memberAdminService.getMemberSubscriptions(this.chapter.id).pipe(
+        tap((subscriptions: MemberSubscription[]) => this.memberSubscriptions = subscriptions)
+      )
+    ]).subscribe(() => {
+      const subscriptionMap: Map<string, MemberSubscription> = ArrayUtils.toMap(this.memberSubscriptions, x => x.memberId);
+
+      this.viewModels = this.members
+        .sort((a, b) => a.fullName.localeCompare(b.fullName))
+        .map((member: Member): AdminListMemberViewModel => {
+          return {
+            member: member,
+            subscription: subscriptionMap.get(member.id)
+          };
+        });
       this.changeDetector.detectChanges();
     });
 

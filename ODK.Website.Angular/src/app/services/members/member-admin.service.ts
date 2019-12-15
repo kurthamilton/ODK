@@ -8,11 +8,13 @@ import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from './member.service';
+import { MemberSubscription } from 'src/app/core/members/member-subscription';
 
 const baseUrl: string = `${environment.baseUrl}/admin/members`;
 
 const endpoints = {
   members: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
+  memberSubscriptions: (chapterId: string) => `${baseUrl}/subscriptions?chapterId=${chapterId}`,
   rotateImage: (memberId: string) => `${baseUrl}/${memberId}/image/rotate/right`,
   updateImage: (memberId: string) => `${baseUrl}/${memberId}/image`
 };
@@ -32,6 +34,12 @@ export class MemberAdminService extends MemberService {
     );
   }
 
+  getMemberSubscriptions(chapterId: string): Observable<MemberSubscription[]> {
+    return this.http.get(endpoints.memberSubscriptions(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapMemberSubscription(x)))
+    );
+  }
+
   rotateMemberImage(memberId: string): Observable<string> {
     return HttpUtils.putBase64(this.http, endpoints.rotateImage(memberId));
   }
@@ -41,5 +49,13 @@ export class MemberAdminService extends MemberService {
     formData.append('file', file, file.name);
 
     return HttpUtils.putBase64(this.http, endpoints.rotateImage(memberId), formData);
+  }
+
+  private mapMemberSubscription(response: any): MemberSubscription {
+    return {
+      expiryDate: response.expiryDate ? new Date(response.expiryDate) : null,
+      memberId: response.memberId,
+      type: response.type
+    };
   }
 }

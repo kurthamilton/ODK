@@ -35,6 +35,7 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
   completedSubject: Subject<void> = new Subject<void>();
   form: FormViewModel;
   subscription: MemberSubscription;
+  title: string;
 
   private chapter: Chapter;
 
@@ -53,6 +54,7 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
         tap((chapterSubscriptions: ChapterSubscription[]) => this.chapterSubscriptions = chapterSubscriptions)
       )
     ]).subscribe(() => {
+      this.title = this.subscription.type === SubscriptionType.Trial ? 'Purchase membership' : 'Renew membership';
       this.buildForm();
       this.changeDetector.detectChanges();
     });

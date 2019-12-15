@@ -19,6 +19,7 @@ export class MemberImageComponent implements OnChanges, OnDestroy {
   ) {
   }
 
+  @Input() isTop: boolean;
   @Input() maxWidth: number;
   @Input() member: Member;
   @Input() update: Observable<boolean>;

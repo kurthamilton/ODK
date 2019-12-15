@@ -1,3 +1,6 @@
 <ng-container *appLoading="loading">
-    <img *ngIf="image" class="card-img-top" [attr.src]="image" [attr.alt]="'Photo of ' + member.fullName" />
+    <span *ngIf="image" [style.max-width.px]="maxWidth" class="d-inline-block">
+      <img *ngIf="image" [class.card-img]="!isTop" [class.card-img-top]="isTop" 
+        [attr.src]="image" [attr.alt]="'Photo of ' + member.fullName" />
+    </span>    
 </ng-container>

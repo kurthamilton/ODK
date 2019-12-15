@@ -95,6 +95,13 @@ namespace ODK.Services.Members
             return await _memberRepository.GetMembers(chapterId);
         }
 
+        public async Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _memberRepository.GetMemberSubscriptions(chapterId);
+        }
+
         public async Task RemoveMemberFromGroup(Guid currentMemberId, Guid memberId, Guid memberGroupId)
         {
             MemberGroup memberGroup = await GetMemberGroup(currentMemberId, memberGroupId);

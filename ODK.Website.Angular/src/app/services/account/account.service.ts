@@ -140,6 +140,7 @@ export class AccountService {
   private mapMemberSubscription(response: any): MemberSubscription {
     return {
       expiryDate: response.expiryDate ? new Date(response.expiryDate) : null,
+      memberId: response.memberId,
       type: response.type
     };
   }

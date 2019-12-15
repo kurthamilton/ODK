@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
 using ODK.Services.Members;
 using ODK.Web.Api.Account.Requests;
+using ODK.Web.Api.Account.Responses;
 using ODK.Web.Api.Members.Responses;
 
 namespace ODK.Web.Api.Admin.Members
@@ -32,6 +33,13 @@ namespace ODK.Web.Api.Admin.Members
         {
             IReadOnlyCollection<Member> members = await _memberAdminService.GetMembers(GetMemberId(), chapterId);
             return members.Select(_mapper.Map<MemberApiResponse>);
+        }
+
+        [HttpGet("Subscriptions")]
+        public async Task<IEnumerable<SubscriptionApiResponse>> GetSubscriptions(Guid chapterId)
+        {
+            IReadOnlyCollection<MemberSubscription> subscriptions = await _memberAdminService.GetMemberSubscriptions(GetMemberId(), chapterId);
+            return subscriptions.Select(_mapper.Map<SubscriptionApiResponse>);
         }
 
         [HttpPut("{id}/Disable")]

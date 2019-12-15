@@ -23,6 +23,8 @@ namespace ODK.Services.Members
 
         Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId);
 
+        Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId);
+
         Task RemoveMemberFromGroup(Guid currentMemberId, Guid memberId, Guid memberGroupId);
 
         Task<MemberImage> RotateMemberImage(Guid currentMemberId, Guid id, int degrees);
