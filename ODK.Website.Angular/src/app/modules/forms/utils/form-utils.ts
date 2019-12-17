@@ -6,6 +6,10 @@ export class FormUtils {
   private static formBuilder: FormBuilder = new FormBuilder();
 
   static createControl(formGroup: FormGroup, viewModel: FormControlViewModel): AbstractControl {
+    if (!formGroup) {
+      return;
+    }
+    
     let control: AbstractControl = formGroup.get(viewModel.id);
     if (control) {
       return control;

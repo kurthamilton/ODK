@@ -9,6 +9,15 @@ export class DateUtils {
     return date;
   }
 
+  static compare(date1: Date, date2: Date): number {
+    if (!date1 || !date2) {
+      return date1 ? -1 : date2 ? 1 : 0;
+    }
+
+    const result: number = date1.getTime() - date2.getTime();
+    return result < 0 ? -1 : result > 0 ? 1 : 0;
+  }
+  
   static daysBetween(date1: Date, date2: Date): number {
     const difference: number = date2.getTime() - date1.getTime();   
     return difference / (1000 * 3600 * 24); 

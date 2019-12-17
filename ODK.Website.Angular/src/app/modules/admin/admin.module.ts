@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 import { AdminComponent } from './components/admin/admin.component';
 import { AdminMenuComponent } from './components/structure/admin-menu/admin-menu.component';
@@ -29,6 +30,8 @@ import { VenueFormComponent } from './components/venues/venue-form/venue-form.co
 import { VenuesComponent } from './components/venues/venues/venues.component';
 import { ChapterQuestionsComponent } from './components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterEmailsComponent } from './components/chapters/chapter-emails/chapter-emails.component';
+import { MemberFilterComponent } from './components/members/member-filter/member-filter.component';
+import { DropDownMultiComponent } from './components/forms/inputs/drop-down-multi/drop-down-multi.component';
 
 @NgModule({
   declarations: [
@@ -55,6 +58,8 @@ import { ChapterEmailsComponent } from './components/chapters/chapter-emails/cha
     EditVenueComponent,
     ChapterQuestionsComponent,
     ChapterEmailsComponent,
+    MemberFilterComponent,
+    DropDownMultiComponent,
   ],
   imports: [
     AdminRoutingModule,
@@ -62,6 +67,7 @@ import { ChapterEmailsComponent } from './components/chapters/chapter-emails/cha
     AppSharedModule,
     CKEditorModule,
     CommonModule,
+    NgSelectModule,
   ],
   entryComponents: [
     GoogleMapsTextInputFormControlComponent,

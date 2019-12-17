@@ -54,6 +54,10 @@ export abstract class InputBase implements OnDestroy {
   ngOnDestroy(): void {}
 
   onValidate(): void {
+    if (!this.control) {
+      return;
+    }
+    
     this.control.updateValueAndValidity();
   }
 

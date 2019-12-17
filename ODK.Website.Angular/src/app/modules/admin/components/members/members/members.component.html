@@ -3,12 +3,20 @@
     <button class="btn btn-link" (click)="file.click()">Upload pictures</button>
 </p>
 
+<p>
+  <app-member-filter [viewModel]="filter" (change)="onFilterChange($event)"></app-member-filter>
+</p>
+
 <table *ngIf="viewModels" class="table table-striped">
     <thead>
         <tr>
-            <th>Name</th>   
+            <th>
+              <button class="btn btn-link p-0" (click)="onSort('name')">Name</button>
+            </th>   
             <th>Type</th>       
-            <th>Expires</th>       
+            <th>
+              <button class="btn btn-link p-0" (click)="onSort('expires')">Expires</button>
+            </th>       
         </tr>
     </thead>
     <tbody>

@@ -10,11 +10,12 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
+import { DateUtils } from 'src/app/utils/date-utils';
 import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
+import { MemberFilterViewModel } from '../member-filter/member-filter.view-model';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { SubscriptionType } from 'src/app/core/account/subscription-type';
-import { DateUtils } from 'src/app/utils/date-utils';
 
 @Component({
   selector: 'app-members',
@@ -30,6 +31,7 @@ export class MembersComponent implements OnInit {
   ) {
   }
 
+  filter: MemberFilterViewModel;
   subscriptionTypes = SubscriptionType;
   subscriptionWarningDate: Date = DateUtils.addDays(DateUtils.today(), 7);
   superAdmin: boolean;
@@ -40,9 +42,12 @@ export class MembersComponent implements OnInit {
   private imageQueue: Member[];
   private members: Member[];
   private memberSubscriptions: MemberSubscription[];
+  private sortBy: 'name' | 'expires';
+  private subscriptionMap: Map<string, MemberSubscription>;
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
+
     forkJoin([
       this.memberAdminService.getAdminMembers(this.chapter.id).pipe(
         tap((members: Member[]) => this.members = members)
@@ -50,17 +55,16 @@ export class MembersComponent implements OnInit {
       this.memberAdminService.getMemberSubscriptions(this.chapter.id).pipe(
         tap((subscriptions: MemberSubscription[]) => this.memberSubscriptions = subscriptions)
       )
-    ]).subscribe(() => {
-      const subscriptionMap: Map<string, MemberSubscription> = ArrayUtils.toMap(this.memberSubscriptions, x => x.memberId);
+    ]).subscribe(() => {      
+      this.subscriptionMap = ArrayUtils.toMap(this.memberSubscriptions, x => x.memberId);
+      this.filter = {
+        types: [
+          SubscriptionType.Trial, SubscriptionType.Full, SubscriptionType.Partial
+        ]
+      };
 
-      this.viewModels = this.members
-        .sort((a, b) => a.fullName.localeCompare(b.fullName))
-        .map((member: Member): AdminListMemberViewModel => {
-          return {
-            member: member,
-            subscription: subscriptionMap.get(member.id)
-          };
-        });
+      this.filterMembers(this.filter);
+      this.sortMembers();
       this.changeDetector.detectChanges();
     });
 
@@ -70,6 +74,16 @@ export class MembersComponent implements OnInit {
 
   getMemberUrl(member: Member): string {
     return adminUrls.member(this.chapter, member);
+  }
+
+  onFilterChange(filter: MemberFilterViewModel): void {
+    this.filterMembers(filter);
+    this.sortMembers();
+  }
+
+  onSort(sortBy: 'name' | 'expires'): void {
+    this.sortBy = sortBy;
+    this.sortMembers();
   }
 
   onUploadPicture(files: FileList): void {
@@ -87,6 +101,28 @@ export class MembersComponent implements OnInit {
         this.imageQueue.push(member);
         this.uploadPicture(member, file);
       }
+    }
+  }
+
+  private filterMembers(filter: MemberFilterViewModel): void {
+    this.viewModels = this.members
+      .filter(x => !filter.types || !filter.types.length || filter.types.includes(this.subscriptionMap.get(x.id).type))
+      .map((member: Member): AdminListMemberViewModel => {
+        return {
+          member: member,
+          subscription: this.subscriptionMap.get(member.id)
+        };
+      });
+  }
+
+  private sortMembers(): void {
+    switch (this.sortBy) {
+      case 'expires':
+        this.viewModels.sort((a, b) => DateUtils.compare(a.subscription.expiryDate, b.subscription.expiryDate));
+        break;
+      default:
+        this.viewModels.sort((a, b) => a.member.fullName.localeCompare(b.member.fullName));
+        break;
     }
   }
 
