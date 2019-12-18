@@ -89,8 +89,10 @@ namespace ODK.Services.Chapters
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
+            ChapterEmailSettings current = await _chapterRepository.GetChapterEmailSettings(chapterId);
+
             ChapterEmailSettings update = new ChapterEmailSettings(chapterId, emailSettings.AdminEmailAddress, emailSettings.ContactEmailAddress,
-                emailSettings.FromEmailAddress);
+                emailSettings.FromEmailAddress, current.EmailProvider, emailSettings.EmailApiKey);
 
             ValidateChapterEmailSettings(update);
 
@@ -124,7 +126,8 @@ namespace ODK.Services.Chapters
         {
             if (string.IsNullOrWhiteSpace(emailSettings.AdminEmailAddress) ||
                 string.IsNullOrWhiteSpace(emailSettings.ContactEmailAddress) ||
-                string.IsNullOrWhiteSpace(emailSettings.FromEmailAddress))
+                string.IsNullOrWhiteSpace(emailSettings.FromEmailAddress) || 
+                string.IsNullOrWhiteSpace(emailSettings.EmailApiKey))
             {
                 throw new OdkServiceException("Some required fields are missing");
             }

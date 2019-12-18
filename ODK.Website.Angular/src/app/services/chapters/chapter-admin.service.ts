@@ -92,6 +92,7 @@ export class ChapterAdminService extends ChapterService {
     const params: HttpParams = HttpUtils.createFormParams({
       adminEmailAddress: emailSettings.adminEmailAddress,
       contactEmailAddress: emailSettings.contactEmailAddress,
+      emailApiKey: emailSettings.emailApiKey,
       fromEmailAddress: emailSettings.fromEmailAddress,
     });
 
@@ -112,6 +113,8 @@ export class ChapterAdminService extends ChapterService {
     return {
       adminEmailAddress: response.adminEmailAddress,
       contactEmailAddress: response.contactEmailAddress,
+      emailApiKey: response.emailApiKey,
+      emailProvider: response.emailProvider,
       fromEmailAddress: response.fromEmailAddress
     };
   }

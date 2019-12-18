@@ -6,6 +6,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { ChapterEmailSettings } from 'src/app/core/chapters/chapter-email-settings';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
@@ -17,7 +18,8 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
-  ) { }
+  ) {     
+  }
 
   emailSettings: ChapterEmailSettings;
   form: FormViewModel;
@@ -27,6 +29,8 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
   private formControls: {
     adminEmailAddress: TextInputFormControlViewModel;
     contactEmailAddress: TextInputFormControlViewModel;
+    emailApiKey: TextInputFormControlViewModel;
+    emailProvider: ReadOnlyFormControlViewModel;
     fromEmailAddress: TextInputFormControlViewModel;
   };
 
@@ -47,6 +51,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
   onFormSubmit(): void {
     this.emailSettings.adminEmailAddress = this.formControls.adminEmailAddress.value;
     this.emailSettings.contactEmailAddress = this.formControls.contactEmailAddress.value;
+    this.emailSettings.emailApiKey = this.formControls.emailApiKey.value;
     this.emailSettings.fromEmailAddress = this.formControls.fromEmailAddress.value;
     this.chapterAdminService.updateChapterEmailSettings(this.chapter.id, this.emailSettings).subscribe(() => {
       this.formCallback.next(true);
@@ -75,6 +80,23 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
         },
         value: this.emailSettings.contactEmailAddress
       }),
+      emailApiKey: new TextInputFormControlViewModel({
+        id: 'email-api-key',
+        label: {
+          text: 'Provider Api Key'
+        },
+        validation: {
+          required: true
+        },
+        value: this.emailSettings.emailApiKey
+      }),
+      emailProvider: new ReadOnlyFormControlViewModel({
+        id: 'email-provider',
+        label: {
+          text: 'Provider'
+        },
+        value: this.emailSettings.emailProvider
+      }),
       fromEmailAddress: new TextInputFormControlViewModel({
         id: 'from-email-address',
         label: {
@@ -93,7 +115,9 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
       controls: [
         this.formControls.fromEmailAddress,
         this.formControls.adminEmailAddress,
-        this.formControls.contactEmailAddress
+        this.formControls.contactEmailAddress,
+        this.formControls.emailProvider,
+        this.formControls.emailApiKey
       ]
     };
   }

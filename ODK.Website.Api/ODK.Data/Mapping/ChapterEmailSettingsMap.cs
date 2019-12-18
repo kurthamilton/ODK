@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using ODK.Core.Chapters;
+using ODK.Data.Sql;
 using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Mapping
@@ -12,6 +13,8 @@ namespace ODK.Data.Mapping
             Property(x => x.ChapterId);
             Property(x => x.AdminEmailAddress);
             Property(x => x.ContactEmailAddress);
+            Property(x => x.EmailApiKey);
+            Property(x => x.EmailProvider);
             Property(x => x.FromEmailAddress);
         }
 
@@ -22,7 +25,9 @@ namespace ODK.Data.Mapping
                 chapterId: reader.GetGuid(0),
                 adminEmailAddress: reader.GetString(1),
                 contactEmailAddress: reader.GetString(2),
-                fromEmailAddress: reader.GetString(3)
+                emailApiKey: reader.GetStringOrDefault(3),
+                emailProvider: reader.GetStringOrDefault(4),
+                fromEmailAddress: reader.GetString(5)
             );
         }
     }
