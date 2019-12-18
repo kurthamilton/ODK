@@ -13,6 +13,8 @@ namespace ODK.Web.Api.Account.Responses
 
         public Guid MemberId { get; set; }
 
+        public bool? MembershipDisabled { get; set; }
+
         public string RefreshToken { get; set; }
 
         public DateTime? SubscriptionExpiryDate { get; set; }

@@ -7,12 +7,13 @@ namespace ODK.Services.Authentication
     public class AuthenticationToken
     {
         public AuthenticationToken(Guid memberId, Guid chapterId, string accessToken, string refreshToken,
-            IEnumerable<Guid> adminChapterIds, bool superAdmin, DateTime? subscriptionExpiryDate)
+            IEnumerable<Guid> adminChapterIds, bool superAdmin, DateTime? subscriptionExpiryDate, bool membershipActive)
         {
             AccessToken = accessToken;
             AdminChapterIds = adminChapterIds?.ToArray();
             ChapterId = chapterId;
             MemberId = memberId;
+            MembershipActive = membershipActive;
             RefreshToken = refreshToken;
             SubscriptionExpiryDate = subscriptionExpiryDate;
             SuperAdmin = superAdmin;
@@ -25,6 +26,8 @@ namespace ODK.Services.Authentication
         public Guid ChapterId { get; }
 
         public Guid MemberId { get; }
+
+        public bool MembershipActive { get; }
 
         public string RefreshToken { get; }
 

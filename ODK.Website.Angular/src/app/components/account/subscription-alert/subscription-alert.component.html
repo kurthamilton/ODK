@@ -1,9 +1,17 @@
-<div *ngIf="status" class="container mt-3 subscription-alerts">
-  <ngb-alert [dismissible]="false" *ngIf="status === 'expired'" type="danger">
-    Your {{type}} has expired. <a [routerLink]="links.subscription">{{action}}</a>
-  </ngb-alert>
+<div *ngIf="status" class="container subscription-alerts">
+  <div *ngIf="status" class="mt-3">
+    <ngb-alert [dismissible]="false" *ngIf="status === 'expired'" type="danger">
+      Your {{type}} has expired. <a [routerLink]="links.subscription">{{action}}</a>
+    </ngb-alert>      
   
-  <ngb-alert type="warning" (close)="onClose()" *ngIf="status === 'expiring' && !hide">
-    Your {{type}} expires {{expiresIn}}. <a [routerLink]="links.subscription">{{action}}</a>
-  </ngb-alert>
+    <ngb-alert type="warning" (close)="onClose()" *ngIf="status === 'expiring' && !hide">
+      Your {{type}} expires {{expiresIn}}. <a [routerLink]="links.subscription">{{action}}</a>
+    </ngb-alert>
+  </div>
+
+  <div *ngIf="disabled" class="mt-3">
+    <ngb-alert [dismissible]="false" type="danger">
+      Your access has expired.
+    </ngb-alert>
+  </div>
 </div>

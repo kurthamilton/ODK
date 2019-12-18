@@ -9,6 +9,7 @@ using ODK.Core.Mail;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
+using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
 using ODK.Services.Mails;
 
@@ -16,6 +17,7 @@ namespace ODK.Services.Events
 {
     public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
+        private readonly IAuthorizationService _authorizationService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IEventRepository _eventRepository;
         private readonly IMailService _mailService;
@@ -26,9 +28,11 @@ namespace ODK.Services.Events
 
         public EventAdminService(IEventRepository eventRepository, IChapterRepository chapterRepository,
             IMemberEmailRepository memberEmailRepository, EventAdminServiceSettings settings,
-            IMemberRepository memberRepository, IMailService mailService, IVenueRepository venueRepository)
+            IMemberRepository memberRepository, IMailService mailService, IVenueRepository venueRepository,
+            IAuthorizationService authorizationService)
             : base(chapterRepository)
         {
+            _authorizationService = authorizationService;
             _chapterRepository = chapterRepository;
             _eventRepository = eventRepository;
             _mailService = mailService;
@@ -146,10 +150,20 @@ namespace ODK.Services.Events
             IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
             email = email.Interpolate(parameters);
 
+            ChapterMembershipSettings membershipSettings = await _chapterRepository.GetChapterMembershipSettings(@event.ChapterId);
+
             IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(@event.ChapterId);
+            IReadOnlyCollection<MemberSubscription> memberSubscriptions = await _memberRepository.GetMemberSubscriptions(@event.ChapterId);
             IReadOnlyCollection<MemberEventEmail> sent = await _memberEmailRepository.GetEventEmails(eventId);
 
-            foreach (Member member in members.Where(member => sent.All(x => x.MemberId != member.Id)))
+            IDictionary<Guid, MemberSubscription> memberSubscriptionDictionary = memberSubscriptions.ToDictionary(x => x.MemberId, x => x);
+
+            members = members
+                .Where(member => sent.All(x => x.MemberId != member.Id))
+                .Where(x => _authorizationService.MembershipIsActive(memberSubscriptionDictionary[x.Id], membershipSettings))
+                .ToArray();
+
+            foreach (Member member in members)
             {
                 await SendEventInvite(@event, member, email);
             }

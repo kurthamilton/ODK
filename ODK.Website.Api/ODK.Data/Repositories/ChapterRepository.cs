@@ -77,6 +77,14 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterMembershipSettings>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid chapterId)
         {
             return await Context
@@ -166,14 +174,6 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<Chapter>()
                 .VersionAsync();
-        }
-
-        public async Task<ChapterTrialSettings> GetChapterTrialSettings(Guid chapterId)
-        {
-            return await Context
-                .Select<ChapterTrialSettings>()
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .FirstOrDefaultAsync();
         }
 
         public async Task UpdateChapterEmailSettings(ChapterEmailSettings emailSettings)

@@ -1,4 +1,4 @@
-<ng-container *ngIf="viewModels">
+<ng-container *appLoading="!viewModels">
     <p>
         <a class="btn btn-primary" [routerLink]="links.createEvent">Create</a>
     </p>

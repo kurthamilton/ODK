@@ -59,9 +59,9 @@ namespace ODK.Services.Members
 
             Guid id = await _memberRepository.CreateMember(create);
 
-            ChapterTrialSettings trialSettings = await _chapterRepository.GetChapterTrialSettings(chapterId);
+            ChapterMembershipSettings membershipSettings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
 
-            MemberSubscription subscription = new MemberSubscription(id, SubscriptionType.Trial, create.CreatedDate.AddMonths(trialSettings.TrialPeriodMonths));
+            MemberSubscription subscription = new MemberSubscription(id, SubscriptionType.Trial, create.CreatedDate.AddMonths(membershipSettings.TrialPeriodMonths));
             await _memberRepository.UpdateMemberSubscription(subscription);
 
             MemberImage image = CreateMemberImage(id, profile.Image.MimeType, profile.Image.ImageData);
@@ -172,6 +172,8 @@ namespace ODK.Services.Members
             memberSubscription = new MemberSubscription(member.Id, chapterSubscription.SubscriptionType, expiryDate);
 
             await _memberRepository.UpdateMemberSubscription(memberSubscription);
+
+            _cacheService.UpdatedVersionedItem<MemberSubscription>(memberSubscription, memberId);
 
             return memberSubscription;
         }

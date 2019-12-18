@@ -59,10 +59,10 @@ export class EventsComponent implements OnInit {
       this.eventService.getEvents(this.chapter.id).pipe(
         tap((events: Event[]) => this.events = events)
       ),
-      token ? this.eventService.getMemberResponses().pipe(
+      token && !token.membershipDisabled ? this.eventService.getMemberResponses().pipe(
         tap((responses: EventMemberResponse[]) => this.memberResponses = responses)
       ) : of(true),
-      (token ? this.venueService.getVenues(this.chapter.id) : this.venueService.getPublicVenues(this.chapter.id)).pipe(
+      this.venueService.getVenues(this.chapter.id).pipe(
         tap((venues: Venue[]) => this.venues = venues)
       )
     ]).subscribe(() => {

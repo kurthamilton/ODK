@@ -235,7 +235,8 @@ namespace ODK.Services.Authentication
             return new AuthenticationToken(member.Id, member.ChapterId, accessToken, refreshToken,
                 adminChapterMembers.Select(x => x.ChapterId),
                 adminChapterMembers.Any(x => x.SuperAdmin),
-                subscription.ExpiryDate);
+                subscription.ExpiryDate,
+                await _authorizationService.MembershipIsActive(subscription, member.ChapterId));
         }
 
         private async Task<string> GenerateRefreshToken(Guid memberId, DateTime? expires = null)

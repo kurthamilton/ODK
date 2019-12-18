@@ -12,12 +12,12 @@ namespace ODK.Data
             AddMap(new ChapterEmailSettingsMap());
             AddMap(new ChapterLinksMap());
             AddMap(new ChapterMap());
+            AddMap(new ChapterMembershipSettingsMap());
             AddMap(new ChapterPaymentSettingsMap());
             AddMap(new ChapterPropertyMap());
             AddMap(new ChapterPropertyOptionMap());
             AddMap(new ChapterQuestionMap());
             AddMap(new ChapterSubscriptionMap());
-            AddMap(new ChapterTrialSettingsMap());
             AddMap(new ContactRequestMap());
             AddMap(new CountryMap());
             AddMap(new EmailMap());

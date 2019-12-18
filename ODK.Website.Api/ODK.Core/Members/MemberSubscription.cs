@@ -1,8 +1,9 @@
 ﻿using System;
+using ODK.Core.Utils;
 
 namespace ODK.Core.Members
 {
-    public class MemberSubscription
+    public class MemberSubscription : IVersioned
     {
         public MemberSubscription(Guid memberId, SubscriptionType type, DateTime? expiryDate)
         {
@@ -16,5 +17,7 @@ namespace ODK.Core.Members
         public Guid MemberId { get; }
 
         public SubscriptionType Type { get; }
+
+        long IVersioned.Version => ExpiryDate != null ? 0 : DateUtils.DateVersion(ExpiryDate.Value);
     }
 }

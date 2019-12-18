@@ -82,7 +82,8 @@ export class AuthenticationService {
     const token: AuthenticationToken = this.getToken();
     return token ? {
       chapterId: token.chapterId,
-      memberId: token.memberId
+      memberId: token.memberId,
+      membershipActive: !token.membershipDisabled
     } : null;
   }
 
@@ -189,6 +190,7 @@ export class AuthenticationService {
       accessToken: response.accessToken,
       chapterId: response.chapterId,
       memberId: response.memberId,
+      membershipDisabled: response.membershipDisabled || false,
       refreshToken: response.refreshToken,
       subscriptionExpiryDate: response.subscriptionExpiryDate ? new Date(response.subscriptionExpiryDate) : null
     };

@@ -45,7 +45,7 @@ export class EventService {
 
   getEvents(chapterId: string): Observable<Event[]> {
     const accountDetails: AccountDetails = this.authenticationService.getAccountDetails();
-    if (!accountDetails || accountDetails.chapterId !== chapterId) {
+    if (!accountDetails || accountDetails.chapterId !== chapterId || !accountDetails.membershipActive) {
       return this.getPublicEvents(chapterId);
     }
 

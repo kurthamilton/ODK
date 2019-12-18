@@ -22,6 +22,8 @@ namespace ODK.Core.Chapters
 
         Task<ChapterLinks> GetChapterLinks(Guid chapterId);
 
+        Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid chapterId);
+
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid chapterId);
 
         Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId);
@@ -43,8 +45,6 @@ namespace ODK.Core.Chapters
         Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid chapterId);
 
         Task<long> GetChaptersVersion();
-
-        Task<ChapterTrialSettings> GetChapterTrialSettings(Guid chapterId);
 
         Task UpdateChapterEmailSettings(ChapterEmailSettings emailSettings);
 

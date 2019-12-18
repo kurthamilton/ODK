@@ -39,6 +39,11 @@ namespace ODK.Data.Sql.Queries
             return SetCondition(">=", value);
         }
 
+        public SqlConditionalQuery<T> NotEqualTo(TValue value)
+        {
+            return SetCondition("!=", value);
+        }
+
         public string ToSql(SqlContext context)
         {
             SqlColumn column = context.GetColumn(Expression);

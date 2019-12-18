@@ -33,6 +33,7 @@ export class SubscriptionAlertComponent implements OnInit, OnDestroy {
   }
     
   action: string;
+  disabled: boolean;
   expiresIn: string;
   hide = false;
   links: {
@@ -83,6 +84,7 @@ export class SubscriptionAlertComponent implements OnInit, OnDestroy {
       };            
       
       this.action = this.memberSubscription.type === SubscriptionType.Trial ? 'Purchase membership' : 'Renew';
+      this.disabled = token.membershipDisabled;
       this.type = this.memberSubscription.type === SubscriptionType.Trial ? 'trial' : 'subscription';
 
       if (!token.subscriptionExpiryDate || expires < today) {

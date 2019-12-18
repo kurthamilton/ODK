@@ -17,6 +17,11 @@ namespace ODK.Services.Caching
             _cache = cache;
         }
 
+        public async Task<T> GetOrSetItem<T>(Func<Task<T>> getter, object instanceKey)
+        {
+            return await GetOrSet<T>(getter, instanceKey, null, null);
+        }
+
         public async Task<VersionedServiceResult<IReadOnlyCollection<T>>> GetOrSetVersionedCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter,
             Func<Task<long>> getVersion, long? currentVersion, object key = null)
         {
@@ -78,10 +83,21 @@ namespace ODK.Services.Caching
             _cache.Remove(key);
         }
 
+        public void UpdateItem<T>(T item, object instanceKey)
+        {
+            Set<T>(item, instanceKey, null, null);
+        }
+
         public void UpdatedVersionedCollection<T>(IReadOnlyCollection<T> collection, long version, object key = null)
         {
             SetVersion<T>(version, key ?? CollectionInstanceKey);
             Set(collection, key ?? CollectionInstanceKey, version, null);
+        }
+
+        public void UpdatedVersionedItem<T>(T item, object instanceKey) where T : IVersioned
+        {
+            SetVersion<T>(item.Version, instanceKey);
+            Set<T>(item, instanceKey, item.Version, null);
         }
 
         private static string GetKey<T>(object instanceKey)

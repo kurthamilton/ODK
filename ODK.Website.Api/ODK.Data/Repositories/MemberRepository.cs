@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Members;
 using ODK.Data.Sql;
+using ODK.Data.Sql.Queries;
 
 namespace ODK.Data.Repositories
 {
@@ -119,8 +120,7 @@ namespace ODK.Data.Repositories
 
         public async Task<Member> GetMember(Guid memberId)
         {
-            return await Context
-                .Select<Member>()
+            return await MembersQuery()
                 .Where(x => x.Id).EqualTo(memberId)
                 .FirstOrDefaultAsync();
         }
@@ -168,11 +168,8 @@ namespace ODK.Data.Repositories
 
         public async Task<IReadOnlyCollection<Member>> GetMembers(Guid chapterId)
         {
-            return await Context
-                .Select<Member>()
+            return await MembersQuery()
                 .Where(x => x.ChapterId).EqualTo(chapterId)
-                .Where(x => x.Activated).EqualTo(true)
-                .Where(x => x.Disabled).EqualTo(false)
                 .ToArrayAsync();
         }
 
@@ -194,11 +191,8 @@ namespace ODK.Data.Repositories
 
         public async Task<long> GetMembersVersion(Guid chapterId)
         {
-            return await Context
-                .Select<Member>()
+            return await MembersQuery()
                 .Where(x => x.ChapterId).EqualTo(chapterId)
-                .Where(x => x.Activated).EqualTo(true)
-                .Where(x => x.Disabled).EqualTo(false)
                 .VersionAsync();
         }
 
@@ -287,6 +281,15 @@ namespace ODK.Data.Repositories
                 .Set(x => x.ExpiryDate, memberSubscription.ExpiryDate)
                 .Where(x => x.MemberId).EqualTo(memberSubscription.MemberId)
                 .ExecuteAsync();
+        }
+
+        private SqlConditionalQuery<Member> MembersQuery()
+        {
+            return Context
+                .Select<Member>()
+                .Where(x => x.Activated).EqualTo(true)
+                .Where(x => x.Disabled).EqualTo(false)
+                .Where<MemberSubscription, SubscriptionType>(x => x.Type).NotEqualTo(SubscriptionType.Alum);
         }
 
         private async Task<bool> MemberHasImage(Guid memberId)

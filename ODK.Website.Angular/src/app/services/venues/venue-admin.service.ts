@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { AuthenticationService } from '../authentication/authentication.service';
 import { catchApiError } from '../http/catchApiError';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
@@ -23,8 +24,10 @@ const endpoints = {
 })
 export class VenueAdminService extends VenueService {
 
-  constructor(http: HttpClient) {
-    super(http);
+  constructor(http: HttpClient,
+    authenticationService: AuthenticationService
+  ) {
+    super(http, authenticationService);
   }
 
   createVenue(venue: Venue): Observable<ServiceResult<Venue>> {
