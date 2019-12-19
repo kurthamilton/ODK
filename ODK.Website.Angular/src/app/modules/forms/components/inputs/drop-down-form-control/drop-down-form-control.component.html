@@ -1,5 +1,6 @@
 <div [formGroup]="formGroup">
-  <select class="custom-select" [attr.required]="required ? 'required' : null" [id]="viewModel.id" [name]="viewModel.id"
+  <select class="custom-select" [attr.required]="required ? 'required' : null" 
+    [id]="viewModel.id" [name]="viewModel.id"
     [formControlName]="viewModel.id">
     <option *ngFor="let option of options" [attr.value]="option.value"
         [attr.selected]="option.selected ? 'selected' : null">

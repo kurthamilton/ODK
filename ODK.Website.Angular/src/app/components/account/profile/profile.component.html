@@ -1,25 +1,27 @@
 <app-body>
+  <ng-container *appLoading="!profile">
     <ngb-alert *ngIf="successMessage" type="success">
-        {{successMessage}}
+      {{successMessage}}
     </ngb-alert>
     <div class="row">
-        <div class="col-6" *ngIf="links">
-            <div>
-                <a [routerLink]="links.subscription">My subscription</a>
-            </div>
-            <div>
-                <a [routerLink]="links.changePassword">Change password</a>
-            </div>
+      <div class="col-6" *ngIf="links">
+        <div>
+          <a [routerLink]="links.subscription">My subscription</a>
         </div>
+        <div>
+          <a [routerLink]="links.changePassword">Change password</a>
+        </div>
+      </div>
 
-        <div class="col-6">
-            <div class="form-group text-right">
-                <app-profile-picture></app-profile-picture>
-            </div>
+      <div class="col-6">
+        <div class="form-group text-right">
+          <app-profile-picture></app-profile-picture>
         </div>
+      </div>
     </div>
 
-    <app-profile-form *appLoading="!profile" [chapterId]="chapterId" [formCallback]="formCallback" [profile]="profile" 
+    <app-profile-form [chapterId]="chapterId" [formCallback]="formCallback" [profile]="profile" 
       (formSubmit)="onFormSubmit($event)">      
     </app-profile-form>
+  </ng-container>    
 </app-body>

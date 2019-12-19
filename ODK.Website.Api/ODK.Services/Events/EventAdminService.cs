@@ -205,12 +205,18 @@ namespace ODK.Services.Events
         private async Task AssertEventCanBeDeleted(Guid currentMemberId, Guid id)
         {
             Event @event = await GetEvent(currentMemberId, id);
-
             if (!string.IsNullOrWhiteSpace(@event.EmailProviderEmailId))
             {
                 throw new OdkServiceException("Events that have had invite emails sent cannot be deleted");
             }
+
+            IReadOnlyCollection<EventMemberResponse> responses = await _eventRepository.GetEventResponses(id);
+            if (responses.Count > 0)
+            {
+                throw new OdkServiceException("Events with responses cannot be deleted");
+            }
         }
+
 
         private async Task<Email> GetEventEmail()
         {

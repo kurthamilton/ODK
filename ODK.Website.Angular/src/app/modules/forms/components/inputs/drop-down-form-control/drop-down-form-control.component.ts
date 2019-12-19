@@ -50,6 +50,8 @@ export class DropDownFormControlComponent extends InputBase implements OnDestroy
       this.freeText = this.viewModel.value;
     }
 
+    this.control.setValue(selectedOption.value);
+    
     this.control.valueChanges.pipe(
       takeUntil(componentDestroyed(this))
     ).subscribe((value: string) => {
