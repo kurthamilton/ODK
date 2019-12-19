@@ -51,6 +51,12 @@ export class EventAdminService extends EventService {
     );
   }
 
+  deleteEvent(id: string): Observable<void> {
+    return this.http.delete(endpoints.event(id)).pipe(
+      map(() => undefined)
+    );
+  }
+
   getChapterInvites(chapterId: string): Observable<EventInvites[]> {
     return this.http.get(endpoints.chapterInvites(chapterId)).pipe(
       map((response: any) => response.map(x => this.mapEventInvites(x)))
@@ -124,7 +130,6 @@ export class EventAdminService extends EventService {
 
   private mapEventInvites(response: any, id?: string): EventInvites {
     return {
-      delivered: response ? response.delivered : 0,
       eventId: response ? response.eventId : id,
       sent: response ? response.sent : 0
     };

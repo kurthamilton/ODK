@@ -73,6 +73,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IEventAdminService, EventAdminService>();
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IImageService, ImageService>();
+            services.AddScoped<IMailProviderFactory, MailProviderFactory>();
             services.AddScoped<IMailService, MailService>();
             services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();
@@ -109,7 +110,6 @@ namespace ODK.Web.Api.Config
 
             services.AddSingleton(new MailServiceSettings
             {
-                EmailReadUrl = $"{urls.ApiBase}{urls.ApiEmailRead}",
                 Host = smtp.Host,
                 Password = smtp.Password,
                 Username = smtp.Username

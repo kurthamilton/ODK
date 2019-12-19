@@ -94,6 +94,7 @@ export class ChapterAdminService extends ChapterService {
       contactEmailAddress: emailSettings.contactEmailAddress,
       emailApiKey: emailSettings.emailApiKey,
       fromEmailAddress: emailSettings.fromEmailAddress,
+      fromEmailName: emailSettings.fromEmailName
     });
 
     return this.http.put(endpoints.emailSettings(chapterId), params).pipe(
@@ -115,7 +116,8 @@ export class ChapterAdminService extends ChapterService {
       contactEmailAddress: response.contactEmailAddress,
       emailApiKey: response.emailApiKey,
       emailProvider: response.emailProvider,
-      fromEmailAddress: response.fromEmailAddress
+      fromEmailAddress: response.fromEmailAddress,
+      fromEmailName: response.fromEmailName
     };
   }
 }

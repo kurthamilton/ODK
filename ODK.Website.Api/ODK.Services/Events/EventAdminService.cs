@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
-using ODK.Core.Cryptography;
 using ODK.Core.Events;
 using ODK.Core.Mail;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
-using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
 using ODK.Services.Mails;
 
@@ -17,10 +14,9 @@ namespace ODK.Services.Events
 {
     public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
-        private readonly IAuthorizationService _authorizationService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IEventRepository _eventRepository;
-        private readonly IMailService _mailService;
+        private readonly IMailProviderFactory _mailProviderFactory;
         private readonly IMemberEmailRepository _memberEmailRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly EventAdminServiceSettings _settings;
@@ -28,14 +24,13 @@ namespace ODK.Services.Events
 
         public EventAdminService(IEventRepository eventRepository, IChapterRepository chapterRepository,
             IMemberEmailRepository memberEmailRepository, EventAdminServiceSettings settings,
-            IMemberRepository memberRepository, IMailService mailService, IVenueRepository venueRepository,
-            IAuthorizationService authorizationService)
+            IMemberRepository memberRepository, IVenueRepository venueRepository,
+            IMailProviderFactory mailProviderFactory)
             : base(chapterRepository)
         {
-            _authorizationService = authorizationService;
             _chapterRepository = chapterRepository;
             _eventRepository = eventRepository;
-            _mailService = mailService;
+            _mailProviderFactory = mailProviderFactory;
             _memberEmailRepository = memberEmailRepository;
             _memberRepository = memberRepository;
             _settings = settings;
@@ -48,9 +43,9 @@ namespace ODK.Services.Events
 
             Member member = await _memberRepository.GetMember(memberId);
 
-            Event @event = new Event(Guid.Empty, createEvent.ChapterId, $"{member.FirstName} {member.LastName}", createEvent.Name, createEvent.Date,
-                createEvent.VenueId, createEvent.Time, null,
-                createEvent.Description, createEvent.IsPublic);
+            Event @event = new Event(Guid.Empty, createEvent.ChapterId, $"{member.FirstName} {member.LastName}", createEvent.Name,
+                createEvent.Date, createEvent.VenueId, createEvent.Time, null,
+                createEvent.Description, createEvent.IsPublic, null);
 
             await ValidateEvent(@event);
 
@@ -68,8 +63,18 @@ namespace ODK.Services.Events
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            IReadOnlyCollection<MemberEventEmail> invites = await _memberEmailRepository.GetChapterEventEmails(chapterId);
-            return MapEmailsToInvites(invites);
+            IReadOnlyCollection<Event> events = await _eventRepository.GetEvents(chapterId, DateTime.UtcNow);
+
+            IMailProvider mailProvider = await _mailProviderFactory.Create(chapterId);
+
+            List<EventInvites> invites = new List<EventInvites>();
+            foreach (Event @event in events)
+            {
+                EventInvites eventInvites = await mailProvider.GetEventInvites(@event);
+                invites.Add(eventInvites);
+            }
+
+            return invites;
         }
 
         public async Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid currentMemberId,
@@ -106,8 +111,9 @@ namespace ODK.Services.Events
         public async Task<EventInvites> GetEventInvites(Guid currentMemberId, Guid eventId)
         {
             Event @event = await GetEvent(currentMemberId, eventId);
-            IReadOnlyCollection<MemberEventEmail> emails = await _memberEmailRepository.GetEventEmails(@event.Id);
-            return MapEmailsToInvites(emails).SingleOrDefault();
+
+            IMailProvider mailProvider = await _mailProviderFactory.Create(@event.ChapterId);
+            return await mailProvider.GetEventInvites(@event);
         }
 
         public async Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid currentMemberId, Guid eventId)
@@ -144,65 +150,39 @@ namespace ODK.Services.Events
                 throw new OdkServiceException("Invites cannot be sent to past events");
             }
 
+            IMailProvider mailProvider = await _mailProviderFactory.Create(@event.ChapterId);
+
+            await mailProvider.SynchroniseMembers(@event.ChapterId);
+
             Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
             Venue venue = await _venueRepository.GetVenue(@event.VenueId);
+
             Email email = await GetEventEmail();
             IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
             email = email.Interpolate(parameters);
 
-            ChapterMembershipSettings membershipSettings = await _chapterRepository.GetChapterMembershipSettings(@event.ChapterId);
+            @event.EmailProviderEmailId = await mailProvider.SendEventEmail(@event, email);
 
-            IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(@event.ChapterId);
-            IReadOnlyCollection<MemberSubscription> memberSubscriptions = await _memberRepository.GetMemberSubscriptions(@event.ChapterId);
-            IReadOnlyCollection<MemberEventEmail> sent = await _memberEmailRepository.GetEventEmails(eventId);
-
-            IDictionary<Guid, MemberSubscription> memberSubscriptionDictionary = memberSubscriptions.ToDictionary(x => x.MemberId, x => x);
-
-            members = members
-                .Where(member => sent.All(x => x.MemberId != member.Id))
-                .Where(x => _authorizationService.MembershipIsActive(memberSubscriptionDictionary[x.Id], membershipSettings))
-                .ToArray();
-
-            foreach (Member member in members)
-            {
-                await SendEventInvite(@event, member, email);
-            }
+            await _eventRepository.UpdateEvent(@event);
         }
 
         public async Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
         {
             Event update = await GetEvent(memberId, id);
 
-            update.Update(@event.Date, @event.Description, null, @event.IsPublic,
-                @event.Name, @event.Time, @event.VenueId);
+            update.Date = @event.Date;
+            update.Description = @event.Description;
+            update.ImageUrl = null;
+            update.IsPublic = @event.IsPublic;
+            update.Name = @event.Name;
+            update.Time = @event.Time;
+            update.VenueId = @event.VenueId;
 
             await ValidateEvent(update);
 
             await _eventRepository.UpdateEvent(update);
 
             return update;
-        }
-
-        private static IDictionary<string, string> GetMemberEmailParameters(string token)
-        {
-            IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                parameters.Add("token", token);
-            }
-
-            return parameters;
-        }
-
-        private static IReadOnlyCollection<EventInvites> MapEmailsToInvites(IEnumerable<MemberEventEmail> emails)
-        {
-            return emails.GroupBy(x => x.EventId).Select(group => new EventInvites
-            {
-                Delivered = group.Count(x => x.Sent),
-                EventId = group.Key,
-                Sent = group.Count()
-            }).ToArray();
         }
 
         private async Task ValidateEvent(Event @event)
@@ -226,10 +206,9 @@ namespace ODK.Services.Events
         {
             Event @event = await GetEvent(currentMemberId, id);
 
-            IReadOnlyCollection<EventMemberResponse> responses = await _eventRepository.GetEventResponses(@event.Id);
-            if (responses.Count > 0)
+            if (!string.IsNullOrWhiteSpace(@event.EmailProviderEmailId))
             {
-                throw new OdkServiceException("Events with responses cannot be deleted");
+                throw new OdkServiceException("Events that have had invite emails sent cannot be deleted");
             }
         }
 
@@ -254,26 +233,6 @@ namespace ODK.Services.Events
             parameters.Add("event.url", (_settings.BaseUrl + _settings.EventUrlFormat).Interpolate(parameters));
 
             return parameters;
-        }
-
-        private async Task SendEventInvite(Event @event, Member member, Email email)
-        {
-            if (!member.EmailOptIn)
-            {
-                return;
-            }
-
-            string token = RandomStringGenerator.Generate(32);
-            IDictionary<string, string> parameters = GetMemberEmailParameters(token);
-
-            email = email.Interpolate(parameters);
-
-            MemberEmail memberEmail = await _mailService.CreateMemberEmail(member, email, parameters);
-
-            MemberEventEmail memberEventEmail = new MemberEventEmail(@event.Id, member.Id, memberEmail.Id, token, memberEmail.Sent);
-            await _memberEmailRepository.AddMemberEventEmail(memberEventEmail);
-
-            await _mailService.SendMemberMail(memberEmail, member, email);
         }
     }
 }

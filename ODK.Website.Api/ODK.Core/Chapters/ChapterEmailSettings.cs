@@ -5,7 +5,7 @@ namespace ODK.Core.Chapters
     public class ChapterEmailSettings
     {
         public ChapterEmailSettings(Guid chapterId, string adminEmailAddress, string contactEmailAddress, 
-            string fromEmailAddress, string emailProvider, string emailApiKey)
+            string fromEmailAddress, string fromEmailName, string emailProvider, string emailApiKey)
         {
             AdminEmailAddress = adminEmailAddress;
             ChapterId = chapterId;
@@ -13,6 +13,7 @@ namespace ODK.Core.Chapters
             EmailApiKey = emailApiKey;
             EmailProvider = emailProvider;
             FromEmailAddress = fromEmailAddress;
+            FromEmailName = fromEmailName;
         }
 
         public string AdminEmailAddress { get; }
@@ -26,5 +27,7 @@ namespace ODK.Core.Chapters
         public string EmailProvider { get; }
 
         public string FromEmailAddress { get; }
+
+        public string FromEmailName { get; }
     }
 }

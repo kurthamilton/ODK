@@ -1,1 +1,6 @@
-<app-form *ngIf="form" [form]="form" (formSubmit)="onFormSubmit()"></app-form>
+<app-form *appLoading="!form" [form]="form" (formSubmit)="onFormSubmit()">
+  <ng-container app-button-row>
+    <ng-content>        
+    </ng-content>
+  </ng-container>
+</app-form>

@@ -5,7 +5,6 @@ export interface AdminListEventViewModel {
     declined: number;
     event: Event;
     going: number;
-    invitesFailed: number;
     invitesSent: number;
     maybe: number;
     venue: Venue;

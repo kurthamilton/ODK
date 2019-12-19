@@ -20,10 +20,7 @@
                 <td><a [routerLink]="getEventLink(viewModel.event)">{{viewModel.event.name}}</a></td>
                 <td>{{viewModel.event.date | date:'dd MMM yyyy'}}</td>
                 <td><a [routerLink]="getVenueLink(viewModel.venue)">{{viewModel.venue.name}}</a></td>
-                <td>
-                    {{viewModel.invitesSent}}
-                    <span *ngIf="viewModel.invitesFailed" class="text-danger"> ({{viewModel.invitesFailed}})</span>
-                </td>
+                <td>{{viewModel.invitesSent}}</td>
                 <td>{{viewModel.going}}</td>
                 <td>{{viewModel.maybe}}</td>
                 <td>{{viewModel.declined}}</td>

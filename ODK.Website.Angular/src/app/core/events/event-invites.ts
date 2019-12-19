@@ -1,5 +1,4 @@
-export interface EventInvites {
-    delivered: number;
+export interface EventInvites {    
     eventId: string;
     sent: number;
 }

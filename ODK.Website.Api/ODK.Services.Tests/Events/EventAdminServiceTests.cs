@@ -15,7 +15,7 @@ namespace ODK.Services.Tests.Events
     public static class EventAdminServiceTests
     {
         private const string BaseUrl = "http://mock.com";
-        private const string EventRsvpUrlFormat = "/{event.id}/rsvp/{token}";
+        private const string EventRsvpUrlFormat = "/{event.id}?rsvp=yes";
         private const string EventUrlFormat = "/{event.id}";
 
         [Test]
@@ -56,7 +56,6 @@ namespace ODK.Services.Tests.Events
         [Test]
         public static async Task GetEventEmail_ReplacesEventUrlProperties()
         {
-            Venue venue = new Venue(Guid.Empty, Guid.NewGuid(), "Location", "", "", 0);
             Event @event = CreateMockEvent("Name", new DateTime(2015, 6, 7), "Time");
             IEventRepository eventRepository = CreateMockEventRepository(@event);
 
@@ -68,7 +67,7 @@ namespace ODK.Services.Tests.Events
             Email eventEmail = await service.GetEventEmail(Guid.NewGuid(), Guid.NewGuid());
 
             Assert.AreEqual($"Subject: {BaseUrl}/{@event.Id}", eventEmail.Subject);
-            Assert.AreEqual($"RSVP: {BaseUrl}/{@event.Id}/rsvp/{{token}}, Url: {BaseUrl}/{@event.Id}" , eventEmail.Body);
+            Assert.AreEqual($"RSVP: {BaseUrl}/{EventRsvpUrlFormat}, Url: {BaseUrl}/{@event.Id}" , eventEmail.Body);
         }
 
         private static EventAdminService CreateService(IMemberEmailRepository memberEmailRepository = null,
@@ -80,8 +79,8 @@ namespace ODK.Services.Tests.Events
                 memberEmailRepository ?? CreateMockMemberEmailRepository(new Email(EmailType.EventInvite, "Subject", "Body")),
                 new EventAdminServiceSettings { BaseUrl = BaseUrl, EventRsvpUrlFormat = EventRsvpUrlFormat, EventUrlFormat = EventUrlFormat },
                 GetMockMemberRepository(),
-                GetMockMailService(),
-                Mock.Of<IVenueRepository>());
+                Mock.Of<IVenueRepository>(),
+                Mock.Of<IMailProviderFactory>());
         }
 
         private static Chapter CreateMockChapter(string name = null)
@@ -105,7 +104,7 @@ namespace ODK.Services.Tests.Events
         private static Event CreateMockEvent(string name = null, DateTime? date = null, string time = null)
         {
             return new Event(Guid.NewGuid(), Guid.NewGuid(), "Admin Member", name ?? "Name", date ?? DateTime.Today, Guid.NewGuid(),
-                time ?? "Time", null, "Description", false);
+                time ?? "Time", null, "Description", false, null);
         }
 
         private static IEventRepository CreateMockEventRepository(Event @event = null)
@@ -116,11 +115,6 @@ namespace ODK.Services.Tests.Events
                 .ReturnsAsync(@event);
 
             return mock.Object;
-        }
-
-        private static IMailService GetMockMailService()
-        {
-            return Mock.Of<IMailService>();
         }
 
         private static IMemberEmailRepository CreateMockMemberEmailRepository(Email email = null)

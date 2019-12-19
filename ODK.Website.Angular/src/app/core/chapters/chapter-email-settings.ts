@@ -4,4 +4,5 @@ export interface ChapterEmailSettings {
   emailApiKey: string;
   emailProvider: string;
   fromEmailAddress: string;
+  fromEmailName: string;
 }

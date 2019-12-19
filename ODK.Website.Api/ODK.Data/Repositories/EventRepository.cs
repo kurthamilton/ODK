@@ -106,6 +106,7 @@ namespace ODK.Data.Repositories
                 .Set(x => x.Name, @event.Name)
                 .Set(x => x.Time, @event.Time)
                 .Set(x => x.VenueId, @event.VenueId)
+                .Set(x => x.EmailProviderEmailId, @event.EmailProviderEmailId)
                 .Where(x => x.Id).EqualTo(@event.Id)
                 .ExecuteAsync();
         }

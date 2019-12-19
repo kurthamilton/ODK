@@ -6,8 +6,6 @@
 
         public string ApiBase { get; set; }
 
-        public string ApiEmailRead { get; set; }
-
         public string Base { get; set; }
 
         public string Event { get; set; }

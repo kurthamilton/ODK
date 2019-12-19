@@ -7,7 +7,6 @@ using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Mail;
 using ODK.Core.Members;
-using ODK.Core.Utils;
 
 namespace ODK.Services.Mails
 {
@@ -24,17 +23,12 @@ namespace ODK.Services.Mails
             _settings = settings;
         }
 
-        public async Task ConfirmEmailRead(Guid memberEmailId)
-        {
-            await _memberEmailRepository.ConfirmMemberEmailRead(memberEmailId);
-        }
-
         public async Task<MemberEmail> CreateMemberEmail(Member member, Email email, IDictionary<string, string> parameters)
         {
             email = email.Interpolate(parameters);
 
-            MemberEmail memberEmail = new MemberEmail(Guid.Empty, member.ChapterId, member.EmailAddress, email.Subject, email.Body, DateTime.UtcNow,
-                false, false);
+            MemberEmail memberEmail = new MemberEmail(Guid.Empty, member.ChapterId, member.EmailAddress, email.Subject, email.Body,
+                DateTime.UtcNow);
             Guid memberEmailId = await _memberEmailRepository.AddMemberEmail(memberEmail);
             memberEmail.SetId(memberEmailId);
             return memberEmail;
@@ -57,10 +51,7 @@ namespace ODK.Services.Mails
         {
             ChapterEmailSettings emailSettings = await GetChapterEmailSettings(member.ChapterId);
 
-            if (await Send(emailSettings.FromEmailAddress, member, email, memberEmail))
-            {
-                await _memberEmailRepository.ConfirmMemberEmailSent(memberEmail.Id);
-            }
+            await Send(emailSettings.FromEmailAddress, member, email, memberEmail);
 
             return memberEmail;
         }
@@ -90,7 +81,7 @@ namespace ODK.Services.Mails
             {
                 Body = new TextPart(TextFormat.Html)
                 {
-                    Text = email.Body + GetReadImageHtml(memberEmail)
+                    Text = email.Body
                 },
                 Subject = email.Subject
             };
@@ -104,21 +95,6 @@ namespace ODK.Services.Mails
         private async Task<ChapterEmailSettings> GetChapterEmailSettings(Guid chapterId)
         {
             return await _chapterRepository.GetChapterEmailSettings(chapterId);
-        }
-
-        private string GetReadImageHtml(MemberEmail memberEmail)
-        {
-            if (memberEmail == null)
-            {
-                return "";
-            }
-
-            string url = _settings.EmailReadUrl.Interpolate(new Dictionary<string, string>
-            {
-                {  "email.id", memberEmail.Id.ToString() }
-            });
-
-            return $"<img src=\"{url}\" />";
         }
 
         private async Task<bool> Send(string from, Member member, Email email, MemberEmail memberEmail)

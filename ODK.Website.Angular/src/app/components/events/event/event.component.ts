@@ -39,7 +39,7 @@ export class EventComponent implements OnInit {
   venue: Venue;
 
   ngOnInit(): void {
-    this.eventId = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.event.params.id);
+    this.eventId = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.event.params.id);    
 
     this.chapter = this.chapterService.getActiveChapter();
     this.breadcrumbs = [

@@ -32,6 +32,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
     emailApiKey: TextInputFormControlViewModel;
     emailProvider: ReadOnlyFormControlViewModel;
     fromEmailAddress: TextInputFormControlViewModel;
+    fromEmailName: TextInputFormControlViewModel;
   };
 
   ngOnInit(): void {
@@ -53,6 +54,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
     this.emailSettings.contactEmailAddress = this.formControls.contactEmailAddress.value;
     this.emailSettings.emailApiKey = this.formControls.emailApiKey.value;
     this.emailSettings.fromEmailAddress = this.formControls.fromEmailAddress.value;
+    this.emailSettings.fromEmailName = this.formControls.fromEmailName.value;
     this.chapterAdminService.updateChapterEmailSettings(this.chapter.id, this.emailSettings).subscribe(() => {
       this.formCallback.next(true);
     });
@@ -106,6 +108,13 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
           required: true
         },
         value: this.emailSettings.fromEmailAddress
+      }),
+      fromEmailName: new TextInputFormControlViewModel({
+        id: 'from-email-name',
+        label: {
+          text: 'From email name'
+        },
+        value: this.emailSettings.fromEmailName
       })
     };
 
@@ -114,6 +123,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
       callback: this.formCallback,
       controls: [
         this.formControls.fromEmailAddress,
+        this.formControls.fromEmailName,
         this.formControls.adminEmailAddress,
         this.formControls.contactEmailAddress,
         this.formControls.emailProvider,

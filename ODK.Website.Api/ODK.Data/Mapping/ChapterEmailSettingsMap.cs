@@ -16,6 +16,7 @@ namespace ODK.Data.Mapping
             Property(x => x.EmailApiKey);
             Property(x => x.EmailProvider);
             Property(x => x.FromEmailAddress);
+            Property(x => x.FromEmailName);
         }
 
         public override ChapterEmailSettings Read(IDataReader reader)
@@ -27,7 +28,8 @@ namespace ODK.Data.Mapping
                 contactEmailAddress: reader.GetString(2),
                 emailApiKey: reader.GetStringOrDefault(3),
                 emailProvider: reader.GetStringOrDefault(4),
-                fromEmailAddress: reader.GetString(5)
+                fromEmailAddress: reader.GetString(5),
+                fromEmailName: reader.GetStringOrDefault(6)
             );
         }
     }

@@ -23,6 +23,9 @@ export const appPaths = {
         path: 'events/:id',
         params: {
           id: 'id'
+        },
+        queryParams: {
+          rsvp: 'rsvp'
         }
       },
       events: {

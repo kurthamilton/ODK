@@ -92,7 +92,7 @@ namespace ODK.Services.Chapters
             ChapterEmailSettings current = await _chapterRepository.GetChapterEmailSettings(chapterId);
 
             ChapterEmailSettings update = new ChapterEmailSettings(chapterId, emailSettings.AdminEmailAddress, emailSettings.ContactEmailAddress,
-                emailSettings.FromEmailAddress, current.EmailProvider, emailSettings.EmailApiKey);
+                emailSettings.FromEmailAddress, emailSettings.FromEmailName, current.EmailProvider, emailSettings.EmailApiKey);
 
             ValidateChapterEmailSettings(update);
 

@@ -58,7 +58,6 @@ export class EventsComponent implements OnInit {
           declined: responseTypeMap.has(EventResponseType.No) ? responseTypeMap.get(EventResponseType.No).length : 0,
           event,
           going: responseTypeMap.has(EventResponseType.Yes) ? responseTypeMap.get(EventResponseType.Yes).length : 0,
-          invitesFailed: eventInvites ? eventInvites.sent - eventInvites.delivered : 0,
           invitesSent: eventInvites ? eventInvites.sent : 0,
           maybe: responseTypeMap.has(EventResponseType.Maybe) ? responseTypeMap.get(EventResponseType.Maybe).length : 0,
           venue: venueMap.get(event.venueId)
