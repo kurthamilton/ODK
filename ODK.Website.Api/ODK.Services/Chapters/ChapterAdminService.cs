@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
+using ODK.Services.Mails;
 
 namespace ODK.Services.Chapters
 {
@@ -13,13 +14,16 @@ namespace ODK.Services.Chapters
         private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IChapterService _chapterService;
+        private readonly IMailProviderFactory _mailProviderFactory;
 
-        public ChapterAdminService(IChapterRepository chapterRepository, ICacheService cacheService, IChapterService chapterService)
+        public ChapterAdminService(IChapterRepository chapterRepository, ICacheService cacheService, IChapterService chapterService,
+            IMailProviderFactory mailProviderFactory)
             : base(chapterRepository)
         {
             _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _chapterService = chapterService;
+            _mailProviderFactory = mailProviderFactory;
         }
 
         public async Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question)
@@ -69,6 +73,11 @@ namespace ODK.Services.Chapters
                 .ToArray();
         }
 
+        public Task<IReadOnlyCollection<string>> GetEmailProviders()
+        {
+            return _mailProviderFactory.GetProviders();
+        }
+
         public async Task<Chapter> UpdateChapterDetails(Guid currentMemberId, Guid chapterId, UpdateChapterDetails details)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
@@ -91,12 +100,14 @@ namespace ODK.Services.Chapters
 
             ChapterEmailSettings current = await _chapterRepository.GetChapterEmailSettings(chapterId);
 
-            ChapterEmailSettings update = new ChapterEmailSettings(chapterId, emailSettings.AdminEmailAddress, emailSettings.ContactEmailAddress,
-                emailSettings.FromEmailAddress, emailSettings.FromEmailName, current.EmailProvider, emailSettings.EmailApiKey);
+            current.AdminEmailAddress = emailSettings.AdminEmailAddress;
+            current.ContactEmailAddress = emailSettings.ContactEmailAddress;
+            current.EmailApiKey = emailSettings.EmailApiKey;
+            current.EmailProvider = emailSettings.EmailProvider;
 
-            ValidateChapterEmailSettings(update);
+            await ValidateChapterEmailSettings(current);
 
-            await _chapterRepository.UpdateChapterEmailSettings(update);
+            await _chapterRepository.UpdateChapterEmailSettings(current);
         }
 
         public async Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links)
@@ -122,12 +133,15 @@ namespace ODK.Services.Chapters
             return update;
         }
 
-        private void ValidateChapterEmailSettings(ChapterEmailSettings emailSettings)
+        private async Task ValidateChapterEmailSettings(ChapterEmailSettings emailSettings)
         {
+            IReadOnlyCollection<string> emailProviders = await _mailProviderFactory.GetProviders();
+
             if (string.IsNullOrWhiteSpace(emailSettings.AdminEmailAddress) ||
                 string.IsNullOrWhiteSpace(emailSettings.ContactEmailAddress) ||
-                string.IsNullOrWhiteSpace(emailSettings.FromEmailAddress) || 
-                string.IsNullOrWhiteSpace(emailSettings.EmailApiKey))
+                string.IsNullOrWhiteSpace(emailSettings.FromEmailAddress) ||
+                string.IsNullOrWhiteSpace(emailSettings.EmailApiKey) ||
+                !emailProviders.Contains(emailSettings.EmailProvider))
             {
                 throw new OdkServiceException("Some required fields are missing");
             }

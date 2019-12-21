@@ -15,6 +15,8 @@ namespace ODK.Services.Chapters
 
         Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId);
 
+        Task<IReadOnlyCollection<string>> GetEmailProviders();
+
         Task<Chapter> UpdateChapterDetails(Guid currentMemberId, Guid chapterId, UpdateChapterDetails details);
 
         Task UpdateChapterEmailSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailSettings emailSettings);

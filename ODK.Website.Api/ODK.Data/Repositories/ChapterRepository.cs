@@ -183,8 +183,7 @@ namespace ODK.Data.Repositories
                 .Set(x => x.AdminEmailAddress, emailSettings.AdminEmailAddress)
                 .Set(x => x.ContactEmailAddress, emailSettings.ContactEmailAddress)
                 .Set(x => x.EmailApiKey, emailSettings.EmailApiKey)
-                .Set(x => x.FromEmailAddress, emailSettings.FromEmailAddress)
-                .Set(x => x.FromEmailName, emailSettings.FromEmailName)
+                .Set(x => x.EmailProvider, emailSettings.EmailProvider)
                 .Where(x => x.ChapterId).EqualTo(emailSettings.ChapterId)
                 .ExecuteAsync();
         }

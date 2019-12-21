@@ -1,6 +1,9 @@
 <ng-container *appLoading="!invites">
     <p *ngIf="invites.sent === 0">
-        <button class="btn btn-primary" (click)="onSend()">Send invites</button>
+        <button class="btn btn-primary" [attr.disabled]="sending ? 'disabled' : null" 
+          (click)="onSend()">
+          Send invites
+        </button>
     </p>
     
     <div class="row">

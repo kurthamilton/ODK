@@ -27,6 +27,13 @@ namespace ODK.Web.Api.Admin.Chapters
             _mapper = mapper;
         }
 
+        [HttpGet("Emails/Providers")]
+        public async Task<IEnumerable<string>> GetEmailProviders(Guid id)
+        {
+            IReadOnlyCollection<string> providers = await _chapterAdminService.GetEmailProviders();
+            return providers;
+        }
+
         [HttpGet]
         public async Task<IEnumerable<ChapterApiResponse>> Get()
         {

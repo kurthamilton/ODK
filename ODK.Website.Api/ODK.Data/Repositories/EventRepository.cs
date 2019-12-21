@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Threading.Tasks;
 using ODK.Core.Events;
 using ODK.Data.Sql;
@@ -12,6 +11,13 @@ namespace ODK.Data.Repositories
         public EventRepository(SqlContext context)
             : base(context)
         {
+        }
+
+        public async Task AddEventEmail(EventEmail eventEmail)
+        {
+            await Context
+                .Insert(eventEmail)
+                .ExecuteAsync();
         }
 
         public async Task<Event> CreateEvent(Event @event)
@@ -48,6 +54,24 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<EventEmail> GetEventEmail(Guid eventId)
+        {
+            return await Context
+                .Select<EventEmail>()
+                .Where(x => x.EventId).EqualTo(eventId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<IReadOnlyCollection<EventEmail>> GetEventEmails(Guid chapterId, DateTime after)
+        {
+            return await Context
+                .Select<EventEmail>()
+                .Join<Event, Guid>(x => x.EventId, x => x.Id)
+                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
+                .Where<Event, DateTime>(x => x.Date).GreaterThanOrEqualTo(after)
+                .ToArrayAsync();
+        }
+
         public async Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid eventId)
         {
             return await Context
@@ -56,13 +80,13 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime? after)
+        public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime after)
         {
             return await Context
                 .Select<Event>()
                 .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
-                .ConditionalWhere(x => x.Date, after.HasValue).GreaterThanOrEqualTo(after ?? SqlDateTime.MinValue.Value)
+                .Where(x => x.Date).GreaterThanOrEqualTo(after)
                 .ToArrayAsync();
         }
 
@@ -106,7 +130,6 @@ namespace ODK.Data.Repositories
                 .Set(x => x.Name, @event.Name)
                 .Set(x => x.Time, @event.Time)
                 .Set(x => x.VenueId, @event.VenueId)
-                .Set(x => x.EmailProviderEmailId, @event.EmailProviderEmailId)
                 .Where(x => x.Id).EqualTo(@event.Id)
                 .ExecuteAsync();
         }

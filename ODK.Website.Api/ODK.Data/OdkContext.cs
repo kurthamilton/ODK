@@ -21,6 +21,7 @@ namespace ODK.Data
             AddMap(new ContactRequestMap());
             AddMap(new CountryMap());
             AddMap(new EmailMap());
+            AddMap(new EventEmailMap());
             AddMap(new EventMap());
             AddMap(new EventResponseMap());
             AddMap(new MemberActivationTokenMap());

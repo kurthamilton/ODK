@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
@@ -45,7 +46,7 @@ namespace ODK.Services.Events
 
             Event @event = new Event(Guid.Empty, createEvent.ChapterId, $"{member.FirstName} {member.LastName}", createEvent.Name,
                 createEvent.Date, createEvent.VenueId, createEvent.Time, null,
-                createEvent.Description, createEvent.IsPublic, null);
+                createEvent.Description, createEvent.IsPublic);
 
             await ValidateEvent(@event);
 
@@ -63,14 +64,18 @@ namespace ODK.Services.Events
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            IReadOnlyCollection<Event> events = await _eventRepository.GetEvents(chapterId, DateTime.UtcNow);
+            IReadOnlyCollection<Event> events = await _eventRepository.GetEvents(chapterId, DateTime.UtcNow.Date);
+            IReadOnlyCollection<EventEmail> eventEmails = await _eventRepository.GetEventEmails(chapterId, DateTime.UtcNow.Date);
+
+            IDictionary<Guid, EventEmail> eventEmailDictionary = eventEmails.ToDictionary(x => x.EventId, x => x);
 
             IMailProvider mailProvider = await _mailProviderFactory.Create(chapterId);
 
             List<EventInvites> invites = new List<EventInvites>();
             foreach (Event @event in events)
             {
-                EventInvites eventInvites = await mailProvider.GetEventInvites(@event);
+                EventEmail eventEmail = eventEmailDictionary.ContainsKey(@event.Id) ? eventEmailDictionary[@event.Id] : null;
+                EventInvites eventInvites = await mailProvider.GetEventInvites(@event, eventEmail);
                 invites.Add(eventInvites);
             }
 
@@ -111,9 +116,10 @@ namespace ODK.Services.Events
         public async Task<EventInvites> GetEventInvites(Guid currentMemberId, Guid eventId)
         {
             Event @event = await GetEvent(currentMemberId, eventId);
+            EventEmail eventEmail = await _eventRepository.GetEventEmail(eventId);
 
             IMailProvider mailProvider = await _mailProviderFactory.Create(@event.ChapterId);
-            return await mailProvider.GetEventInvites(@event);
+            return await mailProvider.GetEventInvites(@event, eventEmail);
         }
 
         public async Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid currentMemberId, Guid eventId)
@@ -126,7 +132,7 @@ namespace ODK.Services.Events
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            return await _eventRepository.GetEvents(chapterId, null);
+            return await _eventRepository.GetEvents(chapterId, DateTime.UtcNow.Date);
         }
 
         public async Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId)
@@ -150,20 +156,23 @@ namespace ODK.Services.Events
                 throw new OdkServiceException("Invites cannot be sent to past events");
             }
 
-            IMailProvider mailProvider = await _mailProviderFactory.Create(@event.ChapterId);
+            Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
+            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(@event.ChapterId);
+
+            IMailProvider mailProvider = _mailProviderFactory.Create(chapter, emailSettings);
 
             await mailProvider.SynchroniseMembers(@event.ChapterId);
 
-            Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
             Venue venue = await _venueRepository.GetVenue(@event.VenueId);
 
             Email email = await GetEventEmail();
             IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
             email = email.Interpolate(parameters);
 
-            @event.EmailProviderEmailId = await mailProvider.SendEventEmail(@event, email);
+            string emailProviderEmailId = await mailProvider.SendEventEmail(@event, email);
+            EventEmail eventEmail = new EventEmail(Guid.Empty, eventId, emailSettings.EmailProvider, emailProviderEmailId, DateTime.UtcNow);
 
-            await _eventRepository.UpdateEvent(@event);
+            await _eventRepository.AddEventEmail(eventEmail);
         }
 
         public async Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
@@ -204,8 +213,8 @@ namespace ODK.Services.Events
 
         private async Task AssertEventCanBeDeleted(Guid currentMemberId, Guid id)
         {
-            Event @event = await GetEvent(currentMemberId, id);
-            if (!string.IsNullOrWhiteSpace(@event.EmailProviderEmailId))
+            EventEmail eventEmail = await _eventRepository.GetEventEmail(id);
+            if (eventEmail != null)
             {
                 throw new OdkServiceException("Events that have had invite emails sent cannot be deleted");
             }

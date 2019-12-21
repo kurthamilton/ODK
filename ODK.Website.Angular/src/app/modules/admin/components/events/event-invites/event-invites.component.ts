@@ -18,21 +18,32 @@ export class EventInvitesComponent implements OnChanges {
   @Input() eventId: string;
 
   invites: EventInvites;
-  
+  sending = false;
+  sent = false;
+
   ngOnChanges(): void {
     if (!this.eventId) {
       return;
     }
     
-    this.eventAdminService.getEventInvites(this.eventId).subscribe((invites: EventInvites) => {
-      this.invites = invites;
-      this.changeDetector.detectChanges();
-    });
+    this.loadStatistics();
   }
 
   onSend(): void {
+    this.sending = true;
+    this.changeDetector.detectChanges();
+
     this.eventAdminService.sendInvites(this.eventId).subscribe(() => {
-      
+      this.sending = false;
+      this.sent = true;
+      this.loadStatistics();
+    });
+  }
+
+  private loadStatistics(): void {
+    this.eventAdminService.getEventInvites(this.eventId).subscribe((invites: EventInvites) => {
+      this.invites = invites;
+      this.changeDetector.detectChanges();
     });
   }
 }

@@ -7,6 +7,7 @@ using ODK.Core.Chapters;
 using ODK.Core.DataTypes;
 using ODK.Core.Members;
 using ODK.Services.Authorization;
+using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using ODK.Services.Mails;
@@ -76,7 +77,8 @@ namespace ODK.Services.Tests.Members
                 CreateMockMailService(),
                 new MemberServiceSettings(),
                 CreateMockImageService(),
-                Mock.Of<IPaymentService>());
+                Mock.Of<IPaymentService>(),
+                Mock.Of<ICacheService>());
         }
 
         private static IAuthorizationService CreateMockAuthorizationService()

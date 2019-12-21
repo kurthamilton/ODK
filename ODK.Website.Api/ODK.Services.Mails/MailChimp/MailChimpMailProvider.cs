@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MailChimp.Net;
@@ -7,36 +6,57 @@ using MailChimp.Net.Core;
 using MailChimp.Net.Interfaces;
 using MailChimp.Net.Models;
 using ODK.Core.Chapters;
+using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Services.Events;
-using OdkEmail = ODK.Core.Mail.Email;
-using OdkEvent = ODK.Core.Events.Event;
-using OdkMember = ODK.Core.Members.Member;
 
 namespace ODK.Services.Mails.MailChimp
 {
-    public class MailChimpMailProvider : IMailChimpMailProvider
+    public class MailChimpMailProvider : MailProviderBase
     {
-        private readonly IChapterRepository _chapterRepository;
         private readonly IMemberRepository _memberRepository;
 
         public MailChimpMailProvider(IChapterRepository chapterRepository, IMemberRepository memberRepository)
+            : base(chapterRepository)
         {
-            _chapterRepository = chapterRepository;
             _memberRepository = memberRepository;
         }
 
-        public async Task<EventInvites> GetEventInvites(OdkEvent @event)
+        protected override async Task<string> CreateCampaign(string apiKey, EventCampaign campaign)
         {
-            IMailChimpManager manager = await CreateManager(@event.ChapterId);
+            IMailChimpManager manager = CreateManager(apiKey);
+
+            Campaign create = new Campaign
+            {
+                Recipients = new Recipient
+                {
+                    ListId = campaign.SubscriptionMemberGroupId
+                },
+                Settings = new Setting
+                {
+                    FromName = campaign.FromName,
+                    ReplyTo = campaign.From,
+                    SubjectLine = campaign.Subject,
+                    Title = campaign.Subject,
+                },
+                Type = CampaignType.Regular
+            };
+
+            Campaign created = await manager.Campaigns.AddAsync(create);
+            return created.Id;
+        }
+
+        protected override async Task<EventInvites> GetEventInvites(string apiKey, EventEmail eventEmail)
+        {
+            IMailChimpManager manager = CreateManager(apiKey);
 
             try
             {
-                Campaign campaign = await manager.Campaigns.GetAsync(@event.EmailProviderEmailId);
+                Campaign campaign = await manager.Campaigns.GetAsync(eventEmail.EmailProviderEmailId);
 
                 return new EventInvites
                 {
-                    EventId = @event.Id,
+                    EventId = eventEmail.EventId,
                     Sent = campaign.EmailsSent ?? 0
                 };
             }
@@ -44,67 +64,47 @@ namespace ODK.Services.Mails.MailChimp
             {
                 return new EventInvites
                 {
-                    EventId = @event.Id,
+                    EventId = eventEmail.EventId,
                     Sent = 0
                 };
             }
         }
 
-        public async Task<string> SendEventEmail(OdkEvent @event, OdkEmail email)
+        protected override async Task<IReadOnlyCollection<SubscriptionMemberGroup>> GetSubscriptionMemberGroups(string apiKey)
         {
-            Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
-            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(chapter.Id);
-
-            IMailChimpManager manager = CreateManager(emailSettings);
+            IMailChimpManager manager = CreateManager(apiKey);
 
             IEnumerable<List> lists = await manager.Lists.GetAllAsync();
 
-            Campaign create = new Campaign
+            return lists.Select(x => new SubscriptionMemberGroup
             {
-                Recipients = new Recipient
-                {
-                    ListId = lists.First().Id
-                },
-                Settings = new Setting
-                {
-                    FromName = emailSettings.FromEmailName,
-                    ReplyTo = emailSettings.FromEmailAddress,
-                    SubjectLine = email.Subject,
-                    Title = $"Event: {@event.Name}",
-                },
-                Type = CampaignType.Regular
-            };
+                Id = x.Id,
+                Name = x.Name
+            }).ToArray();
+        }
 
-            Campaign campaign = await manager.Campaigns.AddAsync(create);
+        protected override async Task SendCampaignEmail(string apiKey, EventCampaign campaign)
+        {
+            IMailChimpManager manager = CreateManager(apiKey);
+
+            await manager.Campaigns.SendAsync(campaign.Id);
+        }
+
+        protected override async Task UpdateCampaignEmailContent(string apiKey, EventCampaign campaign)
+        {
+            IMailChimpManager manager = CreateManager(apiKey);
 
             ContentRequest content = new ContentRequest
             {
-                Html = email.Body
+                Html = campaign.HtmlContent
             };
 
             await manager.Content.AddOrUpdateAsync(campaign.Id, content);
-
-            await manager.Campaigns.SendAsync(campaign.Id);
-
-            return campaign.Id;
         }
 
-        public async Task SynchroniseMembers(Guid chapterId)
+        private IMailChimpManager CreateManager(string apiKey)
         {
-            IReadOnlyCollection<OdkMember> members = await _memberRepository.GetMembers(chapterId);
-
-
-        }
-
-        private async Task<IMailChimpManager> CreateManager(Guid chapterId)
-        {
-            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(chapterId);
-            return CreateManager(emailSettings);
-        }
-
-        private IMailChimpManager CreateManager(ChapterEmailSettings emailSettings)
-        {
-            return new MailChimpManager(emailSettings.EmailApiKey);
+            return new MailChimpManager(apiKey);
         }
     }
 }

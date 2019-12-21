@@ -1,10 +1,13 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
-import { Subject } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { ChapterEmailSettings } from 'src/app/core/chapters/chapter-email-settings';
+import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
+import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
@@ -25,24 +28,31 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
   form: FormViewModel;
 
   private chapter: Chapter;
+  private emailProviders: string[];
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
     adminEmailAddress: TextInputFormControlViewModel;
     contactEmailAddress: TextInputFormControlViewModel;
     emailApiKey: TextInputFormControlViewModel;
-    emailProvider: ReadOnlyFormControlViewModel;
-    fromEmailAddress: TextInputFormControlViewModel;
-    fromEmailName: TextInputFormControlViewModel;
+    emailProvider: DropDownFormControlViewModel;
+    fromEmailAddress: ReadOnlyFormControlViewModel;
+    fromEmailName: ReadOnlyFormControlViewModel;
   };
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
 
-    this.chapterAdminService.getChapterAdminEmailSettings(this.chapter.id).subscribe((emailSettings: ChapterEmailSettings) => {
-      this.emailSettings = emailSettings;
+    forkJoin([
+      this.chapterAdminService.getChapterAdminEmailSettings(this.chapter.id).pipe(
+        tap((emailSettings: ChapterEmailSettings) => this.emailSettings = emailSettings)
+      ),
+      this.chapterAdminService.getEmailProviders().pipe(
+        tap((providers: string[]) => this.emailProviders = providers)
+      )  
+    ]).subscribe(() => {
       this.buildForm();
       this.changeDetector.detectChanges();
-    });    
+    });
   }
 
   ngOnDestroy(): void {
@@ -53,6 +63,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
     this.emailSettings.adminEmailAddress = this.formControls.adminEmailAddress.value;
     this.emailSettings.contactEmailAddress = this.formControls.contactEmailAddress.value;
     this.emailSettings.emailApiKey = this.formControls.emailApiKey.value;
+    this.emailSettings.emailProvider = this.formControls.emailProvider.value;
     this.emailSettings.fromEmailAddress = this.formControls.fromEmailAddress.value;
     this.emailSettings.fromEmailName = this.formControls.fromEmailName.value;
     this.chapterAdminService.updateChapterEmailSettings(this.chapter.id, this.emailSettings).subscribe(() => {
@@ -92,14 +103,21 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
         },
         value: this.emailSettings.emailApiKey
       }),
-      emailProvider: new ReadOnlyFormControlViewModel({
+      emailProvider: new DropDownFormControlViewModel({
         id: 'email-provider',
         label: {
           text: 'Provider'
         },
+        options: this.emailProviders.map((provider: string): DropDownFormControlOption => ({
+          text: provider,
+          value: provider
+        })),
+        validation: {
+          required: true
+        },
         value: this.emailSettings.emailProvider
       }),
-      fromEmailAddress: new TextInputFormControlViewModel({
+      fromEmailAddress: new ReadOnlyFormControlViewModel({
         id: 'from-email-address',
         label: {
           text: 'From email address'
@@ -109,7 +127,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
         },
         value: this.emailSettings.fromEmailAddress
       }),
-      fromEmailName: new TextInputFormControlViewModel({
+      fromEmailName: new ReadOnlyFormControlViewModel({
         id: 'from-email-name',
         label: {
           text: 'From email name'

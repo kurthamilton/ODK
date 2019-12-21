@@ -18,6 +18,7 @@ const baseUrl = `${environment.baseUrl}/admin/chapters`;
 const endpoints = {
   chapters: baseUrl,
   details: (id: string) => `${baseUrl}/${id}/details`,
+  emailProviders: `${baseUrl}/emails/providers`,
   emailSettings: (id: string) => `${baseUrl}/${id}/emails/settings`,
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   questions: (id: string) => `${baseUrl}/${id}/Questions`
@@ -61,6 +62,12 @@ export class ChapterAdminService extends ChapterService {
     );
   }
 
+  getEmailProviders(): Observable<string[]> {
+    return this.http.get(endpoints.emailProviders).pipe(
+      map((response: any) => response)
+    );
+  }
+
   hasAccess(chapter: Chapter): Observable<boolean> {
     return chapter ? this.getAdminChapters().pipe(
       map((chapters: Chapter[]) => !!chapters.find(x => x.id === chapter.id))
@@ -93,6 +100,7 @@ export class ChapterAdminService extends ChapterService {
       adminEmailAddress: emailSettings.adminEmailAddress,
       contactEmailAddress: emailSettings.contactEmailAddress,
       emailApiKey: emailSettings.emailApiKey,
+      emailProvider: emailSettings.emailProvider,
       fromEmailAddress: emailSettings.fromEmailAddress,
       fromEmailName: emailSettings.fromEmailName
     });

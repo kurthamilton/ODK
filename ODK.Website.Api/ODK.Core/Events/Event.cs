@@ -5,13 +5,12 @@ namespace ODK.Core.Events
     public class Event
     {
         public Event(Guid id, Guid chapterId, string createdBy, string name, DateTime date, Guid venueId, string time,
-            string imageUrl, string description, bool isPublic, string emailProviderEmailId)
+            string imageUrl, string description, bool isPublic)
         {
             ChapterId = chapterId;
             CreatedBy = createdBy;
             Date = date;
             Description = description;
-            EmailProviderEmailId = emailProviderEmailId;
             Id = id;
             ImageUrl = imageUrl;
             IsPublic = isPublic;
@@ -27,8 +26,6 @@ namespace ODK.Core.Events
         public DateTime Date { get; set; }
 
         public string Description { get; set; }
-
-        public string EmailProviderEmailId { get; set; }
 
         public Guid Id { get; }
 

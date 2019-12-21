@@ -28,7 +28,7 @@ namespace ODK.Services.Events
         {
             await _authorizationService.AssertMemberIsChapterMember(currentMemberId, chapterId);
             await _authorizationService.AssertMembershipIsActive(currentMemberId, chapterId);
-            return await _eventRepository.GetEvents(chapterId, DateTime.Today);
+            return await _eventRepository.GetEvents(chapterId, DateTime.UtcNow.Date);
         }
 
         public async Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId)
@@ -38,7 +38,7 @@ namespace ODK.Services.Events
 
         public async Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId)
         {
-            return await _eventRepository.GetPublicEvents(chapterId, DateTime.Today);
+            return await _eventRepository.GetPublicEvents(chapterId, DateTime.UtcNow.Date);
         }
 
         public async Task<EventMemberResponse> UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType)

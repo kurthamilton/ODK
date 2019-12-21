@@ -16,15 +16,15 @@ namespace ODK.Core.Chapters
             FromEmailName = fromEmailName;
         }
 
-        public string AdminEmailAddress { get; }
+        public string AdminEmailAddress { get; set; }
 
         public Guid ChapterId { get; }
 
-        public string ContactEmailAddress { get; }
+        public string ContactEmailAddress { get; set; }
 
-        public string EmailApiKey { get; }
+        public string EmailApiKey { get; set; }
 
-        public string EmailProvider { get; }
+        public string EmailProvider { get; set; }
 
         public string FromEmailAddress { get; }
 

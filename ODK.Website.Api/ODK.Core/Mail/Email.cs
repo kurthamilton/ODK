@@ -14,12 +14,19 @@ namespace ODK.Core.Mail
 
         public string Body { get; }
 
+        public IDictionary<string, string> Parameters { get; } = new Dictionary<string, string>();
+
         public string Subject { get; }
 
         public EmailType Type { get; }
 
         public Email Interpolate(IDictionary<string, string> parameters)
         {
+            foreach (string key in parameters.Keys)
+            {
+                Parameters[key] = parameters[key];
+            }
+
             string body = Body.Interpolate(parameters);
             string subject = Subject.Interpolate(parameters);
 

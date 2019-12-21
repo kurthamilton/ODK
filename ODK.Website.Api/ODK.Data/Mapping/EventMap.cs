@@ -20,7 +20,6 @@ namespace ODK.Data.Mapping
             Property(x => x.ImageUrl);
             Property(x => x.Description);
             Property(x => x.IsPublic);
-            Property(x => x.EmailProviderEmailId);
         }
 
         public override Event Read(IDataReader reader)
@@ -36,8 +35,7 @@ namespace ODK.Data.Mapping
                 time: reader.GetStringOrDefault(6),
                 imageUrl: reader.GetStringOrDefault(7),
                 description: reader.GetStringOrDefault(8),
-                isPublic: reader.GetBoolean(9),
-                emailProviderEmailId: reader.GetStringOrDefault(10)
+                isPublic: reader.GetBoolean(9)
             );
         }
     }

@@ -8,7 +8,7 @@ namespace ODK.Services.Mails
 {
     public interface IMailProvider
     {
-        Task<EventInvites> GetEventInvites(Event @event);
+        Task<EventInvites> GetEventInvites(Event @event, EventEmail eventEmail);
 
         Task<string> SendEventEmail(Event @event, Email email);
 
