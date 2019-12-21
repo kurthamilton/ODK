@@ -11,9 +11,11 @@ namespace ODK.Data.Sql.Queries
     {
         private readonly IList<ISqlQueryCondition> _conditions = new List<ISqlQueryCondition>();
         private bool _delete;
+        private int _fetch;
         private T _insertEntity;
         private SqlColumn _insertOutputColumn;
         private readonly IList<ISqlComponent> _joins = new List<ISqlComponent>();
+        private int _offset;
         private readonly IList<ISqlComponent> _orderByFields = new List<ISqlComponent>();
         private readonly IList<string> _selectColumns = new List<string>();
         private int _top;
@@ -85,7 +87,8 @@ namespace ODK.Data.Sql.Queries
                FromSql(context) +
                JoinSql(context) +
                WhereSql(context) +
-               OrderBySql(context);
+               OrderBySql(context) +
+               PageSql();
         }
 
         public async Task<int> VersionAsync()
@@ -139,6 +142,12 @@ namespace ODK.Data.Sql.Queries
             {
                 AddSelectColumn(column);
             }
+        }
+
+        protected void AddPage(int page, int pageSize)
+        {
+            _fetch = pageSize;
+            _offset = pageSize * (page - 1);
         }
 
         protected void AddTop(int size)
@@ -204,6 +213,16 @@ namespace ODK.Data.Sql.Queries
             return _orderByFields.Count > 0 ?
                 $" ORDER BY {string.Join(",", _orderByFields.Select(x => x.ToSql(context)))}"
                 : "";
+        }
+
+        private string PageSql()
+        {
+            if (_fetch == 0)
+            {
+                return "";
+            }
+
+            return $" OFFSET {_offset} ROWS FETCH NEXT {_fetch} ROWS ONLY";
         }
 
         private string WhereSql(SqlContext context)

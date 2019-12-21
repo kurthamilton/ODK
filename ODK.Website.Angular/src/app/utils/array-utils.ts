@@ -16,6 +16,25 @@ export class ArrayUtils {
     return !!arr && arr.length > 0;
   }
   
+  static last<T>(arr: T[]): T {
+    if (!this.hasValues(arr)) {
+      return;
+    }
+
+    return arr[arr.length - 1];
+  }
+
+  static numbersBetween(start: number, end: number): number[] {
+    let modifier = 1;
+    if (start > end) {
+      modifier = -1;
+    }
+    
+    return Array.from(
+      new Array(Math.abs(end - start) + 1),
+      (_, index: number) => start + (modifier * index));
+  }
+
   static segment<T>(arr: T[], segmentSize: number): T[][] {
     const segments: T[][] = [];
 
@@ -40,13 +59,5 @@ export class ArrayUtils {
       map.set(key, current);
       return map;
     }, new Map<TKey, T>());
-  }  
-
-  private static last<T>(arr: T[]): T {
-    if (!this.hasValues(arr)) {
-      return;
-    }
-
-    return arr[arr.length - 1];
-  }
+  }    
 }

@@ -32,6 +32,7 @@ import { ChapterQuestionsComponent } from './components/chapters/chapter-questio
 import { ChapterEmailsComponent } from './components/chapters/chapter-emails/chapter-emails.component';
 import { MemberFilterComponent } from './components/members/member-filter/member-filter.component';
 import { DropDownMultiComponent } from './components/forms/inputs/drop-down-multi/drop-down-multi.component';
+import { PaginationComponent } from './components/elements/pagination/pagination.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +61,7 @@ import { DropDownMultiComponent } from './components/forms/inputs/drop-down-mult
     ChapterEmailsComponent,
     MemberFilterComponent,
     DropDownMultiComponent,
+    PaginationComponent,
   ],
   imports: [
     AdminRoutingModule,

@@ -120,12 +120,16 @@ export class EventFormComponent implements OnChanges {
       venue: new DropDownFormControlViewModel({
         id: 'venue',
         label: {
+          helpText: 'Select an existing venue or create a new venue first on the venues page',
           text: 'Venue'
         },
-        options: this.venues.map((venue: Venue): DropDownFormControlOption => ({
-          text: venue.name,
-          value: venue.id
-        })),
+        options: [
+          { text: '', value: '', default: true },
+          ...this.venues.map((venue: Venue): DropDownFormControlOption => ({
+            text: venue.name,
+            value: venue.id
+          }))
+        ],
         validation: {
           required: true
         },

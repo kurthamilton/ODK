@@ -60,26 +60,18 @@ namespace ODK.Services.Events
             await _eventRepository.DeleteEvent(id);
         }
 
-        public async Task<IReadOnlyCollection<EventInvites>> GetChapterInvites(Guid currentMemberId, Guid chapterId)
+        public async Task<IReadOnlyCollection<EventInvites>> GetChapterInvites(Guid currentMemberId, Guid chapterId, int page, int pageSize)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            IReadOnlyCollection<Event> events = await _eventRepository.GetEvents(chapterId, DateTime.UtcNow.Date);
-            IReadOnlyCollection<EventEmail> eventEmails = await _eventRepository.GetEventEmails(chapterId, DateTime.UtcNow.Date);
-
-            IDictionary<Guid, EventEmail> eventEmailDictionary = eventEmails.ToDictionary(x => x.EventId, x => x);
+            IReadOnlyCollection<Event> events = await _eventRepository.GetEvents(chapterId, page, pageSize);
+            IReadOnlyCollection<EventEmail> eventEmails = events.Count > 0
+                ? await _eventRepository.GetEventEmails(chapterId, events.Min(x => x.Date))
+                : new EventEmail[0];
 
             IMailProvider mailProvider = await _mailProviderFactory.Create(chapterId);
 
-            List<EventInvites> invites = new List<EventInvites>();
-            foreach (Event @event in events)
-            {
-                EventEmail eventEmail = eventEmailDictionary.ContainsKey(@event.Id) ? eventEmailDictionary[@event.Id] : null;
-                EventInvites eventInvites = await mailProvider.GetEventInvites(@event, eventEmail);
-                invites.Add(eventInvites);
-            }
-
-            return invites;
+            return await mailProvider.GetInvites(chapterId, eventEmails);
         }
 
         public async Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid currentMemberId,
@@ -101,6 +93,13 @@ namespace ODK.Services.Events
             await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
 
             return @event;
+        }
+
+        public async Task<int> GetEventCount(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _eventRepository.GetEventCount(chapterId);
         }
 
         public async Task<Email> GetEventEmail(Guid currentMemberId, Guid eventId)
@@ -128,11 +127,11 @@ namespace ODK.Services.Events
             return await _eventRepository.GetEventResponses(@event.Id);
         }
 
-        public async Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId)
+        public async Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId, int page, int pageSize)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            return await _eventRepository.GetEvents(chapterId, DateTime.UtcNow.Date);
+            return await _eventRepository.GetEvents(chapterId, page, pageSize);
         }
 
         public async Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId)

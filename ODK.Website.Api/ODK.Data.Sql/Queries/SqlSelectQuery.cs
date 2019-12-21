@@ -20,6 +20,12 @@ namespace ODK.Data.Sql.Queries
             return this;
         }
 
+        public SqlSelectQuery<T> Page(int page, int pageSize)
+        {
+            AddPage(page, pageSize);
+            return this;
+        }
+
         public SqlSelectQuery<T> Top(int size)
         {
             AddTop(size);

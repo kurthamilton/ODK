@@ -12,11 +12,13 @@ namespace ODK.Services.Events
 
         Task DeleteEvent(Guid currentMemberId, Guid id);
 
-        Task<IReadOnlyCollection<EventInvites>> GetChapterInvites(Guid currentMemberId, Guid chapterId);
+        Task<IReadOnlyCollection<EventInvites>> GetChapterInvites(Guid currentMemberId, Guid chapterId, int page, int pageSize);
 
         Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid currentMemberId, Guid chapterId);
 
         Task<Event> GetEvent(Guid currentMemberId, Guid id);
+
+        Task<int> GetEventCount(Guid currentMemberId, Guid chapterId);
 
         Task<Email> GetEventEmail(Guid currentMemberId, Guid eventId);
 
@@ -24,7 +26,7 @@ namespace ODK.Services.Events
 
         Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid currentMemberId, Guid eventId);
 
-        Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId);
+        Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId, int page, int pageSize);
 
         Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId);
 

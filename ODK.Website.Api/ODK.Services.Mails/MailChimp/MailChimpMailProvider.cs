@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MailChimp.Net;
@@ -68,6 +69,11 @@ namespace ODK.Services.Mails.MailChimp
                     Sent = 0
                 };
             }
+        }
+
+        protected override async Task<IReadOnlyCollection<EventInvites>> GetInvites(string apiKey, IEnumerable<EventEmail> eventEmails)
+        {
+            throw new NotImplementedException();
         }
 
         protected override async Task<IReadOnlyCollection<SubscriptionMemberGroup>> GetSubscriptionMemberGroups(string apiKey)

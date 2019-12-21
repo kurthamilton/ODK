@@ -16,6 +16,8 @@ import { EventResponseType } from 'src/app/core/events/event-response-type';
 import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 import { Venue } from 'src/app/core/venues/venue';
 
+const pageSize = 10;
+
 @Component({
   selector: 'app-events',
   templateUrl: './events.component.html',
@@ -33,40 +35,48 @@ export class EventsComponent implements OnInit {
   links: {
     createEvent: string;
   };
-
+  page = 1;
+  pageCount: number;
   viewModels: AdminListEventViewModel[];
 
   private chapter: Chapter;
+  private eventInvitesMap: Map<string, EventInvites>;
+  private eventResponseMap: Map<string, EventMemberResponse[]>;  
   private events: Event[];
   private invites: EventInvites[];
   private responses: EventMemberResponse[];
+  private totalEventCount: number;
+  private venueMap: Map<string, Venue>;
   private venues: Venue[];
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
 
-    this.loadEvents(this.chapter).subscribe(() => {
-      const eventInvitesMap: Map<string, EventInvites> = ArrayUtils.toMap(this.invites, x => x.eventId);
-      const eventResponseMap: Map<string, EventMemberResponse[]> = ArrayUtils.groupValues(this.responses, x => x.eventId, x => x);
-      const venueMap: Map<string, Venue> = ArrayUtils.toMap(this.venues, x => x.id);
-
-      this.viewModels = this.events.map((event: Event): AdminListEventViewModel => {
-        const eventInvites = eventInvitesMap.has(event.id) ? eventInvitesMap.get(event.id) : null;
-        const eventResponses: EventMemberResponse[] = eventResponseMap.get(event.id) || [];
-        const responseTypeMap: Map<EventResponseType, EventMemberResponse[]> = ArrayUtils.groupValues(eventResponses, x => x.responseType, x => x);
-        return {
-          declined: responseTypeMap.has(EventResponseType.No) ? responseTypeMap.get(EventResponseType.No).length : 0,
-          event,
-          going: responseTypeMap.has(EventResponseType.Yes) ? responseTypeMap.get(EventResponseType.Yes).length : 0,
-          invitesSent: eventInvites ? eventInvites.sent : 0,
-          maybe: responseTypeMap.has(EventResponseType.Maybe) ? responseTypeMap.get(EventResponseType.Maybe).length : 0,
-          venue: venueMap.get(event.venueId)
-        }
-      });
+    forkJoin([
+      forkJoin([
+        this.eventAdminService.getEventCount(this.chapter.id).pipe(
+          tap((count: number) => this.totalEventCount = count)
+        ),
+        this.eventAdminService.getChapterResponses(this.chapter.id).pipe(
+          tap((responses: EventMemberResponse[]) => this.responses = responses)
+        ),
+        this.venueAdminService.getVenues(this.chapter.id).pipe(
+          tap((venues: Venue[]) => this.venues = venues)
+        )
+      ]),
+      this.loadEvents()
+    ]).subscribe(() => {
+      this.eventInvitesMap = ArrayUtils.toMap(this.invites, x => x.eventId);
+      this.eventResponseMap = ArrayUtils.groupValues(this.responses, x => x.eventId, x => x);
+      this.venueMap = ArrayUtils.toMap(this.venues, x => x.id);
 
       this.links = {
         createEvent: adminUrls.eventCreate(this.chapter)
       };
+      this.pageCount = Math.ceil(this.totalEventCount / pageSize);
+
+      this.setViewModels();
+      
       this.changeDetector.detectChanges();
     });
   }
@@ -79,20 +89,41 @@ export class EventsComponent implements OnInit {
     return adminUrls.venue(this.chapter, venue);
   }
 
-  private loadEvents(chapter: Chapter): Observable<{}> {
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadEvents().subscribe(() => {
+      this.setViewModels();
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  private loadEvents(): Observable<{}> {
+    this.viewModels = null;
+    this.changeDetector.detectChanges();
+    
     return forkJoin([
-      this.eventAdminService.getEvents(chapter.id).pipe(
+      this.eventAdminService.getAdminEvents(this.chapter.id, this.page, this.pageCount).pipe(
         tap((events: Event[]) => this.events = events)
       ),
-      this.eventAdminService.getChapterInvites(chapter.id).pipe(
+      this.eventAdminService.getChapterInvites(this.chapter.id, this.page, this.pageCount).pipe(
         tap((invites: EventInvites[]) => this.invites = invites)
       ),
-      this.eventAdminService.getChapterResponses(chapter.id).pipe(
-        tap((responses: EventMemberResponse[]) => this.responses = responses)
-      ),
-      this.venueAdminService.getVenues(chapter.id).pipe(
-        tap((venues: Venue[]) => this.venues = venues)
-      )
     ]);
+  }
+
+  private setViewModels(): void {
+    this.viewModels = this.events.map((event: Event): AdminListEventViewModel => {
+      const eventInvites = this.eventInvitesMap.has(event.id) ? this.eventInvitesMap.get(event.id) : null;
+      const eventResponses: EventMemberResponse[] = this.eventResponseMap.get(event.id) || [];
+      const responseTypeMap: Map<EventResponseType, EventMemberResponse[]> = ArrayUtils.groupValues(eventResponses, x => x.responseType, x => x);
+      return {
+        declined: responseTypeMap.has(EventResponseType.No) ? responseTypeMap.get(EventResponseType.No).length : 0,
+        event,
+        going: responseTypeMap.has(EventResponseType.Yes) ? responseTypeMap.get(EventResponseType.Yes).length : 0,
+        invitesSent: eventInvites ? eventInvites.sent : 0,
+        maybe: responseTypeMap.has(EventResponseType.Maybe) ? responseTypeMap.get(EventResponseType.Maybe).length : 0,
+        venue: this.venueMap.get(event.venueId)
+      };
+    });
   }
 }

@@ -70,6 +70,26 @@ namespace ODK.Services.Mails.SendInBlue
             };
         }
 
+        protected override async Task<IReadOnlyCollection<EventInvites>> GetInvites(string apiKey, IEnumerable<EventEmail> eventEmails)
+        {
+            string url = SendInBlueEndpoints.EmailCampaigns;
+
+            IRestRequest request = CreateRequest(apiKey, url, Method.GET);
+
+            EmailCampaignsApiResponse response = await GetResponse<EmailCampaignsApiResponse>(request);
+
+            IDictionary<int, EventEmail> eventEmailDictionary = eventEmails.ToDictionary(x => int.Parse(x.EmailProviderEmailId), x => x);
+
+            return response.Campaigns
+                .Where(x => eventEmailDictionary.ContainsKey(x.Id))
+                .Select(x => new EventInvites
+                {
+                    EventId = eventEmailDictionary[x.Id].EventId,
+                    Sent = x.Statistics.GlobalStats.Sent
+                })
+                .ToArray();
+        }
+
         protected override async Task<IReadOnlyCollection<SubscriptionMemberGroup>> GetSubscriptionMemberGroups(string apiKey)
         {
             IRestRequest request = CreateRequest(apiKey, SendInBlueEndpoints.ContactLists, Method.GET);

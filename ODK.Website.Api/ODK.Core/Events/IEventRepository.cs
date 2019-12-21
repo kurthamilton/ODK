@@ -11,10 +11,12 @@ namespace ODK.Core.Events
         Task DeleteEvent(Guid id);
         Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid chapterId);
         Task<Event> GetEvent(Guid id);
+        Task<int> GetEventCount(Guid chapterId);
         Task<EventEmail> GetEventEmail(Guid eventId);
         Task<IReadOnlyCollection<EventEmail>> GetEventEmails(Guid chapterId, DateTime after);
         Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid eventId);
         Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime after);
+        Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, int page, int pageSize);
         Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid venueId);
         Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId);
         Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId, DateTime after);

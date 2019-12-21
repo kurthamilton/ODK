@@ -54,6 +54,14 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<int> GetEventCount(Guid chapterId)
+        {
+            return await Context
+                .Select<Event>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .CountAsync();
+        }
+
         public async Task<EventEmail> GetEventEmail(Guid eventId)
         {
             return await Context
@@ -87,6 +95,16 @@ namespace ODK.Data.Repositories
                 .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .Where(x => x.Date).GreaterThanOrEqualTo(after)
+                .ToArrayAsync();
+        }
+
+        public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, int page, int pageSize)
+        {
+            return await Context
+                .Select<Event>()
+                .Page(page, pageSize)
+                .OrderBy(x => x.Date, SqlSortDirection.Descending)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
                 .ToArrayAsync();
         }
 

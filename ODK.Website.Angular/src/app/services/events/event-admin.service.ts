@@ -17,13 +17,16 @@ import { ServiceResult } from 'src/app/services/service-result';
 const baseUrl = `${environment.baseUrl}/admin/events`
 
 const endpoints = {
-  chapterInvites: (chapterId: string) => `${baseUrl}/invites?chapterId=${chapterId}`,
+  chapterInvites: (chapterId: string, page: number, pageCount: number) => 
+    `${baseUrl}/invites?chapterId=${chapterId}&page=${page}&pageCount=${pageCount}`,
   chapterResponses: (chapterId: string) => `${baseUrl}/responses?chapterId=${chapterId}`,
+  count: (chapterId: string) => `${baseUrl}/count?chapterId=${chapterId}`,
   createEvent: `${baseUrl}`,
   event: (id: string) => `${baseUrl}/${id}`,
   eventInvites: (eventId: string) => `${baseUrl}/${eventId}/invites`,
   eventResponses: (eventId: string) => `${baseUrl}/${eventId}/responses`,
-  events: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
+  events: (chapterId: string, page: number, pageCount: number) => 
+    `${baseUrl}?chapterId=${chapterId}&page=${page}&pageCount=${pageCount}`,
   eventsByVenue: (venueId: string) => `${baseUrl}/venues/${venueId}`,
   sendInvites: (eventId: string) => `${baseUrl}/${eventId}/invites/send`
 };
@@ -57,8 +60,14 @@ export class EventAdminService extends EventService {
     );
   }
 
-  getChapterInvites(chapterId: string): Observable<EventInvites[]> {
-    return this.http.get(endpoints.chapterInvites(chapterId)).pipe(
+  getAdminEvents(chapterId: string, page: number, pageCount: number): Observable<Event[]> {
+    return this.http.get(endpoints.events(chapterId, page, pageCount)).pipe(
+      map((response: any) => response.map(x => this.mapEvent(x)))
+    );
+  }
+  
+  getChapterInvites(chapterId: string, page: number, pageCount: number): Observable<EventInvites[]> {
+    return this.http.get(endpoints.chapterInvites(chapterId, page, pageCount)).pipe(
       map((response: any) => response.map(x => this.mapEventInvites(x)))
     );
   }
@@ -75,6 +84,12 @@ export class EventAdminService extends EventService {
     );
   }
 
+  getEventCount(chapterId: string): Observable<number> {
+    return this.http.get(endpoints.count(chapterId)).pipe(
+      map((response: any) => response)
+    );
+  }
+
   getEventInvites(eventId: string): Observable<EventInvites> {
     return this.http.get(endpoints.eventInvites(eventId)).pipe(
       map((response: any) => this.mapEventInvites(response, eventId))
@@ -85,13 +100,7 @@ export class EventAdminService extends EventService {
     return this.http.get(endpoints.eventResponses(eventId)).pipe(
       map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
     );
-  }
-
-  getEvents(chapterId: string): Observable<Event[]> {
-    return this.http.get(endpoints.events(chapterId)).pipe(
-      map((response: any) => response.map(x => this.mapEvent(x)))
-    );
-  }
+  }  
 
   getEventsByVenue(venueId: string): Observable<Event[]> {
     return this.http.get(endpoints.eventsByVenue(venueId)).pipe(

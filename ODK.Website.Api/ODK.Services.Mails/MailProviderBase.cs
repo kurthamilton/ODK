@@ -28,6 +28,12 @@ namespace ODK.Services.Mails
             };
         }
 
+        public async Task<IReadOnlyCollection<EventInvites>> GetInvites(Guid chapterId, IEnumerable<EventEmail> eventEmails)
+        {
+            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(chapterId);
+            return await GetInvites(emailSettings.EmailApiKey, eventEmails);
+        }
+
         public async Task<string> SendEventEmail(Event @event, Email email)
         {
             ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(@event.ChapterId);
@@ -60,6 +66,8 @@ namespace ODK.Services.Mails
         protected abstract Task<string> CreateCampaign(string apiKey, EventCampaign campaign);
 
         protected abstract Task<EventInvites> GetEventInvites(string apiKey, EventEmail eventEmail);
+
+        protected abstract Task<IReadOnlyCollection<EventInvites>> GetInvites(string apiKey, IEnumerable<EventEmail> eventEmails);
 
         protected abstract Task<IReadOnlyCollection<SubscriptionMemberGroup>> GetSubscriptionMemberGroups(string apiKey);
 
