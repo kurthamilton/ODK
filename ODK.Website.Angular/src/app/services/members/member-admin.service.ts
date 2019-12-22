@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { DateUtils } from 'src/app/utils/date-utils';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { Member } from 'src/app/core/members/member';
@@ -13,7 +14,9 @@ import { MemberSubscription } from 'src/app/core/members/member-subscription';
 const baseUrl: string = `${environment.baseUrl}/admin/members`;
 
 const endpoints = {
+  member: (memberId: string) => `${baseUrl}/${memberId}`,
   members: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
+  memberSubscription: (memberId: string) => `${baseUrl}/${memberId}/subscription`,
   memberSubscriptions: (chapterId: string) => `${baseUrl}/subscriptions?chapterId=${chapterId}`,
   rotateImage: (memberId: string) => `${baseUrl}/${memberId}/image/rotate/right`,
   updateImage: (memberId: string) => `${baseUrl}/${memberId}/image`
@@ -28,9 +31,21 @@ export class MemberAdminService extends MemberService {
     super(http);
   }
 
+  getAdminMember(memberId: string): Observable<Member> {
+    return this.http.get(endpoints.member(memberId)).pipe(
+      map((response: any) => this.mapMember(response))
+    );
+  }
+
   getAdminMembers(chapterId: string): Observable<Member[]> {
     return this.http.get(endpoints.members(chapterId)).pipe(
       map((response: any) => response.map(x => this.mapMember(x)))
+    );
+  }
+
+  getMemberSubscription(memberId: string): Observable<MemberSubscription> {
+    return this.http.get(endpoints.memberSubscription(memberId)).pipe(
+      map((response: any) => this.mapMemberSubscription(response))
     );
   }
 
@@ -49,6 +64,17 @@ export class MemberAdminService extends MemberService {
     formData.append('file', file, file.name);
 
     return HttpUtils.putBase64(this.http, endpoints.rotateImage(memberId), formData);
+  }
+
+  updateMemberSubscription(subscription: MemberSubscription): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      expiryDate: DateUtils.toISODateString(subscription.expiryDate),
+      type: subscription.type.toString()
+    });
+
+    return this.http.put(endpoints.memberSubscription(subscription.memberId), params).pipe(
+      map(() => undefined)
+    );
   }
 
   private mapMemberSubscription(response: any): MemberSubscription {

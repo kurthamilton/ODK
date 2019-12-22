@@ -74,6 +74,11 @@ namespace ODK.Services.Members
             await _memberRepository.EnableMember(member.Id);
         }
 
+        public async Task<Member> GetMember(Guid currentMemberId, Guid memberId)
+        {
+            return await GetMember(currentMemberId, memberId, false);
+        }
+
         public async Task<IReadOnlyCollection<MemberGroupMember>> GetMemberGroupMembers(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
@@ -92,7 +97,14 @@ namespace ODK.Services.Members
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            return await _memberRepository.GetMembers(chapterId);
+            return await _memberRepository.GetMembers(chapterId, true);
+        }
+
+        public async Task<MemberSubscription> GetMemberSubscription(Guid currentMemberId, Guid memberId)
+        {
+            Member member = await GetMember(currentMemberId, memberId);
+
+            return await _memberRepository.GetMemberSubscription(member.Id);
         }
 
         public async Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId)
@@ -109,16 +121,16 @@ namespace ODK.Services.Members
             await _memberGroupRepository.RemoveMemberFromGroup(memberId, memberGroup.Id);
         }
 
-        public async Task<MemberImage> RotateMemberImage(Guid currentMemberId, Guid id, int degrees)
+        public async Task<MemberImage> RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees)
         {
-            Member member = await GetMember(currentMemberId, id);
+            Member member = await GetMember(currentMemberId, memberId);
 
             return await _memberService.RotateMemberImage(member.Id, degrees);
         }
 
-        public async Task<MemberGroup> UpdateMemberGroup(Guid currentMemberId, Guid id, CreateMemberGroup memberGroup)
+        public async Task<MemberGroup> UpdateMemberGroup(Guid currentMemberId, Guid memberId, CreateMemberGroup memberGroup)
         {
-            MemberGroup update = await GetMemberGroup(currentMemberId, id);
+            MemberGroup update = await GetMemberGroup(currentMemberId, memberId);
 
             update.Update(memberGroup.Name);
 
@@ -129,16 +141,32 @@ namespace ODK.Services.Members
             return update;
         }
 
-        public async Task<MemberImage> UpdateMemberImage(Guid currentMemberId, Guid id, UpdateMemberImage image)
+        public async Task<MemberImage> UpdateMemberImage(Guid currentMemberId, Guid memberId, UpdateMemberImage image)
         {
-            Member member = await GetMember(currentMemberId, id, true);
+            Member member = await GetMember(currentMemberId, memberId, true);
 
             return await _memberService.UpdateMemberImage(member.Id, image);
         }
 
-        private async Task<Member> GetMember(Guid currentMemberId, Guid id, bool superAdmin = false)
+        public async Task<MemberSubscription> UpdateMemberSubscription(Guid currentMemberId, Guid memberId,
+            UpdateMemberSubscription subscription)
         {
-            Member member = await _memberRepository.GetMember(id);
+            Member member = await GetMember(currentMemberId, memberId);
+
+            DateTime? expiryDate = subscription.Type == SubscriptionType.Alum ? new DateTime?() : subscription.ExpiryDate;
+
+            MemberSubscription update = new MemberSubscription(member.Id, subscription.Type, expiryDate);
+
+            ValidateMemberSubscription(update);
+
+            await _memberRepository.UpdateMemberSubscription(update);
+
+            return update;
+        }
+
+        private async Task<Member> GetMember(Guid currentMemberId, Guid id, bool superAdmin)
+        {
+            Member member = await _memberRepository.GetMember(id, true);
             if (member == null)
             {
                 throw new OdkNotFoundException();
@@ -180,6 +208,23 @@ namespace ODK.Services.Members
             if (existing.Any(x => x.Id != memberGroup.Id && string.Equals(memberGroup.Name, x.Name, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new OdkServiceException("Name already exists");
+            }
+        }
+
+        private void ValidateMemberSubscription(MemberSubscription subscription)
+        {
+            if (!Enum.IsDefined(typeof(SubscriptionType), subscription.Type) || subscription.Type == SubscriptionType.None)
+            {
+                throw new OdkServiceException("Invalid type");
+            }
+
+            if (subscription.Type == SubscriptionType.Alum && subscription.ExpiryDate != null)
+            {
+                throw new OdkServiceException("Alum should not have expiry date");
+            }
+            else if (subscription.Type != SubscriptionType.Alum && subscription.ExpiryDate < DateTime.UtcNow.Date)
+            {
+                throw new OdkServiceException("Expiry date should not be in the past");
             }
         }
     }

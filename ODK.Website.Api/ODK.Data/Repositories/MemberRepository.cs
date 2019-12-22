@@ -36,6 +36,13 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task AddMemberSubscriptionRecord(MemberSubscriptionRecord record)
+        {
+            await Context
+                .Insert(record)
+                .ExecuteAsync();
+        }
+
         public async Task AddPasswordResetRequest(Guid memberId, DateTime created, DateTime expires, string token)
         {
             MemberPasswordResetRequest request = new MemberPasswordResetRequest(Guid.Empty, memberId, created, expires, token);
@@ -118,9 +125,9 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<Member> GetMember(Guid memberId)
+        public async Task<Member> GetMember(Guid memberId, bool searchAll = false)
         {
-            return await MembersQuery()
+            return await MembersQuery(searchAll)
                 .Where(x => x.Id).EqualTo(memberId)
                 .FirstOrDefaultAsync();
         }
@@ -166,9 +173,9 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<IReadOnlyCollection<Member>> GetMembers(Guid chapterId)
+        public async Task<IReadOnlyCollection<Member>> GetMembers(Guid chapterId, bool searchAll = false)
         {
-            return await MembersQuery()
+            return await MembersQuery(searchAll)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .ToArrayAsync();
         }
@@ -189,9 +196,9 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<long> GetMembersVersion(Guid chapterId)
+        public async Task<long> GetMembersVersion(Guid chapterId, bool searchAll = false)
         {
-            return await MembersQuery()
+            return await MembersQuery(searchAll)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .VersionAsync();
         }
@@ -283,10 +290,15 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        private SqlConditionalQuery<Member> MembersQuery()
+        private SqlConditionalQuery<Member> MembersQuery(bool searchAll)
         {
-            return Context
-                .Select<Member>()
+            SqlSelectQuery<Member> query = Context.Select<Member>();
+            if (searchAll)
+            {
+                return query;
+            }
+
+            return query
                 .Where(x => x.Activated).EqualTo(true)
                 .Where(x => x.Disabled).EqualTo(false)
                 .Where<MemberSubscription, SubscriptionType>(x => x.Type).NotEqualTo(SubscriptionType.Alum);

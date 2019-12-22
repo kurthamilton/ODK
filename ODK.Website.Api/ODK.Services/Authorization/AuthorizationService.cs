@@ -85,7 +85,7 @@ namespace ODK.Services.Authorization
         private async Task<Member> GetMember(Guid id)
         {
             VersionedServiceResult<Member> member = await _cacheService.GetOrSetVersionedItem(
-                () => _memberRepository.GetMember(id), id, null);
+                () => _memberRepository.GetMember(id, true), id, null);
             AssertMemberIsCurrent(member.Value);
             return member.Value;
         }

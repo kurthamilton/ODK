@@ -4,8 +4,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 
 import { adminPaths } from '../../../routing/admin-paths';
-import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
 
@@ -18,8 +16,7 @@ export class MemberComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private memberAdminService: MemberAdminService,
-    private chapterAdminService: ChapterAdminService
+    private memberAdminService: MemberAdminService
   ) {
   }
 
@@ -27,9 +24,8 @@ export class MemberComponent implements OnInit, OnDestroy {
   updateImage: Subject<boolean> = new Subject<boolean>();
 
   ngOnInit(): void {
-    const chapter: Chapter = this.chapterAdminService.getActiveChapter();
     const id: string = this.route.snapshot.paramMap.get(adminPaths.members.member.params.id);
-    this.memberAdminService.getMember(id, chapter.id).subscribe((member: Member) => {
+    this.memberAdminService.getAdminMember(id).subscribe((member: Member) => {
       this.member = member;
       this.changeDetector.detectChanges();
     });

@@ -10,6 +10,18 @@ namespace ODK.Web.Api.Admin.Members
     {
         public AdminMembersMappingProfile()
         {
+            MapRequests();
+
+            MapResponses();
+        }
+
+        private void MapRequests()
+        {
+            CreateMap<UpdateMemberSubscriptionApiRequest, UpdateMemberSubscription>();
+        }
+
+        private void MapResponses()
+        {
             CreateMap<MemberGroup, MemberGroupApiResponse>();
 
             CreateMap<MemberGroupMember, MemberGroupMemberApiResponse>();

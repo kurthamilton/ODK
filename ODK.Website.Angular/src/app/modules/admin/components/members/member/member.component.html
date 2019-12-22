@@ -1,4 +1,23 @@
-<app-member-image [member]="member" [maxWidth]="250" [update]="updateImage"></app-member-image>
-<button *ngIf="member" (click)="onRotate()">
-    Rotate
-</button>
+<ng-container *appLoading="!member">
+  <h2>{{member.fullName}}</h2>
+
+  <ngb-tabset type="pills">
+    <ngb-tab title="Subscription">
+      <ng-template ngbTabContent>
+        <app-member-subscription [member]="member"></app-member-subscription>
+      </ng-template>
+    </ngb-tab>
+    <ngb-tab title="Image">
+      <ng-template ngbTabContent>
+        <div>    
+          <app-member-image [member]="member" [maxWidth]="250" [update]="updateImage"></app-member-image>
+        </div>
+        <div>
+          <button class="btn-icon" ngbTooltip="Rotate right" (click)="onRotate()">
+            <i class="fas fa-undo flip-horizontal"></i>
+          </button>
+        </div>
+      </ng-template>
+    </ngb-tab>    
+  </ngb-tabset>  
+</ng-container>

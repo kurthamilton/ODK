@@ -10,6 +10,7 @@ using ODK.Core.Members;
 using ODK.Services.Members;
 using ODK.Web.Api.Account.Requests;
 using ODK.Web.Api.Account.Responses;
+using ODK.Web.Api.Admin.Members.Requests;
 using ODK.Web.Api.Members.Responses;
 
 namespace ODK.Web.Api.Admin.Members
@@ -40,6 +41,13 @@ namespace ODK.Web.Api.Admin.Members
         {
             IReadOnlyCollection<MemberSubscription> subscriptions = await _memberAdminService.GetMemberSubscriptions(GetMemberId(), chapterId);
             return subscriptions.Select(_mapper.Map<SubscriptionApiResponse>);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<MemberApiResponse> GetMember(Guid id)
+        {
+            Member member = await _memberAdminService.GetMember(GetMemberId(), id);
+            return _mapper.Map<MemberApiResponse>(member);
         }
 
         [HttpPut("{id}/Disable")]
@@ -78,6 +86,23 @@ namespace ODK.Web.Api.Admin.Members
         {
             MemberImage rotated = await _memberAdminService.RotateMemberImage(GetMemberId(), id, -90);
             return MemberImageResult(rotated);
+        }
+
+        [HttpGet("{id}/Subscription")]
+        public async Task<SubscriptionApiResponse> GetMemberSubscription(Guid id)
+        {
+            MemberSubscription subscription = await _memberAdminService.GetMemberSubscription(GetMemberId(), id);
+            return _mapper.Map<SubscriptionApiResponse>(subscription);
+        }
+
+        [HttpPut("{id}/Subscription")]
+        public async Task<SubscriptionApiResponse> UpdateMemberSubscription(Guid id,
+            [FromForm] UpdateMemberSubscriptionApiRequest request)
+        {
+            UpdateMemberSubscription update = _mapper.Map<UpdateMemberSubscription>(request);
+
+            MemberSubscription updated = await _memberAdminService.UpdateMemberSubscription(GetMemberId(), id, update);
+            return _mapper.Map<SubscriptionApiResponse>(updated);
         }
     }
 }

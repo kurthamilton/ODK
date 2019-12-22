@@ -21,7 +21,7 @@ export class DateUtils {
   static daysBetween(date1: Date, date2: Date): number {
     const difference: number = date2.getTime() - date1.getTime();   
     return difference / (1000 * 3600 * 24); 
-  } 
+  }   
 
   static toDate(date: Date): Date {
     if (!date) {
@@ -33,5 +33,9 @@ export class DateUtils {
 
   static today(): Date {
     return this.toDate(new Date());
+  }
+
+  static toISODateString(date: Date): string {
+    return date.toISOString().slice(0, 10);
   }
 }

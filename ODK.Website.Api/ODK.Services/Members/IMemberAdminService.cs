@@ -17,20 +17,26 @@ namespace ODK.Services.Members
 
         Task EnableMember(Guid currentMemberId, Guid id);
 
+        Task<Member> GetMember(Guid currentMemberId, Guid memberId);
+
         Task<IReadOnlyCollection<MemberGroupMember>> GetMemberGroupMembers(Guid currentMemberId, Guid chapterId);
 
         Task<IReadOnlyCollection<MemberGroup>> GetMemberGroups(Guid currentMemberId, Guid chapterId);
 
         Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId);
 
+        Task<MemberSubscription> GetMemberSubscription(Guid currentMemberId, Guid memberId);
+
         Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId);
 
         Task RemoveMemberFromGroup(Guid currentMemberId, Guid memberId, Guid memberGroupId);
 
-        Task<MemberImage> RotateMemberImage(Guid currentMemberId, Guid id, int degrees);
+        Task<MemberImage> RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees);
 
-        Task<MemberGroup> UpdateMemberGroup(Guid currentMemberId, Guid id, CreateMemberGroup memberGroup);
+        Task<MemberGroup> UpdateMemberGroup(Guid currentMemberId, Guid memberId, CreateMemberGroup memberGroup);
 
-        Task<MemberImage> UpdateMemberImage(Guid currentMemberId, Guid id, UpdateMemberImage image);
+        Task<MemberImage> UpdateMemberImage(Guid currentMemberId, Guid memberId, UpdateMemberImage image);
+
+        Task<MemberSubscription> UpdateMemberSubscription(Guid currentMemberId, Guid memberId, UpdateMemberSubscription subscription);
     }
 }

@@ -173,7 +173,10 @@ namespace ODK.Services.Members
 
             await _memberRepository.UpdateMemberSubscription(memberSubscription);
 
-            _cacheService.UpdatedVersionedItem<MemberSubscription>(memberSubscription, memberId);
+            MemberSubscriptionRecord record = new MemberSubscriptionRecord(memberId, chapterSubscription.SubscriptionType, DateTime.UtcNow);
+            await _memberRepository.AddMemberSubscriptionRecord(record);
+
+            _cacheService.UpdatedVersionedItem(memberSubscription, memberId);
 
             return memberSubscription;
         }
