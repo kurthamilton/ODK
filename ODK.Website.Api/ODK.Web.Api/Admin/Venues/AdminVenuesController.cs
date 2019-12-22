@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -6,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Venues;
 using ODK.Services.Venues;
 using ODK.Web.Api.Admin.Venues.Requests;
+using ODK.Web.Api.Admin.Venues.Responses;
 using ODK.Web.Api.Venues.Responses;
 
 namespace ODK.Web.Api.Admin.Venues
@@ -45,6 +48,13 @@ namespace ODK.Web.Api.Admin.Venues
             CreateVenue update = _mapper.Map<CreateVenue>(request);
             Venue venue = await _venueAdminService.UpdateVenue(GetMemberId(), id, update);
             return _mapper.Map<VenueApiResponse>(venue);
+        }
+
+        [HttpGet("Stats")]
+        public async Task<IEnumerable<VenueStatsApiResponse>> GetStats(Guid chapterId)
+        {
+            IReadOnlyCollection<VenueStats> stats = await _venueAdminService.GetChapterVenueStats(GetMemberId(), chapterId);
+            return stats.Select(_mapper.Map<VenueStatsApiResponse>);
         }
     }
 }

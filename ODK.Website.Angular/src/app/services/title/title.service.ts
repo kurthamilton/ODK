@@ -33,7 +33,7 @@ export class TitleService {
 
   setRouteTitle(...titles: string[]): void {
     titles = titles.filter(x => !!x);
-    this.routeTitle = titles[titles.length - 1];
+    this.routeTitle = titles[0];
     this.routeTitles = titles;
     this.updateTitle();
   }

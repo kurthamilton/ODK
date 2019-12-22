@@ -34,6 +34,7 @@ import { PaginationComponent } from './components/elements/pagination/pagination
 import { VenueComponent } from './components/venues/venue/venue.component';
 import { VenueFormComponent } from './components/venues/venue-form/venue-form.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
+import { VenueEventsComponent } from './components/venues/venue-events/venue-events.component';
 
 @NgModule({
   declarations: [
@@ -64,6 +65,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     DropDownMultiComponent,
     PaginationComponent,
     MemberSubscriptionComponent,
+    VenueEventsComponent,
   ],
   imports: [
     AdminRoutingModule,

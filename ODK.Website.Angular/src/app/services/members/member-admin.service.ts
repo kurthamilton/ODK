@@ -63,7 +63,7 @@ export class MemberAdminService extends MemberService {
     const formData = new FormData();
     formData.append('file', file, file.name);
 
-    return HttpUtils.putBase64(this.http, endpoints.rotateImage(memberId), formData);
+    return HttpUtils.putBase64(this.http, endpoints.updateImage(memberId), formData);
   }
 
   updateMemberSubscription(subscription: MemberSubscription): Observable<void> {

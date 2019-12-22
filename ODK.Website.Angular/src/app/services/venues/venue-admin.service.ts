@@ -11,10 +11,12 @@ import { HttpUtils } from '../http/http-utils';
 import { ServiceResult } from '../service-result';
 import { Venue } from 'src/app/core/venues/venue';
 import { VenueService } from './venue.service';
+import { VenueStats } from 'src/app/core/venues/venue-stats';
 
 const baseUrl = `${environment.baseUrl}/admin/venues`;
 
 const endpoints = {
+  chapterStats: (chapterId: string) => `${baseUrl}/stats?chapterId=${chapterId}`,
   create: baseUrl,
   venue: (id: string) => `${baseUrl}/${id}`
 };
@@ -39,6 +41,12 @@ export class VenueAdminService extends VenueService {
         value: this.mapVenue(response)
       })),
       catchApiError()
+    );
+  }
+
+  getChapterStats(chapterId: string): Observable<VenueStats[]> {
+    return this.http.get(endpoints.chapterStats(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapVenueStats(x)))
     );
   }
 
@@ -67,5 +75,13 @@ export class VenueAdminService extends VenueService {
       mapQuery: venue.mapQuery,
       name: venue.name
     });
+  }
+
+  private mapVenueStats(response: any): VenueStats {
+    return {
+      eventCount: response.eventCount,
+      lastEventDate: response.lastEventDate ? new Date(response.lastEventDate) : null,
+      venueId: response.venueId
+    };
   }
 }

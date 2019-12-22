@@ -106,6 +106,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
       emailProvider: new DropDownFormControlViewModel({
         id: 'email-provider',
         label: {
+          helpText: 'Event emails are sent via a third-party email provider',
           text: 'Provider'
         },
         options: this.emailProviders.map((provider: string): DropDownFormControlOption => ({
@@ -120,6 +121,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
       fromEmailAddress: new ReadOnlyFormControlViewModel({
         id: 'from-email-address',
         label: {
+          helpText: 'These settings are used by the third-party email provider. Email addresses need to be validated before they can be used.',
           text: 'From email address'
         },
         validation: {
@@ -139,13 +141,13 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
     this.form = {
       buttonText: 'Update',
       callback: this.formCallback,
-      controls: [
-        this.formControls.fromEmailAddress,
-        this.formControls.fromEmailName,
+      controls: [        
         this.formControls.adminEmailAddress,
         this.formControls.contactEmailAddress,
         this.formControls.emailProvider,
-        this.formControls.emailApiKey
+        this.formControls.emailApiKey,
+        this.formControls.fromEmailAddress,
+        this.formControls.fromEmailName
       ]
     };
   }

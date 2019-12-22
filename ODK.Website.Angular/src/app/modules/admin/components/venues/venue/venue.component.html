@@ -2,10 +2,15 @@
   <h2>{{venue.name}}</h2>
 
   <ngb-tabset type="pills">
-      <ngb-tab title="Edit">
-          <ng-template ngbTabContent>
-              <app-edit-venue [chapter]="chapter" [venue]="venue"></app-edit-venue>
-          </ng-template>
-      </ngb-tab>
+    <ngb-tab title="Edit">
+      <ng-template ngbTabContent>
+        <app-edit-venue [chapter]="chapter" [venue]="venue"></app-edit-venue>
+      </ng-template>
+    </ngb-tab>
+    <ngb-tab title="Events">
+      <ng-template ngbTabContent>
+        <app-venue-events [venue]="venue"></app-venue-events>
+      </ng-template>
+    </ngb-tab>
   </ngb-tabset>
 </ng-container>
