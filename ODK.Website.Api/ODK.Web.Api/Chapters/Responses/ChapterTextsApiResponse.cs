@@ -1,8 +1,8 @@
 ﻿namespace ODK.Web.Api.Chapters.Responses
 {
-    public class ChapterDetailsApiResponse
+    public class ChapterTextsApiResponse
     {
-        public string BannerImageUrl { get; set; }
+        public string RegisterText { get; set; }
 
         public string WelcomeText { get; set; }
     }

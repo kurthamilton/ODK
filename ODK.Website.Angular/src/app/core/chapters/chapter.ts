@@ -1,6 +1,7 @@
 export interface Chapter {
-    countryId: string;
-    id: string;
-    name: string;
-    redirectUrl: string;
+  bannerImageUrl: string;
+  countryId: string;
+  id: string;
+  name: string;
+  redirectUrl: string;
 }

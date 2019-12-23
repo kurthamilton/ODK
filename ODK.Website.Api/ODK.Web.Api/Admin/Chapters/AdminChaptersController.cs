@@ -41,14 +41,6 @@ namespace ODK.Web.Api.Admin.Chapters
             return chapters.Select(_mapper.Map<ChapterApiResponse>);
         }
 
-        [HttpPut("{id}/Details")]
-        public async Task<ActionResult<ChapterDetailsApiResponse>> UpdateChapterDetails(Guid id, [FromForm] UpdateChapterDetailsApiRequest request)
-        {
-            UpdateChapterDetails details = _mapper.Map<UpdateChapterDetails>(request);
-            Chapter chapter = await _chapterAdminService.UpdateChapterDetails( GetMemberId(), id, details);
-            return _mapper.Map<ChapterDetailsApiResponse>(chapter);
-        }
-
         [HttpGet("{id}/Emails/Settings")]
         public async Task<ChapterEmailSettingsApiResponse> GetChapterEmailSettings(Guid id)
         {
@@ -94,6 +86,14 @@ namespace ODK.Web.Api.Admin.Chapters
             CreateChapterQuestion question = _mapper.Map<CreateChapterQuestion>(request);
             await _chapterAdminService.CreateChapterQuestion(GetMemberId(), id, question);
             return Created();
+        }
+
+        [HttpPut("{id}/Texts")]
+        public async Task<ActionResult<ChapterTextsApiResponse>> UpdateChapterTexts(Guid id, [FromForm] UpdateChapterTextsApiRequest request)
+        {
+            UpdateChapterTexts texts = _mapper.Map<UpdateChapterTexts>(request);
+            ChapterTexts updated = await _chapterAdminService.UpdateChapterTexts(GetMemberId(), id, texts);
+            return _mapper.Map<ChapterTextsApiResponse>(updated);
         }
     }
 }

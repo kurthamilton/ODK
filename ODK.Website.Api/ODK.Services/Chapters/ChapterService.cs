@@ -90,6 +90,15 @@ namespace ODK.Services.Chapters
             return await _chapterRepository.GetChapterSubscriptions(chapterId);
         }
 
+        public async Task<VersionedServiceResult<ChapterTexts>> GetChapterTexts(long? currentVersion, Guid chapterId)
+        {
+            return await _cacheService.GetOrSetVersionedItem(
+                () => _chapterRepository.GetChapterTexts(chapterId),
+                _ => _chapterRepository.GetChapterTextsVersion(chapterId),
+                chapterId,
+                currentVersion);
+        }
+
         public async Task SendContactMessage(Guid chapterId, string fromAddress, string message)
         {
             if (string.IsNullOrWhiteSpace(fromAddress) || string.IsNullOrWhiteSpace(message))

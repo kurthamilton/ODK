@@ -49,13 +49,19 @@ namespace ODK.Services.Caching
         public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T>> getter, object key,
             long? currentVersion) where T : class, IVersioned
         {
+            return await GetOrSetVersionedItem<T>(getter, t => Task.FromResult(t.Version), key, currentVersion);
+        }
+
+        public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T>> getter, Func<T, Task<long>> getVersion,
+            object key, long? currentVersion) where T : class
+        {
             long? version = TryGetCachedVersion<T>(key);
 
             T item = null;
             if (version == null)
             {
                 item = await getter();
-                version = item.Version;
+                version = await getVersion(item);
                 SetVersion<T>(version.Value, key);
             }
 

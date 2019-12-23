@@ -3,7 +3,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
+import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from 'src/app/services/members/member.service';
@@ -51,7 +51,7 @@ export class ChapterComponent implements OnInit {
   }
 
   private loadPublicPage(): void {
-    this.chapterService.getChapterDetails(this.chapter.id).subscribe((details: ChapterDetails) => {
+    this.chapterService.getChapterTexts(this.chapter.id).subscribe((details: ChapterTexts) => {
       this.welcomeTextHtml = details.welcomeText;
       this.changeDetector.detectChanges();
     });

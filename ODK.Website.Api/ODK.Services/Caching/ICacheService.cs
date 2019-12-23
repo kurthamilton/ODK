@@ -12,7 +12,11 @@ namespace ODK.Services.Caching
         Task<VersionedServiceResult<IReadOnlyCollection<T>>> GetOrSetVersionedCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter, 
             Func<Task<long>> getVersion, long? currentVersion, object key = null);
 
-        Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T>> getter, object instanceKey, long? currentVersion) where T : class, IVersioned;        
+        Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T>> getter, object key, 
+            long? currentVersion) where T : class, IVersioned;
+
+        Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T>> getter, Func<T, Task<long>> getVersion, 
+            object key, long? currentVersion) where T : class;
 
         void RemoveVersionedCollection<T>(object key = null);
 

@@ -23,6 +23,8 @@ namespace ODK.Services.Chapters
 
         Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid chapterId);
 
+        Task<VersionedServiceResult<ChapterTexts>> GetChapterTexts(long? currentVersion, Guid chapterId);
+
         Task SendContactMessage(Guid chapterId, string emailAddress, string message);
     }
 }

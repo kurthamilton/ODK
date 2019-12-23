@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
+import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
 import { HtmlEditorFormControlViewModel } from '../../forms/inputs/html-editor-form-control/html-editor-form-control.view-model';
 
@@ -23,17 +23,18 @@ export class ChapterSettingsComponent implements OnInit, OnDestroy {
   form: FormViewModel;
 
   private chapter: Chapter;
-  private chapterDetails: ChapterDetails;
+  private chapterTexts: ChapterTexts;
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
-    welcomeText: HtmlEditorFormControlViewModel
+    registerText: HtmlEditorFormControlViewModel;
+    welcomeText: HtmlEditorFormControlViewModel;
   };
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
 
-    this.chapterAdminService.getChapterDetails(this.chapter.id).subscribe((details: ChapterDetails) => {
-      this.chapterDetails = details;
+    this.chapterAdminService.getChapterTexts(this.chapter.id).subscribe((texts: ChapterTexts) => {
+      this.chapterTexts = texts;
       this.buildForm();
       this.changeDetector.detectChanges();
     });
@@ -44,10 +45,11 @@ export class ChapterSettingsComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
-    this.chapterDetails.welcomeText = this.formControls.welcomeText.value;
+    this.chapterTexts.registerText = this.formControls.registerText.value;
+    this.chapterTexts.welcomeText = this.formControls.welcomeText.value;
 
-    this.chapterAdminService.updateChapterDetails(this.chapter.id, this.chapterDetails).subscribe((details: ChapterDetails) => {
-      this.chapterDetails = details;
+    this.chapterAdminService.updateChapterTexts(this.chapter.id, this.chapterTexts).subscribe((texts: ChapterTexts) => {
+      this.chapterTexts = texts;
       this.buildForm();
       this.changeDetector.detectChanges();
 
@@ -57,6 +59,17 @@ export class ChapterSettingsComponent implements OnInit, OnDestroy {
 
   private buildForm(): void {
     this.formControls = {
+      registerText: new HtmlEditorFormControlViewModel({
+        id: 'register-text',
+        label: {
+          helpText: 'The message to display on the register page',
+          text: 'Register message'
+        },
+        validation: {
+          required: true
+        },
+        value: this.chapterTexts.registerText
+      }),
       welcomeText: new HtmlEditorFormControlViewModel({
         id: 'welcome-text',
         label: {
@@ -66,7 +79,7 @@ export class ChapterSettingsComponent implements OnInit, OnDestroy {
         validation: {
           required: true
         },
-        value: this.chapterDetails.welcomeText
+        value: this.chapterTexts.welcomeText
       })
     };
 
@@ -74,6 +87,7 @@ export class ChapterSettingsComponent implements OnInit, OnDestroy {
       buttonText: 'Update',
       callback: this.formCallback,
       controls: [
+        this.formControls.registerText,
         this.formControls.welcomeText
       ]
     };

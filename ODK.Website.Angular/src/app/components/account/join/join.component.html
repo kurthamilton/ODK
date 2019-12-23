@@ -1,5 +1,6 @@
 <app-body>
   <ng-container *ngIf="!submitted">
+    <app-raw-html *appLoading="!chapterTexts" [html]="chapterTexts.registerText"></app-raw-html>
     <app-profile-form *appLoading="!chapter" [chapterId]="chapter.id" [formCallback]="formCallback"
       (imageUpload)="onImageUpload($event)" (formSubmit)="onFormSubmit($event)">
     </app-profile-form>

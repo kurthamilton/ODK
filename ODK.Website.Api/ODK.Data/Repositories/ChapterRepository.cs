@@ -176,6 +176,22 @@ namespace ODK.Data.Repositories
                 .VersionAsync();
         }
 
+        public async Task<ChapterTexts> GetChapterTexts(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterTexts>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<long> GetChapterTextsVersion(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterTexts>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .VersionAsync();
+        }
+
         public async Task UpdateChapterEmailSettings(ChapterEmailSettings emailSettings)
         {
             await Context
@@ -220,12 +236,13 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        public async Task UpdateChapterWelcomeText(Guid chapterId, string welcomeText)
+        public async Task UpdateChapterTexts(ChapterTexts texts)
         {
             await Context
-                .Update<Chapter>()
-                .Set(x => x.WelcomeText, welcomeText)
-                .Where(x => x.Id).EqualTo(chapterId)
+                .Update<ChapterTexts>()
+                .Set(x => x.RegisterText, texts.RegisterText)
+                .Set(x => x.WelcomeText, texts.WelcomeText)
+                .Where(x => x.ChapterId).EqualTo(texts.ChapterId)
                 .ExecuteAsync();
         }
     }

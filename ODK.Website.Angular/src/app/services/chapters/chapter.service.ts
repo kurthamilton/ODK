@@ -5,28 +5,28 @@ import { Observable, of, Subject, ReplaySubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterDetails } from 'src/app/core/chapters/chapter-details';
 import { ChapterLinks } from 'src/app/core/chapters/chapter-links';
 import { ChapterPaymentSettings } from 'src/app/core/chapters/chapter-payment-settings';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
+import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 
 const baseUrl = `${environment.baseUrl}/chapters`;
 
 const endpoints = {
-  chapterContact: (id: string) => `${baseUrl}/${id}/contact`,
-  chapterDetails: (id: string) => `${baseUrl}/${id}`,
+  chapterContact: (id: string) => `${baseUrl}/${id}/contact`,  
   chapterLinks: (id: string) => `${baseUrl}/${id}/links`,
   chapterPaymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   chapterProperties: (id: string) => `${baseUrl}/${id}/properties`,
   chapterPropertyOptions: (id: string) => `${baseUrl}/${id}/propertyOptions`,
   chapterQuestions: (id: string) => `${baseUrl}/${id}/questions`,
   chapters: baseUrl,
-  chapterSubscriptions: (id: string) => `${baseUrl}/${id}/subscriptions`
+  chapterSubscriptions: (id: string) => `${baseUrl}/${id}/subscriptions`,
+  chapterTexts: (id: string) => `${baseUrl}/${id}/texts`
 }
 
 @Injectable({
@@ -38,7 +38,7 @@ export class ChapterService {
 
   private activeChapter: Chapter;
   private activeChapterSubject: Subject<Chapter> = new ReplaySubject<Chapter>(1);
-  private chapterDetails: Map<string, ChapterDetails> = new Map<string, ChapterDetails>();
+  private chapterDetails: Map<string, ChapterTexts> = new Map<string, ChapterTexts>();
   private chapterLinks: Map<string, ChapterLinks> = new Map<string, ChapterLinks>();
   private chapters: Chapter[];
 
@@ -65,18 +65,7 @@ export class ChapterService {
     return this.getChapters().pipe(
       map((chapters: Chapter[]) => chapters.find(x => x.name.toLocaleLowerCase() === name.toLocaleLowerCase()))
     );
-  }
-
-  getChapterDetails(chapterId: string): Observable<ChapterDetails> {
-    if (this.chapterDetails.has(chapterId)) {
-      return of(this.chapterDetails.get(chapterId));
-    }
-
-    return this.http.get(endpoints.chapterDetails(chapterId)).pipe(
-      map((response: any) => this.mapChapterDetails(response)),
-      tap((details: ChapterDetails) => this.chapterDetails.set(chapterId, details))
-    );
-  }
+  }  
 
   getChapterById(id: string): Observable<Chapter> {
     return this.getChapters().pipe(
@@ -137,6 +126,17 @@ export class ChapterService {
     );
   }
 
+  getChapterTexts(chapterId: string): Observable<ChapterTexts> {
+    if (this.chapterDetails.has(chapterId)) {
+      return of(this.chapterDetails.get(chapterId));
+    }
+
+    return this.http.get(endpoints.chapterTexts(chapterId)).pipe(
+      map((response: any) => this.mapChapterTexts(response)),
+      tap((details: ChapterTexts) => this.chapterDetails.set(chapterId, details))
+    );
+  }
+
   setActiveChapter(chapter: Chapter): void {
     this.activeChapter = chapter;
     this.activeChapterSubject.next(chapter);
@@ -144,19 +144,13 @@ export class ChapterService {
 
   protected mapChapter(response: any): Chapter {
     return {
+      bannerImageUrl: response.bannerImageUrl,
       countryId: response.countryId,
       id: response.id,
       name: response.name,
       redirectUrl: response.redirectUrl
     }
-  }
-
-  protected mapChapterDetails(response: any): ChapterDetails {
-    return {
-      bannerImageUrl: response.bannerImageUrl,
-      welcomeText: response.welcomeText
-    };
-  }
+  }  
 
   private mapChapterLinks(response: any): ChapterLinks {
     return {
@@ -208,6 +202,13 @@ export class ChapterService {
       name: response.name,
       subscriptionType: response.subscriptionType,
       title: response.title
+    };
+  }
+
+  protected mapChapterTexts(response: any): ChapterTexts {
+    return {      
+      registerText: response.registerText,
+      welcomeText: response.welcomeText
     };
   }
 }

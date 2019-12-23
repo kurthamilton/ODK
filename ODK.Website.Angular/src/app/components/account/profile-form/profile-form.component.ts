@@ -5,6 +5,7 @@ import { forkJoin, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { AccountProfile } from 'src/app/core/account/account-profile';
+import { appUrls } from 'src/app/routing/app-urls';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
@@ -52,14 +53,20 @@ export class ProfileFormComponent implements OnChanges {
   private memberPropertyMap: Map<string, MemberProperty>;
 
   private formControls: {
-    emailAddress: FormControlViewModel;
-    emailOptIn: CheckBoxFormControlViewModel;
-    firstName: TextInputFormControlViewModel;
-    image: FileInputFormControlViewModel;
+    emailAddress: FormControlViewModel;    
+    firstName: TextInputFormControlViewModel;    
     joined: ReadOnlyFormControlViewModel;
     lastName: TextInputFormControlViewModel;
     properties: FormControlViewModel[];
   };
+
+  private joinFormControls: {
+    emailOptIn: CheckBoxFormControlViewModel;
+    image: FileInputFormControlViewModel;
+    privacy: CheckBoxFormControlViewModel;
+    subscription: CheckBoxFormControlViewModel;
+    threeTenets: CheckBoxFormControlViewModel;
+  }
 
   ngOnChanges(): void {
     if (!this.chapterId) {
@@ -86,7 +93,7 @@ export class ProfileFormComponent implements OnChanges {
   onFormSubmit(): void {
     const profile: AccountProfile = {
       emailAddress: this.formControls.emailAddress.value,
-      emailOptIn: this.formControls.emailOptIn.value,
+      emailOptIn: this.profile ? this.profile.emailOptIn : this.joinFormControls.emailOptIn.value,
       firstName: this.formControls.firstName.value,
       joined: null,
       lastName: this.formControls.lastName.value,
@@ -96,8 +103,8 @@ export class ProfileFormComponent implements OnChanges {
       }))
     };
 
-    if (this.formControls.image && this.formControls.image.value && this.formControls.image.value.length >= 1) {
-      this.imageUpload.emit(this.formControls.image.value[0]);
+    if (this.joinFormControls && this.joinFormControls.image.value && this.joinFormControls.image.value.length >= 1) {
+      this.imageUpload.emit(this.joinFormControls.image.value[0]);
     }
 
     this.formSubmit.emit(profile);
@@ -120,15 +127,7 @@ export class ProfileFormComponent implements OnChanges {
           required: true
         },
         value: ''
-      }),
-      emailOptIn: new CheckBoxFormControlViewModel({
-        id: 'emailOptIn',
-        label: {
-          text: 'Receive emails',
-          subtitle: 'Opt in to emails informing you of upcoming events'
-        },
-        value: this.profile ? this.profile.emailOptIn : true
-      }),
+      }),      
       firstName: new TextInputFormControlViewModel({
         id: 'firstName',
         label: {
@@ -138,17 +137,7 @@ export class ProfileFormComponent implements OnChanges {
           required: true
         },
         value: this.profile ? this.profile.firstName : ''
-      }),
-      image: !this.profile ? new FileInputFormControlViewModel({
-        fileType: 'image',
-        id: 'image',
-        label: {
-          text: 'Picture'
-        },
-        validation: {
-          required: true
-        }
-      }) : null,
+      }),      
       joined: this.profile ? new ReadOnlyFormControlViewModel({
         id: 'joined',
         label: {
@@ -167,17 +156,81 @@ export class ProfileFormComponent implements OnChanges {
         value: this.profile ? this.profile.lastName : ''
       }),
       properties: this.chapterProperties.map(x => this.mapFormControl(x))
+    };
+
+    if (!this.profile) {
+      this.joinFormControls = {
+        emailOptIn: this.profile ? null : new CheckBoxFormControlViewModel({
+          id: 'emailOptIn',
+          label: {
+            helpText: "We recommend you leave this on. Once you're set up, we'll only send you one email per event.",
+            text: 'Receive event emails',
+            subtitle: 'Opt in to emails informing you of upcoming events'
+          },
+          value: this.profile ? this.profile.emailOptIn : true
+        }),
+        image: new FileInputFormControlViewModel({
+          fileType: 'image',
+          id: 'image',
+          label: {
+            text: 'Picture'
+          },
+          validation: {
+            required: true
+          }
+        }),
+        privacy: new CheckBoxFormControlViewModel({
+          id: 'privacy',
+          label: {
+            text: `I have read the <a href="${appUrls.privacy}" target="_blank">privacy policy</a>`,
+            textIsHtml: true
+          },
+          validation: {
+            required: true
+          },
+          value: false
+        }),
+        subscription: new CheckBoxFormControlViewModel({
+          id: 'subscription',
+          label: {
+            text: 'I agree to purchase a subscription after a one month trial period'
+          },
+          validation: {
+            required: true
+          },
+          value: false
+        }),
+        threeTenets: new CheckBoxFormControlViewModel({
+          id: 'three-tenets',
+          label: {
+            text: 'I abide by the three <a href="/#tenets" target="_blank">tenets</a> of Drunken Knithood',
+            textIsHtml: true
+          },
+          validation: {
+            required: true
+          },
+          value: false
+        })
+      };
     }
 
     const controls: FormControlViewModel[] = [];
     
-    if (this.formControls.image) {
-      controls.push(this.formControls.image);
+    if (this.joinFormControls) {
+      controls.push(this.joinFormControls.image);
+    }
+
+    controls.push(
+      this.formControls.emailAddress
+    );
+
+    if (this.joinFormControls) {
+      controls.push(
+        this.joinFormControls.emailOptIn
+      );
     }
 
     controls.push(...[
-      this.formControls.emailAddress,
-      this.formControls.emailOptIn,
       this.formControls.firstName,
       this.formControls.lastName,
       ...this.formControls.properties,        
@@ -185,6 +238,14 @@ export class ProfileFormComponent implements OnChanges {
 
     if (this.formControls.joined) {
       controls.push(this.formControls.joined);
+    }
+
+    if (this.joinFormControls) {
+      controls.push(...[
+        this.joinFormControls.threeTenets,
+        this.joinFormControls.privacy,
+        this.joinFormControls.subscription
+      ]);
     }
 
     this.form = {

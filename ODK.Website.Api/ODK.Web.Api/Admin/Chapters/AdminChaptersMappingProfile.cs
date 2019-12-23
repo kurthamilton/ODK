@@ -18,13 +18,13 @@ namespace ODK.Web.Api.Admin.Chapters
         {
             CreateMap<CreateChapterQuestionApiRequest, CreateChapterQuestion>();
 
-            CreateMap<UpdateChapterDetailsApiRequest, UpdateChapterDetails>();
-
             CreateMap<UpdateChapterEmailSettingsApiRequest, UpdateChapterEmailSettings>();
 
             CreateMap<UpdateChapterLinksApiRequest, UpdateChapterLinks>();
 
             CreateMap<UpdateChapterPaymentSettingsApiRequest, UpdateChapterPaymentSettings>();
+
+            CreateMap<UpdateChapterTextsApiRequest, UpdateChapterTexts>();
         }
 
         private void MapResponses()

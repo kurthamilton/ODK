@@ -48,7 +48,7 @@ export const appRoutes: Routes = [
         { path: chapterPaths.contact.path, component: ContactComponent, data: { title: 'Send us a message' } },
         { path: chapterPaths.events.path, component: EventsComponent, data: { title: 'Events' } },
         { path: chapterPaths.event.path, component: EventComponent },
-        { path: chapterPaths.join.path, component: JoinComponent, data: { title: 'Join' } },
+        { path: chapterPaths.join.path, component: JoinComponent },
         { path: chapterPaths.login.path, component: LoginComponent, data: { title: 'Login' } },
         { path: chapterPaths.logout.path, component: LogoutComponent },
         { path: chapterPaths.members.path, component: MembersComponent, canActivate: [ChapterMemberGuardService] },

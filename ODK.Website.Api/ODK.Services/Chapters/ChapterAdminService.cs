@@ -43,7 +43,7 @@ namespace ODK.Services.Chapters
 
             await _chapterRepository.CreateChapterQuestion(create);
 
-            _cacheService.RemoveVersionedCollection<ChapterQuestion>();
+            _cacheService.RemoveVersionedItem<ChapterQuestion>(chapterId);
         }
 
         public async Task<ChapterEmailSettings> GetChapterEmailSettings(Guid currentMemberId, Guid chapterId)
@@ -76,22 +76,6 @@ namespace ODK.Services.Chapters
         public Task<IReadOnlyCollection<string>> GetEmailProviders()
         {
             return _mailProviderFactory.GetProviders();
-        }
-
-        public async Task<Chapter> UpdateChapterDetails(Guid currentMemberId, Guid chapterId, UpdateChapterDetails details)
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
-
-            if (string.IsNullOrWhiteSpace(details.WelcomeText))
-            {
-                throw new OdkServiceException("Welcome text is required");
-            }
-
-            await _chapterRepository.UpdateChapterWelcomeText(chapterId, details.WelcomeText);
-
-            _cacheService.RemoveVersionedCollection<Chapter>();
-
-            return await _chapterRepository.GetChapter(chapterId);
         }
 
         public async Task UpdateChapterEmailSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailSettings emailSettings)
@@ -129,6 +113,25 @@ namespace ODK.Services.Chapters
             ChapterPaymentSettings update = new ChapterPaymentSettings(chapterId, paymentSettings.ApiPublicKey, paymentSettings.ApiSecretKey, existing.Provider);
 
             await _chapterRepository.UpdateChapterPaymentSettings(update);
+
+            return update;
+        }
+
+        public async Task<ChapterTexts> UpdateChapterTexts(Guid currentMemberId, Guid chapterId, UpdateChapterTexts texts)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            if (string.IsNullOrWhiteSpace(texts.RegisterText) ||
+                string.IsNullOrWhiteSpace(texts.WelcomeText))
+            {
+                throw new OdkServiceException("Some required fields are missing");
+            }
+
+            ChapterTexts update = new ChapterTexts(chapterId, texts.RegisterText, texts.WelcomeText);
+
+            await _chapterRepository.UpdateChapterTexts(update);
+
+            _cacheService.RemoveVersionedItem<ChapterTexts>(chapterId);
 
             return update;
         }

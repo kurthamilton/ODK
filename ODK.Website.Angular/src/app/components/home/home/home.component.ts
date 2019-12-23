@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -16,6 +17,7 @@ import { CountryService } from 'src/app/services/countries/country.service';
 export class HomeComponent implements OnInit {
   
   constructor(private changeDetector: ChangeDetectorRef,
+    private route: ActivatedRoute,
     private chapterService: ChapterService,
     private countryService: CountryService
   ) {
@@ -38,6 +40,13 @@ export class HomeComponent implements OnInit {
         .map(x => x.continent)
         .filter((value: string, index: number, self: string[]) => self.indexOf(value) === index);
       this.changeDetector.detectChanges();
+
+      if (this.route.snapshot.fragment) {
+        const element: HTMLElement = document.getElementById(this.route.snapshot.fragment);
+        if (element) {
+          element.scrollIntoView();
+        }
+      }
     });
   }
 }

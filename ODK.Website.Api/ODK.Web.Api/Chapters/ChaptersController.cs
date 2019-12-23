@@ -36,15 +36,6 @@ namespace ODK.Web.Api.Chapters
         }
 
         [AllowAnonymous]
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ChapterDetailsApiResponse>> Get(Guid id)
-        {
-            return await HandleVersionedRequest(
-                version => _chapterService.GetChapter(version, id),
-                x => _mapper.Map<ChapterDetailsApiResponse>(x));
-        }
-
-        [AllowAnonymous]
         [HttpPost("{id}/Contact")]
         public async Task<IActionResult> Contact(Guid id, [FromForm] ContactApiRequest request)
         {
@@ -101,6 +92,15 @@ namespace ODK.Web.Api.Chapters
         {
             IReadOnlyCollection<ChapterSubscription> chapters = await _chapterService.GetChapterSubscriptions(id);
             return chapters.Select(_mapper.Map<ChapterSubscriptionApiResponse>);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{id}/Texts")]
+        public async Task<ActionResult<ChapterTextsApiResponse>> Texts(Guid id)
+        {
+            return await HandleVersionedRequest(
+                version => _chapterService.GetChapterTexts(version, id),
+                x => _mapper.Map<ChapterTextsApiResponse>(x));
         }
     }
 }

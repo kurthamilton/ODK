@@ -1,6 +1,8 @@
 <ng-container *ngIf="viewModel">
-  <label [attr.for]="controlId" class="form-control-label">
-    {{viewModel.text}}
+  <label [attr.for]="controlId" [class.form-control-label]="!viewModel.class" 
+    [ngClass]="viewModel.class">
+    <span *ngIf="!viewModel.textIsHtml">{{viewModel.text}}</span>
+    <app-raw-html *ngIf="viewModel.textIsHtml" [html]="viewModel.text"></app-raw-html>
   </label>
   <span *ngIf="viewModel.helpText">
     <i class="ml-1 icon--help fas fa-question-circle" [ngbTooltip]="viewModel.helpText"></i>

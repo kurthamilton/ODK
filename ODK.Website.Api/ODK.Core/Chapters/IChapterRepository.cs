@@ -46,12 +46,16 @@ namespace ODK.Core.Chapters
 
         Task<long> GetChaptersVersion();
 
+        Task<ChapterTexts> GetChapterTexts(Guid chapterId);
+
+        Task<long> GetChapterTextsVersion(Guid chapterId);
+
         Task UpdateChapterEmailSettings(ChapterEmailSettings emailSettings);
 
         Task UpdateChapterLinks(ChapterLinks links);
 
         Task UpdateChapterPaymentSettings(ChapterPaymentSettings paymentSettings);
 
-        Task UpdateChapterWelcomeText(Guid chapterId, string welcomeText);
+        Task UpdateChapterTexts(ChapterTexts texts);
     }
 }
