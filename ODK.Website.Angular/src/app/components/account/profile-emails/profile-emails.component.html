@@ -1,10 +1,14 @@
 <app-body [breadcrumbs]="breadcrumbs">  
   <ng-container *appLoading="!profile">
       <p *ngIf="profile.emailOptIn">
-        You are currently receiving event emails.
+        <ngb-alert type="success" [dismissible]="false">
+          You are currently receiving event emails.
+        </ngb-alert>        
       </p>
       <p *ngIf="!profile.emailOptIn">
-        You have chosen not to receive event emails.        
+        <ngb-alert type="danger" [dismissible]="false">
+          You have chosen not to receive event emails.
+        </ngb-alert>             
       </p>
       <app-form *ngIf="form" [form]="form" (formSubmit)="onFormSubmit()"></app-form>
   </ng-container>
