@@ -18,24 +18,28 @@ import { CreateEventComponent } from './components/events/create-event/create-ev
 import { CreateVenueComponent } from './components/venues/create-venue/create-venue.component';
 import { DropDownMultiComponent } from './components/forms/inputs/drop-down-multi/drop-down-multi.component';
 import { EditEventComponent } from './components/events/edit-event/edit-event.component';
+import { EditMemberImageComponent } from './components/members/edit-member-image/edit-member-image.component';
 import { EditVenueComponent } from './components/venues/edit-venue/edit-venue.component';
-import { EventComponent } from './components/events/event/event.component';
 import { EventFormComponent } from './components/events/event-form/event-form.component';
 import { EventHeaderComponent } from './components/events/event-header/event-header.component';
 import { EventInvitesComponent } from './components/events/event-invites/event-invites.component';
+import { EventLayoutComponent } from './components/events/event-layout/event-layout.component';
 import { EventMenuComponent } from './components/events/event-menu/event-menu.component';
 import { EventResponsesComponent } from './components/events/event-responses/event-responses.component';
 import { EventsComponent } from './components/events/events/events.component';
 import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
 import { HtmlEditorFormControlComponent } from './components/forms/inputs/html-editor-form-control/html-editor-form-control.component';
-import { MemberComponent } from './components/members/member/member.component';
 import { MemberFilterComponent } from './components/members/member-filter/member-filter.component';
+import { MemberLayoutComponent } from './components/members/member-layout/member-layout.component';
+import { MemberMenuComponent } from './components/members/member-menu/member-menu.component';
 import { MembersComponent } from './components/members/members/members.component';
 import { MemberSubscriptionComponent } from './components/members/member-subscription/member-subscription.component';
+import { NavTabsComponent } from './components/elements/nav-tabs/nav-tabs.component';
 import { PaginationComponent } from './components/elements/pagination/pagination.component';
-import { VenueComponent } from './components/venues/venue/venue.component';
 import { VenueEventsComponent } from './components/venues/venue-events/venue-events.component';
 import { VenueFormComponent } from './components/venues/venue-form/venue-form.component';
+import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
+import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
 
 @NgModule({
@@ -43,33 +47,37 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     AdminComponent,
     AdminMenuComponent,
     ChapterComponent,
+    ChapterEmailsComponent,
     ChapterPaymentSettingsComponent,
+    ChapterQuestionsComponent,
     ChapterSettingsComponent,
     CreateEventComponent,
+    CreateVenueComponent,
+    DropDownMultiComponent,
     EditEventComponent,
-    EventComponent,
+    EditVenueComponent,
     EventFormComponent,
+    EventHeaderComponent,
     EventInvitesComponent,
+    EventLayoutComponent,
+    EventMenuComponent,
     EventResponsesComponent,
     EventsComponent,
     GoogleMapsTextInputFormControlComponent,
     HtmlEditorFormControlComponent,
-    MemberComponent,
-    MembersComponent,
-    VenuesComponent,
-    CreateVenueComponent,
-    VenueComponent,
-    VenueFormComponent,
-    EditVenueComponent,
-    ChapterQuestionsComponent,
-    ChapterEmailsComponent,
     MemberFilterComponent,
-    DropDownMultiComponent,
-    PaginationComponent,
+    MembersComponent,
     MemberSubscriptionComponent,
+    NavTabsComponent,
+    PaginationComponent,
     VenueEventsComponent,
-    EventMenuComponent,
-    EventHeaderComponent,
+    VenueFormComponent,
+    VenueLayoutComponent,
+    VenuesComponent,
+    VenueMenuComponent,
+    MemberMenuComponent,
+    MemberLayoutComponent,
+    EditMemberImageComponent,
   ],
   imports: [
     AdminRoutingModule,

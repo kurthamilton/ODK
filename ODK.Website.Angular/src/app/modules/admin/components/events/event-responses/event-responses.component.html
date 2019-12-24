@@ -1,6 +1,4 @@
-<ng-container *appLoading="!event">
-  <app-event-header [event]="event"></app-event-header>
-  
+<ng-container *appLoading="!going">  
   <div *ngIf="going.length">
     <h4>Going</h4>
     <div *ngFor="let member of going">{{member.fullName}}</div>

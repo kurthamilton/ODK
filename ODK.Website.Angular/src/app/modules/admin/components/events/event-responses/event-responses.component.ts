@@ -4,7 +4,6 @@ import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { adminPaths } from '../../../routing/admin-paths';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
@@ -40,16 +39,13 @@ export class EventResponsesComponent implements OnInit {
 
   ngOnInit(): void {
     const chapter: Chapter = this.chapterAdminService.getActiveChapter();
-    const eventId: string = this.route.snapshot.paramMap.get(adminPaths.events.event.params.id);
+    this.event = this.eventAdminService.getActiveEvent();
     
     forkJoin(
-      this.eventAdminService.getEvent(eventId).pipe(
-        tap((event: Event) => this.event = event)
-      ),
       this.memberService.getMembers(chapter.id).pipe(
         tap((members: Member[]) => this.members = members)
       ),
-      this.eventAdminService.getEventResponses(eventId).pipe(
+      this.eventAdminService.getEventResponses(this.event.id).pipe(
         tap((responses: EventMemberResponse[]) => this.responses = responses)
       )
     ).subscribe(() => {

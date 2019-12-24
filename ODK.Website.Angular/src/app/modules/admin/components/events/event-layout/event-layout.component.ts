@@ -9,22 +9,23 @@ import { Event } from 'src/app/core/events/event';
 import { EventAdminService } from 'src/app/services/events/event-admin.service';
 
 @Component({
-  selector: 'app-event',
-  templateUrl: './event.component.html',
+  selector: 'app-event-layout',
+  templateUrl: './event-layout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EventComponent implements OnInit {
+export class EventLayoutComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterAdminService: ChapterAdminService,
-    private eventAdminService: EventAdminService    
-  ) {
+    private eventAdminService: EventAdminService
+  ) {     
   }
 
-  chapter: Chapter;
   event: Event;
+
+  private chapter: Chapter;
 
   ngOnInit(): void {
     const id: string = this.route.snapshot.paramMap.get(adminPaths.events.event.params.id);
@@ -35,6 +36,7 @@ export class EventComponent implements OnInit {
         return;
       }
 
+      this.eventAdminService.setActiveEvent(event);
       this.event = event;
       this.changeDetector.detectChanges();
     });

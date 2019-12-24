@@ -1,0 +1,7 @@
+<ul *ngIf="menuItems" class="nav nav-tabs mb-3">
+  <li *ngFor="let menuItem of menuItems" class="nav-item">
+    <a [routerLink]="menuItem.link" [routerLinkActiveOptions]="{ exact: menuItem.matchExactRoute }" 
+      routerLinkActive="active" class="nav-link">
+      {{menuItem.text}}
+    </a>
+</ul>

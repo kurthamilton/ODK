@@ -42,6 +42,8 @@ export class EventAdminService extends EventService {
     super(http, authenticationService);
   }
 
+  private activeEvent: Event;
+
   createEvent(event: Event): Observable<ServiceResult<Event>> {
     const params: HttpParams = this.createEventParams(event);
 
@@ -58,6 +60,10 @@ export class EventAdminService extends EventService {
     return this.http.delete(endpoints.event(id)).pipe(
       map(() => undefined)
     );
+  }
+
+  getActiveEvent(): Event {
+    return this.activeEvent;
   }
 
   getAdminEvents(chapterId: string, page: number, pageCount: number): Observable<Event[]> {
@@ -112,6 +118,10 @@ export class EventAdminService extends EventService {
     return this.http.post(endpoints.sendInvites(eventId, test), null).pipe(
       map(() => ({}))
     );
+  }
+
+  setActiveEvent(event: Event): void {
+    this.activeEvent = event;
   }
 
   updateEvent(event: Event): Observable<ServiceResult<Event>> {

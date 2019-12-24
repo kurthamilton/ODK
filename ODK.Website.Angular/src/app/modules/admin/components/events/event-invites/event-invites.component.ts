@@ -1,9 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
-import { adminPaths } from '../../../routing/admin-paths';
 import { Event } from 'src/app/core/events/event';
 import { EventAdminService } from 'src/app/services/events/event-admin.service';
 import { EventInvites } from 'src/app/core/events/event-invites';
@@ -17,7 +15,6 @@ import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-m
 export class EventInvitesComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private route: ActivatedRoute,
     private eventAdminService: EventAdminService
   ) {     
   }
@@ -30,11 +27,12 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
   private formCallback: Subject<boolean> = new Subject<boolean>();
 
   ngOnInit(): void {
-    const eventId: string = this.route.snapshot.paramMap.get(adminPaths.events.event.params.id);
-    this.eventAdminService.getEvent(eventId).subscribe((event: Event) => {
-      this.event = event;
-      this.loadStatistics();
-    });    
+    this.event = this.eventAdminService.getActiveEvent();
+    this.eventAdminService.getEventInvites(this.event.id).subscribe((invites: EventInvites) => {
+      this.invites = invites;
+      this.buildForms();
+      this.changeDetector.detectChanges();
+    });
   }
 
   ngOnDestroy(): void {

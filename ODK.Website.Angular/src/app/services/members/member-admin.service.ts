@@ -31,6 +31,12 @@ export class MemberAdminService extends MemberService {
     super(http);
   }
 
+  private activeMember: Member;
+
+  getActiveMember(): Member {
+    return this.activeMember;
+  }
+
   getAdminMember(memberId: string): Observable<Member> {
     return this.http.get(endpoints.member(memberId)).pipe(
       map((response: any) => this.mapMember(response))
@@ -57,6 +63,10 @@ export class MemberAdminService extends MemberService {
 
   rotateMemberImage(memberId: string): Observable<string> {
     return HttpUtils.putBase64(this.http, endpoints.rotateImage(memberId));
+  }
+
+  setActiveMember(member: Member): void {
+    this.activeMember = member;
   }
 
   updateImage(memberId: string, file: File): Observable<string> {

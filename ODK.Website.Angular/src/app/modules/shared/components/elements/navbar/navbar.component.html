@@ -9,7 +9,9 @@
         <ul *ngFor="let group of groups" class="navbar-nav">
           <li *ngFor="let menuItem of group" class="nav-item">
             <a *ngIf="menuItem.link" class="nav-link" 
-              [routerLink]="menuItem.link" routerLinkActive="active" (click)="collapse()">
+              [routerLink]="menuItem.link" [routerLinkActiveOptions]="{ exact: menuItem.matchExactRoute }"
+              routerLinkActive="active"
+              (click)="collapse()">
               {{menuItem.text}}
             </a>
             <a *ngIf="menuItem.externalLink" class="nav-link" 

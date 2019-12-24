@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
@@ -8,23 +8,30 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ServiceResult } from 'src/app/services/service-result';
 import { Venue } from 'src/app/core/venues/venue';
 import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
+import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 
 @Component({
   selector: 'app-edit-venue',
   templateUrl: './edit-venue.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EditVenueComponent implements OnDestroy {
+export class EditVenueComponent implements OnInit, OnDestroy {
 
   constructor(private router: Router,
+    private chapterAdminService: ChapterAdminService,
     private venueAdminService: VenueAdminService
   ) {
   }
 
-  @Input() chapter: Chapter;
-  @Input() venue: Venue;
-
+  chapter: Chapter;  
   formCallback: Subject<string[]> = new Subject<string[]>();
+  venue: Venue;
+
+
+  ngOnInit(): void {
+    this.chapter = this.chapterAdminService.getActiveChapter();
+    this.venue = this.venueAdminService.getActiveVenue();
+  }
 
   ngOnDestroy(): void {
     this.formCallback.complete();

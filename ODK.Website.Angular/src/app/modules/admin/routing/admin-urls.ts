@@ -16,8 +16,10 @@ export const adminUrls = {
     eventResponses: (chapter: Chapter, event: Event) => chapterUrl(chapter, `${adminPaths.events.path}/${event.id}/${adminPaths.events.event.responses.path}`),
     events: (chapter: Chapter) => chapterUrl(chapter, adminPaths.events.path),
     member: (chapter: Chapter, member: Member) => chapterUrl(chapter, `${adminPaths.members.path}/${member.id}`),
+    memberImage: (chapter: Chapter, member: Member) => chapterUrl(chapter, `${adminPaths.members.path}/${member.id}/${adminPaths.members.member.image.path}`),
     members: (chapter: Chapter) => chapterUrl(chapter, adminPaths.members.path),
     venue: (chapter: Chapter, venue: Venue) => chapterUrl(chapter, `${adminPaths.venues.path}/${venue.id}`),
+    venueEvents: (chapter: Chapter, venue: Venue) => chapterUrl(chapter, `${adminPaths.venues.path}/${venue.id}/${adminPaths.venues.venue.events.path}`),
     venues: (chapter: Chapter) => chapterUrl(chapter, adminPaths.venues.path),
     venueCreate: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.venues.path}/${adminPaths.venues.create.path}`)
 };

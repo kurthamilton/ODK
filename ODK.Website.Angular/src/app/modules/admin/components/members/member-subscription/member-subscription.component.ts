@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { Subject } from 'rxjs';
 
@@ -17,7 +17,7 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
   templateUrl: './member-subscription.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MemberSubscriptionComponent implements OnChanges, OnDestroy {
+export class MemberSubscriptionComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private datePipe: DatePipe,
@@ -25,9 +25,8 @@ export class MemberSubscriptionComponent implements OnChanges, OnDestroy {
   ) {     
   }
 
-  @Input() member: Member;
-
   form: FormViewModel;
+  member: Member;
 
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
@@ -36,11 +35,9 @@ export class MemberSubscriptionComponent implements OnChanges, OnDestroy {
   };
   private subscription: MemberSubscription;
 
-  ngOnChanges(): void {
-    if (!this.member) {
-      return;
-    }
-
+  ngOnInit(): void {
+    this.member = this.memberAdminService.getActiveMember();
+    
     this.memberAdminService.getMemberSubscription(this.member.id).subscribe((subscription: MemberSubscription) => {
       this.subscription = subscription;
       this.buildForm();

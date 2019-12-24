@@ -32,6 +32,8 @@ export class VenueAdminService extends VenueService {
     super(http, authenticationService);
   }
 
+  private activeVenue: Venue;
+
   createVenue(venue: Venue): Observable<ServiceResult<Venue>> {
     const params: HttpParams = this.createVenueParams(venue);
 
@@ -44,6 +46,10 @@ export class VenueAdminService extends VenueService {
     );
   }
 
+  getActiveVenue(): Venue {
+    return this.activeVenue;
+  }
+  
   getChapterStats(chapterId: string): Observable<VenueStats[]> {
     return this.http.get(endpoints.chapterStats(chapterId)).pipe(
       map((response: any) => response.map(x => this.mapVenueStats(x)))
@@ -54,6 +60,10 @@ export class VenueAdminService extends VenueService {
     return this.http.get(endpoints.venue(id)).pipe(
       map((response: any) => this.mapVenue(response))
     );
+  }
+
+  setActiveVenue(venue: Venue): void {
+    this.activeVenue = venue;
   }
 
   updateVenue(venue: Venue): Observable<ServiceResult<Venue>> {

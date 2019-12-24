@@ -1,34 +1,25 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
-import { adminPaths } from '../../../routing/admin-paths';
 import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
 
 @Component({
-  selector: 'app-member',
-  templateUrl: './member.component.html',
+  selector: 'app-edit-member-image',
+  templateUrl: './edit-member-image.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MemberComponent implements OnInit, OnDestroy {
+export class EditMemberImageComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
-    private route: ActivatedRoute,
-    private memberAdminService: MemberAdminService
-  ) {
+  constructor(private memberAdminService: MemberAdminService) {     
   }
 
   member: Member;
   updateImage: Subject<boolean> = new Subject<boolean>();
-
+  
   ngOnInit(): void {
-    const id: string = this.route.snapshot.paramMap.get(adminPaths.members.member.params.id);
-    this.memberAdminService.getAdminMember(id).subscribe((member: Member) => {
-      this.member = member;
-      this.changeDetector.detectChanges();
-    });
+    this.member = this.memberAdminService.getActiveMember();
   }
 
   ngOnDestroy(): void {

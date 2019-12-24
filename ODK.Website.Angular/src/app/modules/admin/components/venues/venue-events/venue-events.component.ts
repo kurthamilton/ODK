@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
@@ -7,33 +7,31 @@ import { DateUtils } from 'src/app/utils/date-utils';
 import { Event } from 'src/app/core/events/event';
 import { EventAdminService } from 'src/app/services/events/event-admin.service';
 import { Venue } from 'src/app/core/venues/venue';
+import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 
 @Component({
   selector: 'app-venue-events',
   templateUrl: './venue-events.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class VenueEventsComponent implements OnChanges {
+export class VenueEventsComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private eventAdminService: EventAdminService,
-    private chapterAdminService: ChapterAdminService
+    private chapterAdminService: ChapterAdminService,
+    private venueAdminService: VenueAdminService
   ) {     
   }
-
-  @Input() venue: Venue;
-
+  
   events: Event[];
+  venue: Venue;
 
   private chapter: Chapter;
 
-  ngOnChanges(): void {
-    if (!this.venue) {
-      return;
-    }
-
+  ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
-
+    this.venue = this.venueAdminService.getActiveVenue();
+    
     this.eventAdminService.getEventsByVenue(this.venue.id).subscribe((events: Event[]) => {
       this.events = events.sort((a, b) => DateUtils.compare(b.date, a.date));
       this.changeDetector.detectChanges();
