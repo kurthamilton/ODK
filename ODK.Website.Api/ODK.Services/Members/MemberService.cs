@@ -24,6 +24,7 @@ namespace ODK.Services.Members
         private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IImageService _imageService;
+        private readonly IMailProviderFactory _mailProviderFactory;
         private readonly IMailService _mailService;
         private readonly IMemberRepository _memberRepository;
         private readonly IPaymentService _paymentService;
@@ -31,12 +32,13 @@ namespace ODK.Services.Members
 
         public MemberService(IMemberRepository memberRepository, IChapterRepository chapterRepository, IAuthorizationService authorizationService,
             IMailService mailService, MemberServiceSettings settings, IImageService imageService, IPaymentService paymentService,
-            ICacheService cacheService)
+            ICacheService cacheService, IMailProviderFactory mailProviderFactory)
         {
             _authorizationService = authorizationService;
             _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _imageService = imageService;
+            _mailProviderFactory = mailProviderFactory;
             _mailService = mailService;
             _memberRepository = memberRepository;
             _paymentService = paymentService;
@@ -131,7 +133,22 @@ namespace ODK.Services.Members
         public async Task<MemberProfile> GetMemberProfile(Guid currentMemberId, Guid memberId)
         {
             Member member = await GetMember(currentMemberId, memberId);
-            return await GetMemberProfile(member);
+            MemberProfile profile = await GetMemberProfile(member);
+
+            if (currentMemberId == memberId)
+            {
+                // synchronise member opt in from mail provider
+                IMailProvider mailProvider = await _mailProviderFactory.Create(member.ChapterId);
+                bool optIn = await mailProvider.GetMemberOptIn(member);
+
+                if (optIn != member.EmailOptIn)
+                {
+                    profile.EmailOptIn = optIn;
+                    await _memberRepository.UpdateMember(memberId, optIn, member.FirstName, member.LastName);
+                }
+            }
+
+            return profile;
         }
 
         public async Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetMembers(long? currentVersion, Guid currentMemberId,
@@ -195,6 +212,23 @@ namespace ODK.Services.Members
             return await UpdateMemberImage(member, data, image.MimeType);
         }
 
+        public async Task UpdateMemberEmailOptIn(Guid memberId, bool optIn)
+        {
+            Member member = await GetMember(memberId, memberId);
+            if (member.EmailOptIn == optIn)
+            {
+                return;
+            }
+
+            IMailProvider mailProvider = await _mailProviderFactory.Create(member.ChapterId);
+
+            await mailProvider.UpdateMemberOptIn(member, optIn);
+
+            await _memberRepository.UpdateMember(member.Id, optIn, member.FirstName, member.LastName);
+
+            _cacheService.RemoveVersionedItem<Member>(memberId);
+        }
+
         public async Task<MemberImage> UpdateMemberImage(Guid id, UpdateMemberImage image)
         {
             Member member = await GetMember(id, id);
@@ -210,7 +244,7 @@ namespace ODK.Services.Members
             MemberProfile existing = await GetMemberProfile(id);
             UpdateMemberProfile(existing, profile);
 
-            await _memberRepository.UpdateMember(id, existing.EmailAddress, existing.EmailOptIn, existing.FirstName, existing.LastName);
+            await _memberRepository.UpdateMember(id, existing.EmailOptIn, existing.FirstName, existing.LastName);
             await _memberRepository.UpdateMemberProperties(id, existing.MemberProperties);
 
             IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(member.ChapterId);
@@ -265,7 +299,9 @@ namespace ODK.Services.Members
 
         private static void UpdateMemberProfile(MemberProfile existing, UpdateMemberProfile update)
         {
-            existing.Update(update.EmailOptIn, update.FirstName, update.LastName);
+            existing.EmailOptIn = update.EmailOptIn;
+            existing.FirstName = update.FirstName.Trim();
+            existing.LastName = update.LastName.Trim();
 
             foreach (MemberProperty memberProperty in existing.MemberProperties)
             {

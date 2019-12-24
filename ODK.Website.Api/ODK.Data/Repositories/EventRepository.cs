@@ -152,6 +152,15 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task UpdateEventEmail(EventEmail eventEmail)
+        {
+            await Context
+                .Update<EventEmail>()
+                .Set(x => x.SentDate, eventEmail.SentDate)
+                .Where(x => x.Id).EqualTo(eventEmail.Id)
+                .ExecuteAsync();
+        }
+
         public async Task UpdateEventResponse(EventMemberResponse response)
         {
             if (await MemberHasRespondedToEvent(response.EventId, response.MemberId))

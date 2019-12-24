@@ -16,6 +16,7 @@ const baseUrl = `${environment.baseUrl}/account`;
 
 const endpoints = {
   activate: `${baseUrl}/activate`,
+  emailOptIn: `${baseUrl}/emails/optin`,
   image: `${baseUrl}/image`,
   profile: `${baseUrl}/profile`,
   purchaseSubscription: (id: string) => `${baseUrl}/subscriptions/${id}/purchase`,
@@ -84,6 +85,16 @@ export class AccountService {
 
   rotateImage(): Observable<string> {
     return HttpUtils.putBase64(this.http, endpoints.rotateImage);
+  }
+
+  updateEmailOptIn(optIn: boolean): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      optIn: optIn ? 'True' : 'False'
+    });
+
+    return this.http.put(endpoints.emailOptIn, params).pipe(
+      map(() => undefined)
+    );
   }
 
   updateImage(file: File): Observable<string> {

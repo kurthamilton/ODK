@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 
-import { FormControlLabelViewModel } from '../form-control-label.view-model';
+import { FormControlLabelViewModel } from './form-control-label.view-model';
 
 @Component({
   selector: 'app-form-control-label',

@@ -6,7 +6,7 @@ import { switchMap, tap } from 'rxjs/operators';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { HtmlEditorFormControlViewModel } from '../../forms/inputs/html-editor-form-control/html-editor-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
@@ -85,7 +85,9 @@ export class ChapterQuestionsComponent implements OnInit, OnDestroy {
     };
 
     this.form = {
-      buttonText: 'Add',
+      buttons: [
+        { text: 'Add' }
+      ],
       callback: this.formCallback,
       controls: [
         this.formControls.name,

@@ -8,7 +8,7 @@ import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.ser
 import { ChapterEmailSettings } from 'src/app/core/chapters/chapter-email-settings';
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
@@ -139,7 +139,9 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
     };
 
     this.form = {
-      buttonText: 'Update',
+      buttons: [
+        { text: 'Update' }
+      ],
       callback: this.formCallback,
       controls: [        
         this.formControls.adminEmailAddress,

@@ -41,7 +41,7 @@ namespace ODK.Services.Mails
                 case MailChimpProviderName:
                     return new MailChimpMailProvider(_chapterRepository, _memberRepository);
                 case SendInBlueProviderName:
-                    return new SendInBlueMailProvider(_chapterRepository);
+                    return new SendInBlueMailProvider(_chapterRepository, _memberRepository);
             }
 
             throw new NotSupportedException();

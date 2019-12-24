@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { InputBase } from '../input-base';
-import { FormControlLabelViewModel } from '../../form-control-label.view-model';
+import { FormControlLabelViewModel } from '../../form-control-label/form-control-label.view-model';
 
 @Component({
   selector: 'app-check-box-form-control',

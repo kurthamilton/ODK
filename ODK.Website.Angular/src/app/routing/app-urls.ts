@@ -14,6 +14,7 @@ export const appUrls = {
     adminChapter: (chapter: Chapter) => chapterUrl(chapter, 'admin'),
     chapter: (chapter: Chapter) => chapterUrl(chapter),
     contact: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.contact.path),
+    emails: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.emails.path}`),
     event: (chapter: Chapter, event: Event) => chapterUrl(chapter, `${chapterPaths.events.path}/${event.id}`),
     events: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.events.path),
     home: (chapter: Chapter) => chapter ? chapterUrl(chapter, '') : `/${appPaths.home.path}`,

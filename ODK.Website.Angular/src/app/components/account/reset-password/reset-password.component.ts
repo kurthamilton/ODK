@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 
 import { appPaths } from 'src/app/routing/app-paths';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { ServiceResult } from 'src/app/services/service-result';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
@@ -62,7 +62,9 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
       })
     };
     this.form = {
-      buttonText: 'Reset',
+      buttons: [
+        { text: 'Reset' }
+      ],
       callback: this.formCallback,
       controls: [
         this.controls.password

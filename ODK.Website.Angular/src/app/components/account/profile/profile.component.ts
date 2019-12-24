@@ -29,8 +29,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
   formCallback: Subject<boolean> = new Subject<boolean>();
   profile: AccountProfile;
   links: {
-    changePassword: string,
-    subscription: string
+    changePassword: string;
+    emails: string;
+    subscription: string;
   };
 
   successMessage: string;
@@ -51,6 +52,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     ]).subscribe(() => {
       this.links = {
         changePassword: appUrls.password.change(this.chapter),
+        emails: appUrls.emails(this.chapter),
         subscription: appUrls.subscription(this.chapter)
       };
       this.changeDetector.detectChanges();

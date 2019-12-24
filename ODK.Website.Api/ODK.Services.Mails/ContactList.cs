@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Mails
 {
-    public class SubscriptionMemberGroup
+    public class ContactList
     {
         public string Id { get; set; }
 

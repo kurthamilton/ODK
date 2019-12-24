@@ -8,7 +8,7 @@ import { appPaths } from 'src/app/routing/app-paths';
 import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { ServiceResult } from 'src/app/services/service-result';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
@@ -79,7 +79,9 @@ export class ActivateAccountComponent implements OnInit, OnDestroy {
     };
 
     this.form = {
-      buttonText: 'Activate account',
+      buttons: [
+        { text: 'Activate account' }
+      ],
       callback: this.formCallback,
       controls: [
         this.formControls.password

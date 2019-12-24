@@ -1,0 +1,17 @@
+<ul *ngIf="links" class="nav nav-tabs">
+  <li class="nav-item">
+    <a [routerLink]="links.edit" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active" class="nav-link">
+      Edit
+    </a>
+  </li>
+  <li class="nav-item">
+    <a [routerLink]="links.invites" routerLinkActive="active" class="nav-link">
+      Invites
+    </a>
+  </li>
+  <li class="nav-item">
+    <a [routerLink]="links.responses" routerLinkActive="active" class="nav-link">
+      Responses
+    </a>
+  </li>
+</ul>

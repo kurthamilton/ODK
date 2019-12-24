@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { AboutComponent } from '../components/about/about/about.component';
+import { ActivateAccountComponent } from '../components/account/activate/activate-account.component';
 import { appPaths } from './app-paths';
 import { AuthenticatedGuardService } from '../routing/authenticated-guard.service';
 import { ChangePasswordComponent } from '../components/account/change-password/change-password.component';
@@ -23,9 +24,9 @@ import { MemberComponent } from '../components/members/member/member.component';
 import { MembersComponent } from '../components/members/members/members.component';
 import { PrivacyComponent } from '../components/privacy/privacy.component';
 import { ProfileComponent } from '../components/account/profile/profile.component';
+import { ProfileEmailsComponent } from '../components/account/profile-emails/profile-emails.component';
 import { ResetPasswordComponent } from '../components/account/reset-password/reset-password.component';
 import { SubscriptionComponent } from '../components/account/subscription/subscription.component';
-import { ActivateAccountComponent } from '../components/account/activate/activate-account.component';
 
 const chapterPaths = appPaths.chapter.childPaths;
 
@@ -57,6 +58,7 @@ export const appRoutes: Routes = [
         { path: chapterPaths.password.reset.path, component: ResetPasswordComponent, data: { title: 'Reset password' } },
         { path: chapterPaths.profile.path, canActivate: [AuthenticatedGuardService], children: [
           { path: '', component: ProfileComponent, data: { title: 'My profile' } },
+          { path: chapterPaths.profile.emails.path, component: ProfileEmailsComponent, data: { title: 'Emails' } },
           { path: chapterPaths.profile.password.change.path, component: ChangePasswordComponent, data: { title: 'Change password' } },
           { path: chapterPaths.profile.subscription.path, component: SubscriptionComponent, data: { title: 'My subscription' } }
         ] },

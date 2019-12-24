@@ -1,13 +1,18 @@
-<ng-container *appLoading="!invites">
-    <p *ngIf="invites.sent === 0">
-        <button class="btn btn-primary" [attr.disabled]="sending ? 'disabled' : null" 
-          (click)="onSend()">
-          Send invites
-        </button>
-    </p>
-    
-    <div class="row">
-        <div class="col-3">Sent</div>
-        <div class="col-3">{{invites.sent}}</div>
-    </div>
+<ng-container *appLoading="!event">
+  <app-event-header [event]="event"></app-event-header>
+
+  <div *ngIf="sendForm" class="mb-3">
+    <app-form [form]="sendForm" (formSubmit)="onSendFormSubmit()">      
+    </app-form>
+  </div>  
+
+  <div *ngIf="sendTestForm" class="mb-3">
+    <app-form [form]="sendTestForm" (formSubmit)="onSendTestFormSubmit()">      
+    </app-form>
+  </div>  
+  
+  <div class="row">
+    <div class="col-3">Sent</div>
+    <div class="col-3">{{invites.sent}}</div>
+  </div>
 </ng-container>

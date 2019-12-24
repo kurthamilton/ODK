@@ -3,7 +3,7 @@ import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChan
 import { Observable } from 'rxjs';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { GoogleMapsTextInputFormControlViewModel } from '../../forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 import { Venue } from 'src/app/core/venues/venue';
@@ -83,7 +83,9 @@ export class VenueFormComponent implements OnChanges {
     };
 
     this.form = {
-      buttonText: this.buttonText,
+      buttons: [
+        { text: this.buttonText }
+      ],
       callback: this.formCallback,
       controls: [
         this.formControls.name,

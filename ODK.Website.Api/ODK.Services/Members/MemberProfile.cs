@@ -12,32 +12,27 @@ namespace ODK.Services.Members
         {
         }
 
-        public MemberProfile(string emailAddress, bool emailOptIn, string firstName, string lastName, DateTime joined, IEnumerable<MemberProperty> memberProperties)
+        public MemberProfile(string emailAddress, bool emailOptIn, string firstName, string lastName, DateTime joined, 
+            IEnumerable<MemberProperty> memberProperties)
         {
-            EmailAddress = emailAddress.Trim();
+            EmailAddress = emailAddress;
+            EmailOptIn = emailOptIn;
+            FirstName = firstName;
             Joined = joined;
+            LastName = lastName;
             MemberProperties = memberProperties.ToArray();
-
-            Update(emailOptIn, firstName, lastName);
         }
 
         public string EmailAddress { get; }
 
-        public bool EmailOptIn { get; private set; }
+        public bool EmailOptIn { get; set; }
 
-        public string FirstName { get; private set; }
+        public string FirstName { get; set; }
 
         public DateTime Joined { get; }
 
-        public string LastName { get; private set; }
+        public string LastName { get; set; }
 
         public IReadOnlyCollection<MemberProperty> MemberProperties { get; }
-
-        public void Update(bool emailOptIn, string firstName, string lastName)
-        {
-            EmailOptIn = emailOptIn;
-            FirstName = firstName.Trim();
-            LastName = lastName.Trim();
-        }
     }
 }

@@ -18,7 +18,7 @@ import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/i
 import { FileInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/file-input-form-control/file-input-form-control.view-model';
 import { FormControlOptions } from 'src/app/modules/forms/components/form-control-options';
 import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { MemberProperty } from 'src/app/core/members/member-property';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 import { TextAreaFormControlOptions } from 'src/app/modules/forms/components/inputs/text-area-form-control/text-area-form-control-options';
@@ -249,7 +249,9 @@ export class ProfileFormComponent implements OnChanges {
     }
 
     this.form = {
-      buttonText: this.profile ? 'Update' : 'Create',
+      buttons: [
+        { text: this.profile ? 'Update' : 'Create' }
+      ],
       callback: this.formCallback,
       controls: controls
     };

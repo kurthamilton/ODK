@@ -6,7 +6,7 @@ import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { MenuItem } from 'src/app/core/menus/menu-item';
 import { NotificationService } from 'src/app/services/notifications/notification.service';
 import { ServiceResult } from 'src/app/services/service-result';
@@ -77,7 +77,9 @@ export class ChangePasswordComponent implements OnInit {
     };
 
     this.form = {
-      buttonText: 'Update',
+      buttons: [
+        { text: 'Update' }
+      ],
       callback: this.formCallback.asObservable(),
       controls: [
         this.formControls.currentPassword,

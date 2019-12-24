@@ -32,7 +32,7 @@ namespace ODK.Core.Members
         Task<long> GetMembersVersion(Guid chapterId, bool searchAll = false);
         Task<MemberPasswordResetRequest> GetPasswordResetRequest(string token);
         Task<MemberRefreshToken> GetRefreshToken(string refreshToken);
-        Task UpdateMember(Guid memberId, string emailAddress, bool emailOptIn, string firstName, string lastName);
+        Task UpdateMember(Guid memberId, bool emailOptIn, string firstName, string lastName);
         Task UpdateMemberImage(MemberImage image);
         Task UpdateMemberPassword(MemberPassword password);
         Task UpdateMemberProperties(Guid memberId, IEnumerable<MemberProperty> memberProperties);

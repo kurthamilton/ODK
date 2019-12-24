@@ -6,7 +6,7 @@ import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
@@ -52,7 +52,9 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
     };
 
     this.form = {
-      buttonText: 'Submit',
+      buttons: [
+        { text: 'Submit' }
+      ],
       callback: this.formCallback,
       controls: [
         this.controls.email

@@ -9,7 +9,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { MemberProfile } from 'src/app/core/members/member-profile';
 import { MemberProperty } from 'src/app/core/members/member-property';
 import { MemberService } from 'src/app/services/members/member.service';
@@ -59,7 +59,7 @@ export class MemberProfileComponent implements OnChanges {
   private buildProfileForm(): void {
     const memberPropertyMap: Map<string, MemberProperty> = ArrayUtils.toMap(this.profile.properties, x => x.chapterPropertyId);
     this.form = {
-      buttonText: '',
+      buttons: [],
       callback: null,
       controls: [
         ... this.chapterProperties

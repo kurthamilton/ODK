@@ -60,6 +60,7 @@ import { StripeFormComponent } from './components/payments/stripe-form/stripe-fo
 import { SubscriptionAlertComponent } from './components/account/subscription-alert/subscription-alert.component';
 import { SubscriptionComponent } from './components/account/subscription/subscription.component';
 import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenets.component';
+import { ProfileEmailsComponent } from './components/account/profile-emails/profile-emails.component';
 
 @NgModule({
   declarations: [
@@ -116,6 +117,7 @@ import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenet
     SubscriptionAlertComponent,
     AboutComponent,
     ActivateAccountComponent,
+    ProfileEmailsComponent,
   ],
   imports: [
     AppFormsModule,

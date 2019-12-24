@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, Input, OnChanges, Output, EventEmitter } from '@angular/core';
 
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
-import { FormControlLabelViewModel } from 'src/app/modules/forms/components/form-control-label.view-model';
+import { FormControlLabelViewModel } from 'src/app/modules/forms/components/form-control-label/form-control-label.view-model';
 import { MemberFilterViewModel } from './member-filter.view-model';
 import { SubscriptionType } from 'src/app/core/account/subscription-type';
 

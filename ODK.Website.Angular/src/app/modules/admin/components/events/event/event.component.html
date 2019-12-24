@@ -1,23 +1,4 @@
 <ng-container *appLoading="!event">
-  <h2>{{event.name}}</h2>
-  <h5>{{event.date | date:'fullDate'}}</h5>
-  <h5>{{venue.name}}</h5>
-
-  <ngb-tabset type="pills">
-    <ngb-tab title="Edit">
-      <ng-template ngbTabContent>
-        <app-edit-event [chapter]="chapter" [event]="event"></app-edit-event>
-      </ng-template>
-    </ngb-tab>
-    <ngb-tab title="Invites">
-      <ng-template ngbTabContent>
-        <app-event-invites [eventId]="event.id"></app-event-invites>
-      </ng-template>
-    </ngb-tab>
-    <ngb-tab title="Responses">
-      <ng-template ngbTabContent>
-        <app-event-responses [eventId]="event.id"></app-event-responses>
-      </ng-template>
-    </ngb-tab>
-  </ngb-tabset>
+  <app-event-header [event]="event"></app-event-header>  
+  <app-edit-event [chapter]="chapter" [event]="event"></app-edit-event>
 </ng-container>

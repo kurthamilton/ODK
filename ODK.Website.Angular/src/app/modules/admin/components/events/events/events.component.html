@@ -21,7 +21,13 @@
         <td><a [routerLink]="getEventLink(viewModel.event)">{{viewModel.event.name}}</a></td>
         <td>{{viewModel.event.date | date:'dd MMM yyyy'}}</td>
         <td><a [routerLink]="getVenueLink(viewModel.venue)">{{viewModel.venue.name}}</a></td>
-        <td>{{viewModel.invitesSent}}</td>
+        <td>
+          <span *ngIf="viewModel.invitesSent > 0">{{viewModel.invitesSent}}</span>
+          <a *ngIf="viewModel.canSendInvites" 
+            [routerLink]="getEventInvitesLink(viewModel.event)">
+            Send
+          </a>
+        </td>
         <td>{{viewModel.going}}</td>
         <td>{{viewModel.maybe}}</td>
         <td>{{viewModel.declined}}</td>

@@ -23,6 +23,8 @@ namespace ODK.Services.Members
 
         Task<MemberImage> RotateMemberImage(Guid memberId, int degrees);
 
+        Task UpdateMemberEmailOptIn(Guid memberId, bool optIn);
+
         Task<MemberImage> UpdateMemberImage(Guid id, UpdateMemberImage image);
 
         Task<MemberProfile> UpdateMemberProfile(Guid id, UpdateMemberProfile profile);

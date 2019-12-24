@@ -28,7 +28,7 @@ const endpoints = {
   events: (chapterId: string, page: number, pageCount: number) => 
     `${baseUrl}?chapterId=${chapterId}&page=${page}&pageCount=${pageCount}`,
   eventsByVenue: (venueId: string) => `${baseUrl}/venues/${venueId}`,
-  sendInvites: (eventId: string) => `${baseUrl}/${eventId}/invites/send`
+  sendInvites: (eventId: string, test?: boolean) => `${baseUrl}/${eventId}/invites/send${test ? '/test' : ''}`
 };
 
 @Injectable({
@@ -108,8 +108,8 @@ export class EventAdminService extends EventService {
     );
   }
 
-  sendInvites(eventId: string): Observable<{}> {
-    return this.http.post(endpoints.sendInvites(eventId), null).pipe(
+  sendInvites(eventId: string, test?: boolean): Observable<{}> {
+    return this.http.post(endpoints.sendInvites(eventId, test), null).pipe(
       map(() => ({}))
     );
   }

@@ -3,6 +3,7 @@
     <ngb-alert *ngIf="successMessage" type="success">
       {{successMessage}}
     </ngb-alert>
+    
     <div class="row">
       <div class="col-6" *ngIf="links">
         <div>
@@ -10,6 +11,9 @@
         </div>
         <div>
           <a [routerLink]="links.changePassword">Change password</a>
+        </div>
+        <div>
+          <a [routerLink]="links.emails">Emails</a>
         </div>
       </div>
 

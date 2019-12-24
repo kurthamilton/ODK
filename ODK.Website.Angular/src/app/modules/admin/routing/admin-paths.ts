@@ -1,40 +1,46 @@
 export const adminPaths = {
-    events: {
-        create: {
-            path: 'create'
-        },
-        event: {
-            path: ':id',
-            params: {
-                id: 'id'
-            }
-        },
-        path: 'events'
+  events: {
+    create: {
+      path: 'create'
     },
-    home: {
-        path: ''
-    },
-    members: {
-        path: 'members',
-        member: {
-            path: ':id',
-            params: {
-                id: 'id'
-            }
-        }
-    },
-    venues: {
-        create: {
-            path: 'create'
-        },
-        path: 'venues',
-        venue: {
-            path: ':id',
-            params: {
-                id: 'id'
-            }
-        }
+    event: {
+      invites: {
+        path: 'invites'
+      },
+      path: ':id',
+      params: {
+        id: 'id'
+      },
+      responses: {
+        path: 'responses'
+      }
+    },        
+    path: 'events'
+  },
+  home: {
+    path: ''
+  },
+  members: {
+    path: 'members',
+    member: {
+      path: ':id',
+      params: {
+        id: 'id'
+      }
     }
+  },
+  venues: {
+    create: {
+      path: 'create'
+    },
+    path: 'venues',
+    venue: {
+      path: ':id',
+      params: {
+        id: 'id'
+      }
+    }
+  }
 };
 
 Object.freeze(adminPaths);

@@ -21,7 +21,9 @@ import { EditEventComponent } from './components/events/edit-event/edit-event.co
 import { EditVenueComponent } from './components/venues/edit-venue/edit-venue.component';
 import { EventComponent } from './components/events/event/event.component';
 import { EventFormComponent } from './components/events/event-form/event-form.component';
+import { EventHeaderComponent } from './components/events/event-header/event-header.component';
 import { EventInvitesComponent } from './components/events/event-invites/event-invites.component';
+import { EventMenuComponent } from './components/events/event-menu/event-menu.component';
 import { EventResponsesComponent } from './components/events/event-responses/event-responses.component';
 import { EventsComponent } from './components/events/events/events.component';
 import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
@@ -32,9 +34,9 @@ import { MembersComponent } from './components/members/members/members.component
 import { MemberSubscriptionComponent } from './components/members/member-subscription/member-subscription.component';
 import { PaginationComponent } from './components/elements/pagination/pagination.component';
 import { VenueComponent } from './components/venues/venue/venue.component';
+import { VenueEventsComponent } from './components/venues/venue-events/venue-events.component';
 import { VenueFormComponent } from './components/venues/venue-form/venue-form.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
-import { VenueEventsComponent } from './components/venues/venue-events/venue-events.component';
 
 @NgModule({
   declarations: [
@@ -66,6 +68,8 @@ import { VenueEventsComponent } from './components/venues/venue-events/venue-eve
     PaginationComponent,
     MemberSubscriptionComponent,
     VenueEventsComponent,
+    EventMenuComponent,
+    EventHeaderComponent,
   ],
   imports: [
     AdminRoutingModule,

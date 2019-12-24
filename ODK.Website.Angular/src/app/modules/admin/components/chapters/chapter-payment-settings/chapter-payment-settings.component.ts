@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
@@ -80,7 +80,9 @@ export class ChapterPaymentSettingsComponent implements OnInit {
     };
 
     this.form = {
-      buttonText: 'Update',
+      buttons: [
+        { text: 'Update' }
+      ],
       callback: this.formCallback,
       controls: [
         this.controls.provider,

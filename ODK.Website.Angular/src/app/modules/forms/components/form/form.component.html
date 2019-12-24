@@ -4,12 +4,12 @@
     </app-loading-spinner>
     <app-form-controls [form]="form" [state]="state" [validated]="state.validated" [validateForm]="validateForm">
     </app-form-controls>
-    <ng-container *ngIf="form.buttonText">
-        <div class="d-flex align-items-center">
-            <button type="submit" class="btn btn-primary">{{form.buttonText}}</button>
-            <ng-content select="[app-button-row]"></ng-content>
-        </div>
-        <app-error-messages [messages]="messages"></app-error-messages>
+    <ng-container *ngIf="form.buttons && form.buttons.length">      
+      <div class="d-flex align-items-center">
+        <app-form-button *ngFor="let button of form.buttons" [button]="button"></app-form-button>
+        <ng-content select="[app-button-row]"></ng-content>
+      </div>
+      <app-error-messages [messages]="messages"></app-error-messages>
     </ng-container>
   </fieldset>
 </form>

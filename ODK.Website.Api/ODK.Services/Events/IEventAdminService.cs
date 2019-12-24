@@ -30,7 +30,7 @@ namespace ODK.Services.Events
 
         Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId);
 
-        Task SendEventInvites(Guid currentMemberId, Guid eventId);
+        Task SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false);
 
         Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event);
     }

@@ -1,0 +1,7 @@
+<div *ngIf="event" class="mb-3">
+  <h2>{{event.name}}</h2>
+  <h5>{{event.date | date:'fullDate'}}</h5>
+  <h5 *ngIf="venue">{{venue.name}}</h5>
+
+  <app-event-menu [event]="event"></app-event-menu>
+</div>

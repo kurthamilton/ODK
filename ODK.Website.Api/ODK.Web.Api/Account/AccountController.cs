@@ -38,6 +38,13 @@ namespace ODK.Web.Api.Account
             return Created();
         }
 
+        [HttpPut("Emails/OptIn")]
+        public async Task<IActionResult> UpdateEmailOptIn([FromForm] UpdateEmailOptInApiRequest request)
+        {
+            await _memberService.UpdateMemberEmailOptIn(GetMemberId(), request.OptIn);
+            return NoContent();
+        }
+
         [HttpPut("Image")]
         public async Task<IActionResult> UpdateImage([FromForm] IFormFile file)
         {

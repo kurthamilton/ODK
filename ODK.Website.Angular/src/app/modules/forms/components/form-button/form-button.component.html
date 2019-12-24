@@ -1,0 +1,6 @@
+<button type="submit" class="btn" 
+  [class.btn-primary]="!button.type || button.type === 'primary'"
+  [class.btn-danger]="button.type === 'danger'" 
+  [class.btn-success]="button.type === 'success'">
+  {{button.text}}
+</button>

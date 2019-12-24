@@ -61,6 +61,9 @@ export const appPaths = {
         }
       },
       profile: {
+        emails: {
+          path: 'emails'
+        },
         password: {
           change: {
             path: 'password/change'

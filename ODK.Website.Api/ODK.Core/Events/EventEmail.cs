@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ODK.Core.Events
 {
     public class EventEmail
     {
-        public EventEmail(Guid id, Guid eventId, string emailProvider, string emailProviderEmailId, DateTime sentDate)
+        public EventEmail(Guid id, Guid eventId, string emailProvider, string emailProviderEmailId, DateTime? sentDate)
         {
             EmailProvider = emailProvider;
             EmailProviderEmailId = emailProviderEmailId;
@@ -23,6 +21,6 @@ namespace ODK.Core.Events
 
         public Guid Id { get; }
 
-        public DateTime SentDate { get; }
+        public DateTime? SentDate { get; set; }
     }
 }

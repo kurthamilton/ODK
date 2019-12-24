@@ -6,7 +6,7 @@ import { takeUntil } from 'rxjs/operators';
 
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 import { FormStateViewModel } from '../form-state.view-model';
-import { FormViewModel } from '../form.view-model';
+import { FormViewModel } from '../form/form.view-model';
 
 @Component({
   selector: 'app-form-controls',

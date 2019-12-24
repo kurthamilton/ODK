@@ -219,11 +219,10 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task UpdateMember(Guid memberId, string emailAddress, bool emailOptIn, string firstName, string lastName)
+        public async Task UpdateMember(Guid memberId, bool emailOptIn, string firstName, string lastName)
         {
             await Context
                 .Update<Member>()
-                .Set(x => x.EmailAddress, emailAddress)
                 .Set(x => x.EmailOptIn, emailOptIn)
                 .Set(x => x.FirstName, firstName)
                 .Set(x => x.LastName, lastName)

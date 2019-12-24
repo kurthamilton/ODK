@@ -1,11 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ODK.Services.Mails.SendInBlue.Requests
+﻿namespace ODK.Services.Mails.SendInBlue.Requests
 {
     public class CreateEmailCampaignApiRequest
     {
-        public string Name { get; }
+        public string HtmlContent { get; set; }
+
+        public string Name { get; set; }
+
+        public EmailCampaignRecipientsApiRequest Recipients { get; set; }
+
+        public EmailCampaignSenderApiRequest Sender { get; set; }
+
+        public string Subject { get; set; }
     }
 }

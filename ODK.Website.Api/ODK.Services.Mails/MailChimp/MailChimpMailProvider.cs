@@ -10,17 +10,15 @@ using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Services.Events;
+using OdkMember = ODK.Core.Members.Member;
 
 namespace ODK.Services.Mails.MailChimp
 {
     public class MailChimpMailProvider : MailProviderBase
     {
-        private readonly IMemberRepository _memberRepository;
-
         public MailChimpMailProvider(IChapterRepository chapterRepository, IMemberRepository memberRepository)
-            : base(chapterRepository)
+            : base(chapterRepository, memberRepository)
         {
-            _memberRepository = memberRepository;
         }
 
         protected override async Task<string> CreateCampaign(string apiKey, EventCampaign campaign)
@@ -31,7 +29,7 @@ namespace ODK.Services.Mails.MailChimp
             {
                 Recipients = new Recipient
                 {
-                    ListId = campaign.SubscriptionMemberGroupId
+                    ListId = campaign.ContactListId
                 },
                 Settings = new Setting
                 {
@@ -45,6 +43,42 @@ namespace ODK.Services.Mails.MailChimp
 
             Campaign created = await manager.Campaigns.AddAsync(create);
             return created.Id;
+        }
+
+        protected override Task CreateContact(string apiKey, OdkMember member, ContactList contactList)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Task DeleteContact(string apiKey, Contact contact)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Task<Contact> GetContact(string apiKey, string emailAddress)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override async Task<ContactList> GetContactList(string apiKey, string name)
+        {
+            IMailChimpManager manager = CreateManager(apiKey);
+
+            IEnumerable<List> lists = await manager.Lists.GetAllAsync();
+
+            List list = lists
+                .FirstOrDefault(x => string.Equals(name, x.Name, StringComparison.OrdinalIgnoreCase));
+
+            return list != null ? new ContactList
+            {
+                Id = list.Id,
+                Name = list.Name
+            } : null;
+        }
+
+        protected override Task<IReadOnlyCollection<Contact>> GetContacts(string apiKey, string contactListId)
+        {
+            throw new NotImplementedException();
         }
 
         protected override async Task<EventInvites> GetEventInvites(string apiKey, EventEmail eventEmail)
@@ -71,29 +105,26 @@ namespace ODK.Services.Mails.MailChimp
             }
         }
 
-        protected override async Task<IReadOnlyCollection<EventInvites>> GetInvites(string apiKey, IEnumerable<EventEmail> eventEmails)
+        protected override Task<IReadOnlyCollection<EventInvites>> GetInvites(string apiKey, IEnumerable<EventEmail> eventEmails)
         {
             throw new NotImplementedException();
         }
 
-        protected override async Task<IReadOnlyCollection<SubscriptionMemberGroup>> GetSubscriptionMemberGroups(string apiKey)
+        protected override async Task SendCampaignEmail(string apiKey, string id)
         {
             IMailChimpManager manager = CreateManager(apiKey);
 
-            IEnumerable<List> lists = await manager.Lists.GetAllAsync();
-
-            return lists.Select(x => new SubscriptionMemberGroup
-            {
-                Id = x.Id,
-                Name = x.Name
-            }).ToArray();
+            await manager.Campaigns.SendAsync(id);
         }
 
-        protected override async Task SendCampaignEmail(string apiKey, EventCampaign campaign)
+        protected override Task SendTestCampaignEmail(string apiKey, string id, string to)
         {
-            IMailChimpManager manager = CreateManager(apiKey);
+            throw new NotImplementedException();
+        }
 
-            await manager.Campaigns.SendAsync(campaign.Id);
+        protected override Task UpdateCampaign(string apiKey, EventCampaign campaign)
+        {
+            throw new NotImplementedException();
         }
 
         protected override async Task UpdateCampaignEmailContent(string apiKey, EventCampaign campaign)
@@ -106,6 +137,11 @@ namespace ODK.Services.Mails.MailChimp
             };
 
             await manager.Content.AddOrUpdateAsync(campaign.Id, content);
+        }
+
+        protected override Task UpdateContactOptIn(string apiKey, string emailAddress, bool optIn)
+        {
+            throw new NotImplementedException();
         }
 
         private IMailChimpManager CreateManager(string apiKey)

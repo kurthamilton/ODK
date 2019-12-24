@@ -8,6 +8,7 @@ import { adminUrls } from '../../../routing/admin-urls';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
+import { DateUtils } from 'src/app/utils/date-utils';
 import { Event } from 'src/app/core/events/event';
 import { EventAdminService } from 'src/app/services/events/event-admin.service';
 import { EventInvites } from 'src/app/core/events/event-invites';
@@ -81,6 +82,10 @@ export class EventsComponent implements OnInit {
     });
   }
 
+  getEventInvitesLink(event: Event): string {
+    return adminUrls.eventInvites(this.chapter, event);    
+  }
+
   getEventLink(event: Event): string {
     return adminUrls.event(this.chapter, event);
   }
@@ -112,15 +117,19 @@ export class EventsComponent implements OnInit {
   }
 
   private setViewModels(): void {
+    const today: Date = DateUtils.today();
+
     this.viewModels = this.events.map((event: Event): AdminListEventViewModel => {
       const eventInvites = this.eventInvitesMap.has(event.id) ? this.eventInvitesMap.get(event.id) : null;
       const eventResponses: EventMemberResponse[] = this.eventResponseMap.get(event.id) || [];
       const responseTypeMap: Map<EventResponseType, EventMemberResponse[]> = ArrayUtils.groupValues(eventResponses, x => x.responseType, x => x);
+      const invitesSent: number = eventInvites ? eventInvites.sent : 0;
       return {
+        canSendInvites: event.date >= today && invitesSent === 0,
         declined: responseTypeMap.has(EventResponseType.No) ? responseTypeMap.get(EventResponseType.No).length : 0,
         event,
         going: responseTypeMap.has(EventResponseType.Yes) ? responseTypeMap.get(EventResponseType.Yes).length : 0,
-        invitesSent: eventInvites ? eventInvites.sent : 0,
+        invitesSent: invitesSent,
         maybe: responseTypeMap.has(EventResponseType.Maybe) ? responseTypeMap.get(EventResponseType.Maybe).length : 0,
         venue: this.venueMap.get(event.venueId)
       };

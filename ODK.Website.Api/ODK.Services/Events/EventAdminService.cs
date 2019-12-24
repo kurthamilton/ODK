@@ -107,7 +107,7 @@ namespace ODK.Services.Events
             Event @event = await GetEvent(currentMemberId, eventId);
             Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
             Venue venue = await _venueRepository.GetVenue(@event.VenueId);
-            Email email = await GetEventEmail();
+            Email email = await GetEventEmailTemplate();
             IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
             return email.Interpolate(parameters);
         }
@@ -147,7 +147,7 @@ namespace ODK.Services.Events
             return await _eventRepository.GetEventsByVenue(venueId);
         }
 
-        public async Task SendEventInvites(Guid currentMemberId, Guid eventId)
+        public async Task SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false)
         {
             Event @event = await GetEvent(currentMemberId, eventId);
             if (@event.Date < DateTime.UtcNow)
@@ -155,23 +155,41 @@ namespace ODK.Services.Events
                 throw new OdkServiceException("Invites cannot be sent to past events");
             }
 
+            EventEmail eventEmail = await _eventRepository.GetEventEmail(@event.Id);
+            if (!test && eventEmail?.SentDate != null)
+            {
+                throw new OdkServiceException("Invites have already been sent for this event");
+            }
+
             Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
             ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(@event.ChapterId);
 
             IMailProvider mailProvider = _mailProviderFactory.Create(chapter, emailSettings);
 
-            await mailProvider.SynchroniseMembers(@event.ChapterId);
+            await mailProvider.SynchroniseMembers(emailSettings, chapter);
 
-            Venue venue = await _venueRepository.GetVenue(@event.VenueId);
+            if (eventEmail == null)
+            {
+                eventEmail = await CreateEventEmail(mailProvider, emailSettings, @event, chapter);
+            }
+            else
+            {
+                await UpdateEventEmail(mailProvider, emailSettings, @event, chapter, eventEmail);
+            }
 
-            Email email = await GetEventEmail();
-            IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
-            email = email.Interpolate(parameters);
+            Member member = await _memberRepository.GetMember(currentMemberId);
 
-            string emailProviderEmailId = await mailProvider.SendEventEmail(@event, email);
-            EventEmail eventEmail = new EventEmail(Guid.Empty, eventId, emailSettings.EmailProvider, emailProviderEmailId, DateTime.UtcNow);
+            if (test)
+            {
+                await mailProvider.SendTestEventEmail(emailSettings, eventEmail.EmailProviderEmailId, member);
+            }
+            else
+            {
+                await mailProvider.SendEventEmail(emailSettings, eventEmail.EmailProviderEmailId);
 
-            await _eventRepository.AddEventEmail(eventEmail);
+                eventEmail.SentDate = DateTime.UtcNow;
+                await _eventRepository.UpdateEventEmail(eventEmail);
+            }
         }
 
         public async Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
@@ -225,10 +243,27 @@ namespace ODK.Services.Events
             }
         }
 
-
-        private async Task<Email> GetEventEmail()
+        private async Task<EventEmail> CreateEventEmail(IMailProvider mailProvider, ChapterEmailSettings emailSettings,
+            Event @event, Chapter chapter)
         {
-            return await _memberEmailRepository.GetEmail(EmailType.EventInvite);
+            Email email = await GetEventEmail(@event, chapter);
+
+            string emailProviderEmailId = await mailProvider.CreateEventEmail(emailSettings, @event, chapter, email);
+
+            EventEmail eventEmail = new EventEmail(Guid.Empty, @event.Id, emailSettings.EmailProvider, emailProviderEmailId, null);
+
+            await _eventRepository.AddEventEmail(eventEmail);
+
+            return eventEmail;
+        }
+
+        private async Task<Email> GetEventEmail(Event @event, Chapter chapter)
+        {
+            Venue venue = await _venueRepository.GetVenue(@event.VenueId);
+
+            Email template = await GetEventEmailTemplate();
+            IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
+            return template.Interpolate(parameters);
         }
 
         private IDictionary<string, string> GetEventEmailParameters(Chapter chapter, Event @event, Venue venue)
@@ -247,6 +282,19 @@ namespace ODK.Services.Events
             parameters.Add("event.url", (_settings.BaseUrl + _settings.EventUrlFormat).Interpolate(parameters));
 
             return parameters;
+        }
+
+        private async Task<Email> GetEventEmailTemplate()
+        {
+            return await _memberEmailRepository.GetEmail(EmailType.EventInvite);
+        }
+
+        private async Task UpdateEventEmail(IMailProvider mailProvider, ChapterEmailSettings emailSettings,
+                    Event @event, Chapter chapter, EventEmail eventEmail)
+        {
+            Email email = await GetEventEmail(@event, chapter);
+
+            await mailProvider.UpdateEventEmail(emailSettings, @event, chapter, email, eventEmail.EmailProviderEmailId);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using ODK.Core.Events;
+using ODK.Data.Sql;
 using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Mapping
@@ -24,7 +25,7 @@ namespace ODK.Data.Mapping
                 eventId: reader.GetGuid(1),
                 emailProvider: reader.GetString(2),
                 emailProviderEmailId: reader.GetString(3),
-                sentDate: reader.GetDateTime(4)
+                sentDate: reader.GetNullableDateTime(4)
             );
         }
     }

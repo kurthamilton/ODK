@@ -10,7 +10,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
 import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { MenuItem } from 'src/app/core/menus/menu-item';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
@@ -93,8 +93,9 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
         value: this.datePipe.transform(this.subscription.expiryDate, 'dd MMMM yyyy')
       }));
     }
+    
     this.form = {
-      buttonText: '',
+      buttons: [],
       callback: null,
       controls
     };

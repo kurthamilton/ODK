@@ -15,6 +15,7 @@ import { FormControlValidationComponent } from './components/form-control-valida
 import { ReadOnlyFormControlComponent } from './components/inputs/read-only-form-control/read-only-form-control.component';
 import { TextAreaComponent } from './components/inputs/text-area-form-control/text-area-form-control.component';
 import { TextInputFormControlComponent } from './components/inputs/text-input-form-control/text-input-form-control.component';
+import { FormButtonComponent } from './components/form-button/form-button.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { TextInputFormControlComponent } from './components/inputs/text-input-fo
     ReadOnlyFormControlComponent,
     TextAreaComponent,
     TextInputFormControlComponent,
+    FormButtonComponent,
   ],
   imports: [
     AppSharedModule,

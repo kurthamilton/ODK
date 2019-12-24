@@ -1,0 +1,11 @@
+<app-body [breadcrumbs]="breadcrumbs">  
+  <ng-container *appLoading="!profile">
+      <p *ngIf="profile.emailOptIn">
+        You are currently receiving event emails.
+      </p>
+      <p *ngIf="!profile.emailOptIn">
+        You have chosen not to receive event emails.        
+      </p>
+      <app-form *ngIf="form" [form]="form" (formSubmit)="onFormSubmit()"></app-form>
+  </ng-container>
+</app-body>

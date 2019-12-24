@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { HtmlEditorFormControlViewModel } from '../../forms/inputs/html-editor-form-control/html-editor-form-control.view-model';
 
 @Component({
@@ -84,7 +84,9 @@ export class ChapterSettingsComponent implements OnInit, OnDestroy {
     };
 
     this.form = {
-      buttonText: 'Update',
+      buttons: [
+        { text: 'Update' }
+      ],
       callback: this.formCallback,
       controls: [
         this.formControls.registerText,

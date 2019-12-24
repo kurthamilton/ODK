@@ -8,7 +8,7 @@ import { CheckBoxFormControlViewModel } from 'src/app/modules/forms/components/i
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
 import { Event } from 'src/app/core/events/event';
-import { FormViewModel } from 'src/app/modules/forms/components/form.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { HtmlEditorFormControlViewModel } from '../../forms/inputs/html-editor-form-control/html-editor-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 import { Venue } from 'src/app/core/venues/venue';
@@ -138,7 +138,9 @@ export class EventFormComponent implements OnChanges {
     };
 
     this.form = {
-      buttonText: this.buttonText,
+      buttons: [
+        { text: this.buttonText }
+      ],
       callback: this.formCallback,
       controls: [
         this.formControls.isPublic,
