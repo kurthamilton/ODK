@@ -150,7 +150,8 @@ export class EventAdminService extends EventService {
   private mapEventInvites(response: any, id?: string): EventInvites {
     return {
       eventId: response ? response.eventId : id,
-      sent: response ? response.sent : 0
+      sent: response ? response.sent : 0,
+      sentDate: (!!response && response.sentDate) ? new Date(response.sentDate) : null
     };
   }
 }

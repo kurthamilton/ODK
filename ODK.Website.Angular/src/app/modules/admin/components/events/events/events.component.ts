@@ -123,13 +123,13 @@ export class EventsComponent implements OnInit {
       const eventInvites = this.eventInvitesMap.has(event.id) ? this.eventInvitesMap.get(event.id) : null;
       const eventResponses: EventMemberResponse[] = this.eventResponseMap.get(event.id) || [];
       const responseTypeMap: Map<EventResponseType, EventMemberResponse[]> = ArrayUtils.groupValues(eventResponses, x => x.responseType, x => x);
-      const invitesSent: number = eventInvites ? eventInvites.sent : 0;
+
       return {
-        canSendInvites: event.date >= today && invitesSent === 0,
+        canSendInvites: event.date >= today && (!eventInvites || !eventInvites.sentDate),
         declined: responseTypeMap.has(EventResponseType.No) ? responseTypeMap.get(EventResponseType.No).length : 0,
         event,
         going: responseTypeMap.has(EventResponseType.Yes) ? responseTypeMap.get(EventResponseType.Yes).length : 0,
-        invitesSent: invitesSent,
+        invitesSent: !!eventInvites ? eventInvites.sent : 0,
         maybe: responseTypeMap.has(EventResponseType.Maybe) ? responseTypeMap.get(EventResponseType.Maybe).length : 0,
         venue: this.venueMap.get(event.venueId)
       };

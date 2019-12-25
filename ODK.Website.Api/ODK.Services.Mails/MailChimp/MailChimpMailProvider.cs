@@ -9,7 +9,6 @@ using MailChimp.Net.Models;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
-using ODK.Services.Events;
 using OdkMember = ODK.Core.Members.Member;
 
 namespace ODK.Services.Mails.MailChimp
@@ -81,7 +80,7 @@ namespace ODK.Services.Mails.MailChimp
             throw new NotImplementedException();
         }
 
-        protected override async Task<EventInvites> GetEventInvites(string apiKey, EventEmail eventEmail)
+        protected override async Task<EventCampaignStats> GetEventStats(string apiKey, EventEmail eventEmail)
         {
             IMailChimpManager manager = CreateManager(apiKey);
 
@@ -89,7 +88,7 @@ namespace ODK.Services.Mails.MailChimp
             {
                 Campaign campaign = await manager.Campaigns.GetAsync(eventEmail.EmailProviderEmailId);
 
-                return new EventInvites
+                return new EventCampaignStats
                 {
                     EventId = eventEmail.EventId,
                     Sent = campaign.EmailsSent ?? 0
@@ -97,15 +96,14 @@ namespace ODK.Services.Mails.MailChimp
             }
             catch
             {
-                return new EventInvites
+                return new EventCampaignStats
                 {
-                    EventId = eventEmail.EventId,
-                    Sent = 0
+                    EventId = eventEmail.EventId
                 };
             }
         }
 
-        protected override Task<IReadOnlyCollection<EventInvites>> GetInvites(string apiKey, IEnumerable<EventEmail> eventEmails)
+        protected override Task<IReadOnlyCollection<EventCampaignStats>> GetStats(string apiKey, IEnumerable<EventEmail> eventEmails)
         {
             throw new NotImplementedException();
         }

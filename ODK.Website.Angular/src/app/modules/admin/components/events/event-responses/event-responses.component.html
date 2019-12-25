@@ -1,16 +1,16 @@
 <ng-container *appLoading="!going">  
   <div *ngIf="going.length">
-    <h4>Going</h4>
-    <div *ngFor="let member of going">{{member.fullName}}</div>
+    <h5>Going</h5>
+    <app-member-list size="xs" [chapter]="chapter" [members]="going"></app-member-list>
   </div>
 
   <div *ngIf="maybe.length">
-    <h4>Maybe</h4>
-    <div *ngFor="let member of maybe">{{member.fullName}}</div>
+    <h5>Maybe</h5>
+    <app-member-list size="xs" [chapter]="chapter" [members]="maybe"></app-member-list>
   </div>
 
   <div *ngIf="declined.length">
-    <h4>Declined</h4>
-    <div *ngFor="let member of declined">{{member.fullName}}</div>
+    <h5>Declined</h5>
+    <app-member-list size="xs" [chapter]="chapter" [members]="declined"></app-member-list>
   </div>
 </ng-container>

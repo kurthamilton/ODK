@@ -228,18 +228,24 @@ namespace ODK.Services.Events
             }
         }
 
-        private async Task AssertEventCanBeDeleted(Guid currentMemberId, Guid id)
+        private async Task AssertEventCanBeDeleted(Guid currentMemberId, Guid eventId)
         {
-            EventEmail eventEmail = await _eventRepository.GetEventEmail(id);
-            if (eventEmail != null)
+            EventEmail eventEmail = await _eventRepository.GetEventEmail(eventId);
+            if (eventEmail?.SentDate != null)
             {
                 throw new OdkServiceException("Events that have had invite emails sent cannot be deleted");
             }
 
-            IReadOnlyCollection<EventMemberResponse> responses = await _eventRepository.GetEventResponses(id);
+            IReadOnlyCollection<EventMemberResponse> responses = await _eventRepository.GetEventResponses(eventId);
             if (responses.Count > 0)
             {
                 throw new OdkServiceException("Events with responses cannot be deleted");
+            }
+
+            Event @event = await _eventRepository.GetEvent(eventId);
+            if (@event != null)
+            {
+                await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
             }
         }
 

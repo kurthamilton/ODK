@@ -1,4 +1,5 @@
 export interface EventInvites {    
-    eventId: string;
-    sent: number;
+  eventId: string;
+  sent: number;
+  sentDate: Date;  
 }

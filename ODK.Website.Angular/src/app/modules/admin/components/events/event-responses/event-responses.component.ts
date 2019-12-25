@@ -1,5 +1,4 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 
 import { forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -22,13 +21,13 @@ import { MemberService } from 'src/app/services/members/member.service';
 export class EventResponsesComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private route: ActivatedRoute,
     private chapterAdminService: ChapterAdminService,
     private eventAdminService: EventAdminService,
     private memberService: MemberService
   ) {
   }  
 
+  chapter: Chapter;
   declined: Member[];
   event: Event;
   going: Member[];
@@ -38,11 +37,11 @@ export class EventResponsesComponent implements OnInit {
   private members: Member[];
 
   ngOnInit(): void {
-    const chapter: Chapter = this.chapterAdminService.getActiveChapter();
+    this.chapter = this.chapterAdminService.getActiveChapter();
     this.event = this.eventAdminService.getActiveEvent();
     
     forkJoin(
-      this.memberService.getMembers(chapter.id).pipe(
+      this.memberService.getMembers(this.chapter.id).pipe(
         tap((members: Member[]) => this.members = members)
       ),
       this.eventAdminService.getEventResponses(this.event.id).pipe(
@@ -72,5 +71,4 @@ export class EventResponsesComponent implements OnInit {
       this.changeDetector.detectChanges();
     });
   }
-
 }

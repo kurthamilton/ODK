@@ -1,6 +1,0 @@
-<div *ngIf="member" class="card member-tile" [class.member-tile-sm]="size === 'sm'">
-  <a *ngIf="link" [routerLink]="link" [ngbTooltip]="size === 'sm' ? member.fullName : ''">
-    <app-member-image [isTop]="size !== 'sm'" [maxWidth]="maxWidth" [member]="member"></app-member-image>
-    <div *ngIf="size !== 'sm'">{{member.fullName}}</div>
-  </a>
-</div>

@@ -58,7 +58,7 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
   }
 
   private buildForms(): void {
-    if (this.invites.sent > 0) {
+    if (this.invites.sentDate != null) {
       this.sendForm = null;
       this.sendTestForm = null;
       return;

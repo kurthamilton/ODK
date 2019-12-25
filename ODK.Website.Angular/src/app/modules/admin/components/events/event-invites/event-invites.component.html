@@ -9,8 +9,12 @@
     </app-form>
   </div>  
   
-  <div class="row">
-    <div class="col-3">Sent</div>
-    <div class="col-3">{{invites.sent}}</div>
-  </div>
+  <ng-container *ngIf="invites.sentDate">
+    <p>
+      {{invites.sent}} invites were sent on {{invites.sentDate | date:'fullDate' }}
+    </p>  
+
+    <h3>Responses</h3>
+    <app-event-responses></app-event-responses>
+  </ng-container>  
 </ng-container>

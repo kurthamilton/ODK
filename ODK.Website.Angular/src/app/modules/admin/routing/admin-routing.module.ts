@@ -41,8 +41,7 @@ const routes: Routes = [
       { path: adminPaths.events.create.path, component: CreateEventComponent },
       { path: adminPaths.events.event.path, component: EventLayoutComponent, children: [
         { path: '', component: EditEventComponent },
-        { path: adminPaths.events.event.invites.path, component: EventInvitesComponent },
-        { path: adminPaths.events.event.responses.path, component: EventResponsesComponent },
+        { path: adminPaths.events.event.invites.path, component: EventInvitesComponent }
       ] },
     ] },
     { path: adminPaths.members.path, children: [

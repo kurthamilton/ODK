@@ -25,9 +25,6 @@ export const adminPaths = {
       path: ':id',
       params: {
         id: 'id'
-      },
-      responses: {
-        path: 'responses'
       }
     },        
     path: 'events'

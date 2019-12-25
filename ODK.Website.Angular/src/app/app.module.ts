@@ -36,11 +36,9 @@ import { HomeMenuComponent } from './components/structure/home-menu/home-menu.co
 import { HttpAuthInterceptorService } from './services/http/http-auth-interceptor.service';
 import { JoinComponent } from './components/account/join/join.component';
 import { ListEventComponent } from './components/events/list-event/list-event.component';
-import { ListMemberComponent } from './components/members/list-member/list-member.component';
 import { LoginComponent } from './components/account/login/login.component';
 import { LogoutComponent } from './components/account/logout/logout.component';
 import { MemberComponent } from './components/members/member/member.component';
-import { MemberListComponent } from './components/members/member-list/member-list.component';
 import { MemberProfileComponent } from './components/members/member-profile/member-profile.component';
 import { MembersComponent } from './components/members/members/members.component';
 import { ModalComponent } from './components/elements/modal/modal.component';
@@ -91,11 +89,9 @@ import { ProfileEmailsComponent } from './components/account/profile-emails/prof
     HomeMenuComponent,
     JoinComponent,
     ListEventComponent,
-    ListMemberComponent,
     LoginComponent,
     LogoutComponent,
     MemberComponent,
-    MemberListComponent,
     MemberProfileComponent,
     MembersComponent,
     ModalComponent,

@@ -46,17 +46,26 @@ namespace ODK.Services.Mails
         public async Task<EventInvites> GetEventInvites(Event @event, EventEmail eventEmail)
         {
             ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(@event.ChapterId);
-            EventInvites invites = await GetEventInvites(emailSettings.EmailApiKey, eventEmail);
-            return invites ?? new EventInvites
+            EventCampaignStats stats = await GetEventStats(emailSettings.EmailApiKey, eventEmail);
+            return new EventInvites
             {
-                EventId = @event.Id
+                EventId = @event.Id,
+                Sent = stats.Sent,
+                SentDate = eventEmail.SentDate
             };
         }
 
         public async Task<IReadOnlyCollection<EventInvites>> GetInvites(Guid chapterId, IEnumerable<EventEmail> eventEmails)
         {
             ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(chapterId);
-            return await GetInvites(emailSettings.EmailApiKey, eventEmails);
+            IReadOnlyCollection<EventCampaignStats> stats = await GetStats(emailSettings.EmailApiKey, eventEmails);
+            IDictionary<Guid, EventCampaignStats> statsDictionary = stats.ToDictionary(x => x.EventId, x => x);
+            return eventEmails.Select(x => new EventInvites
+            {
+                EventId = x.EventId,
+                Sent = statsDictionary.ContainsKey(x.EventId) ? statsDictionary[x.EventId].Sent : 0,
+                SentDate = x.SentDate
+            }).ToArray();
         }
 
         public async Task<bool> GetMemberOptIn(Member member)
@@ -150,9 +159,9 @@ namespace ODK.Services.Mails
 
         protected abstract Task<IReadOnlyCollection<Contact>> GetContacts(string apiKey, string contactListId);
 
-        protected abstract Task<EventInvites> GetEventInvites(string apiKey, EventEmail eventEmail);
+        protected abstract Task<EventCampaignStats> GetEventStats(string apiKey, EventEmail eventEmail);
 
-        protected abstract Task<IReadOnlyCollection<EventInvites>> GetInvites(string apiKey, IEnumerable<EventEmail> eventEmails);
+        protected abstract Task<IReadOnlyCollection<EventCampaignStats>> GetStats(string apiKey, IEnumerable<EventEmail> eventEmails);
 
         protected abstract Task SendCampaignEmail(string apiKey, string id);
 

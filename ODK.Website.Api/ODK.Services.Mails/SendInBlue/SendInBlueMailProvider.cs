@@ -110,41 +110,47 @@ namespace ODK.Services.Mails.SendInBlue
                 .ToArray();
         }
 
-        protected override async Task<EventInvites> GetEventInvites(string apiKey, EventEmail eventEmail)
+        protected override async Task<EventCampaignStats> GetEventStats(string apiKey, EventEmail eventEmail)
         {
-            if (eventEmail == null || !int.TryParse(eventEmail.EmailProviderEmailId, out int emailCampaignId))
+            if (eventEmail == null || !int.TryParse(eventEmail.EmailProviderEmailId, out int emailCampaignId) || emailCampaignId == 0)
             {
-                return null;
+                return new EventCampaignStats
+                {
+                    EventId = eventEmail.EventId
+                };
             }
 
             string url = SendInBlueEndpoints.EmailCampaign(emailCampaignId);
 
             EmailCampaignApiResponse response = await Get<EmailCampaignApiResponse>(apiKey, url);
 
-            return new EventInvites
+            return new EventCampaignStats
             {
                 EventId = eventEmail.EventId,
                 Sent = response.Statistics.GlobalStats.Sent
             };
         }
 
-        protected override async Task<IReadOnlyCollection<EventInvites>> GetInvites(string apiKey, IEnumerable<EventEmail> eventEmails)
+        protected override async Task<IReadOnlyCollection<EventCampaignStats>> GetStats(string apiKey, IEnumerable<EventEmail> eventEmails)
         {
             EmailCampaignsApiResponse response = await Get<EmailCampaignsApiResponse>(apiKey, SendInBlueEndpoints.EmailCampaigns);
 
-            if (response.Campaigns == null)
-            {
-                return new EventInvites[0];
-            }
+            IDictionary<int, EmailCampaignStatisticsApiResponse> emailCampaignDictionary = response?.Campaigns
+                .ToDictionary(x => x.Id, x => x.Statistics) ?? new Dictionary<int, EmailCampaignStatisticsApiResponse>();
 
-            IDictionary<int, EventEmail> eventEmailDictionary = eventEmails.ToDictionary(x => int.Parse(x.EmailProviderEmailId), x => x);
-
-            return response.Campaigns
-                .Where(x => eventEmailDictionary.ContainsKey(x.Id))
-                .Select(x => new EventInvites
+            return eventEmails
+                .Select(x =>
                 {
-                    EventId = eventEmailDictionary[x.Id].EventId,
-                    Sent = x.Statistics.GlobalStats.Sent
+                    int.TryParse(x.EmailProviderEmailId, out int emailCampaignId);
+                    EmailCampaignStatisticsApiResponse stats = emailCampaignDictionary.ContainsKey(emailCampaignId)
+                        ? emailCampaignDictionary[emailCampaignId]
+                        : null;
+
+                    return new EventCampaignStats
+                    {
+                        EventId = x.EventId,
+                        Sent = stats?.GlobalStats.Sent ?? 0
+                    };
                 })
                 .ToArray();
         }

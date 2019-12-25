@@ -30,9 +30,7 @@ export class EventMenuComponent implements OnChanges {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.menuItems = [
       { link: adminUrls.event(this.chapter, this.event), text: 'Edit', matchExactRoute: true },
-      { link: adminUrls.eventInvites(this.chapter, this.event), text: 'Invites' },
-      { link: adminUrls.eventResponses(this.chapter, this.event), text: 'Responses' },
+      { link: adminUrls.eventInvites(this.chapter, this.event), text: 'Invites' }
     ];
   }
-
 }

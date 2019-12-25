@@ -36,7 +36,7 @@ export class EditEventComponent implements OnInit, OnDestroy {
     this.event = this.eventAdminService.getActiveEvent();
 
     this.eventAdminService.getEventInvites(this.event.id).subscribe((invites: EventInvites) => {
-      this.canDelete = invites.sent === 0;
+      this.canDelete = !invites.sentDate;
       this.changeDetector.detectChanges();
     });
   }
