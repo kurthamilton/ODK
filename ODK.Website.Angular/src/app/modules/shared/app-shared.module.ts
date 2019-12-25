@@ -13,10 +13,12 @@ import { MemberImageComponent } from './components/members/member-image/member-i
 import { MemberListComponent } from './components/members/member-list/member-list.component';
 import { NavbarComponent } from './components/elements/navbar/navbar.component';
 import { RawHtmlComponent } from './components/elements/raw-html/raw-html.component';
+import { BreadcrumbsComponent } from './components/elements/breadcrumbs/breadcrumbs.component';
 
 @NgModule({
   declarations: [
     AccountMenuComponent,
+    BreadcrumbsComponent,
     GoogleMapComponent,
     ListMemberComponent,
     MemberImageComponent,
@@ -39,6 +41,7 @@ import { RawHtmlComponent } from './components/elements/raw-html/raw-html.compon
   ],
   exports: [
     AccountMenuComponent,
+    BreadcrumbsComponent,
     GoogleMapComponent,
     ListMemberComponent,
     LoadingDirective,

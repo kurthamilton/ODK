@@ -10,7 +10,6 @@ import { AppFormsModule } from './modules/forms/app-forms.module';
 import { AppRoutingModule } from './routing/app-routing.module';
 import { AppSharedModule } from './modules/shared/app-shared.module';
 import { BodyComponent } from './components/structure/body/body.component';
-import { BreadcrumbsComponent } from './components/elements/breadcrumbs/breadcrumbs.component';
 import { ChangePasswordComponent } from './components/account/change-password/change-password.component';
 import { ChapterComponent } from './components/chapters/chapter/chapter.component';
 import { ChapterFooterComponent } from './components/structure/chapter-footer/chapter-footer.component';
@@ -64,7 +63,6 @@ import { ProfileEmailsComponent } from './components/account/profile-emails/prof
   declarations: [
     AppComponent,
     BodyComponent,
-    BreadcrumbsComponent,
     ChangePasswordComponent,
     ChapterComponent,
     ChapterFooterComponent,

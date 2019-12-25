@@ -1,3 +1,4 @@
+<app-breadcrumbs [breadcrumbs]="breadcrumbs" active="Create new event" ></app-breadcrumbs>
 <h2>Create new event</h2>
 <app-event-form *ngIf="event" buttonText="Create" [event]="event" [formCallback]="formCallback"
     (formSubmit)="onFormSubmit($event)">

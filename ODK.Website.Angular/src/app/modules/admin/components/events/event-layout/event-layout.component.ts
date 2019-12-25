@@ -7,6 +7,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { Event } from 'src/app/core/events/event';
 import { EventAdminService } from 'src/app/services/events/event-admin.service';
+import { MenuItem } from 'src/app/core/menus/menu-item';
 
 @Component({
   selector: 'app-event-layout',
@@ -23,6 +24,7 @@ export class EventLayoutComponent implements OnInit {
   ) {     
   }
 
+  breadcrumbs: MenuItem[];
   event: Event;
 
   private chapter: Chapter;
@@ -30,6 +32,11 @@ export class EventLayoutComponent implements OnInit {
   ngOnInit(): void {
     const id: string = this.route.snapshot.paramMap.get(adminPaths.events.event.params.id);
     this.chapter = this.chapterAdminService.getActiveChapter();
+
+    this.breadcrumbs = [
+      { link: adminUrls.events(this.chapter), text: 'Events' }
+    ];
+
     this.eventAdminService.getEvent(id).subscribe((event: Event) => {
       if (!event) {
         this.router.navigateByUrl(adminUrls.events(this.chapter));

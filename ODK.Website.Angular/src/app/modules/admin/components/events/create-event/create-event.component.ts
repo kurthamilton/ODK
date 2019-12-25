@@ -9,6 +9,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { Event } from 'src/app/core/events/event';
 import { EventAdminService } from 'src/app/services/events/event-admin.service';
+import { MenuItem } from 'src/app/core/menus/menu-item';
 import { ServiceResult } from 'src/app/services/service-result';
 import { Venue } from 'src/app/core/venues/venue';
 import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
@@ -28,7 +29,8 @@ export class CreateEventComponent implements OnInit {
     private venueAdminService: VenueAdminService
   ) {
   }
-  
+
+  breadcrumbs: MenuItem[];
   event: Event;
   formCallback: Subject<string[]> = new Subject<string[]>();
 
@@ -37,6 +39,9 @@ export class CreateEventComponent implements OnInit {
 
   ngOnInit(): void {    
     this.chapter = this.chapterAdminService.getActiveChapter();
+    this.breadcrumbs = [
+      { link: adminUrls.events(this.chapter), text: 'Events' }
+    ];
 
     const venueId: string = this.route.snapshot.queryParamMap.get(adminPaths.events.create.queryParams.venue);
     if (venueId) {

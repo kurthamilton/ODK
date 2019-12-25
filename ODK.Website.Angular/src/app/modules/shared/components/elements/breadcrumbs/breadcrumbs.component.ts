@@ -8,7 +8,6 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BreadcrumbsComponent {
-
   @Input() active: string;
   @Input() breadcrumbs: MenuItem[];
 }
