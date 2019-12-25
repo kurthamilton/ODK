@@ -10,9 +10,6 @@ namespace ODK.Services.Mails
 {
     public class MailProviderFactory : IMailProviderFactory
     {
-        private const string MailChimpProviderName = "MailChimp";
-        private const string SendInBlueProviderName = "SendInBlue";
-
         private readonly IChapterRepository _chapterRepository;
         private readonly IMemberRepository _memberRepository;
 
@@ -30,18 +27,18 @@ namespace ODK.Services.Mails
 
         public async Task<IMailProvider> Create(Chapter chapter)
         {
-            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(chapter.Id);
+            ChapterEmailProviderSettings emailSettings = await _chapterRepository.GetChapterEmailProviderSettings(chapter.Id);
             return Create(chapter, emailSettings);
         }
 
-        public IMailProvider Create(Chapter chapter, ChapterEmailSettings emailSettings)
+        public IMailProvider Create(Chapter chapter, ChapterEmailProviderSettings emailSettings)
         {
             switch (emailSettings.EmailProvider)
             {
-                case MailChimpProviderName:
-                    return new MailChimpMailProvider(_chapterRepository, _memberRepository);
-                case SendInBlueProviderName:
-                    return new SendInBlueMailProvider(_chapterRepository, _memberRepository);
+                case MailChimpMailProvider.ProviderName:
+                    return new MailChimpMailProvider(emailSettings, chapter, _chapterRepository, _memberRepository);
+                case SendInBlueMailProvider.ProviderName:
+                    return new SendInBlueMailProvider(emailSettings, chapter, _chapterRepository, _memberRepository);
             }
 
             throw new NotSupportedException();
@@ -51,8 +48,7 @@ namespace ODK.Services.Mails
         {
             return Task.FromResult<IReadOnlyCollection<string>>(new[]
             {
-                MailChimpProviderName,
-                SendInBlueProviderName
+                SendInBlueMailProvider.ProviderName
             });
         }
     }

@@ -3,6 +3,9 @@ export const adminPaths = {
     about: {
       path: 'about'
     },
+    emailProvider: {
+      path: 'email-provider'
+    },
     emails: {
       path: 'emails'
     },

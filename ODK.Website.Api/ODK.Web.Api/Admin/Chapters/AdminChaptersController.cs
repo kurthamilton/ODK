@@ -28,7 +28,7 @@ namespace ODK.Web.Api.Admin.Chapters
         }
 
         [HttpGet("Emails/Providers")]
-        public async Task<IEnumerable<string>> GetEmailProviders(Guid id)
+        public async Task<IEnumerable<string>> GetEmailProviders()
         {
             IReadOnlyCollection<string> providers = await _chapterAdminService.GetEmailProviders();
             return providers;
@@ -39,6 +39,24 @@ namespace ODK.Web.Api.Admin.Chapters
         {
             IReadOnlyCollection<Chapter> chapters = await _chapterAdminService.GetChapters(GetMemberId());
             return chapters.Select(_mapper.Map<ChapterApiResponse>);
+        }
+
+        [HttpGet("{id}/Emails/Provider/Settings")]
+        public async Task<ChapterEmailProviderSettingsApiResponse> GetChapterEmailProviderSettings(Guid id)
+        {
+            ChapterEmailProviderSettings settings = await _chapterAdminService.GetChapterEmailProviderSettings(GetMemberId(), id);
+            return settings != null
+                ? _mapper.Map<ChapterEmailProviderSettingsApiResponse>(settings)
+                : new ChapterEmailProviderSettingsApiResponse();
+        }
+
+        [HttpPut("{id}/Emails/Provider/Settings")]
+        public async Task<IActionResult> UpdateChapterEmailProviderSettings(Guid id,
+            [FromForm] UpdateChapterEmailProviderSettingsApiRequest request)
+        {
+            UpdateChapterEmailProviderSettings emailProviderSettings = _mapper.Map<UpdateChapterEmailProviderSettings>(request);
+            await _chapterAdminService.UpdateChapterEmailProviderSettings(GetMemberId(), id, emailProviderSettings);
+            return NoContent();
         }
 
         [HttpGet("{id}/Emails/Settings")]

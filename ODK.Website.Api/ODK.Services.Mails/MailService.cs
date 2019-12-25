@@ -42,18 +42,22 @@ namespace ODK.Services.Mails
 
             ChapterEmailSettings emailSettings = await GetChapterEmailSettings(chapter.Id);
 
-            MimeMessage message = CreateMessage(emailSettings.FromEmailAddress, emailSettings.ContactEmailAddress, email, null);
+            // MimeMessage message = CreateMessage(emailSettings.FromEmailAddress, emailSettings.ContactEmailAddress, email, null);
 
-            return await Send(message);
+            // return await Send(message);
+
+            throw new NotImplementedException();
         }
 
         public async Task<MemberEmail> SendMemberMail(MemberEmail memberEmail, Member member, Email email)
         {
             ChapterEmailSettings emailSettings = await GetChapterEmailSettings(member.ChapterId);
 
-            await Send(emailSettings.FromEmailAddress, member, email, memberEmail);
+            // await Send(emailSettings.FromEmailAddress, member, email, memberEmail);
 
-            return memberEmail;
+            // return memberEmail;
+
+            throw new NotImplementedException();
         }
 
         public async Task<MemberEmail> SendMemberMail(Member member, Email email, IDictionary<string, string> parameters)

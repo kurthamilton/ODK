@@ -18,6 +18,8 @@ namespace ODK.Web.Api.Admin.Chapters
         {
             CreateMap<CreateChapterQuestionApiRequest, CreateChapterQuestion>();
 
+            CreateMap<UpdateChapterEmailProviderSettingsApiRequest, UpdateChapterEmailProviderSettings>();
+
             CreateMap<UpdateChapterEmailSettingsApiRequest, UpdateChapterEmailSettings>();
 
             CreateMap<UpdateChapterLinksApiRequest, UpdateChapterLinks>();
@@ -30,6 +32,8 @@ namespace ODK.Web.Api.Admin.Chapters
         private void MapResponses()
         {
             CreateMap<ChapterEmailSettings, ChapterEmailSettingsApiResponse>();
+
+            CreateMap<ChapterEmailProviderSettings, ChapterEmailProviderSettingsApiResponse>();
 
             CreateMap<ChapterPaymentSettings, ChapterAdminPaymentSettingsApiResponse>();
         }

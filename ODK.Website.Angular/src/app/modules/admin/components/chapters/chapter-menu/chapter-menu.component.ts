@@ -32,6 +32,7 @@ export class ChapterMenuComponent implements OnInit {
     ];
 
     if (token.superAdmin) {
+      this.menuItems.push({ link: adminUrls.chapterEmailProvider(chapter), text: 'Email Provider' });
       this.menuItems.push({ link: adminUrls.chapterPayments(chapter), text: 'Payments' });
     }
   }

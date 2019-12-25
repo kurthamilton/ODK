@@ -9,6 +9,8 @@ namespace ODK.Services.Chapters
     {
         Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question);
 
+        Task<ChapterEmailProviderSettings> GetChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId);
+
         Task<ChapterEmailSettings> GetChapterEmailSettings(Guid currentMemberId, Guid chapterId);
 
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
@@ -16,6 +18,8 @@ namespace ODK.Services.Chapters
         Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId);
 
         Task<IReadOnlyCollection<string>> GetEmailProviders();
+
+        Task UpdateChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailProviderSettings emailProviderSettings);
 
         Task UpdateChapterEmailSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailSettings emailSettings);
 

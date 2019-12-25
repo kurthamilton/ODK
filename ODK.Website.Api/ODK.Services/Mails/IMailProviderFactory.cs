@@ -11,7 +11,7 @@ namespace ODK.Services.Mails
 
         Task<IMailProvider> Create(Chapter chapter);
 
-        IMailProvider Create(Chapter chapter, ChapterEmailSettings emailSettings);
+        IMailProvider Create(Chapter chapter, ChapterEmailProviderSettings emailSettings);
 
         Task<IReadOnlyCollection<string>> GetProviders();
     }

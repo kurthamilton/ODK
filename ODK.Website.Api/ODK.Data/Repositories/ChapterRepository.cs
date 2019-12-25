@@ -13,6 +13,13 @@ namespace ODK.Data.Repositories
         {
         }
 
+        public async Task AddChapterEmailProviderSettings(ChapterEmailProviderSettings chapterEmailProviderSettings)
+        {
+            await Context
+                .Insert(chapterEmailProviderSettings)
+                .ExecuteAsync();
+        }
+
         public async Task<Guid> AddContactRequest(ContactRequest contactRequest)
         {
             return await Context
@@ -59,6 +66,14 @@ namespace ODK.Data.Repositories
                 .Select<ChapterAdminMember>()
                 .Where(x => x.MemberId).EqualTo(memberId)
                 .ToArrayAsync();
+        }
+
+        public async Task<ChapterEmailProviderSettings> GetChapterEmailProviderSettings(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterEmailProviderSettings>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<ChapterEmailSettings> GetChapterEmailSettings(Guid chapterId)
@@ -192,14 +207,28 @@ namespace ODK.Data.Repositories
                 .VersionAsync();
         }
 
+        public async Task UpdateChapterEmailProviderSettings(ChapterEmailProviderSettings emailProviderSettings)
+        {
+            await Context
+                .Update<ChapterEmailProviderSettings>()
+                .Set(x => x.ApiKey, emailProviderSettings.ApiKey)
+                .Set(x => x.EmailProvider, emailProviderSettings.EmailProvider)
+                .Set(x => x.FromEmailAddress, emailProviderSettings.FromEmailAddress)
+                .Set(x => x.FromName, emailProviderSettings.FromName)
+                .Set(x => x.SmtpLogin, emailProviderSettings.SmtpLogin)
+                .Set(x => x.SmtpPassword, emailProviderSettings.SmtpPassword)
+                .Set(x => x.SmtpPort, emailProviderSettings.SmtpPort)
+                .Set(x => x.SmtpServer, emailProviderSettings.SmtpServer)
+                .Where(x => x.ChapterId).EqualTo(emailProviderSettings.ChapterId)
+                .ExecuteAsync();
+        }
+
         public async Task UpdateChapterEmailSettings(ChapterEmailSettings emailSettings)
         {
             await Context
                 .Update<ChapterEmailSettings>()
                 .Set(x => x.AdminEmailAddress, emailSettings.AdminEmailAddress)
                 .Set(x => x.ContactEmailAddress, emailSettings.ContactEmailAddress)
-                .Set(x => x.EmailApiKey, emailSettings.EmailApiKey)
-                .Set(x => x.EmailProvider, emailSettings.EmailProvider)
                 .Where(x => x.ChapterId).EqualTo(emailSettings.ChapterId)
                 .ExecuteAsync();
         }

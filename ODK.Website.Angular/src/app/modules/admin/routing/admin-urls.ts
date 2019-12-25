@@ -22,6 +22,7 @@ const eventPaths = adminPaths.events.event;
 export const adminUrls = {
     chapter: (chapter: Chapter) => chapterPath(chapter),
     chapterAbout: (chapter: Chapter) => chapterPath(chapter, chapterPaths.about.path),
+    chapterEmailProvider: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emailProvider.path),
     chapterEmails: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emails.path),
     chapterPayments: (chapter: Chapter) => chapterPath(chapter, chapterPaths.payments.path),
     event: (chapter: Chapter, event: Event) => eventPath(chapter, event),

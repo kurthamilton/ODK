@@ -16,49 +16,57 @@ namespace ODK.Services.Mails
         private readonly IChapterRepository _chapterRepository;
         private readonly IMemberRepository _memberRepository;
 
-        protected MailProviderBase(IChapterRepository chapterRepository, IMemberRepository memberRepository)
+        protected MailProviderBase(ChapterEmailProviderSettings settings, Chapter chapter, IChapterRepository chapterRepository,
+            IMemberRepository memberRepository)
         {
             _chapterRepository = chapterRepository;
             _memberRepository = memberRepository;
+            Chapter = chapter;
+            Settings = settings;
         }
 
-        public async Task<string> CreateEventEmail(ChapterEmailSettings emailSettings, Event @event, Chapter chapter, Email email)
+        public abstract string Name { get; }
+
+        protected Chapter Chapter { get; }
+
+        protected ChapterEmailProviderSettings Settings { get; }
+
+        public async Task<string> CreateEventEmail(Event @event, Email email)
         {
-            ContactList contactList = await GetEventContactList(emailSettings, chapter);
+            ContactList contactList = await GetEventContactList();
 
             EventCampaign campaign = new EventCampaign
             {
                 ContactListId = contactList.Id,
-                From = emailSettings.FromEmailAddress,
-                FromName = emailSettings.FromEmailName,
+                From = Settings.FromEmailAddress,
+                FromName = Settings.FromName,
                 HtmlContent = email.Body,
                 Name = $"Event: {@event.Name}",
                 Subject = email.Subject
             };
 
-            campaign.Id = await CreateCampaign(emailSettings.EmailApiKey, campaign);
+            campaign.Id = await CreateCampaign(campaign);
 
-            await UpdateCampaignEmailContent(emailSettings.EmailApiKey, campaign);
+            await UpdateCampaignEmailContent(campaign);
 
             return campaign.Id;
         }
 
         public async Task<EventInvites> GetEventInvites(Event @event, EventEmail eventEmail)
         {
-            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(@event.ChapterId);
-            EventCampaignStats stats = await GetEventStats(emailSettings.EmailApiKey, eventEmail);
+            EventCampaignStats stats = await GetEventStats(eventEmail);
             return new EventInvites
             {
                 EventId = @event.Id,
                 Sent = stats.Sent,
-                SentDate = eventEmail.SentDate
+                SentDate = eventEmail?.SentDate
             };
         }
 
         public async Task<IReadOnlyCollection<EventInvites>> GetInvites(Guid chapterId, IEnumerable<EventEmail> eventEmails)
         {
             ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(chapterId);
-            IReadOnlyCollection<EventCampaignStats> stats = await GetStats(emailSettings.EmailApiKey, eventEmails);
+            IReadOnlyCollection<EventCampaignStats> stats = await GetStats(eventEmails);
             IDictionary<Guid, EventCampaignStats> statsDictionary = stats.ToDictionary(x => x.EventId, x => x);
             return eventEmails.Select(x => new EventInvites
             {
@@ -71,26 +79,26 @@ namespace ODK.Services.Mails
         public async Task<bool> GetMemberOptIn(Member member)
         {
             ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(member.ChapterId);
-            Contact contact = await GetContact(emailSettings.EmailApiKey, member.EmailAddress);
+            Contact contact = await GetContact(member.EmailAddress);
             return contact.OptIn;
         }
 
-        public async Task SendEventEmail(ChapterEmailSettings emailSettings, string id)
+        public async Task SendEventEmail(string id)
         {
-            await SendCampaignEmail(emailSettings.EmailApiKey, id);
+            await SendCampaignEmail(id);
         }
 
-        public async Task SendTestEventEmail(ChapterEmailSettings emailSettings, string id, Member member)
+        public async Task SendTestEventEmail(string id, Member member)
         {
-            await SendTestCampaignEmail(emailSettings.EmailApiKey, id, member.EmailAddress);
+            await SendTestCampaignEmail(id, member.EmailAddress);
         }
 
-        public async Task SynchroniseMembers(ChapterEmailSettings emailSettings, Chapter chapter)
+        public async Task SynchroniseMembers()
         {
-            ContactList contactList = await GetEventContactList(emailSettings, chapter);
+            ContactList contactList = await GetEventContactList();
 
-            IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(emailSettings.ChapterId);
-            IReadOnlyCollection<Contact> contacts = await GetContacts(emailSettings.EmailApiKey, contactList.Id);
+            IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(Chapter.Id);
+            IReadOnlyCollection<Contact> contacts = await GetContacts(contactList.Id);
             IReadOnlyCollection<(Contact Contact, Member Member)> map = GetContactMap(contacts, members).ToArray();
 
             // add new members
@@ -99,7 +107,7 @@ namespace ODK.Services.Mails
                 .Select(x => x.Member);
             foreach (Member member in newMembers)
             {
-                await CreateContact(emailSettings.EmailApiKey, member, contactList);
+                await CreateContact(member, contactList);
             }
 
             // opt-out members who have unsubscribed
@@ -117,61 +125,60 @@ namespace ODK.Services.Mails
                 .Select(x => x.Contact);
             foreach (Contact contact in deleteContacts)
             {
-                await DeleteContact(emailSettings.EmailApiKey, contact);
+                await DeleteContact(contact);
             }
         }
 
-        public async Task UpdateEventEmail(ChapterEmailSettings emailSettings, Event @event, Chapter chapter, Email email,
-            string emailId)
+        public async Task UpdateEventEmail(Event @event, Email email, string emailId)
         {
-            ContactList contactList = await GetEventContactList(emailSettings, chapter);
+            ContactList contactList = await GetEventContactList();
 
             EventCampaign campaign = new EventCampaign
             {
                 ContactListId = contactList.Id,
-                From = emailSettings.FromEmailAddress,
-                FromName = emailSettings.FromEmailName,
+                From = Settings.FromEmailAddress,
+                FromName = Settings.FromName,
                 HtmlContent = email.Body,
                 Id = emailId,
                 Name = $"Event: {@event.Name}",
                 Subject = email.Subject
             };
 
-            await UpdateCampaign(emailSettings.EmailApiKey, campaign);
+            await UpdateCampaign(campaign);
         }
 
         public async Task UpdateMemberOptIn(Member member, bool optIn)
         {
             ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(member.ChapterId);
 
-            await UpdateContactOptIn(emailSettings.EmailApiKey, member.EmailAddress, optIn);
+            await UpdateContactOptIn(member.EmailAddress, optIn);
         }
 
-        protected abstract Task<string> CreateCampaign(string apiKey, EventCampaign campaign);
+        protected abstract Task<string> CreateCampaign(EventCampaign campaign);
 
-        protected abstract Task CreateContact(string apiKey, Member member, ContactList contactList);
+        protected abstract Task CreateContact(Member member, ContactList contactList);
 
-        protected abstract Task DeleteContact(string apiKey, Contact contact);
+        protected abstract Task DeleteContact(Contact contact);
 
-        protected abstract Task<Contact> GetContact(string apiKey, string emailAddress);
+        protected abstract Task<Contact> GetContact(string emailAddress);
 
-        protected abstract Task<ContactList> GetContactList(string apiKey, string name);
+        protected abstract Task<ContactList> GetContactList(string name);
 
-        protected abstract Task<IReadOnlyCollection<Contact>> GetContacts(string apiKey, string contactListId);
+        protected abstract Task<IReadOnlyCollection<Contact>> GetContacts(string contactListId);
 
-        protected abstract Task<EventCampaignStats> GetEventStats(string apiKey, EventEmail eventEmail);
+        protected abstract Task<EventCampaignStats> GetEventStats(EventEmail eventEmail);
 
-        protected abstract Task<IReadOnlyCollection<EventCampaignStats>> GetStats(string apiKey, IEnumerable<EventEmail> eventEmails);
+        protected abstract Task<IReadOnlyCollection<EventCampaignStats>> GetStats(IEnumerable<EventEmail> eventEmails);
 
-        protected abstract Task SendCampaignEmail(string apiKey, string id);
+        protected abstract Task SendCampaignEmail(string id);
 
-        protected abstract Task SendTestCampaignEmail(string apiKey, string id, string to);
+        protected abstract Task SendTestCampaignEmail(string id, string to);
 
-        protected abstract Task UpdateCampaign(string apiKey, EventCampaign campaign);
+        protected abstract Task UpdateCampaign(EventCampaign campaign);
 
-        protected abstract Task UpdateCampaignEmailContent(string apiKey, EventCampaign campaign);
+        protected abstract Task UpdateCampaignEmailContent(EventCampaign campaign);
 
-        protected abstract Task UpdateContactOptIn(string apiKey, string emailAddress, bool optIn);
+        protected abstract Task UpdateContactOptIn(string emailAddress, bool optIn);
 
         private IEnumerable<(Contact, Member)> GetContactMap(IReadOnlyCollection<Contact> contacts,
             IReadOnlyCollection<Member> members)
@@ -195,11 +202,11 @@ namespace ODK.Services.Mails
             }
         }
 
-        private async Task<ContactList> GetEventContactList(ChapterEmailSettings emailSettings, Chapter chapter)
+        private async Task<ContactList> GetEventContactList()
         {
-            string listName = $"{chapter.Name} Events";
+            string listName = $"{Chapter.Name} Events";
 
-            ContactList contactList = await GetContactList(emailSettings.EmailApiKey, listName);
+            ContactList contactList = await GetContactList(listName);
             if (contactList == null)
             {
                 throw new OdkServiceException($"Contact list not found: {listName}");

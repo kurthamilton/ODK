@@ -17,7 +17,6 @@ import { EditMemberImageComponent } from '../components/members/edit-member-imag
 import { EditVenueComponent } from '../components/venues/edit-venue/edit-venue.component';
 import { EventInvitesComponent } from '../components/events/event-invites/event-invites.component';
 import { EventLayoutComponent } from '../components/events/event-layout/event-layout.component';
-import { EventResponsesComponent } from '../components/events/event-responses/event-responses.component';
 import { EventsComponent } from '../components/events/events/events.component';
 import { MemberLayoutComponent } from '../components/members/member-layout/member-layout.component';
 import { MembersComponent } from '../components/members/members/members.component';
@@ -25,6 +24,7 @@ import { MemberSubscriptionComponent } from '../components/members/member-subscr
 import { VenueEventsComponent } from '../components/venues/venue-events/venue-events.component';
 import { VenueLayoutComponent } from '../components/venues/venue-layout/venue-layout.component';
 import { VenuesComponent } from '../components/venues/venues/venues.component';
+import { ChapterEmailProviderComponent } from '../components/chapters/chapter-email-provider/chapter-email-provider.component';
 
 const routes: Routes = [
   { path: '', component: AdminComponent, canActivate: [ChapterAdminGuardService], children: [
@@ -32,6 +32,8 @@ const routes: Routes = [
     { path: adminPaths.chapter.path, component: ChapterAdminLayoutComponent, children: [
       { path: '', component: ChapterSettingsComponent },
       { path: adminPaths.chapter.about.path, component: ChapterQuestionsComponent },
+      { path: adminPaths.chapter.emailProvider.path, component: ChapterEmailProviderComponent, 
+        canActivate: [ChapterSuperAdminGuardService] },
       { path: adminPaths.chapter.emails.path, component: ChapterEmailsComponent },
       { path: adminPaths.chapter.payments.path, component: ChapterPaymentSettingsComponent, 
         canActivate: [ChapterSuperAdminGuardService] }

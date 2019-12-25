@@ -12,12 +12,14 @@ import { ChapterService } from './chapter.service';
 import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
+import { ChapterEmailProviderSettings } from 'src/app/core/chapters/chapter-email-provider-settings';
 
 const baseUrl = `${environment.baseUrl}/admin/chapters`;
 
 const endpoints = {
   chapters: baseUrl,  
   emailProviders: `${baseUrl}/emails/providers`,
+  emailProviderSettings: (id: string) => `${baseUrl}/${id}/emails/provider/settings`,
   emailSettings: (id: string) => `${baseUrl}/${id}/emails/settings`,
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   questions: (id: string) => `${baseUrl}/${id}/questions`,
@@ -50,6 +52,12 @@ export class ChapterAdminService extends ChapterService {
     );
   }
 
+  getChapterAdminEmailProviderSettings(chapterId: string): Observable<ChapterEmailProviderSettings> {
+    return this.http.get(endpoints.emailProviderSettings(chapterId)).pipe(
+      map((response: any) => this.mapChapterEmailProviderSettings(response))
+    );
+  }
+
   getChapterAdminEmailSettings(chapterId: string): Observable<ChapterEmailSettings> {
     return this.http.get(endpoints.emailSettings(chapterId)).pipe(
       map((response: any) => this.mapChapterEmailSettings(response))
@@ -74,6 +82,34 @@ export class ChapterAdminService extends ChapterService {
     ) : of(false);
   }
 
+  updateChapterAdminEmailProviderSettings(chapterId: string, emailProviderSettings: ChapterEmailProviderSettings): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      apiKey: emailProviderSettings.apiKey,
+      emailProvider: emailProviderSettings.emailProvider,
+      fromEmailAddress: emailProviderSettings.fromEmailAddress,
+      fromName: emailProviderSettings.fromName,
+      smtpLogin: emailProviderSettings.smtpLogin,
+      smtpPassword: emailProviderSettings.smtpPassword,
+      smtpPort: emailProviderSettings.smtpPort.toString(),
+      smtpServer: emailProviderSettings.smtpServer
+    });
+
+    return this.http.put(endpoints.emailProviderSettings(chapterId), params).pipe(
+      map(() => undefined)
+    );
+  }
+
+  updateChapterAdminEmailSettings(chapterId: string, emailSettings: ChapterEmailSettings): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      adminEmailAddress: emailSettings.adminEmailAddress,
+      contactEmailAddress: emailSettings.contactEmailAddress
+    });
+
+    return this.http.put(endpoints.emailSettings(chapterId), params).pipe(
+      map(() => undefined)
+    );
+  }
+
   updateChapterAdminPaymentSettings(chapterId: string, paymentSettings: ChapterAdminPaymentSettings): Observable<ChapterAdminPaymentSettings> {
     const params: HttpParams = HttpUtils.createFormParams({
       apiPublicKey: paymentSettings.apiPublicKey,
@@ -83,22 +119,7 @@ export class ChapterAdminService extends ChapterService {
     return this.http.put(endpoints.paymentSettings(chapterId), params).pipe(
       map((response: any) => this.mapChapterAdminPaymentSettings(response))
     );
-  }  
-
-  updateChapterEmailSettings(chapterId: string, emailSettings: ChapterEmailSettings): Observable<void> {
-    const params: HttpParams = HttpUtils.createFormParams({
-      adminEmailAddress: emailSettings.adminEmailAddress,
-      contactEmailAddress: emailSettings.contactEmailAddress,
-      emailApiKey: emailSettings.emailApiKey,
-      emailProvider: emailSettings.emailProvider,
-      fromEmailAddress: emailSettings.fromEmailAddress,
-      fromEmailName: emailSettings.fromEmailName
-    });
-
-    return this.http.put(endpoints.emailSettings(chapterId), params).pipe(
-      map(() => undefined)
-    );
-  }
+  }    
 
   updateChapterTexts(chapterId: string, texts: ChapterTexts): Observable<ChapterTexts> {
     const params: HttpParams = HttpUtils.createFormParams({
@@ -119,14 +140,23 @@ export class ChapterAdminService extends ChapterService {
     };
   }
 
+  private mapChapterEmailProviderSettings(response: any): ChapterEmailProviderSettings {
+    return {
+      apiKey: response.apiKey,
+      emailProvider: response.emailProvider,
+      fromEmailAddress: response.fromEmailAddress,
+      fromName: response.fromName,
+      smtpLogin: response.smtpLogin,
+      smtpPassword: response.smtpPassword,
+      smtpPort: response.smtpPort,
+      smtpServer: response.smtpServer
+    };
+  }
+
   private mapChapterEmailSettings(response: any): ChapterEmailSettings {
     return {
       adminEmailAddress: response.adminEmailAddress,
-      contactEmailAddress: response.contactEmailAddress,
-      emailApiKey: response.emailApiKey,
-      emailProvider: response.emailProvider,
-      fromEmailAddress: response.fromEmailAddress,
-      fromEmailName: response.fromEmailName
+      contactEmailAddress: response.contactEmailAddress
     };
   }
 }

@@ -7,7 +7,6 @@ using Newtonsoft.Json.Serialization;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
-using ODK.Services.Events;
 using ODK.Services.Mails.SendInBlue.Requests;
 using ODK.Services.Mails.SendInBlue.Responses;
 using RestSharp;
@@ -16,18 +15,23 @@ namespace ODK.Services.Mails.SendInBlue
 {
     public class SendInBlueMailProvider : MailProviderBase
     {
+        public const string ProviderName = "SendInBlue";
+
         public static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             NullValueHandling = NullValueHandling.Ignore,
         };
 
-        public SendInBlueMailProvider(IChapterRepository chapterRepository, IMemberRepository memberRepository)
-            : base(chapterRepository, memberRepository)
+        public override string Name => ProviderName;
+
+        public SendInBlueMailProvider(ChapterEmailProviderSettings settings, Chapter chapter, IChapterRepository chapterRepository,
+            IMemberRepository memberRepository)
+            : base(settings, chapter, chapterRepository, memberRepository)
         {
         }
 
-        protected override async Task<string> CreateCampaign(string apiKey, EventCampaign campaign)
+        protected override async Task<string> CreateCampaign(EventCampaign campaign)
         {
             CreateEmailCampaignApiRequest request = new CreateEmailCampaignApiRequest
             {
@@ -46,12 +50,12 @@ namespace ODK.Services.Mails.SendInBlue
             };
 
             CreatedEmailCampaignApiResponse created = await Post<CreateEmailCampaignApiRequest, CreatedEmailCampaignApiResponse>(
-                apiKey, SendInBlueEndpoints.EmailCampaigns, request);
+                SendInBlueEndpoints.EmailCampaigns, request);
 
             return created.Id.ToString();
         }
 
-        protected override async Task CreateContact(string apiKey, Member member, ContactList contactList)
+        protected override async Task CreateContact(Member member, ContactList contactList)
         {
             CreateContactApiRequest body = new CreateContactApiRequest
             {
@@ -65,29 +69,28 @@ namespace ODK.Services.Mails.SendInBlue
                 ListIds = new int[] { int.Parse(contactList.Id) }
             };
 
-            await Post<CreateContactApiRequest, CreatedContactApiResponse>(
-                apiKey, SendInBlueEndpoints.Contacts, body);
+            await Post<CreateContactApiRequest, CreatedContactApiResponse>(SendInBlueEndpoints.Contacts, body);
         }
 
-        protected override async Task DeleteContact(string apiKey, Contact contact)
+        protected override async Task DeleteContact(Contact contact)
         {
             string url = SendInBlueEndpoints.Contact(contact.EmailAddress);
 
-            await Delete(apiKey, url);
+            await Delete(url);
         }
 
-        protected override async Task<Contact> GetContact(string apiKey, string emailAddress)
+        protected override async Task<Contact> GetContact(string emailAddress)
         {
             string url = SendInBlueEndpoints.Contact(emailAddress);
 
-            ContactApiResponse response = await Get<ContactApiResponse>(apiKey, url);
+            ContactApiResponse response = await Get<ContactApiResponse>(url);
 
             return MapContact(response);
         }
 
-        protected override async Task<ContactList> GetContactList(string apiKey, string name)
+        protected override async Task<ContactList> GetContactList(string name)
         {
-            ContactListsApiResponse response = await Get<ContactListsApiResponse>(apiKey, SendInBlueEndpoints.ContactLists);
+            ContactListsApiResponse response = await Get<ContactListsApiResponse>(SendInBlueEndpoints.ContactLists);
 
             ContactListApiResponse list = response.Lists
                 .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
@@ -99,30 +102,30 @@ namespace ODK.Services.Mails.SendInBlue
             } : null;
         }
 
-        protected override async Task<IReadOnlyCollection<Contact>> GetContacts(string apiKey, string contactListId)
+        protected override async Task<IReadOnlyCollection<Contact>> GetContacts(string contactListId)
         {
             string url = SendInBlueEndpoints.ContactListContacts(int.Parse(contactListId));
 
-            ContactsApiResponse response = await Get<ContactsApiResponse>(apiKey, url);
+            ContactsApiResponse response = await Get<ContactsApiResponse>(url);
 
             return response.Contacts
                 .Select(MapContact)
                 .ToArray();
         }
 
-        protected override async Task<EventCampaignStats> GetEventStats(string apiKey, EventEmail eventEmail)
+        protected override async Task<EventCampaignStats> GetEventStats(EventEmail eventEmail)
         {
             if (eventEmail == null || !int.TryParse(eventEmail.EmailProviderEmailId, out int emailCampaignId) || emailCampaignId == 0)
             {
                 return new EventCampaignStats
                 {
-                    EventId = eventEmail.EventId
+                    EventId = eventEmail?.EventId ?? Guid.Empty
                 };
             }
 
             string url = SendInBlueEndpoints.EmailCampaign(emailCampaignId);
 
-            EmailCampaignApiResponse response = await Get<EmailCampaignApiResponse>(apiKey, url);
+            EmailCampaignApiResponse response = await Get<EmailCampaignApiResponse>(url);
 
             return new EventCampaignStats
             {
@@ -131,9 +134,9 @@ namespace ODK.Services.Mails.SendInBlue
             };
         }
 
-        protected override async Task<IReadOnlyCollection<EventCampaignStats>> GetStats(string apiKey, IEnumerable<EventEmail> eventEmails)
+        protected override async Task<IReadOnlyCollection<EventCampaignStats>> GetStats(IEnumerable<EventEmail> eventEmails)
         {
-            EmailCampaignsApiResponse response = await Get<EmailCampaignsApiResponse>(apiKey, SendInBlueEndpoints.EmailCampaigns);
+            EmailCampaignsApiResponse response = await Get<EmailCampaignsApiResponse>(SendInBlueEndpoints.EmailCampaigns);
 
             IDictionary<int, EmailCampaignStatisticsApiResponse> emailCampaignDictionary = response?.Campaigns
                 .ToDictionary(x => x.Id, x => x.Statistics) ?? new Dictionary<int, EmailCampaignStatisticsApiResponse>();
@@ -155,16 +158,16 @@ namespace ODK.Services.Mails.SendInBlue
                 .ToArray();
         }
 
-        protected override async Task SendCampaignEmail(string apiKey, string id)
+        protected override async Task SendCampaignEmail(string id)
         {
             string url = SendInBlueEndpoints.EmailCampaignSend(int.Parse(id));
 
-            IRestRequest request = CreateRequest(apiKey, url, Method.POST);
+            IRestRequest request = CreateRequest(url, Method.POST);
 
             await GetResponse<string>(request);
         }
 
-        protected override async Task SendTestCampaignEmail(string apiKey, string id, string to)
+        protected override async Task SendTestCampaignEmail(string id, string to)
         {
             string url = SendInBlueEndpoints.EmailCampaignSendTest(int.Parse(id));
 
@@ -173,12 +176,12 @@ namespace ODK.Services.Mails.SendInBlue
                 EmailTo = new [] { to }
             };
 
-            IRestRequest request = CreateRequest(apiKey, url, Method.POST, body);
+            IRestRequest request = CreateRequest(url, Method.POST, body);
 
             await GetResponse<string>(request);
         }
 
-        protected override async Task UpdateCampaign(string apiKey, EventCampaign campaign)
+        protected override async Task UpdateCampaign(EventCampaign campaign)
         {
             string url = SendInBlueEndpoints.EmailCampaign(int.Parse(campaign.Id));
 
@@ -198,19 +201,19 @@ namespace ODK.Services.Mails.SendInBlue
                 Subject = campaign.Subject
             };
 
-            IRestRequest request = CreateRequest(apiKey, url, Method.PUT, body);
+            IRestRequest request = CreateRequest(url, Method.PUT, body);
 
             await ExecuteRequest(request);
         }
 
-        protected override Task UpdateCampaignEmailContent(string apiKey, EventCampaign campaign)
+        protected override Task UpdateCampaignEmailContent(EventCampaign campaign)
         {
             return Task.CompletedTask;
         }
 
-        protected override async Task UpdateContactOptIn(string apiKey, string emailAddress, bool optIn)
+        protected override async Task UpdateContactOptIn(string emailAddress, bool optIn)
         {
-            Contact contact = await GetContact(apiKey, emailAddress);
+            Contact contact = await GetContact(emailAddress);
 
             UpdateContactApiRequest body = new UpdateContactApiRequest
             {
@@ -224,7 +227,7 @@ namespace ODK.Services.Mails.SendInBlue
 
             string url = SendInBlueEndpoints.Contact(emailAddress);
 
-            IRestRequest request = CreateRequest(apiKey, url, Method.PUT, body);
+            IRestRequest request = CreateRequest(url, Method.PUT, body);
 
             await ExecuteRequest(request);
         }
@@ -241,10 +244,10 @@ namespace ODK.Services.Mails.SendInBlue
             } : null;
         }
 
-        private IRestRequest CreateRequest(string apiKey, string url, Method method, object body = null)
+        private IRestRequest CreateRequest(string url, Method method, object body = null)
         {
             IRestRequest request = new RestRequest(url, method);
-            request.AddHeader("api-key", apiKey);
+            request.AddHeader("api-key", Settings.ApiKey);
 
             if (body != null)
             {
@@ -255,9 +258,9 @@ namespace ODK.Services.Mails.SendInBlue
             return request;
         }
 
-        private async Task Delete(string apiKey, string url)
+        private async Task Delete(string url)
         {
-            IRestRequest request = CreateRequest(apiKey, url, Method.DELETE);
+            IRestRequest request = CreateRequest(url, Method.DELETE);
 
             await ExecuteRequest(request);
         }
@@ -283,9 +286,9 @@ namespace ODK.Services.Mails.SendInBlue
             return response;
         }
 
-        private async Task<T> Get<T>(string apiKey, string url)
+        private async Task<T> Get<T>(string url)
         {
-            IRestRequest request = CreateRequest(apiKey, url, Method.GET);
+            IRestRequest request = CreateRequest(url, Method.GET);
 
             return await GetResponse<T>(request);
         }
@@ -297,9 +300,9 @@ namespace ODK.Services.Mails.SendInBlue
             return JsonConvert.DeserializeObject<T>(response.Content, SerializerSettings);
         }
 
-        private async Task<TResponse> Post<TRequest, TResponse>(string apiKey, string url, TRequest body)
+        private async Task<TResponse> Post<TRequest, TResponse>(string url, TRequest body)
         {
-            IRestRequest request = CreateRequest(apiKey, url, Method.POST, body);
+            IRestRequest request = CreateRequest(url, Method.POST, body);
 
             return await GetResponse<TResponse>(request);
         }

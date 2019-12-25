@@ -162,30 +162,29 @@ namespace ODK.Services.Events
             }
 
             Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
-            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(@event.ChapterId);
 
-            IMailProvider mailProvider = _mailProviderFactory.Create(chapter, emailSettings);
+            IMailProvider mailProvider = await _mailProviderFactory.Create(chapter);
 
-            await mailProvider.SynchroniseMembers(emailSettings, chapter);
+            await mailProvider.SynchroniseMembers();
 
             if (eventEmail == null)
             {
-                eventEmail = await CreateEventEmail(mailProvider, emailSettings, @event, chapter);
+                eventEmail = await CreateEventEmail(mailProvider, @event, chapter);
             }
             else
             {
-                await UpdateEventEmail(mailProvider, emailSettings, @event, chapter, eventEmail);
+                await UpdateEventEmail(mailProvider, @event, chapter, eventEmail);
             }
 
             Member member = await _memberRepository.GetMember(currentMemberId);
 
             if (test)
             {
-                await mailProvider.SendTestEventEmail(emailSettings, eventEmail.EmailProviderEmailId, member);
+                await mailProvider.SendTestEventEmail(eventEmail.EmailProviderEmailId, member);
             }
             else
             {
-                await mailProvider.SendEventEmail(emailSettings, eventEmail.EmailProviderEmailId);
+                await mailProvider.SendEventEmail(eventEmail.EmailProviderEmailId);
 
                 eventEmail.SentDate = DateTime.UtcNow;
                 await _eventRepository.UpdateEventEmail(eventEmail);
@@ -249,14 +248,13 @@ namespace ODK.Services.Events
             }
         }
 
-        private async Task<EventEmail> CreateEventEmail(IMailProvider mailProvider, ChapterEmailSettings emailSettings,
-            Event @event, Chapter chapter)
+        private async Task<EventEmail> CreateEventEmail(IMailProvider mailProvider, Event @event, Chapter chapter)
         {
             Email email = await GetEventEmail(@event, chapter);
 
-            string emailProviderEmailId = await mailProvider.CreateEventEmail(emailSettings, @event, chapter, email);
+            string emailProviderEmailId = await mailProvider.CreateEventEmail(@event, email);
 
-            EventEmail eventEmail = new EventEmail(Guid.Empty, @event.Id, emailSettings.EmailProvider, emailProviderEmailId, null);
+            EventEmail eventEmail = new EventEmail(Guid.Empty, @event.Id, mailProvider.Name, emailProviderEmailId, null);
 
             await _eventRepository.AddEventEmail(eventEmail);
 
@@ -295,12 +293,11 @@ namespace ODK.Services.Events
             return await _memberEmailRepository.GetEmail(EmailType.EventInvite);
         }
 
-        private async Task UpdateEventEmail(IMailProvider mailProvider, ChapterEmailSettings emailSettings,
-                    Event @event, Chapter chapter, EventEmail eventEmail)
+        private async Task UpdateEventEmail(IMailProvider mailProvider, Event @event, Chapter chapter, EventEmail eventEmail)
         {
             Email email = await GetEventEmail(@event, chapter);
 
-            await mailProvider.UpdateEventEmail(emailSettings, @event, chapter, email, eventEmail.EmailProviderEmailId);
+            await mailProvider.UpdateEventEmail(@event, email, eventEmail.EmailProviderEmailId);
         }
     }
 }
