@@ -1,8 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 
-import { takeUntil, filter, switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { takeUntil, filter } from 'rxjs/operators';
 
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
@@ -10,6 +9,7 @@ import { AuthenticationToken } from 'src/app/core/authentication/authentication-
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { adminUrls } from 'src/app/modules/admin/routing/admin-urls';
 
 @Component({
   selector: 'app-account-menu',
@@ -19,9 +19,9 @@ import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 export class AccountMenuComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
+    private router: Router,
     private authenticationService: AuthenticationService,
-    private chapterService: ChapterService,
-    private router: Router
+    private chapterService: ChapterService
   ) {
   }
 
@@ -30,7 +30,10 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
   chapter: Chapter;
 
   links: {
-    admin: string;
+    admin: {
+      eventCreate: string;
+      home: string;
+    };
     chapter: string,
     logout: string;
     profile: string
@@ -92,11 +95,18 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
     this.chapterService.getChapterById(token.chapterId).subscribe((chapter: Chapter) => {
       this.chapter = chapter;
       this.links = {
-        admin: token.adminChapterIds && token.adminChapterIds.includes(chapter.id) ? appUrls.adminChapter(chapter) : null,
+        admin: null,
         chapter: appUrls.chapter(chapter),
         logout: appUrls.logout(chapter),
         profile: appUrls.profile(chapter)
       };
+
+      if (token.adminChapterIds && token.adminChapterIds.includes(chapter.id)) {
+        this.links.admin = {
+          eventCreate: adminUrls.eventCreate(chapter),
+          home: adminUrls.chapter(chapter)
+        };
+      }
 
       this.changeDetector.detectChanges();
     });
