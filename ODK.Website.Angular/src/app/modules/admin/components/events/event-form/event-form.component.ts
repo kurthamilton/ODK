@@ -4,6 +4,7 @@ import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChan
 import { Observable } from 'rxjs';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { CheckBoxFormControlViewModel } from 'src/app/modules/forms/components/inputs/check-box-form-control/check-box-form-control.view-model';
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
@@ -23,17 +24,19 @@ export class EventFormComponent implements OnChanges {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private datePipe: DatePipe,
+    private chapterAdminService: ChapterAdminService,
     private venueAdminService: VenueAdminService
   ) {
   }
 
-  @Input() buttonText: string;
-  @Input() chapter: Chapter;
+  @Input() buttonText: string;  
   @Input() event: Event;
   @Input() formCallback: Observable<string[]>;
   @Output() formSubmit: EventEmitter<Event> = new EventEmitter<Event>();
 
   form: FormViewModel;
+
+  private chapter: Chapter;
   private venues: Venue[];
 
   private formControls: {
@@ -46,9 +49,11 @@ export class EventFormComponent implements OnChanges {
   };
 
   ngOnChanges(): void {
-    if (!this.chapter) {
+    if (!this.event) {
       return;
     }
+
+    this.chapter = this.chapterAdminService.getActiveChapter();
 
     this.venueAdminService.getVenues(this.chapter.id).subscribe((venues: Venue[]) => {
       this.venues = venues.sort((a, b) => a.name.localeCompare(b.name));

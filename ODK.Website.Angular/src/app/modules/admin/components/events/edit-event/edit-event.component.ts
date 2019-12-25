@@ -25,11 +25,12 @@ export class EditEventComponent implements OnInit, OnDestroy {
   ) {
   }
 
-  canDelete: boolean;
-  chapter: Chapter;
+  canDelete: boolean;  
   event: Event;
   formCallback: Subject<string[]> = new Subject<string[]>();
 
+  private chapter: Chapter;
+  
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.event = this.eventAdminService.getActiveEvent();

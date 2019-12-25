@@ -24,6 +24,10 @@ export class VenueEventsComponent implements OnInit {
   }
   
   events: Event[];
+  links: {
+    createEvent: string;
+    createEventParams: {}
+  };
   venue: Venue;
 
   private chapter: Chapter;
@@ -31,7 +35,13 @@ export class VenueEventsComponent implements OnInit {
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.venue = this.venueAdminService.getActiveVenue();
-    
+    this.links = {
+      createEvent: adminUrls.eventCreate(this.chapter),
+      createEventParams: {
+        venue: this.venue.id
+      }
+    };
+
     this.eventAdminService.getEventsByVenue(this.venue.id).subscribe((events: Event[]) => {
       this.events = events.sort((a, b) => DateUtils.compare(b.date, a.date));
       this.changeDetector.detectChanges();

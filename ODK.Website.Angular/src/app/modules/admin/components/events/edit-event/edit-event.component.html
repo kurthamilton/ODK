@@ -1,4 +1,4 @@
-<app-event-form buttonText="Update" [chapter]="chapter" [event]="event" 
+<app-event-form buttonText="Update" [event]="event" 
   [formCallback]="formCallback" (formSubmit)="onFormSubmit($event)">
   <button *ngIf="canDelete" class="btn btn-danger ml-1" type="button" (click)="onDelete()">
     Delete

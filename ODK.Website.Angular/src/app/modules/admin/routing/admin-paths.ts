@@ -13,7 +13,10 @@ export const adminPaths = {
   },
   events: {
     create: {
-      path: 'create'
+      path: 'create',
+      queryParams: {
+        venue: 'venue'
+      }
     },
     event: {
       invites: {

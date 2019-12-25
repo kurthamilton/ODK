@@ -1,4 +1,10 @@
 <ng-container *appLoading="!events">
+  <p>
+    <a [routerLink]="links.createEvent" [queryParams]="links.createEventParams" class="btn btn-primary">
+      Create event
+    </a>
+  </p>
+
   <table class="table table-striped">
     <thead>
       <tr>
