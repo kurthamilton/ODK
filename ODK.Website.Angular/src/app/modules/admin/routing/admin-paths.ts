@@ -1,6 +1,15 @@
 export const adminPaths = {
   chapter: {
-    path: 'chapter'
+    about: {
+      path: 'about'
+    },
+    emails: {
+      path: 'emails'
+    },
+    path: 'chapter',
+    payments: {
+      path: 'payments'
+    }
   },
   events: {
     create: {
@@ -21,7 +30,7 @@ export const adminPaths = {
     path: 'events'
   },
   home: {
-    path: ''
+    path: 'chapter'
   },
   members: {
     path: 'members',

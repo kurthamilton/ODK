@@ -9,8 +9,9 @@ import { AdminMenuComponent } from './components/structure/admin-menu/admin-menu
 import { AdminRoutingModule } from './routing/admin-routing.module';
 import { AppFormsModule } from '../forms/app-forms.module';
 import { AppSharedModule } from '../shared/app-shared.module';
-import { ChapterComponent } from './components/chapters/chapter/chapter.component';
 import { ChapterEmailsComponent } from './components/chapters/chapter-emails/chapter-emails.component';
+import { ChapterAdminLayoutComponent } from './components/chapters/chapter-admin-layout/chapter-admin-layout.component';
+import { ChapterMenuComponent } from './components/chapters/chapter-menu/chapter-menu.component';
 import { ChapterPaymentSettingsComponent } from './components/chapters/chapter-payment-settings/chapter-payment-settings.component';
 import { ChapterQuestionsComponent } from './components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from './components/chapters/chapter-settings/chapter-settings.component';
@@ -46,8 +47,9 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
   declarations: [
     AdminComponent,
     AdminMenuComponent,
-    ChapterComponent,
     ChapterEmailsComponent,
+    ChapterAdminLayoutComponent,
+    ChapterMenuComponent,
     ChapterPaymentSettingsComponent,
     ChapterQuestionsComponent,
     ChapterSettingsComponent,
@@ -55,6 +57,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     CreateVenueComponent,
     DropDownMultiComponent,
     EditEventComponent,
+    EditMemberImageComponent,
     EditVenueComponent,
     EventFormComponent,
     EventHeaderComponent,
@@ -66,6 +69,8 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     GoogleMapsTextInputFormControlComponent,
     HtmlEditorFormControlComponent,
     MemberFilterComponent,
+    MemberLayoutComponent,
+    MemberMenuComponent,
     MembersComponent,
     MemberSubscriptionComponent,
     NavTabsComponent,
@@ -73,11 +78,8 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     VenueEventsComponent,
     VenueFormComponent,
     VenueLayoutComponent,
-    VenuesComponent,
     VenueMenuComponent,
-    MemberMenuComponent,
-    MemberLayoutComponent,
-    EditMemberImageComponent,
+    VenuesComponent,
   ],
   imports: [
     AdminRoutingModule,

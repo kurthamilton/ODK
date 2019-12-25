@@ -4,7 +4,12 @@ import { Routes, RouterModule } from '@angular/router';
 import { AdminComponent } from '../components/admin/admin.component';
 import { adminPaths } from './admin-paths';
 import { ChapterAdminGuardService } from 'src/app/routing/chapter-admin-guard.service';
-import { ChapterComponent } from '../components/chapters/chapter/chapter.component';
+import { ChapterAdminLayoutComponent } from '../components/chapters/chapter-admin-layout/chapter-admin-layout.component';
+import { ChapterEmailsComponent } from '../components/chapters/chapter-emails/chapter-emails.component';
+import { ChapterPaymentSettingsComponent } from '../components/chapters/chapter-payment-settings/chapter-payment-settings.component';
+import { ChapterQuestionsComponent } from '../components/chapters/chapter-questions/chapter-questions.component';
+import { ChapterSettingsComponent } from '../components/chapters/chapter-settings/chapter-settings.component';
+import { ChapterSuperAdminGuardService } from 'src/app/routing/chapter-super-admin-guard.service';
 import { CreateEventComponent } from '../components/events/create-event/create-event.component';
 import { CreateVenueComponent } from '../components/venues/create-venue/create-venue.component';
 import { EditEventComponent } from '../components/events/edit-event/edit-event.component';
@@ -22,8 +27,15 @@ import { VenueLayoutComponent } from '../components/venues/venue-layout/venue-la
 import { VenuesComponent } from '../components/venues/venues/venues.component';
 
 const routes: Routes = [
-  { path: adminPaths.home.path, component: AdminComponent, canActivate: [ChapterAdminGuardService], children: [
-    { path: '', component: ChapterComponent },
+  { path: '', component: AdminComponent, canActivate: [ChapterAdminGuardService], children: [
+    { path: '', pathMatch: 'full', redirectTo: adminPaths.chapter.path },
+    { path: adminPaths.chapter.path, component: ChapterAdminLayoutComponent, children: [
+      { path: '', component: ChapterSettingsComponent },
+      { path: adminPaths.chapter.about.path, component: ChapterQuestionsComponent },
+      { path: adminPaths.chapter.emails.path, component: ChapterEmailsComponent },
+      { path: adminPaths.chapter.payments.path, component: ChapterPaymentSettingsComponent, 
+        canActivate: [ChapterSuperAdminGuardService] }
+    ] },
     { path: adminPaths.events.path, children: [
       { path: '', component: EventsComponent },
       { path: adminPaths.events.create.path, component: CreateEventComponent },
