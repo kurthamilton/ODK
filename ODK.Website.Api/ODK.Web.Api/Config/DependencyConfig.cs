@@ -89,7 +89,6 @@ namespace ODK.Web.Api.Config
         {
             AuthSettings auth = appSettings.Auth;
             MembersSettings members = appSettings.Members;
-            SmtpSettings smtp = appSettings.Smtp;
             UrlSettings urls = appSettings.Urls;
 
             services.AddSingleton(new AuthenticationServiceSettings
@@ -106,13 +105,6 @@ namespace ODK.Web.Api.Config
                 BaseUrl = urls.Base,
                 EventRsvpUrlFormat = urls.EventRsvp,
                 EventUrlFormat = urls.Event
-            });
-
-            services.AddSingleton(new MailServiceSettings
-            {
-                Host = smtp.Host,
-                Password = smtp.Password,
-                Username = smtp.Username
             });
 
             services.AddSingleton(new MemberServiceSettings

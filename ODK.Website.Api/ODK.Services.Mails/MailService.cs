@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MailKit.Net.Smtp;
-using MimeKit;
-using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Mail;
 using ODK.Core.Members;
@@ -13,121 +10,40 @@ namespace ODK.Services.Mails
     public class MailService : IMailService
     {
         private readonly IChapterRepository _chapterRepository;
+        private readonly IMailProviderFactory _mailProviderFactory;
         private readonly IMemberEmailRepository _memberEmailRepository;
-        private readonly MailServiceSettings _settings;
 
-        public MailService(MailServiceSettings settings, IChapterRepository chapterRepository, IMemberEmailRepository memberEmailRepository)
+        public MailService(IChapterRepository chapterRepository, IMemberEmailRepository memberEmailRepository,
+            IMailProviderFactory mailProviderFactory)
         {
             _chapterRepository = chapterRepository;
+            _mailProviderFactory = mailProviderFactory;
             _memberEmailRepository = memberEmailRepository;
-            _settings = settings;
         }
 
-        public async Task<MemberEmail> CreateMemberEmail(Member member, Email email, IDictionary<string, string> parameters)
-        {
-            email = email.Interpolate(parameters);
-
-            MemberEmail memberEmail = new MemberEmail(Guid.Empty, member.ChapterId, member.EmailAddress, email.Subject, email.Body,
-                DateTime.UtcNow);
-            Guid memberEmailId = await _memberEmailRepository.AddMemberEmail(memberEmail);
-            memberEmail.SetId(memberEmailId);
-            return memberEmail;
-        }
-
-        public async Task<bool> SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters)
+        public async Task SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters)
         {
             Email email = await _memberEmailRepository.GetEmail(EmailType.ContactRequest);
 
-            email = email.Interpolate(parameters);
-
             ChapterEmailSettings emailSettings = await GetChapterEmailSettings(chapter.Id);
 
-            // MimeMessage message = CreateMessage(emailSettings.FromEmailAddress, emailSettings.ContactEmailAddress, email, null);
+            IMailProvider mailProvider = await _mailProviderFactory.Create(chapter);
 
-            // return await Send(message);
-
-            throw new NotImplementedException();
+            await mailProvider.SendEmail(null, emailSettings.ContactEmailAddress, email, parameters);
         }
 
-        public async Task<MemberEmail> SendMemberMail(MemberEmail memberEmail, Member member, Email email)
-        {
-            ChapterEmailSettings emailSettings = await GetChapterEmailSettings(member.ChapterId);
-
-            // await Send(emailSettings.FromEmailAddress, member, email, memberEmail);
-
-            // return memberEmail;
-
-            throw new NotImplementedException();
-        }
-
-        public async Task<MemberEmail> SendMemberMail(Member member, Email email, IDictionary<string, string> parameters)
-        {
-            MemberEmail memberEmail = await CreateMemberEmail(member, email, parameters);
-
-            return await SendMemberMail(memberEmail, member, email);
-        }
-
-        public async Task<MemberEmail> SendMemberMail(Member member, EmailType type, IDictionary<string, string> parameters)
+        public async Task SendMemberMail(Member member, EmailType type, IDictionary<string, string> parameters)
         {
             Email email = await _memberEmailRepository.GetEmail(type);
 
-            return await SendMemberMail(member, email, parameters);
-        }
+            IMailProvider mailProvider = await _mailProviderFactory.Create(member.ChapterId);
 
-        private MimeMessage CreateMessage(string from, Member member, Email email, MemberEmail memberEmail)
-        {
-            return CreateMessage(from, member.EmailAddress, email, memberEmail);
-        }
-
-        private MimeMessage CreateMessage(string from, string to, Email email, MemberEmail memberEmail)
-        {
-            MimeMessage message = new MimeMessage
-            {
-                Body = new TextPart(TextFormat.Html)
-                {
-                    Text = email.Body
-                },
-                Subject = email.Subject
-            };
-
-            message.From.Add(new MailboxAddress(from));
-            message.To.Add(new MailboxAddress(to));
-
-            return message;
+            await mailProvider.SendEmail(null, member.EmailAddress, email, parameters);
         }
 
         private async Task<ChapterEmailSettings> GetChapterEmailSettings(Guid chapterId)
         {
             return await _chapterRepository.GetChapterEmailSettings(chapterId);
-        }
-
-        private async Task<bool> Send(string from, Member member, Email email, MemberEmail memberEmail)
-        {
-            MimeMessage message = CreateMessage(from, member, email, memberEmail);
-            return await Send(message);
-        }
-
-        private async Task<bool> Send(MimeMessage message)
-        {
-            try
-            {
-                using SmtpClient client = new SmtpClient();
-                await client.ConnectAsync(_settings.Host, 25, false);
-
-                if (!string.IsNullOrWhiteSpace(_settings.Username) &&
-                    !string.IsNullOrWhiteSpace(_settings.Password))
-                {
-                    client.Authenticate(_settings.Username, _settings.Password);
-                }
-
-                await client.SendAsync(message);
-                await client.DisconnectAsync(true);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
         }
     }
 }

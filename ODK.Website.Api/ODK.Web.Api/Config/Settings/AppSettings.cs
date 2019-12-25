@@ -9,7 +9,6 @@ namespace ODK.Web.Api.Config.Settings
             Auth = configuration.Map<AuthSettings>("Auth");
             Cors = configuration.Map<CorsSettings>("Cors");
             Members = configuration.Map<MembersSettings>("Members");
-            Smtp = configuration.Map<SmtpSettings>("Smtp");
             Urls = configuration.Map<UrlSettings>("Urls");
         }
 
@@ -18,8 +17,6 @@ namespace ODK.Web.Api.Config.Settings
         public CorsSettings Cors { get; }
 
         public MembersSettings Members { get; }
-
-        public SmtpSettings Smtp { get; }
 
         public UrlSettings Urls { get; }
     }

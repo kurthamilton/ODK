@@ -78,7 +78,8 @@ namespace ODK.Services.Tests.Members
                 new MemberServiceSettings(),
                 CreateMockImageService(),
                 Mock.Of<IPaymentService>(),
-                Mock.Of<ICacheService>());
+                Mock.Of<ICacheService>(),
+                Mock.Of<IMailProviderFactory>());
         }
 
         private static IAuthorizationService CreateMockAuthorizationService()
@@ -150,7 +151,7 @@ namespace ODK.Services.Tests.Members
         {
             Mock<IMemberRepository> mock = new Mock<IMemberRepository>();
 
-            mock.Setup(x => x.GetMember(It.IsAny<Guid>()))
+            mock.Setup(x => x.GetMember(It.IsAny<Guid>(), It.IsAny<bool>()))
                 .ReturnsAsync(member);
 
             mock.Setup(x => x.GetMemberProperties(It.IsAny<Guid>()))

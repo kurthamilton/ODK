@@ -20,6 +20,8 @@ namespace ODK.Services.Mails
 
         Task<bool> GetMemberOptIn(Member member);
 
+        Task SendEmail(string to, string from, Email email, IDictionary<string, string> parameters = null);
+
         Task SendEventEmail(string id);
 
         Task SendTestEventEmail(string id, Member member);

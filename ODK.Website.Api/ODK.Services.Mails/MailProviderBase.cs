@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MailKit.Net.Smtp;
+using MimeKit;
+using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Mail;
@@ -13,13 +16,11 @@ namespace ODK.Services.Mails
 {
     public abstract class MailProviderBase : IMailProvider
     {
-        private readonly IChapterRepository _chapterRepository;
         private readonly IMemberRepository _memberRepository;
 
-        protected MailProviderBase(ChapterEmailProviderSettings settings, Chapter chapter, IChapterRepository chapterRepository,
+        protected MailProviderBase(ChapterEmailProviderSettings settings, Chapter chapter,
             IMemberRepository memberRepository)
         {
-            _chapterRepository = chapterRepository;
             _memberRepository = memberRepository;
             Chapter = chapter;
             Settings = settings;
@@ -65,7 +66,6 @@ namespace ODK.Services.Mails
 
         public async Task<IReadOnlyCollection<EventInvites>> GetInvites(Guid chapterId, IEnumerable<EventEmail> eventEmails)
         {
-            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(chapterId);
             IReadOnlyCollection<EventCampaignStats> stats = await GetStats(eventEmails);
             IDictionary<Guid, EventCampaignStats> statsDictionary = stats.ToDictionary(x => x.EventId, x => x);
             return eventEmails.Select(x => new EventInvites
@@ -78,9 +78,31 @@ namespace ODK.Services.Mails
 
         public async Task<bool> GetMemberOptIn(Member member)
         {
-            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(member.ChapterId);
             Contact contact = await GetContact(member.EmailAddress);
             return contact.OptIn;
+        }
+
+        public async Task SendEmail(string from, string to, Email email, IDictionary<string, string> parameters = null)
+        {
+            try
+            {
+                if (parameters != null)
+                {
+                    email = email.Interpolate(parameters);
+                }
+
+                MimeMessage message = CreateMessage(from, to, email.Subject, email.Body);
+
+                using SmtpClient client = new SmtpClient();
+                await client.ConnectAsync(Settings.SmtpServer, Settings.SmtpPort, false);
+                client.Authenticate(Settings.SmtpLogin, Settings.SmtpPassword);
+
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+            catch
+            {
+            }
         }
 
         public async Task SendEventEmail(string id)
@@ -149,8 +171,6 @@ namespace ODK.Services.Mails
 
         public async Task UpdateMemberOptIn(Member member, bool optIn)
         {
-            ChapterEmailSettings emailSettings = await _chapterRepository.GetChapterEmailSettings(member.ChapterId);
-
             await UpdateContactOptIn(member.EmailAddress, optIn);
         }
 
@@ -179,6 +199,31 @@ namespace ODK.Services.Mails
         protected abstract Task UpdateCampaignEmailContent(EventCampaign campaign);
 
         protected abstract Task UpdateContactOptIn(string emailAddress, bool optIn);
+
+        private MimeMessage CreateMessage(string from, string to, string subject, string body)
+        {
+            MimeMessage message = new MimeMessage
+            {
+                Body = new TextPart(TextFormat.Html)
+                {
+                    Text = body
+                },
+                Subject = subject
+            };
+
+            if (!string.IsNullOrEmpty(from))
+            {
+                message.From.Add(new MailboxAddress(from));
+            }
+            else
+            {
+                message.From.Add(new MailboxAddress(Settings.FromName, Settings.FromEmailAddress));
+            }
+
+            message.To.Add(new MailboxAddress(to));
+
+            return message;
+        }
 
         private IEnumerable<(Contact, Member)> GetContactMap(IReadOnlyCollection<Contact> contacts,
             IReadOnlyCollection<Member> members)

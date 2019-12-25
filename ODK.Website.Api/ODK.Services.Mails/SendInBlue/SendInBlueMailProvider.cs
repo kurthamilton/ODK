@@ -25,9 +25,9 @@ namespace ODK.Services.Mails.SendInBlue
 
         public override string Name => ProviderName;
 
-        public SendInBlueMailProvider(ChapterEmailProviderSettings settings, Chapter chapter, IChapterRepository chapterRepository,
+        public SendInBlueMailProvider(ChapterEmailProviderSettings settings, Chapter chapter,
             IMemberRepository memberRepository)
-            : base(settings, chapter, chapterRepository, memberRepository)
+            : base(settings, chapter, memberRepository)
         {
         }
 

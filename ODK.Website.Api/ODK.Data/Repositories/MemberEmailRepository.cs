@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ODK.Core.Mail;
 using ODK.Data.Sql;
 
@@ -10,13 +9,6 @@ namespace ODK.Data.Repositories
         public MemberEmailRepository(SqlContext context)
             : base(context)
         {
-        }
-
-        public async Task<Guid> AddMemberEmail(MemberEmail email)
-        {
-            return await Context
-                .Insert(email)
-                .GetIdentityAsync();
         }
 
         public async Task<Email> GetEmail(EmailType type)

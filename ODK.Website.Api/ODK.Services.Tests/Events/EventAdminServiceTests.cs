@@ -104,7 +104,7 @@ namespace ODK.Services.Tests.Events
         private static Event CreateMockEvent(string name = null, DateTime? date = null, string time = null)
         {
             return new Event(Guid.NewGuid(), Guid.NewGuid(), "Admin Member", name ?? "Name", date ?? DateTime.Today, Guid.NewGuid(),
-                time ?? "Time", null, "Description", false, null);
+                time ?? "Time", null, "Description", false);
         }
 
         private static IEventRepository CreateMockEventRepository(Event @event = null)

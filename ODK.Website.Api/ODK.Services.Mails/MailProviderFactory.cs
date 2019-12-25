@@ -36,9 +36,9 @@ namespace ODK.Services.Mails
             switch (emailSettings.EmailProvider)
             {
                 case MailChimpMailProvider.ProviderName:
-                    return new MailChimpMailProvider(emailSettings, chapter, _chapterRepository, _memberRepository);
+                    return new MailChimpMailProvider(emailSettings, chapter, _memberRepository);
                 case SendInBlueMailProvider.ProviderName:
-                    return new SendInBlueMailProvider(emailSettings, chapter, _chapterRepository, _memberRepository);
+                    return new SendInBlueMailProvider(emailSettings, chapter, _memberRepository);
             }
 
             throw new NotSupportedException();
