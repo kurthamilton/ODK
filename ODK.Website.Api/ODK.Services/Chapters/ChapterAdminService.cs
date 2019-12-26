@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Mails;
@@ -14,16 +15,38 @@ namespace ODK.Services.Chapters
         private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IChapterService _chapterService;
+        private readonly IMemberRepository _memberRepository;
         private readonly IMailProviderFactory _mailProviderFactory;
 
         public ChapterAdminService(IChapterRepository chapterRepository, ICacheService cacheService, IChapterService chapterService,
-            IMailProviderFactory mailProviderFactory)
+            IMailProviderFactory mailProviderFactory, IMemberRepository memberRepository)
             : base(chapterRepository)
         {
             _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _chapterService = chapterService;
+            _memberRepository = memberRepository;
             _mailProviderFactory = mailProviderFactory;
+        }
+
+        public async Task AddChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            Member member = await _memberRepository.GetMember(memberId);
+            if (member == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            ChapterAdminMember existing = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
+            if (existing != null)
+            {
+                return;
+            }
+
+            ChapterAdminMember adminMember = new ChapterAdminMember(chapterId, memberId);
+            await _chapterRepository.AddChapterAdminMember(adminMember);
         }
 
         public async Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question)
@@ -46,18 +69,42 @@ namespace ODK.Services.Chapters
             _cacheService.RemoveVersionedItem<ChapterQuestion>(chapterId);
         }
 
+        public async Task DeleteChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
+        {
+            ChapterAdminMember adminMember = await GetChapterAdminMember(currentMemberId, chapterId, memberId);
+            if (adminMember.SuperAdmin)
+            {
+                return;
+            }
+
+            await _chapterRepository.DeleteChapterAdminMember(chapterId, memberId);
+        }
+
+        public async Task<ChapterAdminMember> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            ChapterAdminMember adminMember = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
+            if (adminMember == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            return adminMember;
+        }
+
+        public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _chapterRepository.GetChapterAdminMembers(chapterId);
+        }
+
         public async Task<ChapterEmailProviderSettings> GetChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
 
             return await _chapterRepository.GetChapterEmailProviderSettings(chapterId);
-        }
-
-        public async Task<ChapterEmailSettings> GetChapterEmailSettings(Guid currentMemberId, Guid chapterId)
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
-
-            return await _chapterRepository.GetChapterEmailSettings(chapterId);
         }
 
         public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
@@ -69,7 +116,7 @@ namespace ODK.Services.Chapters
 
         public async Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId)
         {
-            IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(memberId);
+            IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembersByMember(memberId);
             if (chapterAdminMembers.Count == 0)
             {
                 throw new OdkNotAuthorizedException();
@@ -83,6 +130,26 @@ namespace ODK.Services.Chapters
         public Task<IReadOnlyCollection<string>> GetEmailProviders()
         {
             return _mailProviderFactory.GetProviders();
+        }
+
+        public async Task UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId,
+            UpdateChapterAdminMember adminMember)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            ChapterAdminMember existing = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
+            if (existing == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            existing.AdminEmailAddress = adminMember.AdminEmailAddress;
+            existing.ReceiveContactEmails = adminMember.ReceiveContactEmails;
+            existing.ReceiveNewMemberEmails = adminMember.ReceiveNewMemberEmails;
+            existing.SendEventEmails = adminMember.SendEventEmails;
+            existing.SendNewMemberEmails = adminMember.SendNewMemberEmails;
+
+            await _chapterRepository.UpdateChapterAdminMember(existing);
         }
 
         public async Task UpdateChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId,
@@ -117,20 +184,6 @@ namespace ODK.Services.Chapters
             {
                 await _chapterRepository.AddChapterEmailProviderSettings(current);
             }
-        }
-
-        public async Task UpdateChapterEmailSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailSettings emailSettings)
-        {
-            await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
-
-            ChapterEmailSettings current = await _chapterRepository.GetChapterEmailSettings(chapterId);
-
-            current.AdminEmailAddress = emailSettings.AdminEmailAddress;
-            current.ContactEmailAddress = emailSettings.ContactEmailAddress;
-
-            await ValidateChapterEmailSettings(current);
-
-            await _chapterRepository.UpdateChapterEmailSettings(current);
         }
 
         public async Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links)
@@ -186,17 +239,6 @@ namespace ODK.Services.Chapters
                 string.IsNullOrWhiteSpace(emailProviderSettings.SmtpPassword) ||
                 emailProviderSettings.SmtpPort == 0 ||
                 !emailProviders.Contains(emailProviderSettings.EmailProvider))
-            {
-                throw new OdkServiceException("Some required fields are missing");
-            }
-        }
-
-        private async Task ValidateChapterEmailSettings(ChapterEmailSettings emailSettings)
-        {
-            IReadOnlyCollection<string> emailProviders = await _mailProviderFactory.GetProviders();
-
-            if (string.IsNullOrWhiteSpace(emailSettings.AdminEmailAddress) ||
-                string.IsNullOrWhiteSpace(emailSettings.ContactEmailAddress))
             {
                 throw new OdkServiceException("Some required fields are missing");
             }

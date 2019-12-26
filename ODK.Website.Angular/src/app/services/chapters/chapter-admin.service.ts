@@ -5,18 +5,20 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterAdminMember } from 'src/app/core/chapters/chapter-admin-member';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
-import { ChapterEmailSettings } from 'src/app/core/chapters/chapter-email-settings';
+import { ChapterEmailProviderSettings } from 'src/app/core/chapters/chapter-email-provider-settings';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterService } from './chapter.service';
 import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
-import { ChapterEmailProviderSettings } from 'src/app/core/chapters/chapter-email-provider-settings';
 
 const baseUrl = `${environment.baseUrl}/admin/chapters`;
 
 const endpoints = {
+  adminMember: (id: string, memberId: string) => `${baseUrl}/${id}/adminmembers/${memberId}`,
+  adminMembers: (id: string) => `${baseUrl}/${id}/adminmembers`,
   chapters: baseUrl,  
   emailProviders: `${baseUrl}/emails/providers`,
   emailProviderSettings: (id: string) => `${baseUrl}/${id}/emails/provider/settings`,
@@ -33,6 +35,16 @@ export class ChapterAdminService extends ChapterService {
 
   constructor(http: HttpClient) {
     super(http);
+  }
+
+  addChapterAdminMember(chapterId: string, memberId: string): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      memberId: memberId
+    });
+
+    return this.http.post(endpoints.adminMembers(chapterId), params).pipe(
+      map(() => undefined)
+    );
   }
 
   createChapterQuestion(chapterId: string, chapterQuestion: ChapterQuestion): Observable<void> {
@@ -58,9 +70,15 @@ export class ChapterAdminService extends ChapterService {
     );
   }
 
-  getChapterAdminEmailSettings(chapterId: string): Observable<ChapterEmailSettings> {
-    return this.http.get(endpoints.emailSettings(chapterId)).pipe(
-      map((response: any) => this.mapChapterEmailSettings(response))
+  getChapterAdminMember(chapterId: string, memberId: string): Observable<ChapterAdminMember> {
+    return this.http.get(endpoints.adminMember(chapterId, memberId)).pipe(
+      map((response: any) => this.mapChapterAdminMember(response))
+    );
+  }
+
+  getChapterAdminMembers(chapterId: string): Observable<ChapterAdminMember[]> {
+    return this.http.get(endpoints.adminMembers(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapChapterAdminMember(x)))
     );
   }
 
@@ -82,6 +100,26 @@ export class ChapterAdminService extends ChapterService {
     ) : of(false);
   }
 
+  removeChapterAdminMember(chapterId: string, adminMember: ChapterAdminMember): Observable<void> {
+    return this.http.delete(endpoints.adminMember(chapterId, adminMember.memberId)).pipe(
+      map(() => undefined)
+    );
+  }
+
+  updateChapterAdminMember(chapterId: string, adminMember: ChapterAdminMember): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      adminEmailAddress: adminMember.adminEmailAddress,
+      receiveContactEmails: adminMember.receiveContactEmails ? 'True' : 'False',
+      receiveNewMemberEmails: adminMember.receiveNewMemberEmails ? 'True' : 'False',
+      sendEventEmails: adminMember.sendEventEmails ? 'True' : 'False',
+      sendNewMemberEmails: adminMember.sendNewMemberEmails ? 'True' : 'False'
+    });
+
+    return this.http.put(endpoints.adminMember(chapterId, adminMember.memberId), params).pipe(
+      map(() => undefined)
+    );
+  }
+
   updateChapterAdminEmailProviderSettings(chapterId: string, emailProviderSettings: ChapterEmailProviderSettings): Observable<void> {
     const params: HttpParams = HttpUtils.createFormParams({
       apiKey: emailProviderSettings.apiKey,
@@ -95,17 +133,6 @@ export class ChapterAdminService extends ChapterService {
     });
 
     return this.http.put(endpoints.emailProviderSettings(chapterId), params).pipe(
-      map(() => undefined)
-    );
-  }
-
-  updateChapterAdminEmailSettings(chapterId: string, emailSettings: ChapterEmailSettings): Observable<void> {
-    const params: HttpParams = HttpUtils.createFormParams({
-      adminEmailAddress: emailSettings.adminEmailAddress,
-      contactEmailAddress: emailSettings.contactEmailAddress
-    });
-
-    return this.http.put(endpoints.emailSettings(chapterId), params).pipe(
       map(() => undefined)
     );
   }
@@ -132,6 +159,19 @@ export class ChapterAdminService extends ChapterService {
     );
   }
 
+  private mapChapterAdminMember(response: any): ChapterAdminMember {
+    return {
+      adminEmailAddress: response.adminEmailAddress,
+      firstName: response.firstName,
+      lastName: response.lastName,
+      memberId: response.memberId,
+      receiveContactEmails: response.receiveContactEmails,
+      receiveNewMemberEmails: response.receiveNewMemberEmails,
+      sendEventEmails: response.sendEventEmails,
+      sendNewMemberEmails: response.sendNewMemberEmails
+    };
+  }
+
   private mapChapterAdminPaymentSettings(response: any): ChapterAdminPaymentSettings {
     return {
       apiPublicKey: response.apiPublicKey,
@@ -150,13 +190,6 @@ export class ChapterAdminService extends ChapterService {
       smtpPassword: response.smtpPassword,
       smtpPort: response.smtpPort,
       smtpServer: response.smtpServer
-    };
-  }
-
-  private mapChapterEmailSettings(response: any): ChapterEmailSettings {
-    return {
-      adminEmailAddress: response.adminEmailAddress,
-      contactEmailAddress: response.contactEmailAddress
     };
   }
 }

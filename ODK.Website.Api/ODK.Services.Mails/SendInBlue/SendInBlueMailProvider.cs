@@ -26,8 +26,8 @@ namespace ODK.Services.Mails.SendInBlue
         public override string Name => ProviderName;
 
         public SendInBlueMailProvider(ChapterEmailProviderSettings settings, Chapter chapter,
-            IMemberRepository memberRepository)
-            : base(settings, chapter, memberRepository)
+            IChapterRepository chapterRepository, IMemberRepository memberRepository)
+            : base(settings, chapter, chapterRepository, memberRepository)
         {
         }
 
@@ -41,6 +41,7 @@ namespace ODK.Services.Mails.SendInBlue
                 {
                     ListIds = new int[] { int.Parse(campaign.ContactListId) }
                 },
+                ReplyTo = campaign.ReplyTo,
                 Sender = new EmailCampaignSenderApiRequest
                 {
                     Email = campaign.From,
@@ -193,6 +194,7 @@ namespace ODK.Services.Mails.SendInBlue
                 {
                     ListIds = new int[] { int.Parse(campaign.ContactListId) }
                 },
+                ReplyTo = campaign.ReplyTo,
                 Sender = new EmailCampaignSenderApiRequest
                 {
                     Email = campaign.From,

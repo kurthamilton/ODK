@@ -79,7 +79,7 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
       buttons: [
         {  
           text: 'Send test',
-          type: 'primary'
+          type: 'secondary'
         }
       ],
       callback: this.formCallback,

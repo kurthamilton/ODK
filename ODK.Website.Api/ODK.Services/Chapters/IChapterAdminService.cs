@@ -7,11 +7,17 @@ namespace ODK.Services.Chapters
 {
     public interface IChapterAdminService
     {
+        Task AddChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
+
         Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question);
 
-        Task<ChapterEmailProviderSettings> GetChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId);
+        Task DeleteChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
 
-        Task<ChapterEmailSettings> GetChapterEmailSettings(Guid currentMemberId, Guid chapterId);
+        Task<ChapterAdminMember> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
+
+        Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid currentMemberId, Guid chapterId);
+
+        Task<ChapterEmailProviderSettings> GetChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId);
 
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
 
@@ -19,9 +25,9 @@ namespace ODK.Services.Chapters
 
         Task<IReadOnlyCollection<string>> GetEmailProviders();
 
-        Task UpdateChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailProviderSettings emailProviderSettings);
+        Task UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember adminMember);
 
-        Task UpdateChapterEmailSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailSettings emailSettings);
+        Task UpdateChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailProviderSettings emailProviderSettings);
 
         Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links);
 

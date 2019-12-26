@@ -3,12 +3,21 @@ export const adminPaths = {
     about: {
       path: 'about'
     },
+    adminMembers: {
+      add: {
+        path: 'add'
+      },
+      adminMember: {
+        path: ':memberId',
+        params: {
+          memberId: 'memberId'
+        }
+      },
+      path: 'admin-members'
+    },
     emailProvider: {
       path: 'email-provider'
-    },
-    emails: {
-      path: 'emails'
-    },
+    },    
     path: 'chapter',
     payments: {
       path: 'payments'

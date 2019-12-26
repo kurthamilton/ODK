@@ -3,5 +3,5 @@ import { FormControlOptions } from '../../form-control-options';
 
 export interface DropDownFormControlOptions extends FormControlOptions {
   options: DropDownFormControlOption[];
-  value: string;
+  value?: string;
 }

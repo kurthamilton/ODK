@@ -14,6 +14,8 @@
 
         public string Name { get; set; }
 
+        public string ReplyTo { get; set; }
+
         public string Subject { get; set; }
     }
 }

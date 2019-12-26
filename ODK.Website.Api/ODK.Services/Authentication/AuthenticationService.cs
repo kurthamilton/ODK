@@ -212,7 +212,7 @@ namespace ODK.Services.Authentication
 
         private async Task<AuthenticationToken> GenerateAccessToken(Member member, DateTime? refreshTokenExpires = null)
         {
-            IReadOnlyCollection<ChapterAdminMember> adminChapterMembers = await _chapterRepository.GetChapterAdminMembers(member.Id);
+            IReadOnlyCollection<ChapterAdminMember> adminChapterMembers = await _chapterRepository.GetChapterAdminMembersByMember(member.Id);
             MemberSubscription subscription = await _memberRepository.GetMemberSubscription(member.Id);
 
             byte[] keyBytes = Encoding.ASCII.GetBytes(_settings.Key);

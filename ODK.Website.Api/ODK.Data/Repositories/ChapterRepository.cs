@@ -13,6 +13,13 @@ namespace ODK.Data.Repositories
         {
         }
 
+        public async Task AddChapterAdminMember(ChapterAdminMember adminMember)
+        {
+            await Context
+                .Insert(adminMember)
+                .ExecuteAsync();
+        }
+
         public async Task AddChapterEmailProviderSettings(ChapterEmailProviderSettings chapterEmailProviderSettings)
         {
             await Context
@@ -43,6 +50,15 @@ namespace ODK.Data.Repositories
                 .GetIdentityAsync();
         }
 
+        public async Task DeleteChapterAdminMember(Guid chapterId, Guid memberId)
+        {
+            await Context
+                .Delete<ChapterAdminMember>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .Where(x => x.MemberId).EqualTo(memberId)
+                .ExecuteAsync();
+        }
+
         public async Task<Chapter> GetChapter(Guid id)
         {
             return await Context
@@ -60,7 +76,15 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid memberId)
+        public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterAdminMember>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .ToArrayAsync();
+        }
+
+        public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembersByMember(Guid memberId)
         {
             return await Context
                 .Select<ChapterAdminMember>()
@@ -72,14 +96,6 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<ChapterEmailProviderSettings>()
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .FirstOrDefaultAsync();
-        }
-
-        public async Task<ChapterEmailSettings> GetChapterEmailSettings(Guid chapterId)
-        {
-            return await Context
-                .Select<ChapterEmailSettings>()
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .FirstOrDefaultAsync();
         }
@@ -207,6 +223,19 @@ namespace ODK.Data.Repositories
                 .VersionAsync();
         }
 
+        public async Task UpdateChapterAdminMember(ChapterAdminMember adminMember)
+        {
+            await Context
+                .Update<ChapterAdminMember>()
+                .Set(x => x.AdminEmailAddress, adminMember.AdminEmailAddress)
+                .Set(x => x.ReceiveContactEmails, adminMember.ReceiveContactEmails)
+                .Set(x => x.ReceiveNewMemberEmails, adminMember.ReceiveNewMemberEmails)
+                .Set(x => x.SendEventEmails, adminMember.SendEventEmails)
+                .Set(x => x.SendNewMemberEmails, adminMember.SendNewMemberEmails)
+                .Where(x => x.MemberId).EqualTo(adminMember.MemberId)
+                .ExecuteAsync();
+        }
+
         public async Task UpdateChapterEmailProviderSettings(ChapterEmailProviderSettings emailProviderSettings)
         {
             await Context
@@ -220,16 +249,6 @@ namespace ODK.Data.Repositories
                 .Set(x => x.SmtpPort, emailProviderSettings.SmtpPort)
                 .Set(x => x.SmtpServer, emailProviderSettings.SmtpServer)
                 .Where(x => x.ChapterId).EqualTo(emailProviderSettings.ChapterId)
-                .ExecuteAsync();
-        }
-
-        public async Task UpdateChapterEmailSettings(ChapterEmailSettings emailSettings)
-        {
-            await Context
-                .Update<ChapterEmailSettings>()
-                .Set(x => x.AdminEmailAddress, emailSettings.AdminEmailAddress)
-                .Set(x => x.ContactEmailAddress, emailSettings.ContactEmailAddress)
-                .Where(x => x.ChapterId).EqualTo(emailSettings.ChapterId)
                 .ExecuteAsync();
         }
 

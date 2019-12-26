@@ -41,6 +41,43 @@ namespace ODK.Web.Api.Admin.Chapters
             return chapters.Select(_mapper.Map<ChapterApiResponse>);
         }
 
+        [HttpPost("{id}/AdminMembers")]
+        public async Task<IActionResult> AddChapterAdminMember(Guid id, [FromForm] AddChapterAdminMemberApiRequest request)
+        {
+            await _chapterAdminService.AddChapterAdminMember(GetMemberId(), id, request.MemberId);
+            return Created();
+        }
+
+        [HttpGet("{id}/AdminMembers")]
+        public async Task<IEnumerable<ChapterAdminMemberApiResponse>> GetChapterAdminMembers(Guid id)
+        {
+            IReadOnlyCollection<ChapterAdminMember> adminMembers = await _chapterAdminService.GetChapterAdminMembers(GetMemberId(), id);
+            return adminMembers.Select(_mapper.Map<ChapterAdminMemberApiResponse>);
+        }
+
+        [HttpGet("{id}/AdminMembers/{memberId}")]
+        public async Task<ChapterAdminMemberApiResponse> GetChapterAdminMember(Guid id, Guid memberId)
+        {
+            ChapterAdminMember adminMember = await _chapterAdminService.GetChapterAdminMember(GetMemberId(), id, memberId);
+            return _mapper.Map<ChapterAdminMemberApiResponse>(adminMember);
+        }
+
+        [HttpPut("{id}/AdminMembers/{memberId}")]
+        public async Task<IActionResult> UpdateChapterAdminMember(Guid id, Guid memberId,
+            [FromForm] UpdateChapterAdminMemberApiRequest request)
+        {
+            UpdateChapterAdminMember adminMember = _mapper.Map<UpdateChapterAdminMember>(request);
+            await _chapterAdminService.UpdateChapterAdminMember(GetMemberId(), id, memberId, adminMember);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}/AdminMembers/{memberId}")]
+        public async Task<IActionResult> DeleteChapterAdminMember(Guid id, Guid memberId)
+        {
+            await _chapterAdminService.DeleteChapterAdminMember(GetMemberId(), id, memberId);
+            return NoContent();
+        }
+
         [HttpGet("{id}/Emails/Provider/Settings")]
         public async Task<ChapterEmailProviderSettingsApiResponse> GetChapterEmailProviderSettings(Guid id)
         {
@@ -56,21 +93,6 @@ namespace ODK.Web.Api.Admin.Chapters
         {
             UpdateChapterEmailProviderSettings emailProviderSettings = _mapper.Map<UpdateChapterEmailProviderSettings>(request);
             await _chapterAdminService.UpdateChapterEmailProviderSettings(GetMemberId(), id, emailProviderSettings);
-            return NoContent();
-        }
-
-        [HttpGet("{id}/Emails/Settings")]
-        public async Task<ChapterEmailSettingsApiResponse> GetChapterEmailSettings(Guid id)
-        {
-            ChapterEmailSettings settings = await _chapterAdminService.GetChapterEmailSettings(GetMemberId(), id);
-            return _mapper.Map<ChapterEmailSettingsApiResponse>(settings);
-        }
-
-        [HttpPut("{id}/Emails/Settings")]
-        public async Task<IActionResult> UpdateChapterEmailSettings(Guid id, [FromForm] UpdateChapterEmailSettingsApiRequest request)
-        {
-            UpdateChapterEmailSettings emailSettings = _mapper.Map<UpdateChapterEmailSettings>(request);
-            await _chapterAdminService.UpdateChapterEmailSettings(GetMemberId(), id, emailSettings);
             return NoContent();
         }
 

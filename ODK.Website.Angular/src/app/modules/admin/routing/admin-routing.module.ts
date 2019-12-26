@@ -5,7 +5,10 @@ import { AdminComponent } from '../components/admin/admin.component';
 import { adminPaths } from './admin-paths';
 import { ChapterAdminGuardService } from 'src/app/routing/chapter-admin-guard.service';
 import { ChapterAdminLayoutComponent } from '../components/chapters/chapter-admin-layout/chapter-admin-layout.component';
-import { ChapterEmailsComponent } from '../components/chapters/chapter-emails/chapter-emails.component';
+import { ChapterAdminMemberAddComponent } from '../components/chapters/chapter-admin-member-add/chapter-admin-member-add.component';
+import { ChapterAdminMemberComponent } from '../components/chapters/chapter-admin-member/chapter-admin-member.component';
+import { ChapterAdminMembersComponent } from '../components/chapters/chapter-admin-members/chapter-admin-members.component';
+import { ChapterEmailProviderComponent } from '../components/chapters/chapter-email-provider/chapter-email-provider.component';
 import { ChapterPaymentSettingsComponent } from '../components/chapters/chapter-payment-settings/chapter-payment-settings.component';
 import { ChapterQuestionsComponent } from '../components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from '../components/chapters/chapter-settings/chapter-settings.component';
@@ -24,7 +27,6 @@ import { MemberSubscriptionComponent } from '../components/members/member-subscr
 import { VenueEventsComponent } from '../components/venues/venue-events/venue-events.component';
 import { VenueLayoutComponent } from '../components/venues/venue-layout/venue-layout.component';
 import { VenuesComponent } from '../components/venues/venues/venues.component';
-import { ChapterEmailProviderComponent } from '../components/chapters/chapter-email-provider/chapter-email-provider.component';
 
 const routes: Routes = [
   { path: '', component: AdminComponent, canActivate: [ChapterAdminGuardService], children: [
@@ -32,9 +34,13 @@ const routes: Routes = [
     { path: adminPaths.chapter.path, component: ChapterAdminLayoutComponent, children: [
       { path: '', component: ChapterSettingsComponent },
       { path: adminPaths.chapter.about.path, component: ChapterQuestionsComponent },
+      { path: adminPaths.chapter.adminMembers.path, children: [
+        { path: '', component: ChapterAdminMembersComponent },
+        { path: adminPaths.chapter.adminMembers.add.path, component: ChapterAdminMemberAddComponent },
+        { path: adminPaths.chapter.adminMembers.adminMember.path, component: ChapterAdminMemberComponent }
+      ] },
       { path: adminPaths.chapter.emailProvider.path, component: ChapterEmailProviderComponent, 
         canActivate: [ChapterSuperAdminGuardService] },
-      { path: adminPaths.chapter.emails.path, component: ChapterEmailsComponent },
       { path: adminPaths.chapter.payments.path, component: ChapterPaymentSettingsComponent, 
         canActivate: [ChapterSuperAdminGuardService] }
     ] },

@@ -8,6 +8,8 @@
 
         public EmailCampaignRecipientsApiRequest Recipients { get; set; }
 
+        public string ReplyTo { get; set; }
+
         public EmailCampaignSenderApiRequest Sender { get; set; }
 
         public string Subject { get; set; }

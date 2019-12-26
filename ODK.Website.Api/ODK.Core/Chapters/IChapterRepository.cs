@@ -6,6 +6,8 @@ namespace ODK.Core.Chapters
 {
     public interface IChapterRepository
     {
+        Task AddChapterAdminMember(ChapterAdminMember adminMember);
+
         Task AddChapterEmailProviderSettings(ChapterEmailProviderSettings chapterEmailProviderSettings);
 
         Task<Guid> AddContactRequest(ContactRequest contactRequest);
@@ -14,15 +16,17 @@ namespace ODK.Core.Chapters
 
         Task<Guid> CreateChapterQuestion(ChapterQuestion question);
 
+        Task DeleteChapterAdminMember(Guid chapterId, Guid memberId);
+
         Task<Chapter> GetChapter(Guid id);
 
         Task<ChapterAdminMember> GetChapterAdminMember(Guid chapterId, Guid memberId);
 
-        Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid memberId);
+        Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid chapterId);
+
+        Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembersByMember(Guid memberId);
 
         Task<ChapterEmailProviderSettings> GetChapterEmailProviderSettings(Guid chapterId);
-
-        Task<ChapterEmailSettings> GetChapterEmailSettings(Guid chapterId);
 
         Task<ChapterLinks> GetChapterLinks(Guid chapterId);
 
@@ -54,9 +58,9 @@ namespace ODK.Core.Chapters
 
         Task<long> GetChapterTextsVersion(Guid chapterId);
 
-        Task UpdateChapterEmailProviderSettings(ChapterEmailProviderSettings emailProviderSettings);
+        Task UpdateChapterAdminMember(ChapterAdminMember adminMember);
 
-        Task UpdateChapterEmailSettings(ChapterEmailSettings emailSettings);
+        Task UpdateChapterEmailProviderSettings(ChapterEmailProviderSettings emailProviderSettings);
 
         Task UpdateChapterLinks(ChapterLinks links);
 

@@ -29,26 +29,49 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
   message: string;
 
   private chapter: Chapter;
-  private controls: {
-    email: TextInputFormControlViewModel
-  } = {
-    email: new TextInputFormControlViewModel({
-      id: 'email',
-      label: {
-        text: 'Email address'
-      },
-      value: '',
-      validation: {
-        required: true
-      }
-    })
-  };
   private formCallback: Subject<boolean> = new Subject<boolean>();
+  private formControls: {
+    email: TextInputFormControlViewModel;
+  };
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
     this.links = {
       login: appUrls.login(this.chapter)
+    };
+
+    this.buildForm();
+  }
+
+  ngOnDestroy(): void {
+    this.formCallback.complete();
+  }
+
+  onAlertClose(): void {
+    this.message = null;
+    this.buildForm();
+    this.changeDetector.detectChanges();
+  }
+
+  onFormSubmit(): void {
+    this.authenticationService.requestPasswordReset(this.formControls.email.value).subscribe(() => {
+      this.message = 'An email containing password reset instructions has been sent';
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  private buildForm(): void {
+    this.formControls = {
+      email: new TextInputFormControlViewModel({
+        id: 'email',
+        label: {
+          text: 'Email address'
+        },
+        value: '',
+        validation: {
+          required: true
+        }
+      })
     };
 
     this.form = {
@@ -57,19 +80,8 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
       ],
       callback: this.formCallback,
       controls: [
-        this.controls.email
+        this.formControls.email
       ]
     };
-  }
-
-  ngOnDestroy(): void {
-    this.formCallback.complete();
-  }
-
-  onFormSubmit(): void {
-    this.authenticationService.requestPasswordReset(this.controls.email.value).subscribe(() => {
-      this.message = 'An email containing password reset instructions has been sent';
-      this.changeDetector.detectChanges();
-    });
   }
 }

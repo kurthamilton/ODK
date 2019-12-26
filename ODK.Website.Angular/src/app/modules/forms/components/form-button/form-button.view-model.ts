@@ -1,4 +1,4 @@
 export interface FormButtonViewModel {
   text: string;
-  type?: 'success' | 'danger' | 'primary';
+  type?: 'success' | 'danger' | 'primary' | 'secondary';
 }

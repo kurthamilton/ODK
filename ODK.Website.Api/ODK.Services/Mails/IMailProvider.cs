@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Mail;
 using ODK.Core.Members;
@@ -9,8 +10,10 @@ using ODK.Services.Events;
 namespace ODK.Services.Mails
 {
     public interface IMailProvider
-    {
+    {        
         string Name { get; }
+
+        ChapterEmailProviderSettings Settings { get; }
 
         Task<string> CreateEventEmail(Event @event, Email email);
 
@@ -20,7 +23,9 @@ namespace ODK.Services.Mails
 
         Task<bool> GetMemberOptIn(Member member);
 
-        Task SendEmail(string to, string from, Email email, IDictionary<string, string> parameters = null);
+        Task SendEmail(ChapterAdminMember from, string to, Email email, IDictionary<string, string> parameters = null);
+
+        Task SendEmail(ChapterAdminMember from, IEnumerable<string> to, Email email, IDictionary<string, string> parameters = null);
 
         Task SendEventEmail(string id);
 

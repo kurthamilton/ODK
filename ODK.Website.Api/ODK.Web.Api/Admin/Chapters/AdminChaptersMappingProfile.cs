@@ -18,9 +18,9 @@ namespace ODK.Web.Api.Admin.Chapters
         {
             CreateMap<CreateChapterQuestionApiRequest, CreateChapterQuestion>();
 
-            CreateMap<UpdateChapterEmailProviderSettingsApiRequest, UpdateChapterEmailProviderSettings>();
+            CreateMap<UpdateChapterAdminMemberApiRequest, UpdateChapterAdminMember>();
 
-            CreateMap<UpdateChapterEmailSettingsApiRequest, UpdateChapterEmailSettings>();
+            CreateMap<UpdateChapterEmailProviderSettingsApiRequest, UpdateChapterEmailProviderSettings>();
 
             CreateMap<UpdateChapterLinksApiRequest, UpdateChapterLinks>();
 
@@ -31,7 +31,7 @@ namespace ODK.Web.Api.Admin.Chapters
 
         private void MapResponses()
         {
-            CreateMap<ChapterEmailSettings, ChapterEmailSettingsApiResponse>();
+            CreateMap<ChapterAdminMember, ChapterAdminMemberApiResponse>();
 
             CreateMap<ChapterEmailProviderSettings, ChapterEmailProviderSettingsApiResponse>();
 

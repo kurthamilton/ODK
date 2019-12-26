@@ -16,11 +16,13 @@ namespace ODK.Services.Mails
 {
     public abstract class MailProviderBase : IMailProvider
     {
+        private readonly IChapterRepository _chapterRepository;
         private readonly IMemberRepository _memberRepository;
 
         protected MailProviderBase(ChapterEmailProviderSettings settings, Chapter chapter,
-            IMemberRepository memberRepository)
+            IChapterRepository chapterRepository, IMemberRepository memberRepository)
         {
+            _chapterRepository = chapterRepository;
             _memberRepository = memberRepository;
             Chapter = chapter;
             Settings = settings;
@@ -28,23 +30,13 @@ namespace ODK.Services.Mails
 
         public abstract string Name { get; }
 
-        protected Chapter Chapter { get; }
+        public ChapterEmailProviderSettings Settings { get; }
 
-        protected ChapterEmailProviderSettings Settings { get; }
+        protected Chapter Chapter { get; }
 
         public async Task<string> CreateEventEmail(Event @event, Email email)
         {
-            ContactList contactList = await GetEventContactList();
-
-            EventCampaign campaign = new EventCampaign
-            {
-                ContactListId = contactList.Id,
-                From = Settings.FromEmailAddress,
-                FromName = Settings.FromName,
-                HtmlContent = email.Body,
-                Name = $"Event: {@event.Name}",
-                Subject = email.Subject
-            };
+            EventCampaign campaign = await CreateCampaign(@event, email);
 
             campaign.Id = await CreateCampaign(campaign);
 
@@ -82,7 +74,12 @@ namespace ODK.Services.Mails
             return contact.OptIn;
         }
 
-        public async Task SendEmail(string from, string to, Email email, IDictionary<string, string> parameters = null)
+        public async Task SendEmail(ChapterAdminMember from, string to, Email email, IDictionary<string, string> parameters = null)
+        {
+            await SendEmail(from, new[] { to }, email, parameters);
+        }
+
+        public async Task SendEmail(ChapterAdminMember from, IEnumerable<string> to, Email email, IDictionary<string, string> parameters = null)
         {
             try
             {
@@ -91,7 +88,7 @@ namespace ODK.Services.Mails
                     email = email.Interpolate(parameters);
                 }
 
-                MimeMessage message = CreateMessage(from, to, email.Subject, email.Body);
+                MimeMessage message = await CreateMessage(from, to, email.Subject, email.Body);
 
                 using SmtpClient client = new SmtpClient();
                 await client.ConnectAsync(Settings.SmtpServer, Settings.SmtpPort, false);
@@ -153,19 +150,8 @@ namespace ODK.Services.Mails
 
         public async Task UpdateEventEmail(Event @event, Email email, string emailId)
         {
-            ContactList contactList = await GetEventContactList();
-
-            EventCampaign campaign = new EventCampaign
-            {
-                ContactListId = contactList.Id,
-                From = Settings.FromEmailAddress,
-                FromName = Settings.FromName,
-                HtmlContent = email.Body,
-                Id = emailId,
-                Name = $"Event: {@event.Name}",
-                Subject = email.Subject
-            };
-
+            EventCampaign campaign = await CreateCampaign(@event, email);
+            campaign.Id = emailId;
             await UpdateCampaign(campaign);
         }
 
@@ -200,7 +186,25 @@ namespace ODK.Services.Mails
 
         protected abstract Task UpdateContactOptIn(string emailAddress, bool optIn);
 
-        private MimeMessage CreateMessage(string from, string to, string subject, string body)
+        private async Task<EventCampaign> CreateCampaign(Event @event, Email email)
+        {
+            ContactList contactList = await GetEventContactList();
+
+            IReadOnlyCollection<ChapterAdminMember> adminMembers = await _chapterRepository.GetChapterAdminMembers(Chapter.Id);
+
+            return new EventCampaign
+            {
+                ContactListId = contactList.Id,
+                From = Settings.FromEmailAddress,
+                FromName = Settings.FromName,
+                HtmlContent = email.Body,
+                Name = $"Event: {@event.Name}",
+                ReplyTo = adminMembers.FirstOrDefault(x => x.SendEventEmails)?.AdminEmailAddress,
+                Subject = email.Subject
+            };
+        }
+
+        private async Task<MimeMessage> CreateMessage(ChapterAdminMember from, IEnumerable<string> to, string subject, string body)
         {
             MimeMessage message = new MimeMessage
             {
@@ -211,16 +215,20 @@ namespace ODK.Services.Mails
                 Subject = subject
             };
 
-            if (!string.IsNullOrEmpty(from))
+            if (from != null)
             {
-                message.From.Add(new MailboxAddress(from));
+                Member member = await _memberRepository.GetMember(from.MemberId);
+                message.From.Add(new MailboxAddress($"{member.FirstName} {member.LastName}", from.AdminEmailAddress));
             }
             else
             {
                 message.From.Add(new MailboxAddress(Settings.FromName, Settings.FromEmailAddress));
             }
 
-            message.To.Add(new MailboxAddress(to));
+            foreach (string recipient in to)
+            {
+                message.To.Add(new MailboxAddress(recipient));
+            }
 
             return message;
         }

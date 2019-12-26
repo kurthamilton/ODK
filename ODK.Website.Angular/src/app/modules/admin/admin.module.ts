@@ -9,7 +9,6 @@ import { AdminMenuComponent } from './components/structure/admin-menu/admin-menu
 import { AdminRoutingModule } from './routing/admin-routing.module';
 import { AppFormsModule } from '../forms/app-forms.module';
 import { AppSharedModule } from '../shared/app-shared.module';
-import { ChapterEmailsComponent } from './components/chapters/chapter-emails/chapter-emails.component';
 import { ChapterAdminLayoutComponent } from './components/chapters/chapter-admin-layout/chapter-admin-layout.component';
 import { ChapterMenuComponent } from './components/chapters/chapter-menu/chapter-menu.component';
 import { ChapterPaymentSettingsComponent } from './components/chapters/chapter-payment-settings/chapter-payment-settings.component';
@@ -43,12 +42,14 @@ import { VenueLayoutComponent } from './components/venues/venue-layout/venue-lay
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
 import { ChapterEmailProviderComponent } from './components/chapters/chapter-email-provider/chapter-email-provider.component';
+import { ChapterAdminMembersComponent } from './components/chapters/chapter-admin-members/chapter-admin-members.component';
+import { ChapterAdminMemberComponent } from './components/chapters/chapter-admin-member/chapter-admin-member.component';
+import { ChapterAdminMemberAddComponent } from './components/chapters/chapter-admin-member-add/chapter-admin-member-add.component';
 
 @NgModule({
   declarations: [
     AdminComponent,
     AdminMenuComponent,
-    ChapterEmailsComponent,
     ChapterAdminLayoutComponent,
     ChapterMenuComponent,
     ChapterPaymentSettingsComponent,
@@ -82,6 +83,9 @@ import { ChapterEmailProviderComponent } from './components/chapters/chapter-ema
     VenueMenuComponent,
     VenuesComponent,
     ChapterEmailProviderComponent,
+    ChapterAdminMembersComponent,
+    ChapterAdminMemberComponent,
+    ChapterAdminMemberAddComponent,
   ],
   imports: [
     AdminRoutingModule,

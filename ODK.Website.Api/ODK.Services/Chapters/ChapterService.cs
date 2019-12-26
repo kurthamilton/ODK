@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using ODK.Core.Chapters;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -114,7 +115,7 @@ namespace ODK.Services.Chapters
             IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 {"from", fromAddress},
-                {"message", message}
+                {"message", HttpUtility.HtmlEncode(message)}
             };
 
             await _mailService.SendChapterContactMail(chapter.Value, parameters);

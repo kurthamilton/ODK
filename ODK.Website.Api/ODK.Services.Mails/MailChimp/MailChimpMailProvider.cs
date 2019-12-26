@@ -18,8 +18,8 @@ namespace ODK.Services.Mails.MailChimp
         public const string ProviderName = "MailChimp";
 
         public MailChimpMailProvider(ChapterEmailProviderSettings settings, Chapter chapter,
-            IMemberRepository memberRepository)
-            : base(settings, chapter, memberRepository)
+            IChapterRepository chapterRepository, IMemberRepository memberRepository)
+            : base(settings, chapter, chapterRepository, memberRepository)
         {
         }
 
