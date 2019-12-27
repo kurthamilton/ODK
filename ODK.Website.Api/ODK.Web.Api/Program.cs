@@ -45,13 +45,12 @@ namespace ODK.Web.Api
 
             string path = builtConfig["Logging:Path"];
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Logger(config =>
-                {
-                    config
-                    .Filter.ByIncludingOnly(e => e.Level == Serilog.Events.LogEventLevel.Error)
-                    .WriteTo.File(Path.Combine(path, "Errors.txt"));
-                })
-                .WriteTo.File(Path.Combine(path, "Trace.txt"))
+                .WriteTo.Logger(config => config
+                    .Filter
+                    .ByIncludingOnly(e => e.Level == Serilog.Events.LogEventLevel.Error)
+                    .WriteTo
+                    .File(Path.Combine(path, $"Errors.{DateTime.Today:yyyyMMdd}.txt")))
+                .WriteTo.File(Path.Combine(path, $"Trace.{DateTime.Today:yyyyMMdd}.txt"))
                 .WriteTo.Console()
                 .CreateLogger();
         }
