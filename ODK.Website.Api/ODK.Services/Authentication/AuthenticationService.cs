@@ -150,6 +150,7 @@ namespace ODK.Services.Authentication
 
             await _mailService.SendMemberMail(member, EmailType.PasswordReset, new Dictionary<string, string>
             {
+                { "chapter.name", chapter.Name },
                 { "url", url }
             });
         }

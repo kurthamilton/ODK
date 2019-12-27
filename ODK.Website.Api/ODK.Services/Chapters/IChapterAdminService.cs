@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
+using ODK.Core.Mail;
 
 namespace ODK.Services.Chapters
 {
@@ -19,6 +20,8 @@ namespace ODK.Services.Chapters
 
         Task<ChapterEmailProviderSettings> GetChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId);
 
+        Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid currentMemberId, Guid chapterId);
+
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
 
         Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId);
@@ -26,6 +29,8 @@ namespace ODK.Services.Chapters
         Task<IReadOnlyCollection<string>> GetEmailProviders();
 
         Task UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember adminMember);
+
+        Task UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, UpdateChapterEmail chapterEmail);
 
         Task UpdateChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailProviderSettings emailProviderSettings);
 

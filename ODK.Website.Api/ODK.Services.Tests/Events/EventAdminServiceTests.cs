@@ -25,7 +25,7 @@ namespace ODK.Services.Tests.Events
             IChapterRepository chapterRepository = CreateMockChapterRepository(chapter: chapter);
 
             Email email = new Email(EmailType.EventInvite, "Subject: {chapter.name}", "Body: {chapter.name}");
-            IMemberEmailRepository memberEmailRepository = CreateMockMemberEmailRepository(email);
+            IEmailRepository memberEmailRepository = CreateMockMemberEmailRepository(email);
 
             EventAdminService service = CreateService(memberEmailRepository, chapterRepository);
 
@@ -43,7 +43,7 @@ namespace ODK.Services.Tests.Events
             IEventRepository eventRepository = CreateMockEventRepository(@event);
 
             Email email = new Email(EmailType.EventInvite, "Subject: {event.name}", "Name: {event.name}, Date: {event.date}, Location: {event.location}, Time: {event.time}");
-            IMemberEmailRepository memberEmailRepository = CreateMockMemberEmailRepository(email);
+            IEmailRepository memberEmailRepository = CreateMockMemberEmailRepository(email);
 
             EventAdminService service = CreateService(memberEmailRepository, eventRepository: eventRepository);
 
@@ -60,7 +60,7 @@ namespace ODK.Services.Tests.Events
             IEventRepository eventRepository = CreateMockEventRepository(@event);
 
             Email email = new Email(EmailType.EventInvite, "Subject: {event.url}", "RSVP: {event.rsvpurl}, Url: {event.url}");
-            IMemberEmailRepository memberEmailRepository = CreateMockMemberEmailRepository(email);
+            IEmailRepository memberEmailRepository = CreateMockMemberEmailRepository(email);
 
             EventAdminService service = CreateService(memberEmailRepository, eventRepository: eventRepository);
 
@@ -70,7 +70,7 @@ namespace ODK.Services.Tests.Events
             Assert.AreEqual($"RSVP: {BaseUrl}/{EventRsvpUrlFormat}, Url: {BaseUrl}/{@event.Id}" , eventEmail.Body);
         }
 
-        private static EventAdminService CreateService(IMemberEmailRepository memberEmailRepository = null,
+        private static EventAdminService CreateService(IEmailRepository memberEmailRepository = null,
             IChapterRepository chapterRepository = null, IEventRepository eventRepository = null)
         {
             return new EventAdminService(
@@ -117,9 +117,9 @@ namespace ODK.Services.Tests.Events
             return mock.Object;
         }
 
-        private static IMemberEmailRepository CreateMockMemberEmailRepository(Email email = null)
+        private static IEmailRepository CreateMockMemberEmailRepository(Email email = null)
         {
-            Mock<IMemberEmailRepository> mock = new Mock<IMemberEmailRepository>();
+            Mock<IEmailRepository> mock = new Mock<IEmailRepository>();
 
             mock.Setup(x => x.GetEmail(It.IsAny<EmailType>()))
                 .ReturnsAsync(email);

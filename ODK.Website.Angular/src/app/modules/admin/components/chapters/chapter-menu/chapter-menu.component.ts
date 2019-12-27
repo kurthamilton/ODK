@@ -28,7 +28,8 @@ export class ChapterMenuComponent implements OnInit {
     this.menuItems = [
       { link: adminUrls.chapter(chapter), text: 'Settings', matchExactRoute: true },
       { link: adminUrls.chapterAbout(chapter), text: 'About' },
-      { link: adminUrls.chapterAdminMembers(chapter), text: 'Admin members' }
+      { link: adminUrls.chapterAdminMembers(chapter), text: 'Admin members' },
+      { link: adminUrls.chapterEmails(chapter), text: 'Emails' }
     ];
 
     if (token.superAdmin) {

@@ -17,7 +17,10 @@ export const adminPaths = {
     },
     emailProvider: {
       path: 'email-provider'
-    },    
+    },  
+    emails: {
+      path: 'emails'
+    }, 
     path: 'chapter',
     payments: {
       path: 'payments'

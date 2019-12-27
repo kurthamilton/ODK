@@ -9,6 +9,7 @@ import { ChapterAdminMemberAddComponent } from '../components/chapters/chapter-a
 import { ChapterAdminMemberComponent } from '../components/chapters/chapter-admin-member/chapter-admin-member.component';
 import { ChapterAdminMembersComponent } from '../components/chapters/chapter-admin-members/chapter-admin-members.component';
 import { ChapterEmailProviderComponent } from '../components/chapters/chapter-email-provider/chapter-email-provider.component';
+import { ChapterEmailsComponent } from '../components/chapters/chapter-emails/chapter-emails.component';
 import { ChapterPaymentSettingsComponent } from '../components/chapters/chapter-payment-settings/chapter-payment-settings.component';
 import { ChapterQuestionsComponent } from '../components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from '../components/chapters/chapter-settings/chapter-settings.component';
@@ -41,6 +42,7 @@ const routes: Routes = [
       ] },
       { path: adminPaths.chapter.emailProvider.path, component: ChapterEmailProviderComponent, 
         canActivate: [ChapterSuperAdminGuardService] },
+      { path: adminPaths.chapter.emails.path, component: ChapterEmailsComponent },
       { path: adminPaths.chapter.payments.path, component: ChapterPaymentSettingsComponent, 
         canActivate: [ChapterSuperAdminGuardService] }
     ] },

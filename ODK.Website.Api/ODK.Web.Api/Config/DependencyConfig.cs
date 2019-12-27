@@ -54,7 +54,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IChapterRepository, ChapterRepository>();
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<IEventRepository, EventRepository>();
-            services.AddScoped<IMemberEmailRepository, MemberEmailRepository>();
+            services.AddScoped<IEmailRepository, EmailRepository>();
             services.AddScoped<IMemberRepository, MemberRepository>();
             services.AddScoped<IMemberGroupRepository, MemberGroupRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();

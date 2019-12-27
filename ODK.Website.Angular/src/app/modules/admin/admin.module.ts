@@ -45,6 +45,7 @@ import { ChapterEmailProviderComponent } from './components/chapters/chapter-ema
 import { ChapterAdminMembersComponent } from './components/chapters/chapter-admin-members/chapter-admin-members.component';
 import { ChapterAdminMemberComponent } from './components/chapters/chapter-admin-member/chapter-admin-member.component';
 import { ChapterAdminMemberAddComponent } from './components/chapters/chapter-admin-member-add/chapter-admin-member-add.component';
+import { ChapterEmailsComponent } from './components/chapters/chapter-emails/chapter-emails.component';
 
 @NgModule({
   declarations: [
@@ -86,6 +87,7 @@ import { ChapterAdminMemberAddComponent } from './components/chapters/chapter-ad
     ChapterAdminMembersComponent,
     ChapterAdminMemberComponent,
     ChapterAdminMemberAddComponent,
+    ChapterEmailsComponent,
   ],
   imports: [
     AdminRoutingModule,

@@ -26,6 +26,7 @@ export const adminUrls = {
     chapterAdminMemberAdd: (chapter: Chapter) => chapterPath(chapter, `${chapterPaths.adminMembers.path}/${adminPaths.chapter.adminMembers.add.path}`),
     chapterAdminMembers: (chapter: Chapter) => chapterPath(chapter, chapterPaths.adminMembers.path),
     chapterEmailProvider: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emailProvider.path),
+    chapterEmails: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emails.path),
     chapterPayments: (chapter: Chapter) => chapterPath(chapter, chapterPaths.payments.path),
     event: (chapter: Chapter, event: Event) => eventPath(chapter, event),
     eventCreate: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.events.path}/${adminPaths.events.create.path}`),

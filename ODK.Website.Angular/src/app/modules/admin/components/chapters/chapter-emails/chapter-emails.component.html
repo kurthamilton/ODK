@@ -1,0 +1,5 @@
+<ng-container *appLoading="!forms">
+  <div *ngFor="let form of forms" class="mb-5">
+    <app-form [form]="form" (formSubmit)="onFormSubmit(form)"></app-form>
+  </div>  
+</ng-container>

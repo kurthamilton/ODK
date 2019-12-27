@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
+using ODK.Core.Mail;
 using ODK.Core.Members;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
@@ -15,16 +16,18 @@ namespace ODK.Services.Chapters
         private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IChapterService _chapterService;
+        private readonly IEmailRepository _emailRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly IMailProviderFactory _mailProviderFactory;
 
         public ChapterAdminService(IChapterRepository chapterRepository, ICacheService cacheService, IChapterService chapterService,
-            IMailProviderFactory mailProviderFactory, IMemberRepository memberRepository)
+            IMailProviderFactory mailProviderFactory, IMemberRepository memberRepository, IEmailRepository emailRepository)
             : base(chapterRepository)
         {
             _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _chapterService = chapterService;
+            _emailRepository = emailRepository;
             _memberRepository = memberRepository;
             _mailProviderFactory = mailProviderFactory;
         }
@@ -107,6 +110,34 @@ namespace ODK.Services.Chapters
             return await _chapterRepository.GetChapterEmailProviderSettings(chapterId);
         }
 
+        public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            IReadOnlyCollection<ChapterEmail> chapterEmails = await _emailRepository.GetChapterEmails(chapterId);
+            IDictionary<EmailType, ChapterEmail> chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type, x => x);
+
+            List<ChapterEmail> defaultEmails = new List<ChapterEmail>();
+            foreach (EmailType type in Enum.GetValues(typeof(EmailType)))
+            {
+                if (type == EmailType.None)
+                {
+                    continue;
+                }
+
+                if (!chapterEmailDictionary.ContainsKey(type))
+                {
+                    Email email = await _emailRepository.GetEmail(type);
+                    defaultEmails.Add(new ChapterEmail(Guid.Empty, chapterId, type, email.Subject, email.Body));
+                }
+            }
+
+            return chapterEmails
+                .Union(defaultEmails)
+                .OrderBy(x => x.Type)
+                .ToArray();
+        }
+
         public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
@@ -150,6 +181,33 @@ namespace ODK.Services.Chapters
             existing.SendNewMemberEmails = adminMember.SendNewMemberEmails;
 
             await _chapterRepository.UpdateChapterAdminMember(existing);
+        }
+
+        public async Task UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, UpdateChapterEmail chapterEmail)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            ChapterEmail existing = await _emailRepository.GetChapterEmail(chapterId, type);
+            if (existing == null)
+            {
+                existing = new ChapterEmail(Guid.Empty, chapterId, type, chapterEmail.Subject, chapterEmail.HtmlContent);
+            }
+            else
+            {
+                existing.HtmlContent = chapterEmail.HtmlContent;
+                existing.Subject = chapterEmail.Subject;
+            }
+
+            ValidateChapterEmail(existing);
+
+            if (existing.Id != Guid.Empty)
+            {
+                await _emailRepository.UpdateChapterEmail(existing);
+            }
+            else
+            {
+                await _emailRepository.AddChapterEmail(existing);
+            }
         }
 
         public async Task UpdateChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId,
@@ -226,6 +284,20 @@ namespace ODK.Services.Chapters
             _cacheService.RemoveVersionedItem<ChapterTexts>(chapterId);
 
             return update;
+        }
+
+        private void ValidateChapterEmail(ChapterEmail chapterEmail)
+        {
+            if (!Enum.IsDefined(typeof(EmailType), chapterEmail.Type) || chapterEmail.Type == EmailType.None)
+            {
+                throw new OdkServiceException("Invalid type");
+            }
+
+            if (string.IsNullOrWhiteSpace(chapterEmail.HtmlContent) ||
+                string.IsNullOrWhiteSpace(chapterEmail.Subject))
+            {
+                throw new OdkServiceException("Some required fields are missing");
+            }
         }
 
         private async Task ValidateChapterEmailProviderSettings(ChapterEmailProviderSettings emailProviderSettings)

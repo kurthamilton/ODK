@@ -7,7 +7,9 @@ import { map } from 'rxjs/operators';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminMember } from 'src/app/core/chapters/chapter-admin-member';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
+import { ChapterEmail } from 'src/app/core/chapters/chapter-email';
 import { ChapterEmailProviderSettings } from 'src/app/core/chapters/chapter-email-provider-settings';
+import { ChapterEmailType } from 'src/app/core/chapters/chapter-email-type';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterService } from './chapter.service';
 import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
@@ -20,8 +22,10 @@ const endpoints = {
   adminMember: (id: string, memberId: string) => `${baseUrl}/${id}/adminmembers/${memberId}`,
   adminMembers: (id: string) => `${baseUrl}/${id}/adminmembers`,
   chapters: baseUrl,  
+  email: (id: string, type: ChapterEmailType) => `${baseUrl}/${id}/emails/${ChapterEmailType[type]}`,
   emailProviders: `${baseUrl}/emails/providers`,
   emailProviderSettings: (id: string) => `${baseUrl}/${id}/emails/provider/settings`,
+  emails: (id: string) => `${baseUrl}/${id}/emails`,
   emailSettings: (id: string) => `${baseUrl}/${id}/emails/settings`,
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   questions: (id: string) => `${baseUrl}/${id}/questions`,
@@ -88,6 +92,12 @@ export class ChapterAdminService extends ChapterService {
     );
   }
 
+  getChapterEmails(chapterId: string): Observable<ChapterEmail[]> {
+    return this.http.get(endpoints.emails(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapChapterEmail(x)))
+    );
+  }
+
   getEmailProviders(): Observable<string[]> {
     return this.http.get(endpoints.emailProviders).pipe(
       map((response: any) => response)
@@ -148,6 +158,17 @@ export class ChapterAdminService extends ChapterService {
     );
   }    
 
+  updateChapterEmail(chapterId: string, chapterEmail: ChapterEmail): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      htmlContent: chapterEmail.htmlContent,
+      subject: chapterEmail.subject
+    });
+
+    return this.http.put(endpoints.email(chapterId, chapterEmail.type), params).pipe(
+      map(() => undefined)
+    );
+  }
+
   updateChapterTexts(chapterId: string, texts: ChapterTexts): Observable<ChapterTexts> {
     const params: HttpParams = HttpUtils.createFormParams({
       registerText: texts.registerText,
@@ -177,6 +198,15 @@ export class ChapterAdminService extends ChapterService {
       apiPublicKey: response.apiPublicKey,
       apiSecretKey: response.apiSecretKey,
       provider: response.provider
+    };
+  }
+
+  private mapChapterEmail(response: any): ChapterEmail {
+    return {
+      htmlContent: response.htmlContent,
+      id: response.id,
+      subject: response.subject,
+      type: response.type
     };
   }
 

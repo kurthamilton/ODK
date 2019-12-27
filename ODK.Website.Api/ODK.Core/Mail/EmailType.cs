@@ -6,6 +6,8 @@
         PasswordReset = 1,
         ActivateAccount = 2,
         EventInvite = 3,
-        ContactRequest = 4
+        ContactRequest = 4,
+        NewMember = 5,
+        NewMemberAdmin = 6
     }
 }

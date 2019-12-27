@@ -12,9 +12,9 @@ namespace ODK.Services.Mails
     {
         private readonly IChapterRepository _chapterRepository;
         private readonly IMailProviderFactory _mailProviderFactory;
-        private readonly IMemberEmailRepository _memberEmailRepository;
+        private readonly IEmailRepository _memberEmailRepository;
 
-        public MailService(IChapterRepository chapterRepository, IMemberEmailRepository memberEmailRepository,
+        public MailService(IChapterRepository chapterRepository, IEmailRepository memberEmailRepository,
             IMailProviderFactory mailProviderFactory)
         {
             _chapterRepository = chapterRepository;

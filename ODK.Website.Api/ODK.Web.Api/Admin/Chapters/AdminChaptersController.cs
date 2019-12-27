@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
+using ODK.Core.Mail;
 using ODK.Services.Chapters;
 using ODK.Web.Api.Admin.Chapters.Requests;
 using ODK.Web.Api.Admin.Chapters.Responses;
@@ -75,6 +76,22 @@ namespace ODK.Web.Api.Admin.Chapters
         public async Task<IActionResult> DeleteChapterAdminMember(Guid id, Guid memberId)
         {
             await _chapterAdminService.DeleteChapterAdminMember(GetMemberId(), id, memberId);
+            return NoContent();
+        }
+
+        [HttpGet("{id}/Emails")]
+        public async Task<IEnumerable<ChapterEmailApiResponse>> GetChapterEmails(Guid id)
+        {
+            IReadOnlyCollection<ChapterEmail> emails = await _chapterAdminService.GetChapterEmails(GetMemberId(), id);
+            return emails.Select(_mapper.Map<ChapterEmailApiResponse>);
+        }
+
+        [HttpPut("{id}/Emails/{type}")]
+        public async Task<IActionResult> UpdateChapterEmail(Guid id, EmailType type,
+            [FromForm] UpdateChapterEmailApiRequest request)
+        {
+            UpdateChapterEmail chapterEmail = _mapper.Map<UpdateChapterEmail>(request);
+            await _chapterAdminService.UpdateChapterEmail(GetMemberId(), id, type, chapterEmail);
             return NoContent();
         }
 

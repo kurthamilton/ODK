@@ -18,13 +18,13 @@ namespace ODK.Services.Events
         private readonly IChapterRepository _chapterRepository;
         private readonly IEventRepository _eventRepository;
         private readonly IMailProviderFactory _mailProviderFactory;
-        private readonly IMemberEmailRepository _memberEmailRepository;
+        private readonly IEmailRepository _memberEmailRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly EventAdminServiceSettings _settings;
         private readonly IVenueRepository _venueRepository;
 
         public EventAdminService(IEventRepository eventRepository, IChapterRepository chapterRepository,
-            IMemberEmailRepository memberEmailRepository, EventAdminServiceSettings settings,
+            IEmailRepository memberEmailRepository, EventAdminServiceSettings settings,
             IMemberRepository memberRepository, IVenueRepository venueRepository,
             IMailProviderFactory mailProviderFactory)
             : base(chapterRepository)

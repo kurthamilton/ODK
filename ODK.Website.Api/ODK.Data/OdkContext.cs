@@ -9,6 +9,7 @@ namespace ODK.Data
             : base(connectionString)
         {
             AddMap(new ChapterAdminMemberMap());
+            AddMap(new ChapterEmailMap());
             AddMap(new ChapterEmailProviderSettingsMap());
             AddMap(new ChapterLinksMap());
             AddMap(new ChapterMap());

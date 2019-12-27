@@ -88,6 +88,7 @@ namespace ODK.Services.Members
 
             await _mailService.SendMemberMail(create, EmailType.ActivateAccount, new Dictionary<string, string>
             {
+                { "chapter.name", chapter.Name },
                 { "url", url }
             });
         }
