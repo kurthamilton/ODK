@@ -27,6 +27,7 @@ import { ProfileComponent } from '../components/account/profile/profile.componen
 import { ProfileEmailsComponent } from '../components/account/profile-emails/profile-emails.component';
 import { ResetPasswordComponent } from '../components/account/reset-password/reset-password.component';
 import { SubscriptionComponent } from '../components/account/subscription/subscription.component';
+import { UnauthenticatedGuardService } from './unauthenticated-guard.service';
 
 const chapterPaths = appPaths.chapter.childPaths;
 
@@ -34,10 +35,13 @@ export const appRoutes: Routes = [
     {
       path: appPaths.home.path, component: HomeLayoutComponent, canActivate: [HomeGuardService], children: [
         { path: '', component: HomeComponent },
-        { path: appPaths.login.path, component: LoginComponent, data: { title: 'Login' } },
-        { path: appPaths.logout.path, component: LogoutComponent },
-        { path: appPaths.password.forgotten.path, component: ForgottenPasswordComponent, data: { title: 'Forgotten password' } },
-        { path: appPaths.password.reset.path, component: ResetPasswordComponent, data: { title: 'Reset password' } },
+        { path: appPaths.login.path, component: LoginComponent, canActivate: [UnauthenticatedGuardService], 
+          data: { title: 'Login' } },
+        { path: appPaths.logout.path, component: LogoutComponent, canActivate: [AuthenticatedGuardService] },
+        { path: appPaths.password.forgotten.path, component: ForgottenPasswordComponent, canActivate: [UnauthenticatedGuardService], 
+          data: { title: 'Forgotten password' } },
+        { path: appPaths.password.reset.path, component: ResetPasswordComponent, canActivate: [UnauthenticatedGuardService],
+          data: { title: 'Reset password' } },
         { path: appPaths.privacy.path, component: PrivacyComponent, data: { title: 'Privacy' } },
       ]
     },
@@ -45,17 +49,21 @@ export const appRoutes: Routes = [
       path: appPaths.chapter.path, component: ChapterLayoutComponent, canActivate: [ChapterGuardService], children: [
         { path: '', component: ChapterComponent },
         { path: chapterPaths.about.path, component: AboutComponent, data: { title: 'About' } },
-        { path: chapterPaths.activateAccount.path, component: ActivateAccountComponent, data: { title: 'Activate account' } },
+        { path: chapterPaths.activateAccount.path, component: ActivateAccountComponent, canActivate: [UnauthenticatedGuardService], 
+          data: { title: 'Activate account' } },
         { path: chapterPaths.contact.path, component: ContactComponent, data: { title: 'Send us a message' } },
         { path: chapterPaths.events.path, component: EventsComponent, data: { title: 'Events' } },
         { path: chapterPaths.event.path, component: EventComponent },
-        { path: chapterPaths.join.path, component: JoinComponent },
-        { path: chapterPaths.login.path, component: LoginComponent, data: { title: 'Login' } },
-        { path: chapterPaths.logout.path, component: LogoutComponent },
+        { path: chapterPaths.join.path, component: JoinComponent, canActivate: [UnauthenticatedGuardService] },
+        { path: chapterPaths.login.path, component: LoginComponent, canActivate: [UnauthenticatedGuardService], 
+          data: { title: 'Login' } },
+        { path: chapterPaths.logout.path, component: LogoutComponent, canActivate: [AuthenticatedGuardService] },
         { path: chapterPaths.members.path, component: MembersComponent, canActivate: [ChapterMemberGuardService] },
         { path: chapterPaths.member.path, component: MemberComponent, canActivate: [ChapterMemberGuardService] },
-        { path: chapterPaths.password.forgotten.path, component: ForgottenPasswordComponent, data: { title: 'Forgotten password' } },
-        { path: chapterPaths.password.reset.path, component: ResetPasswordComponent, data: { title: 'Reset password' } },
+        { path: chapterPaths.password.forgotten.path, component: ForgottenPasswordComponent, canActivate: [UnauthenticatedGuardService], 
+          data: { title: 'Forgotten password' } },
+        { path: chapterPaths.password.reset.path, component: ResetPasswordComponent, canActivate: [UnauthenticatedGuardService], 
+          data: { title: 'Reset password' } },
         { path: chapterPaths.profile.path, canActivate: [AuthenticatedGuardService], children: [
           { path: '', component: ProfileComponent, data: { title: 'My profile' } },
           { path: chapterPaths.profile.emails.path, component: ProfileEmailsComponent, data: { title: 'Emails' } },
