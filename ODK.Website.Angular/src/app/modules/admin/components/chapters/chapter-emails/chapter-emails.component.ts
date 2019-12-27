@@ -1,5 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
+import { Subject } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { ChapterEmail } from 'src/app/core/chapters/chapter-email';
@@ -8,7 +11,6 @@ import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-m
 import { HtmlEditorFormControlViewModel } from '../../forms/inputs/html-editor-form-control/html-editor-form-control.view-model';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 import { StringUtils } from 'src/app/utils/string-utils';
-import { Subject } from 'rxjs';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
@@ -23,7 +25,10 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
   ) {     
   }
 
-  forms: FormViewModel[];
+  viewModels: { 
+    email: ChapterEmail;
+    form: FormViewModel;
+  }[];
   
   private chapter: Chapter;
   private formCallback: Subject<boolean> = new Subject<boolean>();
@@ -47,23 +52,37 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
     this.formCallback.complete();
   }
 
-  onFormSubmit(form: FormViewModel): void {
-    const emailType: ChapterEmailType = parseInt(form.id);
-    
-    const email: ChapterEmail = {
-      htmlContent: this.formControls.get(emailType).htmlContent.value,
-      id: '',
-      subject: this.formControls.get(emailType).subject.value,
-      type: emailType
-    };
+  onFormSubmit(email: ChapterEmail): void {
+    email.htmlContent = this.formControls.get(email.type).htmlContent.value;
+    email.subject = this.formControls.get(email.type).subject.value;
 
-    this.chapterAdminService.updateChapterEmail(this.chapter.id, email).subscribe(() => {
-      this.formCallback.next(true);
+    this.formCallback.next(true);
+    this.viewModels = null;
+    this.changeDetector.detectChanges();
+
+    this.chapterAdminService.updateChapterEmail(this.chapter.id, email).pipe(
+      switchMap(() => this.chapterAdminService.getChapterEmails(this.chapter.id))
+    ).subscribe((emails: ChapterEmail[]) => {
+      this.emails = emails;
+      this.buildForm();
+      this.changeDetector.detectChanges();
     });
   }
 
+  onRestoreDefaultClick(email: ChapterEmail): void {
+    this.viewModels = null;
+
+    this.chapterAdminService.deleteChapterEmail(this.chapter.id, email.type).pipe(
+      switchMap(() => this.chapterAdminService.getChapterEmails(this.chapter.id))
+    ).subscribe((emails: ChapterEmail[]) => {
+      this.emails = emails;
+      this.buildForm();
+      this.changeDetector.detectChanges();
+    });
+  }
+  
   private buildForm(): void {
-    this.forms = [];
+    this.viewModels = [];
     this.formControls = new Map();
 
     this.emails
@@ -99,7 +118,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
           })
         });
         
-        this.forms.push({
+        const form: FormViewModel = {
           buttons: [
             { text: 'Update' }
           ],
@@ -108,8 +127,12 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
             this.formControls.get(chapterEmail.type).heading,
             this.formControls.get(chapterEmail.type).subject,
             this.formControls.get(chapterEmail.type).htmlContent
-          ],
-          id: chapterEmail.type.toString()
+          ]
+        };
+
+        this.viewModels.push({
+          email: chapterEmail,
+          form: form
         });
       });
   }

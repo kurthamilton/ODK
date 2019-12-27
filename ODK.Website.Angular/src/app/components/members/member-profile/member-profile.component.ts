@@ -65,9 +65,9 @@ export class MemberProfileComponent implements OnChanges {
         ... this.chapterProperties
           .filter(x => memberPropertyMap.has(x.id) && !!memberPropertyMap.get(x.id).value)
           .map((x): FormControlViewModel => (new ReadOnlyFormControlViewModel({
-            id: x.id,
+            id: x.name,
             label: {
-              text: x.name
+              text: x.label
             },
             value: memberPropertyMap.get(x.id).value
           }))),

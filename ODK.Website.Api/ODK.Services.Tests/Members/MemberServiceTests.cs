@@ -87,13 +87,14 @@ namespace ODK.Services.Tests.Members
             return Mock.Of<IAuthorizationService>();
         }
 
-        private static ChapterProperty CreateMockChapterProperty(string name = null, bool required = false)
+        private static ChapterProperty CreateMockChapterProperty(string label = null, bool required = false)
         {
             return new ChapterProperty(
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 DataType.Text,
-                name ?? "property",
+                "name",
+                label ?? "property",
                 1,
                 required,
                 null,

@@ -107,7 +107,7 @@ namespace ODK.Services.Events
             Event @event = await GetEvent(currentMemberId, eventId);
             Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
             Venue venue = await _venueRepository.GetVenue(@event.VenueId);
-            Email email = await GetEventEmailTemplate();
+            Email email = await GetEventEmailTemplate(chapter.Id);
             IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
             return email.Interpolate(parameters);
         }
@@ -265,7 +265,7 @@ namespace ODK.Services.Events
         {
             Venue venue = await _venueRepository.GetVenue(@event.VenueId);
 
-            Email template = await GetEventEmailTemplate();
+            Email template = await GetEventEmailTemplate(chapter.Id);
             IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
             return template.Interpolate(parameters);
         }
@@ -288,9 +288,9 @@ namespace ODK.Services.Events
             return parameters;
         }
 
-        private async Task<Email> GetEventEmailTemplate()
+        private async Task<Email> GetEventEmailTemplate(Guid chapterId)
         {
-            return await _memberEmailRepository.GetEmail(EmailType.EventInvite);
+            return await _memberEmailRepository.GetEmail(chapterId, EmailType.EventInvite);
         }
 
         private async Task UpdateEventEmail(IMailProvider mailProvider, Event @event, Chapter chapter, EventEmail eventEmail)

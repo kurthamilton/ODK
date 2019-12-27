@@ -95,6 +95,13 @@ namespace ODK.Web.Api.Admin.Chapters
             return NoContent();
         }
 
+        [HttpDelete("{id}/Emails/{type}")]
+        public async Task<IActionResult> DeleteChapterEmail(Guid id, EmailType type)
+        {
+            await _chapterAdminService.DeleteChapterEmail(GetMemberId(), id, type);
+            return NoContent();
+        }
+
         [HttpGet("{id}/Emails/Provider/Settings")]
         public async Task<ChapterEmailProviderSettingsApiResponse> GetChapterEmailProviderSettings(Guid id)
         {

@@ -20,6 +20,15 @@ namespace ODK.Data.Repositories
                 .GetIdentityAsync();
         }
 
+        public async Task DeleteChapterEmail(Guid chapterId, EmailType type)
+        {
+            await Context
+                .Delete<ChapterEmail>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .Where(x => x.Type).EqualTo(type)
+                .ExecuteAsync();
+        }
+
         public async Task<ChapterEmail> GetChapterEmail(Guid chapterId, EmailType type)
         {
             return await Context
@@ -37,8 +46,14 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<Email> GetEmail(EmailType type)
+        public async Task<Email> GetEmail(Guid chapterId, EmailType type)
         {
+            ChapterEmail chapterEmail = await GetChapterEmail(chapterId, type);
+            if (chapterEmail != null)
+            {
+                return new Email(chapterEmail.Type, chapterEmail.Subject, chapterEmail.HtmlContent);
+            }
+
             return await Context
                 .Select<Email>()
                 .Where(x => x.Type).EqualTo(type)

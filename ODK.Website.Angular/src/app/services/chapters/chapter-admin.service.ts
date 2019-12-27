@@ -62,6 +62,12 @@ export class ChapterAdminService extends ChapterService {
     );
   }
 
+  deleteChapterEmail(chapterId: string, type: ChapterEmailType): Observable<void> {
+    return this.http.delete(endpoints.email(chapterId, type)).pipe(
+      map(() => undefined)
+    );
+  }
+
   getAdminChapters(): Observable<Chapter[]> {
     return this.http.get(endpoints.chapters).pipe(
       map((response: any) => response.map(x => this.mapChapter(x)))

@@ -172,6 +172,7 @@ export class ChapterService {
       dataType: response.dataTypeId,
       helpText: response.helpText,
       id: response.id,
+      label: response.label,
       name: response.name,
       required: response.required === true,
       subtitle: response.subtitle

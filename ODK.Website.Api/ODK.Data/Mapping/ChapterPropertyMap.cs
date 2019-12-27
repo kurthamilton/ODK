@@ -15,6 +15,7 @@ namespace ODK.Data.Mapping
             Property(x => x.ChapterId);
             Property(x => x.DataType).HasColumnName("DataTypeId");
             Property(x => x.Name);
+            Property(x => x.Label);
             Property(x => x.DisplayOrder);
             Property(x => x.Required);
             Property(x => x.Subtitle);
@@ -29,10 +30,11 @@ namespace ODK.Data.Mapping
                 chapterId: reader.GetGuid(1),
                 dataType: (DataType)reader.GetInt32(2),
                 name: reader.GetString(3),
-                displayOrder: reader.GetInt32(4),
-                required: reader.GetBoolean(5),
-                subtitle: reader.GetStringOrDefault(6),
-                helpText: reader.GetStringOrDefault(7)
+                label: reader.GetString(4),
+                displayOrder: reader.GetInt32(5),
+                required: reader.GetBoolean(6),
+                subtitle: reader.GetStringOrDefault(7),
+                helpText: reader.GetStringOrDefault(8)
             );
         }
     }

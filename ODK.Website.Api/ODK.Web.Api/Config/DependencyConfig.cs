@@ -94,6 +94,7 @@ namespace ODK.Web.Api.Config
             services.AddSingleton(new AuthenticationServiceSettings
             {
                 AccessTokenLifetimeMinutes = auth.AccessTokenLifetimeMinutes,
+                EventsUrl = $"{urls.Base}{urls.Events}",
                 Key = auth.Key,
                 PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
                 PasswordResetUrl = $"{urls.Base}{urls.PasswordReset}",

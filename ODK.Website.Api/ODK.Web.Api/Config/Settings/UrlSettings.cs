@@ -12,6 +12,8 @@
 
         public string EventRsvp { get; set; }
 
+        public string Events { get; set; }
+
         public string PasswordReset { get; set; }
     }
 }

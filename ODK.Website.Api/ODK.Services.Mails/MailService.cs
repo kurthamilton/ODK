@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
@@ -24,7 +23,7 @@ namespace ODK.Services.Mails
 
         public async Task SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters)
         {
-            Email email = await _memberEmailRepository.GetEmail(EmailType.ContactRequest);
+            Email email = await _memberEmailRepository.GetEmail(chapter.Id, EmailType.ContactRequest);
 
             IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(chapter.Id);
             List<string> to = chapterAdminMembers
@@ -42,9 +41,29 @@ namespace ODK.Services.Mails
             await mailProvider.SendEmail(null, to, email, parameters);
         }
 
-        public async Task SendMemberMail(Member member, EmailType type, IDictionary<string, string> parameters)
+        public async Task SendChapterNewMemberAdminMail(Chapter chapter, Member member, IDictionary<string, string> parameters)
         {
-            Email email = await _memberEmailRepository.GetEmail(type);
+            Email email = await _memberEmailRepository.GetEmail(chapter.Id, EmailType.NewMemberAdmin);
+
+            IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(chapter.Id);
+            List<string> to = chapterAdminMembers
+                .Where(x => x.ReceiveNewMemberEmails && !string.IsNullOrWhiteSpace(x.AdminEmailAddress))
+                .Select(x => x.AdminEmailAddress)
+                .ToList();
+
+            IMailProvider mailProvider = await _mailProviderFactory.Create(chapter);
+
+            if (to.Count == 0)
+            {
+                to.Add(mailProvider.Settings.FromEmailAddress);
+            }
+
+            await mailProvider.SendEmail(null, to, email, parameters);
+        }
+
+        public async Task SendMemberMail(Chapter chapter, Member member, EmailType type, IDictionary<string, string> parameters)
+        {
+            Email email = await _memberEmailRepository.GetEmail(chapter.Id, type);
 
             IMailProvider mailProvider = await _mailProviderFactory.Create(member.ChapterId);
 

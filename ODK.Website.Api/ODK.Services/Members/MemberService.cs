@@ -86,7 +86,7 @@ namespace ODK.Services.Members
                 { "token", HttpUtility.UrlEncode(activationToken) }
             });
 
-            await _mailService.SendMemberMail(create, EmailType.ActivateAccount, new Dictionary<string, string>
+            await _mailService.SendMemberMail(chapter, create, EmailType.ActivateAccount, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "url", url }
@@ -293,7 +293,7 @@ namespace ODK.Services.Members
 
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    yield return chapterProperty.Name;
+                    yield return chapterProperty.Label;
                 }
             }
         }

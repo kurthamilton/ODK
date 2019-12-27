@@ -1,5 +1,11 @@
-<ng-container *appLoading="!forms">
-  <div *ngFor="let form of forms" class="mb-5">
-    <app-form [form]="form" (formSubmit)="onFormSubmit(form)"></app-form>
+<ng-container *appLoading="!viewModels">
+  <div *ngFor="let viewModel of viewModels" class="mb-5">
+    <app-form [form]="viewModel.form" (formSubmit)="onFormSubmit(viewModel.email)">
+      <div app-button-row *ngIf="viewModel.email.id">
+        <button class="btn btn-link" (click)="onRestoreDefaultClick(viewModel.email)">
+          Restore default
+        </button>
+      </div>
+    </app-form>
   </div>  
 </ng-container>

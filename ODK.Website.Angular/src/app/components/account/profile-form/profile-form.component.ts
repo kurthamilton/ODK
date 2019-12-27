@@ -267,7 +267,7 @@ export class ProfileFormComponent implements OnChanges {
       label: {
         helpText: chapterProperty.helpText,
         subtitle: chapterProperty.subtitle,
-        text: chapterProperty.name
+        text: chapterProperty.label
       },
       validation: {
         required: chapterProperty.required

@@ -22,15 +22,17 @@ namespace ODK.Services.Authentication
     {
         private readonly IAuthorizationService _authorizationService;
         private readonly IChapterRepository _chapterRepository;
+        private readonly IEmailRepository _emailRepository;
         private readonly IMailService _mailService;
         private readonly IMemberRepository _memberRepository;
         private readonly AuthenticationServiceSettings _settings;
 
         public AuthenticationService(IMemberRepository memberRepository, IMailService mailService, AuthenticationServiceSettings settings,
-            IAuthorizationService authorizationService, IChapterRepository chapterRepository)
+            IAuthorizationService authorizationService, IChapterRepository chapterRepository, IEmailRepository emailRepository)
         {
             _authorizationService = authorizationService;
             _chapterRepository = chapterRepository;
+            _emailRepository = emailRepository;
             _mailService = mailService;
             _memberRepository = memberRepository;
             _settings = settings;
@@ -49,7 +51,7 @@ namespace ODK.Services.Authentication
             await _memberRepository.DeleteActivationToken(token.MemberId);
             await _memberRepository.ActivateMember(token.MemberId);
 
-            // TODO: Send new member emails
+            await SendNewMemberEmails(token.MemberId);
         }
 
         public async Task ChangePassword(Guid memberId, string currentPassword, string newPassword)
@@ -148,7 +150,7 @@ namespace ODK.Services.Authentication
                 { "token", HttpUtility.UrlEncode(token) }
             });
 
-            await _mailService.SendMemberMail(member, EmailType.PasswordReset, new Dictionary<string, string>
+            await _mailService.SendMemberMail(chapter, member, EmailType.PasswordReset, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "url", url }
@@ -253,6 +255,43 @@ namespace ODK.Services.Authentication
             await _memberRepository.AddRefreshToken(token);
 
             return refreshToken;
+        }
+
+        private async Task SendNewMemberEmails(Guid memberId)
+        {
+            Member member = await _memberRepository.GetMember(memberId);
+            Chapter chapter = await _chapterRepository.GetChapter(member.ChapterId);
+
+            string eventsUrl = _settings.EventsUrl.Interpolate(new Dictionary<string, string>
+            {
+                { "chapter.name", chapter.Name }
+            });
+
+            await _mailService.SendMemberMail(chapter, member, EmailType.NewMember, new Dictionary<string, string>
+            {
+                { "chapter.name", chapter.Name },
+                { "eventsUrl", eventsUrl },
+                { "member.firstName", member.FirstName }
+            });
+
+            IReadOnlyCollection<MemberProperty> memberProperties = await _memberRepository.GetMemberProperties(memberId);
+            IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(member.ChapterId);
+
+            IDictionary<string, string> newMemberAdminEmailParameters = new Dictionary<string, string>
+            {
+                { "chapter.name", chapter.Name },
+                { "member.emailAddress", member.EmailAddress },
+                { "member.firstName", member.FirstName },
+                { "member.lastName", member.LastName }
+            };
+
+            foreach (ChapterProperty chapterProperty in chapterProperties)
+            {
+                string value = memberProperties.FirstOrDefault(x => x.ChapterPropertyId == chapterProperty.Id)?.Value;
+                newMemberAdminEmailParameters.Add($"member.properties.{chapterProperty.Name}", value);
+            }
+
+            await _mailService.SendChapterNewMemberAdminMail(chapter, member, newMemberAdminEmailParameters);
         }
 
         private async Task UpdatePassword(Guid memberId, string password)

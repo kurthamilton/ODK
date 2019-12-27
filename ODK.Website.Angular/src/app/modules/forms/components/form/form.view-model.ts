@@ -7,5 +7,4 @@ export interface FormViewModel {
   buttons: FormButtonViewModel[];
   callback: Observable<boolean | string[]>;
   controls: FormControlViewModel[];
-  id?: string;
 }

@@ -83,6 +83,13 @@ namespace ODK.Services.Chapters
             await _chapterRepository.DeleteChapterAdminMember(chapterId, memberId);
         }
 
+        public async Task DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            await _emailRepository.DeleteChapterEmail(chapterId, type);
+        }
+
         public async Task<ChapterAdminMember> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
@@ -127,7 +134,7 @@ namespace ODK.Services.Chapters
 
                 if (!chapterEmailDictionary.ContainsKey(type))
                 {
-                    Email email = await _emailRepository.GetEmail(type);
+                    Email email = await _emailRepository.GetEmail(chapterId, type);
                     defaultEmails.Add(new ChapterEmail(Guid.Empty, chapterId, type, email.Subject, email.Body));
                 }
             }
