@@ -271,7 +271,7 @@ namespace ODK.Services.Authentication
             {
                 { "chapter.name", chapter.Name },
                 { "eventsUrl", eventsUrl },
-                { "member.firstName", member.FirstName }
+                { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) }
             });
 
             IReadOnlyCollection<MemberProperty> memberProperties = await _memberRepository.GetMemberProperties(memberId);
@@ -280,15 +280,15 @@ namespace ODK.Services.Authentication
             IDictionary<string, string> newMemberAdminEmailParameters = new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
-                { "member.emailAddress", member.EmailAddress },
-                { "member.firstName", member.FirstName },
-                { "member.lastName", member.LastName }
+                { "member.emailAddress", HttpUtility.HtmlEncode(member.EmailAddress) },
+                { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) },
+                { "member.lastName", HttpUtility.HtmlEncode(member.LastName) }
             };
 
             foreach (ChapterProperty chapterProperty in chapterProperties)
             {
                 string value = memberProperties.FirstOrDefault(x => x.ChapterPropertyId == chapterProperty.Id)?.Value;
-                newMemberAdminEmailParameters.Add($"member.properties.{chapterProperty.Name}", value);
+                newMemberAdminEmailParameters.Add($"member.properties.{chapterProperty.Name}", HttpUtility.HtmlEncode(value ?? ""));
             }
 
             await _mailService.SendChapterNewMemberAdminMail(chapter, member, newMemberAdminEmailParameters);
