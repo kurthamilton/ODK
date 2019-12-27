@@ -24,6 +24,15 @@ export const adminPaths = {
     path: 'chapter',
     payments: {
       path: 'payments'
+    },
+    properties: {
+      path: 'properties',
+      property: {
+        path: ':id',
+        params: {
+          id: 'id'
+        }
+      }
     }
   },
   events: {

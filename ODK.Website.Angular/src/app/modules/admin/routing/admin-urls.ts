@@ -1,5 +1,6 @@
 import { adminPaths } from './admin-paths';
 import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { Event } from 'src/app/core/events/event';
 import { Member } from 'src/app/core/members/member';
 import { Venue } from 'src/app/core/venues/venue';
@@ -28,6 +29,8 @@ export const adminUrls = {
     chapterEmailProvider: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emailProvider.path),
     chapterEmails: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emails.path),
     chapterPayments: (chapter: Chapter) => chapterPath(chapter, chapterPaths.payments.path),
+    chapterProperties: (chapter: Chapter) => chapterPath(chapter, chapterPaths.properties.path),
+    chapterProperty: (chapter: Chapter, property: ChapterProperty) => chapterPath(chapter, `${chapterPaths.properties.path}/${property.id}`),
     event: (chapter: Chapter, event: Event) => eventPath(chapter, event),
     eventCreate: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.events.path}/${adminPaths.events.create.path}`),
     eventInvites: (chapter: Chapter, event: Event) => eventPath(chapter, event, eventPaths.invites.path),

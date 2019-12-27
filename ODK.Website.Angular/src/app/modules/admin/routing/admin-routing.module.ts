@@ -11,6 +11,7 @@ import { ChapterAdminMembersComponent } from '../components/chapters/chapter-adm
 import { ChapterEmailProviderComponent } from '../components/chapters/chapter-email-provider/chapter-email-provider.component';
 import { ChapterEmailsComponent } from '../components/chapters/chapter-emails/chapter-emails.component';
 import { ChapterPaymentSettingsComponent } from '../components/chapters/chapter-payment-settings/chapter-payment-settings.component';
+import { ChapterPropertiesComponent } from '../components/chapters/chapter-properties/chapter-properties.component';
 import { ChapterQuestionsComponent } from '../components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from '../components/chapters/chapter-settings/chapter-settings.component';
 import { ChapterSuperAdminGuardService } from 'src/app/routing/chapter-super-admin-guard.service';
@@ -28,6 +29,7 @@ import { MemberSubscriptionComponent } from '../components/members/member-subscr
 import { VenueEventsComponent } from '../components/venues/venue-events/venue-events.component';
 import { VenueLayoutComponent } from '../components/venues/venue-layout/venue-layout.component';
 import { VenuesComponent } from '../components/venues/venues/venues.component';
+import { ChapterPropertyComponent } from '../components/chapters/chapter-property/chapter-property.component';
 
 const routes: Routes = [
   { path: '', component: AdminComponent, canActivate: [ChapterAdminGuardService], children: [
@@ -44,7 +46,11 @@ const routes: Routes = [
         canActivate: [ChapterSuperAdminGuardService] },
       { path: adminPaths.chapter.emails.path, component: ChapterEmailsComponent },
       { path: adminPaths.chapter.payments.path, component: ChapterPaymentSettingsComponent, 
-        canActivate: [ChapterSuperAdminGuardService] }
+        canActivate: [ChapterSuperAdminGuardService] },
+      { path: adminPaths.chapter.properties.path, children: [
+        { path: '', component: ChapterPropertiesComponent },
+        { path: adminPaths.chapter.properties.property.path, component: ChapterPropertyComponent }
+      ] }
     ] },
     { path: adminPaths.events.path, children: [
       { path: '', component: EventsComponent },

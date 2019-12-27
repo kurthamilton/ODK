@@ -1,0 +1,14 @@
+<table *appLoading="!properties" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Label</th>
+      <th>Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let property of properties">
+      <td><a [routerLink]="getPropertyLink(property)">{{property.label}}</a></td>
+      <td>{{property.name}}</td>
+    </tr>
+  </tbody>
+</table>

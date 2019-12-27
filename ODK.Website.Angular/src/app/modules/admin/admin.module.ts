@@ -10,8 +10,14 @@ import { AdminRoutingModule } from './routing/admin-routing.module';
 import { AppFormsModule } from '../forms/app-forms.module';
 import { AppSharedModule } from '../shared/app-shared.module';
 import { ChapterAdminLayoutComponent } from './components/chapters/chapter-admin-layout/chapter-admin-layout.component';
+import { ChapterAdminMemberAddComponent } from './components/chapters/chapter-admin-member-add/chapter-admin-member-add.component';
+import { ChapterAdminMemberComponent } from './components/chapters/chapter-admin-member/chapter-admin-member.component';
+import { ChapterAdminMembersComponent } from './components/chapters/chapter-admin-members/chapter-admin-members.component';
+import { ChapterEmailProviderComponent } from './components/chapters/chapter-email-provider/chapter-email-provider.component';
+import { ChapterEmailsComponent } from './components/chapters/chapter-emails/chapter-emails.component';
 import { ChapterMenuComponent } from './components/chapters/chapter-menu/chapter-menu.component';
 import { ChapterPaymentSettingsComponent } from './components/chapters/chapter-payment-settings/chapter-payment-settings.component';
+import { ChapterPropertiesComponent } from './components/chapters/chapter-properties/chapter-properties.component';
 import { ChapterQuestionsComponent } from './components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from './components/chapters/chapter-settings/chapter-settings.component';
 import { CreateEventComponent } from './components/events/create-event/create-event.component';
@@ -41,11 +47,7 @@ import { VenueFormComponent } from './components/venues/venue-form/venue-form.co
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
-import { ChapterEmailProviderComponent } from './components/chapters/chapter-email-provider/chapter-email-provider.component';
-import { ChapterAdminMembersComponent } from './components/chapters/chapter-admin-members/chapter-admin-members.component';
-import { ChapterAdminMemberComponent } from './components/chapters/chapter-admin-member/chapter-admin-member.component';
-import { ChapterAdminMemberAddComponent } from './components/chapters/chapter-admin-member-add/chapter-admin-member-add.component';
-import { ChapterEmailsComponent } from './components/chapters/chapter-emails/chapter-emails.component';
+import { ChapterPropertyComponent } from './components/chapters/chapter-property/chapter-property.component';
 
 @NgModule({
   declarations: [
@@ -88,6 +90,8 @@ import { ChapterEmailsComponent } from './components/chapters/chapter-emails/cha
     ChapterAdminMemberComponent,
     ChapterAdminMemberAddComponent,
     ChapterEmailsComponent,
+    ChapterPropertiesComponent,
+    ChapterPropertyComponent,
   ],
   imports: [
     AdminRoutingModule,
