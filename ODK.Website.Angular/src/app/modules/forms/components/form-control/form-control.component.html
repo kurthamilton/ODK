@@ -5,6 +5,6 @@
   <div #inputcontainer>
   </div>
   <app-form-control-validation *ngIf="control" [control]="control" [label]="viewModel.label.text"
-    [validated]="validated">
+    [validated]="validated" [viewModel]="viewModel.validation">
   </app-form-control-validation>
 </div>

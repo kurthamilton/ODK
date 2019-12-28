@@ -395,6 +395,11 @@ namespace ODK.Services.Members
             {
                 throw new OdkServiceException($"The following properties are required: {string.Join(", ", missingProperties)}");
             }
+
+            if (!MailUtils.ValidEmailAddress(profile.EmailAddress))
+            {
+                throw new OdkServiceException("Invalid email address format");
+            }
         }
     }
 }

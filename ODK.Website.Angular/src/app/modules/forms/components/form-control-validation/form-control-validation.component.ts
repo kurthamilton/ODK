@@ -4,6 +4,7 @@ import { FormControl } from '@angular/forms';
 import { takeUntil } from 'rxjs/operators';
 
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { FormControlValidationViewModel } from './form-control-validation.view-model';
 
 @Component({
   selector: 'app-form-control-validation',
@@ -18,6 +19,7 @@ export class FormControlValidationComponent implements OnInit, OnDestroy {
   @Input() control: FormControl;
   @Input() label: string;
   @Input() validated: boolean;
+  @Input() viewModel: FormControlValidationViewModel;
 
   ngOnInit(): void {
     this.control.statusChanges

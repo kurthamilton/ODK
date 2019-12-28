@@ -8,6 +8,7 @@ import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.ser
 import { ChapterEmailProviderSettings } from 'src/app/core/chapters/chapter-email-provider-settings';
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
+import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
@@ -106,6 +107,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
           text: 'From Email Address'
         },
         validation: {
+          pattern: FormControlValidationPatterns.email,
           required: true
         },
         value: this.emailProviderSettings.fromEmailAddress

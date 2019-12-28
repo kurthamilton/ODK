@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { TextAreaFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-area-form-control/text-area-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
@@ -29,7 +30,7 @@ export class ContactComponent implements OnInit, OnDestroy {
   private chapter: Chapter;
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
-    email: TextInputFormControlViewModel;
+    emailAddress: TextInputFormControlViewModel;
     message: TextAreaFormControlViewModel;
   };
   
@@ -54,7 +55,7 @@ export class ContactComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
-    this.chapterService.contact(this.chapter.id, this.formControls.email.value, this.formControls.message.value).subscribe(() => {
+    this.chapterService.contact(this.chapter.id, this.formControls.emailAddress.value, this.formControls.message.value).subscribe(() => {
       this.form = null;
       this.submitted = true;
       this.formCallback.next();
@@ -64,12 +65,13 @@ export class ContactComponent implements OnInit, OnDestroy {
   
   private buildForm(): void {
     this.formControls = {
-      email: new TextInputFormControlViewModel({
+      emailAddress: new TextInputFormControlViewModel({
         id: 'email',
         label: {
-          text: 'Email'
+          text: 'Email address'
         },
         validation: {
+          pattern: FormControlValidationPatterns.email,
           required: true
         }
       }),
@@ -91,7 +93,7 @@ export class ContactComponent implements OnInit, OnDestroy {
       ],
       callback: this.formCallback,
       controls: [
-        this.formControls.email,
+        this.formControls.emailAddress,
         this.formControls.message
       ]
     };

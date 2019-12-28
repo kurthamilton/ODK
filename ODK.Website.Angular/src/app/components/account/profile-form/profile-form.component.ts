@@ -17,6 +17,7 @@ import { DropDownFormControlOptions } from 'src/app/modules/forms/components/inp
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
 import { FileInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/file-input-form-control/file-input-form-control.view-model';
 import { FormControlOptions } from 'src/app/modules/forms/components/form-control-options';
+import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
 import { FormControlViewModel } from 'src/app/modules/forms/components/form-control.view-model';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { MemberProperty } from 'src/app/core/members/member-property';
@@ -113,17 +114,18 @@ export class ProfileFormComponent implements OnChanges {
   private buildForm(): void {
     this.formControls = {
       emailAddress: this.profile ? new ReadOnlyFormControlViewModel({
-        id: 'emailAddresss',
+        id: 'emailAddress',
         label: {
-          text: 'Email'
+          text: 'Email address'
         },
         value: this.profile.emailAddress
       }) : new TextInputFormControlViewModel({
         id: 'emailAddress',
         label: {
-          text: 'Email'
+          text: 'Email address'
         },
         validation: {
+          pattern: FormControlValidationPatterns.email,
           required: true
         },
         value: ''

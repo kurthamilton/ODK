@@ -1,5 +1,8 @@
 <ng-container *ngIf="control.invalid && (control.touched || validated)">
-    <div *ngIf="control.errors['required']" class="text-danger">
-        Required
-    </div>    
+  <div *ngIf="control.errors['pattern']" class="text-danger">
+    {{viewModel.message || 'Invalid ' + label + ' format'}}
+  </div>
+  <div *ngIf="control.errors['required']" class="text-danger">
+    {{viewModel.message || 'Required'}}
+  </div>
 </ng-container>

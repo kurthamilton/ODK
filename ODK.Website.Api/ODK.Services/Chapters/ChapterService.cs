@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using ODK.Core.Chapters;
+using ODK.Core.Mail;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
@@ -105,6 +106,11 @@ namespace ODK.Services.Chapters
             if (string.IsNullOrWhiteSpace(fromAddress) || string.IsNullOrWhiteSpace(message))
             {
                 throw new OdkServiceException("Email address and message must be provided");
+            }
+
+            if (!MailUtils.ValidEmailAddress(fromAddress))
+            {
+                throw new OdkServiceException("Invalid email address format");
             }
 
             VersionedServiceResult<Chapter> chapter = await GetChapter(null, chapterId);

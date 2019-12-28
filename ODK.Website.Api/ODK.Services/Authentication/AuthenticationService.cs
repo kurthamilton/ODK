@@ -125,6 +125,11 @@ namespace ODK.Services.Authentication
 
         public async Task RequestPasswordReset(string emailAddress)
         {
+            if (!MailUtils.ValidEmailAddress(emailAddress))
+            {
+                throw new OdkServiceException("Invalid email address format");
+            }
+
             Member member = await _memberRepository.FindMemberByEmailAddress(emailAddress);
 
             DateTime created = DateTime.UtcNow;

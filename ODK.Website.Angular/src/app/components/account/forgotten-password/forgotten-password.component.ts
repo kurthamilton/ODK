@@ -6,6 +6,7 @@ import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
@@ -31,7 +32,7 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
   private chapter: Chapter;
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
-    email: TextInputFormControlViewModel;
+    emailAddress: TextInputFormControlViewModel;
   };
 
   ngOnInit(): void {
@@ -54,7 +55,7 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
-    this.authenticationService.requestPasswordReset(this.formControls.email.value).subscribe(() => {
+    this.authenticationService.requestPasswordReset(this.formControls.emailAddress.value).subscribe(() => {
       this.message = 'An email containing password reset instructions has been sent';
       this.changeDetector.detectChanges();
     });
@@ -62,13 +63,14 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
 
   private buildForm(): void {
     this.formControls = {
-      email: new TextInputFormControlViewModel({
+      emailAddress: new TextInputFormControlViewModel({
         id: 'email',
         label: {
           text: 'Email address'
         },
         value: '',
         validation: {
+          pattern: FormControlValidationPatterns.email,
           required: true
         }
       })
@@ -80,7 +82,7 @@ export class ForgottenPasswordComponent implements OnInit, OnDestroy {
       ],
       callback: this.formCallback,
       controls: [
-        this.formControls.email
+        this.formControls.emailAddress
       ]
     };
   }

@@ -9,10 +9,11 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminMember } from 'src/app/core/chapters/chapter-admin-member';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { CheckBoxFormControlViewModel } from 'src/app/modules/forms/components/inputs/check-box-form-control/check-box-form-control.view-model';
+import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
+import { MenuItem } from 'src/app/core/menus/menu-item';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
-import { MenuItem } from 'src/app/core/menus/menu-item';
 
 @Component({
   selector: 'app-chapter-admin-member',
@@ -87,6 +88,7 @@ export class ChapterAdminMemberComponent implements OnInit, OnDestroy {
           text: 'Admin email address'
         },
         validation: {
+          pattern: FormControlValidationPatterns.email,
           required: true
         },
         value: this.adminMember.adminEmailAddress
