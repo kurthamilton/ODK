@@ -11,7 +11,10 @@ namespace ODK.Services.Mails
         Task SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters);
 
         Task SendChapterNewMemberAdminMail(Chapter chapter, Member member, IDictionary<string, string> parameters);
+        
+        Task SendMail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters);
 
         Task SendMemberMail(Chapter chapter, Member member, EmailType type, IDictionary<string, string> parameters);
+
     }
 }

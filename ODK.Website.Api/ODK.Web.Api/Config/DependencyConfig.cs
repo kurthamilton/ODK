@@ -111,6 +111,7 @@ namespace ODK.Web.Api.Config
             services.AddSingleton(new MemberServiceSettings
             {
                 ActivateAccountUrl = $"{urls.Base}{urls.ActivateAccount}",
+                ConfirmEmailAddressUpdateUrl = $"{urls.Base}{urls.ConfirmEmailAddressUpdate}",
                 MaxImageSize = members.MaxImageSize
             });
         }

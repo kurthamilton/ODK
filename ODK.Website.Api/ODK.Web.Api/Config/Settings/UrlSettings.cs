@@ -8,6 +8,8 @@
 
         public string Base { get; set; }
 
+        public string ConfirmEmailAddressUpdate { get; set; }
+
         public string Event { get; set; }
 
         public string EventRsvp { get; set; }

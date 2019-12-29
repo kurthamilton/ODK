@@ -28,6 +28,7 @@ import { ProfileEmailsComponent } from '../components/account/profile-emails/pro
 import { ResetPasswordComponent } from '../components/account/reset-password/reset-password.component';
 import { SubscriptionComponent } from '../components/account/subscription/subscription.component';
 import { UnauthenticatedGuardService } from './unauthenticated-guard.service';
+import { UpdateEmailAddressComponent } from '../components/account/update-email-address/update-email-address.component';
 
 const chapterPaths = appPaths.chapter.childPaths;
 
@@ -66,9 +67,10 @@ export const appRoutes: Routes = [
           data: { title: 'Reset password' } },
         { path: chapterPaths.profile.path, canActivate: [AuthenticatedGuardService], children: [
           { path: '', component: ProfileComponent, data: { title: 'My profile' } },
-          { path: chapterPaths.profile.emails.path, component: ProfileEmailsComponent, data: { title: 'Emails' } },
+          { path: chapterPaths.profile.emails.path, component: ProfileEmailsComponent, data: { title: 'Email opt-in' } },
           { path: chapterPaths.profile.password.change.path, component: ChangePasswordComponent, data: { title: 'Change password' } },
-          { path: chapterPaths.profile.subscription.path, component: SubscriptionComponent, data: { title: 'My subscription' } }
+          { path: chapterPaths.profile.subscription.path, component: SubscriptionComponent, data: { title: 'My subscription' } },
+          { path: chapterPaths.profile.updateEmailAddress.path, component: UpdateEmailAddressComponent, data: { title: 'Update email address' } },
         ] },
       ]
     },

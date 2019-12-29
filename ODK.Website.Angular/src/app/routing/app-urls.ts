@@ -30,7 +30,8 @@ export const appUrls = {
     },
     privacy: `/${appPaths.privacy.path}`,
     profile: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.profile.path),
-    subscription: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.subscription.path}`)
+    subscription: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.subscription.path}`),
+    updateEmailAddress: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.updateEmailAddress.path}`),
 };
 
 Object.freeze(appUrls);

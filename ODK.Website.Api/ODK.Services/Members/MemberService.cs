@@ -45,6 +45,37 @@ namespace ODK.Services.Members
             _settings = settings;
         }
 
+        public async Task ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
+        {
+            Member member = await GetMember(memberId, memberId);
+
+            MemberEmailAddressUpdateToken token = await _memberRepository.GetMemberEmailAddressUpdateToken(member.Id);
+            if (token == null)
+            {
+                return;
+            }
+
+            if (token.ConfirmationToken != confirmationToken)
+            {
+                throw new OdkServiceException("Token mismatch");
+            }
+
+            Member existing = await _memberRepository.FindMemberByEmailAddress(token.NewEmailAddress);
+            if (existing != null)
+            {
+                await _memberRepository.DeleteEmailAddressUpdateToken(member.Id);
+                throw new OdkServiceException("Error updating email address: email address is already registered to an account");
+            }
+
+            await _memberRepository.UpdateMemberEmailAddress(member.Id, token.NewEmailAddress);
+            _cacheService.RemoveVersionedItem<Member>(member.Id);
+
+            await _memberRepository.DeleteEmailAddressUpdateToken(member.Id);
+
+            IMailProvider mailProvider = await _mailProviderFactory.Create(member.ChapterId);
+            await mailProvider.UpdateMemberEmailAddress(member, token.NewEmailAddress);
+        }
+
         public async Task CreateMember(Guid chapterId, CreateMemberProfile profile)
         {
             await ValidateMemberProfile(chapterId, profile);
@@ -211,6 +242,45 @@ namespace ODK.Services.Members
 
             byte[] data = _imageService.Rotate(image.ImageData, degrees);
             return await UpdateMemberImage(member, data, image.MimeType);
+        }
+
+        public async Task RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress)
+        {
+            Member member = await GetMember(memberId, memberId);
+            if (member.EmailAddress.Equals(newEmailAddress, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (!MailUtils.ValidEmailAddress(newEmailAddress))
+            {
+                throw new OdkServiceException("Invalid email address format");
+            }
+
+            MemberEmailAddressUpdateToken existingToken = await _memberRepository.GetMemberEmailAddressUpdateToken(member.Id);
+            if (existingToken != null)
+            {
+                await _memberRepository.DeleteEmailAddressUpdateToken(member.Id);
+            }
+
+            string activationToken = RandomStringGenerator.Generate(64);
+
+            MemberEmailAddressUpdateToken token = new MemberEmailAddressUpdateToken(member.Id, newEmailAddress, activationToken);
+            await _memberRepository.AddEmailAddressUpdateToken(token);
+
+            Chapter chapter = await _chapterRepository.GetChapter(member.ChapterId);
+
+            string url = _settings.ConfirmEmailAddressUpdateUrl.Interpolate(new Dictionary<string, string>
+            {
+                { "chapter.name", chapter.Name },
+                { "token", HttpUtility.UrlEncode(activationToken) }
+            });
+
+            await _mailService.SendMail(chapter, newEmailAddress, EmailType.EmailAddressUpdate, new Dictionary<string, string>
+            {
+                { "chapter.name", chapter.Name },
+                { "url", url }
+            });
         }
 
         public async Task UpdateMemberEmailOptIn(Guid memberId, bool optIn)

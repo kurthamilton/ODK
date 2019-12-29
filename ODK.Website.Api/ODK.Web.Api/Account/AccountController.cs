@@ -118,6 +118,20 @@ namespace ODK.Web.Api.Account
             return _mapper.Map<MemberProfileApiResponse>(profile);
         }
 
+        [HttpPost("Profile/EmailAddress/Request")]
+        public async Task<IActionResult> RequestEmailAddressUpdate([FromForm] UpdateEmailAddressApiRequest request)
+        {
+            await _memberService.RequestMemberEmailAddressUpdate(GetMemberId(), request.NewEmailAddress);
+            return Created();
+        }
+
+        [HttpPost("Profile/EmailAddress/Confirm")]
+        public async Task<IActionResult> ConfirmEmailAddressUpdate(string token)
+        {
+            await _memberService.ConfirmEmailAddressUpdate(GetMemberId(), token);
+            return Created();
+        }
+
         [AllowAnonymous]
         [HttpPost("RefreshToken")]
         public async Task<ActionResult<AuthenticationTokenApiResponse>> RefreshToken([FromForm] RefreshTokenApiRequest request)

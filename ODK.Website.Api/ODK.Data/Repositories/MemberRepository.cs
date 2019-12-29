@@ -29,6 +29,13 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task AddEmailAddressUpdateToken(MemberEmailAddressUpdateToken token)
+        {
+            await Context
+                .Insert(token)
+                .ExecuteAsync();
+        }
+
         public async Task AddMemberImage(MemberImage image)
         {
             await Context
@@ -69,6 +76,14 @@ namespace ODK.Data.Repositories
         {
             await Context
                 .Delete<MemberActivationToken>()
+                .Where(x => x.MemberId).EqualTo(memberId)
+                .ExecuteAsync();
+        }
+
+        public async Task DeleteEmailAddressUpdateToken(Guid memberId)
+        {
+            await Context
+                .Delete<MemberEmailAddressUpdateToken>()
                 .Where(x => x.MemberId).EqualTo(memberId)
                 .ExecuteAsync();
         }
@@ -145,6 +160,14 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<MemberActivationToken>()
                 .Where(x => x.ActivationToken).EqualTo(activationToken)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<MemberEmailAddressUpdateToken> GetMemberEmailAddressUpdateToken(Guid memberId)
+        {
+            return await Context
+                .Select<MemberEmailAddressUpdateToken>()
+                .Where(x => x.MemberId).EqualTo(memberId)
                 .FirstOrDefaultAsync();
         }
 
@@ -226,6 +249,15 @@ namespace ODK.Data.Repositories
                 .Set(x => x.EmailOptIn, emailOptIn)
                 .Set(x => x.FirstName, firstName)
                 .Set(x => x.LastName, lastName)
+                .Where(x => x.Id).EqualTo(memberId)
+                .ExecuteAsync();
+        }
+
+        public async Task UpdateMemberEmailAddress(Guid memberId, string emailAddress)
+        {
+            await Context
+                .Update<Member>()
+                .Set(x => x.EmailAddress, emailAddress)
                 .Where(x => x.Id).EqualTo(memberId)
                 .ExecuteAsync();
         }

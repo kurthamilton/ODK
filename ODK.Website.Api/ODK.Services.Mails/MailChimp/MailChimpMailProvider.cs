@@ -142,6 +142,11 @@ namespace ODK.Services.Mails.MailChimp
             await manager.Content.AddOrUpdateAsync(campaign.Id, content);
         }
 
+        protected override Task UpdateContactEmailAddress(string emailAddress, string newEmailAddress)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override Task UpdateContactOptIn(string emailAddress, bool optIn)
         {
             throw new NotImplementedException();

@@ -72,7 +72,13 @@ export const appPaths = {
         path: 'profile',
         subscription: {
           path: 'subscription'
-        }
+        },
+        updateEmailAddress: {
+          path: 'update-email-address',
+          queryParams: {
+            token: 'token'
+          }
+        },
       }
     },
     path: ':chapter',

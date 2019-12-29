@@ -61,13 +61,18 @@ namespace ODK.Services.Mails
             await mailProvider.SendEmail(null, to, email, parameters);
         }
 
-        public async Task SendMemberMail(Chapter chapter, Member member, EmailType type, IDictionary<string, string> parameters)
+        public async Task SendMail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters)
         {
             Email email = await _memberEmailRepository.GetEmail(chapter.Id, type);
 
-            IMailProvider mailProvider = await _mailProviderFactory.Create(member.ChapterId);
+            IMailProvider mailProvider = await _mailProviderFactory.Create(chapter);
 
-            await mailProvider.SendEmail(null, member.EmailAddress, email, parameters);
+            await mailProvider.SendEmail(null, to, email, parameters);
+        }
+
+        public async Task SendMemberMail(Chapter chapter, Member member, EmailType type, IDictionary<string, string> parameters)
+        {
+            await SendMail(chapter, member.EmailAddress, type, parameters);
         }
     }
 }

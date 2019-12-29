@@ -35,6 +35,8 @@ namespace ODK.Services.Mails
 
         Task UpdateEventEmail(Event @event, Email email, string emailId);
 
+        Task UpdateMemberEmailAddress(Member member, string newEmailAddress);
+
         Task UpdateMemberOptIn(Member member, bool optIn);
     }
 }

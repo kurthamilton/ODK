@@ -32,6 +32,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     changePassword: string;
     emails: string;
     subscription: string;
+    updateEmailAddress: string;
   };
 
   successMessage: string;
@@ -53,7 +54,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
       this.links = {
         changePassword: appUrls.password.change(this.chapter),
         emails: appUrls.emails(this.chapter),
-        subscription: appUrls.subscription(this.chapter)
+        subscription: appUrls.subscription(this.chapter),
+        updateEmailAddress: appUrls.updateEmailAddress(this.chapter)
       };
       this.changeDetector.detectChanges();
     });

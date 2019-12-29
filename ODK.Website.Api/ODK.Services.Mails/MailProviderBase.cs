@@ -71,7 +71,7 @@ namespace ODK.Services.Mails
         public async Task<bool> GetMemberOptIn(Member member)
         {
             Contact contact = await GetContact(member.EmailAddress);
-            return contact.OptIn;
+            return contact?.OptIn ?? false;
         }
 
         public async Task SendEmail(ChapterAdminMember from, string to, Email email, IDictionary<string, string> parameters = null)
@@ -155,6 +155,11 @@ namespace ODK.Services.Mails
             await UpdateCampaign(campaign);
         }
 
+        public async Task UpdateMemberEmailAddress(Member member, string newEmailAddress)
+        {
+            await UpdateContactEmailAddress(member.EmailAddress, newEmailAddress);
+        }
+
         public async Task UpdateMemberOptIn(Member member, bool optIn)
         {
             await UpdateContactOptIn(member.EmailAddress, optIn);
@@ -183,6 +188,8 @@ namespace ODK.Services.Mails
         protected abstract Task UpdateCampaign(EventCampaign campaign);
 
         protected abstract Task UpdateCampaignEmailContent(EventCampaign campaign);
+
+        protected abstract Task UpdateContactEmailAddress(string emailAddress, string newEmailAddress);
 
         protected abstract Task UpdateContactOptIn(string emailAddress, bool optIn);
 

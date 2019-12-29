@@ -84,9 +84,15 @@ namespace ODK.Services.Mails.SendInBlue
         {
             string url = SendInBlueEndpoints.Contact(emailAddress);
 
-            ContactApiResponse response = await Get<ContactApiResponse>(url);
-
-            return MapContact(response);
+            try
+            {
+                ContactApiResponse response = await Get<ContactApiResponse>(url);
+                return MapContact(response);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         protected override async Task<ContactList> GetContactList(string name)
@@ -213,17 +219,27 @@ namespace ODK.Services.Mails.SendInBlue
             return Task.CompletedTask;
         }
 
-        protected override async Task UpdateContactOptIn(string emailAddress, bool optIn)
+        protected override async Task UpdateContactEmailAddress(string emailAddress, string newEmailAddress)
         {
-            Contact contact = await GetContact(emailAddress);
-
             UpdateContactApiRequest body = new UpdateContactApiRequest
             {
                 Attributes = new UpdateContactAttributesApiRequest
                 {
-                    FirstName = contact.FirstName,
-                    LastName = contact.LastName
-                },
+                    Email = newEmailAddress
+                }
+            };
+
+            string url = SendInBlueEndpoints.Contact(emailAddress);
+
+            IRestRequest request = CreateRequest(url, Method.PUT, body);
+
+            await ExecuteRequest(request);
+        }
+
+        protected override async Task UpdateContactOptIn(string emailAddress, bool optIn)
+        {
+            UpdateContactApiRequest body = new UpdateContactApiRequest
+            {
                 EmailBlacklisted = !optIn
             };
 

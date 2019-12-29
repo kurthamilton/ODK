@@ -16,11 +16,13 @@ const baseUrl = `${environment.baseUrl}/account`;
 
 const endpoints = {
   activate: `${baseUrl}/activate`,
+  confirmEmailAddressUpdate: (token: string) => `${baseUrl}/profile/emailaddress/confirm?token=${encodeURIComponent(token)}`,
   emailOptIn: `${baseUrl}/emails/optin`,
   image: `${baseUrl}/image`,
   profile: `${baseUrl}/profile`,
   purchaseSubscription: (id: string) => `${baseUrl}/subscriptions/${id}/purchase`,
   register: `${baseUrl}/register`,
+  requestEmailAddressUpdate: `${baseUrl}/profile/emailaddress/request`,
   rotateImage: `${baseUrl}/image/rotate/right`,
   subscription: `${baseUrl}/subscription`
 };
@@ -44,6 +46,15 @@ export class AccountService {
       })),
       catchApiError()
     )
+  }
+
+  confirmEmailAddressUpdate(token: string): Observable<ServiceResult<void>> {
+    return this.http.post(endpoints.confirmEmailAddressUpdate(token), null).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
+    );
   }
 
   getProfile(): Observable<AccountProfile> {
@@ -76,6 +87,19 @@ export class AccountService {
     const formData: FormData = HttpUtils.createFormData(paramsObject);
 
     return this.http.post(endpoints.register, formData).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
+    );
+  }
+
+  requestEmailAddressUpdate(newEmailAddress: string): Observable<ServiceResult<void>> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      newEmailAddress: newEmailAddress
+    });
+
+    return this.http.post(endpoints.requestEmailAddressUpdate, params).pipe(
       map((): ServiceResult<void> => ({
         success: true
       })),

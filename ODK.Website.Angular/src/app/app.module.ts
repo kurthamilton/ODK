@@ -58,6 +58,7 @@ import { SubscriptionAlertComponent } from './components/account/subscription-al
 import { SubscriptionComponent } from './components/account/subscription/subscription.component';
 import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenets.component';
 import { ProfileEmailsComponent } from './components/account/profile-emails/profile-emails.component';
+import { UpdateEmailAddressComponent } from './components/account/update-email-address/update-email-address.component';
 
 @NgModule({
   declarations: [
@@ -112,6 +113,7 @@ import { ProfileEmailsComponent } from './components/account/profile-emails/prof
     AboutComponent,
     ActivateAccountComponent,
     ProfileEmailsComponent,
+    UpdateEmailAddressComponent,
   ],
   imports: [
     AppFormsModule,

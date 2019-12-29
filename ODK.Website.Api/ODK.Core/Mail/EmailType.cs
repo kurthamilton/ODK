@@ -8,6 +8,7 @@
         EventInvite = 3,
         ContactRequest = 4,
         NewMember = 5,
-        NewMemberAdmin = 6
+        NewMemberAdmin = 6,
+        EmailAddressUpdate = 7
     }
 }
