@@ -1,8 +1,6 @@
-﻿using ODK.Core.Mail;
-
-namespace ODK.Services.Chapters
+﻿namespace ODK.Services.Mails
 {
-    public class UpdateChapterEmail
+    public class UpdateEmail
     {
         public string HtmlContent { get; set; }
 

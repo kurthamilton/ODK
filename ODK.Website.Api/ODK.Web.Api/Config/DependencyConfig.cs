@@ -70,6 +70,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IChapterAdminService, ChapterAdminService>();
             services.AddScoped<IChapterService, ChapterService>();
             services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<IEmailAdminService, EmailAdminService>();
             services.AddScoped<IEventAdminService, EventAdminService>();
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IImageService, ImageService>();

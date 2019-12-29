@@ -1,6 +1,6 @@
-﻿namespace ODK.Web.Api.Admin.Chapters.Requests
+﻿namespace ODK.Web.Api.Admin.Emails.Requests
 {
-    public class UpdateChapterEmailApiRequest
+    public class UpdateEmailApiRequest
     {
         public string HtmlContent { get; set; }
 

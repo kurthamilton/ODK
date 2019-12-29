@@ -8,15 +8,15 @@ import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.ser
 import { MenuItem } from 'src/app/core/menus/menu-item';
 
 @Component({
-  selector: 'app-chapter-menu',
-  templateUrl: './chapter-menu.component.html',
+  selector: 'app-email-menu',
+  templateUrl: './email-menu.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterMenuComponent implements OnInit {
+export class EmailMenuComponent implements OnInit {
 
   constructor(private chapterAdminService: ChapterAdminService,
     private authenticationService: AuthenticationService
-  ) {     
+  ) { 
   }
 
   menuItems: MenuItem[];
@@ -26,13 +26,15 @@ export class ChapterMenuComponent implements OnInit {
     const token: AuthenticationToken = this.authenticationService.getToken();
 
     this.menuItems = [
-      { link: adminUrls.chapter(chapter), text: 'Settings', matchExactRoute: true },
-      { link: adminUrls.chapterAbout(chapter), text: 'About' },
-      { link: adminUrls.chapterAdminMembers(chapter), text: 'Admin members' }
+      { link: adminUrls.emails(chapter), text: 'Chapter', matchExactRoute: true }
     ];
 
     if (token.superAdmin) {
-      this.menuItems.push({ link: adminUrls.chapterPayments(chapter), text: 'Payments' });
+      this.menuItems.push(...[
+        { link: adminUrls.emailProvider(chapter), text: 'Provider' },
+        { link: adminUrls.emailsDefault(chapter), text: 'Default' }
+      ]);
     }
   }
+
 }

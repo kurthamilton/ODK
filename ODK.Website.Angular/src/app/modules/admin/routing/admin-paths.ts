@@ -14,13 +14,7 @@ export const adminPaths = {
         }
       },
       path: 'admin-members'
-    },
-    emailProvider: {
-      path: 'email-provider'
-    },  
-    emails: {
-      path: 'emails'
-    }, 
+    },    
     path: 'chapter',
     payments: {
       path: 'payments'
@@ -34,6 +28,15 @@ export const adminPaths = {
         }
       }
     }
+  },
+  emails: {
+    default: {
+      path: 'default'
+    },
+    emailProvider: {
+      path: 'email-provider'
+    },  
+    path: 'emails'
   },
   events: {
     create: {

@@ -5,8 +5,9 @@ import { switchMap } from 'rxjs/operators';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { ChapterEmail } from 'src/app/core/chapters/chapter-email';
-import { ChapterEmailType } from 'src/app/core/chapters/chapter-email-type';
+import { Email } from 'src/app/core/emails/email';
+import { EmailAdminService } from 'src/app/services/emails/email-admin.service';
+import { EmailType } from 'src/app/core/emails/email-type';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { HtmlEditorFormControlViewModel } from '../../forms/inputs/html-editor-form-control/html-editor-form-control.view-model';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
@@ -14,34 +15,35 @@ import { StringUtils } from 'src/app/utils/string-utils';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
-  selector: 'app-chapter-emails',
-  templateUrl: './chapter-emails.component.html',
+  selector: 'app-default-emails',
+  templateUrl: './default-emails.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterEmailsComponent implements OnInit, OnDestroy {
+export class DefaultEmailsComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private chapterAdminService: ChapterAdminService
+    private chapterAdminService: ChapterAdminService,
+    private emailAdminService: EmailAdminService
   ) {     
   }
 
   viewModels: { 
-    email: ChapterEmail;
+    email: Email;
     form: FormViewModel;
   }[];
   
   private chapter: Chapter;
   private formCallback: Subject<boolean> = new Subject<boolean>();
-  private formControls: Map<ChapterEmailType, {  
+  private formControls: Map<EmailType, {  
     heading: ReadOnlyFormControlViewModel;
     htmlContent: HtmlEditorFormControlViewModel;
     subject: TextInputFormControlViewModel;
   }>;
-  private emails: ChapterEmail[];
-  
+  private emails: Email[];
+
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
-    this.chapterAdminService.getChapterEmails(this.chapter.id).subscribe((emails: ChapterEmail[]) => {
+    this.emailAdminService.getEmails(this.chapter.id).subscribe((emails: Email[]) => {
       this.emails = emails;
       this.buildForm();
       this.changeDetector.detectChanges();
@@ -52,7 +54,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
     this.formCallback.complete();
   }
 
-  onFormSubmit(email: ChapterEmail): void {
+  onFormSubmit(email: Email): void {
     email.htmlContent = this.formControls.get(email.type).htmlContent.value;
     email.subject = this.formControls.get(email.type).subject.value;
 
@@ -60,21 +62,9 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
     this.viewModels = null;
     this.changeDetector.detectChanges();
 
-    this.chapterAdminService.updateChapterEmail(this.chapter.id, email).pipe(
-      switchMap(() => this.chapterAdminService.getChapterEmails(this.chapter.id))
-    ).subscribe((emails: ChapterEmail[]) => {
-      this.emails = emails;
-      this.buildForm();
-      this.changeDetector.detectChanges();
-    });
-  }
-
-  onRestoreDefaultClick(email: ChapterEmail): void {
-    this.viewModels = null;
-
-    this.chapterAdminService.deleteChapterEmail(this.chapter.id, email.type).pipe(
-      switchMap(() => this.chapterAdminService.getChapterEmails(this.chapter.id))
-    ).subscribe((emails: ChapterEmail[]) => {
+    this.emailAdminService.updateEmail(email, this.chapter.id).pipe(
+      switchMap(() => this.emailAdminService.getEmails(this.chapter.id))
+    ).subscribe((emails: Email[]) => {
       this.emails = emails;
       this.buildForm();
       this.changeDetector.detectChanges();
@@ -86,35 +76,35 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
     this.formControls = new Map();
 
     this.emails
-      .sort((a, b) => ChapterEmailType[a.type].localeCompare(ChapterEmailType[b.type]))
-      .forEach((chapterEmail: ChapterEmail) => {
-        this.formControls.set(chapterEmail.type, {
+      .sort((a, b) => EmailType[a.type].localeCompare(EmailType[b.type]))
+      .forEach((email: Email) => {
+        this.formControls.set(email.type, {
           heading: new ReadOnlyFormControlViewModel({
-            id: `heading-${chapterEmail.type}`,
+            id: `heading-${email.type}`,
             label: {
-              text: StringUtils.camelPad(ChapterEmailType[chapterEmail.type]),
+              text: StringUtils.camelPad(EmailType[email.type]),
               type: 'heading'
             }
           }),
           htmlContent: new HtmlEditorFormControlViewModel({
-            id: `html-content-${chapterEmail.type}`,
+            id: `html-content-${email.type}`,
             label: {
               text: 'Content'
             },
             validation: {
               required: true
             },
-            value: chapterEmail.htmlContent
+            value: email.htmlContent
           }),
           subject: new TextInputFormControlViewModel({
-            id: `subject-${chapterEmail.type}`,
+            id: `subject-${email.type}`,
             label: {
               text: 'Subject'
             },
             validation: {
               required: true
             },
-            value: chapterEmail.subject
+            value: email.subject
           })
         });
         
@@ -124,14 +114,14 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
           ],
           callback: this.formCallback,
           controls: [
-            this.formControls.get(chapterEmail.type).heading,
-            this.formControls.get(chapterEmail.type).subject,
-            this.formControls.get(chapterEmail.type).htmlContent
+            this.formControls.get(email.type).heading,
+            this.formControls.get(email.type).subject,
+            this.formControls.get(email.type).htmlContent
           ]
         };
 
         this.viewModels.push({
-          email: chapterEmail,
+          email: email,
           form: form
         });
       });

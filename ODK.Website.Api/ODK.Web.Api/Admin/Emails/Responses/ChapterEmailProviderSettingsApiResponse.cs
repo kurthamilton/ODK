@@ -1,6 +1,6 @@
-﻿namespace ODK.Web.Api.Admin.Chapters.Requests
+﻿namespace ODK.Web.Api.Admin.Emails.Responses
 {
-    public class UpdateChapterEmailProviderSettingsApiRequest
+    public class ChapterEmailProviderSettingsApiResponse
     {
         public string ApiKey { get; set; }
 

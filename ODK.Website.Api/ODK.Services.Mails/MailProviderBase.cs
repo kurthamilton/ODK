@@ -88,7 +88,7 @@ namespace ODK.Services.Mails
                     email = email.Interpolate(parameters);
                 }
 
-                MimeMessage message = await CreateMessage(from, to, email.Subject, email.Body);
+                MimeMessage message = await CreateMessage(from, to, email.Subject, email.HtmlContent);
 
                 using SmtpClient client = new SmtpClient();
                 await client.ConnectAsync(Settings.SmtpServer, Settings.SmtpPort, false);
@@ -204,7 +204,7 @@ namespace ODK.Services.Mails
                 ContactListId = contactList.Id,
                 From = Settings.FromEmailAddress,
                 FromName = Settings.FromName,
-                HtmlContent = email.Body,
+                HtmlContent = email.HtmlContent,
                 Name = $"Event: {@event.Name}",
                 ReplyTo = adminMembers.FirstOrDefault(x => x.SendEventEmails)?.AdminEmailAddress,
                 Subject = email.Subject

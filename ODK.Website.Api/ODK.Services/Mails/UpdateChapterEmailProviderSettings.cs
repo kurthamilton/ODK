@@ -1,4 +1,4 @@
-﻿namespace ODK.Services.Chapters
+﻿namespace ODK.Services.Mails
 {
     public class UpdateChapterEmailProviderSettings
     {

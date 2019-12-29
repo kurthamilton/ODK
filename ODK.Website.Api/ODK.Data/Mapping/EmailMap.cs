@@ -11,7 +11,7 @@ namespace ODK.Data.Mapping
         {
             Property(x => x.Type).HasColumnName("EmailTypeId");
             Property(X => X.Subject);
-            Property(x => x.Body);
+            Property(x => x.HtmlContent).HasColumnName("Body");
         }
 
         public override Email Read(IDataReader reader)
@@ -20,7 +20,7 @@ namespace ODK.Data.Mapping
             (
                 type: (EmailType)reader.GetInt32(0),
                 subject: reader.GetString(1),
-                body: reader.GetString(2)
+                htmlContent: reader.GetString(2)
             );
         }
     }

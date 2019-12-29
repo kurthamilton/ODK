@@ -7,9 +7,6 @@ import { map } from 'rxjs/operators';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminMember } from 'src/app/core/chapters/chapter-admin-member';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
-import { ChapterEmail } from 'src/app/core/chapters/chapter-email';
-import { ChapterEmailProviderSettings } from 'src/app/core/chapters/chapter-email-provider-settings';
-import { ChapterEmailType } from 'src/app/core/chapters/chapter-email-type';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterService } from './chapter.service';
 import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
@@ -22,11 +19,6 @@ const endpoints = {
   adminMember: (id: string, memberId: string) => `${baseUrl}/${id}/adminmembers/${memberId}`,
   adminMembers: (id: string) => `${baseUrl}/${id}/adminmembers`,
   chapters: baseUrl,  
-  email: (id: string, type: ChapterEmailType) => `${baseUrl}/${id}/emails/${ChapterEmailType[type]}`,
-  emailProviders: `${baseUrl}/emails/providers`,
-  emailProviderSettings: (id: string) => `${baseUrl}/${id}/emails/provider/settings`,
-  emails: (id: string) => `${baseUrl}/${id}/emails`,
-  emailSettings: (id: string) => `${baseUrl}/${id}/emails/settings`,
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   questions: (id: string) => `${baseUrl}/${id}/questions`,
   texts: (id: string) => `${baseUrl}/${id}/texts`,
@@ -60,25 +52,13 @@ export class ChapterAdminService extends ChapterService {
     return this.http.post(endpoints.questions(chapterId), params).pipe(
       map(() => undefined)
     );
-  }
-
-  deleteChapterEmail(chapterId: string, type: ChapterEmailType): Observable<void> {
-    return this.http.delete(endpoints.email(chapterId, type)).pipe(
-      map(() => undefined)
-    );
-  }
+  }  
 
   getAdminChapters(): Observable<Chapter[]> {
     return this.http.get(endpoints.chapters).pipe(
       map((response: any) => response.map(x => this.mapChapter(x)))
     );
-  }
-
-  getChapterAdminEmailProviderSettings(chapterId: string): Observable<ChapterEmailProviderSettings> {
-    return this.http.get(endpoints.emailProviderSettings(chapterId)).pipe(
-      map((response: any) => this.mapChapterEmailProviderSettings(response))
-    );
-  }
+  }  
 
   getChapterAdminMember(chapterId: string, memberId: string): Observable<ChapterAdminMember> {
     return this.http.get(endpoints.adminMember(chapterId, memberId)).pipe(
@@ -96,19 +76,7 @@ export class ChapterAdminService extends ChapterService {
     return this.http.get(endpoints.paymentSettings(chapterId)).pipe(
       map((response: any) => this.mapChapterAdminPaymentSettings(response))
     );
-  }
-
-  getChapterEmails(chapterId: string): Observable<ChapterEmail[]> {
-    return this.http.get(endpoints.emails(chapterId)).pipe(
-      map((response: any) => response.map(x => this.mapChapterEmail(x)))
-    );
-  }
-
-  getEmailProviders(): Observable<string[]> {
-    return this.http.get(endpoints.emailProviders).pipe(
-      map((response: any) => response)
-    );
-  }
+  }  
 
   hasAccess(chapter: Chapter): Observable<boolean> {
     return chapter ? this.getAdminChapters().pipe(
@@ -134,24 +102,7 @@ export class ChapterAdminService extends ChapterService {
     return this.http.put(endpoints.adminMember(chapterId, adminMember.memberId), params).pipe(
       map(() => undefined)
     );
-  }
-
-  updateChapterAdminEmailProviderSettings(chapterId: string, emailProviderSettings: ChapterEmailProviderSettings): Observable<void> {
-    const params: HttpParams = HttpUtils.createFormParams({
-      apiKey: emailProviderSettings.apiKey,
-      emailProvider: emailProviderSettings.emailProvider,
-      fromEmailAddress: emailProviderSettings.fromEmailAddress,
-      fromName: emailProviderSettings.fromName,
-      smtpLogin: emailProviderSettings.smtpLogin,
-      smtpPassword: emailProviderSettings.smtpPassword,
-      smtpPort: emailProviderSettings.smtpPort.toString(),
-      smtpServer: emailProviderSettings.smtpServer
-    });
-
-    return this.http.put(endpoints.emailProviderSettings(chapterId), params).pipe(
-      map(() => undefined)
-    );
-  }
+  }  
 
   updateChapterAdminPaymentSettings(chapterId: string, paymentSettings: ChapterAdminPaymentSettings): Observable<ChapterAdminPaymentSettings> {
     const params: HttpParams = HttpUtils.createFormParams({
@@ -163,18 +114,7 @@ export class ChapterAdminService extends ChapterService {
       map((response: any) => this.mapChapterAdminPaymentSettings(response))
     );
   }    
-
-  updateChapterEmail(chapterId: string, chapterEmail: ChapterEmail): Observable<void> {
-    const params: HttpParams = HttpUtils.createFormParams({
-      htmlContent: chapterEmail.htmlContent,
-      subject: chapterEmail.subject
-    });
-
-    return this.http.put(endpoints.email(chapterId, chapterEmail.type), params).pipe(
-      map(() => undefined)
-    );
-  }
-
+  
   updateChapterTexts(chapterId: string, texts: ChapterTexts): Observable<ChapterTexts> {
     const params: HttpParams = HttpUtils.createFormParams({
       registerText: texts.registerText,
@@ -205,27 +145,5 @@ export class ChapterAdminService extends ChapterService {
       apiSecretKey: response.apiSecretKey,
       provider: response.provider
     };
-  }
-
-  private mapChapterEmail(response: any): ChapterEmail {
-    return {
-      htmlContent: response.htmlContent,
-      id: response.id,
-      subject: response.subject,
-      type: response.type
-    };
-  }
-
-  private mapChapterEmailProviderSettings(response: any): ChapterEmailProviderSettings {
-    return {
-      apiKey: response.apiKey,
-      emailProvider: response.emailProvider,
-      fromEmailAddress: response.fromEmailAddress,
-      fromName: response.fromName,
-      smtpLogin: response.smtpLogin,
-      smtpPassword: response.smtpPassword,
-      smtpPort: response.smtpPort,
-      smtpServer: response.smtpServer
-    };
-  }
+  }  
 }

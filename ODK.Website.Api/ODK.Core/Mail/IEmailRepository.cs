@@ -14,8 +14,14 @@ namespace ODK.Core.Mail
 
         Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid chapterId);
 
+        Task<Email> GetEmail(EmailType type);
+
         Task<Email> GetEmail(Guid chapterId, EmailType type);
 
+        Task<IReadOnlyCollection<Email>> GetEmails();
+
         Task UpdateChapterEmail(ChapterEmail chapterEmail);
+
+        Task UpdateEmail(Email email);
     }
 }

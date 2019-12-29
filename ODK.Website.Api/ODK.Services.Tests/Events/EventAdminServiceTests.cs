@@ -32,7 +32,7 @@ namespace ODK.Services.Tests.Events
             Email eventEmail = await service.GetEventEmail(Guid.NewGuid(), Guid.NewGuid());
 
             Assert.AreEqual("Subject: Chapter", eventEmail.Subject);
-            Assert.AreEqual("Body: Chapter", eventEmail.Body);
+            Assert.AreEqual("Body: Chapter", eventEmail.HtmlContent);
         }
 
         [Test]
@@ -50,7 +50,7 @@ namespace ODK.Services.Tests.Events
             Email eventEmail = await service.GetEventEmail(Guid.NewGuid(), Guid.NewGuid());
 
             Assert.AreEqual("Subject: Name", eventEmail.Subject);
-            Assert.AreEqual("Name: Name, Date: Sunday 07 June, 2015, Location: Location, Time: Time", eventEmail.Body);
+            Assert.AreEqual("Name: Name, Date: Sunday 07 June, 2015, Location: Location, Time: Time", eventEmail.HtmlContent);
         }
 
         [Test]
@@ -67,7 +67,7 @@ namespace ODK.Services.Tests.Events
             Email eventEmail = await service.GetEventEmail(Guid.NewGuid(), Guid.NewGuid());
 
             Assert.AreEqual($"Subject: {BaseUrl}/{@event.Id}", eventEmail.Subject);
-            Assert.AreEqual($"RSVP: {BaseUrl}/{EventRsvpUrlFormat}, Url: {BaseUrl}/{@event.Id}" , eventEmail.Body);
+            Assert.AreEqual($"RSVP: {BaseUrl}/{EventRsvpUrlFormat}, Url: {BaseUrl}/{@event.Id}" , eventEmail.HtmlContent);
         }
 
         private static EventAdminService CreateService(IEmailRepository memberEmailRepository = null,

@@ -8,6 +8,7 @@ import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.ser
 import { ChapterEmailProviderSettings } from 'src/app/core/chapters/chapter-email-provider-settings';
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
+import { EmailAdminService } from 'src/app/services/emails/email-admin.service';
 import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
@@ -20,8 +21,10 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private chapterAdminService: ChapterAdminService
-  ) { }
+    private chapterAdminService: ChapterAdminService,
+    private emailAdminService: EmailAdminService
+  ) {     
+  }
 
   form: FormViewModel;
 
@@ -44,10 +47,10 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
     this.chapter = this.chapterAdminService.getActiveChapter();
 
     forkJoin([
-      this.chapterAdminService.getChapterAdminEmailProviderSettings(this.chapter.id).pipe(
+      this.emailAdminService.getChapterAdminEmailProviderSettings(this.chapter.id).pipe(
         tap((emailProviderSettings: ChapterEmailProviderSettings) => this.emailProviderSettings = emailProviderSettings)
       ),
-      this.chapterAdminService.getEmailProviders().pipe(
+      this.emailAdminService.getEmailProviders().pipe(
         tap((providers: string[]) => this.emailProviders = providers)
       )
     ]).subscribe(() => {
@@ -70,7 +73,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
     this.emailProviderSettings.smtpPort = parseInt(this.formControls.smtpPort.value, 10);
     this.emailProviderSettings.smtpServer = this.formControls.smtpServer.value;
 
-    this.chapterAdminService.updateChapterAdminEmailProviderSettings(this.chapter.id, this.emailProviderSettings).subscribe(() => {
+    this.emailAdminService.updateChapterAdminEmailProviderSettings(this.chapter.id, this.emailProviderSettings).subscribe(() => {
       this.formCallback.next(true);
     });
   }

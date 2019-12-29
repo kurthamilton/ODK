@@ -5,18 +5,18 @@ namespace ODK.Core.Mail
 {
     public class Email
     {
-        public Email(EmailType type, string subject, string body)
+        public Email(EmailType type, string subject, string htmlContent)
         {
-            Body = body;
+            HtmlContent = htmlContent;
             Subject = subject;
             Type = type;
         }
 
-        public string Body { get; }
+        public string HtmlContent { get; set; }
 
         public IDictionary<string, string> Parameters { get; } = new Dictionary<string, string>();
 
-        public string Subject { get; }
+        public string Subject { get; set; }
 
         public EmailType Type { get; }
 
@@ -27,10 +27,10 @@ namespace ODK.Core.Mail
                 Parameters[key] = parameters[key];
             }
 
-            string body = Body.Interpolate(parameters);
+            string htmlContent = HtmlContent.Interpolate(parameters);
             string subject = Subject.Interpolate(parameters);
 
-            return new Email(Type, subject, body);
+            return new Email(Type, subject, htmlContent);
         }
     }
 }
