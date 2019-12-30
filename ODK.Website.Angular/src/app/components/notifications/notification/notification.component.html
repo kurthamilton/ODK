@@ -1,3 +1,4 @@
-<ngb-alert *ngIf="notification" [type]="notification.success ? 'success' : 'warning'" (close)="onDismiss()">
+<ngb-alert *ngIf="notification" [ngClass]="cssClass" [type]="notification.success ? 'success' : 'warning'" 
+  (close)="onDismiss()">
     {{notification.message}}
 </ngb-alert>

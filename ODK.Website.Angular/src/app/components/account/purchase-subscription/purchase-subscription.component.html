@@ -1,13 +1,13 @@
 <ng-container *ngIf="chapterSubscription">
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">{{chapterSubscription.title}}</h5>
-            <div class="card-text">
-                <app-raw-html [html]="chapterSubscription.description"></app-raw-html>
-            </div>
-            <div>
-                <app-payment-button [payment]="payment" [close]="close" (cardSubmit)="onCardSubmit($event)"></app-payment-button>
-            </div>
-        </div>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">{{chapterSubscription.title}}</h5>
+      <div class="card-text">
+        <app-raw-html [html]="chapterSubscription.description"></app-raw-html>
+      </div>
+      <div>
+        <app-payment-button [payment]="payment" [close]="close" (cardSubmit)="onCardSubmit($event)"></app-payment-button>
+      </div>
     </div>
+  </div>
 </ng-container>

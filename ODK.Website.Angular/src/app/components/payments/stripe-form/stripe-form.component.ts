@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, ViewChild, ElementRef, ChangeDetectorRef, Output, EventEmitter, OnDestroy } from '@angular/core';
 
+import { LoadingSpinnerOptions } from 'src/app/modules/shared/components/elements/loading-spinner/loading-spinner-options';
 import { ScriptService, appScripts } from 'src/app/services/scripts/script.service';
 
 @Component({
@@ -13,7 +14,7 @@ export class StripeFormComponent implements OnInit, OnDestroy {
     private scriptService: ScriptService
   ) {
   }
-
+  
   @Input() amount: number;
   @Input() currencyCode: string;
   @Input() currencySymbol: string;
@@ -22,21 +23,25 @@ export class StripeFormComponent implements OnInit, OnDestroy {
   @Output() cardSubmit: EventEmitter<string> = new EventEmitter<string>();
   @Output() close: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  @ViewChild('card', { static: true }) card: ElementRef;
+  @ViewChild('card', { static: false }) card: ElementRef;
 
   error: string;
+  loadingOptions: LoadingSpinnerOptions = {
+    overlay: true
+  };
+  paying = false;
   token: any;
 
   private stripe: stripe.Stripe;
   private stripeElement: stripe.elements.Element;
-
+  
   ngOnInit(): void {
     this.scriptService.load(appScripts.stripe)
       .then(() => {
         this.loadStripeForm();
         this.changeDetector.detectChanges();
       })
-      .catch(() => {
+      .catch((e) => {
         this.error = 'An error has occurred while loading the form'
         this.changeDetector.detectChanges();
       });
@@ -49,8 +54,12 @@ export class StripeFormComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    this.stripe.createToken(this.stripeElement).then((result: stripe.TokenResponse) => {
+    this.paying = true;
+    this.changeDetector.detectChanges();
+
+    this.stripe.createToken(this.stripeElement).then((result: stripe.TokenResponse) => {      
       if (result.error) {
+        this.paying = false;
         this.error = result.error.message;
         this.changeDetector.detectChanges();
       } else {

@@ -1,4 +1,6 @@
 <app-modal [title]="name" (close)="onClose()">
+  <div class="overlay-container">
+    <app-loading-spinner *ngIf="paying" [options]="loadingOptions"></app-loading-spinner>
     <form (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="card-element">Credit or debit card</label>
@@ -6,9 +8,10 @@
         <app-error-messages [messages]="[error]"></app-error-messages>
       </div>
       <div class="d-flex justify-content-end align-items-center">
-          <button class="btn btn-primary" type="button" (click)="onSubmit()">
-            Pay {{currencySymbol}}{{amount | number:'1.2-2'}}
-          </button>
+        <button [disabled]="paying ? 'disabled' : null" class="btn btn-primary" type="button" (click)="onSubmit()">
+          Pay {{currencySymbol}}{{amount | number:'1.2-2'}}
+        </button>
       </div>
     </form>
+  </div>  
 </app-modal>

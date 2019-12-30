@@ -2,10 +2,11 @@ import { DatePipe } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { forkJoin, Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, switchMap } from 'rxjs/operators';
 
 import { AccountService } from 'src/app/services/account/account.service';
 import { appUrls } from 'src/app/routing/app-urls';
+import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
@@ -13,6 +14,7 @@ import { FormControlViewModel } from 'src/app/modules/forms/components/form-cont
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { MenuItem } from 'src/app/core/menus/menu-item';
+import { NotificationService } from 'src/app/services/notifications/notification.service';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
 import { SubscriptionType } from 'src/app/core/account/subscription-type';
 
@@ -24,9 +26,11 @@ import { SubscriptionType } from 'src/app/core/account/subscription-type';
 export class SubscriptionComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
+    private datePipe: DatePipe,
     private accountService: AccountService,
     private chapterService: ChapterService,
-    private datePipe: DatePipe
+    private authenticationService: AuthenticationService,
+    private notificationService: NotificationService
   ) {
   }
 
@@ -65,11 +69,19 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
   }
 
   onPurchase(chapterSubscription: ChapterSubscription, token: string): void {
-    this.accountService.purchaseSubscription(chapterSubscription.id, token).subscribe((subscription: MemberSubscription) => {
-      this.subscription = subscription;
+    this.accountService.purchaseSubscription(chapterSubscription.id, token).pipe(
+      tap((subscription: MemberSubscription) => this.subscription = subscription),
+      switchMap(() => this.authenticationService.refreshAccessToken(this.authenticationService.getToken()))
+    ).subscribe(() => {      
+      this.notificationService.publish({
+        message: 'Thank you for purchasing a subscription',
+        success: true
+      });
       this.completedSubject.next();
       this.buildForm();
-      this.changeDetector.detectChanges();
+      this.changeDetector.detectChanges();      
+      
+      window.setTimeout(() => window.scrollTo(0, 0), 0);
     });
   }
 

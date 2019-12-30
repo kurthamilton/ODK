@@ -10,7 +10,7 @@ namespace ODK.Data.Mapping
             : base("MemberSubscriptionLog")
         {
             Property(x => x.MemberId);
-            Property(x => x.Type);
+            Property(x => x.Type).HasColumnName("SubscriptionTypeId");
             Property(x => x.PurchaseDate);
         }
 

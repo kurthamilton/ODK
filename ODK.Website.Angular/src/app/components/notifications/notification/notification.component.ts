@@ -11,6 +11,7 @@ export class NotificationComponent {
 
   constructor() { }
 
+  @Input() cssClass: string;
   @Input() notification: Notification;
   @Output() dismiss: EventEmitter<boolean> = new EventEmitter<boolean>();
 
