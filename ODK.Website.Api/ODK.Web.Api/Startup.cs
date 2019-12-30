@@ -56,6 +56,12 @@ namespace ODK.Web.Api
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.Use(async (context, next) =>
+            {
+                LoggingConfig.AddRequestProperties(context);
+                await next.Invoke();
+            });
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

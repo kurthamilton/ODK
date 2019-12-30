@@ -22,17 +22,15 @@ namespace ODK.Services.Authentication
     {
         private readonly IAuthorizationService _authorizationService;
         private readonly IChapterRepository _chapterRepository;
-        private readonly IEmailRepository _emailRepository;
         private readonly IMailService _mailService;
         private readonly IMemberRepository _memberRepository;
         private readonly AuthenticationServiceSettings _settings;
 
         public AuthenticationService(IMemberRepository memberRepository, IMailService mailService, AuthenticationServiceSettings settings,
-            IAuthorizationService authorizationService, IChapterRepository chapterRepository, IEmailRepository emailRepository)
+            IAuthorizationService authorizationService, IChapterRepository chapterRepository)
         {
             _authorizationService = authorizationService;
             _chapterRepository = chapterRepository;
-            _emailRepository = emailRepository;
             _mailService = mailService;
             _memberRepository = memberRepository;
             _settings = settings;
@@ -230,7 +228,9 @@ namespace ODK.Services.Authentication
             (
                 claims: new []
                 {
-                    new Claim(ClaimTypes.NameIdentifier, member.Id.ToString())
+                    new Claim(ClaimTypes.NameIdentifier, member.Id.ToString()),
+                    new Claim(ClaimTypes.Name, $"{member.FirstName} {member.LastName}"),
+                    new Claim(ClaimTypes.Email, member.EmailAddress)
                 },
                 notBefore: DateTime.UtcNow,
                 expires: DateTime.UtcNow.AddMinutes(_settings.AccessTokenLifetimeMinutes),

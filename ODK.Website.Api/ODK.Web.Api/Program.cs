@@ -1,8 +1,8 @@
 using System;
-using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using ODK.Web.Api.Config;
 using Serilog;
 
 namespace ODK.Web.Api
@@ -44,15 +44,8 @@ namespace ODK.Web.Api
                 .Build();
 
             string path = builtConfig["Logging:Path"];
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Logger(config => config
-                    .Filter
-                    .ByIncludingOnly(e => e.Level == Serilog.Events.LogEventLevel.Error)
-                    .WriteTo
-                    .File(Path.Combine(path, $"Errors.{DateTime.Today:yyyyMMdd}.txt")))
-                .WriteTo.File(Path.Combine(path, $"Trace.{DateTime.Today:yyyyMMdd}.txt"))
-                .WriteTo.Console()
-                .CreateLogger();
+
+            LoggingConfig.Configure(path);
         }
     }
 }
