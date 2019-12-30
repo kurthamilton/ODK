@@ -18,7 +18,7 @@ namespace ODK.Services.Events
         private readonly IChapterRepository _chapterRepository;
         private readonly IEventRepository _eventRepository;
         private readonly IMailProviderFactory _mailProviderFactory;
-        private readonly IEmailRepository _memberEmailRepository;
+        private readonly IEmailRepository _emailRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly EventAdminServiceSettings _settings;
         private readonly IVenueRepository _venueRepository;
@@ -32,7 +32,7 @@ namespace ODK.Services.Events
             _chapterRepository = chapterRepository;
             _eventRepository = eventRepository;
             _mailProviderFactory = mailProviderFactory;
-            _memberEmailRepository = memberEmailRepository;
+            _emailRepository = memberEmailRepository;
             _memberRepository = memberRepository;
             _settings = settings;
             _venueRepository = venueRepository;
@@ -290,7 +290,7 @@ namespace ODK.Services.Events
 
         private async Task<Email> GetEventEmailTemplate(Guid chapterId)
         {
-            return await _memberEmailRepository.GetEmail(chapterId, EmailType.EventInvite);
+            return await _emailRepository.GetEmail(EmailType.EventInvite, chapterId);
         }
 
         private async Task UpdateEventEmail(IMailProvider mailProvider, Event @event, Chapter chapter, EventEmail eventEmail)

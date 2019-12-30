@@ -416,7 +416,8 @@ namespace ODK.Services.Members
 
         private async Task<Member> GetMember(Guid currentMemberId, Guid memberId)
         {
-            VersionedServiceResult<Member> member = await _cacheService.GetOrSetVersionedItem(() => _memberRepository.GetMember(memberId), memberId, null);
+            VersionedServiceResult<Member> member = await _cacheService.GetOrSetVersionedItem(
+                () => _memberRepository.GetMember(memberId), memberId, null);
             await _authorizationService.AssertMemberIsChapterMember(currentMemberId, member.Value.ChapterId);
             return member.Value;
         }

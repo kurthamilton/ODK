@@ -54,7 +54,7 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<Email> GetEmail(Guid chapterId, EmailType type)
+        public async Task<Email> GetEmail(EmailType type, Guid chapterId)
         {
             ChapterEmail chapterEmail = await GetChapterEmail(chapterId, type);
             if (chapterEmail != null)

@@ -23,7 +23,7 @@ namespace ODK.Services.Mails
 
         public async Task SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters)
         {
-            Email email = await _memberEmailRepository.GetEmail(chapter.Id, EmailType.ContactRequest);
+            Email email = await _memberEmailRepository.GetEmail(EmailType.ContactRequest, chapter.Id);
 
             IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(chapter.Id);
             List<string> to = chapterAdminMembers
@@ -43,7 +43,7 @@ namespace ODK.Services.Mails
 
         public async Task SendChapterNewMemberAdminMail(Chapter chapter, Member member, IDictionary<string, string> parameters)
         {
-            Email email = await _memberEmailRepository.GetEmail(chapter.Id, EmailType.NewMemberAdmin);
+            Email email = await _memberEmailRepository.GetEmail(EmailType.NewMemberAdmin, chapter.Id);
 
             IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(chapter.Id);
             List<string> to = chapterAdminMembers
@@ -63,7 +63,7 @@ namespace ODK.Services.Mails
 
         public async Task SendMail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters)
         {
-            Email email = await _memberEmailRepository.GetEmail(chapter.Id, type);
+            Email email = await _memberEmailRepository.GetEmail(type, chapter.Id);
 
             IMailProvider mailProvider = await _mailProviderFactory.Create(chapter);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
@@ -69,7 +70,7 @@ namespace ODK.Services.Tests.Members
         }
 
         private static MemberService CreateService(IMemberRepository memberRepository = null,
-            IChapterRepository chapterRepository = null)
+            IChapterRepository chapterRepository = null, ICacheService cacheService = null)
         {
             return new MemberService(memberRepository ?? CreateMockMemberRepository(CreateMockMember()),
                 chapterRepository ?? CreateMockChapterRepository(),
@@ -78,13 +79,23 @@ namespace ODK.Services.Tests.Members
                 new MemberServiceSettings(),
                 CreateMockImageService(),
                 Mock.Of<IPaymentService>(),
-                Mock.Of<ICacheService>(),
+                cacheService ?? CreateMockCacheService(new Member(Guid.NewGuid(), Guid.NewGuid(), "email", true, "first", "last", DateTime.Today, true, false, 0)),
                 Mock.Of<IMailProviderFactory>());
         }
 
         private static IAuthorizationService CreateMockAuthorizationService()
         {
             return Mock.Of<IAuthorizationService>();
+        }
+
+        private static ICacheService CreateMockCacheService(Member member = null)
+        {
+            Mock<ICacheService> mock = new Mock<ICacheService>();
+
+            mock.Setup(x => x.GetOrSetVersionedItem(It.IsAny<Func<Task<Member>>>(), It.IsAny<object>(), It.IsAny<long?>()))
+                .ReturnsAsync(new VersionedServiceResult<Member>(0, member));
+
+            return mock.Object;
         }
 
         private static ChapterProperty CreateMockChapterProperty(string label = null, bool required = false)

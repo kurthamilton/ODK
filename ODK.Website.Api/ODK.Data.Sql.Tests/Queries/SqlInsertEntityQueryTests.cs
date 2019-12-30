@@ -43,7 +43,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("INSERT INTO Table (Int,String) VALUES (@Int,@String)", sql);
+            Assert.AreEqual("INSERT INTO Table ([Int],[String]) VALUES (@Int,@String)", sql);
         }
 
         [Test]
@@ -59,7 +59,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("INSERT INTO Table (Int,Other) VALUES (@Int,@Other)", sql);
+            Assert.AreEqual("INSERT INTO Table ([Int],[Other]) VALUES (@Int,@Other)", sql);
         }
 
         [Test]
@@ -75,7 +75,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("INSERT INTO Table (String) VALUES (@String)", sql);
+            Assert.AreEqual("INSERT INTO Table ([String]) VALUES (@String)", sql);
         }
 
         [Test]
@@ -92,7 +92,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("INSERT INTO Table (String) OUTPUT inserted.Int VALUES (@String)", sql);
+            Assert.AreEqual("INSERT INTO Table ([String]) OUTPUT inserted.Int VALUES (@String)", sql);
         }
 
         private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)

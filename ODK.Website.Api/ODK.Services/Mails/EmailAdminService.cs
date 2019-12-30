@@ -54,7 +54,7 @@ namespace ODK.Services.Mails
 
                 if (!chapterEmailDictionary.ContainsKey(type))
                 {
-                    Email email = await _emailRepository.GetEmail(chapterId, type);
+                    Email email = await _emailRepository.GetEmail(type, chapterId);
                     defaultEmails.Add(new ChapterEmail(Guid.Empty, chapterId, type, email.Subject, email.HtmlContent));
                 }
             }

@@ -16,7 +16,7 @@ namespace ODK.Core.Mail
 
         Task<Email> GetEmail(EmailType type);
 
-        Task<Email> GetEmail(Guid chapterId, EmailType type);
+        Task<Email> GetEmail(EmailType type, Guid chapterId);
 
         Task<IReadOnlyCollection<Email>> GetEmails();
 
