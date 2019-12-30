@@ -1,12 +1,16 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter } from '@angular/core';
 
 import { Subject } from 'rxjs';
 
+import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
-import { FormControlViewModel } from '../../forms/form-control.view-model';
-import { FormViewModel } from '../../forms/form.view-model';
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
+import { MenuItem } from 'src/app/core/menus/menu-item';
 import { NotificationService } from 'src/app/services/notifications/notification.service';
 import { ServiceResult } from 'src/app/services/service-result';
+import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-change-password',
@@ -15,57 +19,70 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class ChangePasswordComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
-    private authenticationService: AuthenticationService,
-    private notificationService: NotificationService
-  ) { 
+  constructor(private authenticationService: AuthenticationService,
+    private notificationService: NotificationService,
+    private chapterService: ChapterService
+  ) {
   }
 
   @Output() passwordUpdate: EventEmitter<boolean> = new EventEmitter<boolean>();
 
+  breadcrumbs: MenuItem[];
   form: FormViewModel;
-  messages: string[];
-  
-  private formCallback: Subject<boolean> = new Subject<boolean>();
+
+  private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
-    confirmPassword: FormControlViewModel;
-    currentPassword: FormControlViewModel;
-    newPassword: FormControlViewModel;
+    confirmPassword: TextInputFormControlViewModel;
+    currentPassword: TextInputFormControlViewModel;
+    newPassword: TextInputFormControlViewModel;
   };
-  
+
   ngOnInit(): void {
+    const chapter: Chapter = this.chapterService.getActiveChapter();
+    this.breadcrumbs = [
+      { link: appUrls.profile(chapter), text: 'Profile' }
+    ];
+
     this.formControls = {
-      confirmPassword: {
+      confirmPassword: new TextInputFormControlViewModel({
         id: 'confirmPassword',
-        label: 'Confirm password',
-        validators: {
-          required: true
+        inputType: 'password',
+        label: {
+          text: 'Confirm password'
         },
-        type: 'password'
-      },
-      currentPassword: {
+        validation: {
+          required: true
+        }
+      }),
+      currentPassword: new TextInputFormControlViewModel({
         id: 'password',
-        label: 'Current password',
-        validators: {
-          required: true
+        inputType: 'password',
+        label: {
+          text: 'Current password'
         },
-        type: 'password'
-      },
-      newPassword: {
+        validation: {
+          required: true
+        }
+      }),
+      newPassword: new TextInputFormControlViewModel({
         id: 'newPassword',
-        label: 'New password',
-        validators: {
-          required: true
+        inputType: 'password',
+        label: {
+          text: 'New password'
         },
-        type: 'password'
-      }
+        validation: {
+          required: true
+        }
+      })
     };
-    
+
     this.form = {
-      buttonText: 'Update',
+      buttons: [
+        { text: 'Update' }
+      ],
       callback: this.formCallback.asObservable(),
-      formControls: [ 
-        this.formControls.currentPassword, 
+      controls: [
+        this.formControls.currentPassword,
         this.formControls.newPassword,
         // this.formControls.confirmPassword
       ]
@@ -75,14 +92,12 @@ export class ChangePasswordComponent implements OnInit {
   onFormSubmit(): void {
     const currentPassword: string = this.formControls.currentPassword.value;
     const newPassword: string = this.formControls.newPassword.value;
-    
+
     this.authenticationService
       .changePassword(currentPassword, newPassword)
-      .subscribe((result: ServiceResult<{}>) => {
-        this.formCallback.next(true);
-        this.messages = result.messages;
-        this.changeDetector.detectChanges();
-        
+      .subscribe((result: ServiceResult<void>) => {
+        this.formCallback.next(result.messages);
+
         if (result.success === true) {
           this.notificationService.publish({
             message: 'Password updated',

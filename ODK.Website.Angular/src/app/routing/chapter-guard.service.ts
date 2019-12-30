@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
 
-import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
+import { appPaths } from './app-paths';
 import { Chapter } from '../core/chapters/chapter';
-import { ChapterService } from '../services/chapter/chapter.service';
+import { ChapterService } from '../services/chapters/chapter.service';
 import { RouteGuardService } from './route-guard.service';
 
 @Injectable({
@@ -20,10 +21,13 @@ export class ChapterGuardService extends RouteGuardService {
   }
 
   hasAccess(route: ActivatedRouteSnapshot): Observable<boolean> {
-    const name: string = route.paramMap.get('chapter');
+    const name: string = route.paramMap.get(appPaths.chapter.params.chapter);
     return this.chapterService.getChapter(name).pipe(
-      tap((chapter: Chapter) => this.chapterService.setActiveChapter(chapter)),
-      map((chapter: Chapter) => !!chapter)
+      switchMap((chapter: Chapter) => {
+        this.chapterService.setActiveChapter(chapter);
+        return of(chapter);
+      }),
+      map((chapter: Chapter) => !!chapter && !chapter.redirectUrl)
     );
   }
 }

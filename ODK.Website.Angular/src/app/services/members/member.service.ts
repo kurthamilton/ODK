@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
@@ -13,7 +13,8 @@ import { MemberProperty } from 'src/app/core/members/member-property';
 const baseUrl = `${environment.baseUrl}/members`;
 
 const endpoints = {
-  memberImage: (memberId: string) => `${baseUrl}/${memberId}/image`,
+  latestMembers: (chapterId: string) => `${baseUrl}/latest?chapterId=${chapterId}`,
+  memberImage: (memberId: string, size: number) => `${baseUrl}/${memberId}/image?${size ? `size=${size}` : ''}`,
   memberProfile: (memberId: string) => `${baseUrl}/${memberId}/profile`,
   members: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`
 }
@@ -23,7 +24,14 @@ const endpoints = {
 })
 export class MemberService {
 
-  constructor(private http: HttpClient) { }
+  constructor(protected http: HttpClient) { }
+
+  getLatestMembers(chapterId: string): Observable<Member[]> {
+    return this.http.get(endpoints.latestMembers(chapterId))
+      .pipe(
+        map((response: any) => response.map(x => this.mapMember(x)))
+      );
+  }
 
   getMember(id: string, chapterId: string): Observable<Member> {
     return this.getMembers(chapterId).pipe(
@@ -31,12 +39,22 @@ export class MemberService {
     );
   }
 
-  getMemberImage(id: string): Observable<string> {
-    return HttpUtils.getBase64(this.http, endpoints.memberImage(id));
+  getMemberImage(memberId: string, size: number): Observable<string> {
+    return HttpUtils.getBase64(this.http, endpoints.memberImage(memberId, size));
   }
 
-  getMemberProfile(id: string): Observable<MemberProfile> {
-    return this.http.get(endpoints.memberProfile(id)).pipe(
+  getMemberImages(memberIds: string[], maxWidth: number): Observable<Map<string, string>> {
+    return forkJoin(memberIds.map(x => this.getMemberImage(x, maxWidth))).pipe(
+      map((values: string[]) => {
+        const map: Map<string, string> = new Map<string, string>();
+        memberIds.forEach((memberId: string, i: number) => map.set(memberId, values[i]));
+        return map;
+      })
+    );
+  }
+
+  getMemberProfile(memberId: string): Observable<MemberProfile> {
+    return this.http.get(endpoints.memberProfile(memberId)).pipe(
       map((response: any) => this.mapMemberProfile(response))
     );
   }
@@ -48,7 +66,7 @@ export class MemberService {
       );
   }
 
-  private mapMember(response: any): Member {
+  protected mapMember(response: any): Member {
     return {
       chapterId: response.chapterId,
       firstName: response.firstName,

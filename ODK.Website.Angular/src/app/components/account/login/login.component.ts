@@ -1,13 +1,18 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
+import { appPaths } from 'src/app/routing/app-paths';
+import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from '../../../services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
-import { FormControlViewModel } from '../../forms/form-control.view-model';
-import { FormViewModel } from '../../forms/form.view-model';
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { ServiceResult } from 'src/app/services/service-result';
+import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-login',
@@ -16,45 +21,60 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class LoginComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
-    private authenticationService: AuthenticationService,
+  constructor(private authenticationService: AuthenticationService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private chapterService: ChapterService
   ) {
   }
 
   form: FormViewModel;
-  messages: string[];
+  links: {
+    forgottenPassword: string
+  };
 
-  private formCallback: Subject<boolean> = new Subject<boolean>();
+  private chapter: Chapter;
+  private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
-    password: FormControlViewModel;
-    username: FormControlViewModel;
+    password: TextInputFormControlViewModel;
+    username: TextInputFormControlViewModel;
   };
 
   ngOnInit(): void {
+    this.chapter = this.chapterService.getActiveChapter();
+    this.links = {
+      forgottenPassword: appUrls.password.forgotten(this.chapter)
+    };
+
     this.formControls = {
-      password: {
+      password: new TextInputFormControlViewModel({
         id: 'password',
-        label: 'Password',
-        validators: {
-          required: true
+        inputType: 'password',
+        label: {
+          text: 'Password'
         },
-        type: 'password'
-      },
-      username: {
+        validation: {
+          required: true
+        }
+      }),
+      username: new TextInputFormControlViewModel({
         id: 'username',
-        label: 'Email',
-        validators: {
+        label: {
+          text: 'Email address'
+        },
+        validation: {
+          pattern: FormControlValidationPatterns.email,
           required: true
         },
-      }
-    };    
+      })
+    };
 
     this.form = {
-      buttonText: 'Sign In',
+      buttons: [
+        { text: 'Sign in' }
+      ],
       callback: this.formCallback.asObservable(),
-      formControls: [ this.formControls.username, this.formControls.password ]
+      controls: [ this.formControls.username, this.formControls.password ]
     };
   }
 
@@ -65,12 +85,11 @@ export class LoginComponent implements OnInit {
     this.authenticationService
       .login(username, password)
       .subscribe((result: ServiceResult<AuthenticationToken>) => {
-        this.formCallback.next(true);
-        this.messages = result.messages;
-        this.changeDetector.detectChanges();
+        this.formCallback.next(result.messages);
+
         if (result.success === true) {
-          // const url: string = this.route.snapshot.queryParams[appPaths.login.queryParams.returnUrl] || appPaths.home.path;
-          this.router.navigateByUrl('/');
+          const url: string = this.route.snapshot.queryParams[appPaths.login.queryParams.returnUrl] || appPaths.home.path;
+          this.router.navigateByUrl(url);
         }
       });
   }

@@ -1,7 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
+
 import { takeUntil } from 'rxjs/operators';
 
+import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 import { Notification } from 'src/app/core/notifications/notification';
 import { NotificationService } from 'src/app/services/notifications/notification.service';
 
@@ -14,17 +15,15 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private notificationService: NotificationService
-  ) { 
+  ) {
   }
 
   notifications: Notification[] = [];
 
-  private destroyed: Subject<{}> = new Subject<{}>();
-
   ngOnInit(): void {
     this.notificationService.subscribe()
       .pipe(
-        takeUntil(this.destroyed)
+        takeUntil(componentDestroyed(this))
       )
       .subscribe((notification: Notification) => {
         this.notifications.push(notification);
@@ -32,9 +31,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       });
   }
 
-  ngOnDestroy(): void {
-    this.destroyed.next({});
-  }
+  ngOnDestroy(): void {}
 
   onDismiss(notification: Notification): void {
     const index: number = this.notifications.indexOf(notification);

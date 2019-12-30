@@ -1,0 +1,8 @@
+<ng-container *ngIf="form && form.controls && formGroup">
+  <ng-container *ngFor="let control of form.controls">
+      <app-form-control [formGroup]="formGroup" [validateForm]="validateForm"
+        [validated]="validated" [viewModel]="control"
+        (valueChange)="onValueChange()">
+      </app-form-control>
+  </ng-container>
+</ng-container>

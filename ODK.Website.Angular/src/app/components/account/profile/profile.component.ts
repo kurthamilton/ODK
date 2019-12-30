@@ -1,50 +1,76 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
-import { Subject } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
+import { AccountProfile } from 'src/app/core/account/account-profile';
 import { AccountService } from 'src/app/services/account/account.service';
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
-import { DataTypeService } from 'src/app/services/data-types/data-type.service';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProfileComponent implements OnInit {
-  
+export class ProfileComponent implements OnInit, OnDestroy {
+
   constructor(private changeDetector: ChangeDetectorRef,
     private authenticationService: AuthenticationService,
-    private chapterService: ChapterService
+    private chapterService: ChapterService,
+    private accountService: AccountService
   ) {
   }
-  
+
+  chapterId: string;
+  formCallback: Subject<boolean> = new Subject<boolean>();
+  profile: AccountProfile;
   links: {
-    subscription: string
+    changePassword: string;
+    emails: string;
+    subscription: string;
+    updateEmailAddress: string;
   };
-  showChangePasswordModal: Subject<boolean> = new Subject<boolean>();
+
+  successMessage: string;
+
+  private chapter: Chapter;
 
   ngOnInit(): void {
     const authenticationToken: AuthenticationToken = this.authenticationService.getToken();
-    const chapterId: string = authenticationToken.chapterId;    
+    this.chapterId = authenticationToken.chapterId;
 
-    this.chapterService.getChapterById(chapterId).subscribe((chapter: Chapter) => {
+    forkJoin([
+      this.accountService.getProfile().pipe(
+        tap((profile: AccountProfile) => this.profile = profile)
+      ),
+      this.chapterService.getChapterById(this.chapterId).pipe(
+        tap((chapter: Chapter) => this.chapter = chapter)
+      )
+    ]).subscribe(() => {
       this.links = {
-        subscription: appUrls.subscription(chapter)
+        changePassword: appUrls.password.change(this.chapter),
+        emails: appUrls.emails(this.chapter),
+        subscription: appUrls.subscription(this.chapter),
+        updateEmailAddress: appUrls.updateEmailAddress(this.chapter)
       };
       this.changeDetector.detectChanges();
-    });    
-  }  
-  
-  onPasswordChanged(): void {
-    this.showChangePasswordModal.next(false);
+    });
   }
 
-  onShowChangePasswordModal(): void {
-    this.showChangePasswordModal.next(true);
-  }  
+  ngOnDestroy(): void {
+    this.formCallback.complete();
+  }
+
+  onFormSubmit(profile: AccountProfile): void {
+    this.accountService.updateProfile(profile).subscribe(() => {
+      this.formCallback.next(true);
+      this.successMessage = 'Your profile has been updated';
+      this.changeDetector.detectChanges();
+      window.scrollTo(0, 0);
+    });
+  }
 }

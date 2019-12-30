@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 
-import { appPaths } from 'src/app/routing/app-paths';
+import { appUrls } from 'src/app/routing/app-urls';
 
 @Component({
   selector: 'app-footer',
@@ -9,7 +9,7 @@ import { appPaths } from 'src/app/routing/app-paths';
 })
 export class FooterComponent {
   links = {
-    home: `/${appPaths.home.path}`,
-    privacy: `/${appPaths.privacy.path}`
+    home: appUrls.home(null),
+    privacy: appUrls.privacy
   };
 }

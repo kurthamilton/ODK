@@ -1,0 +1,6 @@
+<ng-container *appLoading="!viewModels">
+  <div *ngFor="let viewModel of viewModels" class="mb-5">
+    <app-form [form]="viewModel.form" (formSubmit)="onFormSubmit(viewModel.email)">
+    </app-form>
+  </div>  
+</ng-container>

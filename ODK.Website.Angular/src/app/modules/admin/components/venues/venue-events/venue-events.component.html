@@ -1,0 +1,22 @@
+<ng-container *appLoading="!events">
+  <p>
+    <a [routerLink]="links.createEvent" [queryParams]="links.createEventParams" class="btn btn-primary">
+      Create event
+    </a>
+  </p>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Date</th>        
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let event of events">
+        <td><a [routerLink]="getEventLink(event)">{{event.name}}</a></td>
+        <td>{{event.date | date:'dd MMM yyyy'}}</td>
+      </tr>
+    </tbody>
+  </table>
+</ng-container>

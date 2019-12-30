@@ -1,3 +1,6 @@
-<app-body *ngIf="member" [title]="member.fullName">
-    
+<app-body *appLoading="!member" [breadcrumbs]="breadcrumbs">    
+  <div class="float-right">
+    <app-member-image [member]="member"></app-member-image>
+  </div>
+  <app-member-profile [memberId]="memberId"></app-member-profile>  
 </app-body>

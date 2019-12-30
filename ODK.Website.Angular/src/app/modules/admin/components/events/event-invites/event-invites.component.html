@@ -1,0 +1,20 @@
+<ng-container *appLoading="!invites">
+  <div *ngIf="sendForm" class="mb-3">
+    <app-form [form]="sendForm" (formSubmit)="onSendFormSubmit()">      
+    </app-form>
+  </div>  
+
+  <div *ngIf="sendTestForm" class="mb-3">
+    <app-form [form]="sendTestForm" (formSubmit)="onSendTestFormSubmit()">      
+    </app-form>
+  </div>  
+  
+  <ng-container *ngIf="invites.sentDate">
+    <p>
+      {{invites.sent}} invites were sent on {{invites.sentDate | date:'fullDate' }}
+    </p>  
+
+    <h3>Responses</h3>
+    <app-event-responses></app-event-responses>
+  </ng-container>  
+</ng-container>

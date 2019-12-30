@@ -1,0 +1,10 @@
+<div [formGroup]="formGroup">
+    <input #file
+      type="file" [attr.match]="match" [attr.pattern]="pattern" [attr.required]="required ? 'required' : null"
+      class="form-control"
+      [accept]="accept"
+      [id]="controlId" [name]="controlId"
+      [formControlName]="controlId"
+      (change)="onFileChange(file.files)"
+      (blur)="onValidate()" />
+</div>

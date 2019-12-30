@@ -8,12 +8,17 @@ import { AccountDetails } from 'src/app/core/account/account-details';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { environment } from 'src/environments/environment';
 import { Event } from 'src/app/core/events/event';
+import { EventMemberResponse } from 'src/app/core/events/event-member-response';
+import { EventResponseType } from 'src/app/core/events/event-response-type';
 
 const baseUrl = `${environment.baseUrl}/events`;
 
 const endpoints = {
+  eventResponses: (eventId: string) => `${baseUrl}/${eventId}/responses`,
   events: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
-  publicEvents: (chapterId: string) => `${baseUrl}/public?chapterId=${chapterId}`
+  memberResponses: `${baseUrl}/responses`,
+  publicEvents: (chapterId: string) => `${baseUrl}/public?chapterId=${chapterId}`,
+  respond: (eventId: string, type: number) => `${baseUrl}/${eventId}/respond?type=${type}`
 }
 
 @Injectable({
@@ -21,9 +26,9 @@ const endpoints = {
 })
 export class EventService {
 
-  constructor(private http: HttpClient,
+  constructor(protected http: HttpClient,
     private authenticationService: AuthenticationService
-  ) {     
+  ) {
   }
 
   getEvent(id: string, chapterId: string): Observable<Event> {
@@ -32,9 +37,15 @@ export class EventService {
     );
   }
 
+  getEventResponses(eventId: string): Observable<EventMemberResponse[]> {
+    return this.http.get(endpoints.eventResponses(eventId)).pipe(
+      map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
+    );
+  }
+
   getEvents(chapterId: string): Observable<Event[]> {
     const accountDetails: AccountDetails = this.authenticationService.getAccountDetails();
-    if (!accountDetails || accountDetails.chapterId !== chapterId) {
+    if (!accountDetails || accountDetails.chapterId !== chapterId || !accountDetails.membershipActive) {
       return this.getPublicEvents(chapterId);
     }
 
@@ -44,26 +55,44 @@ export class EventService {
       )
   }
 
+  getMemberResponses(): Observable<EventMemberResponse[]> {
+    return this.http.get(endpoints.memberResponses).pipe(
+      map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
+    );
+  }
+  
   getPublicEvents(chapterId: string): Observable<Event[]> {
     return this.http.get(endpoints.publicEvents(chapterId))
       .pipe(
         map((response: any) => response.map(x => this.mapEvent(x)))
       )
+  }  
+
+  respond(eventId: string, responseType: EventResponseType): Observable<EventMemberResponse> {
+    return this.http.put(endpoints.respond(eventId, responseType), null).pipe(
+      map((response: any) => this.mapEventMemberResponse(response))
+    )
   }
 
-  private mapEvent(response: any): Event {
+  protected mapEvent(response: any): Event {
     return {
-      address: response.address,
       chapterId: response.chapterId,
       date: new Date(response.date),
       description: response.description,
       id: response.id,
       imageUrl: response.imageUrl,
       isPublic: response.isPublic,
-      location: response.location,
-      mapQuery: response.mapQuery,
       name: response.name,
-      time: response.time
+      time: response.time,
+      venueId: response.venueId
     };
+  }
+
+  protected mapEventMemberResponse(response: any): EventMemberResponse {
+    return {
+      eventId: response.eventId,
+      memberId: response.memberId,
+      responseType: response.responseTypeId
+    }
   }
 }

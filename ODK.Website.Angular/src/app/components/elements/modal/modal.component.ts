@@ -1,9 +1,10 @@
 import { Component, Input, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 
-import { Observable, Subject } from 'rxjs';
+import { Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { NgbModal, NgbModalRef, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
+import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 
 @Component({
   selector: 'app-modal',
@@ -22,7 +23,6 @@ export class ModalComponent implements OnInit, OnDestroy {
   @ViewChild('modal', { static: true }) modalEl: ElementRef;
 
   private modal: NgbModalRef;
-  private destroyed: Subject<{}> = new Subject<{}>();
 
   ngOnInit(): void {
     if (!this.show) {
@@ -32,12 +32,12 @@ export class ModalComponent implements OnInit, OnDestroy {
     }
 
     this.show
-      .pipe(takeUntil(this.destroyed))
+      .pipe(takeUntil(componentDestroyed(this)))
       .subscribe((show: boolean) => show ? this.openModal() : this.closeModal());
   }
 
   ngOnDestroy(): void {
-    this.destroyed.next();
+    this.closeModal();
   }
 
   closeModal(): void {

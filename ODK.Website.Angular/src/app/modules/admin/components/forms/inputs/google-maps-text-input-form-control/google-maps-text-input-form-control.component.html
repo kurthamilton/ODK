@@ -1,0 +1,7 @@
+<app-text-input-form-control [formGroup]="formGroup" [viewModel]="viewModel" (blur)="onBlur()">
+</app-text-input-form-control>
+
+<div *ngIf="query" class="mt-3">
+  <app-google-map [query]="query">
+  </app-google-map>
+</div>

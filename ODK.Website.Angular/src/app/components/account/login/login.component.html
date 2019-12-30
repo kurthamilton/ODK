@@ -1,6 +1,7 @@
-<app-body title="Login">
-    <app-form [form]="form" (formSubmit)="onFormSubmit()"></app-form>
-    <ng-container *ngIf="messages">
-        <div *ngFor="let message of messages" class="text-danger">{{message}}</div>    
-    </ng-container>    
+<app-body>
+    <app-form [form]="form" (formSubmit)="onFormSubmit()">
+        <div app-button-row class="ml-auto">
+            <a [routerLink]="links.forgottenPassword">Forgotten password?</a>
+        </div>
+    </app-form>
 </app-body>

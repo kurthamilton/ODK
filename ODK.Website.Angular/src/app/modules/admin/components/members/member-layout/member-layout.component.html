@@ -1,0 +1,6 @@
+<ng-container *appLoading="!member">
+  <app-breadcrumbs [breadcrumbs]="breadcrumbs" [active]="member.fullName"></app-breadcrumbs>
+  <h2>{{member.fullName}}</h2>
+  <app-member-menu></app-member-menu>
+  <router-outlet></router-outlet>    
+</ng-container>

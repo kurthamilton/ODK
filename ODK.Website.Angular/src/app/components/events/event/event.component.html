@@ -1,1 +1,22 @@
-<app-body *ngIf="event" [title]="event.name"></app-body>
+<app-body *appLoading="!event" [breadcrumbs]="breadcrumbs">
+  <app-page-with-sidebar>
+    <ng-container app-main>
+      <h2>{{venue.name}}</h2>
+      <h2>{{event.date | date:'fullDate'}}</h2>
+      <h3 *ngIf="event.time">{{event.time}}</h3>
+      <p *ngIf="event.imageUrl">
+        <img [src]="event.imageUrl" />
+      </p>
+      <div *ngIf="event.description">
+        <app-raw-html [html]="event.description"></app-raw-html>
+      </div>
+      <p *ngIf="venue.mapQuery" class="d-none d-md-block">
+        <app-google-map [query]="venue.mapQuery"></app-google-map>
+      </p>
+    </ng-container>
+
+    <ng-container app-sidebar>
+      <app-event-sidebar [event]="event"></app-event-sidebar>
+    </ng-container>
+  </app-page-with-sidebar>
+</app-body>

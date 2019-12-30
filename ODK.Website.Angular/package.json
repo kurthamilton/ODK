@@ -4,11 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open --aot",
-    "build": "ng build",
+    "build": "ng build --prod --output-path=dist/prod",
+    "build-staging": "ng build --prod --configuration=staging --output-path=dist/staging",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e",
-    "start-admin": "ng serve --open --aot --project=admin"
+    "e2e": "ng e2e"
   },
   "private": true,
   "dependencies": {
@@ -20,21 +20,26 @@
     "@angular/platform-browser": "~8.2.14",
     "@angular/platform-browser-dynamic": "~8.2.14",
     "@angular/router": "~8.2.14",
+    "@ckeditor/ckeditor5-angular": "^1.1.2",
+    "@ckeditor/ckeditor5-build-classic": "^15.0.0",
     "@ng-bootstrap/ng-bootstrap": "^5.1.4",
+    "@ng-select/ng-select": "^3.7.0",
+    "@types/stripe-v3": "^3.1.9",
     "bootstrap": "^4.3.1",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.803.19",
+    "@angular-devkit/build-angular": "^0.803.20",
     "@angular-devkit/build-ng-packagr": "~0.803.19",
     "@angular/cli": "~8.3.19",
     "@angular/compiler-cli": "~8.2.14",
     "@angular/language-service": "~8.2.14",
-    "@types/node": "~8.9.4",
+    "@fortawesome/fontawesome-free": "^5.11.2",
     "@types/jasmine": "~3.3.8",
     "@types/jasminewd2": "~2.0.3",
+    "@types/node": "~8.9.4",
     "codelyzer": "^5.0.0",
     "jasmine-core": "~3.4.0",
     "jasmine-spec-reporter": "~4.2.1",

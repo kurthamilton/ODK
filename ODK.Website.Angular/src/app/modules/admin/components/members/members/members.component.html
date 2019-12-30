@@ -1,0 +1,35 @@
+<h2>Members</h2>
+<p *ngIf="superAdmin">
+    <input type="file" accept="image/*" #file placeholder="Choose file" (change)="onUploadPicture(file.files)" class="d-none" multiple />
+    <button class="btn btn-link" (click)="file.click()">Upload pictures</button>
+</p>
+
+<p>
+  <app-member-filter [viewModel]="filter" (change)="onFilterChange($event)"></app-member-filter>
+</p>
+
+<table *ngIf="viewModels" class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+              <button class="btn btn-link p-0" (click)="onSort('name')">Name</button>
+            </th>   
+            <th>Type</th>       
+            <th>
+              <button class="btn btn-link p-0" (click)="onSort('expires')">Expires</button>
+            </th>       
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let viewModel of viewModels">
+            <td><a [routerLink]="getMemberUrl(viewModel.member)">{{viewModel.member.fullName}}</a></td>
+            <td>{{subscriptionTypes[viewModel.subscription.type]}}</td>
+            <td>
+              <span [class.text-danger]="viewModel.subscription.expiryDate < today"
+                [class.text-warning]="viewModel.subscription.expiryDate <= subscriptionWarningDate">
+                {{viewModel.subscription.expiryDate | date:'yyyy-MM-dd' }}
+              </span>              
+            </td>
+        </tr>
+    </tbody>
+</table>

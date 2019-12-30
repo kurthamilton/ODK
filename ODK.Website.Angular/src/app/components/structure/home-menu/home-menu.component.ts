@@ -1,9 +1,10 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { appUrls } from 'src/app/routing/app-urls';
+import { ArrayUtils } from 'src/app/utils/array-utils';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
-import { MenuItem } from '../navbar/menu-item';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { MenuItem } from '../../../core/menus/menu-item';
 
 @Component({
   selector: 'app-home-menu',
@@ -15,15 +16,17 @@ export class HomeMenuComponent implements OnInit {
     private chapterService: ChapterService) { 
   }
 
-  menuItems: MenuItem[];
+  menuItems: MenuItem[][];
 
   ngOnInit(): void {
     this.chapterService.getChapters().subscribe((chapters: Chapter[]) => {
-      this.menuItems = chapters.map((chapter: Chapter): MenuItem => ({
+      const menuItems: MenuItem[] = chapters.map((chapter: Chapter): MenuItem => ({
         externalLink: chapter.redirectUrl ? chapter.redirectUrl : null,
         link: !chapter.redirectUrl ? appUrls.chapter(chapter) : null,
         text: chapter.name
       }));
+
+      this.menuItems = ArrayUtils.segment(menuItems, 5);
       this.changeDetector.detectChanges();
     });
   }

@@ -1,0 +1,5 @@
+<div [formGroup]="formGroup" class="form-control form-control-custom" [class.is-invalid]="isInvalid" [class.is-valid]="isValid">
+  <ckeditor [editor]="Editor" [id]="viewModel.id" [formControlName]="viewModel.id" [required]="required"
+    (change)="onChange()">
+  </ckeditor>
+</div>

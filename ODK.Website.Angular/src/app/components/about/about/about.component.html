@@ -1,0 +1,14 @@
+<app-body>
+  <h3>Frequently asked questions</h3>
+  <ngb-accordion *appLoading="!questions" [closeOthers]="true" activeIds="question-0">
+    <ngb-panel *ngFor="let question of questions; let i = index" [title]="question.name" [id]="'question-' + i">
+      <ng-template ngbPanelContent>
+        <app-raw-html [html]="question.answer"></app-raw-html>
+      </ng-template>
+    </ngb-panel>    
+  </ngb-accordion>
+
+  <p class="mt-3">
+    Still have questions? Feel free to <a [routerLink]="links.contact">get in touch</a> before joining.
+  </p>
+</app-body>

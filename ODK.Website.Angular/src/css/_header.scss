@@ -12,3 +12,13 @@
         margin-bottom: 0;
     }
 }
+
+.nav-container {
+    margin-bottom: 0.4rem;
+}
+
+.nav-account-menu {
+    position: absolute;
+    right: $grid-gutter-width / 2;
+    top: 0;
+}

@@ -1,0 +1,14 @@
+<ng-container *appLoading="!viewModels">
+  <p>
+    Chapter emails use the standard emails by default. Update the emails below to customise chapter emails.
+  </p>
+  <div *ngFor="let viewModel of viewModels" class="mb-5">
+    <app-form [form]="viewModel.form" (formSubmit)="onFormSubmit(viewModel.email)">
+      <div app-button-row *ngIf="viewModel.email.id">
+        <button class="btn btn-link" (click)="onRestoreDefaultClick(viewModel.email)">
+          Restore default
+        </button>
+      </div>
+    </app-form>
+  </div>  
+</ng-container>

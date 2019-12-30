@@ -1,2 +1,0 @@
-cd ..
-dotnet watch run

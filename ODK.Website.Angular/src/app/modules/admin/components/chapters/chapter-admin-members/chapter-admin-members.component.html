@@ -1,0 +1,43 @@
+<p>
+  <a class="btn btn-primary" [routerLink]="links.addAdminMember">Add</a>
+</p>
+<table *appLoading="!adminMembers" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Admin email address</th>
+      <th>Receive contact emails</th>
+      <th>Receive new member emails</th>
+      <th>Send event emails</th>
+      <th>Send new member emails</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let adminMember of adminMembers">
+      <td>
+        <a [routerLink]="getAdminMemberLink(adminMember)">{{adminMember.firstName}} {{adminMember.lastName}}</a>
+      </td>
+      <td>
+        {{adminMember.adminEmailAddress}}
+      </td>
+      <td>
+        <i *ngIf="adminMember.receiveContactEmails" class="fa fa-check"></i>
+      </td>
+      <td>
+        <i *ngIf="adminMember.receiveNewMemberEmails" class="fa fa-check"></i>
+      </td>
+      <td>
+        <i *ngIf="adminMember.sendEventEmails" class="fa fa-check"></i>
+      </td>
+      <td>
+        <i *ngIf="adminMember.sendNewMemberEmails" class="fa fa-check"></i>
+      </td>
+      <td>
+        <button class="btn-icon text-danger" (click)="onRemoveAdminMember(adminMember)" ngbTooltip="Remove">
+          <i class="fas fa-times"></i>
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>

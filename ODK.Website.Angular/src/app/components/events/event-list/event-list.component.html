@@ -1,5 +1,5 @@
-<ng-container *ngIf="events">
-    <div *ngFor="let event of events" class="list-item">
-        <app-list-event [event]="event"></app-list-event>
+<ng-container *ngIf="viewModels">
+    <div *ngFor="let viewModel of viewModels" class="list-item">
+        <app-list-event [viewModel]="viewModel"></app-list-event>
     </div>
 </ng-container>

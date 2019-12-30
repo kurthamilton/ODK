@@ -1,10 +1,9 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
-import { switchMap } from 'rxjs/operators';
-
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterLinks } from 'src/app/core/chapters/chapter-links';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { SocialMediaService } from 'src/app/services/social-media/social-media.service';
 
 @Component({
   selector: 'app-chapter-footer',
@@ -14,17 +13,34 @@ import { ChapterService } from 'src/app/services/chapter/chapter.service';
 export class ChapterFooterComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private chapterService: ChapterService
+    private chapterService: ChapterService,
+    private socialMediaService: SocialMediaService
   ) { 
   }
 
-  links: ChapterLinks;
+  links: {
+    facebook: string;
+    facebookName: string;
+    instagram: string;
+    instagramName: string;    
+    twitter: string;
+    twitterName: string;
+  };
+
+  private chapterLinks: ChapterLinks;
 
   ngOnInit(): void {
-    this.chapterService.getActiveChapter().pipe(
-      switchMap((chapter: Chapter) => this.chapterService.getChapterLinks(chapter.id))
-    ).subscribe((links: ChapterLinks) => {   
-      this.links = links;      
+    const chapter: Chapter = this.chapterService.getActiveChapter();
+    this.chapterService.getChapterLinks(chapter.id).subscribe((links: ChapterLinks) => {   
+      this.chapterLinks = links;      
+      this.links = {
+        facebook: this.socialMediaService.getFacebookAccountLink(this.chapterLinks.facebook),
+        facebookName: this.chapterLinks.facebook,
+        instagram: this.socialMediaService.getInstagramAccountLink(this.chapterLinks.instagram),
+        instagramName: this.chapterLinks.instagram,
+        twitter: this.socialMediaService.getTwitterAccountLink(this.chapterLinks.twitter),
+        twitterName: this.chapterLinks.twitter
+      };
       this.changeDetector.detectChanges();
     });
   }

@@ -1,7 +1,0 @@
-/packages
-/.vs
-*.user
-bin
-obj
-App_Data
-/ODK.Website/Media

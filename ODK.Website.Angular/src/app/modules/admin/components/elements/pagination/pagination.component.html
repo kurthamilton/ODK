@@ -1,0 +1,21 @@
+<div *ngIf="pageCount > 1" class="d-flex justify-content-center mt-3">
+  <ul class="pagination">
+    <li class="page-item" [class.disabled]="activePage === 1">
+      <button class="page-link" (click)="onPageChanged(activePage - 1)" tabindex="-1">Prev</button>
+    </li>
+
+    <ng-container *ngFor="let pageGroup of pageGroups; let i = index">
+      <li class="page-item disabled" *ngIf="i > 0">
+        <span class="page-link">...</span>
+      </li>
+
+      <li class="page-item" *ngFor="let p of pageGroup.pages" [class.active]="p === activePage">
+        <button class="page-link" (click)="onPageChanged(p)">{{p}}</button>
+      </li>
+    </ng-container>
+
+    <li class="page-item" [class.disabled]="activePage === pageCount">
+      <button class="page-link" (click)="onPageChanged(activePage + 1)">Next</button>
+    </li>
+  </ul>
+</div>

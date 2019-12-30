@@ -1,14 +1,14 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { tap, switchMap } from 'rxjs/operators';
-
 import { appPaths } from 'src/app/routing/app-paths';
+import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterService } from 'src/app/services/chapter/chapter.service';
+import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from 'src/app/services/members/member.service';
-import { appUrls } from 'src/app/routing/app-urls';
+import { MenuItem } from 'src/app/core/menus/menu-item';
+import { TitleService } from 'src/app/services/title/title.service';
 
 @Component({
   selector: 'app-member',
@@ -21,28 +21,33 @@ export class MemberComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private chapterService: ChapterService,
-    private memberService: MemberService
-  ) {   
+    private memberService: MemberService,
+    private titleService: TitleService
+  ) {
   }
 
-  chapter: Chapter;
+  breadcrumbs: MenuItem[];
   member: Member;
+  memberId: string;
 
   ngOnInit(): void {
-    const id: string = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.member.params.id);
+    this.memberId = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.member.params.id);
+    this.changeDetector.detectChanges();
 
-    this.chapterService.getActiveChapter().pipe(
-      tap((chapter: Chapter) => this.chapter = chapter),
-      switchMap((chapter: Chapter) => this.memberService.getMember(id, chapter.id))
-    ).subscribe((member: Member) => {
+    const chapter: Chapter = this.chapterService.getActiveChapter();
+    this.breadcrumbs = [
+      { link: appUrls.members(chapter), text: `${chapter.name} Knitwits` }
+    ];
+
+    this.memberService.getMember(this.memberId, chapter.id).subscribe((member: Member) => {
       if (!member) {
-        this.router.navigateByUrl(appUrls.members(this.chapter));
+        this.router.navigateByUrl(appUrls.members(chapter));
         return;
       }
 
+      this.titleService.setRouteTitle(member.fullName, `${chapter.name} Knitwits`);
       this.member = member;
       this.changeDetector.detectChanges();
     });
   }
-
 }

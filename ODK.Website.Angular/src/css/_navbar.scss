@@ -15,7 +15,6 @@
     .navbar-nav {
         flex-wrap: wrap;        
         justify-content: center;
-        margin-bottom: 0.4rem;
     }    
 }
 
@@ -101,5 +100,33 @@
 
     &:hover {
         opacity: 0.7;
+    }
+}
+
+.anonymous-links {
+    display: flex;    
+
+    .anonymous-link {
+        padding-top: 0.1rem;
+        padding-bottom: 0.1rem;
+
+        &:not(:first-child) {
+            margin-left: 0.25rem;    
+        }
+    }    
+}
+
+.home {
+    .anonymous-links {
+        flex-direction: column;
+        
+        .anonymous-link {            
+            &:not(:first-child) {
+                flex-grow: 1;
+                flex-basis: 0;            
+                margin-left: 0;
+                margin-top: 0.25rem;    
+            }
+        }        
     }
 }

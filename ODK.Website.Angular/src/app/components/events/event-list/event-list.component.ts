@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, OnChanges } from '@angular/core';
 
-import { Event } from 'src/app/core/events/event';
+import { ListEventViewModel } from '../list-event/list-event.view-model';
 
 @Component({
   selector: 'app-event-list',
@@ -8,5 +8,5 @@ import { Event } from 'src/app/core/events/event';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EventListComponent {
-  @Input() events: Event[];
+  @Input() viewModels: ListEventViewModel[];
 }

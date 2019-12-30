@@ -2,10 +2,11 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { Observable, of, Subject, BehaviorSubject } from 'rxjs';
-import { map, catchError, take } from 'rxjs/operators';
+import { map, take, tap } from 'rxjs/operators';
 
 import { AccountDetails } from 'src/app/core/account/account-details';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
+import { catchApiError } from '../http/catchApiError';
 import { environment } from 'src/environments/environment';
 import { HttpAuthInterceptorHeaders } from '../http/http-auth-interceptor-headers';
 import { HttpUtils } from '../http/http-utils';
@@ -16,8 +17,10 @@ const baseUrl = `${environment.baseUrl}/account`;
 
 const endpoints = {
   changePassword: `${baseUrl}/password`,
+  completePasswordReset: `${baseUrl}/password/reset/complete`,
   login: `${baseUrl}/login`,
-  refreshToken: `${baseUrl}/refreshToken`
+  refreshToken: `${baseUrl}/refreshToken`,
+  requestPasswordReset: `${baseUrl}/password/reset/request`
 }
 
 const storageKeys = {
@@ -31,17 +34,26 @@ export class AuthenticationService {
 
   constructor(private http: HttpClient,
     private storageService: StorageService
-  ) { 
+  ) {
     const token: AuthenticationToken = this.getToken();
     this.tokenSubject = new BehaviorSubject<AuthenticationToken>(token);
-  }  
+  }
 
   private loginSubject: Subject<ServiceResult<AuthenticationToken>> = new Subject<ServiceResult<AuthenticationToken>>();
   private nextTokenSubject: Subject<AuthenticationToken> = new Subject<AuthenticationToken>();
   private refreshSubject: Subject<ServiceResult<AuthenticationToken>> = new Subject<ServiceResult<AuthenticationToken>>();
+  private tokenExpiredSubject: Subject<AuthenticationToken> = new Subject<AuthenticationToken>();
   private tokenSubject: Subject<AuthenticationToken>;
 
-  changePassword(currentPassword: string, newPassword: string): Observable<ServiceResult<{}>> {
+  authenticationExpired(): Observable<AuthenticationToken> {
+    return this.tokenExpiredSubject.asObservable();
+  }
+
+  authenticationTokenChange(): Observable<AuthenticationToken> {
+    return this.tokenSubject.asObservable();
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
       currentPassword,
       newPassword
@@ -49,23 +61,29 @@ export class AuthenticationService {
 
     return this.http.put(endpoints.changePassword, params)
       .pipe(
-        map((): ServiceResult<{}> => ({ success: true })),
-        catchError((err: any): Observable<ServiceResult<{}>> => {
-          const response = err.error;
-          const result: ServiceResult<{}> = {
-            messages: response.messages,
-            success: false
-          };
-          return of(result);
-        })
+        map((): ServiceResult<void> => ({ success: true })),
+        catchApiError()
       );
   }
 
+  completePasswordReset(password: string, token: string): Observable<ServiceResult<void>> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      password,
+      token
+    });
+
+    return this.http.post(endpoints.completePasswordReset, params).pipe(
+      map((): ServiceResult<void> => ({ success: true })),
+      catchApiError()
+    )
+  }
+  
   getAccountDetails(): AccountDetails {
     const token: AuthenticationToken = this.getToken();
     return token ? {
       chapterId: token.chapterId,
-      memberId: token.memberId
+      memberId: token.memberId,
+      membershipActive: !token.membershipDisabled
     } : null;
   }
 
@@ -78,10 +96,6 @@ export class AuthenticationService {
 
   getToken(): AuthenticationToken {
     return this.storageService.get<AuthenticationToken>(storageKeys.authToken);
-  }
-
-  isAuthenticated(): Observable<AuthenticationToken> {
-    return this.tokenSubject.asObservable();
   }
 
   login(username: string, password: string): Observable<ServiceResult<AuthenticationToken>> {
@@ -97,8 +111,30 @@ export class AuthenticationService {
 
     return this.loginSubject
       .pipe(
-        take(1)
+        take(1),
+        map((result: ServiceResult<AuthenticationToken>) => {
+          return result.success ? result : {
+            messages: result.messages,
+            success: false
+          };
+        })
       );
+  }
+
+  logout(): Observable<void> {
+    const token: AuthenticationToken = this.getToken();
+    if (!token) {
+      return of();
+    }
+
+    const params: HttpParams = HttpUtils.createFormParams({
+      refreshToken: token.refreshToken
+    });
+
+    return this.http.delete(endpoints.refreshToken, { params }).pipe(
+      tap(() => this.setToken({ success: false })),
+      map(() => undefined)
+    );
   }
 
   refreshAccessToken(token: AuthenticationToken): Observable<ServiceResult<AuthenticationToken>> {
@@ -122,17 +158,52 @@ export class AuthenticationService {
 
     return this.refreshSubject
       .pipe(
-        take(1)
+        take(1),        
+        map((result: ServiceResult<AuthenticationToken>) => {
+          return result.success ? result : {
+            messages: result.messages,
+            success: false            
+          };
+        }),
+        tap((result: ServiceResult<AuthenticationToken>) => {
+          if (!result.success) {
+            this.setToken(result);
+            this.tokenExpiredSubject.next(result.value);
+          }
+        })
       );
-  }      
+  }
+
+  requestPasswordReset(emailAddress: string): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      emailAddress
+    });
+
+    return this.http.post(endpoints.requestPasswordReset, params)
+      .pipe(
+        map(() => undefined)
+      );
+  }
 
   private mapToken(response: any): AuthenticationToken {
-    return {
+    const token: AuthenticationToken = {
       accessToken: response.accessToken,
       chapterId: response.chapterId,
       memberId: response.memberId,
-      refreshToken: response.refreshToken
+      membershipDisabled: response.membershipDisabled || false,
+      refreshToken: response.refreshToken,
+      subscriptionExpiryDate: response.subscriptionExpiryDate ? new Date(response.subscriptionExpiryDate) : null
     };
+
+    if (response.adminChapterIds) {
+      token.adminChapterIds = response.adminChapterIds;
+    }
+
+    if (response.superAdmin) {
+      token.superAdmin = response.superAdmin;
+    }
+
+    return token;
   }
 
   private requestToken(url: string, options: {
@@ -148,25 +219,18 @@ export class AuthenticationService {
           success: true,
           value: token
         })),
-        catchError((err: any): Observable<ServiceResult<AuthenticationToken>> => {
-          const response = err.error;
-          const result: ServiceResult<AuthenticationToken> = {
-            messages: response.messages,
-            success: false
-          };
-          return of(result);
-        })
+        catchApiError(this.getToken())
       ).subscribe((result: ServiceResult<AuthenticationToken>) => {
         this.setToken(result, options.subject);
       });
   }
-  
+
   private setStorageToken(token: AuthenticationToken): void {
     this.storageService.set(storageKeys.authToken, token);
   }
 
   private setToken(result: ServiceResult<AuthenticationToken>, subject?: Subject<ServiceResult<AuthenticationToken>>): void {
-    const token: AuthenticationToken = result.value;
+    const token: AuthenticationToken = result.success ? result.value : null;
     this.setStorageToken(token);
 
     if (subject) {
