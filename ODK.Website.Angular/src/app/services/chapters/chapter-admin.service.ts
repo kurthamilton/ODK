@@ -13,7 +13,7 @@ import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 
-const baseUrl = `${environment.baseUrl}/admin/chapters`;
+const baseUrl = `${environment.apiBaseUrl}/admin/chapters`;
 
 const endpoints = {
   adminMember: (id: string, memberId: string) => `${baseUrl}/${id}/adminmembers/${memberId}`,

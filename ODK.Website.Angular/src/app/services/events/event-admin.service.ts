@@ -14,7 +14,7 @@ import { EventService } from './event.service';
 import { HttpUtils } from 'src/app/services/http/http-utils';
 import { ServiceResult } from 'src/app/services/service-result';
 
-const baseUrl = `${environment.baseUrl}/admin/events`
+const baseUrl = `${environment.apiBaseUrl}/admin/events`
 
 const endpoints = {
   chapterInvites: (chapterId: string, page: number, pageCount: number) => 

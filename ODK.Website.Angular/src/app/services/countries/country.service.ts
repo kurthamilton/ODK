@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators';
 import { Country } from 'src/app/core/countries/country';
 import { environment } from 'src/environments/environment';
 
-const baseUrl = `${environment.baseUrl}/countries`;
+const baseUrl = `${environment.apiBaseUrl}/countries`;
 
 const endpoints = {
   countries: baseUrl

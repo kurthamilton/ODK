@@ -15,7 +15,7 @@ import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 
-const baseUrl = `${environment.baseUrl}/chapters`;
+const baseUrl = `${environment.apiBaseUrl}/chapters`;
 
 const endpoints = {
   chapterContact: (id: string) => `${baseUrl}/${id}/contact`,  

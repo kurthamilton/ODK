@@ -13,7 +13,7 @@ import { HttpUtils } from '../http/http-utils';
 import { ServiceResult } from '../service-result';
 import { StorageService } from '../caching/storage.service';
 
-const baseUrl = `${environment.baseUrl}/account`;
+const baseUrl = `${environment.apiBaseUrl}/account`;
 
 const endpoints = {
   changePassword: `${baseUrl}/password`,

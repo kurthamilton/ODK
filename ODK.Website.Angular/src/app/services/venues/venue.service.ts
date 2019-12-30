@@ -9,7 +9,7 @@ import { AuthenticationService } from '../authentication/authentication.service'
 import { environment } from 'src/environments/environment';
 import { Venue } from 'src/app/core/venues/venue';
 
-const baseUrl = `${environment.baseUrl}/venues`;
+const baseUrl = `${environment.apiBaseUrl}/venues`;
 
 const endpoints = {
   publicVenues: (chapterId: string) => `${baseUrl}/public?chapterId=${chapterId}`,

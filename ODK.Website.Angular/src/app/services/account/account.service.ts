@@ -12,7 +12,7 @@ import { MemberProperty } from 'src/app/core/members/member-property';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { ServiceResult } from '../service-result';
 
-const baseUrl = `${environment.baseUrl}/account`;
+const baseUrl = `${environment.apiBaseUrl}/account`;
 
 const endpoints = {
   activate: `${baseUrl}/activate`,

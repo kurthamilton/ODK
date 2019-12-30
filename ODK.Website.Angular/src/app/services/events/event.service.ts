@@ -11,7 +11,7 @@ import { Event } from 'src/app/core/events/event';
 import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 import { EventResponseType } from 'src/app/core/events/event-response-type';
 
-const baseUrl = `${environment.baseUrl}/events`;
+const baseUrl = `${environment.apiBaseUrl}/events`;
 
 const endpoints = {
   eventResponses: (eventId: string) => `${baseUrl}/${eventId}/responses`,

@@ -13,7 +13,7 @@ import { Venue } from 'src/app/core/venues/venue';
 import { VenueService } from './venue.service';
 import { VenueStats } from 'src/app/core/venues/venue-stats';
 
-const baseUrl = `${environment.baseUrl}/admin/venues`;
+const baseUrl = `${environment.apiBaseUrl}/admin/venues`;
 
 const endpoints = {
   chapterStats: (chapterId: string) => `${baseUrl}/stats?chapterId=${chapterId}`,

@@ -10,7 +10,7 @@ import { Member } from 'src/app/core/members/member';
 import { MemberProfile } from 'src/app/core/members/member-profile';
 import { MemberProperty } from 'src/app/core/members/member-property';
 
-const baseUrl = `${environment.baseUrl}/members`;
+const baseUrl = `${environment.apiBaseUrl}/members`;
 
 const endpoints = {
   latestMembers: (chapterId: string) => `${baseUrl}/latest?chapterId=${chapterId}`,

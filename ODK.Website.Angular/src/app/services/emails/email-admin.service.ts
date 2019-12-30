@@ -11,7 +11,7 @@ import { EmailType } from 'src/app/core/emails/email-type';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 
-const baseUrl: string = `${environment.baseUrl}/admin/emails`;
+const baseUrl: string = `${environment.apiBaseUrl}/admin/emails`;
 
 const endpoints = {
   chapterEmail: (chapterId: string, type: EmailType) => `${baseUrl}/chapters/${chapterId}/${EmailType[type]}`,

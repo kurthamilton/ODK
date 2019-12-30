@@ -7,7 +7,7 @@ import { map, catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { SocialMediaImage } from 'src/app/core/social-media/social-media-image';
 
-const baseUrl = `${environment.baseUrl}/socialmedia`;
+const baseUrl = `${environment.apiBaseUrl}/socialmedia`;
 
 const endpoints = {
   instagram: (chapterId: string, max: number) => `${baseUrl}/instagram?chapterId=${chapterId}&max=${max}`
