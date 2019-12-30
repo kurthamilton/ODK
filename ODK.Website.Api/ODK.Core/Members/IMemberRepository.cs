@@ -26,7 +26,7 @@ namespace ODK.Core.Members
         Task<MemberActivationToken> GetMemberActivationToken(Guid memberId);
         Task<MemberActivationToken> GetMemberActivationToken(string activationToken);
         Task<MemberEmailAddressUpdateToken> GetMemberEmailAddressUpdateToken(Guid memberId);
-        Task<MemberImage> GetMemberImage(Guid memberId, long? versionAfter);
+        Task<MemberImage> GetMemberImage(Guid memberId);
         Task<MemberPassword> GetMemberPassword(Guid memberId);
         Task<IReadOnlyCollection<MemberProperty>> GetMemberProperties(Guid memberId);
         Task<IReadOnlyCollection<Member>> GetMembers(Guid chapterId, bool searchAll = false);

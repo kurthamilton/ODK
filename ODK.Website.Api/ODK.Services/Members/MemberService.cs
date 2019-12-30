@@ -144,17 +144,22 @@ namespace ODK.Services.Members
             return new VersionedServiceResult<IReadOnlyCollection<Member>>(members.Version, latestMembers);
         }
 
-        public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? version, Guid currentMemberId, Guid memberId, int? size)
+        public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid currentMemberId, Guid memberId, int? size)
         {
             Member member = await GetMember(currentMemberId, memberId);
 
-            MemberImage image = await _memberRepository.GetMemberImage(member.Id, version);
-            if (image == null)
+            VersionedServiceResult<MemberImage> cached = await _cacheService.GetOrSetVersionedItem(
+                () => _memberRepository.GetMemberImage(member.Id),
+                memberId,
+                currentVersion);
+
+            if (currentVersion == cached.Version)
             {
-                return new VersionedServiceResult<MemberImage>(version ?? 0);
+                return cached;
             }
 
-            if (size != null)
+            MemberImage image = cached.Value;
+            if (size != null && image != null)
             {
                 byte[] imageData = _imageService.Crop(image.ImageData, size.Value, size.Value);
                 image = new MemberImage(image.MemberId, imageData, image.MimeType, image.Version);
@@ -235,7 +240,7 @@ namespace ODK.Services.Members
         {
             Member member = await GetMember(memberId, memberId);
 
-            MemberImage image = await _memberRepository.GetMemberImage(memberId, null);
+            MemberImage image = await _memberRepository.GetMemberImage(memberId);
             if (image == null)
             {
                 return null;
@@ -443,7 +448,12 @@ namespace ODK.Services.Members
             MemberImage update = CreateMemberImage(member.Id, mimeType, imageData);
 
             await _memberRepository.UpdateMemberImage(update);
-            return await _memberRepository.GetMemberImage(member.Id, null);
+
+            MemberImage updated = await _memberRepository.GetMemberImage(member.Id);
+
+            _cacheService.UpdatedVersionedItem(updated, member.Id);
+
+            return updated;
         }
 
         private async Task ValidateMemberProfile(Guid chapterId, UpdateMemberProfile profile)

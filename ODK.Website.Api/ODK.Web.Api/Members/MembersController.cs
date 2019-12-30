@@ -39,7 +39,7 @@ namespace ODK.Web.Api.Members
             return await HandleVersionedRequest(
                 version => _memberService.GetMemberImage(version, GetMemberId(), id, size),
                 MemberImageResult);
-        }
+        }        
 
         [HttpGet("Latest")]
         public async Task<ActionResult<IEnumerable<MemberApiResponse>>> Latest(Guid chapterId)

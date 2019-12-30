@@ -1,7 +1,12 @@
 <div class="d-inline-block">
-    <img *ngIf="imageData" [attr.src]="imageData" />
-    <div class="d-flex justify-content-center">
-        <input type="file" accept="image/*" #file placeholder="Choose file" (change)="onUploadPicture(file.files)" class="d-none" />
-        <button class="btn btn-link" (click)="file.click()">Change picture</button>
+  <img *ngIf="imageData" [attr.src]="imageData" />
+  <div class="d-flex justify-content-center">
+    <input type="file" accept="image/*" #file placeholder="Choose file" (change)="onUploadPicture(file.files)" class="d-none" />
+    <div>
+      <button class="btn btn-link" (click)="file.click()">Change picture</button>
+      <button class="btn-icon" ngbTooltip="Rotate right" (click)="onRotate()">
+        <i class="fas fa-undo flip-horizontal"></i>
+      </button>
     </div>
+  </div>
 </div>

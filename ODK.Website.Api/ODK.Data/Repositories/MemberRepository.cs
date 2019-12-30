@@ -171,12 +171,11 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<MemberImage> GetMemberImage(Guid memberId, long? versionAfter)
+        public async Task<MemberImage> GetMemberImage(Guid memberId)
         {
             return await Context
                 .Select<MemberImage>()
                 .Where(x => x.MemberId).EqualTo(memberId)
-                .ConditionalWhere(x => x.Version, versionAfter.HasValue).GreaterThan(versionAfter ?? 0)
                 .FirstOrDefaultAsync();
         }
 

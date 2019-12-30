@@ -33,6 +33,13 @@ export class ProfilePictureComponent implements OnInit {
     this.loadImage().subscribe();
   }
 
+  onRotate(): void {
+    this.accountService.rotateImage().subscribe((imageData: string) => {
+      this.imageData = imageData;
+      this.changeDetector.detectChanges();
+    });
+  }
+
   onUploadPicture(files: FileList): void {
     if (files.length === 0) {
       return;
