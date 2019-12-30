@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
@@ -21,7 +21,6 @@ export class ActivateAccountComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private router: Router,
     private chapterService: ChapterService,
     private accountService: AccountService
   ) {     

@@ -147,6 +147,7 @@ namespace ODK.Services.Members
         public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? version, Guid currentMemberId, Guid memberId, int? size)
         {
             Member member = await GetMember(currentMemberId, memberId);
+
             MemberImage image = await _memberRepository.GetMemberImage(member.Id, version);
             if (image == null)
             {

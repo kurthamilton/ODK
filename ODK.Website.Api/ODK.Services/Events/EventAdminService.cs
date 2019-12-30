@@ -45,7 +45,7 @@ namespace ODK.Services.Events
             Member member = await _memberRepository.GetMember(memberId);
 
             Event @event = new Event(Guid.Empty, createEvent.ChapterId, $"{member.FirstName} {member.LastName}", createEvent.Name,
-                createEvent.Date, createEvent.VenueId, createEvent.Time, null,
+                createEvent.Date, createEvent.VenueId, createEvent.Time, createEvent.ImageUrl,
                 createEvent.Description, createEvent.IsPublic);
 
             await ValidateEvent(@event);
@@ -197,7 +197,7 @@ namespace ODK.Services.Events
 
             update.Date = @event.Date;
             update.Description = @event.Description;
-            update.ImageUrl = null;
+            update.ImageUrl = @event.ImageUrl;
             update.IsPublic = @event.IsPublic;
             update.Name = @event.Name;
             update.Time = @event.Time;

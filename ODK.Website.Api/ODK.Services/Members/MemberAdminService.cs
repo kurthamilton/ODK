@@ -4,20 +4,23 @@ using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 
 namespace ODK.Services.Members
 {
     public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
+        private readonly ICacheService _cacheService;
         private readonly IMemberGroupRepository _memberGroupRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly IMemberService _memberService;
 
         public MemberAdminService(IChapterRepository chapterRepository, IMemberRepository memberRepository,
-            IMemberGroupRepository memberGroupRepository, IMemberService memberService)
+            IMemberGroupRepository memberGroupRepository, IMemberService memberService, ICacheService cacheService)
             : base(chapterRepository)
         {
+            _cacheService = cacheService;
             _memberGroupRepository = memberGroupRepository;
             _memberRepository = memberRepository;
             _memberService = memberService;
@@ -125,7 +128,11 @@ namespace ODK.Services.Members
         {
             Member member = await GetMember(currentMemberId, memberId);
 
-            return await _memberService.RotateMemberImage(member.Id, degrees);
+            MemberImage rotated = await _memberService.RotateMemberImage(member.Id, degrees);
+
+            _cacheService.RemoveVersionedItem<MemberImage>(memberId);
+
+            return rotated;
         }
 
         public async Task<MemberGroup> UpdateMemberGroup(Guid currentMemberId, Guid memberId, CreateMemberGroup memberGroup)
@@ -145,7 +152,11 @@ namespace ODK.Services.Members
         {
             Member member = await GetMember(currentMemberId, memberId, true);
 
-            return await _memberService.UpdateMemberImage(member.Id, image);
+            MemberImage updated = await _memberService.UpdateMemberImage(member.Id, image);
+
+            _cacheService.RemoveVersionedItem<MemberImage>(memberId);
+
+            return updated;
         }
 
         public async Task<MemberSubscription> UpdateMemberSubscription(Guid currentMemberId, Guid memberId,
@@ -160,6 +171,8 @@ namespace ODK.Services.Members
             ValidateMemberSubscription(update);
 
             await _memberRepository.UpdateMemberSubscription(update);
+
+            _cacheService.RemoveVersionedItem<MemberSubscription>(memberId);
 
             return update;
         }

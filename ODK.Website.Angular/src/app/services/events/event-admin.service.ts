@@ -140,6 +140,7 @@ export class EventAdminService extends EventService {
       chapterId: event.chapterId,
       date: event.date.toISOString(),
       description: event.description,
+      imageUrl: event.imageUrl,
       isPublic: event.isPublic ? 'true' : 'false',
       name: event.name,
       time: event.time,

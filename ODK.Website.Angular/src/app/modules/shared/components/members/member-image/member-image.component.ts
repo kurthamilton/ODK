@@ -41,7 +41,9 @@ export class MemberImageComponent implements OnChanges, OnDestroy {
     this.loadImage();
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.changeDetector.detach();
+  }
 
   private loadImage(): void {
     this.loading = true;

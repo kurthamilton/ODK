@@ -42,6 +42,7 @@ export class EventFormComponent implements OnChanges {
   private formControls: {
     date: TextInputFormControlViewModel;
     description: HtmlEditorFormControlViewModel;
+    imageUrl: TextInputFormControlViewModel;
     isPublic: CheckBoxFormControlViewModel;
     name: TextInputFormControlViewModel;
     time: TextInputFormControlViewModel;
@@ -68,7 +69,7 @@ export class EventFormComponent implements OnChanges {
       date: new Date(this.formControls.date.value),
       description: this.formControls.description.value,
       id: this.event ? this.event.id : '',
-      imageUrl: '',
+      imageUrl: this.formControls.imageUrl.value,
       isPublic: this.formControls.isPublic.value,
       name: this.formControls.name.value,
       time: this.formControls.time.value,
@@ -97,6 +98,13 @@ export class EventFormComponent implements OnChanges {
           text: 'Description'
         },
         value: this.event ? this.event.description : ''
+      }),
+      imageUrl: new TextInputFormControlViewModel({
+        id: 'image-url',
+        label: {
+          text: 'Image URL'
+        },
+        value: this.event ? this.event.imageUrl : ''
       }),
       isPublic: new CheckBoxFormControlViewModel({
         id: 'ispublic',
@@ -154,6 +162,7 @@ export class EventFormComponent implements OnChanges {
         this.formControls.date,
         this.formControls.time,
         this.formControls.description,
+        this.formControls.imageUrl
       ]
     };
   }
