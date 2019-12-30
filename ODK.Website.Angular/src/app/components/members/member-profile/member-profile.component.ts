@@ -14,6 +14,7 @@ import { MemberProfile } from 'src/app/core/members/member-profile';
 import { MemberProperty } from 'src/app/core/members/member-property';
 import { MemberService } from 'src/app/services/members/member.service';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
+import { SocialMediaService } from 'src/app/services/social-media/social-media.service';
 
 @Component({
   selector: 'app-member-profile',
@@ -25,10 +26,11 @@ export class MemberProfileComponent implements OnChanges {
   constructor(private changeDetector: ChangeDetectorRef,
     private datePipe: DatePipe,
     private chapterService: ChapterService,
-    private memberService: MemberService
+    private memberService: MemberService,
+    private socialMediaService: SocialMediaService
   ) {
   }
-
+  
   @Input() memberId: string;
 
   form: FormViewModel;
@@ -70,7 +72,9 @@ export class MemberProfileComponent implements OnChanges {
             label: {
               text: x.label
             },
-            value: (x.name === 'facebook' ? 'https://www.facebook.com/' : '') + memberPropertyMap.get(x.id).value
+            value: x.name === 'facebook' 
+              ? this.socialMediaService.getFacebookAccountLink(memberPropertyMap.get(x.id).value) 
+              : memberPropertyMap.get(x.id).value
           }))),
         new ReadOnlyFormControlViewModel({
           id: 'joined',

@@ -17,7 +17,7 @@
         <app-social-media-image-list *appLoading="!instagramImages" [images]="instagramImages">          
         </app-social-media-image-list>
         <div *ngIf="links && links.instagram" class="d-flex justify-content-end">
-          <i class="fab fa-instagram mr-1"></i><a [attr.href]="'https://www.instagram.com/' + links.instagram" target="_blank">{{links.instagram}}</a>
+          <i class="fab fa-instagram mr-1"></i><a [attr.href]="links.instagram" target="_blank">{{links.instagramName}}</a>
         </div>
       </div>        
     </ng-container>

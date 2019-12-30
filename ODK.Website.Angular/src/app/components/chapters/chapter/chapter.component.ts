@@ -35,8 +35,13 @@ export class ChapterComponent implements OnInit {
   instagramImages: SocialMediaImage[];
   isMember: boolean;
   latestMembers: Member[];
-  links: ChapterLinks;
+  links: {
+    instagram: string;
+    instagramName: string;
+  };
   welcomeTextHtml: string;
+
+  private chapterLinks: ChapterLinks;
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
@@ -56,9 +61,13 @@ export class ChapterComponent implements OnInit {
         tap((images) => this.instagramImages = images)
       ),
       this.chapterService.getChapterLinks(this.chapter.id).pipe(
-        tap((links: ChapterLinks) => this.links = links)
+        tap((links: ChapterLinks) => this.chapterLinks = links)
       )
     ]).subscribe(() => {
+      this.links = {
+        instagram: this.socialMediaService.getInstagramAccountLink(this.chapterLinks.instagram),
+        instagramName: this.chapterLinks.instagram
+      };
       this.changeDetector.detectChanges();
     });
   }

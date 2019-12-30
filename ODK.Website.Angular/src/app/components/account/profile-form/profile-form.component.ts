@@ -22,6 +22,7 @@ import { FormControlViewModel } from 'src/app/modules/forms/components/form-cont
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { MemberProperty } from 'src/app/core/members/member-property';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
+import { SocialMediaService } from 'src/app/services/social-media/social-media.service';
 import { TextAreaFormControlOptions } from 'src/app/modules/forms/components/inputs/text-area-form-control/text-area-form-control-options';
 import { TextAreaFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-area-form-control/text-area-form-control.view-model';
 import { TextInputFormControlOptions } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control-options';
@@ -35,8 +36,9 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 export class ProfileFormComponent implements OnChanges {
 
   constructor(private changeDetector: ChangeDetectorRef,
+    private datePipe: DatePipe,
     private chapterService: ChapterService,
-    private datePipe: DatePipe
+    private socialMediaService: SocialMediaService
   ) {
   }
 
@@ -301,7 +303,7 @@ export class ProfileFormComponent implements OnChanges {
     const textInputOptions = <TextInputFormControlOptions>options;
     textInputOptions.prefix = chapterProperty.name === 'facebook' ? {
       icon: 'fa-facebook-f',
-      text: 'https://www.facebook.com/'
+      text: this.socialMediaService.getFacebookAccountLink('')
     } : null;
     textInputOptions.value = memberProperty ? memberProperty.value : '';
     return new TextInputFormControlViewModel(textInputOptions);
