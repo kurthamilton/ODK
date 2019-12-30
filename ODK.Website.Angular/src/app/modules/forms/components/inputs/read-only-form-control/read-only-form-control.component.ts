@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { InputBase } from '../input-base';
+import { ReadOnlyFormControlViewModel } from './read-only-form-control.view-model';
 
 @Component({
   selector: 'app-read-only-form-control',
@@ -11,4 +12,6 @@ export class ReadOnlyFormControlComponent extends InputBase {
   constructor(changeDetector: ChangeDetectorRef) {
     super(changeDetector);
   }
+  
+  get controlType(): string { return (<ReadOnlyFormControlViewModel>this.viewModel).controlType; }
 }

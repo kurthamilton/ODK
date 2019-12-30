@@ -299,6 +299,10 @@ export class ProfileFormComponent implements OnChanges {
     }
 
     const textInputOptions = <TextInputFormControlOptions>options;
+    textInputOptions.prefix = chapterProperty.name === 'facebook' ? {
+      icon: 'fa-facebook-f',
+      text: 'https://www.facebook.com/'
+    } : null;
     textInputOptions.value = memberProperty ? memberProperty.value : '';
     return new TextInputFormControlViewModel(textInputOptions);
   }

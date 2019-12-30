@@ -1,3 +1,8 @@
 <div *ngIf="viewModel.value" class="form-control-plaintext">
+  <span *ngIf="!controlType">
     {{viewModel.value}}
+  </span>    
+  <a *ngIf="controlType === 'url'" [attr.href]="viewModel.value" target="_blank">
+    {{viewModel.value}}
+  </a>
 </div>

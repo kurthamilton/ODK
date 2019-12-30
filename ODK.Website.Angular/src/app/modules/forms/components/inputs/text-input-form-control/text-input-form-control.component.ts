@@ -16,6 +16,12 @@ export class TextInputFormControlComponent extends InputBase {
 
   @Output() blur: EventEmitter<void> = new EventEmitter<void>();
 
+  get prefix(): { icon: string; text: string; } {
+    return this.viewModel
+      ? (<TextInputFormControlViewModel>this.viewModel).prefix
+      : null;
+  }
+
   get type(): string {
     return this.viewModel
       ? (<TextInputFormControlViewModel>this.viewModel).inputType || 'text'

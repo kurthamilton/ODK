@@ -1,10 +1,6 @@
-<app-body *appLoading="!member" [breadcrumbs]="breadcrumbs">
-    <div class="row">
-        <div class="col-md-7">
-            <app-member-profile [memberId]="memberId"></app-member-profile>
-        </div>
-        <div class="col-md-5">
-            <app-member-image [member]="member"></app-member-image>
-        </div>
-    </div>
+<app-body *appLoading="!member" [breadcrumbs]="breadcrumbs">    
+  <div class="float-right">
+    <app-member-image [member]="member"></app-member-image>
+  </div>
+  <app-member-profile [memberId]="memberId"></app-member-profile>  
 </app-body>

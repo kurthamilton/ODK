@@ -65,17 +65,18 @@ export class MemberProfileComponent implements OnChanges {
         ... this.chapterProperties
           .filter(x => memberPropertyMap.has(x.id) && !!memberPropertyMap.get(x.id).value)
           .map((x): FormControlViewModel => (new ReadOnlyFormControlViewModel({
+            controlType: x.name === 'facebook' ? 'url' : null,
             id: x.name,
             label: {
               text: x.label
             },
-            value: memberPropertyMap.get(x.id).value
+            value: (x.name === 'facebook' ? 'https://www.facebook.com/' : '') + memberPropertyMap.get(x.id).value
           }))),
         new ReadOnlyFormControlViewModel({
           id: 'joined',
           label: {
             text: 'Date joined'
-          },
+          },          
           value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy')
         })
       ]

@@ -11,10 +11,15 @@ export class TextInputFormControlViewModel extends FormControlViewModel {
   constructor(options: TextInputFormControlOptions) {
     super(options);
     this._inputType = options.inputType || 'text';
+    this.prefix = options.prefix;
     this.value = options.value;
   }
 
   get inputType(): string { return this._inputType; }
+  prefix: {
+    icon: string;
+    text: string;
+  };
   get type(): Type<InputBase> { return TextInputFormControlComponent; }
   value: string;
 }
