@@ -1,11 +1,11 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
+import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
 import { MenuItem } from 'src/app/core/menus/menu-item';
-import { adminUrls } from '../../../routing/admin-urls';
 
 @Component({
   selector: 'app-member-menu',
@@ -27,7 +27,8 @@ export class MemberMenuComponent implements OnInit {
 
     this.menuItems = [
       { link: adminUrls.member(chapter, member), text: 'Subscription', matchExactRoute: true },
-      { link: adminUrls.memberImage(chapter, member), text: 'Image' }
+      { link: adminUrls.memberImage(chapter, member), text: 'Image' },
+      { link: adminUrls.memberEvents(chapter, member), text: 'Events' }
     ];
   }
 

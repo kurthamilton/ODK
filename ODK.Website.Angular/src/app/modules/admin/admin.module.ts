@@ -51,6 +51,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
 import { EmailLayoutComponent } from './components/emails/email-layout/email-layout.component';
 import { EmailMenuComponent } from './components/emails/email-menu/email-menu.component';
 import { DefaultEmailsComponent } from './components/emails/default-emails/default-emails.component';
+import { MemberEventsComponent } from './components/members/member-events/member-events.component';
 
 @NgModule({
   declarations: [
@@ -98,6 +99,7 @@ import { DefaultEmailsComponent } from './components/emails/default-emails/defau
     EmailLayoutComponent,
     EmailMenuComponent,
     DefaultEmailsComponent,
+    MemberEventsComponent,
   ],
   imports: [
     AdminRoutingModule,

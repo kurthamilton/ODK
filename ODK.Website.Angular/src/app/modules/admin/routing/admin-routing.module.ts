@@ -26,6 +26,7 @@ import { EmailLayoutComponent } from '../components/emails/email-layout/email-la
 import { EventInvitesComponent } from '../components/events/event-invites/event-invites.component';
 import { EventLayoutComponent } from '../components/events/event-layout/event-layout.component';
 import { EventsComponent } from '../components/events/events/events.component';
+import { MemberEventsComponent } from '../components/members/member-events/member-events.component';
 import { MemberLayoutComponent } from '../components/members/member-layout/member-layout.component';
 import { MembersComponent } from '../components/members/members/members.component';
 import { MemberSubscriptionComponent } from '../components/members/member-subscription/member-subscription.component';
@@ -70,6 +71,7 @@ const routes: Routes = [
       { path: '', component: MembersComponent },
       { path: adminPaths.members.member.path, component: MemberLayoutComponent, children: [
         { path: '', component: MemberSubscriptionComponent },
+        { path: adminPaths.members.member.events.path, component: MemberEventsComponent  },
         { path: adminPaths.members.member.image.path, component: EditMemberImageComponent }
       ] }
     ] },

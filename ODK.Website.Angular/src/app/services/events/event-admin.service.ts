@@ -19,7 +19,7 @@ const baseUrl = `${environment.apiBaseUrl}/admin/events`
 const endpoints = {
   chapterInvites: (chapterId: string, page: number, pageCount: number) => 
     `${baseUrl}/invites?chapterId=${chapterId}&page=${page}&pageCount=${pageCount}`,
-  chapterResponses: (chapterId: string) => `${baseUrl}/responses?chapterId=${chapterId}`,
+  chapterResponses: (chapterId: string) => `${baseUrl}/responses/chapters/${chapterId}`,
   count: (chapterId: string) => `${baseUrl}/count?chapterId=${chapterId}`,
   createEvent: `${baseUrl}`,
   event: (id: string) => `${baseUrl}/${id}`,
@@ -28,6 +28,7 @@ const endpoints = {
   events: (chapterId: string, page: number, pageCount: number) => 
     `${baseUrl}?chapterId=${chapterId}&page=${page}&pageCount=${pageCount}`,
   eventsByVenue: (venueId: string) => `${baseUrl}/venues/${venueId}`,
+  memberResponses: (memberId: string) => `${baseUrl}/responses/members/${memberId}`,
   sendInvites: (eventId: string, test?: boolean) => `${baseUrl}/${eventId}/invites/send${test ? '/test' : ''}`
 };
 
@@ -66,12 +67,18 @@ export class EventAdminService extends EventService {
     return this.activeEvent;
   }
 
-  getAdminEvents(chapterId: string, page: number, pageCount: number): Observable<Event[]> {
+  getAllEvents(chapterId: string, page: number, pageCount: number): Observable<Event[]> {
     return this.http.get(endpoints.events(chapterId, page, pageCount)).pipe(
       map((response: any) => response.map(x => this.mapEvent(x)))
     );
   }
   
+  getAllMemberResponses(memberId: string): Observable<EventMemberResponse[]> {
+    return this.http.get(endpoints.memberResponses(memberId)).pipe(
+      map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
+    );
+  }
+
   getChapterInvites(chapterId: string, page: number, pageCount: number): Observable<EventInvites[]> {
     return this.http.get(endpoints.chapterInvites(chapterId, page, pageCount)).pipe(
       map((response: any) => response.map(x => this.mapEventInvites(x)))

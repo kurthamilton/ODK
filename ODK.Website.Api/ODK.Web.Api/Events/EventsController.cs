@@ -33,28 +33,28 @@ namespace ODK.Web.Api.Events
         }
 
         [AllowAnonymous]
-        [HttpGet("public")]
+        [HttpGet("Public")]
         public async Task<IEnumerable<EventApiResponse>> Public(Guid chapterId)
         {
             IReadOnlyCollection<Event> events = await _eventService.GetPublicEvents(chapterId);
             return events.Select(_mapper.Map<EventApiResponse>);
         }
 
-        [HttpPut("{id}/respond")]
+        [HttpPut("{id}/Respond")]
         public async Task<EventMemberResponseApiResponse> Respond(Guid id, EventResponseType type)
         {
             EventMemberResponse response = await _eventService.UpdateMemberResponse(GetMemberId(), id, type);
             return _mapper.Map<EventMemberResponseApiResponse>(response);
         }
 
-        [HttpGet("{id}/responses")]
+        [HttpGet("{id}/Responses")]
         public async Task<IEnumerable<EventMemberResponseApiResponse>> Responses(Guid id)
         {
             IReadOnlyCollection<EventMemberResponse> responses = await _eventService.GetEventResponses(GetMemberId(), id);
             return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
         }
 
-        [HttpGet("responses")]
+        [HttpGet("Responses")]
         public async Task<IEnumerable<EventMemberResponseApiResponse>> MemberResponses()
         {
             IReadOnlyCollection<EventMemberResponse> responses = await _eventService.GetMemberResponses(GetMemberId());

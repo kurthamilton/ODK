@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, OnChanges } from '@angular/core';
 
+import { adminUrls } from 'src/app/modules/admin/routing/admin-urls';
 import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { Member } from 'src/app/core/members/member';
@@ -13,6 +14,7 @@ export class MemberListComponent implements OnChanges {
 
   @Input() chapter: Chapter;
   @Input() cols: number;
+  @Input() isAdmin: boolean;
   @Input() members: Member[];
   @Input() size: 'sm' | 'xs';
   
@@ -30,6 +32,8 @@ export class MemberListComponent implements OnChanges {
   }
 
   getMemberLink(member: Member): string {
-    return appUrls.member(this.chapter, member);
+    return this.isAdmin 
+      ? adminUrls.member(this.chapter, member)
+      : appUrls.member(this.chapter, member);
   }
 }

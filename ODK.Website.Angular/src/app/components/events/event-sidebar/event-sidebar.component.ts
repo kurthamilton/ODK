@@ -111,14 +111,16 @@ export class EventSidebarComponent implements OnChanges {
     responseGroups.set(EventResponseType.No, this.declined);
 
     const memberMap: Map<string, Member> = ArrayUtils.toMap(this.members, x => x.id);
-    this.responses.forEach((response: EventMemberResponse) => {
-      const member: Member = memberMap.get(response.memberId);
-      if (member) {
-        responseGroups.get(response.responseType).push(member);
-        if (response.memberId === this.memberId) {
-          this.memberResponse = response.responseType;
+    this.responses
+      .sort((a, b) => memberMap.get(a.memberId).fullName.localeCompare(memberMap.get(b.memberId).fullName))
+      .forEach((response: EventMemberResponse) => {
+        const member: Member = memberMap.get(response.memberId);
+        if (member) {
+          responseGroups.get(response.responseType).push(member);
+          if (response.memberId === this.memberId) {
+            this.memberResponse = response.responseType;
+          }
         }
-      }
-    });        
+      });        
   }
 }

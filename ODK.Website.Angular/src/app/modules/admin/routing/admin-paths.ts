@@ -62,6 +62,9 @@ export const adminPaths = {
   members: {
     path: 'members',
     member: {
+      events: {
+        path: 'events'
+      },
       image: {
         path: 'image'
       },

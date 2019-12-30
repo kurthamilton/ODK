@@ -20,7 +20,6 @@ import { ChapterSidebarComponent } from './components/chapters/chapter-sidebar/c
 import { ContactComponent } from './components/contact/contact/contact.component';
 import { EventComponent } from './components/events/event/event.component';
 import { EventListComponent } from './components/events/event-list/event-list.component';
-import { EventResponseIconComponent } from './components/events/event-response-icon/event-response-icon.component';
 import { EventsComponent } from './components/events/events/events.component';
 import { EventSidebarAttendeesComponent } from './components/events/event-sidebar-attendees/event-sidebar-attendees.component';
 import { EventSidebarComponent } from './components/events/event-sidebar/event-sidebar.component';
@@ -77,7 +76,6 @@ import { UpdateEmailAddressComponent } from './components/account/update-email-a
     ContactComponent,
     EventComponent,
     EventListComponent,
-    EventResponseIconComponent,
     EventsComponent,
     EventSidebarAttendeesComponent,
     EventSidebarComponent,

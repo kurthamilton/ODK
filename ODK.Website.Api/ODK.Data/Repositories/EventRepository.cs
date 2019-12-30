@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Threading.Tasks;
 using ODK.Core.Events;
 using ODK.Data.Sql;
@@ -116,13 +117,13 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId)
+        public async Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId, bool all = false)
         {
             return await Context
                 .Select<EventMemberResponse>()
                 .Join<Event, Guid>(x => x.EventId, x => x.Id)
                 .Where(x => x.MemberId).EqualTo(memberId)
-                .Where<Event, DateTime>(x => x.Date).GreaterThanOrEqualTo(DateTime.UtcNow.Date)
+                .Where<Event, DateTime>(x => x.Date).GreaterThanOrEqualTo(all ? SqlDateTime.MinValue.Value : DateTime.UtcNow.Date)
                 .ToArrayAsync();
         }
 

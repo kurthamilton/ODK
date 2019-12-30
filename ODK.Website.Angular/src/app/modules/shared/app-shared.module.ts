@@ -5,6 +5,8 @@ import { RouterModule } from '@angular/router';
 import { NgbModule, NgbAlertModule, NgbCollapseModule, NgbDatepickerModule, NgbDropdownModule, NgbModalModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { AccountMenuComponent } from './components/account/account-menu/account-menu.component';
+import { BreadcrumbsComponent } from './components/elements/breadcrumbs/breadcrumbs.component';
+import { EventResponseIconComponent } from './components/events/event-response-icon/event-response-icon.component';
 import { GoogleMapComponent } from './components/maps/google-map/google-map.component';
 import { ListMemberComponent } from './components/members/list-member/list-member.component';
 import { LoadingDirective } from './directives/loading/loading.directive';
@@ -13,12 +15,12 @@ import { MemberImageComponent } from './components/members/member-image/member-i
 import { MemberListComponent } from './components/members/member-list/member-list.component';
 import { NavbarComponent } from './components/elements/navbar/navbar.component';
 import { RawHtmlComponent } from './components/elements/raw-html/raw-html.component';
-import { BreadcrumbsComponent } from './components/elements/breadcrumbs/breadcrumbs.component';
 
 @NgModule({
   declarations: [
     AccountMenuComponent,
     BreadcrumbsComponent,
+    EventResponseIconComponent,
     GoogleMapComponent,
     ListMemberComponent,
     MemberImageComponent,
@@ -42,6 +44,7 @@ import { BreadcrumbsComponent } from './components/elements/breadcrumbs/breadcru
   exports: [
     AccountMenuComponent,
     BreadcrumbsComponent,
+    EventResponseIconComponent,
     GoogleMapComponent,
     ListMemberComponent,
     LoadingDirective,

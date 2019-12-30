@@ -18,6 +18,6 @@ namespace ODK.Core.Members
 
         public SubscriptionType Type { get; }
 
-        long IVersioned.Version => ExpiryDate != null ? 0 : DateUtils.DateVersion(ExpiryDate.Value);
+        long IVersioned.Version => ExpiryDate == null ? 0 : DateUtils.DateVersion(ExpiryDate.Value);
     }
 }

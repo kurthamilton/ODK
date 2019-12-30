@@ -107,7 +107,7 @@ export class EventsComponent implements OnInit {
     this.changeDetector.detectChanges();
     
     return forkJoin([
-      this.eventAdminService.getAdminEvents(this.chapter.id, this.page, this.pageCount).pipe(
+      this.eventAdminService.getAllEvents(this.chapter.id, this.page, this.pageCount).pipe(
         tap((events: Event[]) => this.events = events)
       ),
       this.eventAdminService.getChapterInvites(this.chapter.id, this.page, this.pageCount).pipe(

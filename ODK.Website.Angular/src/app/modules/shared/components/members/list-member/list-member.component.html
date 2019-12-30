@@ -1,5 +1,5 @@
 <div *ngIf="member" class="card member-tile" [class.member-tile-sm]="hideName">
-  <a *ngIf="link" [routerLink]="link" [ngbTooltip]="hideName ? member.fullName : ''">
+  <a *ngIf="link" [routerLink]="link" [ngbTooltip]="hideName ? member.fullName : ''" container="body">
     <app-member-image [isTop]="!hideName" [maxWidth]="maxWidth" [member]="member">      
     </app-member-image>
     <div *ngIf="!hideName">{{member.fullName}}</div>

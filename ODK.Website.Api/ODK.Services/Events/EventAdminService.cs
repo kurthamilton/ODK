@@ -147,6 +147,19 @@ namespace ODK.Services.Events
             return await _eventRepository.GetEventsByVenue(venueId);
         }
 
+        public async Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid currentMemberId, Guid memberId)
+        {
+            Member member = await _memberRepository.GetMember(memberId);
+            if (member == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, member.ChapterId);
+
+            return await _eventRepository.GetMemberResponses(memberId, true);
+        }
+
         public async Task SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false)
         {
             Event @event = await GetEvent(currentMemberId, eventId);

@@ -18,7 +18,7 @@ namespace ODK.Core.Events
         Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime after);
         Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, int page, int pageSize);
         Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid venueId);
-        Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId);
+        Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId, bool all = false);
         Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId, DateTime after);
         Task UpdateEvent(Event @event);
         Task UpdateEventEmail(EventEmail eventEmail);

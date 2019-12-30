@@ -59,14 +59,16 @@ export class EventResponsesComponent implements OnInit {
       responseMap.set(EventResponseType.Maybe, this.maybe);
       responseMap.set(EventResponseType.No, this.declined);
 
-      this.responses.forEach((response: EventMemberResponse) => {
-        const member: Member = memberMap.get(response.memberId);
-        if (member) {
-          if (responseMap.has(response.responseType)) {
-            responseMap.get(response.responseType).push(member);
+      this.responses
+        .sort((a, b) => memberMap.get(a.memberId).fullName.localeCompare(memberMap.get(b.memberId).fullName))
+        .forEach((response: EventMemberResponse) => {
+          const member: Member = memberMap.get(response.memberId);
+          if (member) {
+            if (responseMap.has(response.responseType)) {
+              responseMap.get(response.responseType).push(member);
+            }
           }
-        }
-      });
+        });
 
       this.changeDetector.detectChanges();
     });

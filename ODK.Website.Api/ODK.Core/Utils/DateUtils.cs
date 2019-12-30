@@ -6,7 +6,7 @@ namespace ODK.Core.Utils
     {
         public static long DateVersion(DateTime date)
         {
-            return long.Parse($"{date}:yyyyMMdd");
+            return long.Parse($"{date:yyyyMMdd}");
         }
     }
 }
