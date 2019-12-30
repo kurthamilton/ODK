@@ -25,6 +25,7 @@ using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Stripe;
 using ODK.Services.Settings;
+using ODK.Services.SocialMedia;
 using ODK.Services.Venues;
 using ODK.Web.Api.Config.Settings;
 
@@ -82,6 +83,7 @@ namespace ODK.Web.Api.Config
             // TODO: resolve via factory
             services.AddScoped<IPaymentProvider, StripePaymentProvider>();
             services.AddScoped<ISettingsService, SettingsService>();
+            services.AddScoped<ISocialMediaService, SocialMediaService>();
             services.AddScoped<IVenueAdminService, VenueAdminService>();
             services.AddScoped<IVenueService, VenueService>();
         }

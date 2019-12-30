@@ -11,6 +11,10 @@
     line-height: 150px;
     width: inherit;
   }
+
+  &:hover {
+    opacity: 0.5;
+  }
 }
 
 .member-tile-sm {

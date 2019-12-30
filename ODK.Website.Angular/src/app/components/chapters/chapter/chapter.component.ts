@@ -1,12 +1,18 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
+import { forkJoin } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
-import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
+import { ChapterLinks } from 'src/app/core/chapters/chapter-links';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from 'src/app/services/members/member.service';
+import { SocialMediaImage } from 'src/app/core/social-media/social-media-image';
+import { SocialMediaService } from 'src/app/services/social-media/social-media.service';
 import { TitleService } from 'src/app/services/title/title.service';
 
 @Component({
@@ -20,13 +26,16 @@ export class ChapterComponent implements OnInit {
     private chapterService: ChapterService,
     private memberService: MemberService,
     private authenticationService: AuthenticationService,
-    private titleService: TitleService
+    private titleService: TitleService,
+    private socialMediaService: SocialMediaService
   ) {
   }
 
   chapter: Chapter;
+  instagramImages: SocialMediaImage[];
   isMember: boolean;
   latestMembers: Member[];
+  links: ChapterLinks;
   welcomeTextHtml: string;
 
   ngOnInit(): void {
@@ -41,6 +50,17 @@ export class ChapterComponent implements OnInit {
     } else {
       this.loadPublicPage();
     }
+
+    forkJoin([
+      this.socialMediaService.getChapterInstagramImages(this.chapter.id, 8).pipe(
+        tap((images) => this.instagramImages = images)
+      ),
+      this.chapterService.getChapterLinks(this.chapter.id).pipe(
+        tap((links: ChapterLinks) => this.links = links)
+      )
+    ]).subscribe(() => {
+      this.changeDetector.detectChanges();
+    });
   }
 
   private loadMemberPage(): void {

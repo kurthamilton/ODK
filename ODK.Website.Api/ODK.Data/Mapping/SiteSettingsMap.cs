@@ -10,6 +10,8 @@ namespace ODK.Data.Mapping
             : base("Settings")
         {
             Property(x => x.GoogleMapsApiKey);
+            Property(x => x.InstagramUsername);
+            Property(x => x.InstagramPassword);
             Property(x => x.Version).IsRowVersion();
         }
 
@@ -17,8 +19,10 @@ namespace ODK.Data.Mapping
         {
             return new SiteSettings
             (
-                reader.GetString(0),
-                reader.GetInt64(1)
+                googleMapsApiKey: reader.GetString(0),
+                instagramUsername: reader.GetString(1),
+                instagramPassword: reader.GetString(2),
+                version: reader.GetInt64(3)
             );
         }
     }

@@ -48,20 +48,23 @@ import { PageWithSidebarComponent } from './components/layouts/page-with-sidebar
 import { PaymentButtonComponent } from './components/payments/payment-button/payment-button.component';
 import { PrivacyComponent } from './components/privacy/privacy.component';
 import { ProfileComponent } from './components/account/profile/profile.component';
+import { ProfileEmailsComponent } from './components/account/profile-emails/profile-emails.component';
 import { ProfileFormComponent } from './components/account/profile-form/profile-form.component';
 import { ProfilePictureComponent } from './components/account/profile-picture/profile-picture.component';
 import { PurchaseSubscriptionComponent } from './components/account/purchase-subscription/purchase-subscription.component';
 import { ResetPasswordComponent } from './components/account/reset-password/reset-password.component';
 import { SectionComponent } from './components/elements/section/section.component';
+import { SocialMediaImageListComponent } from './components/social-media/social-media-image-list/social-media-image-list.component';
 import { StripeFormComponent } from './components/payments/stripe-form/stripe-form.component';
 import { SubscriptionAlertComponent } from './components/account/subscription-alert/subscription-alert.component';
 import { SubscriptionComponent } from './components/account/subscription/subscription.component';
 import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenets.component';
-import { ProfileEmailsComponent } from './components/account/profile-emails/profile-emails.component';
 import { UpdateEmailAddressComponent } from './components/account/update-email-address/update-email-address.component';
 
 @NgModule({
   declarations: [
+    AboutComponent,
+    ActivateAccountComponent,
     AppComponent,
     BodyComponent,
     ChangePasswordComponent,
@@ -101,18 +104,17 @@ import { UpdateEmailAddressComponent } from './components/account/update-email-a
     PaymentButtonComponent,
     PrivacyComponent,
     ProfileComponent,
+    ProfileEmailsComponent,
     ProfileFormComponent,
     ProfilePictureComponent,
     PurchaseSubscriptionComponent,
     ResetPasswordComponent,
     SectionComponent,
+    SocialMediaImageListComponent,
     StripeFormComponent,
+    SubscriptionAlertComponent,
     SubscriptionComponent,
     ThreeTenetsComponent,
-    SubscriptionAlertComponent,
-    AboutComponent,
-    ActivateAccountComponent,
-    ProfileEmailsComponent,
     UpdateEmailAddressComponent,
   ],
   imports: [
