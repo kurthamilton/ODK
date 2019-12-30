@@ -50,7 +50,7 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
-    this.subscription.expiryDate = new Date(this.formControls.expiryDate.value);
+    this.subscription.expiryDate = this.formControls.expiryDate.value ? new Date(this.formControls.expiryDate.value) : null;
     this.subscription.type = <SubscriptionType>parseInt(this.formControls.type.value, 10);
     this.memberAdminService.updateMemberSubscription(this.subscription).subscribe(() => {
       this.formCallback.next(true);

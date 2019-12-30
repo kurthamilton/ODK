@@ -36,6 +36,6 @@ export class DateUtils {
   }
 
   static toISODateString(date: Date): string {
-    return date.toISOString().slice(0, 10);
+    return date ? date.toISOString().slice(0, 10) : '';
   }
 }
