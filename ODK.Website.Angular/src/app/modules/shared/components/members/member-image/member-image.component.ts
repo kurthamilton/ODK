@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { LoadingSpinnerOptions } from '../../elements/loading-spinner/loading-spinner-options';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from 'src/app/services/members/member.service';
 
@@ -25,7 +26,12 @@ export class MemberImageComponent implements OnChanges, OnDestroy {
   @Input() update: Observable<boolean>;
 
   image: string;
+  imageUrl: string;
   loading = true;
+  loadingOptions: LoadingSpinnerOptions = {
+    overlay: true,
+    small: true
+  };
 
   ngOnChanges(): void {
     if (!this.member) {
@@ -35,7 +41,10 @@ export class MemberImageComponent implements OnChanges, OnDestroy {
     if (this.update) {
       this.update.pipe(
         takeUntil(componentDestroyed(this))
-      ).subscribe(() => this.loadImage());
+      ).subscribe(() => {
+        this.loadImage();
+        this.changeDetector.detectChanges();
+      });
     }
 
     this.loadImage();
@@ -45,12 +54,13 @@ export class MemberImageComponent implements OnChanges, OnDestroy {
     this.changeDetector.detach();
   }
 
+  onLoad(): void {
+    this.loading = false;
+    this.changeDetector.detectChanges();
+  }
+
   private loadImage(): void {
-    this.loading = true;
-    this.memberService.getMemberImage(this.member.id, this.maxWidth).subscribe((image: string) => {
-      this.image = image;
-      this.loading = false;
-      this.changeDetector.detectChanges();
-    });
+    const forceReload: boolean = !!this.imageUrl;    
+    this.imageUrl = this.memberService.getMemberImageUrl(this.member.id, this.maxWidth, forceReload);
   }
 }

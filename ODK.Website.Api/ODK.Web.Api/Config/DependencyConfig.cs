@@ -66,6 +66,7 @@ namespace ODK.Web.Api.Config
         private static void ConfigureServices(this IServiceCollection services)
         {
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IAuthenticationTokenFactory, AuthenticationTokenFactory>();
             services.AddScoped<IAuthorizationService, AuthorizationService>();
             services.AddScoped<ICacheService, CacheService>();
             services.AddScoped<IChapterAdminService, ChapterAdminService>();
@@ -98,10 +99,14 @@ namespace ODK.Web.Api.Config
             {
                 AccessTokenLifetimeMinutes = auth.AccessTokenLifetimeMinutes,
                 EventsUrl = $"{urls.Base}{urls.Events}",
-                Key = auth.Key,
                 PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
                 PasswordResetUrl = $"{urls.Base}{urls.PasswordReset}",
                 RefreshTokenLifetimeDays = auth.RefreshTokenLifetimeDays
+            });
+
+            services.AddSingleton(new AuthenticationTokenFactorySettings
+            {
+                Key = auth.Key
             });
 
             services.AddSingleton(new EventAdminServiceSettings

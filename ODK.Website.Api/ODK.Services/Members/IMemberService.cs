@@ -13,7 +13,7 @@ namespace ODK.Services.Members
 
         Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetLatestMembers(long? currentVersion, Guid currentMemberId, Guid chapterId);
 
-        Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid currentMemberId, Guid memberId, int? size);
+        Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size);
 
         Task<MemberProfile> GetMemberProfile(Guid currentMemberId, Guid memberId);
 

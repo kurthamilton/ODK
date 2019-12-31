@@ -25,7 +25,7 @@ export class MembersComponent implements OnInit {
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
-    this.titleService.setRouteTitle(`${this.chapter.name} Knitwits`);
+    this.titleService.setRouteTitle(`${this.chapter.name} Knitwits`);    
     this.memberService.getMembers(this.chapter.id).subscribe((members: Member[]) => {
       this.members = members.sort((a, b) => a.fullName.localeCompare(b.fullName));
       this.changeDetector.detectChanges();

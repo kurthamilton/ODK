@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -144,21 +145,19 @@ namespace ODK.Services.Members
             return new VersionedServiceResult<IReadOnlyCollection<Member>>(members.Version, latestMembers);
         }
 
-        public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid currentMemberId, Guid memberId, int? size)
+        public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size)
         {
-            Member member = await GetMember(currentMemberId, memberId);
-
-            VersionedServiceResult<MemberImage> cached = await _cacheService.GetOrSetVersionedItem(
-                () => _memberRepository.GetMemberImage(member.Id),
+            VersionedServiceResult<MemberImage> result = await _cacheService.GetOrSetVersionedItem(
+                () => _memberRepository.GetMemberImage(memberId),
                 memberId,
                 currentVersion);
 
-            if (currentVersion == cached.Version)
+            if (currentVersion == result.Version)
             {
-                return cached;
+                return result;
             }
 
-            MemberImage image = cached.Value;
+            MemberImage image = result.Value;
             if (size != null && image != null)
             {
                 byte[] imageData = _imageService.Crop(image.ImageData, size.Value, size.Value);
@@ -416,8 +415,7 @@ namespace ODK.Services.Members
 
         private async Task<Member> GetMember(Guid currentMemberId, Guid memberId)
         {
-            VersionedServiceResult<Member> member = await _cacheService.GetOrSetVersionedItem(
-                () => _memberRepository.GetMember(memberId), memberId, null);
+            VersionedServiceResult<Member> member = await _cacheService.GetOrSetVersionedItem(() => _memberRepository.GetMember(memberId), memberId, null);
             await _authorizationService.AssertMemberIsChapterMember(currentMemberId, member.Value.ChapterId);
             return member.Value;
         }

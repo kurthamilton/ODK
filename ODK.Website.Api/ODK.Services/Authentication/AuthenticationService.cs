@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.IdentityModel.Tokens;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Mail;
@@ -20,6 +16,7 @@ namespace ODK.Services.Authentication
 {
     public class AuthenticationService : IAuthenticationService
     {
+        private readonly IAuthenticationTokenFactory _authenticationTokenFactory;
         private readonly IAuthorizationService _authorizationService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IMailService _mailService;
@@ -27,8 +24,10 @@ namespace ODK.Services.Authentication
         private readonly AuthenticationServiceSettings _settings;
 
         public AuthenticationService(IMemberRepository memberRepository, IMailService mailService, AuthenticationServiceSettings settings,
-            IAuthorizationService authorizationService, IChapterRepository chapterRepository)
+            IAuthorizationService authorizationService, IChapterRepository chapterRepository,
+            IAuthenticationTokenFactory authenticationTokenFactory)
         {
+            _authenticationTokenFactory = authenticationTokenFactory;
             _authorizationService = authorizationService;
             _chapterRepository = chapterRepository;
             _mailService = mailService;
@@ -221,23 +220,7 @@ namespace ODK.Services.Authentication
             IReadOnlyCollection<ChapterAdminMember> adminChapterMembers = await _chapterRepository.GetChapterAdminMembersByMember(member.Id);
             MemberSubscription subscription = await _memberRepository.GetMemberSubscription(member.Id);
 
-            byte[] keyBytes = Encoding.ASCII.GetBytes(_settings.Key);
-            SymmetricSecurityKey key = new SymmetricSecurityKey(keyBytes);
-
-            JwtSecurityToken token = new JwtSecurityToken
-            (
-                claims: new []
-                {
-                    new Claim(ClaimTypes.NameIdentifier, member.Id.ToString()),
-                    new Claim(ClaimTypes.Name, $"{member.FirstName} {member.LastName}"),
-                    new Claim(ClaimTypes.Email, member.EmailAddress)
-                },
-                notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddMinutes(_settings.AccessTokenLifetimeMinutes),
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
-            );
-
-            string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+            string accessToken = _authenticationTokenFactory.Create(member, _settings.AccessTokenLifetimeMinutes);
             string refreshToken = await GenerateRefreshToken(member.Id, refreshTokenExpires);
 
             return new AuthenticationToken(member.Id, member.ChapterId, accessToken, refreshToken,

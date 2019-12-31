@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Members;
 using ODK.Services.Members;
 using ODK.Web.Api.Members.Responses;
 
@@ -33,13 +32,14 @@ namespace ODK.Web.Api.Members
                 x => x.Select(_mapper.Map<MemberApiResponse>));
         }
 
+        [AllowAnonymous]
         [HttpGet("{id}/Image")]
         public async Task<IActionResult> MemberImage(Guid id, int? size)
         {
             return await HandleVersionedRequest(
-                version => _memberService.GetMemberImage(version, GetMemberId(), id, size),
+                version => _memberService.GetMemberImage(version, id, size),
                 MemberImageResult);
-        }        
+        }
 
         [HttpGet("Latest")]
         public async Task<ActionResult<IEnumerable<MemberApiResponse>>> Latest(Guid chapterId)

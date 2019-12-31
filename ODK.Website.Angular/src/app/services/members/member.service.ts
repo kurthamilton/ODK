@@ -1,11 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable, forkJoin } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
-import { HttpUtils } from '../http/http-utils';
 import { Member } from 'src/app/core/members/member';
 import { MemberProfile } from 'src/app/core/members/member-profile';
 import { MemberProperty } from 'src/app/core/members/member-property';
@@ -14,7 +13,7 @@ const baseUrl = `${environment.apiBaseUrl}/members`;
 
 const endpoints = {
   latestMembers: (chapterId: string) => `${baseUrl}/latest?chapterId=${chapterId}`,
-  memberImage: (memberId: string, size: number) => `${baseUrl}/${memberId}/image?${size ? `size=${size}` : ''}`,
+  memberImage: (memberId: string, size: number) => `${baseUrl}/${memberId}/image${size ? `?size=${size}` : ''}`,
   memberProfile: (memberId: string) => `${baseUrl}/${memberId}/profile`,
   members: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`
 }
@@ -39,18 +38,17 @@ export class MemberService {
     );
   }
 
-  getMemberImage(memberId: string, size: number): Observable<string> {
-    return HttpUtils.getBase64(this.http, endpoints.memberImage(memberId, size));
-  }
-
-  getMemberImages(memberIds: string[], maxWidth: number): Observable<Map<string, string>> {
-    return forkJoin(memberIds.map(x => this.getMemberImage(x, maxWidth))).pipe(
-      map((values: string[]) => {
-        const map: Map<string, string> = new Map<string, string>();
-        memberIds.forEach((memberId: string, i: number) => map.set(memberId, values[i]));
-        return map;
-      })
-    );
+  getMemberImageUrl(memberId: string, size: number, forceReload?: boolean): string {
+    let url: string = endpoints.memberImage(memberId, size);
+    if (forceReload === true) {
+      if (!url.includes('?')) {
+        url += '?';
+      } else {
+        url += '&';
+      }
+      url += `t=${new Date().toISOString()}`;
+    }
+    return url;
   }
 
   getMemberProfile(memberId: string): Observable<MemberProfile> {

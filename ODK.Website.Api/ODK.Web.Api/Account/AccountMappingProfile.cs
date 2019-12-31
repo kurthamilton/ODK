@@ -32,7 +32,7 @@ namespace ODK.Web.Api.Account
         private void CreateResponseMaps()
         {
             CreateMap<AuthenticationToken, AuthenticationTokenApiResponse>()
-                .ForMember(x => x.AdminChapterIds, opt => opt.Condition(x => x.AdminChapterIds.Count > 0))
+                .ForMember(x => x.AdminChapterIds, opt => opt.Condition(x => x.AdminChapterIds != null && x.AdminChapterIds.Count > 0))
                 .ForMember(x => x.MembershipDisabled, opt =>
                 {
                     opt.MapFrom(x => !x.MembershipActive);
