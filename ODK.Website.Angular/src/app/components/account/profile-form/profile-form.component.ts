@@ -218,15 +218,9 @@ export class ProfileFormComponent implements OnChanges {
       };
     }
 
-    const controls: FormControlViewModel[] = [];
-    
-    if (this.joinFormControls) {
-      controls.push(this.joinFormControls.image);
-    }
-
-    controls.push(
+    const controls: FormControlViewModel[] = [
       this.formControls.emailAddress
-    );
+    ];        
 
     if (this.joinFormControls) {
       controls.push(
@@ -242,10 +236,11 @@ export class ProfileFormComponent implements OnChanges {
 
     if (this.formControls.joined) {
       controls.push(this.formControls.joined);
-    }
+    }    
 
     if (this.joinFormControls) {
       controls.push(...[
+        this.joinFormControls.image,
         this.joinFormControls.threeTenets,
         this.joinFormControls.privacy,
         this.joinFormControls.subscription
