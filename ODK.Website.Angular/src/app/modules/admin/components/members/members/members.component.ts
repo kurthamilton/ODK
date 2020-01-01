@@ -15,6 +15,7 @@ import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
 import { MemberFilterViewModel } from '../member-filter/member-filter.view-model';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
+import { SortEvent } from '../../../directives/sortable-header/sort-event';
 import { SubscriptionType } from 'src/app/core/account/subscription-type';
 
 @Component({
@@ -42,7 +43,7 @@ export class MembersComponent implements OnInit {
   private imageQueue: Member[];
   private members: Member[];
   private memberSubscriptions: MemberSubscription[];
-  private sortBy: 'name' | 'expires';
+  private sortBy: SortEvent;
   private subscriptionMap: Map<string, MemberSubscription>;
 
   ngOnInit(): void {
@@ -64,7 +65,6 @@ export class MembersComponent implements OnInit {
       };
 
       this.filterMembers(this.filter);
-      this.sortMembers();
       this.changeDetector.detectChanges();
     });
 
@@ -81,7 +81,7 @@ export class MembersComponent implements OnInit {
     this.sortMembers();
   }
 
-  onSort(sortBy: 'name' | 'expires'): void {
+  onSort(sortBy: SortEvent) {
     this.sortBy = sortBy;
     this.sortMembers();
   }
@@ -116,14 +116,18 @@ export class MembersComponent implements OnInit {
   }
 
   private sortMembers(): void {
-    switch (this.sortBy) {
-      case 'expires':
-        this.viewModels.sort((a, b) => DateUtils.compare(a.subscription.expiryDate, b.subscription.expiryDate));
-        break;
-      default:
-        this.viewModels.sort((a, b) => a.member.fullName.localeCompare(b.member.fullName));
-        break;
-    }
+    this.viewModels.sort((a, b) => {
+      if (this.sortBy.direction === 'desc') {
+        [a, b] = [b, a];
+      }
+
+      switch (this.sortBy.column) {
+        case 'expires':
+          return DateUtils.compare(a.subscription.expiryDate, b.subscription.expiryDate);
+        default:
+          return a.member.fullName.localeCompare(b.member.fullName);
+      }      
+    });
   }
 
   private uploadPicture(member: Member, image: File): void {

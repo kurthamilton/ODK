@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { AdminComponent } from '../components/admin/admin.component';
+import { AdminLayoutComponent } from '../components/structure/admin-layout/admin-layout.component';
 import { adminPaths } from './admin-paths';
 import { ChapterAdminGuardService } from 'src/app/routing/chapter-admin-guard.service';
 import { ChapterAdminLayoutComponent } from '../components/chapters/chapter-admin-layout/chapter-admin-layout.component';
@@ -37,7 +37,7 @@ import { VenuesComponent } from '../components/venues/venues/venues.component';
 import { LogComponent } from '../components/admin/log/log.component';
 
 const routes: Routes = [
-  { path: '', component: AdminComponent, canActivate: [ChapterAdminGuardService], children: [
+  { path: '', component: AdminLayoutComponent, canActivate: [ChapterAdminGuardService], children: [
     { path: '', pathMatch: 'full', redirectTo: adminPaths.chapter.path },
     { path: adminPaths.admin.path, component: LogComponent, canActivate: [ChapterSuperAdminGuardService] },
     { path: adminPaths.chapter.path, component: ChapterAdminLayoutComponent, children: [

@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 import { NgSelectModule } from '@ng-select/ng-select';
 
-import { AdminComponent } from './components/admin/admin.component';
+import { AdminLayoutComponent } from './components/structure/admin-layout/admin-layout.component';
 import { AdminMenuComponent } from './components/structure/admin-menu/admin-menu.component';
 import { AdminRoutingModule } from './routing/admin-routing.module';
 import { AppFormsModule } from '../forms/app-forms.module';
@@ -54,10 +54,13 @@ import { VenueLayoutComponent } from './components/venues/venue-layout/venue-lay
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
 import { LogComponent } from './components/admin/log/log.component';
+import { SortButtonComponent } from './components/elements/sort-button/sort-button.component';
+import { SortableHeaderDirective } from './directives/sortable-header/sortable-header.directive';
+import { SortableTableDirective } from './directives/sortable-table/sortable-table.directive';
 
 @NgModule({
   declarations: [
-    AdminComponent,
+    AdminLayoutComponent,
     AdminMenuComponent,
     ChapterAdminLayoutComponent,
     ChapterMenuComponent,
@@ -104,6 +107,9 @@ import { LogComponent } from './components/admin/log/log.component';
     MemberEventsComponent,
     SendEmailComponent,
     LogComponent,
+    SortButtonComponent,
+    SortableHeaderDirective,
+    SortableTableDirective,
   ],
   imports: [
     AdminRoutingModule,

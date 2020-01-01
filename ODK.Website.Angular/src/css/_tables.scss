@@ -1,0 +1,23 @@
+th[sortable] {
+  cursor: pointer;
+  color: $link-color;
+  text-decoration: $link-decoration;
+
+  @include hover {
+    color: $link-hover-color;
+    text-decoration: $link-hover-decoration;
+  }
+
+  &.sort-asc:after,
+  &.sort-desc:after {
+    font-family: 'Font Awesome 5 Free';    
+  }
+
+  &.sort-asc:after {
+    content: '\f0d8'; // caret-up
+  }
+
+  &.sort-desc:after {
+    content: '\f0d7'; // caret-down
+  }
+}

@@ -9,6 +9,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { DateUtils } from 'src/app/utils/date-utils';
 import { ListVenueViewModel } from './list-venue.view-model';
+import { SortEvent } from '../../../directives/sortable-header/sort-event';
 import { Venue } from 'src/app/core/venues/venue';
 import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 import { VenueStats } from 'src/app/core/venues/venue-stats';
@@ -29,7 +30,6 @@ export class VenuesComponent implements OnInit {
   links: {
     createVenue: string;
   };
-  sortBy: string;
   viewModels: ListVenueViewModel[];
 
   private chapter: Chapter;
@@ -67,18 +67,21 @@ export class VenuesComponent implements OnInit {
     return adminUrls.venue(this.chapter, venue);
   }
 
-  onSort(sortBy: 'name' | 'stats.eventCount' | 'stats.lastEventDate'): void {
-    switch (sortBy) {
-      case 'stats.eventCount':
-        this.viewModels = this.viewModels.sort((a, b) => b.stats.eventCount - a.stats.eventCount);
-        break;
-      case 'stats.lastEventDate':
-        this.viewModels = this.viewModels.sort((a, b) => DateUtils.compare(b.stats.lastEventDate, a.stats.lastEventDate));
-        break;
-      default:
-        this.viewModels = this.viewModels.sort((a, b) => a.venue.name.localeCompare(b.venue.name));
-        break;
-    }
+  onSort(sortBy: SortEvent): void {
+    this.viewModels = this.viewModels.sort((a, b) => {
+      if (sortBy.direction === 'desc') {
+        [a,b] = [b,a];
+      }
+
+      switch (sortBy.column) {
+        case 'stats.eventCount':
+          return a.stats.eventCount - b.stats.eventCount;
+        case 'stats.lastEventDate':
+          return DateUtils.compare(a.stats.lastEventDate, b.stats.lastEventDate);
+        default:
+          return a.venue.name.localeCompare(b.venue.name);
+      }
+    });    
 
     this.changeDetector.detectChanges();
   }

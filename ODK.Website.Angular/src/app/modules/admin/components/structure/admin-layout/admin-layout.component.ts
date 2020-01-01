@@ -1,10 +1,10 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
-  selector: 'app-admin',
-  templateUrl: './admin.component.html',
+  selector: 'app-admin-layout',
+  templateUrl: './admin-layout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AdminComponent {
+export class AdminLayoutComponent {
 
 }

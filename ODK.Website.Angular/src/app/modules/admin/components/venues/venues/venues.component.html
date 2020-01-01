@@ -4,18 +4,18 @@
     <a class="btn btn-primary" [routerLink]="links.createVenue">Create</a>
   </p>
 
-  <table class="table table-striped">
+  <table class="table table-striped" sortable="name">
     <thead>
       <tr>
-        <th>
-          <button class="btn btn-link p-0" (click)="onSort('name')">Name</button>
+        <th sortable="name" (sort)="onSort($event)">
+          Name
         </th>
         <th>Address</th>
-        <th>
-          <button class="btn btn-link p-0" (click)="onSort('stats.eventCount')">Events</button>
+        <th sortable="stats.eventCount" direction="desc" (sort)="onSort($event)">
+          Events
         </th>
-        <th>
-          <button class="btn btn-link p-0" (click)="onSort('stats.lastEventDate')">Last event</button>
+        <th sortable="stats.lastEventDate" direction="desc" (sort)="onSort($event)">
+          Last event
         </th>
       </tr>
     </thead>
