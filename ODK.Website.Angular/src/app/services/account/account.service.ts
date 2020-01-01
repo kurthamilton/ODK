@@ -16,6 +16,7 @@ const baseUrl = `${environment.apiBaseUrl}/account`;
 
 const endpoints = {
   activate: `${baseUrl}/activate`,
+  account: baseUrl,
   confirmEmailAddressUpdate: (token: string) => `${baseUrl}/profile/emailaddress/confirm?token=${encodeURIComponent(token)}`,
   emailOptIn: `${baseUrl}/emails/optin`,
   image: `${baseUrl}/image`,
@@ -54,6 +55,12 @@ export class AccountService {
         success: true
       })),
       catchApiError()
+    );
+  }
+
+  deleteAccount(): Observable<void> {
+    return this.http.delete(endpoints.account).pipe(
+      map(() => undefined)
     );
   }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -123,6 +122,20 @@ namespace ODK.Services.Members
                 { "chapter.name", chapter.Name },
                 { "url", url }
             });
+        }
+
+        public async Task DeleteMember(Guid memberId)
+        {
+            Member member = await _memberRepository.GetMember(memberId, true);
+            if (member == null)
+            {
+                return;
+            }
+
+            await _memberRepository.DeleteMember(memberId);
+
+            _cacheService.RemoveVersionedItem<Member>(memberId);
+            _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
         }
 
         public async Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetLatestMembers(long? currentVersion,

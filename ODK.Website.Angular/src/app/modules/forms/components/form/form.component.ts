@@ -1,8 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
-import { takeUntil } from 'rxjs/operators';
-
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 import { FormStateViewModel } from '../form-state.view-model';

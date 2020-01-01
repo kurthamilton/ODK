@@ -3,10 +3,11 @@
 }
 
 .form-group.required {
-	.form-control-label:after {
+  .form-control-label:after,
+  .form-check-label:after {
 		content: " *";
 		color: $danger;
-	}
+  }  
 }
 
 .form-control-custom {

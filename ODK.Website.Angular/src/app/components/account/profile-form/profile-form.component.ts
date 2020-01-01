@@ -190,6 +190,8 @@ export class ProfileFormComponent implements OnChanges {
             textIsHtml: true
           },
           validation: {
+            message: 'Required',
+            pattern: '^true$',
             required: true
           },
           value: false
@@ -200,6 +202,8 @@ export class ProfileFormComponent implements OnChanges {
             text: 'I agree to purchase a subscription after a one month trial period'
           },
           validation: {
+            message: 'Required',
+            pattern: '^true$',
             required: true
           },
           value: false
@@ -211,6 +215,8 @@ export class ProfileFormComponent implements OnChanges {
             textIsHtml: true
           },
           validation: {
+            message: 'Required',
+            pattern: '^true$',
             required: true
           },
           value: false

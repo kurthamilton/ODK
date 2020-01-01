@@ -30,6 +30,13 @@ namespace ODK.Web.Api.Account
             _memberService = memberService;
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            await _memberService.DeleteMember(GetMemberId());
+            return NoContent();
+        }
+
         [AllowAnonymous]
         [HttpPost("Activate")]
         public async Task<IActionResult> Activate([FromForm] ActivateAccountApiRequest request)

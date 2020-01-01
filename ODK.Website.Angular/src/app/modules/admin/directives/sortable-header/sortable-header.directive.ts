@@ -19,7 +19,7 @@ export class SortableHeaderDirective {
   @Input() sortable: string;
   @Output() sort = new EventEmitter<SortEvent>();
   
-  private sorted: SortDirection;
+  sorted: SortDirection;
 
   emit(): void {
     this.sorted = rotate[this.sorted] || this.direction || 'asc';

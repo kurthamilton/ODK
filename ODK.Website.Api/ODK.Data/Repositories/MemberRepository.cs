@@ -88,6 +88,14 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task DeleteMember(Guid memberId)
+        {
+            await Context
+                .Delete<Member>()
+                .Where(x => x.Id).EqualTo(memberId)
+                .ExecuteAsync();
+        }
+
         public async Task DeletePasswordResetRequest(Guid passwordResetRequestId)
         {
             await Context

@@ -43,6 +43,29 @@ export class ChangePasswordComponent implements OnInit {
       { link: appUrls.profile(chapter), text: 'Profile' }
     ];
 
+    this.buildForm();    
+  }
+
+  onFormSubmit(): void {
+    const currentPassword: string = this.formControls.currentPassword.value;
+    const newPassword: string = this.formControls.newPassword.value;
+
+    this.authenticationService
+      .changePassword(currentPassword, newPassword)
+      .subscribe((result: ServiceResult<void>) => {
+        this.formCallback.next(result.messages);
+
+        if (result.success === true) {
+          this.notificationService.publish({
+            message: 'Password updated',
+            success: true
+          });
+          this.passwordUpdate.emit(true);
+        }
+      });
+  }
+
+  private buildForm(): void {
     this.formControls = {
       confirmPassword: new TextInputFormControlViewModel({
         id: 'confirmPassword',
@@ -87,24 +110,5 @@ export class ChangePasswordComponent implements OnInit {
         // this.formControls.confirmPassword
       ]
     };
-  }
-
-  onFormSubmit(): void {
-    const currentPassword: string = this.formControls.currentPassword.value;
-    const newPassword: string = this.formControls.newPassword.value;
-
-    this.authenticationService
-      .changePassword(currentPassword, newPassword)
-      .subscribe((result: ServiceResult<void>) => {
-        this.formCallback.next(result.messages);
-
-        if (result.success === true) {
-          this.notificationService.publish({
-            message: 'Password updated',
-            success: true
-          });
-          this.passwordUpdate.emit(true);
-        }
-      });
   }
 }

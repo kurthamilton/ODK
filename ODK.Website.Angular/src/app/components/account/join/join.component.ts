@@ -45,7 +45,7 @@ export class JoinComponent implements OnInit, OnDestroy {
     this.formCallback.complete();
   }
 
-  onFormSubmit(profile: AccountProfile): void {
+  onFormSubmit(profile: AccountProfile): void {    
     this.accountService.register(this.chapter.id, profile, this.image).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
       this.submitted = result.success === true;

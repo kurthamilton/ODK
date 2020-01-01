@@ -61,6 +61,9 @@ export const appPaths = {
         }
       },
       profile: {
+        delete: {
+          path: 'delete'
+        },
         emails: {
           path: 'emails'
         },

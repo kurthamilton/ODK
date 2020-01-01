@@ -30,6 +30,7 @@ export const appUrls = {
     },
     privacy: `/${appPaths.privacy.path}`,
     profile: (chapter: Chapter) => chapterUrl(chapter, chapterPaths.profile.path),
+    profileDelete: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.delete.path}`),
     subscription: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.subscription.path}`),
     updateEmailAddress: (chapter: Chapter) => chapterUrl(chapter, `${chapterPaths.profile.path}/${chapterPaths.profile.updateEmailAddress.path}`),
 };

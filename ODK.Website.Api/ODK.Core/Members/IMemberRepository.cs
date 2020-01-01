@@ -16,6 +16,7 @@ namespace ODK.Core.Members
         Task<Guid> CreateMember(Member member);
         Task DeleteActivationToken(Guid memberId);
         Task DeleteEmailAddressUpdateToken(Guid memberId);
+        Task DeleteMember(Guid memberId);
         Task DeletePasswordResetRequest(Guid passwordResetRequestId);
         Task DeleteRefreshToken(MemberRefreshToken refreshToken);
         Task DisableMember(Guid id);

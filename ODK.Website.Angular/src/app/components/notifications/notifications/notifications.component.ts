@@ -15,7 +15,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private notificationService: NotificationService
-  ) {
+  ) {    
   }
 
   notifications: Notification[] = [];
@@ -24,8 +24,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.notificationService.subscribe()
       .pipe(
         takeUntil(componentDestroyed(this))
-      )
-      .subscribe((notification: Notification) => {
+      ).subscribe((notification: Notification) => {
         this.notifications.push(notification);
         this.changeDetector.detectChanges();
       });
