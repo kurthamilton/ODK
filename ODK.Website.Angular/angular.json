@@ -24,8 +24,7 @@
             "tsConfig": "tsconfig.app.json",
             "aot": false,
             "assets": [
-              "src/assets",
-              "src/environments/web.config"
+              "src/assets"
             ],
             "styles": [
               "node_modules/@fortawesome/fontawesome-free/css/solid.min.css",
@@ -38,10 +37,14 @@
           },
           "configurations": {
             "production": {
+              "assets": [
+                { "glob": "**/*", "input": "src/assets/", "output": "/assets/" },
+                { "glob": "web.config", "input": "src/environments/production", "output": "/" }
+              ],
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "with": "src/environments/environment.production.ts"
                 }
               ],
               "optimization": true,
@@ -67,6 +70,10 @@
               ]
             },
             "staging": {
+              "assets": [
+                { "glob": "**/*", "input": "src/assets/", "output": "/assets/" },
+                { "glob": "web.config", "input": "src/environments/staging", "output": "/" }
+              ],
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",

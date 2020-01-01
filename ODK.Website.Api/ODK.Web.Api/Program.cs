@@ -30,7 +30,7 @@ namespace ODK.Web.Api
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseSerilog()
+                .UseSerilog(providers: LoggingConfig.Providers)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
@@ -38,13 +38,15 @@ namespace ODK.Web.Api
 
         private static void ConfigureLogging(string[] args)
         {
+            string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
             IConfigurationRoot builtConfig = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{environment}.json")
                 .AddCommandLine(args)
                 .Build();
 
             string path = builtConfig["Logging:Path"];
-
             LoggingConfig.Configure(path);
         }
     }

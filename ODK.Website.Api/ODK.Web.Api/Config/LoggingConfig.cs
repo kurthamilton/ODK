@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Serilog;
 using Serilog.Context;
+using Serilog.Events;
+using Serilog.Extensions.Logging;
 
 namespace ODK.Web.Api.Config
 {
@@ -13,6 +12,10 @@ namespace ODK.Web.Api.Config
     {
         private const string IP = "IP";
         private const string Name = "Name";
+
+        public static ILogger Logger { get; private set; }
+
+        public static LoggerProviderCollection Providers { get; } = new LoggerProviderCollection();
 
         public static void AddRequestProperties(HttpContext context)
         {
@@ -25,16 +28,22 @@ namespace ODK.Web.Api.Config
 
         public static void Configure(string logFileDirectory)
         {
-            string OutputTemplate = $"t:{{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}}|ip:{{{IP}}}|u:{{{Name}}}|m:{{Message:lj}}|ex:{{Exception}}{{NewLine}}";
-            Log.Logger = new LoggerConfiguration()
+            string outputTemplate = $"t:{{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}}|ip:{{{IP}}}|u:{{{Name}}}|m:{{Message:lj}}|ex:{{Exception}}{{NewLine}}";
+            Logger = new LoggerConfiguration()
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
                 .WriteTo.Logger(config => config
                     .Filter
-                    .ByIncludingOnly(e => e.Level == Serilog.Events.LogEventLevel.Error)
-                    .WriteTo.File(path: Path.Combine(logFileDirectory, $"Errors.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: OutputTemplate))
-                .WriteTo.File(Path.Combine(logFileDirectory, $"Trace.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: OutputTemplate)
+                    .ByIncludingOnly(e => e.Level == LogEventLevel.Error)
+                    .WriteTo.File(path: Path.Combine(logFileDirectory, $"Errors.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate))
+                .WriteTo.File(Path.Combine(logFileDirectory, $"Trace.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate)
+                .WriteTo.Providers(Providers)
                 .WriteTo.Console()
                 .CreateLogger();
+
+            Log.Logger = Logger;
+
+            
         }
     }
 }

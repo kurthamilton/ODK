@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ODK.Web.Api.Config;
 using ODK.Web.Api.Config.Settings;
+using Serilog;
 
 namespace ODK.Web.Api
 {
@@ -51,16 +52,19 @@ namespace ODK.Web.Api
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
-
             app.UseAuthentication();
-            app.UseAuthorization();
 
             app.Use(async (context, next) =>
             {
                 LoggingConfig.AddRequestProperties(context);
                 await next.Invoke();
             });
+
+            app.UseSerilogRequestLogging();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

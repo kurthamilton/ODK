@@ -20,6 +20,7 @@ using ODK.Services.Chapters;
 using ODK.Services.Countries;
 using ODK.Services.Events;
 using ODK.Services.Imaging;
+using ODK.Services.Logging;
 using ODK.Services.Mails;
 using ODK.Services.Members;
 using ODK.Services.Payments;
@@ -28,6 +29,7 @@ using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Venues;
 using ODK.Web.Api.Config.Settings;
+using Serilog;
 
 namespace ODK.Web.Api.Config
 {
@@ -45,6 +47,7 @@ namespace ODK.Web.Api.Config
         private static void ConfigureApi(IServiceCollection services)
         {
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Directory.GetCurrentDirectory()));
+            services.AddSingleton(LoggingConfig.Logger);
         }
 
         private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
@@ -76,6 +79,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IEventAdminService, EventAdminService>();
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IImageService, ImageService>();
+            services.AddScoped<ILoggingService, LoggingService>();
             services.AddScoped<IMailProviderFactory, MailProviderFactory>();
             services.AddScoped<IMailService, MailService>();
             services.AddScoped<IMemberAdminService, MemberAdminService>();
