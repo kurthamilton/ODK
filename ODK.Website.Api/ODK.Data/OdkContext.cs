@@ -26,6 +26,7 @@ namespace ODK.Data
             AddMap(new EventEmailMap());
             AddMap(new EventMap());
             AddMap(new EventResponseMap());
+            AddMap(new LogMessageMap());
             AddMap(new MemberActivationTokenMap());
             AddMap(new MemberEmailAddressUpdateTokenMap());
             AddMap(new MemberGroupMap());

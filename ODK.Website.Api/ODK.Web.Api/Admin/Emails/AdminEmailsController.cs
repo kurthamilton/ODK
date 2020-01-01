@@ -19,11 +19,13 @@ namespace ODK.Web.Api.Admin.Emails
     public class AdminEmailsController : OdkControllerBase
     {
         private readonly IEmailAdminService _emailAdminService;
+        private readonly IMailService _mailService;
         private readonly IMapper _mapper;
 
-        public AdminEmailsController(IEmailAdminService emailAdminService, IMapper mapper)
+        public AdminEmailsController(IEmailAdminService emailAdminService, IMapper mapper, IMailService mailService)
         {
             _emailAdminService = emailAdminService;
+            _mailService = mailService;
             _mapper = mapper;
         }
 
@@ -89,6 +91,13 @@ namespace ODK.Web.Api.Admin.Emails
         {
             IReadOnlyCollection<string> providers = await _emailAdminService.GetEmailProviders();
             return providers;
+        }
+
+        [HttpPost("Send")]
+        public async Task<IActionResult> SendEmail([FromForm] SendEmailApiRequest request)
+        {
+            await _mailService.SendMail(GetMemberId(), request.MemberId, request.Subject, request.Body);
+            return Created();
         }
     }
 }

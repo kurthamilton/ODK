@@ -30,13 +30,16 @@ import { MemberEventsComponent } from '../components/members/member-events/membe
 import { MemberLayoutComponent } from '../components/members/member-layout/member-layout.component';
 import { MembersComponent } from '../components/members/members/members.component';
 import { MemberSubscriptionComponent } from '../components/members/member-subscription/member-subscription.component';
+import { SendEmailComponent } from '../components/members/send-email/send-email.component';
 import { VenueEventsComponent } from '../components/venues/venue-events/venue-events.component';
 import { VenueLayoutComponent } from '../components/venues/venue-layout/venue-layout.component';
 import { VenuesComponent } from '../components/venues/venues/venues.component';
+import { LogComponent } from '../components/admin/log/log.component';
 
 const routes: Routes = [
   { path: '', component: AdminComponent, canActivate: [ChapterAdminGuardService], children: [
     { path: '', pathMatch: 'full', redirectTo: adminPaths.chapter.path },
+    { path: adminPaths.admin.path, component: LogComponent, canActivate: [ChapterSuperAdminGuardService] },
     { path: adminPaths.chapter.path, component: ChapterAdminLayoutComponent, children: [
       { path: '', component: ChapterSettingsComponent },
       { path: adminPaths.chapter.about.path, component: ChapterQuestionsComponent },
@@ -72,7 +75,8 @@ const routes: Routes = [
       { path: adminPaths.members.member.path, component: MemberLayoutComponent, children: [
         { path: '', component: MemberSubscriptionComponent },
         { path: adminPaths.members.member.events.path, component: MemberEventsComponent  },
-        { path: adminPaths.members.member.image.path, component: EditMemberImageComponent }
+        { path: adminPaths.members.member.image.path, component: EditMemberImageComponent },
+        { path: adminPaths.members.member.sendEmail.path, component: SendEmailComponent }
       ] }
     ] },
     { path: adminPaths.venues.path, children: [

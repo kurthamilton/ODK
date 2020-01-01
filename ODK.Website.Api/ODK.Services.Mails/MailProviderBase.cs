@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
 using ODK.Core.Chapters;
@@ -11,18 +12,21 @@ using ODK.Core.Mail;
 using ODK.Core.Members;
 using ODK.Services.Events;
 using ODK.Services.Exceptions;
+using ODK.Services.Logging;
 
 namespace ODK.Services.Mails
 {
     public abstract class MailProviderBase : IMailProvider
     {
         private readonly IChapterRepository _chapterRepository;
+        private readonly ILoggingService _loggingService;
         private readonly IMemberRepository _memberRepository;
 
         protected MailProviderBase(ChapterEmailProviderSettings settings, Chapter chapter,
-            IChapterRepository chapterRepository, IMemberRepository memberRepository)
+            IChapterRepository chapterRepository, IMemberRepository memberRepository, ILoggingService loggingService)
         {
             _chapterRepository = chapterRepository;
+            _loggingService = loggingService;
             _memberRepository = memberRepository;
             Chapter = chapter;
             Settings = settings;
@@ -74,6 +78,34 @@ namespace ODK.Services.Mails
             return contact?.OptIn ?? false;
         }
 
+        public async Task SendEmail(ChapterAdminMember from, string to, string subject, string body)
+        {
+            await SendEmail(from, new[] { to }, subject, body);
+        }
+
+        public async Task SendEmail(ChapterAdminMember from, IEnumerable<string> to, string subject, string body)
+        {
+            await _loggingService.LogDebug($"Sending email to {string.Join(", ", to)}");
+
+            try
+            {
+                MimeMessage message = await CreateMessage(from, to, subject, body);
+                using SmtpClient client = new SmtpClient
+                {
+                    ServerCertificateValidationCallback = (s, c, h, e) => true
+                };
+                await client.ConnectAsync(Settings.SmtpServer, Settings.SmtpPort, SecureSocketOptions.StartTlsWhenAvailable);
+                client.Authenticate(Settings.SmtpLogin, Settings.SmtpPassword);
+
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+            catch (Exception ex)
+            {
+                await _loggingService.LogError(ex, $"Error sending email");
+            }
+        }
+
         public async Task SendEmail(ChapterAdminMember from, string to, Email email, IDictionary<string, string> parameters = null)
         {
             await SendEmail(from, new[] { to }, email, parameters);
@@ -81,25 +113,12 @@ namespace ODK.Services.Mails
 
         public async Task SendEmail(ChapterAdminMember from, IEnumerable<string> to, Email email, IDictionary<string, string> parameters = null)
         {
-            try
+            if (parameters != null)
             {
-                if (parameters != null)
-                {
-                    email = email.Interpolate(parameters);
-                }
-
-                MimeMessage message = await CreateMessage(from, to, email.Subject, email.HtmlContent);
-
-                using SmtpClient client = new SmtpClient();
-                await client.ConnectAsync(Settings.SmtpServer, Settings.SmtpPort, false);
-                client.Authenticate(Settings.SmtpLogin, Settings.SmtpPassword);
-
-                await client.SendAsync(message);
-                await client.DisconnectAsync(true);
+                email = email.Interpolate(parameters);
             }
-            catch
-            {
-            }
+
+            await SendEmail(from, to, email.Subject, email.HtmlContent);
         }
 
         public async Task SendEventEmail(string id)

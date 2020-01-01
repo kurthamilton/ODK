@@ -5,6 +5,7 @@ using Microsoft.Extensions.FileProviders;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Events;
+using ODK.Core.Logging;
 using ODK.Core.Mail;
 using ODK.Core.Members;
 using ODK.Core.Payments;
@@ -29,7 +30,6 @@ using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Venues;
 using ODK.Web.Api.Config.Settings;
-using Serilog;
 
 namespace ODK.Web.Api.Config
 {
@@ -59,6 +59,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IEmailRepository, EmailRepository>();
+            services.AddScoped<ILoggingRepository, LoggingRepository>();
             services.AddScoped<IMemberRepository, MemberRepository>();
             services.AddScoped<IMemberGroupRepository, MemberGroupRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();

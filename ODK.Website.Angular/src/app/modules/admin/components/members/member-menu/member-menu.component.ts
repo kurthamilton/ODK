@@ -28,7 +28,8 @@ export class MemberMenuComponent implements OnInit {
     this.menuItems = [
       { link: adminUrls.member(chapter, member), text: 'Subscription', matchExactRoute: true },
       { link: adminUrls.memberImage(chapter, member), text: 'Image' },
-      { link: adminUrls.memberEvents(chapter, member), text: 'Events' }
+      { link: adminUrls.memberEvents(chapter, member), text: 'Events' },
+      { link: adminUrls.memberSendEmail(chapter, member), text: 'Send email' }
     ];
   }
 

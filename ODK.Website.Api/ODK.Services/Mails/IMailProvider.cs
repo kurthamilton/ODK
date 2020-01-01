@@ -23,6 +23,10 @@ namespace ODK.Services.Mails
 
         Task<bool> GetMemberOptIn(Member member);
 
+        Task SendEmail(ChapterAdminMember from, string to, string subject, string body);
+
+        Task SendEmail(ChapterAdminMember from, IEnumerable<string> to, string subject, string body);
+
         Task SendEmail(ChapterAdminMember from, string to, Email email, IDictionary<string, string> parameters = null);
 
         Task SendEmail(ChapterAdminMember from, IEnumerable<string> to, Email email, IDictionary<string, string> parameters = null);

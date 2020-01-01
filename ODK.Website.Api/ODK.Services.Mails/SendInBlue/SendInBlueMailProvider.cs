@@ -7,6 +7,7 @@ using Newtonsoft.Json.Serialization;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Services.Logging;
 using ODK.Services.Mails.SendInBlue.Requests;
 using ODK.Services.Mails.SendInBlue.Responses;
 using RestSharp;
@@ -26,8 +27,8 @@ namespace ODK.Services.Mails.SendInBlue
         public override string Name => ProviderName;
 
         public SendInBlueMailProvider(ChapterEmailProviderSettings settings, Chapter chapter,
-            IChapterRepository chapterRepository, IMemberRepository memberRepository)
-            : base(settings, chapter, chapterRepository, memberRepository)
+            IChapterRepository chapterRepository, IMemberRepository memberRepository, ILoggingService loggingService)
+            : base(settings, chapter, chapterRepository, memberRepository, loggingService)
         {
         }
 

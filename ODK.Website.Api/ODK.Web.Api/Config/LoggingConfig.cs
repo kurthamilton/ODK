@@ -26,7 +26,7 @@ namespace ODK.Web.Api.Config
             LogContext.PushProperty(IP, !string.IsNullOrWhiteSpace(ip) ? ip : "unknown");
         }
 
-        public static void Configure(string logFileDirectory)
+        public static void Configure(string logFileDirectory, string connectionString)
         {
             string outputTemplate = $"t:{{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}}|ip:{{{IP}}}|u:{{{Name}}}|m:{{Message:lj}}|ex:{{Exception}}{{NewLine}}";
             Logger = new LoggerConfiguration()
@@ -39,11 +39,10 @@ namespace ODK.Web.Api.Config
                 .WriteTo.File(Path.Combine(logFileDirectory, $"Trace.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate)
                 .WriteTo.Providers(Providers)
                 .WriteTo.Console()
+                .WriteTo.MSSqlServer(connectionString, "Logs")
                 .CreateLogger();
 
             Log.Logger = Logger;
-
-            
         }
     }
 }

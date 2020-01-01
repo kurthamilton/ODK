@@ -30,11 +30,11 @@ namespace ODK.Web.Api
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseSerilog(providers: LoggingConfig.Providers)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                });
+                })
+                .UseSerilog(providers: LoggingConfig.Providers);
 
         private static void ConfigureLogging(string[] args)
         {
@@ -47,7 +47,8 @@ namespace ODK.Web.Api
                 .Build();
 
             string path = builtConfig["Logging:Path"];
-            LoggingConfig.Configure(path);
+            string connectionString = builtConfig["ConnectionStrings:Default"];
+            LoggingConfig.Configure(path, connectionString);
         }
     }
 }

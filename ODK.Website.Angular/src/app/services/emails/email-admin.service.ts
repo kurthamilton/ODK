@@ -19,7 +19,8 @@ const endpoints = {
   chapterProviderSettings: (chapterId: string) => `${baseUrl}/chapters/${chapterId}/provider/settings`,
   email: (type: EmailType, chapterId: string) => `${baseUrl}/${EmailType[type]}?chapterId=${chapterId}`,
   emails: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
-  providers: `${baseUrl}/providers`
+  providers: `${baseUrl}/providers`,
+  send: `${baseUrl}/send`
 };
 
 @Injectable({
@@ -56,6 +57,18 @@ export class EmailAdminService {
   getEmails(currentChapterId: string): Observable<Email[]> {
     return this.http.get(endpoints.emails(currentChapterId)).pipe(
       map((response: any) => response.map(x => this.mapEmail(x)))
+    );
+  }
+
+  sendEmail(memberId: string, subject: string, body: string): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      body: body,
+      memberId: memberId,      
+      subject: subject
+    });
+
+    return this.http.post(endpoints.send, params).pipe(
+      map(() => undefined)
     );
   }
 

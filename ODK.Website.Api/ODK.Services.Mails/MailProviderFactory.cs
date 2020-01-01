@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Services.Logging;
 using ODK.Services.Mails.MailChimp;
 using ODK.Services.Mails.SendInBlue;
 
@@ -11,11 +12,14 @@ namespace ODK.Services.Mails
     public class MailProviderFactory : IMailProviderFactory
     {
         private readonly IChapterRepository _chapterRepository;
+        private readonly ILoggingService _loggingService;
         private readonly IMemberRepository _memberRepository;
 
-        public MailProviderFactory(IChapterRepository chapterRepository, IMemberRepository memberRepository)
+        public MailProviderFactory(IChapterRepository chapterRepository, IMemberRepository memberRepository,
+            ILoggingService loggingService)
         {
             _chapterRepository = chapterRepository;
+            _loggingService = loggingService;
             _memberRepository = memberRepository;
         }
 
@@ -36,9 +40,11 @@ namespace ODK.Services.Mails
             switch (emailSettings.EmailProvider)
             {
                 case MailChimpMailProvider.ProviderName:
-                    return new MailChimpMailProvider(emailSettings, chapter, _chapterRepository, _memberRepository);
+                    return new MailChimpMailProvider(emailSettings, chapter, _chapterRepository, _memberRepository,
+                        _loggingService);
                 case SendInBlueMailProvider.ProviderName:
-                    return new SendInBlueMailProvider(emailSettings, chapter, _chapterRepository, _memberRepository);
+                    return new SendInBlueMailProvider(emailSettings, chapter, _chapterRepository, _memberRepository,
+                        _loggingService);
             }
 
             throw new NotSupportedException();

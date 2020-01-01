@@ -1,4 +1,10 @@
 export const adminPaths = {
+  admin: {
+    path: 'admin',
+    log: {
+      path: ''
+    }
+  },
   chapter: {
     about: {
       path: 'about'
@@ -58,7 +64,7 @@ export const adminPaths = {
   },
   home: {
     path: 'chapter'
-  },
+  },  
   members: {
     path: 'members',
     member: {
@@ -71,6 +77,9 @@ export const adminPaths = {
       path: ':id',
       params: {
         id: 'id'
+      },
+      sendEmail: {
+        path: 'send-email'
       }
     }
   },

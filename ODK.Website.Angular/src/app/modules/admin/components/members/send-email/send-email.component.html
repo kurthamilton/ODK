@@ -1,0 +1,5 @@
+<ngb-alert *ngIf="sent" type="success" (close)="onAlertClose()">
+  Email sent
+</ngb-alert>
+
+<app-form [form]="form" (formSubmit)="onFormSubmit()"></app-form>
