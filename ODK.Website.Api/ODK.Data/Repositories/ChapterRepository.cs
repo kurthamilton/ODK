@@ -128,8 +128,8 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<ChapterProperty>()
-                .OrderBy(x => x.DisplayOrder)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
+                .OrderBy(x => x.DisplayOrder)
                 .ToArrayAsync();
         }
 
@@ -145,9 +145,9 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<ChapterPropertyOption>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
                 .OrderBy(x => x.ChapterPropertyId)
                 .OrderBy(x => x.DisplayOrder)
-                .Where(x => x.ChapterId).EqualTo(chapterId)
                 .ToArrayAsync();
         }
 
@@ -163,8 +163,8 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<ChapterQuestion>()
-                .OrderBy(x => x.DisplayOrder)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
+                .OrderBy(x => x.DisplayOrder)
                 .ToArrayAsync();
         }
 

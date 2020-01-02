@@ -93,9 +93,9 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Event>()
-                .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .Where(x => x.Date).GreaterThanOrEqualTo(after)
+                .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .ToArrayAsync();
         }
 
@@ -103,9 +103,9 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Event>()
-                .Page(page, pageSize)
-                .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
+                .OrderBy(x => x.Date, SqlSortDirection.Descending)
+                .Page(page, pageSize)
                 .ToArrayAsync();
         }
 
@@ -131,10 +131,10 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<Event>()
-                .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .Where(x => x.Date).GreaterThanOrEqualTo(after)
                 .Where(x => x.IsPublic).EqualTo(true)
+                .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .ToArrayAsync();
         }
 

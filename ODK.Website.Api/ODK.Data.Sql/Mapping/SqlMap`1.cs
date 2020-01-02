@@ -47,7 +47,7 @@ namespace ODK.Data.Sql.Mapping
 
         protected void Join<TJoin, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TJoin, TValue>> targetField)
         {
-            _joins.Add(new SqlJoin<T, TJoin, TValue>(thisField, targetField));
+            Join<T, TJoin, TValue>(thisField, targetField);
         }
 
         protected void Join<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> thisField, Expression<Func<TTo, TValue>> targetField)
@@ -60,7 +60,7 @@ namespace ODK.Data.Sql.Mapping
             SqlDbType type = SqlDbTypes.GetSqlDbType<TValue>();
 
             string entityFieldName = expression.GetMemberName();
-            SqlColumn column = new SqlColumn(entityFieldName)
+            SqlColumn column = new SqlColumn(entityFieldName, _entityColumns.Count)
                 .HasColumnType(type)
                 .From<T>();
 

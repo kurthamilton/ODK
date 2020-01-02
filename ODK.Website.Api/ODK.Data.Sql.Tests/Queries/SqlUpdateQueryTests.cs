@@ -20,7 +20,7 @@ namespace ODK.Data.Sql.Tests.Queries
                 .Set(x => x.String, "updated")
                 .Where(x => x.Int).EqualTo(1);
 
-            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+            (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
             CollectionAssert.AreEqual(new[] { "Int", "String" }, parameterValues.Select(x => x.Column.ColumnName));
             CollectionAssert.AreEqual(new object[] { 1, "updated" }, parameterValues.Select(x => x.Value));
@@ -56,7 +56,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("UPDATE Table SET Table.[Int] = @Int FROM Table WHERE Table.[String] = @String", sql);
+            Assert.AreEqual("UPDATE Table SET Table.[Int] = @Int FROM Table WHERE (Table.[String] = @String0)", sql);
         }
 
         private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)

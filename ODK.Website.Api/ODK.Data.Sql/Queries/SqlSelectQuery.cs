@@ -5,7 +5,7 @@ using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Sql.Queries
 {
-    public class SqlSelectQuery<T> : SqlConditionalQuery<T>
+    public class SqlSelectQuery<T> : SqlConditionalQuery<T, SqlSelectQuery<T>>
     {
         public SqlSelectQuery(SqlContext context)
             : base(context)
@@ -13,6 +13,8 @@ namespace ODK.Data.Sql.Queries
             SqlMap<T> map = Context.GetMap<T>();
             AddSelectColumns(map.SelectColumns.Select(x => x.ToSql(context)));
         }
+
+        protected override SqlSelectQuery<T> Query => this;
 
         public SqlSelectQuery<T> OrderBy<TValue>(Expression<Func<T, TValue>> expression, SqlSortDirection direction = SqlSortDirection.Ascending)
         {

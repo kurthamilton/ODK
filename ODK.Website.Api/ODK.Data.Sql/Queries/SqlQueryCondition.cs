@@ -3,9 +3,9 @@ using System.Linq.Expressions;
 
 namespace ODK.Data.Sql.Queries
 {
-    public class SqlQueryCondition<T, TEntity, TValue> : ISqlQueryCondition
+    public class SqlQueryCondition<T, TEntity, TValue, TQuery> : ISqlQueryCondition where TQuery : SqlQuery<T>
     {
-        public SqlQueryCondition(SqlConditionalQuery<T> query, Expression<Func<TEntity, TValue>> expression)
+        public SqlQueryCondition(TQuery query, Expression<Func<TEntity, TValue>> expression)
         {
             Expression = expression;
             Query = query;
@@ -17,29 +17,36 @@ namespace ODK.Data.Sql.Queries
 
         private string Operator { get; set; }
 
-        private SqlConditionalQuery<T> Query { get; }
+        private string Parameter { get; set; }
 
-        public SqlConditionalQuery<T> EqualTo(TValue value)
+        private TQuery Query { get; }
+
+        public TQuery EqualTo(TValue value)
         {
             return SetCondition("=", value);
         }
 
-        public SqlColumn GetColumn(SqlContext context)
-        {
-            return context.GetColumn(Expression);
-        }
-
-        public SqlConditionalQuery<T> GreaterThan(TValue value)
+        public TQuery GreaterThan(TValue value)
         {
             return SetCondition(">", value);
         }
 
-        public SqlConditionalQuery<T> GreaterThanOrEqualTo(TValue value)
+        public TQuery GreaterThanOrEqualTo(TValue value)
         {
             return SetCondition(">=", value);
         }
 
-        public SqlConditionalQuery<T> NotEqualTo(TValue value)
+        public TQuery LessThan(TValue value)
+        {
+            return SetCondition("<", value);
+        }
+
+        public TQuery LessThanOrEqualTo(TValue value)
+        {
+            return SetCondition("<=", value);
+        }
+
+        public TQuery NotEqualTo(TValue value)
         {
             return SetCondition("!=", value);
         }
@@ -48,13 +55,14 @@ namespace ODK.Data.Sql.Queries
         {
             SqlColumn column = context.GetColumn(Expression);
 
-            return $"{column.ToSql(context)} {Operator} {column.ParameterName}";
+            return $"{column.ToSql(context)} {Operator} {Parameter}";
         }
 
-        private SqlConditionalQuery<T> SetCondition(string @operator, TValue value)
+        private TQuery SetCondition(string @operator, TValue value)
         {
             Operator = @operator;
             Value = value;
+            Parameter = Query.AddParameterValue(Expression, value);
             return Query;
         }
     }

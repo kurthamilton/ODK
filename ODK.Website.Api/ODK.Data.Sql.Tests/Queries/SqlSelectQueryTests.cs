@@ -14,7 +14,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlContext context = CreateMockContext();
             SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context);
 
-            (SqlColumn, object)[] parameterValues = query.GetParameterValues(context).ToArray();
+            (SqlColumn, string, object)[] parameterValues = query.GetParameterValues(context).ToArray();
 
             CollectionAssert.IsEmpty(parameterValues);
         }
@@ -27,10 +27,37 @@ namespace ODK.Data.Sql.Tests.Queries
                 .Where(x => x.Int).EqualTo(1)
                 .Where(x => x.String).EqualTo("value");
 
-            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+            (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
             CollectionAssert.AreEqual(new [] { "Int", "String" }, parameterValues.Select(x => x.Column.ColumnName));
             CollectionAssert.AreEqual(new object[] { 1, "value" }, parameterValues.Select(x => x.Value));
+        }
+
+        [Test]
+        public static void GetParameterValues_ReturnsMultipleConditionValues()
+        {
+            SqlContext context = CreateMockContext();
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .Where(x => x.Int).GreaterThan(1)
+                .Where(x => x.Int).LessThan(5);
+
+            (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+
+            CollectionAssert.AreEqual(new[] { "@Int0", "@Int1" }, parameterValues.Select(x => x.ParameterName));
+            CollectionAssert.AreEqual(new object[] { 1, 5 }, parameterValues.Select(x => x.Value));
+        }
+
+        [Test]
+        public static void GetParameterValues_WithWhereAny_ReturnsConditionValues()
+        {
+            SqlContext context = CreateMockContext();
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .WhereAny<TestEntity, int>(x => x.Int, new [] {1, 3, 5});
+
+            (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+
+            CollectionAssert.AreEqual(new[] { "@Int0", "@Int1", "@Int2" }, parameterValues.Select(x => x.ParameterName));
+            CollectionAssert.AreEqual(new object[] { 1, 3, 5 }, parameterValues.Select(x => x.Value));
         }
 
         [Test]
@@ -62,7 +89,24 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE Table.[Int] >= @Int AND Table.[String] = @String", sql);
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int0) AND (Table.[String] = @String0)", sql);
+        }
+
+        [Test]
+        public static void ToSql_WithMultipleConditions_ReturnsParameterisedSql()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String);
+
+            SqlContext context = CreateMockContext(map);
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .Where(x => x.Int).GreaterThanOrEqualTo(1)
+                .Where(x => x.Int).LessThanOrEqualTo(5);
+
+            string sql = query.ToSql(context);
+
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int0) AND (Table.[Int] <= @Int1)", sql);
         }
 
         [Test]
@@ -78,7 +122,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE Table.[Int] >= @Int", sql);
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int0)", sql);
         }
 
         [Test]
@@ -95,6 +139,22 @@ namespace ODK.Data.Sql.Tests.Queries
             string sql = query.ToSql(context);
 
             Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table", sql);
+        }
+
+        [Test]
+        public static void ToSql_WithWhereAnyCondition_ReturnsParameterisedSql()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String);
+
+            SqlContext context = CreateMockContext(map);
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .WhereAny<TestEntity, int>(x => x.Int, new[] {1, 3, 5});
+
+            string sql = query.ToSql(context);
+
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] = @Int0 OR Table.[Int] = @Int1 OR Table.[Int] = @Int2)", sql);
         }
 
         [Test]

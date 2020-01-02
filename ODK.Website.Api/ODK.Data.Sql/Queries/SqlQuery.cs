@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using System.Threading.Tasks;
 using ODK.Data.Sql.Mapping;
 
@@ -9,7 +10,8 @@ namespace ODK.Data.Sql.Queries
 {
     public abstract class SqlQuery<T>
     {
-        private readonly IList<ISqlQueryCondition> _conditions = new List<ISqlQueryCondition>();
+        private readonly IList<IList<ISqlQueryCondition>> _conditions = new List<IList<ISqlQueryCondition>>();
+        private readonly IDictionary<SqlColumn, IList<(string, object)>> _conditionValues = new Dictionary<SqlColumn, IList<(string, object)>>();
         private bool _delete;
         private int _fetch;
         private T _insertEntity;
@@ -28,6 +30,21 @@ namespace ODK.Data.Sql.Queries
 
         protected SqlContext Context { get; }
 
+        public string AddParameterValue<TEntity, TValue>(Expression<Func<TEntity, TValue>> field, TValue value)
+        {
+            SqlColumn column = Context.GetColumn(field);
+
+            if (!_conditionValues.ContainsKey(column))
+            {
+                _conditionValues.Add(column, new List<(string, object)>());
+            }
+
+            string parameterName = $"{column.ParameterName}{_conditionValues[column].Count}";
+
+            _conditionValues[column].Add((parameterName, value));
+            return parameterName;
+        }
+
         public async Task<int> CountAsync()
         {
             _selectColumns.Clear();
@@ -45,13 +62,13 @@ namespace ODK.Data.Sql.Queries
             return await Context.ReadRecordAsync(this);
         }
 
-        public IEnumerable<(SqlColumn, object)> GetParameterValues(SqlContext context)
+        public IEnumerable<(SqlColumn, string, object)> GetParameterValues(SqlContext context)
         {
-            if (_conditions.Count > 0)
+            foreach (SqlColumn column in _conditionValues.Keys)
             {
-                foreach (ISqlQueryCondition condition in _conditions)
+                foreach ((string parameterName, object parameterValue) in _conditionValues[column])
                 {
-                    yield return (condition.GetColumn(context), condition.Value);
+                    yield return (column, parameterName, parameterValue);
                 }
             }
 
@@ -63,15 +80,15 @@ namespace ODK.Data.Sql.Queries
                 {
                     object value = map.GetEntityValue(_insertEntity, column, context);
 
-                    yield return (column, value);
+                    yield return (column, null, value);
                 }
             }
 
             if (_updateColumns.Count > 0)
             {
-                foreach ((SqlColumn column, object value) updateColumn in _updateColumns)
+                foreach ((SqlColumn column, object value) in _updateColumns)
                 {
-                    yield return updateColumn;
+                    yield return (column, null, value);
                 }
             }
         }
@@ -99,9 +116,14 @@ namespace ODK.Data.Sql.Queries
             return await Context.ReadRecordAsync(this, reader => reader.GetInt32(0));
         }
 
-        protected void AddCondition<TEntity, TValue>(SqlQueryCondition<T, TEntity, TValue> condition)
+        protected void AddCondition<TEntity, TValue, TQuery>(SqlQueryCondition<T, TEntity, TValue, TQuery> condition) where TQuery : SqlQuery<T>
         {
-            _conditions.Add(condition);
+            AddConditions(new [] { condition });
+        }
+
+        protected void AddConditions<TEntity, TValue, TQuery>(IEnumerable<SqlQueryCondition<T, TEntity, TValue, TQuery>> conditions) where TQuery : SqlQuery<T>
+        {
+            _conditions.Add(new List<ISqlQueryCondition>(conditions));
         }
 
         protected void AddDelete()
@@ -157,7 +179,6 @@ namespace ODK.Data.Sql.Queries
 
         protected void AddUpdateColumn<TValue>(Expression<Func<T, TValue>> expression, TValue value)
         {
-            // TODO: resolve conflict between set parameter and where parameter when both operate on same column
             SqlColumn column = Context.GetColumn(expression);
             _updateColumns.Add((column, value));
         }
@@ -227,7 +248,28 @@ namespace ODK.Data.Sql.Queries
 
         private string WhereSql(SqlContext context)
         {
-            return _conditions.Count > 0 ? $" WHERE {string.Join(" AND ", _conditions.Select(x => x.ToSql(context)))}" : "";
+            if (_conditions.Count == 0)
+            {
+                return "";
+            }
+
+            StringBuilder sql = new StringBuilder(" WHERE ");
+
+            for (int i = 0; i < _conditions.Count; i++)
+            {
+                IList<ISqlQueryCondition> group = _conditions[i];
+
+                if (i > 0)
+                {
+                    sql.Append(" AND ");
+                }
+
+                sql.Append("(");
+                sql.Append(string.Join(" OR ", group.Select(x => x.ToSql(context))));
+                sql.Append(")");
+            }
+
+            return sql.ToString();
         }
     }
 }
