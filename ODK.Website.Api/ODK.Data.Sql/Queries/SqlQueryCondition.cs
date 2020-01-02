@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace ODK.Data.Sql.Queries
@@ -25,11 +24,6 @@ namespace ODK.Data.Sql.Queries
         public TQuery EqualTo(TValue value)
         {
             return SetCondition("=", value);
-        }
-
-        public SqlColumn GetColumn(SqlContext context)
-        {
-            return context.GetColumn(Expression);
         }
 
         public TQuery GreaterThan(TValue value)
