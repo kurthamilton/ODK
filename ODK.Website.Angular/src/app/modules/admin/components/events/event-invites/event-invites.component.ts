@@ -23,6 +23,7 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
   invites: EventInvites;
   sendForm: FormViewModel;
   sendTestForm: FormViewModel;
+  sent: boolean;
 
   private formCallback: Subject<boolean> = new Subject<boolean>();
 
@@ -55,6 +56,11 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
     }
 
     this.sendEmails(true);
+  }
+
+  onSentAlertClose(): void {
+    this.sent = false;
+    this.changeDetector.detectChanges();
   }
 
   private buildForms(): void {
@@ -100,6 +106,7 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
 
     this.eventAdminService.sendInvites(this.event.id, test).subscribe(() => {
       this.formCallback.next(true);
+      this.sent = true;
       this.loadStatistics();
     });
   }

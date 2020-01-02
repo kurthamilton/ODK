@@ -7,7 +7,7 @@ using ODK.Core.Members;
 
 namespace ODK.Services.Emails
 {
-    public interface IMailService
+    public interface IEmailService
     {
         Task SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters);
 

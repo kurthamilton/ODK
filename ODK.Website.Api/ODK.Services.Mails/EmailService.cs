@@ -9,14 +9,14 @@ using ODK.Services.Exceptions;
 
 namespace ODK.Services.Emails
 {
-    public class MailService : IMailService
+    public class EmailService : IEmailService
     {
         private readonly IChapterRepository _chapterRepository;
         private readonly IEmailRepository _emailRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly IMailProviderFactory _mailProviderFactory;
 
-        public MailService(IChapterRepository chapterRepository, IEmailRepository emailRepository,
+        public EmailService(IChapterRepository chapterRepository, IEmailRepository emailRepository,
             IMailProviderFactory mailProviderFactory, IMemberRepository memberRepository)
         {
             _chapterRepository = chapterRepository;

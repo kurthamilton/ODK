@@ -19,18 +19,18 @@ namespace ODK.Services.Authentication
         private readonly IAuthenticationTokenFactory _authenticationTokenFactory;
         private readonly IAuthorizationService _authorizationService;
         private readonly IChapterRepository _chapterRepository;
-        private readonly IMailService _mailService;
+        private readonly IEmailService _emailService;
         private readonly IMemberRepository _memberRepository;
         private readonly AuthenticationServiceSettings _settings;
 
-        public AuthenticationService(IMemberRepository memberRepository, IMailService mailService, AuthenticationServiceSettings settings,
+        public AuthenticationService(IMemberRepository memberRepository, IEmailService emailService, AuthenticationServiceSettings settings,
             IAuthorizationService authorizationService, IChapterRepository chapterRepository,
             IAuthenticationTokenFactory authenticationTokenFactory)
         {
             _authenticationTokenFactory = authenticationTokenFactory;
             _authorizationService = authorizationService;
             _chapterRepository = chapterRepository;
-            _mailService = mailService;
+            _emailService = emailService;
             _memberRepository = memberRepository;
             _settings = settings;
         }
@@ -152,7 +152,7 @@ namespace ODK.Services.Authentication
                 { "token", HttpUtility.UrlEncode(token) }
             });
 
-            await _mailService.SendMemberMail(chapter, member, EmailType.PasswordReset, new Dictionary<string, string>
+            await _emailService.SendMemberMail(chapter, member, EmailType.PasswordReset, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "url", url }
@@ -255,7 +255,7 @@ namespace ODK.Services.Authentication
                 { "chapter.name", chapter.Name }
             });
 
-            await _mailService.SendMemberMail(chapter, member, EmailType.NewMember, new Dictionary<string, string>
+            await _emailService.SendMemberMail(chapter, member, EmailType.NewMember, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "eventsUrl", eventsUrl },
@@ -279,7 +279,7 @@ namespace ODK.Services.Authentication
                 newMemberAdminEmailParameters.Add($"member.properties.{chapterProperty.Name}", HttpUtility.HtmlEncode(value ?? ""));
             }
 
-            await _mailService.SendChapterNewMemberAdminMail(chapter, member, newMemberAdminEmailParameters);
+            await _emailService.SendChapterNewMemberAdminMail(chapter, member, newMemberAdminEmailParameters);
         }
 
         private async Task UpdatePassword(Guid memberId, string password)

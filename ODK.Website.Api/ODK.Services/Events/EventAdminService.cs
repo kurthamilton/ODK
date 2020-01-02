@@ -26,7 +26,7 @@ namespace ODK.Services.Events
         public EventAdminService(IEventRepository eventRepository, IChapterRepository chapterRepository,
             IEmailRepository memberEmailRepository, EventAdminServiceSettings settings,
             IMemberRepository memberRepository, IVenueRepository venueRepository,
-            IMailProviderFactory mailProviderFactory)
+            IMailProviderFactory mailProviderFactory, IEmailService emailService)
             : base(chapterRepository)
         {
             _chapterRepository = chapterRepository;
@@ -263,7 +263,7 @@ namespace ODK.Services.Events
 
         private async Task<EventEmail> CreateEventEmail(IMailProvider mailProvider, Event @event, Chapter chapter)
         {
-            Email email = await GetEventEmail(@event, chapter);
+            Email email = await GetEventEmail(mailProvider, @event, chapter);
 
             string emailProviderEmailId = await mailProvider.CreateEventEmail(@event, email);
 
@@ -274,7 +274,7 @@ namespace ODK.Services.Events
             return eventEmail;
         }
 
-        private async Task<Email> GetEventEmail(Event @event, Chapter chapter)
+        private async Task<Email> GetEventEmail(IMailProvider mailProvider, Event @event, Chapter chapter)
         {
             Venue venue = await _venueRepository.GetVenue(@event.VenueId);
 
@@ -282,12 +282,7 @@ namespace ODK.Services.Events
             IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
             Email email = template.Interpolate(parameters);
 
-            Email layout = await _emailRepository.GetEmail(EmailType.Layout, chapter.Id);
-
-            return layout.Interpolate(new Dictionary<string, string>
-            {
-                { "body", email.HtmlContent }
-            });
+            return await mailProvider.GetEmailWithLayout(chapter, email);
         }
 
         private IDictionary<string, string> GetEventEmailParameters(Chapter chapter, Event @event, Venue venue)
@@ -315,7 +310,7 @@ namespace ODK.Services.Events
 
         private async Task UpdateEventEmail(IMailProvider mailProvider, Event @event, Chapter chapter, EventEmail eventEmail)
         {
-            Email email = await GetEventEmail(@event, chapter);
+            Email email = await GetEventEmail(mailProvider, @event, chapter);
 
             await mailProvider.UpdateEventEmail(@event, email, eventEmail.EmailProviderEmailId);
         }

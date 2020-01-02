@@ -127,9 +127,9 @@ namespace ODK.Services.Tests.Members
             return Mock.Of<IImageService>();
         }
 
-        private static IMailService CreateMockMailService()
+        private static IEmailService CreateMockMailService()
         {
-            return Mock.Of<IMailService>();
+            return Mock.Of<IEmailService>();
         }
 
         private static Member CreateMockMember(Guid? memberId = null, Guid? chapterId = null,

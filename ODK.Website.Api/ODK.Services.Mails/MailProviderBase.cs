@@ -52,6 +52,21 @@ namespace ODK.Services.Emails
             return campaign.Id;
         }
 
+        public async Task<Email> GetEmailWithLayout(Chapter chapter, Email email)
+        {
+            Email layout = await _emailRepository.GetEmail(EmailType.Layout, chapter.Id);
+
+            Email interpolated = layout.Interpolate(new Dictionary<string, string>
+            {
+                {  "body", email.HtmlContent },
+                { "chapter.name", chapter.Name }
+            });
+
+            interpolated.Subject = email.Subject;
+
+            return interpolated;
+        }
+
         public async Task<EventInvites> GetEventInvites(Event @event, EventEmail eventEmail)
         {
             EventCampaignStats stats = await GetEventStats(eventEmail);
@@ -146,7 +161,7 @@ namespace ODK.Services.Emails
 
             // add new members
             IEnumerable<Member> newMembers = map
-                .Where(x => x.Contact == null)
+                .Where(x => x.Contact == null && x.Member != null && x.Member.EmailOptIn)
                 .Select(x => x.Member);
             foreach (Member member in newMembers)
             {
@@ -155,16 +170,16 @@ namespace ODK.Services.Emails
 
             // opt-out members who have unsubscribed
             IEnumerable<Member> unsubscribeMembers = map
-                .Where(x => x.Member?.EmailOptIn == true && x.Contact?.OptIn == false)
+                .Where(x => x.Member != null && x.Member.EmailOptIn && !(x.Contact?.OptIn ?? false))
                 .Select(x => x.Member);
             foreach (Member member in unsubscribeMembers)
             {
                 await _memberRepository.UpdateMember(member.Id, false, member.FirstName, member.LastName);
             }
 
-            // delete old members
+            // delete old members or those who have unsubscribed
             IEnumerable<Contact> deleteContacts = map
-                .Where(x => x.Member == null)
+                .Where(x => x.Member == null || x.Contact?.OptIn == false)
                 .Select(x => x.Contact);
             foreach (Contact contact in deleteContacts)
             {
@@ -303,12 +318,12 @@ namespace ODK.Services.Emails
         {
             Email layout = await _emailRepository.GetEmail(EmailType.Layout, chapterId);
 
-            Email email = layout.Interpolate(new Dictionary<string, string>
+            layout = layout.Interpolate(new Dictionary<string, string>
             {
                 { "body", body }
             });
 
-            return email.HtmlContent;
+            return layout.HtmlContent;
         }
     }
 }

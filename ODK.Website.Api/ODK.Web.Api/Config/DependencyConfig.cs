@@ -82,7 +82,7 @@ namespace ODK.Web.Api.Config
             services.AddScoped<IImageService, ImageService>();
             services.AddScoped<ILoggingService, LoggingService>();
             services.AddScoped<IMailProviderFactory, MailProviderFactory>();
-            services.AddScoped<IMailService, MailService>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();
             services.AddScoped<IPaymentService, PaymentService>();

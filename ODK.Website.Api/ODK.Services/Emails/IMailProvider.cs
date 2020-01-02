@@ -10,12 +10,14 @@ using ODK.Services.Events;
 namespace ODK.Services.Emails
 {
     public interface IMailProvider
-    {        
+    {
         string Name { get; }
 
         ChapterEmailProviderSettings Settings { get; }
 
         Task<string> CreateEventEmail(Event @event, Email email);
+
+        Task<Email> GetEmailWithLayout(Chapter chapter, Email email);
 
         Task<EventInvites> GetEventInvites(Event @event, EventEmail eventEmail);
 

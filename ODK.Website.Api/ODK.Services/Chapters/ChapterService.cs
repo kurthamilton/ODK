@@ -17,15 +17,15 @@ namespace ODK.Services.Chapters
         private readonly IAuthorizationService _authorizationService;
         private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
-        private readonly IMailService _mailService;
+        private readonly IEmailService _emailService;
 
-        public ChapterService(IChapterRepository chapterRepository, ICacheService cacheService, IMailService mailService,
+        public ChapterService(IChapterRepository chapterRepository, ICacheService cacheService, IEmailService emailService,
             IAuthorizationService authorizationService)
         {
             _authorizationService = authorizationService;
             _cacheService = cacheService;
             _chapterRepository = chapterRepository;
-            _mailService = mailService;
+            _emailService = emailService;
         }
 
         public async Task<VersionedServiceResult<Chapter>> GetChapter(long? currentVersion, Guid id)
@@ -124,7 +124,7 @@ namespace ODK.Services.Chapters
                 {"message", HttpUtility.HtmlEncode(message)}
             };
 
-            await _mailService.SendChapterContactMail(chapter.Value, parameters);
+            await _emailService.SendChapterContactMail(chapter.Value, parameters);
         }
 
         private async Task<ChapterLinks> GetChapterLinks(Guid chapterId)

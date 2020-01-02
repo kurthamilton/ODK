@@ -23,23 +23,23 @@ namespace ODK.Services.Members
         private readonly IAuthorizationService _authorizationService;
         private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
+        private readonly IEmailService _emailService;
         private readonly IImageService _imageService;
         private readonly IMailProviderFactory _mailProviderFactory;
-        private readonly IMailService _mailService;
         private readonly IMemberRepository _memberRepository;
         private readonly IPaymentService _paymentService;
         private readonly MemberServiceSettings _settings;
 
         public MemberService(IMemberRepository memberRepository, IChapterRepository chapterRepository, IAuthorizationService authorizationService,
-            IMailService mailService, MemberServiceSettings settings, IImageService imageService, IPaymentService paymentService,
+            IEmailService emailService, MemberServiceSettings settings, IImageService imageService, IPaymentService paymentService,
             ICacheService cacheService, IMailProviderFactory mailProviderFactory)
         {
             _authorizationService = authorizationService;
             _cacheService = cacheService;
             _chapterRepository = chapterRepository;
+            _emailService = emailService;
             _imageService = imageService;
             _mailProviderFactory = mailProviderFactory;
-            _mailService = mailService;
             _memberRepository = memberRepository;
             _paymentService = paymentService;
             _settings = settings;
@@ -117,7 +117,7 @@ namespace ODK.Services.Members
                 { "token", HttpUtility.UrlEncode(activationToken) }
             });
 
-            await _mailService.SendMemberMail(chapter, create, EmailType.ActivateAccount, new Dictionary<string, string>
+            await _emailService.SendMemberMail(chapter, create, EmailType.ActivateAccount, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "url", url }
@@ -294,7 +294,7 @@ namespace ODK.Services.Members
                 { "token", HttpUtility.UrlEncode(activationToken) }
             });
 
-            await _mailService.SendMail(chapter, newEmailAddress, EmailType.EmailAddressUpdate, new Dictionary<string, string>
+            await _emailService.SendMail(chapter, newEmailAddress, EmailType.EmailAddressUpdate, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "url", url }
