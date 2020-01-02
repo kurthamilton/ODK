@@ -66,7 +66,7 @@ export class SubscriptionAlertComponent implements OnInit, OnDestroy {
 
     const today: Date = DateUtils.today();
     const expires: Date = DateUtils.toDate(token.subscriptionExpiryDate);    
-    if (token.subscriptionExpiryDate && expires > DateUtils.addDays(today, 7)) {
+    if (!token.subscriptionExpiryDate || expires > DateUtils.addDays(today, 7)) {
       this.changeDetector.detectChanges();
       return;
     }
