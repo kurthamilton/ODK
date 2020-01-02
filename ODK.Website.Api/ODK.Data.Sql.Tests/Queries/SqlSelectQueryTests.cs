@@ -62,7 +62,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE Table.[Int] >= @Int AND Table.[String] = @String", sql);
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int) AND (Table.[String] = @String)", sql);
         }
 
         [Test]
@@ -78,7 +78,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE Table.[Int] >= @Int", sql);
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int)", sql);
         }
 
         [Test]

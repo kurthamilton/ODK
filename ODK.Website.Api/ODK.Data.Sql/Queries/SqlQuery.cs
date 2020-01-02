@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using System.Threading.Tasks;
 using ODK.Data.Sql.Mapping;
 
@@ -9,7 +10,7 @@ namespace ODK.Data.Sql.Queries
 {
     public abstract class SqlQuery<T>
     {
-        private readonly IList<ISqlQueryCondition> _conditions = new List<ISqlQueryCondition>();
+        private readonly IList<IList<ISqlQueryCondition>> _conditions = new List<IList<ISqlQueryCondition>>();
         private bool _delete;
         private int _fetch;
         private T _insertEntity;
@@ -49,9 +50,12 @@ namespace ODK.Data.Sql.Queries
         {
             if (_conditions.Count > 0)
             {
-                foreach (ISqlQueryCondition condition in _conditions)
+                foreach (IList<ISqlQueryCondition> group in _conditions)
                 {
-                    yield return (condition.GetColumn(context), condition.Value);
+                    foreach (ISqlQueryCondition condition in group)
+                    {
+                        yield return (condition.GetColumn(context), condition.Value);
+                    }
                 }
             }
 
@@ -101,7 +105,7 @@ namespace ODK.Data.Sql.Queries
 
         protected void AddCondition<TEntity, TValue, TQuery>(SqlQueryCondition<T, TEntity, TValue, TQuery> condition) where TQuery : SqlQuery<T>
         {
-            _conditions.Add(condition);
+            _conditions.Add(new List<ISqlQueryCondition> { condition });
         }
 
         protected void AddDelete()
@@ -227,7 +231,28 @@ namespace ODK.Data.Sql.Queries
 
         private string WhereSql(SqlContext context)
         {
-            return _conditions.Count > 0 ? $" WHERE {string.Join(" AND ", _conditions.Select(x => x.ToSql(context)))}" : "";
+            if (_conditions.Count == 0)
+            {
+                return "";
+            }
+
+            StringBuilder sql = new StringBuilder(" WHERE ");
+
+            for (int i = 0; i < _conditions.Count; i++)
+            {
+                IList<ISqlQueryCondition> group = _conditions[i];
+
+                if (i > 0)
+                {
+                    sql.Append(" AND ");
+                }
+
+                sql.Append("(");
+                sql.Append(string.Join(" OR ", group.Select(x => x.ToSql(context))));
+                sql.Append(")");
+            }
+
+            return sql.ToString();
         }
     }
 }

@@ -56,7 +56,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("UPDATE Table SET Table.[Int] = @Int FROM Table WHERE Table.[String] = @String", sql);
+            Assert.AreEqual("UPDATE Table SET Table.[Int] = @Int FROM Table WHERE (Table.[String] = @String)", sql);
         }
 
         private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)

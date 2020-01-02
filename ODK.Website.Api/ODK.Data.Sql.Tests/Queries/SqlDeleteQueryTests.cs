@@ -39,7 +39,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("DELETE Table FROM Table WHERE Table.[Int] = @Int", sql);
+            Assert.AreEqual("DELETE Table FROM Table WHERE (Table.[Int] = @Int)", sql);
         }
 
         [Test]
@@ -56,7 +56,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("DELETE Table FROM Table WHERE Table.[Other] = @Other", sql);
+            Assert.AreEqual("DELETE Table FROM Table WHERE (Table.[Other] = @Other)", sql);
         }
 
         private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)
