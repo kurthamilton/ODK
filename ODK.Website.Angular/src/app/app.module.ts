@@ -60,6 +60,7 @@ import { SubscriptionComponent } from './components/account/subscription/subscri
 import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenets.component';
 import { UpdateEmailAddressComponent } from './components/account/update-email-address/update-email-address.component';
 import { DeleteAccountComponent } from './components/account/delete-account/delete-account.component';
+import { HeaderBrandComponent } from './components/structure/header-brand/header-brand.component';
 
 @NgModule({
   declarations: [
@@ -116,6 +117,7 @@ import { DeleteAccountComponent } from './components/account/delete-account/dele
     ThreeTenetsComponent,
     UpdateEmailAddressComponent,
     DeleteAccountComponent,
+    HeaderBrandComponent,
   ],
   imports: [
     AppFormsModule,

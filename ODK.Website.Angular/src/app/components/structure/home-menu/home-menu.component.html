@@ -1,3 +1,7 @@
 <ng-container *ngIf="menuItems">
-    <app-navbar breakpoint="lg" [menuItemGroups]="menuItems"></app-navbar>    
+  <app-navbar breakpoint="lg" [menuItemGroups]="menuItems">
+    <div class="d-lg-none menu-brand">
+      <app-header-brand></app-header-brand>
+    </div>
+  </app-navbar>
 </ng-container>

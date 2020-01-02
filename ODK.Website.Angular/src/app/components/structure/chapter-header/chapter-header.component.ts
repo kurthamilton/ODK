@@ -1,6 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
-import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 
@@ -15,15 +14,8 @@ export class ChapterHeaderComponent implements OnInit {
   }
   
   chapter: Chapter;
-  links: {
-    chapter: string
-  };
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
-    this.links = {
-      chapter: appUrls.chapter(this.chapter)
-    };
   }
-
 }

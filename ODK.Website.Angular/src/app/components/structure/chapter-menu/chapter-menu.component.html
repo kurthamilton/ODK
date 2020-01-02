@@ -1,3 +1,7 @@
 <ng-container *ngIf="chapter">
-    <app-navbar breakpoint="sm" [menuItems]="menuItems"></app-navbar>
+  <app-navbar breakpoint="sm" [menuItems]="menuItems">
+    <div class="d-sm-none menu-brand">
+      <app-header-brand></app-header-brand>
+    </div>
+  </app-navbar>
 </ng-container>
