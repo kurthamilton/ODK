@@ -50,6 +50,13 @@ namespace ODK.Web.Api.Admin.Members
             return _mapper.Map<MemberApiResponse>(member);
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMember(Guid id)
+        {
+            await _memberAdminService.DeleteMember(GetMemberId(), id);
+            return NoContent();
+        }
+
         [HttpPut("{id}/Disable")]
         public async Task<IActionResult> DisableMember(Guid id)
         {

@@ -56,6 +56,16 @@ namespace ODK.Services.Members
             return await _memberGroupRepository.CreateMemberGroup(create);
         }
 
+        public async Task DeleteMember(Guid currentMemberId, Guid memberId)
+        {
+            Member member = await GetMember(currentMemberId, memberId);
+
+            await _memberRepository.DeleteMember(member.Id);
+
+            _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
+            _cacheService.RemoveVersionedItem<Member>(memberId);
+        }
+
         public async Task DeleteMemberGroup(Guid currentMemberId, Guid id)
         {
             MemberGroup memberGroup = await GetMemberGroup(currentMemberId, id);

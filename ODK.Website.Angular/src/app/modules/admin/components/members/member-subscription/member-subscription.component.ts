@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
@@ -11,6 +12,9 @@ import { MemberAdminService } from 'src/app/services/members/member-admin.servic
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { SubscriptionType } from 'src/app/core/account/subscription-type';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
+import { adminUrls } from '../../../routing/admin-urls';
+import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
+import { Chapter } from 'src/app/core/chapters/chapter';
 
 @Component({
   selector: 'app-member-subscription',
@@ -20,14 +24,17 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 export class MemberSubscriptionComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
+    private router: Router,
     private datePipe: DatePipe,
-    private memberAdminService: MemberAdminService
+    private memberAdminService: MemberAdminService,
+    private chapterAdminService: ChapterAdminService
   ) {     
   }
 
   form: FormViewModel;
   member: Member;
 
+  private chapter: Chapter;
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
     expiryDate: TextInputFormControlViewModel;
@@ -36,6 +43,7 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
   private subscription: MemberSubscription;
 
   ngOnInit(): void {
+    this.chapter = this.chapterAdminService.getActiveChapter();
     this.member = this.memberAdminService.getActiveMember();
     
     this.memberAdminService.getMemberSubscription(this.member.id).subscribe((subscription: MemberSubscription) => {
@@ -47,6 +55,16 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.formCallback.complete();
+  }
+
+  onDeleteMember(): void {
+    if (!confirm('Are you sure you want to delete this member and all associated data?')) {
+      return;
+    }
+
+    this.memberAdminService.deleteMember(this.member.id).subscribe(() => {
+      this.router.navigateByUrl(adminUrls.members(this.chapter));
+    });
   }
 
   onFormSubmit(): void {

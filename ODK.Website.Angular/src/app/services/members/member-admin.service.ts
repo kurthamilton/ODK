@@ -33,6 +33,12 @@ export class MemberAdminService extends MemberService {
 
   private activeMember: Member;
 
+  deleteMember(memberId: string): Observable<void> {
+    return this.http.delete(endpoints.member(memberId)).pipe(
+      map(() => undefined)
+    );
+  }
+
   getActiveMember(): Member {
     return this.activeMember;
   }

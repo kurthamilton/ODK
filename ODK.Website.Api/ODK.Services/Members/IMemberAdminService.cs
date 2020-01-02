@@ -11,11 +11,13 @@ namespace ODK.Services.Members
 
         Task<MemberGroup> CreateMemberGroup(Guid currentMemberId, CreateMemberGroup memberGroup);
 
+        Task DeleteMember(Guid currentMemberId, Guid memberId);
+
         Task DeleteMemberGroup(Guid currentMemberId, Guid id);
 
-        Task DisableMember(Guid currentMemberId, Guid id);
+        Task DisableMember(Guid currentMemberId, Guid memberId);
 
-        Task EnableMember(Guid currentMemberId, Guid id);
+        Task EnableMember(Guid currentMemberId, Guid memberId);
 
         Task<Member> GetMember(Guid currentMemberId, Guid memberId);
 
