@@ -68,9 +68,9 @@ namespace ODK.Data.Sql
             return this;
         }
 
-        public IDataParameter ToParameter(object value)
+        public IDataParameter ToParameter(string parameterName, object value)
         {
-            return new SqlParameter(ParameterName, Type) { Value = value ?? DBNull.Value };
+            return new SqlParameter(parameterName ?? ParameterName, Type) { Value = value ?? DBNull.Value };
         }
 
         public string ToSql(SqlContext context)

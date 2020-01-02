@@ -122,13 +122,13 @@ namespace ODK.Data.Sql
         {
             string sql = query.ToSql(this) + appendSql;
 
-            IEnumerable<(SqlColumn, object)> parameterValues = query.GetParameterValues(this);
+            IEnumerable<(SqlColumn, string, object)> parameterValues = query.GetParameterValues(this);
 
             await using SqlConnection connection = new SqlConnection(_connectionString);
             await using DbCommand command = new SqlCommand(sql, connection);
-            foreach ((SqlColumn column, object value) in parameterValues)
+            foreach ((SqlColumn column, string parameterName, object value) in parameterValues)
             {
-                command.Parameters.Add(column.ToParameter(value));
+                command.Parameters.Add(column.ToParameter(parameterName, value));
             }
 
             await connection.OpenAsync();

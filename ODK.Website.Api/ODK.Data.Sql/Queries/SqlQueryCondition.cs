@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace ODK.Data.Sql.Queries
@@ -16,6 +17,8 @@ namespace ODK.Data.Sql.Queries
         private Expression<Func<TEntity, TValue>> Expression { get; }
 
         private string Operator { get; set; }
+
+        private string Parameter { get; set; }
 
         private TQuery Query { get; }
 
@@ -39,6 +42,26 @@ namespace ODK.Data.Sql.Queries
             return SetCondition(">=", value);
         }
 
+        public TQuery In(IEnumerable<TValue> values)
+        {
+            foreach (TValue value in values)
+            {
+                
+            }
+
+            return Query;
+        }
+
+        public TQuery LessThan(TValue value)
+        {
+            return SetCondition("<", value);
+        }
+
+        public TQuery LessThanOrEqualTo(TValue value)
+        {
+            return SetCondition("<=", value);
+        }
+
         public TQuery NotEqualTo(TValue value)
         {
             return SetCondition("!=", value);
@@ -48,13 +71,14 @@ namespace ODK.Data.Sql.Queries
         {
             SqlColumn column = context.GetColumn(Expression);
 
-            return $"{column.ToSql(context)} {Operator} {column.ParameterName}";
+            return $"{column.ToSql(context)} {Operator} {Parameter}";
         }
 
         private TQuery SetCondition(string @operator, TValue value)
         {
             Operator = @operator;
             Value = value;
+            Parameter = Query.AddParameterValue(Expression, value);
             return Query;
         }
     }

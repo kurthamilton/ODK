@@ -24,7 +24,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlContext context = CreateMockContext();
             SqlQuery<TestEntity> query = new SqlInsertEntityQuery<TestEntity>(context, entity);
 
-            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+            (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
             CollectionAssert.AreEqual(new[] { "Int", "String" }, parameterValues.Select(x => x.Column.ColumnName));
             CollectionAssert.AreEqual(new object[] { 5, "value" }, parameterValues.Select(x => x.Value));

@@ -11,6 +11,7 @@ namespace ODK.Data.Sql.Queries
     public abstract class SqlQuery<T>
     {
         private readonly IList<IList<ISqlQueryCondition>> _conditions = new List<IList<ISqlQueryCondition>>();
+        private readonly IDictionary<SqlColumn, IList<(string, object)>> _conditionValues = new Dictionary<SqlColumn, IList<(string, object)>>();
         private bool _delete;
         private int _fetch;
         private T _insertEntity;
@@ -29,6 +30,21 @@ namespace ODK.Data.Sql.Queries
 
         protected SqlContext Context { get; }
 
+        public string AddParameterValue<TEntity, TValue>(Expression<Func<TEntity, TValue>> field, TValue value)
+        {
+            SqlColumn column = Context.GetColumn(field);
+
+            if (!_conditionValues.ContainsKey(column))
+            {
+                _conditionValues.Add(column, new List<(string, object)>());
+            }
+
+            string parameterName = $"{column.ParameterName}{_conditionValues[column].Count}";
+
+            _conditionValues[column].Add((parameterName, value));
+            return parameterName;
+        }
+
         public async Task<int> CountAsync()
         {
             _selectColumns.Clear();
@@ -46,16 +62,13 @@ namespace ODK.Data.Sql.Queries
             return await Context.ReadRecordAsync(this);
         }
 
-        public IEnumerable<(SqlColumn, object)> GetParameterValues(SqlContext context)
+        public IEnumerable<(SqlColumn, string, object)> GetParameterValues(SqlContext context)
         {
-            if (_conditions.Count > 0)
+            foreach (SqlColumn column in _conditionValues.Keys)
             {
-                foreach (IList<ISqlQueryCondition> group in _conditions)
+                foreach ((string parameterName, object parameterValue) in _conditionValues[column])
                 {
-                    foreach (ISqlQueryCondition condition in group)
-                    {
-                        yield return (condition.GetColumn(context), condition.Value);
-                    }
+                    yield return (column, parameterName, parameterValue);
                 }
             }
 
@@ -67,15 +80,15 @@ namespace ODK.Data.Sql.Queries
                 {
                     object value = map.GetEntityValue(_insertEntity, column, context);
 
-                    yield return (column, value);
+                    yield return (column, null, value);
                 }
             }
 
             if (_updateColumns.Count > 0)
             {
-                foreach ((SqlColumn column, object value) updateColumn in _updateColumns)
+                foreach ((SqlColumn column, object value) in _updateColumns)
                 {
-                    yield return updateColumn;
+                    yield return (column, null, value);
                 }
             }
         }
@@ -161,7 +174,6 @@ namespace ODK.Data.Sql.Queries
 
         protected void AddUpdateColumn<TValue>(Expression<Func<T, TValue>> expression, TValue value)
         {
-            // TODO: resolve conflict between set parameter and where parameter when both operate on same column
             SqlColumn column = Context.GetColumn(expression);
             _updateColumns.Add((column, value));
         }

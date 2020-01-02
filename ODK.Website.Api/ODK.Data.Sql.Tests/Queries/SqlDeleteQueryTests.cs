@@ -19,7 +19,7 @@ namespace ODK.Data.Sql.Tests.Queries
             SqlQuery<TestEntity> query = new SqlDeleteQuery<TestEntity>(context)
                 .Where(x => x.Int).EqualTo(5);
 
-            (SqlColumn Column, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+            (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
             CollectionAssert.AreEqual(new[] { "Int" }, parameterValues.Select(x => x.Column.ColumnName));
             CollectionAssert.AreEqual(new object[] { 5 }, parameterValues.Select(x => x.Value));
@@ -39,7 +39,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("DELETE Table FROM Table WHERE (Table.[Int] = @Int)", sql);
+            Assert.AreEqual("DELETE Table FROM Table WHERE (Table.[Int] = @Int0)", sql);
         }
 
         [Test]
@@ -56,7 +56,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("DELETE Table FROM Table WHERE (Table.[Other] = @Other)", sql);
+            Assert.AreEqual("DELETE Table FROM Table WHERE (Table.[Other] = @Other0)", sql);
         }
 
         private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)
