@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace ODK.Data.Sql.Queries
@@ -46,6 +48,20 @@ namespace ODK.Data.Sql.Queries
         public SqlQueryCondition<T, TEntity, TValue, TQuery> Where<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression)
         {
             return Where(expression, true);
+        }
+
+        public TQuery WhereAny<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression, IEnumerable<TValue> values)
+        {
+            IEnumerable<SqlQueryCondition<T, TEntity, TValue, TQuery>> conditions = values.Select(value =>
+            {
+                SqlQueryCondition <T, TEntity, TValue, TQuery> condition = new SqlQueryCondition<T, TEntity, TValue, TQuery>(Query, expression);
+                condition.EqualTo(value);
+                return condition;
+            });
+
+            AddConditions(conditions);
+
+            return Query;
         }
 
         private TQuery Join<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField, SqlJoinType type)

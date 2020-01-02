@@ -118,7 +118,12 @@ namespace ODK.Data.Sql.Queries
 
         protected void AddCondition<TEntity, TValue, TQuery>(SqlQueryCondition<T, TEntity, TValue, TQuery> condition) where TQuery : SqlQuery<T>
         {
-            _conditions.Add(new List<ISqlQueryCondition> { condition });
+            AddConditions(new [] { condition });
+        }
+
+        protected void AddConditions<TEntity, TValue, TQuery>(IEnumerable<SqlQueryCondition<T, TEntity, TValue, TQuery>> conditions) where TQuery : SqlQuery<T>
+        {
+            _conditions.Add(new List<ISqlQueryCondition>(conditions));
         }
 
         protected void AddDelete()

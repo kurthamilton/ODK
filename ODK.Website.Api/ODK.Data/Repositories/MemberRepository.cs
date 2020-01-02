@@ -339,7 +339,8 @@ namespace ODK.Data.Repositories
             return query
                 .Where(x => x.Activated).EqualTo(true)
                 .Where(x => x.Disabled).EqualTo(false)
-                .Where<MemberSubscription, SubscriptionType>(x => x.Type).NotEqualTo(SubscriptionType.Alum);
+                .WhereAny<MemberSubscription, SubscriptionType>(x => x.Type,
+                    new [] { SubscriptionType.Trial, SubscriptionType.Full, SubscriptionType.Partial });
         }
 
         private async Task<bool> MemberHasImage(Guid memberId)

@@ -42,16 +42,6 @@ namespace ODK.Data.Sql.Queries
             return SetCondition(">=", value);
         }
 
-        public TQuery In(IEnumerable<TValue> values)
-        {
-            foreach (TValue value in values)
-            {
-                
-            }
-
-            return Query;
-        }
-
         public TQuery LessThan(TValue value)
         {
             return SetCondition("<", value);
