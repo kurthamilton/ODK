@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ODK.Core.Utils;
 
-namespace ODK.Core.Mail
+namespace ODK.Core.Emails
 {
     public class Email
     {

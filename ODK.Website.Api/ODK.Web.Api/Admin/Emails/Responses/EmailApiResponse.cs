@@ -1,4 +1,4 @@
-﻿using ODK.Core.Mail;
+﻿using ODK.Core.Emails;
 
 namespace ODK.Web.Api.Admin.Emails.Responses
 {

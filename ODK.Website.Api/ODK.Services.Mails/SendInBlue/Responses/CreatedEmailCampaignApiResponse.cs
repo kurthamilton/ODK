@@ -1,4 +1,4 @@
-﻿namespace ODK.Services.Mails.SendInBlue.Responses
+﻿namespace ODK.Services.Emails.SendInBlue.Responses
 {
     public class CreatedEmailCampaignApiResponse
     {

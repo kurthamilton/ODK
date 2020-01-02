@@ -6,8 +6,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
-using ODK.Core.Mail;
-using ODK.Services.Mails;
+using ODK.Core.Emails;
+using ODK.Services.Emails;
 using ODK.Web.Api.Admin.Emails.Requests;
 using ODK.Web.Api.Admin.Emails.Responses;
 

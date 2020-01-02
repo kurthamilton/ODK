@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 
-namespace ODK.Services.Mails
+namespace ODK.Services.Emails
 {
     public interface IMailProviderFactory
     {

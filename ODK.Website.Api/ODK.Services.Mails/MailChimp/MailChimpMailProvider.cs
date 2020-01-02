@@ -12,7 +12,7 @@ using ODK.Core.Members;
 using ODK.Services.Logging;
 using OdkMember = ODK.Core.Members.Member;
 
-namespace ODK.Services.Mails.MailChimp
+namespace ODK.Services.Emails.MailChimp
 {
     public class MailChimpMailProvider : MailProviderBase
     {

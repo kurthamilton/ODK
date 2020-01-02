@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 using ODK.Data.Sql;
 
 namespace ODK.Data.Repositories

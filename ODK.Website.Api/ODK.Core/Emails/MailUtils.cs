@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace ODK.Core.Mail
+namespace ODK.Core.Emails
 {
     public static class MailUtils
     {

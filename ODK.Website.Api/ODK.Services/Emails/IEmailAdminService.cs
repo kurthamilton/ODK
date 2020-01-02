@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 
-namespace ODK.Services.Mails
+namespace ODK.Services.Emails
 {
     public interface IEmailAdminService
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Events;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 
 namespace ODK.Services.Events
 {

@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Mapping

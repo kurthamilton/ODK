@@ -8,11 +8,11 @@ using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Services.Logging;
-using ODK.Services.Mails.SendInBlue.Requests;
-using ODK.Services.Mails.SendInBlue.Responses;
+using ODK.Services.Emails.SendInBlue.Requests;
+using ODK.Services.Emails.SendInBlue.Responses;
 using RestSharp;
 
-namespace ODK.Services.Mails.SendInBlue
+namespace ODK.Services.Emails.SendInBlue
 {
     public class SendInBlueMailProvider : MailProviderBase
     {

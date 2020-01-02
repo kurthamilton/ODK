@@ -94,7 +94,7 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
           heading: new ReadOnlyFormControlViewModel({
             id: `heading-${chapterEmail.type}`,
             label: {
-              text: StringUtils.camelPad(EmailType[chapterEmail.type]),
+              text: StringUtils.camelPad(EmailType[chapterEmail.type] || 'Unknown'),
               type: 'heading'
             }
           }),

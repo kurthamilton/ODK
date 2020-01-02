@@ -1,4 +1,4 @@
-﻿namespace ODK.Services.Mails.SendInBlue
+﻿namespace ODK.Services.Emails.SendInBlue
 {
     public static class SendInBlueEndpoints
     {

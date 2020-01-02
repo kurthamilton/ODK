@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 using ODK.Services.Events;
 using ODK.Web.Api.Admin.Events.Requests;
 using ODK.Web.Api.Admin.Events.Responses;

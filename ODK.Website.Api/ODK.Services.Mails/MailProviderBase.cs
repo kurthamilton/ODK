@@ -8,13 +8,13 @@ using MimeKit;
 using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Services.Events;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 
-namespace ODK.Services.Mails
+namespace ODK.Services.Emails
 {
     public abstract class MailProviderBase : IMailProvider
     {

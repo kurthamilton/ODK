@@ -82,7 +82,7 @@ export class DefaultEmailsComponent implements OnInit, OnDestroy {
           heading: new ReadOnlyFormControlViewModel({
             id: `heading-${email.type}`,
             label: {
-              text: StringUtils.camelPad(EmailType[email.type]),
+              text: StringUtils.camelPad(EmailType[email.type] || 'Unknown'),
               type: 'heading'
             }
           }),

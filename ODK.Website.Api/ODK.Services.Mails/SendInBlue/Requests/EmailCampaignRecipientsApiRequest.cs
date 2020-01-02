@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ODK.Services.Mails.SendInBlue.Requests
+namespace ODK.Services.Emails.SendInBlue.Requests
 {
     public class EmailCampaignRecipientsApiRequest
     {

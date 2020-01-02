@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ODK.Core.Mail
+namespace ODK.Core.Emails
 {
     public interface IEmailRepository
     {

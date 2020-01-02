@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using ODK.Core.Chapters;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
-using ODK.Services.Mails;
+using ODK.Services.Emails;
 
 namespace ODK.Services.Chapters
 {

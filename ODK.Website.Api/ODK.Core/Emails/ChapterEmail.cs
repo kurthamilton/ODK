@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace ODK.Core.Mail
+namespace ODK.Core.Emails
 {
     public class ChapterEmail
     {
@@ -14,7 +12,7 @@ namespace ODK.Core.Mail
             Subject = subject;
             Type = type;
         }
-        
+
         public Guid ChapterId { get; }
 
         public string HtmlContent { get; set; }

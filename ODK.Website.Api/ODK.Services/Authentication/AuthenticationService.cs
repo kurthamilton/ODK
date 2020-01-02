@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
-using ODK.Services.Mails;
+using ODK.Services.Emails;
 
 namespace ODK.Services.Authentication
 {

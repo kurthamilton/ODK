@@ -11,7 +11,7 @@ using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
-using ODK.Services.Mails;
+using ODK.Services.Emails;
 using ODK.Services.Members;
 using ODK.Services.Payments;
 

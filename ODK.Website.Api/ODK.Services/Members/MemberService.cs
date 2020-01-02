@@ -6,14 +6,14 @@ using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Images;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
-using ODK.Services.Mails;
+using ODK.Services.Emails;
 using ODK.Services.Payments;
 
 namespace ODK.Services.Members

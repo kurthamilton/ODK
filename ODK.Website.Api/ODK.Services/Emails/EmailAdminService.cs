@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 using ODK.Services.Exceptions;
 
-namespace ODK.Services.Mails
+namespace ODK.Services.Emails
 {
     public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {

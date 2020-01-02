@@ -4,11 +4,11 @@ using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
-using ODK.Core.Mail;
+using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Venues;
 using ODK.Services.Events;
-using ODK.Services.Mails;
+using ODK.Services.Emails;
 
 namespace ODK.Services.Tests.Events
 {

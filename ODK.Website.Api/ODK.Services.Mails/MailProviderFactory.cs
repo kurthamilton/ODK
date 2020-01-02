@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Services.Logging;
-using ODK.Services.Mails.MailChimp;
-using ODK.Services.Mails.SendInBlue;
+using ODK.Services.Emails.MailChimp;
+using ODK.Services.Emails.SendInBlue;
 
-namespace ODK.Services.Mails
+namespace ODK.Services.Emails
 {
     public class MailProviderFactory : IMailProviderFactory
     {
