@@ -143,8 +143,8 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<Member>()
                 .Top(maxSize)
-                .OrderBy(x => x.CreatedDate, SqlSortDirection.Descending)
                 .Where(x => x.ChapterId).EqualTo(chapterId)
+                .OrderBy(x => x.CreatedDate, SqlSortDirection.Descending)
                 .ToArrayAsync();
         }
 
@@ -328,7 +328,7 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        private SqlConditionalQuery<Member> MembersQuery(bool searchAll)
+        private SqlSelectQuery<Member> MembersQuery(bool searchAll)
         {
             SqlSelectQuery<Member> query = Context.Select<Member>();
             if (searchAll)

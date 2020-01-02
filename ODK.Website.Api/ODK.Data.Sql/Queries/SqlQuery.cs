@@ -99,7 +99,7 @@ namespace ODK.Data.Sql.Queries
             return await Context.ReadRecordAsync(this, reader => reader.GetInt32(0));
         }
 
-        protected void AddCondition<TEntity, TValue>(SqlQueryCondition<T, TEntity, TValue> condition)
+        protected void AddCondition<TEntity, TValue, TQuery>(SqlQueryCondition<T, TEntity, TValue, TQuery> condition) where TQuery : SqlQuery<T>
         {
             _conditions.Add(condition);
         }

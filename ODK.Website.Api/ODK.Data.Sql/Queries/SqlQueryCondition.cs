@@ -3,9 +3,9 @@ using System.Linq.Expressions;
 
 namespace ODK.Data.Sql.Queries
 {
-    public class SqlQueryCondition<T, TEntity, TValue> : ISqlQueryCondition
+    public class SqlQueryCondition<T, TEntity, TValue, TQuery> : ISqlQueryCondition where TQuery : SqlQuery<T>
     {
-        public SqlQueryCondition(SqlConditionalQuery<T> query, Expression<Func<TEntity, TValue>> expression)
+        public SqlQueryCondition(TQuery query, Expression<Func<TEntity, TValue>> expression)
         {
             Expression = expression;
             Query = query;
@@ -17,9 +17,9 @@ namespace ODK.Data.Sql.Queries
 
         private string Operator { get; set; }
 
-        private SqlConditionalQuery<T> Query { get; }
+        private TQuery Query { get; }
 
-        public SqlConditionalQuery<T> EqualTo(TValue value)
+        public TQuery EqualTo(TValue value)
         {
             return SetCondition("=", value);
         }
@@ -29,17 +29,17 @@ namespace ODK.Data.Sql.Queries
             return context.GetColumn(Expression);
         }
 
-        public SqlConditionalQuery<T> GreaterThan(TValue value)
+        public TQuery GreaterThan(TValue value)
         {
             return SetCondition(">", value);
         }
 
-        public SqlConditionalQuery<T> GreaterThanOrEqualTo(TValue value)
+        public TQuery GreaterThanOrEqualTo(TValue value)
         {
             return SetCondition(">=", value);
         }
 
-        public SqlConditionalQuery<T> NotEqualTo(TValue value)
+        public TQuery NotEqualTo(TValue value)
         {
             return SetCondition("!=", value);
         }
@@ -51,7 +51,7 @@ namespace ODK.Data.Sql.Queries
             return $"{column.ToSql(context)} {Operator} {column.ParameterName}";
         }
 
-        private SqlConditionalQuery<T> SetCondition(string @operator, TValue value)
+        private TQuery SetCondition(string @operator, TValue value)
         {
             Operator = @operator;
             Value = value;

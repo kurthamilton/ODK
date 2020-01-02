@@ -3,63 +3,65 @@ using System.Linq.Expressions;
 
 namespace ODK.Data.Sql.Queries
 {
-    public abstract class SqlConditionalQuery<T> : SqlQuery<T>
+    public abstract class SqlConditionalQuery<T, TQuery> : SqlQuery<T> where TQuery : SqlConditionalQuery<T, TQuery>
     {
         protected SqlConditionalQuery(SqlContext context)
             : base(context)
         {
         }
 
-        public SqlQueryCondition<T, T, TValue> ConditionalWhere<TValue>(Expression<Func<T, TValue>> expression, bool condition)
+        protected abstract TQuery Query { get; }
+
+        public SqlQueryCondition<T, T, TValue, TQuery> ConditionalWhere<TValue>(Expression<Func<T, TValue>> expression, bool condition)
         {
             return Where(expression, condition);
         }
 
-        public SqlConditionalQuery<T> Join<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField)
+        public TQuery Join<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField)
         {
             return Join<T, TTo, TValue>(thisField, toField);
         }
 
-        public SqlConditionalQuery<T> Join<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField)
+        public TQuery Join<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField)
         {
             return Join(fromField, toField, SqlJoinType.Inner);
         }
 
-        public SqlConditionalQuery<T> RightJoin<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField)
+        public TQuery RightJoin<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField)
         {
             return RightJoin<T, TTo, TValue>(thisField, toField);
         }
 
-        public SqlConditionalQuery<T> RightJoin<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField)
+        public TQuery RightJoin<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField)
         {
             AddJoin(fromField, toField, SqlJoinType.Right);
-            return this;
+            return Query;
         }
 
-        public SqlQueryCondition<T, T, TValue> Where<TValue>(Expression<Func<T, TValue>> expression)
+        public SqlQueryCondition<T, T, TValue, TQuery> Where<TValue>(Expression<Func<T, TValue>> expression)
         {
             return Where<T, TValue>(expression);
         }
 
-        public SqlQueryCondition<T, TEntity, TValue> Where<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression)
+        public SqlQueryCondition<T, TEntity, TValue, TQuery> Where<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression)
         {
             return Where(expression, true);
         }
 
-        private SqlConditionalQuery<T> Join<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField, SqlJoinType type)
+        private TQuery Join<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField, SqlJoinType type)
         {
             return Join<T, TTo, TValue>(thisField, toField, type);
         }
 
-        private SqlConditionalQuery<T> Join<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField, SqlJoinType type)
+        private TQuery Join<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> fromField, Expression<Func<TTo, TValue>> toField, SqlJoinType type)
         {
             AddJoin(fromField, toField, type);
-            return this;
+            return Query;
         }
 
-        private SqlQueryCondition<T, TEntity, TValue> Where<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression, bool add)
+        private SqlQueryCondition<T, TEntity, TValue, TQuery> Where<TEntity, TValue>(Expression<Func<TEntity, TValue>> expression, bool add)
         {
-            SqlQueryCondition<T, TEntity, TValue> condition = new SqlQueryCondition<T, TEntity, TValue>(this, expression);
+            SqlQueryCondition<T, TEntity, TValue, TQuery> condition = new SqlQueryCondition<T, TEntity, TValue, TQuery>(Query, expression);
             if (add)
             {
                 AddCondition(condition);

@@ -16,9 +16,9 @@ namespace ODK.Data.Repositories
         {
             return await Context
                 .Select<LogMessage>()
+                .ConditionalWhere(x => x.Level, !string.IsNullOrEmpty(level)).EqualTo(level)
                 .OrderBy(x => x.TimeStamp, SqlSortDirection.Descending)
                 .Page(page, pageSize)
-                .ConditionalWhere(x => x.Level, !string.IsNullOrEmpty(level)).EqualTo(level)
                 .ToArrayAsync();
         }
     }
