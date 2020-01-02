@@ -19,13 +19,16 @@ namespace ODK.Services.Emails
     public abstract class MailProviderBase : IMailProvider
     {
         private readonly IChapterRepository _chapterRepository;
+        private readonly IEmailRepository _emailRepository;
         private readonly ILoggingService _loggingService;
         private readonly IMemberRepository _memberRepository;
 
         protected MailProviderBase(ChapterEmailProviderSettings settings, Chapter chapter,
-            IChapterRepository chapterRepository, IMemberRepository memberRepository, ILoggingService loggingService)
+            IChapterRepository chapterRepository, IMemberRepository memberRepository, ILoggingService loggingService,
+            IEmailRepository emailRepository)
         {
             _chapterRepository = chapterRepository;
+            _emailRepository = emailRepository;
             _loggingService = loggingService;
             _memberRepository = memberRepository;
             Chapter = chapter;
@@ -85,6 +88,8 @@ namespace ODK.Services.Emails
 
         public async Task SendEmail(ChapterAdminMember from, IEnumerable<string> to, string subject, string body)
         {
+            body = await GetLayoutBody(from.ChapterId, body);
+
             await _loggingService.LogDebug($"Sending email to {string.Join(", ", to)}");
 
             try
@@ -292,6 +297,18 @@ namespace ODK.Services.Emails
             }
 
             return contactList;
+        }
+
+        private async Task<string> GetLayoutBody(Guid chapterId, string body)
+        {
+            Email layout = await _emailRepository.GetEmail(EmailType.Layout, chapterId);
+
+            Email email = layout.Interpolate(new Dictionary<string, string>
+            {
+                { "body", body }
+            });
+
+            return email.HtmlContent;
         }
     }
 }

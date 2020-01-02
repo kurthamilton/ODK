@@ -3,11 +3,13 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestro
 import { Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
+import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
+import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { ChapterEmail } from 'src/app/core/emails/chapter-email';
-import { EmailType } from 'src/app/core/emails/email-type';
 import { EmailAdminService } from 'src/app/services/emails/email-admin.service';
+import { EmailType } from 'src/app/core/emails/email-type';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { HtmlEditorFormControlViewModel } from '../../forms/inputs/html-editor-form-control/html-editor-form-control.view-model';
 import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/inputs/read-only-form-control/read-only-form-control.view-model';
@@ -23,7 +25,8 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
-    private emailAdminService: EmailAdminService
+    private emailAdminService: EmailAdminService,
+    private authenticationService: AuthenticationService
   ) {     
   }
 
@@ -83,6 +86,13 @@ export class ChapterEmailsComponent implements OnInit, OnDestroy {
     });
   }
   
+  onSendTestEmail(email: ChapterEmail): void {
+    const token: AuthenticationToken = this.authenticationService.getToken();
+    this.emailAdminService.sendEmail(token.memberId, email.subject, email.htmlContent).subscribe(() => {
+
+    });
+  }
+
   private buildForm(): void {
     this.viewModels = [];
     this.formControls = new Map();

@@ -21,6 +21,7 @@ export class HtmlEditorFormControlComponent extends InputBase implements OnInit,
 
   isInvalid = false;
   isValid = false;
+  sourceMode = false;
 
   private submitted = false;
 
@@ -40,6 +41,11 @@ export class HtmlEditorFormControlComponent extends InputBase implements OnInit,
     this.control.markAsTouched();
     super.onValidate();
     this.validate();
+    this.changeDetector.detectChanges();
+  }
+
+  onToggleMode(): void {
+    this.sourceMode = !this.sourceMode;
     this.changeDetector.detectChanges();
   }
 

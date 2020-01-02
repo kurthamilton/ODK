@@ -7,6 +7,7 @@ using MailChimp.Net.Core;
 using MailChimp.Net.Interfaces;
 using MailChimp.Net.Models;
 using ODK.Core.Chapters;
+using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Services.Logging;
@@ -19,8 +20,9 @@ namespace ODK.Services.Emails.MailChimp
         public const string ProviderName = "MailChimp";
 
         public MailChimpMailProvider(ChapterEmailProviderSettings settings, Chapter chapter,
-            IChapterRepository chapterRepository, IMemberRepository memberRepository, ILoggingService loggingService)
-            : base(settings, chapter, chapterRepository, memberRepository, loggingService)
+            IChapterRepository chapterRepository, IMemberRepository memberRepository, ILoggingService loggingService,
+            IEmailRepository emailRepository)
+            : base(settings, chapter, chapterRepository, memberRepository, loggingService, emailRepository)
         {
         }
 

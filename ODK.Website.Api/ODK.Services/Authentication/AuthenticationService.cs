@@ -9,8 +9,8 @@ using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Services.Authorization;
-using ODK.Services.Exceptions;
 using ODK.Services.Emails;
+using ODK.Services.Exceptions;
 
 namespace ODK.Services.Authentication
 {

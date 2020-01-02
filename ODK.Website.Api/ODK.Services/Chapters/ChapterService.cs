@@ -7,8 +7,8 @@ using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
-using ODK.Services.Exceptions;
 using ODK.Services.Emails;
+using ODK.Services.Exceptions;
 
 namespace ODK.Services.Chapters
 {

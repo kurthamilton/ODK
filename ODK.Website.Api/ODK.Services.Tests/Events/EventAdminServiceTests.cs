@@ -7,8 +7,8 @@ using ODK.Core.Events;
 using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Venues;
-using ODK.Services.Events;
 using ODK.Services.Emails;
+using ODK.Services.Events;
 
 namespace ODK.Services.Tests.Events
 {

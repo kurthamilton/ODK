@@ -8,8 +8,8 @@ using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
-using ODK.Services.Exceptions;
 using ODK.Services.Emails;
+using ODK.Services.Exceptions;
 
 namespace ODK.Services.Events
 {
@@ -280,7 +280,14 @@ namespace ODK.Services.Events
 
             Email template = await GetEventEmailTemplate(chapter.Id);
             IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
-            return template.Interpolate(parameters);
+            Email email = template.Interpolate(parameters);
+
+            Email layout = await _emailRepository.GetEmail(EmailType.Layout, chapter.Id);
+
+            return layout.Interpolate(new Dictionary<string, string>
+            {
+                { "body", email.HtmlContent }
+            });
         }
 
         private IDictionary<string, string> GetEventEmailParameters(Chapter chapter, Event @event, Venue venue)
