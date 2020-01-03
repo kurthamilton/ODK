@@ -4,23 +4,23 @@ using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Mapping
 {
-    public class EventResponseMap : SqlMap<EventResponse>
+    public class EventInviteMap : SqlMap<EventInvite>
     {
-        public EventResponseMap()
-            : base("EventResponses")
+        public EventInviteMap()
+            : base("EventInvites")
         {
             Property(x => x.EventId);
             Property(x => x.MemberId);
-            Property(x => x.ResponseTypeId);
+            Property(x => x.SentDate);
         }
 
-        public override EventResponse Read(IDataReader reader)
+        public override EventInvite Read(IDataReader reader)
         {
-            return new EventResponse
+            return new EventInvite
             (
                 eventId: reader.GetGuid(0),
                 memberId: reader.GetGuid(1),
-                responseTypeId: (EventResponseType)reader.GetInt32(2)
+                sentDate: reader.GetDateTime(2)
             );
         }
     }

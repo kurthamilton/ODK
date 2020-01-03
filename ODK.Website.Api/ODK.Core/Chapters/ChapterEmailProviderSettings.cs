@@ -9,13 +9,11 @@ namespace ODK.Core.Chapters
             ChapterId = chapterId;
         }
 
-        public ChapterEmailProviderSettings(Guid chapterId, string emailProvider, string apiKey,
+        public ChapterEmailProviderSettings(Guid chapterId, 
             string smtpServer, int smtpPort, string smtpLogin, string smtpPassword,
             string fromEmailAddress, string fromName)
             : this(chapterId)
         {
-            ApiKey = apiKey;
-            EmailProvider = emailProvider;
             FromEmailAddress = fromEmailAddress;
             FromName = fromName;
             SmtpLogin = smtpLogin;
@@ -24,11 +22,7 @@ namespace ODK.Core.Chapters
             SmtpServer = smtpServer;
         }
 
-        public string ApiKey { get; set; }
-
         public Guid ChapterId { get; }
-
-        public string EmailProvider { get; set; }
 
         public string FromEmailAddress { get; set; }
 

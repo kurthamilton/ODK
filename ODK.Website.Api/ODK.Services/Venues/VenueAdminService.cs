@@ -46,7 +46,7 @@ namespace ODK.Services.Venues
 
             IReadOnlyCollection<Venue> venues = await _venueRepository.GetVenues(chapterId);
             IReadOnlyCollection<Event> events = await _eventRepository.GetEvents(chapterId, 1, int.MaxValue);
-            IReadOnlyCollection<EventMemberResponse> memberResponses = await _eventRepository.GetChapterResponses(chapterId);
+            IReadOnlyCollection<EventResponse> memberResponses = await _eventRepository.GetChapterResponses(chapterId);
 
             IDictionary<Guid, IReadOnlyCollection<Event>> venueEvents = events
                 .GroupBy(x => x.VenueId)

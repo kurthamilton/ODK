@@ -152,7 +152,7 @@ namespace ODK.Services.Authentication
                 { "token", HttpUtility.UrlEncode(token) }
             });
 
-            await _emailService.SendMemberMail(chapter, member, EmailType.PasswordReset, new Dictionary<string, string>
+            await _emailService.SendEmail(chapter, member.EmailAddress, EmailType.PasswordReset, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "url", url }
@@ -255,7 +255,7 @@ namespace ODK.Services.Authentication
                 { "chapter.name", chapter.Name }
             });
 
-            await _emailService.SendMemberMail(chapter, member, EmailType.NewMember, new Dictionary<string, string>
+            await _emailService.SendEmail(chapter, member.EmailAddress, EmailType.NewMember, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "eventsUrl", eventsUrl },
@@ -279,7 +279,7 @@ namespace ODK.Services.Authentication
                 newMemberAdminEmailParameters.Add($"member.properties.{chapterProperty.Name}", HttpUtility.HtmlEncode(value ?? ""));
             }
 
-            await _emailService.SendChapterNewMemberAdminMail(chapter, member, newMemberAdminEmailParameters);
+            await _emailService.SendNewMemberAdminEmail(chapter, member, newMemberAdminEmailParameters);
         }
 
         private async Task UpdatePassword(Guid memberId, string password)

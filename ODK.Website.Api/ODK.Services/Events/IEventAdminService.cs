@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Events;
-using ODK.Core.Emails;
 
 namespace ODK.Services.Events
 {
@@ -14,23 +13,24 @@ namespace ODK.Services.Events
 
         Task<IReadOnlyCollection<EventInvites>> GetChapterInvites(Guid currentMemberId, Guid chapterId, int page, int pageSize);
 
-        Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid currentMemberId, Guid chapterId);
+        Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid currentMemberId, Guid chapterId);
 
         Task<Event> GetEvent(Guid currentMemberId, Guid id);
 
         Task<int> GetEventCount(Guid currentMemberId, Guid chapterId);
 
-        Task<Email> GetEventEmail(Guid currentMemberId, Guid eventId);
-
         Task<EventInvites> GetEventInvites(Guid currentMemberId, Guid eventId);
 
-        Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid currentMemberId, Guid eventId);
+        Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid currentMemberId, Guid eventId);
 
         Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId, int page, int pageSize);
 
         Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId);
 
-        Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid currentMemberId, Guid memberId);
+        Task<IReadOnlyCollection<EventResponse>> GetMemberResponses(Guid currentMemberId, Guid memberId);
+
+        Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes, 
+            string subject, string body);
 
         Task SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false);
 
