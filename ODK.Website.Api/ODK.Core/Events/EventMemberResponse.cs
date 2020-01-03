@@ -4,7 +4,7 @@ namespace ODK.Core.Events
 {
     public class EventMemberResponse
     {
-        public EventMemberResponse(Guid eventId, Guid memberId, EventResponseType responseTypeId)
+        public EventMemberResponse(Guid eventId, Guid memberId, EventResponseType? responseTypeId)
         {
             EventId = eventId;
             MemberId = memberId;
@@ -15,6 +15,6 @@ namespace ODK.Core.Events
 
         public Guid MemberId { get; }
 
-        public EventResponseType ResponseTypeId { get; }
+        public EventResponseType? ResponseTypeId { get; }
     }
 }

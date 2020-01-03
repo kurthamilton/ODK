@@ -36,6 +36,11 @@ namespace ODK.Data.Sql.Queries
             return SetCondition(">=", value);
         }
 
+        public TQuery IsNotNull()
+        {
+            return SetCondition("IS NOT NULL");
+        }
+
         public TQuery LessThan(TValue value)
         {
             return SetCondition("<", value);
@@ -55,14 +60,20 @@ namespace ODK.Data.Sql.Queries
         {
             SqlColumn column = context.GetColumn(Expression);
 
-            return $"{column.ToSql(context)} {Operator} {Parameter}";
+            return $"{column.ToSql(context)} {Operator} {Parameter}".Trim();
         }
 
         private TQuery SetCondition(string @operator, TValue value)
         {
-            Operator = @operator;
+            SetCondition(@operator);
             Value = value;
             Parameter = Query.AddParameterValue(Expression, value);
+            return Query;
+        }
+
+        private TQuery SetCondition(string @operator)
+        {
+            Operator = @operator;
             return Query;
         }
     }

@@ -141,9 +141,18 @@ namespace ODK.Services.Emails
             await SendEmail(from, to, email.Subject, email.HtmlContent);
         }
 
-        public async Task SendEventEmail(string id)
+        public async Task<IReadOnlyCollection<Member>> SendEventEmail(Event @event, EventEmail eventEmail)
         {
-            await SendCampaignEmail(id);
+            await SendCampaignEmail(eventEmail.EmailProviderEmailId);
+
+            ContactList contactList = await GetEventContactList();
+            IReadOnlyCollection<Contact> contacts = await GetContacts(contactList.Id);
+            IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(@event.ChapterId);
+            return members.Where(member =>
+            {
+                Contact contact = contacts.FirstOrDefault(x => x.EmailAddress.Equals(member.EmailAddress, StringComparison.OrdinalIgnoreCase));
+                return contact?.OptIn ?? false;
+            }).ToArray();
         }
 
         public async Task SendTestEventEmail(string id, Member member)

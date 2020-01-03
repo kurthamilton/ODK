@@ -14,11 +14,26 @@ namespace ODK.Data.Repositories
         {
         }
 
-        public async Task AddEventEmail(EventEmail eventEmail)
+        public async Task<Guid> AddEventEmail(EventEmail eventEmail)
         {
-            await Context
+            return await Context
                 .Insert(eventEmail)
-                .ExecuteAsync();
+                .GetIdentityAsync();
+        }
+
+        public async Task AddEventInvites(Guid eventId, IEnumerable<Guid> memberIds)
+        {
+            foreach (Guid memberId in memberIds)
+            {
+                if (await MemberHasRespondedToEvent(eventId, memberId))
+                {
+                    continue;
+                }
+
+                await Context
+                    .Insert(new EventMemberResponse(eventId, memberId, null))
+                    .ExecuteAsync();
+            }
         }
 
         public async Task<Event> CreateEvent(Event @event)
@@ -86,6 +101,7 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<EventMemberResponse>()
                 .Where(x => x.EventId).EqualTo(eventId)
+                .Where(x => x.ResponseTypeId).IsNotNull()
                 .ToArrayAsync();
         }
 

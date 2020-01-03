@@ -33,7 +33,7 @@ namespace ODK.Services.Emails
 
         Task SendEmail(ChapterAdminMember from, IEnumerable<string> to, Email email, IDictionary<string, string> parameters = null);
 
-        Task SendEventEmail(string id);
+        Task<IReadOnlyCollection<Member>> SendEventEmail(Event @event, EventEmail eventEmail);
 
         Task SendTestEventEmail(string id, Member member);
 

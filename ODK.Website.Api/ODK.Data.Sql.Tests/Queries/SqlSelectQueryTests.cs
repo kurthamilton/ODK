@@ -61,6 +61,18 @@ namespace ODK.Data.Sql.Tests.Queries
         }
 
         [Test]
+        public static void GetParameterValues_WithIsNotNull_DoesNotReturnValues()
+        {
+            SqlContext context = CreateMockContext();
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .Where(x => x.String).IsNotNull();
+
+            (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+
+            CollectionAssert.IsEmpty(parameterValues);
+        }
+
+        [Test]
         public static void ToSql_NoConditions_ReturnsSql()
         {
             TestEntityMap map = new TestEntityMap("Table");
@@ -155,6 +167,22 @@ namespace ODK.Data.Sql.Tests.Queries
             string sql = query.ToSql(context);
 
             Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] = @Int0 OR Table.[Int] = @Int1 OR Table.[Int] = @Int2)", sql);
+        }
+
+        [Test]
+        public static void ToSql_WithIsNotNull_ReturnsParameterisedSql()
+        {
+            TestEntityMap map = new TestEntityMap("Table");
+            map.AddProperty(x => x.Int);
+            map.AddProperty(x => x.String);
+
+            SqlContext context = CreateMockContext(map);
+            SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
+                .Where(x => x.String).IsNotNull();
+
+            string sql = query.ToSql(context);
+
+            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[String] IS NOT NULL)", sql);
         }
 
         [Test]

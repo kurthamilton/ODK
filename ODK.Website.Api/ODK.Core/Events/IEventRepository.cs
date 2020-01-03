@@ -6,7 +6,8 @@ namespace ODK.Core.Events
 {
     public interface IEventRepository
     {
-        Task AddEventEmail(EventEmail eventEmail);
+        Task<Guid> AddEventEmail(EventEmail eventEmail);
+        Task AddEventInvites(Guid eventId, IEnumerable<Guid> memberIds);
         Task<Event> CreateEvent(Event @event);
         Task DeleteEvent(Guid id);
         Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid chapterId);

@@ -84,7 +84,8 @@ namespace ODK.Services.Tests.Events
                 new EventAdminServiceSettings { BaseUrl = BaseUrl, EventRsvpUrlFormat = EventRsvpUrlFormat, EventUrlFormat = EventUrlFormat },
                 GetMockMemberRepository(),
                 venueRepository ?? CreateMockVenueRepository(new Venue(Guid.NewGuid(), Guid.NewGuid(), "Name", "Address", "", 0)),
-                Mock.Of<IMailProviderFactory>());
+                Mock.Of<IMailProviderFactory>(),
+                Mock.Of<IEmailService>());
         }
 
         private static Chapter CreateMockChapter(string name = null)

@@ -174,7 +174,7 @@ namespace ODK.Services.Emails.SendInBlue
 
             IRestRequest request = CreateRequest(url, Method.POST);
 
-            await GetResponse<string>(request);
+            await GetResponse<string>(request);            
         }
 
         protected override async Task SendTestCampaignEmail(string id, string to)

@@ -10,6 +10,11 @@ namespace ODK.Data.Sql
             return reader.GetValueOrDefault(ordinal, (r, i) => r.GetDateTime(i), default(DateTime?));
         }
 
+        public static int? GetNullableInt(this IDataReader reader, int ordinal)
+        {
+            return reader.GetValueOrDefault(ordinal, (r, i) => r.GetInt32(i), default(int?));
+        }
+
         public static string GetStringOrDefault(this IDataReader reader, int ordinal)
         {
             return reader.GetValueOrDefault(ordinal, (r, i) => r.GetString(i));

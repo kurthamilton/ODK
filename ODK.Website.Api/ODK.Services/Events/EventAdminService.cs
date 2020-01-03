@@ -189,18 +189,20 @@ namespace ODK.Services.Events
                 await UpdateEventEmail(mailProvider, @event, chapter, eventEmail);
             }
 
-            Member member = await _memberRepository.GetMember(currentMemberId);
-
             if (test)
             {
+                Member member = await _memberRepository.GetMember(currentMemberId);
                 await mailProvider.SendTestEventEmail(eventEmail.EmailProviderEmailId, member);
             }
             else
             {
-                await mailProvider.SendEventEmail(eventEmail.EmailProviderEmailId);
+                IReadOnlyCollection<Member> invited = await mailProvider.SendEventEmail(@event, eventEmail);
 
                 eventEmail.SentDate = DateTime.UtcNow;
                 await _eventRepository.UpdateEventEmail(eventEmail);
+
+                // Add null event responses to indicate that members have been invited
+                await _eventRepository.AddEventInvites(@event.Id, invited.Select(x => x.Id));
             }
         }
 
@@ -269,9 +271,9 @@ namespace ODK.Services.Events
 
             EventEmail eventEmail = new EventEmail(Guid.Empty, @event.Id, mailProvider.Name, emailProviderEmailId, null);
 
-            await _eventRepository.AddEventEmail(eventEmail);
+            Guid id = await _eventRepository.AddEventEmail(eventEmail);
 
-            return eventEmail;
+            return new EventEmail(id, @event.Id, mailProvider.Name, emailProviderEmailId, null);
         }
 
         private async Task<Email> GetEventEmail(IMailProvider mailProvider, Event @event, Chapter chapter)

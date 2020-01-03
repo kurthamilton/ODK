@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using ODK.Core.Events;
+using ODK.Data.Sql;
 using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Mapping
@@ -16,11 +17,12 @@ namespace ODK.Data.Mapping
 
         public override EventMemberResponse Read(IDataReader reader)
         {
+            int? responseTypeId = reader.GetNullableInt(2);
             return new EventMemberResponse
             (
                 eventId: reader.GetGuid(0),
                 memberId: reader.GetGuid(1),
-                responseTypeId: (EventResponseType)reader.GetInt32(2)
+                responseTypeId: responseTypeId != null ? (EventResponseType)responseTypeId.Value : default
             );
         }
     }
