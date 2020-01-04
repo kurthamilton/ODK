@@ -1,16 +1,15 @@
-<ng-container *appLoading="!going">  
-  <div *ngIf="going.length">
-    <h5>Going</h5>
-    <app-member-list size="xs" [chapter]="chapter" [members]="going" [isAdmin]="true"></app-member-list>
-  </div>
+<ng-container *appLoading="!responses">  
+  
+  <ng-container *ngIf="responses.length > 0">
+    <h3>Responses</h3>    
+    <ng-container *ngFor="let memberGroup of memberGroups">
+      <div *ngIf="memberGroup.members.length" class="mb-3">
+        <h5>{{memberGroup.title}}</h5>
+        <app-member-list size="xs" [chapter]="chapter" [members]="memberGroup.members" [isAdmin]="true">          
+        </app-member-list>
+      </div>
+    </ng-container>  
+  </ng-container>
 
-  <div *ngIf="maybe.length">
-    <h5>Maybe</h5>
-    <app-member-list size="xs" [chapter]="chapter" [members]="maybe" [isAdmin]="true"></app-member-list>
-  </div>
-
-  <div *ngIf="declined.length">
-    <h5>Declined</h5>
-    <app-member-list size="xs" [chapter]="chapter" [members]="declined" [isAdmin]="true"></app-member-list>
-  </div>
+  <app-event-invitee-email></app-event-invitee-email>
 </ng-container>

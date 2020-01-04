@@ -41,24 +41,24 @@ namespace ODK.Web.Api.Events
         }
 
         [HttpPut("{id}/Respond")]
-        public async Task<EventMemberResponseApiResponse> Respond(Guid id, EventResponseType type)
+        public async Task<EventResponseApiResponse> Respond(Guid id, EventResponseType type)
         {
-            EventMemberResponse response = await _eventService.UpdateMemberResponse(GetMemberId(), id, type);
-            return _mapper.Map<EventMemberResponseApiResponse>(response);
+            EventResponse response = await _eventService.UpdateMemberResponse(GetMemberId(), id, type);
+            return _mapper.Map<EventResponseApiResponse>(response);
         }
 
         [HttpGet("{id}/Responses")]
-        public async Task<IEnumerable<EventMemberResponseApiResponse>> Responses(Guid id)
+        public async Task<IEnumerable<EventResponseApiResponse>> Responses(Guid id)
         {
-            IReadOnlyCollection<EventMemberResponse> responses = await _eventService.GetEventResponses(GetMemberId(), id);
-            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
+            IReadOnlyCollection<EventResponse> responses = await _eventService.GetEventResponses(GetMemberId(), id);
+            return responses.Select(_mapper.Map<EventResponseApiResponse>);
         }
 
         [HttpGet("Responses")]
-        public async Task<IEnumerable<EventMemberResponseApiResponse>> MemberResponses()
+        public async Task<IEnumerable<EventResponseApiResponse>> MemberResponses()
         {
-            IReadOnlyCollection<EventMemberResponse> responses = await _eventService.GetMemberResponses(GetMemberId());
-            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
+            IReadOnlyCollection<EventResponse> responses = await _eventService.GetMemberResponses(GetMemberId());
+            return responses.Select(_mapper.Map<EventResponseApiResponse>);
         }
     }
 }

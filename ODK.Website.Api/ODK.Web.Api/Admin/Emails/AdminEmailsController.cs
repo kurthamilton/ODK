@@ -86,17 +86,10 @@ namespace ODK.Web.Api.Admin.Emails
             return NoContent();
         }
 
-        [HttpGet("Providers")]
-        public async Task<IEnumerable<string>> GetEmailProviders()
-        {
-            IReadOnlyCollection<string> providers = await _emailAdminService.GetEmailProviders();
-            return providers;
-        }
-
         [HttpPost("Send")]
         public async Task<IActionResult> SendEmail([FromForm] SendEmailApiRequest request)
         {
-            await _emailService.SendMail(GetMemberId(), request.MemberId, request.Subject, request.Body);
+            await _emailService.SendMemberEmail(GetMemberId(), request.MemberId, request.Subject, request.Body);
             return Created();
         }
     }

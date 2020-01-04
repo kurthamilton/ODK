@@ -24,7 +24,7 @@ export class HttpUtils {
     return formData;
   }
 
-  static createFormParams(values: { [name: string]: string }): HttpParams {
+  static createFormParams(values: { [name: string]: string | string[] }): HttpParams {
     for (const key in values) {
       if (values.hasOwnProperty(key)) {
         values[key] = values[key] || ''

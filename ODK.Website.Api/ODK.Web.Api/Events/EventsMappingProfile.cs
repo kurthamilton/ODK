@@ -11,7 +11,7 @@ namespace ODK.Web.Api.Events
             CreateMap<Event, EventApiResponse>()
                 .ForMember(x => x.IsPublic, opt => opt.Condition(x => x.IsPublic));
 
-            CreateMap<EventMemberResponse, EventMemberResponseApiResponse>();
+            CreateMap<EventResponse, EventResponseApiResponse>();
         }
     }
 }

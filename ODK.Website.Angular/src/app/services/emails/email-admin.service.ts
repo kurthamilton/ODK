@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { ChapterEmail } from 'src/app/core/emails/chapter-email';
-import { ChapterEmailProviderSettings } from 'src/app/core/chapters/chapter-email-provider-settings';
+import { ChapterEmailProviderSettings } from 'src/app/core/emails/chapter-email-provider-settings';
 import { Email } from 'src/app/core/emails/email';
 import { EmailType } from 'src/app/core/emails/email-type';
 import { environment } from 'src/environments/environment';
@@ -19,7 +19,6 @@ const endpoints = {
   chapterProviderSettings: (chapterId: string) => `${baseUrl}/chapters/${chapterId}/provider/settings`,
   email: (type: EmailType, chapterId: string) => `${baseUrl}/${EmailType[type]}?chapterId=${chapterId}`,
   emails: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
-  providers: `${baseUrl}/providers`,
   send: `${baseUrl}/send`
 };
 
@@ -48,12 +47,6 @@ export class EmailAdminService {
     );
   }
 
-  getEmailProviders(): Observable<string[]> {
-    return this.http.get(endpoints.providers).pipe(
-      map((response: any) => response)
-    );
-  }
-
   getEmails(currentChapterId: string): Observable<Email[]> {
     return this.http.get(endpoints.emails(currentChapterId)).pipe(
       map((response: any) => response.map(x => this.mapEmail(x)))
@@ -63,7 +56,7 @@ export class EmailAdminService {
   sendEmail(memberId: string, subject: string, body: string): Observable<void> {
     const params: HttpParams = HttpUtils.createFormParams({
       body: body,
-      memberId: memberId,      
+      memberId: memberId,
       subject: subject
     });
 
@@ -74,8 +67,6 @@ export class EmailAdminService {
 
   updateChapterAdminEmailProviderSettings(chapterId: string, emailProviderSettings: ChapterEmailProviderSettings): Observable<void> {
     const params: HttpParams = HttpUtils.createFormParams({
-      apiKey: emailProviderSettings.apiKey,
-      emailProvider: emailProviderSettings.emailProvider,
       fromEmailAddress: emailProviderSettings.fromEmailAddress,
       fromName: emailProviderSettings.fromName,
       smtpLogin: emailProviderSettings.smtpLogin,
@@ -88,7 +79,7 @@ export class EmailAdminService {
       map(() => undefined)
     );
   }
-  
+
   updateChapterEmail(chapterId: string, chapterEmail: ChapterEmail): Observable<void> {
     const params: HttpParams = HttpUtils.createFormParams({
       htmlContent: chapterEmail.htmlContent,
@@ -122,8 +113,6 @@ export class EmailAdminService {
 
   private mapChapterEmailProviderSettings(response: any): ChapterEmailProviderSettings {
     return {
-      apiKey: response.apiKey,
-      emailProvider: response.emailProvider,
       fromEmailAddress: response.fromEmailAddress,
       fromName: response.fromName,
       smtpLogin: response.smtpLogin,

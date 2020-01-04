@@ -6,7 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
-using ODK.Core.Emails;
+using ODK.Services.Emails;
 using ODK.Services.Events;
 using ODK.Web.Api.Admin.Events.Requests;
 using ODK.Web.Api.Admin.Events.Responses;
@@ -19,11 +19,13 @@ namespace ODK.Web.Api.Admin.Events
     [Route("Admin/Events")]
     public class AdminEventsController : OdkControllerBase
     {
+        private readonly IEmailService _emailService;
         private readonly IEventAdminService _eventAdminService;
         private readonly IMapper _mapper;
 
-        public AdminEventsController(IEventAdminService eventAdminService, IMapper mapper)
+        public AdminEventsController(IEventAdminService eventAdminService, IMapper mapper, IEmailService emailService)
         {
+            _emailService = emailService;
             _eventAdminService = eventAdminService;
             _mapper = mapper;
         }
@@ -66,11 +68,12 @@ namespace ODK.Web.Api.Admin.Events
             return Ok();
         }
 
-        [HttpGet("{id}/Email")]
-        public async Task<EventEmailApiResponse> EventEmail(Guid id)
+        [HttpPost("{id}/Invitees/SendEmail")]
+        public async Task<IActionResult> SendEventInviteeEmail(Guid id, [FromForm] SendEventInviteeEmailApiRequest request)
         {
-            Email email = await _eventAdminService.GetEventEmail(GetMemberId(), id);
-            return _mapper.Map<EventEmailApiResponse>(email);
+            await _eventAdminService.SendEventInviteeEmail(GetMemberId(), id, request.Statuses?.ToArray() ?? new EventResponseType[0], 
+                request.Subject, request.Body);
+            return Created();
         }
 
         [HttpGet("{id}/Invites")]
@@ -95,10 +98,10 @@ namespace ODK.Web.Api.Admin.Events
         }
 
         [HttpGet("{id}/Responses")]
-        public async Task<IEnumerable<EventMemberResponseApiResponse>> EventResponses(Guid id)
+        public async Task<IEnumerable<EventResponseApiResponse>> EventResponses(Guid id)
         {
-            IReadOnlyCollection<EventMemberResponse> responses = await _eventAdminService.GetEventResponses(GetMemberId(), id);
-            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
+            IReadOnlyCollection<EventResponse> responses = await _eventAdminService.GetEventResponses(GetMemberId(), id);
+            return responses.Select(_mapper.Map<EventResponseApiResponse>);
         }
 
         [HttpGet("Count")]
@@ -115,17 +118,17 @@ namespace ODK.Web.Api.Admin.Events
         }
 
         [HttpGet("Responses/Chapters/{chapterId}")]
-        public async Task<IEnumerable<EventMemberResponseApiResponse>> ChapterResponses(Guid chapterId)
+        public async Task<IEnumerable<EventResponseApiResponse>> ChapterResponses(Guid chapterId)
         {
-            IReadOnlyCollection<EventMemberResponse> responses = await _eventAdminService.GetChapterResponses(GetMemberId(), chapterId);
-            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
+            IReadOnlyCollection<EventResponse> responses = await _eventAdminService.GetChapterResponses(GetMemberId(), chapterId);
+            return responses.Select(_mapper.Map<EventResponseApiResponse>);
         }
 
         [HttpGet("Responses/Members/{memberId}")]
-        public async Task<IEnumerable<EventMemberResponseApiResponse>> MemberResponses(Guid memberId)
+        public async Task<IEnumerable<EventResponseApiResponse>> MemberResponses(Guid memberId)
         {
-            IReadOnlyCollection<EventMemberResponse> responses = await _eventAdminService.GetMemberResponses(GetMemberId(), memberId);
-            return responses.Select(_mapper.Map<EventMemberResponseApiResponse>);
+            IReadOnlyCollection<EventResponse> responses = await _eventAdminService.GetMemberResponses(GetMemberId(), memberId);
+            return responses.Select(_mapper.Map<EventResponseApiResponse>);
         }
 
         [HttpGet("Venues/{id}")]

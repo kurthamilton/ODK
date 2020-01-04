@@ -12,15 +12,12 @@ namespace ODK.Services.Emails
     {
         private readonly IChapterRepository _chapterRepository;
         private readonly IEmailRepository _emailRepository;
-        private readonly IMailProviderFactory _mailProviderFactory;
 
-        public EmailAdminService(IChapterRepository chapterRepository, IEmailRepository emailRepository,
-            IMailProviderFactory mailProviderFactory)
+        public EmailAdminService(IChapterRepository chapterRepository, IEmailRepository emailRepository)
             : base(chapterRepository)
         {
             _chapterRepository = chapterRepository;
             _emailRepository = emailRepository;
-            _mailProviderFactory = mailProviderFactory;
         }
 
         public async Task DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type)
@@ -63,11 +60,6 @@ namespace ODK.Services.Emails
                 .Union(defaultEmails)
                 .OrderBy(x => x.Type)
                 .ToArray();
-        }
-
-        public Task<IReadOnlyCollection<string>> GetEmailProviders()
-        {
-            return _mailProviderFactory.GetProviders();
         }
 
         public async Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId, Guid currentChapterId)
@@ -117,8 +109,6 @@ namespace ODK.Services.Emails
                 current = new ChapterEmailProviderSettings(chapterId);
             }
 
-            current.ApiKey = emailProviderSettings.ApiKey;
-            current.EmailProvider = emailProviderSettings.EmailProvider;
             current.FromEmailAddress = emailProviderSettings.FromEmailAddress;
             current.FromName = emailProviderSettings.FromName;
             current.SmtpLogin = emailProviderSettings.SmtpLogin;
@@ -126,7 +116,7 @@ namespace ODK.Services.Emails
             current.SmtpPort = emailProviderSettings.SmtpPort;
             current.SmtpServer = emailProviderSettings.SmtpServer;
 
-            await ValidateChapterEmailProviderSettings(current);
+            ValidateChapterEmailProviderSettings(current);
 
             if (update)
             {
@@ -152,7 +142,7 @@ namespace ODK.Services.Emails
             await _emailRepository.UpdateEmail(existing);
         }
 
-        private void ValidateChapterEmail(ChapterEmail chapterEmail)
+        private static void ValidateChapterEmail(ChapterEmail chapterEmail)
         {
             if (!Enum.IsDefined(typeof(EmailType), chapterEmail.Type) || chapterEmail.Type == EmailType.None)
             {
@@ -166,23 +156,19 @@ namespace ODK.Services.Emails
             }
         }
 
-        private async Task ValidateChapterEmailProviderSettings(ChapterEmailProviderSettings emailProviderSettings)
+        private static void ValidateChapterEmailProviderSettings(ChapterEmailProviderSettings emailProviderSettings)
         {
-            IReadOnlyCollection<string> emailProviders = await _mailProviderFactory.GetProviders();
-
-            if (string.IsNullOrWhiteSpace(emailProviderSettings.ApiKey) ||
-                string.IsNullOrWhiteSpace(emailProviderSettings.FromEmailAddress) ||
+            if (string.IsNullOrWhiteSpace(emailProviderSettings.FromEmailAddress) ||
                 string.IsNullOrWhiteSpace(emailProviderSettings.FromName) ||
                 string.IsNullOrWhiteSpace(emailProviderSettings.SmtpLogin) ||
                 string.IsNullOrWhiteSpace(emailProviderSettings.SmtpPassword) ||
-                emailProviderSettings.SmtpPort == 0 ||
-                !emailProviders.Contains(emailProviderSettings.EmailProvider))
+                emailProviderSettings.SmtpPort == 0)
             {
                 throw new OdkServiceException("Some required fields are missing");
             }
         }
 
-        private void ValidateEmail(Email email)
+        private static void ValidateEmail(Email email)
         {
             if (!Enum.IsDefined(typeof(EmailType), email.Type) || email.Type == EmailType.None)
             {

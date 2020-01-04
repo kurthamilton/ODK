@@ -18,7 +18,7 @@ namespace ODK.Services.Events
             _eventRepository = eventRepository;
         }
 
-        public async Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid currentMemberId, Guid eventId)
+        public async Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid currentMemberId, Guid eventId)
         {
             await AssertMemberEventPermission(currentMemberId, eventId);
             return await _eventRepository.GetEventResponses(eventId);
@@ -31,7 +31,7 @@ namespace ODK.Services.Events
             return await _eventRepository.GetEvents(chapterId, DateTime.UtcNow.Date);
         }
 
-        public async Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId)
+        public async Task<IReadOnlyCollection<EventResponse>> GetMemberResponses(Guid memberId)
         {
             return await _eventRepository.GetMemberResponses(memberId);
         }
@@ -41,7 +41,7 @@ namespace ODK.Services.Events
             return await _eventRepository.GetPublicEvents(chapterId, DateTime.UtcNow.Date);
         }
 
-        public async Task<EventMemberResponse> UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType)
+        public async Task<EventResponse> UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType)
         {
             responseType = NormalizeResponseType(responseType);
 
@@ -51,15 +51,15 @@ namespace ODK.Services.Events
                 throw new OdkServiceException("Past events cannot be responded to");
             }
 
-            EventMemberResponse response = new EventMemberResponse(eventId, memberId, responseType);
+            EventResponse response = new EventResponse(eventId, memberId, responseType);
             await _eventRepository.UpdateEventResponse(response);
 
-            return new EventMemberResponse(eventId, memberId, responseType);
+            return new EventResponse(eventId, memberId, responseType);
         }
 
         private static EventResponseType NormalizeResponseType(EventResponseType responseType)
         {
-            if (!Enum.IsDefined(typeof(EventResponseType), responseType) || responseType == EventResponseType.None)
+            if (!Enum.IsDefined(typeof(EventResponseType), responseType) || responseType <= EventResponseType.None)
             {
                 responseType = EventResponseType.No;
             }

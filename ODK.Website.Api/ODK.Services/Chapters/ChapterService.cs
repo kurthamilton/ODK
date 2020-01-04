@@ -115,7 +115,7 @@ namespace ODK.Services.Chapters
 
             VersionedServiceResult<Chapter> chapter = await GetChapter(null, chapterId);
 
-            ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Value.Id,DateTime.UtcNow, fromAddress, message, false);
+            ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Value.Id, DateTime.UtcNow, fromAddress, message, false);
             await _chapterRepository.AddContactRequest(contactRequest);
 
             IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -124,7 +124,7 @@ namespace ODK.Services.Chapters
                 {"message", HttpUtility.HtmlEncode(message)}
             };
 
-            await _emailService.SendChapterContactMail(chapter.Value, parameters);
+            await _emailService.SendContactEmail(chapter.Value, fromAddress, message, parameters);
         }
 
         private async Task<ChapterLinks> GetChapterLinks(Guid chapterId)

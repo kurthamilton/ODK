@@ -32,6 +32,7 @@ import { EmailLayoutComponent } from './components/emails/email-layout/email-lay
 import { EmailMenuComponent } from './components/emails/email-menu/email-menu.component';
 import { EventFormComponent } from './components/events/event-form/event-form.component';
 import { EventHeaderComponent } from './components/events/event-header/event-header.component';
+import { EventInviteeEmailComponent } from './components/events/event-invitee-email/event-invitee-email.component';
 import { EventInvitesComponent } from './components/events/event-invites/event-invites.component';
 import { EventLayoutComponent } from './components/events/event-layout/event-layout.component';
 import { EventMenuComponent } from './components/events/event-menu/event-menu.component';
@@ -39,6 +40,7 @@ import { EventResponsesComponent } from './components/events/event-responses/eve
 import { EventsComponent } from './components/events/events/events.component';
 import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
 import { HtmlEditorFormControlComponent } from './components/forms/inputs/html-editor-form-control/html-editor-form-control.component';
+import { LogComponent } from './components/admin/log/log.component';
 import { MemberEventsComponent } from './components/members/member-events/member-events.component';
 import { MemberFilterComponent } from './components/members/member-filter/member-filter.component';
 import { MemberLayoutComponent } from './components/members/member-layout/member-layout.component';
@@ -48,33 +50,43 @@ import { MemberSubscriptionComponent } from './components/members/member-subscri
 import { NavTabsComponent } from './components/elements/nav-tabs/nav-tabs.component';
 import { PaginationComponent } from './components/elements/pagination/pagination.component';
 import { SendEmailComponent } from './components/members/send-email/send-email.component';
+import { SortableHeaderDirective } from './directives/sortable-header/sortable-header.directive';
+import { SortableTableDirective } from './directives/sortable-table/sortable-table.directive';
+import { SortButtonComponent } from './components/elements/sort-button/sort-button.component';
 import { VenueEventsComponent } from './components/venues/venue-events/venue-events.component';
 import { VenueFormComponent } from './components/venues/venue-form/venue-form.component';
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
-import { LogComponent } from './components/admin/log/log.component';
-import { SortButtonComponent } from './components/elements/sort-button/sort-button.component';
-import { SortableHeaderDirective } from './directives/sortable-header/sortable-header.directive';
-import { SortableTableDirective } from './directives/sortable-table/sortable-table.directive';
 
 @NgModule({
   declarations: [
     AdminLayoutComponent,
     AdminMenuComponent,
     ChapterAdminLayoutComponent,
+    ChapterAdminMemberAddComponent,
+    ChapterAdminMemberComponent,
+    ChapterAdminMembersComponent,
+    ChapterEmailProviderComponent,
+    ChapterEmailsComponent,
     ChapterMenuComponent,
     ChapterPaymentSettingsComponent,
+    ChapterPropertiesComponent,
+    ChapterPropertyComponent,
     ChapterQuestionsComponent,
     ChapterSettingsComponent,
     CreateEventComponent,
     CreateVenueComponent,
+    DefaultEmailsComponent,
     DropDownMultiComponent,
     EditEventComponent,
     EditMemberImageComponent,
     EditVenueComponent,
+    EmailLayoutComponent,
+    EmailMenuComponent,
     EventFormComponent,
     EventHeaderComponent,
+    EventInviteeEmailComponent,
     EventInvitesComponent,
     EventLayoutComponent,
     EventMenuComponent,
@@ -82,6 +94,8 @@ import { SortableTableDirective } from './directives/sortable-table/sortable-tab
     EventsComponent,
     GoogleMapsTextInputFormControlComponent,
     HtmlEditorFormControlComponent,
+    LogComponent,
+    MemberEventsComponent,
     MemberFilterComponent,
     MemberLayoutComponent,
     MemberMenuComponent,
@@ -89,27 +103,15 @@ import { SortableTableDirective } from './directives/sortable-table/sortable-tab
     MemberSubscriptionComponent,
     NavTabsComponent,
     PaginationComponent,
+    SendEmailComponent,
+    SortableHeaderDirective,
+    SortableTableDirective,
+    SortButtonComponent,
     VenueEventsComponent,
     VenueFormComponent,
     VenueLayoutComponent,
     VenueMenuComponent,
     VenuesComponent,
-    ChapterEmailProviderComponent,
-    ChapterAdminMembersComponent,
-    ChapterAdminMemberComponent,
-    ChapterAdminMemberAddComponent,
-    ChapterEmailsComponent,
-    ChapterPropertiesComponent,
-    ChapterPropertyComponent,
-    EmailLayoutComponent,
-    EmailMenuComponent,
-    DefaultEmailsComponent,
-    MemberEventsComponent,
-    SendEmailComponent,
-    LogComponent,
-    SortButtonComponent,
-    SortableHeaderDirective,
-    SortableTableDirective,
   ],
   imports: [
     AdminRoutingModule,

@@ -79,8 +79,7 @@ namespace ODK.Services.Tests.Members
                 new MemberServiceSettings(),
                 CreateMockImageService(),
                 Mock.Of<IPaymentService>(),
-                cacheService ?? CreateMockCacheService(new Member(Guid.NewGuid(), Guid.NewGuid(), "email", true, "first", "last", DateTime.Today, true, false, 0)),
-                Mock.Of<IMailProviderFactory>());
+                cacheService ?? CreateMockCacheService(new Member(Guid.NewGuid(), Guid.NewGuid(), "email", true, "first", "last", DateTime.Today, true, false, 0)));
         }
 
         private static IAuthorizationService CreateMockAuthorizationService()

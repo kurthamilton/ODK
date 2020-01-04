@@ -2,7 +2,7 @@
 
 namespace ODK.Web.Api.Events.Responses
 {
-    public class EventMemberResponseApiResponse
+    public class EventResponseApiResponse
     {
         public Guid EventId { get; set; }
 

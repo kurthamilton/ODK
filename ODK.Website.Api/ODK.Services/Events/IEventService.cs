@@ -7,14 +7,14 @@ namespace ODK.Services.Events
 {
     public interface IEventService
     {
-        Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid currentMemberId, Guid eventId);
+        Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid currentMemberId, Guid eventId);
 
         Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId);
 
-        Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId);
+        Task<IReadOnlyCollection<EventResponse>> GetMemberResponses(Guid memberId);
 
         Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId);
 
-        Task<EventMemberResponse> UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType);
+        Task<EventResponse> UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType);
     }
 }

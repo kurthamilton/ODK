@@ -13,41 +13,70 @@ namespace ODK.Services.Emails
     {
         private readonly IChapterRepository _chapterRepository;
         private readonly IEmailRepository _emailRepository;
+        private readonly IMailProvider _mailProvider;
         private readonly IMemberRepository _memberRepository;
-        private readonly IMailProviderFactory _mailProviderFactory;
 
         public EmailService(IChapterRepository chapterRepository, IEmailRepository emailRepository,
-            IMailProviderFactory mailProviderFactory, IMemberRepository memberRepository)
+            IMailProvider mailProvider, IMemberRepository memberRepository)
         {
             _chapterRepository = chapterRepository;
             _emailRepository = emailRepository;
+            _mailProvider = mailProvider;
             _memberRepository = memberRepository;
-            _mailProviderFactory = mailProviderFactory;
         }
 
-        public async Task SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters)
+        public async Task SendBulkEmail(Guid currentMemberId, Chapter chapter, IEnumerable<Member> to, EmailType type, IDictionary<string, string> parameters)
         {
-            Email email = await _emailRepository.GetEmail(EmailType.ContactRequest, chapter.Id);
+            ChapterAdminMember from = await GetSender(chapter.Id, currentMemberId);
+
+            Email email = await GetEmail(type, chapter.Id, parameters);
+            await _mailProvider.SendBulkEmail(chapter, to.Select(x => x.EmailAddress), email.Subject, email.HtmlContent, from);
+        }
+
+        public async Task SendBulkEmail(Guid currentMemberId, Chapter chapter, IEnumerable<Member> to, string subject, string body)
+        {
+            ChapterAdminMember from = await GetSender(chapter.Id, currentMemberId);
+            await _mailProvider.SendBulkEmail(chapter, to.Select(x => x.EmailAddress), subject, body, from);
+        }
+
+        public async Task SendContactEmail(Chapter chapter, string from, string message, IDictionary<string, string> parameters)
+        {
+            Email email = await GetEmail(EmailType.ContactRequest, chapter.Id, parameters);
 
             IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(chapter.Id);
-            List<string> to = chapterAdminMembers
+            IReadOnlyCollection<string> to = chapterAdminMembers
                 .Where(x => x.ReceiveContactEmails && !string.IsNullOrWhiteSpace(x.AdminEmailAddress))
                 .Select(x => x.AdminEmailAddress)
-                .ToList();
+                .ToArray();
 
-            IMailProvider mailProvider = await _mailProviderFactory.Create(chapter);
-
-            if (to.Count == 0)
-            {
-                to.Add(mailProvider.Settings.FromEmailAddress);
-            }
-
-            await mailProvider.SendEmail(null, to, email, parameters);
+            await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
         }
 
-        public async Task SendChapterNewMemberAdminMail(Chapter chapter, Member member, IDictionary<string, string> parameters)
+        public async Task SendEmail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters)
         {
-            Email email = await _emailRepository.GetEmail(EmailType.NewMemberAdmin, chapter.Id);
+            Email email = await GetEmail(type, chapter.Id, parameters);
+
+            await _mailProvider.SendEmail(chapter, to, email.Subject, email.HtmlContent);
+        }
+
+        public async Task SendMemberEmail(Guid currentMemberId, Guid memberId, string subject, string body)
+        {
+            Member to = await _memberRepository.GetMember(memberId);
+            if (to == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            ChapterAdminMember from = await GetSender(to.ChapterId, currentMemberId);
+
+            Chapter chapter = await _chapterRepository.GetChapter(from.ChapterId);
+
+            await _mailProvider.SendEmail(chapter, to.EmailAddress, subject, body, from);
+        }
+
+        public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, IDictionary<string, string> parameters)
+        {
+            Email email = await GetEmail(EmailType.NewMemberAdmin, chapter.Id, parameters);
 
             IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(chapter.Id);
             List<string> to = chapterAdminMembers
@@ -55,53 +84,24 @@ namespace ODK.Services.Emails
                 .Select(x => x.AdminEmailAddress)
                 .ToList();
 
-            IMailProvider mailProvider = await _mailProviderFactory.Create(chapter);
-
-            if (to.Count == 0)
-            {
-                to.Add(mailProvider.Settings.FromEmailAddress);
-            }
-
-            await mailProvider.SendEmail(null, to, email, parameters);
+            await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
         }
 
-        public async Task SendMail(Guid fromAdminMemberId, Guid toMemberId, string subject, string body)
+        private async Task<Email> GetEmail(EmailType type, Guid chapterId, IDictionary<string, string> parameters)
         {
-            Member to = await _memberRepository.GetMember(toMemberId);
-            if (to == null)
-            {
-                throw new OdkNotFoundException();
-            }
+            Email email = await _emailRepository.GetEmail(type, chapterId);
+            return email.Interpolate(parameters);
+        }
 
-            Chapter chapter = await _chapterRepository.GetChapter(to.ChapterId);
-            if (chapter == null)
-            {
-                throw new OdkNotFoundException();
-            }
-
-            ChapterAdminMember from = await _chapterRepository.GetChapterAdminMember(chapter.Id, fromAdminMemberId);
+        private async Task<ChapterAdminMember> GetSender(Guid chapterId, Guid memberId)
+        {
+            ChapterAdminMember from = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
             if (from == null)
             {
                 throw new OdkNotAuthorizedException();
             }
 
-            IMailProvider mailProvider = await _mailProviderFactory.Create(chapter);
-
-            await mailProvider.SendEmail(from, to.EmailAddress, subject, body);
-        }
-
-        public async Task SendMail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters)
-        {
-            Email email = await _emailRepository.GetEmail(type, chapter.Id);
-
-            IMailProvider mailProvider = await _mailProviderFactory.Create(chapter);
-
-            await mailProvider.SendEmail(null, to, email, parameters);
-        }
-
-        public async Task SendMemberMail(Chapter chapter, Member member, EmailType type, IDictionary<string, string> parameters)
-        {
-            await SendMail(chapter, member.EmailAddress, type, parameters);
+            return from;
         }
     }
 }

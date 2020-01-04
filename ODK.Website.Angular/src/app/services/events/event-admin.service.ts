@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 import { Event } from 'src/app/core/events/event';
 import { EventInvites } from 'src/app/core/events/event-invites';
 import { EventMemberResponse } from 'src/app/core/events/event-member-response';
+import { EventResponseType } from 'src/app/core/events/event-response-type';
 import { EventService } from './event.service';
 import { HttpUtils } from 'src/app/services/http/http-utils';
 import { ServiceResult } from 'src/app/services/service-result';
@@ -29,6 +30,7 @@ const endpoints = {
     `${baseUrl}?chapterId=${chapterId}&page=${page}&pageCount=${pageCount}`,
   eventsByVenue: (venueId: string) => `${baseUrl}/venues/${venueId}`,
   memberResponses: (memberId: string) => `${baseUrl}/responses/members/${memberId}`,
+  sendInviteeEmail: (eventId: string) => `${baseUrl}/${eventId}/invitees/sendemail`,
   sendInvites: (eventId: string, test?: boolean) => `${baseUrl}/${eventId}/invites/send${test ? '/test' : ''}`
 };
 
@@ -121,9 +123,21 @@ export class EventAdminService extends EventService {
     );
   }
 
-  sendInvites(eventId: string, test?: boolean): Observable<{}> {
+  sendInviteeEmail(eventId: string, statuses: EventResponseType[], subject: string, body: string): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      body: body,
+      statuses: statuses.map(x => x.toString()),
+      subject: subject
+    });
+
+    return this.http.post(endpoints.sendInviteeEmail(eventId), params).pipe(
+      map(() => undefined)
+    );
+  }
+
+  sendInvites(eventId: string, test?: boolean): Observable<void> {
     return this.http.post(endpoints.sendInvites(eventId, test), null).pipe(
-      map(() => ({}))
+      map(() => undefined)
     );
   }
 

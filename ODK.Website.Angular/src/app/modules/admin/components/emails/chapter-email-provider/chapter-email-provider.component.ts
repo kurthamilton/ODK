@@ -5,9 +5,7 @@ import { tap } from 'rxjs/operators';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { ChapterEmailProviderSettings } from 'src/app/core/chapters/chapter-email-provider-settings';
-import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
-import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
+import { ChapterEmailProviderSettings } from 'src/app/core/emails/chapter-email-provider-settings';
 import { EmailAdminService } from 'src/app/services/emails/email-admin.service';
 import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
@@ -23,18 +21,15 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private emailAdminService: EmailAdminService
-  ) {     
+  ) {
   }
 
   form: FormViewModel;
 
   private chapter: Chapter;
-  private emailProviders: string[];
   private emailProviderSettings: ChapterEmailProviderSettings;
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
-    apiKey: TextInputFormControlViewModel;
-    emailProvider: DropDownFormControlViewModel;
     fromEmailAddress: TextInputFormControlViewModel;
     fromName: TextInputFormControlViewModel;
     smtpLogin: TextInputFormControlViewModel;
@@ -49,14 +44,11 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
     forkJoin([
       this.emailAdminService.getChapterAdminEmailProviderSettings(this.chapter.id).pipe(
         tap((emailProviderSettings: ChapterEmailProviderSettings) => this.emailProviderSettings = emailProviderSettings)
-      ),
-      this.emailAdminService.getEmailProviders().pipe(
-        tap((providers: string[]) => this.emailProviders = providers)
       )
     ]).subscribe(() => {
       this.buildForm();
       this.changeDetector.detectChanges();
-    });    
+    });
   }
 
   ngOnDestroy(): void {
@@ -64,8 +56,6 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
-    this.emailProviderSettings.apiKey = this.formControls.apiKey.value;
-    this.emailProviderSettings.emailProvider = this.formControls.emailProvider.value;
     this.emailProviderSettings.fromEmailAddress = this.formControls.fromEmailAddress.value;
     this.emailProviderSettings.fromName = this.formControls.fromName.value;
     this.emailProviderSettings.smtpLogin = this.formControls.smtpLogin.value;
@@ -80,30 +70,6 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
 
   private buildForm(): void {
     this.formControls = {
-      apiKey: new TextInputFormControlViewModel({
-        id: 'api-key',
-        label: {
-          text: 'API Key'
-        },
-        validation: {
-          required: true
-        },
-        value: this.emailProviderSettings.apiKey
-      }),
-      emailProvider: new DropDownFormControlViewModel({
-        id: 'email-provider',
-        label: {
-          text: 'Provider'
-        },
-        options: this.emailProviders.map((provider: string): DropDownFormControlOption => ({
-          text: provider,
-          value: provider
-        })),
-        validation: {
-          required: true
-        },
-        value: this.emailProviderSettings.emailProvider
-      }),
       fromEmailAddress: new TextInputFormControlViewModel({
         id: 'from-email-address',
         label: {
@@ -174,10 +140,8 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
       ],
       callback: this.formCallback,
       controls: [
-        this.formControls.emailProvider,
         this.formControls.fromEmailAddress,
         this.formControls.fromName,
-        this.formControls.apiKey,
         this.formControls.smtpServer,
         this.formControls.smtpPort,
         this.formControls.smtpLogin,

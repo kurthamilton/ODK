@@ -9,15 +9,16 @@ namespace ODK.Services.Emails
 {
     public interface IEmailService
     {
-        Task SendChapterContactMail(Chapter chapter, IDictionary<string, string> parameters);
+        Task SendBulkEmail(Guid currentMemberId, Chapter chapter, IEnumerable<Member> to, EmailType type, IDictionary<string, string> parameters);
 
-        Task SendChapterNewMemberAdminMail(Chapter chapter, Member member, IDictionary<string, string> parameters);
+        Task SendBulkEmail(Guid currentMemberId, Chapter chapter, IEnumerable<Member> to, string subject, string body);
 
-        Task SendMail(Guid fromAdminMemberId, Guid toMemberId, string subject, string body);
+        Task SendContactEmail(Chapter chapter, string from, string message, IDictionary<string, string> parameters);
 
-        Task SendMail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters);
+        Task SendEmail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters);
 
-        Task SendMemberMail(Chapter chapter, Member member, EmailType type, IDictionary<string, string> parameters);
+        Task SendMemberEmail(Guid currentMemberId, Guid memberId, string subject, string body);
 
+        Task SendNewMemberAdminEmail(Chapter chapter, Member member, IDictionary<string, string> parameters);
     }
 }

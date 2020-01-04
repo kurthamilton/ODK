@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
-using ODK.Core.Images;
 using ODK.Core.Emails;
+using ODK.Core.Images;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Services.Authorization;
@@ -25,21 +25,19 @@ namespace ODK.Services.Members
         private readonly IChapterRepository _chapterRepository;
         private readonly IEmailService _emailService;
         private readonly IImageService _imageService;
-        private readonly IMailProviderFactory _mailProviderFactory;
         private readonly IMemberRepository _memberRepository;
         private readonly IPaymentService _paymentService;
         private readonly MemberServiceSettings _settings;
 
         public MemberService(IMemberRepository memberRepository, IChapterRepository chapterRepository, IAuthorizationService authorizationService,
             IEmailService emailService, MemberServiceSettings settings, IImageService imageService, IPaymentService paymentService,
-            ICacheService cacheService, IMailProviderFactory mailProviderFactory)
+            ICacheService cacheService)
         {
             _authorizationService = authorizationService;
             _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _emailService = emailService;
             _imageService = imageService;
-            _mailProviderFactory = mailProviderFactory;
             _memberRepository = memberRepository;
             _paymentService = paymentService;
             _settings = settings;
@@ -71,9 +69,6 @@ namespace ODK.Services.Members
             _cacheService.RemoveVersionedItem<Member>(member.Id);
 
             await _memberRepository.DeleteEmailAddressUpdateToken(member.Id);
-
-            IMailProvider mailProvider = await _mailProviderFactory.Create(member.ChapterId);
-            await mailProvider.UpdateMemberEmailAddress(member, token.NewEmailAddress);
         }
 
         public async Task CreateMember(Guid chapterId, CreateMemberProfile profile)
@@ -117,7 +112,7 @@ namespace ODK.Services.Members
                 { "token", HttpUtility.UrlEncode(activationToken) }
             });
 
-            await _emailService.SendMemberMail(chapter, create, EmailType.ActivateAccount, new Dictionary<string, string>
+            await _emailService.SendEmail(chapter, create.EmailAddress, EmailType.ActivateAccount, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "url", url }
@@ -171,7 +166,7 @@ namespace ODK.Services.Members
             }
 
             MemberImage image = result.Value;
-            if (size != null && image != null)
+            if (size != null)
             {
                 byte[] imageData = _imageService.Crop(image.ImageData, size.Value, size.Value);
                 image = new MemberImage(image.MemberId, imageData, image.MimeType, image.Version);
@@ -183,22 +178,7 @@ namespace ODK.Services.Members
         public async Task<MemberProfile> GetMemberProfile(Guid currentMemberId, Guid memberId)
         {
             Member member = await GetMember(currentMemberId, memberId);
-            MemberProfile profile = await GetMemberProfile(member);
-
-            if (currentMemberId == memberId)
-            {
-                // synchronise member opt in from mail provider
-                IMailProvider mailProvider = await _mailProviderFactory.Create(member.ChapterId);
-                bool optIn = await mailProvider.GetMemberOptIn(member);
-
-                if (optIn != member.EmailOptIn)
-                {
-                    profile.EmailOptIn = optIn;
-                    await _memberRepository.UpdateMember(memberId, optIn, member.FirstName, member.LastName);
-                }
-            }
-
-            return profile;
+            return await GetMemberProfile(member);
         }
 
         public async Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetMembers(long? currentVersion, Guid currentMemberId,
@@ -294,7 +274,7 @@ namespace ODK.Services.Members
                 { "token", HttpUtility.UrlEncode(activationToken) }
             });
 
-            await _emailService.SendMail(chapter, newEmailAddress, EmailType.EmailAddressUpdate, new Dictionary<string, string>
+            await _emailService.SendEmail(chapter, newEmailAddress, EmailType.EmailAddressUpdate, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "url", url }
@@ -308,10 +288,6 @@ namespace ODK.Services.Members
             {
                 return;
             }
-
-            IMailProvider mailProvider = await _mailProviderFactory.Create(member.ChapterId);
-
-            await mailProvider.UpdateMemberOptIn(member, optIn);
 
             await _memberRepository.UpdateMember(member.Id, optIn, member.FirstName, member.LastName);
 

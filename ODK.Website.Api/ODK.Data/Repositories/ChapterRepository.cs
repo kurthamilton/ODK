@@ -240,8 +240,6 @@ namespace ODK.Data.Repositories
         {
             await Context
                 .Update<ChapterEmailProviderSettings>()
-                .Set(x => x.ApiKey, emailProviderSettings.ApiKey)
-                .Set(x => x.EmailProvider, emailProviderSettings.EmailProvider)
                 .Set(x => x.FromEmailAddress, emailProviderSettings.FromEmailAddress)
                 .Set(x => x.FromName, emailProviderSettings.FromName)
                 .Set(x => x.SmtpLogin, emailProviderSettings.SmtpLogin)

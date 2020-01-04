@@ -21,17 +21,12 @@ namespace ODK.Data.Repositories
                 .GetIdentityAsync();
         }
 
-        public async Task AddEventInvites(Guid eventId, IEnumerable<Guid> memberIds)
+        public async Task AddEventInvites(Guid eventId, IEnumerable<Guid> memberIds, DateTime sentDate)
         {
             foreach (Guid memberId in memberIds)
             {
-                if (await MemberHasRespondedToEvent(eventId, memberId))
-                {
-                    continue;
-                }
-
                 await Context
-                    .Insert(new EventMemberResponse(eventId, memberId, null))
+                    .Insert(new EventInvite(eventId, memberId, sentDate))
                     .ExecuteAsync();
             }
         }
@@ -53,10 +48,10 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        public async Task<IReadOnlyCollection<EventMemberResponse>> GetChapterResponses(Guid chapterId)
+        public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid chapterId)
         {
             return await Context
-                .Select<EventMemberResponse>()
+                .Select<EventResponse>()
                 .Join<Event, Guid>(x => x.EventId, x => x.Id)
                 .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
                 .ToArrayAsync();
@@ -96,12 +91,29 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<IReadOnlyCollection<EventMemberResponse>> GetEventResponses(Guid eventId)
+        public async Task<IReadOnlyCollection<EventInvite>> GetEventInvites(Guid eventId)
         {
             return await Context
-                .Select<EventMemberResponse>()
+                .Select<EventInvite>()
                 .Where(x => x.EventId).EqualTo(eventId)
-                .Where(x => x.ResponseTypeId).IsNotNull()
+                .ToArrayAsync();
+        }
+
+        public async Task<IReadOnlyCollection<EventInvite>> GetEventInvites(Guid chapterId, DateTime after)
+        {
+            return await Context
+                .Select<EventInvite>()
+                .Join<Event, Guid>(x => x.EventId, x => x.Id)
+                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
+                .Where<Event, DateTime>(x => x.Date).GreaterThanOrEqualTo(after)
+                .ToArrayAsync();
+        }
+
+        public async Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid eventId)
+        {
+            return await Context
+                .Select<EventResponse>()
+                .Where(x => x.EventId).EqualTo(eventId)
                 .ToArrayAsync();
         }
 
@@ -133,13 +145,14 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<IReadOnlyCollection<EventMemberResponse>> GetMemberResponses(Guid memberId, bool all = false)
+        public async Task<IReadOnlyCollection<EventResponse>> GetMemberResponses(Guid memberId, bool allEvents = false)
         {
             return await Context
-                .Select<EventMemberResponse>()
+                .Select<EventResponse>()
                 .Join<Event, Guid>(x => x.EventId, x => x.Id)
                 .Where(x => x.MemberId).EqualTo(memberId)
-                .Where<Event, DateTime>(x => x.Date).GreaterThanOrEqualTo(all ? SqlDateTime.MinValue.Value : DateTime.UtcNow.Date)
+                .Where(x => x.ResponseTypeId).NotEqualTo(EventResponseType.None)
+                .Where<Event, DateTime>(x => x.Date).GreaterThanOrEqualTo(allEvents ? SqlDateTime.MinValue.Value : DateTime.UtcNow.Date)
                 .ToArrayAsync();
         }
 
@@ -178,12 +191,12 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        public async Task UpdateEventResponse(EventMemberResponse response)
+        public async Task UpdateEventResponse(EventResponse response)
         {
-            if (await MemberHasRespondedToEvent(response.EventId, response.MemberId))
+            if (await MemberEventResponseExists(response.EventId, response.MemberId))
             {
                 await Context
-                    .Update<EventMemberResponse>()
+                    .Update<EventResponse>()
                     .Set(x => x.ResponseTypeId, response.ResponseTypeId)
                     .Where(x => x.EventId).EqualTo(response.EventId)
                     .Where(x => x.MemberId).EqualTo(response.MemberId)
@@ -196,13 +209,13 @@ namespace ODK.Data.Repositories
             }
         }
 
-        private async Task<bool> MemberHasRespondedToEvent(Guid eventId, Guid memberId)
+        private async Task<bool> MemberEventResponseExists(Guid eventId, Guid memberId)
         {
             return await Context
-                .Select<EventMemberResponse>()
-                .Where(x => x.EventId).EqualTo(eventId)
-                .Where(x => x.MemberId).EqualTo(memberId)
-                .CountAsync() > 0;
+                       .Select<EventResponse>()
+                       .Where(x => x.EventId).EqualTo(eventId)
+                       .Where(x => x.MemberId).EqualTo(memberId)
+                       .CountAsync() > 0;
         }
     }
 }
