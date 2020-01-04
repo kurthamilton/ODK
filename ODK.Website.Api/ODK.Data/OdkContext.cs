@@ -30,8 +30,6 @@ namespace ODK.Data
             AddMap(new LogMessageMap());
             AddMap(new MemberActivationTokenMap());
             AddMap(new MemberEmailAddressUpdateTokenMap());
-            AddMap(new MemberGroupMap());
-            AddMap(new MemberGroupMemberMap());
             AddMap(new MemberImageMap());
             AddMap(new MemberMap());
             AddMap(new MemberPasswordMap());
