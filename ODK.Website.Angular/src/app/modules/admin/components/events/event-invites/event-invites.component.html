@@ -17,9 +17,8 @@
   <ng-container *ngIf="invites.sentDate">
     <p>
       {{invites.sent}} invites were sent on {{invites.sentDate | date:'fullDate' }}
-    </p>  
-
-    <h3>Responses</h3>
-    <app-event-responses></app-event-responses>
+    </p>      
   </ng-container>  
+  
+  <app-event-responses></app-event-responses>
 </ng-container>

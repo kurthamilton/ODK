@@ -9,6 +9,6 @@ namespace ODK.Web.Api.Admin.Events.Requests
 
         public string Subject { get; set; }
 
-        public IEnumerable<EventResponseType> Types { get; set; }
+        public IEnumerable<EventResponseType> Statuses { get; set; }
     }
 }

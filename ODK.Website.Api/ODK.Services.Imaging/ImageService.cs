@@ -17,7 +17,12 @@ namespace ODK.Services.Imaging
                 image.Mutate(x =>
                 {
                     x.Resize(size);
-                    x.Crop(new Rectangle((size.Width - width) / 2, (size.Height - height) / 2, width, height));
+                    Rectangle crop = new Rectangle(
+                        Math.Max(size.Width - width, 0) / 2,
+                        Math.Max(size.Height - height, 0) / 2,
+                        Math.Min(width, size.Width),
+                        Math.Min(height, size.Width));
+                    x.Crop(crop);
                 });
             });
         }

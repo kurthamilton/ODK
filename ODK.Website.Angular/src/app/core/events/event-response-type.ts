@@ -1,5 +1,7 @@
 export enum EventResponseType {
-    Yes = 1,
-    Maybe = 2,
-    No = 3
+  NotInvited = -1,
+  None = 0,
+  Yes = 1,
+  Maybe = 2,
+  No = 3
 }

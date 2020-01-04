@@ -1,0 +1,8 @@
+<h3>Send Email</h3>
+<ngb-alert *ngIf="sent" type="success" (close)="onAlertClose()">
+  Email sent
+</ngb-alert>
+<app-drop-down-multi controlId="status" [label]="statusLabel" [options]="statusOptions" 
+  (change)="onStatusChange($event)">  
+</app-drop-down-multi>
+<app-form [form]="form" (formSubmit)="onFormSubmit()"></app-form>

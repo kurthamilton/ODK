@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MailKit.Net.Smtp;
@@ -29,12 +30,12 @@ namespace ODK.Services.Emails
             _memberRepository = memberRepository;
         }
 
-        public async Task SendBulkEmail(Chapter chapter, IEnumerable<string> to, string subject, string body, bool bcc = false)
+        public async Task SendBulkEmail(Chapter chapter, IEnumerable<string> to, string subject, string body, bool bcc = true)
         {
             await SendBulkEmail(chapter, to, subject, body, null, bcc);
         }
 
-        public async Task SendBulkEmail(Chapter chapter, IEnumerable<string> to, string subject, string body, ChapterAdminMember from, bool bcc = false)
+        public async Task SendBulkEmail(Chapter chapter, IEnumerable<string> to, string subject, string body, ChapterAdminMember from, bool bcc = true)
         {
             body = await GetLayoutBody(chapter, body);
 
@@ -137,6 +138,12 @@ namespace ODK.Services.Emails
 
         private async Task SendEmail(ChapterEmailProviderSettings settings, MimeMessage message)
         {
+            if (message.To.Count == 0)
+            {
+                await _loggingService.LogDebug("Not sending email, no recipients set");
+                return;
+            }
+
             await _loggingService.LogDebug($"Sending email to {string.Join(", ", message.To)}");
 
             try
@@ -150,9 +157,12 @@ namespace ODK.Services.Emails
 
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
+
+                await _loggingService.LogDebug($"Email sent to {string.Join(", ", message.To)}");
             }
-            catch
+            catch (Exception ex)
             {
+                await _loggingService.LogError(ex, "Error sending email");
                 throw new OdkServiceException("Error sending email");
             }
         }

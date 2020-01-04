@@ -49,7 +49,7 @@ namespace ODK.Services.Emails
                 .Select(x => x.AdminEmailAddress)
                 .ToArray();
 
-            await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent);
+            await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
         }
 
         public async Task SendEmail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters)
@@ -84,7 +84,7 @@ namespace ODK.Services.Emails
                 .Select(x => x.AdminEmailAddress)
                 .ToList();
 
-            await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent);
+            await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
         }
 
         private async Task<Email> GetEmail(EmailType type, Guid chapterId, IDictionary<string, string> parameters)

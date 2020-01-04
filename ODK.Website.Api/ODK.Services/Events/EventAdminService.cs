@@ -126,7 +126,23 @@ namespace ODK.Services.Events
         public async Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid currentMemberId, Guid eventId)
         {
             Event @event = await GetEvent(currentMemberId, eventId);
-            return await _eventRepository.GetEventResponses(@event.Id);
+            IReadOnlyCollection<EventResponse> responses = await _eventRepository.GetEventResponses(@event.Id);
+            IReadOnlyCollection<EventInvite> invited = await _eventRepository.GetEventInvites(@event.Id);
+            IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(@event.ChapterId);
+
+            IDictionary<Guid, EventResponse> responseDictionary = responses.ToDictionary(x => x.MemberId, x => x);
+            IDictionary<Guid, EventInvite> inviteDictionary = invited.ToDictionary(x => x.MemberId, x => x);
+
+            return members.Select(member =>
+            {
+                EventResponseType responseType =
+                    responseDictionary.ContainsKey(member.Id)
+                    ? responseDictionary[member.Id].ResponseTypeId
+                    : inviteDictionary.ContainsKey(member.Id)
+                    ? EventResponseType.None
+                    : EventResponseType.NotInvited;
+                return new EventResponse(eventId, member.Id, responseType);
+            }).ToArray();
         }
 
         public async Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId, int page, int pageSize)

@@ -71,7 +71,7 @@ namespace ODK.Web.Api.Admin.Events
         [HttpPost("{id}/Invitees/SendEmail")]
         public async Task<IActionResult> SendEventInviteeEmail(Guid id, [FromForm] SendEventInviteeEmailApiRequest request)
         {
-            await _eventAdminService.SendEventInviteeEmail(GetMemberId(), id, request.Types?.ToArray() ?? new EventResponseType[0], 
+            await _eventAdminService.SendEventInviteeEmail(GetMemberId(), id, request.Statuses?.ToArray() ?? new EventResponseType[0], 
                 request.Subject, request.Body);
             return Created();
         }

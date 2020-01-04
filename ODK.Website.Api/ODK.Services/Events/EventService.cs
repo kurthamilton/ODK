@@ -59,7 +59,7 @@ namespace ODK.Services.Events
 
         private static EventResponseType NormalizeResponseType(EventResponseType responseType)
         {
-            if (!Enum.IsDefined(typeof(EventResponseType), responseType) || responseType == EventResponseType.None)
+            if (!Enum.IsDefined(typeof(EventResponseType), responseType) || responseType <= EventResponseType.None)
             {
                 responseType = EventResponseType.No;
             }
