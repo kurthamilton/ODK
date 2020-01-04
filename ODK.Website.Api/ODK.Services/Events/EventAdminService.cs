@@ -239,7 +239,7 @@ namespace ODK.Services.Events
                 await _emailService.SendBulkEmail(currentMemberId, chapter, invited, EmailType.EventInvite, parameters);
 
                 DateTime sentDate = DateTime.UtcNow;
-                eventEmail = new EventEmail(Guid.Empty, @event.Id, "", null, sentDate);
+                eventEmail = new EventEmail(Guid.Empty, @event.Id, sentDate);
                 await _eventRepository.AddEventEmail(eventEmail);
 
                 // Add null event responses to indicate that members have been invited
