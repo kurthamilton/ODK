@@ -124,7 +124,8 @@ export class ProfileFormComponent implements OnChanges {
       }) : new TextInputFormControlViewModel({
         id: 'emailAddress',
         label: {
-          text: 'Email address'
+          text: 'Email address',
+          subtitle: 'You will need access to this email to verify your account'
         },
         validation: {
           pattern: FormControlValidationPatterns.email,
