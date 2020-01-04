@@ -21,7 +21,7 @@ namespace ODK.Data.Mapping
             (
                 id: reader.GetGuid(0),
                 eventId: reader.GetGuid(1),
-                sentDate: reader.GetNullableDateTime(3)
+                sentDate: reader.GetNullableDateTime(2)
             );
         }
     }
