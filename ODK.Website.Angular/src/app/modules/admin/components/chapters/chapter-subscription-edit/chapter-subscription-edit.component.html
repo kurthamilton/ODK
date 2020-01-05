@@ -1,0 +1,9 @@
+<ng-container *appLoading="!subscription">
+  <ngb-alert *ngIf="updated" type="success" (close)="onAlertClose()">
+    Updated
+  </ngb-alert>
+  <app-breadcrumbs [breadcrumbs]="breadcrumbs" [active]="subscription.name"></app-breadcrumbs>
+  <app-chapter-subscription-form [subscription]="subscription" [formCallback]="formCallback" 
+    (formSubmit)="onFormSubmit($event)">
+  </app-chapter-subscription-form>
+</ng-container>

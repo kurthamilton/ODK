@@ -7,15 +7,17 @@ import { CheckBoxFormControlComponent } from './components/inputs/check-box-form
 import { DropDownFormControlComponent } from './components/inputs/drop-down-form-control/drop-down-form-control.component';
 import { ErrorMessagesComponent } from './components/error-messages/error-messages.component';
 import { FileInputFormControlComponent } from './components/inputs/file-input-form-control/file-input-form-control.component';
+import { FormButtonComponent } from './components/form-button/form-button.component';
 import { FormComponent } from './components/form/form.component';
 import { FormControlComponent } from './components/form-control/form-control.component';
 import { FormControlLabelComponent } from './components/form-control-label/form-control-label.component';
 import { FormControlsComponent } from './components/form-controls/form-controls.component';
 import { FormControlValidationComponent } from './components/form-control-validation/form-control-validation.component';
+import { InputGroupPrependComponent } from './components/input-group-prepend/input-group-prepend.component';
+import { NumberInputFormControlComponent } from './components/inputs/number-input-form-control/number-input-form-control.component';
 import { ReadOnlyFormControlComponent } from './components/inputs/read-only-form-control/read-only-form-control.component';
 import { TextAreaComponent } from './components/inputs/text-area-form-control/text-area-form-control.component';
 import { TextInputFormControlComponent } from './components/inputs/text-input-form-control/text-input-form-control.component';
-import { FormButtonComponent } from './components/form-button/form-button.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +34,8 @@ import { FormButtonComponent } from './components/form-button/form-button.compon
     TextAreaComponent,
     TextInputFormControlComponent,
     FormButtonComponent,
+    NumberInputFormControlComponent,
+    InputGroupPrependComponent,
   ],
   imports: [
     AppSharedModule,
@@ -49,6 +53,7 @@ import { FormButtonComponent } from './components/form-button/form-button.compon
     FormControlLabelComponent,
     FormControlValidationComponent,
     FormsModule,
+    NumberInputFormControlComponent,
     ReactiveFormsModule,
     ReadOnlyFormControlComponent,
     TextAreaComponent,
@@ -58,6 +63,7 @@ import { FormButtonComponent } from './components/form-button/form-button.compon
     CheckBoxFormControlComponent,
     DropDownFormControlComponent,
     FileInputFormControlComponent,
+    NumberInputFormControlComponent,
     ReadOnlyFormControlComponent,
     TextAreaComponent,
     TextInputFormControlComponent,

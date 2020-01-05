@@ -103,6 +103,30 @@ namespace ODK.Web.Api.Admin.Chapters
             return Created();
         }
 
+        [HttpPost("{id}/Subscriptions")]
+        public async Task<IActionResult> CreateSubscription(Guid id, [FromForm] CreateChapterSubscriptionApiRequest request)
+        {
+            CreateChapterSubscription subscription = _mapper.Map<CreateChapterSubscription>(request);
+            await _chapterAdminService.CreateChapterSubscription(GetMemberId(), id, subscription);
+            return Created();
+        }
+
+        [HttpGet("{id}/Subscriptions/{subscriptionId}")]
+        public async Task<ChapterSubscriptionApiResponse> GetSubscription(Guid id, Guid subscriptionId)
+        {
+            ChapterSubscription subscription = await _chapterAdminService.GetChapterSubscription(GetMemberId(), subscriptionId);
+            return _mapper.Map<ChapterSubscriptionApiResponse>(subscription);
+        }
+
+        [HttpPut("{id}/Subscriptions/{subscriptionId}")]
+        public async Task<IActionResult> UpdateSubscription(Guid id, Guid subscriptionId,
+            [FromForm] CreateChapterSubscriptionApiRequest request)
+        {
+            CreateChapterSubscription subscription = _mapper.Map<CreateChapterSubscription>(request);
+            await _chapterAdminService.UpdateChapterSubscription(GetMemberId(), subscriptionId, subscription);
+            return NoContent();
+        }
+
         [HttpPut("{id}/Texts")]
         public async Task<ActionResult<ChapterTextsApiResponse>> UpdateChapterTexts(Guid id, [FromForm] UpdateChapterTextsApiRequest request)
         {

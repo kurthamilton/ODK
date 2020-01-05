@@ -12,21 +12,29 @@ namespace ODK.Services.Chapters
 
         Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question);
 
-        Task DeleteChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);        
+        Task CreateChapterSubscription(Guid currentMemberId, Guid chapterId, CreateChapterSubscription subscription);
+
+        Task DeleteChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
 
         Task<ChapterAdminMember> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
 
-        Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid currentMemberId, Guid chapterId);        
+        Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid currentMemberId, Guid chapterId);
 
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
 
-        Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId);        
+        Task<IReadOnlyCollection<Chapter>> GetChapters(Guid currentMemberId);
 
-        Task UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember adminMember);        
+        Task<ChapterSubscription> GetChapterSubscription(Guid currentMemberId, Guid id);
+
+        Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid currentMemberId, Guid chapterId);
+
+        Task UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember adminMember);
 
         Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links);
 
         Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings paymentSettings);
+
+        Task UpdateChapterSubscription(Guid currentMemberId, Guid id, CreateChapterSubscription subscription);
 
         Task<ChapterTexts> UpdateChapterTexts(Guid currentMemberId, Guid chapterId, UpdateChapterTexts texts);
     }

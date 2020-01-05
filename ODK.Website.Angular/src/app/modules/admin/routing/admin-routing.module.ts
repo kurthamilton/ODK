@@ -15,6 +15,8 @@ import { ChapterPropertiesComponent } from '../components/chapters/chapter-prope
 import { ChapterPropertyComponent } from '../components/chapters/chapter-property/chapter-property.component';
 import { ChapterQuestionsComponent } from '../components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from '../components/chapters/chapter-settings/chapter-settings.component';
+import { ChapterSubscriptionEditComponent } from '../components/chapters/chapter-subscription-edit/chapter-subscription-edit.component';
+import { ChapterSubscriptionsComponent } from '../components/chapters/chapter-subscriptions/chapter-subscriptions.component';
 import { ChapterSuperAdminGuardService } from 'src/app/routing/chapter-super-admin-guard.service';
 import { CreateEventComponent } from '../components/events/create-event/create-event.component';
 import { CreateVenueComponent } from '../components/venues/create-venue/create-venue.component';
@@ -26,6 +28,7 @@ import { EmailLayoutComponent } from '../components/emails/email-layout/email-la
 import { EventInvitesComponent } from '../components/events/event-invites/event-invites.component';
 import { EventLayoutComponent } from '../components/events/event-layout/event-layout.component';
 import { EventsComponent } from '../components/events/events/events.component';
+import { LogComponent } from '../components/admin/log/log.component';
 import { MemberEventsComponent } from '../components/members/member-events/member-events.component';
 import { MemberLayoutComponent } from '../components/members/member-layout/member-layout.component';
 import { MembersComponent } from '../components/members/members/members.component';
@@ -34,7 +37,6 @@ import { SendEmailComponent } from '../components/members/send-email/send-email.
 import { VenueEventsComponent } from '../components/venues/venue-events/venue-events.component';
 import { VenueLayoutComponent } from '../components/venues/venue-layout/venue-layout.component';
 import { VenuesComponent } from '../components/venues/venues/venues.component';
-import { LogComponent } from '../components/admin/log/log.component';
 
 const routes: Routes = [
   { path: '', component: AdminLayoutComponent, canActivate: [ChapterAdminGuardService], children: [
@@ -53,6 +55,10 @@ const routes: Routes = [
       { path: adminPaths.chapter.properties.path, children: [
         { path: '', component: ChapterPropertiesComponent },
         { path: adminPaths.chapter.properties.property.path, component: ChapterPropertyComponent }
+      ] },
+      { path: adminPaths.chapter.subscriptions.path, children: [
+        { path: '', component: ChapterSubscriptionsComponent },
+        { path: adminPaths.chapter.subscription.path, component: ChapterSubscriptionEditComponent }
       ] }
     ] },
     { path: adminPaths.emails.path, component: EmailLayoutComponent, children: [

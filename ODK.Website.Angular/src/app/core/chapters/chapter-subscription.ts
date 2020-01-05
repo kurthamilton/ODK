@@ -5,7 +5,8 @@ export interface ChapterSubscription {
     chapterId: string;
     description: string;
     id: string;
+    months: number;
     name: string;
-    subscriptionType: SubscriptionType;
+    type: SubscriptionType;
     title: string;
 }

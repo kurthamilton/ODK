@@ -5,7 +5,7 @@ namespace ODK.Core.Chapters
 {
     public class ChapterSubscription
     {
-        public ChapterSubscription(Guid id, Guid chapterId, SubscriptionType subscriptionType, string name, string title,
+        public ChapterSubscription(Guid id, Guid chapterId, SubscriptionType type, string name, string title,
             string description, double amount, int months)
         {
             Amount = amount;
@@ -14,24 +14,24 @@ namespace ODK.Core.Chapters
             Id = id;
             Months = months;
             Name = name;
-            SubscriptionType = subscriptionType;
             Title = title;
+            Type = type;
         }
 
-        public double Amount { get; }
+        public double Amount { get; set; }
 
         public Guid ChapterId { get; }
 
-        public string Description { get; }
+        public string Description { get; set; }
 
         public Guid Id { get; }
 
-        public int Months { get; }
+        public int Months { get; set; }
 
-        public string Name { get; }
+        public string Name { get; set; }
 
-        public SubscriptionType SubscriptionType { get; }
+        public string Title { get; set; }
 
-        public string Title { get; }
+        public SubscriptionType Type { get; set; }
     }
 }

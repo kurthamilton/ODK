@@ -50,6 +50,13 @@ namespace ODK.Data.Repositories
                 .GetIdentityAsync();
         }
 
+        public async Task CreateChapterSubscription(ChapterSubscription subscription)
+        {
+            await Context
+                .Insert(subscription)
+                .ExecuteAsync();
+        }
+
         public async Task DeleteChapterAdminMember(Guid chapterId, Guid memberId)
         {
             await Context
@@ -279,6 +286,20 @@ namespace ODK.Data.Repositories
                 .Update<ChapterPaymentSettings>()
                 .Set(x => x.ApiPublicKey, paymentSettings.ApiPublicKey)
                 .Set(x => x.ApiSecretKey, paymentSettings.ApiSecretKey)
+                .ExecuteAsync();
+        }
+
+        public async Task UpdateChapterSubscription(ChapterSubscription subscription)
+        {
+            await Context
+                .Update<ChapterSubscription>()
+                .Set(x => x.Amount, subscription.Amount)
+                .Set(x => x.Description, subscription.Description)
+                .Set(x => x.Months, subscription.Months)
+                .Set(x => x.Name, subscription.Name)
+                .Set(x => x.Title, subscription.Title)
+                .Set(x => x.Type, subscription.Type)
+                .Where(x => x.Id).EqualTo(subscription.Id)
                 .ExecuteAsync();
         }
 

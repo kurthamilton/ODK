@@ -1,17 +1,12 @@
-﻿using System;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 
-namespace ODK.Web.Api.Chapters.Responses
+namespace ODK.Web.Api.Admin.Chapters.Requests
 {
-    public class ChapterSubscriptionApiResponse
+    public class CreateChapterSubscriptionApiRequest
     {
         public double Amount { get; set; }
 
-        public Guid ChapterId { get; set; }
-
         public string Description { get; set; }
-
-        public Guid Id { get; set; }
 
         public int Months { get; set; }
 

@@ -9,6 +9,7 @@ import { ChapterEmailProviderSettings } from 'src/app/core/emails/chapter-email-
 import { EmailAdminService } from 'src/app/services/emails/email-admin.service';
 import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
+import { NumberInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/number-input-form-control/number-input-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
@@ -34,7 +35,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
     fromName: TextInputFormControlViewModel;
     smtpLogin: TextInputFormControlViewModel;
     smtpPassword: TextInputFormControlViewModel;
-    smtpPort: TextInputFormControlViewModel;
+    smtpPort: NumberInputFormControlViewModel;
     smtpServer: TextInputFormControlViewModel;
   };
 
@@ -60,7 +61,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
     this.emailProviderSettings.fromName = this.formControls.fromName.value;
     this.emailProviderSettings.smtpLogin = this.formControls.smtpLogin.value;
     this.emailProviderSettings.smtpPassword = this.formControls.smtpPassword.value;
-    this.emailProviderSettings.smtpPort = parseInt(this.formControls.smtpPort.value, 10);
+    this.emailProviderSettings.smtpPort = this.formControls.smtpPort.value;
     this.emailProviderSettings.smtpServer = this.formControls.smtpServer.value;
 
     this.emailAdminService.updateChapterAdminEmailProviderSettings(this.chapter.id, this.emailProviderSettings).subscribe(() => {
@@ -111,16 +112,15 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
         },
         value: this.emailProviderSettings.smtpPassword
       }),
-      smtpPort: new TextInputFormControlViewModel({
+      smtpPort: new NumberInputFormControlViewModel({
         id: 'smtp-port',
-        inputType: 'number',
         label: {
           text: 'SMTP Port'
         },
         validation: {
           required: true
         },
-        value: this.emailProviderSettings.smtpPort.toString()
+        value: this.emailProviderSettings.smtpPort
       }),
       smtpServer: new TextInputFormControlViewModel({
         id: 'smtp-server',

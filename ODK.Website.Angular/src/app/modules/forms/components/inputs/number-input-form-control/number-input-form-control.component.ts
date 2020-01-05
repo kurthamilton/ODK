@@ -2,14 +2,14 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmi
 
 import { InputBase } from '../input-base';
 import { InputGroupPrependViewModel } from '../../input-group-prepend/input-group-prepend.view-model';
-import { TextInputFormControlViewModel } from './text-input-form-control.view-model';
+import { NumberInputFormControlViewModel } from './number-input-form-control.view-model';
 
 @Component({
-  selector: 'app-text-input-form-control',
-  templateUrl: './text-input-form-control.component.html',
+  selector: 'app-number-input-form-control',
+  templateUrl: './number-input-form-control.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TextInputFormControlComponent extends InputBase {
+export class NumberInputFormControlComponent extends InputBase {
 
   constructor(changeDetector: ChangeDetectorRef) {
     super(changeDetector);
@@ -17,16 +17,26 @@ export class TextInputFormControlComponent extends InputBase {
 
   @Output() blur: EventEmitter<void> = new EventEmitter<void>();
 
-  get prefix(): InputGroupPrependViewModel {
+  get min(): number { 
     return this.viewModel
-      ? (<TextInputFormControlViewModel>this.viewModel).prefix
+      ? this.numberInputViewModel.min
       : null;
   }
 
-  get type(): string {
+  get prefix(): InputGroupPrependViewModel {
     return this.viewModel
-      ? (<TextInputFormControlViewModel>this.viewModel).inputType || 'text'
-      : 'text';
+      ? this.numberInputViewModel.prefix
+      : null;
+  }
+
+  get step(): number { 
+    return this.viewModel
+      ? this.numberInputViewModel.step
+      : null;
+  }
+
+  private get numberInputViewModel(): NumberInputFormControlViewModel { 
+    return <NumberInputFormControlViewModel>this.viewModel;
   }
 
   onBlur(): void {

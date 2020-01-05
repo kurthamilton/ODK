@@ -1,8 +1,9 @@
 import { FormControlOptions } from '../../form-control-options';
 import { InputGroupPrependViewModel } from '../../input-group-prepend/input-group-prepend.view-model';
 
-export interface TextInputFormControlOptions extends FormControlOptions {
-  inputType?: 'text' | 'date' | 'password';
+export interface NumberInputFormControlOptions extends FormControlOptions {
+  min?: number;
   prefix?: InputGroupPrependViewModel;
-  value?: string;
+  step?: number;
+  value?: number;
 }

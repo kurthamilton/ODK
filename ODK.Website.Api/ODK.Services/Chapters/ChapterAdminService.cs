@@ -66,6 +66,18 @@ namespace ODK.Services.Chapters
             _cacheService.RemoveVersionedItem<ChapterQuestion>(chapterId);
         }
 
+        public async Task CreateChapterSubscription(Guid currentMemberId, Guid chapterId, CreateChapterSubscription subscription)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            ChapterSubscription create = new ChapterSubscription(Guid.Empty, chapterId, subscription.Type, subscription.Name,
+                subscription.Title, subscription.Description, subscription.Amount, subscription.Months);
+
+            await ValidateChapterSubscription(create);
+
+            await _chapterRepository.CreateChapterSubscription(create);
+        }
+
         public async Task DeleteChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
         {
             ChapterAdminMember adminMember = await GetChapterAdminMember(currentMemberId, chapterId, memberId);
@@ -104,9 +116,9 @@ namespace ODK.Services.Chapters
             return await _chapterRepository.GetChapterPaymentSettings(chapterId);
         }
 
-        public async Task<IReadOnlyCollection<Chapter>> GetChapters(Guid memberId)
+        public async Task<IReadOnlyCollection<Chapter>> GetChapters(Guid currentMemberId)
         {
-            IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembersByMember(memberId);
+            IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembersByMember(currentMemberId);
             if (chapterAdminMembers.Count == 0)
             {
                 throw new OdkNotAuthorizedException();
@@ -115,6 +127,26 @@ namespace ODK.Services.Chapters
             return chapterAdminMembers
                 .Select(x => chapters.Value.Single(chapter => chapter.Id == x.ChapterId))
                 .ToArray();
+        }
+
+        public async Task<ChapterSubscription> GetChapterSubscription(Guid currentMemberId, Guid id)
+        {
+            ChapterSubscription subscription = await _chapterRepository.GetChapterSubscription(id);
+            if (subscription == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, subscription.ChapterId);
+
+            return subscription;
+        }
+
+        public async Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _chapterRepository.GetChapterSubscriptions(chapterId);
         }
 
         public async Task UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId,
@@ -160,6 +192,28 @@ namespace ODK.Services.Chapters
             return update;
         }
 
+        public async Task UpdateChapterSubscription(Guid currentMemberId, Guid id, CreateChapterSubscription subscription)
+        {
+            ChapterSubscription existing = await _chapterRepository.GetChapterSubscription(id);
+            if (existing == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, existing.ChapterId);
+
+            existing.Amount = subscription.Amount;
+            existing.Description = subscription.Description;
+            existing.Months = subscription.Months;
+            existing.Name = subscription.Name;
+            existing.Title = subscription.Title;
+            existing.Type = subscription.Type;
+
+            await ValidateChapterSubscription(existing);
+
+            await _chapterRepository.UpdateChapterSubscription(existing);
+        }
+
         public async Task<ChapterTexts> UpdateChapterTexts(Guid currentMemberId, Guid chapterId, UpdateChapterTexts texts)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
@@ -185,6 +239,37 @@ namespace ODK.Services.Chapters
                 string.IsNullOrWhiteSpace(question.Answer))
             {
                 throw new OdkServiceException("Some required fields are missing");
+            }
+        }
+
+        private async Task ValidateChapterSubscription(ChapterSubscription subscription)
+        {
+            if (!Enum.IsDefined(typeof(SubscriptionType), subscription.Type) || subscription.Type == SubscriptionType.None)
+            {
+                throw new OdkServiceException("Invalid type");
+            }
+
+            if (string.IsNullOrWhiteSpace(subscription.Description) ||
+                string.IsNullOrWhiteSpace(subscription.Name) ||
+                string.IsNullOrWhiteSpace(subscription.Title))
+            {
+                throw new OdkServiceException("Some required fields are missing");
+            }
+
+            if (subscription.Amount < 0)
+            {
+                throw new OdkServiceException("Amount cannot be less than 0");
+            }
+
+            if (subscription.Months < 1)
+            {
+                throw new OdkServiceException("Subscription must be for at least 1 month");
+            }
+
+            IReadOnlyCollection<ChapterSubscription> existing = await _chapterRepository.GetChapterSubscriptions(subscription.ChapterId);
+            if (existing.Any(x => x.Id != subscription.Id && x.Name.Equals(subscription.Name)))
+            {
+                throw new OdkServiceException("A subscription with that name already exists");
             }
         }
     }

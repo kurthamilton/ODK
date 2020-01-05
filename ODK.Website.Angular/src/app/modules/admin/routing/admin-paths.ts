@@ -33,6 +33,15 @@ export const adminPaths = {
           id: 'id'
         }
       }
+    },
+    subscription: {
+      path: ':id',
+      params: {
+        id: 'id'
+      }
+    },
+    subscriptions: {
+      path: 'subscriptions'
     }
   },
   emails: {

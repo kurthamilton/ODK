@@ -12,7 +12,7 @@ namespace ODK.Data.Mapping
         {
             Property(x => x.Id).HasColumnName("ChapterSubscriptionId").IsIdentity();
             Property(x => x.ChapterId);
-            Property(x => x.SubscriptionType).HasColumnName("SubscriptionTypeId");
+            Property(x => x.Type).HasColumnName("SubscriptionTypeId");
             Property(x => x.Name);
             Property(x => x.Title);
             Property(x => x.Description);
@@ -26,7 +26,7 @@ namespace ODK.Data.Mapping
             (
                 id: reader.GetGuid(0),
                 chapterId: reader.GetGuid(1),
-                subscriptionType: (SubscriptionType)reader.GetInt32(2),
+                type: (SubscriptionType)reader.GetInt32(2),
                 name: reader.GetString(3),
                 title: reader.GetString(4),
                 description: reader.GetString(5),

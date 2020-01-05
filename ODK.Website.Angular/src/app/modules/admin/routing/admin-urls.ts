@@ -1,6 +1,7 @@
 import { adminPaths } from './admin-paths';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
+import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
 import { Event } from 'src/app/core/events/event';
 import { Member } from 'src/app/core/members/member';
 import { Venue } from 'src/app/core/venues/venue';
@@ -30,6 +31,8 @@ export const adminUrls = {
   chapterPayments: (chapter: Chapter) => chapterPath(chapter, chapterPaths.payments.path),
   chapterProperties: (chapter: Chapter) => chapterPath(chapter, chapterPaths.properties.path),
   chapterProperty: (chapter: Chapter, property: ChapterProperty) => chapterPath(chapter, `${chapterPaths.properties.path}/${property.id}`),
+  chapterSubscription: (chapter: Chapter, subscription: ChapterSubscription) => chapterPath(chapter, `${adminPaths.chapter.subscriptions.path}/${subscription.id}`),
+  chapterSubscriptions: (chapter: Chapter) => chapterPath(chapter, adminPaths.chapter.subscriptions.path),
   emailProvider: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.emailProvider.path}`),
   emails: (chapter: Chapter) => chapterUrl(chapter, adminPaths.emails.path),
   emailsDefault: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.default.path}`),

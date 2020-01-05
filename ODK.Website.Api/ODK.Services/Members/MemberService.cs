@@ -216,11 +216,11 @@ namespace ODK.Services.Members
             MemberSubscription memberSubscription = await _memberRepository.GetMemberSubscription(member.Id);
 
             DateTime expiryDate = (memberSubscription?.ExpiryDate ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
-            memberSubscription = new MemberSubscription(member.Id, chapterSubscription.SubscriptionType, expiryDate);
+            memberSubscription = new MemberSubscription(member.Id, chapterSubscription.Type, expiryDate);
 
             await _memberRepository.UpdateMemberSubscription(memberSubscription);
 
-            MemberSubscriptionRecord record = new MemberSubscriptionRecord(memberId, chapterSubscription.SubscriptionType, DateTime.UtcNow);
+            MemberSubscriptionRecord record = new MemberSubscriptionRecord(memberId, chapterSubscription.Type, DateTime.UtcNow);
             await _memberRepository.AddMemberSubscriptionRecord(record);
 
             _cacheService.UpdatedVersionedItem(memberSubscription, memberId);

@@ -1,7 +1,8 @@
 <div [formGroup]="formGroup" [class.input-group]="prefix">
   <app-input-group-prepend [viewModel]="prefix"></app-input-group-prepend>
   <input
-      [attr.type]="type" [attr.match]="match" [attr.pattern]="pattern" [attr.required]="required ? 'required' : null"
+      type="number" [attr.match]="match" [attr.pattern]="pattern" [attr.required]="required ? 'required' : null"
+      [attr.min]="min" [attr.step]="step"
       class="form-control"
       [id]="controlId" [name]="controlId"
       [formControlName]="controlId"

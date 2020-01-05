@@ -16,6 +16,8 @@ namespace ODK.Core.Chapters
 
         Task<Guid> CreateChapterQuestion(ChapterQuestion question);
 
+        Task CreateChapterSubscription(ChapterSubscription subscription);
+
         Task DeleteChapterAdminMember(Guid chapterId, Guid memberId);
 
         Task<Chapter> GetChapter(Guid id);
@@ -65,6 +67,8 @@ namespace ODK.Core.Chapters
         Task UpdateChapterLinks(ChapterLinks links);
 
         Task UpdateChapterPaymentSettings(ChapterPaymentSettings paymentSettings);
+
+        Task UpdateChapterSubscription(ChapterSubscription subscription);
 
         Task UpdateChapterTexts(ChapterTexts texts);
     }

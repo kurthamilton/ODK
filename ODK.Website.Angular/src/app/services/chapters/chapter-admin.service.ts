@@ -4,14 +4,17 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { catchApiError } from '../http/catchApiError';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminMember } from 'src/app/core/chapters/chapter-admin-member';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterService } from './chapter.service';
+import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
 import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
+import { ServiceResult } from '../service-result';
 
 const baseUrl = `${environment.apiBaseUrl}/admin/chapters`;
 
@@ -21,6 +24,7 @@ const endpoints = {
   chapters: baseUrl,  
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   questions: (id: string) => `${baseUrl}/${id}/questions`,
+  subscription: (id: string, subscriptionId: string) => `${baseUrl}/${id}/subscriptions/${subscriptionId}`,
   texts: (id: string) => `${baseUrl}/${id}/texts`,
 };
 
@@ -78,6 +82,12 @@ export class ChapterAdminService extends ChapterService {
     );
   }  
 
+  getChapterSubscription(id: string, chapterId: string): Observable<ChapterSubscription> {
+    return this.http.get(endpoints.subscription(chapterId, id)).pipe(
+      map((response: any) => this.mapChapterSubscription(response))
+    );
+  }
+
   hasAccess(chapter: Chapter): Observable<boolean> {
     return chapter ? this.getAdminChapters().pipe(
       map((chapters: Chapter[]) => !!chapters.find(x => x.id === chapter.id))
@@ -115,6 +125,24 @@ export class ChapterAdminService extends ChapterService {
     );
   }    
   
+  updateChapterSubscription(subscription: ChapterSubscription): Observable<ServiceResult<void>> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      amount: subscription.amount.toString(),
+      description: subscription.description,
+      months: subscription.months.toString(),
+      name: subscription.name,
+      title: subscription.title,
+      type: subscription.type.toString()
+    });
+
+    return this.http.put(endpoints.subscription(subscription.chapterId, subscription.id), params).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
+    );
+  }
+
   updateChapterTexts(chapterId: string, texts: ChapterTexts): Observable<ChapterTexts> {
     const params: HttpParams = HttpUtils.createFormParams({
       registerText: texts.registerText,

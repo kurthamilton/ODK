@@ -152,6 +152,19 @@ export class ChapterService {
     }
   }  
 
+  protected mapChapterSubscription(response: any): ChapterSubscription {
+    return {
+      amount: response.amount,
+      chapterId: response.chapterId,
+      description: response.description,
+      id: response.id,
+      months: response.months,
+      name: response.name,
+      title: response.title,
+      type: response.type
+    };
+  }
+  
   private mapChapterLinks(response: any): ChapterLinks {
     return {
       facebook: response.facebook,
@@ -192,19 +205,7 @@ export class ChapterService {
       answer: response.answer,
       name: response.name
     };
-  }
-
-  private mapChapterSubscription(response: any): ChapterSubscription {
-    return {
-      amount: response.amount,
-      chapterId: response.chapterId,
-      description: response.description,
-      id: response.id,
-      name: response.name,
-      subscriptionType: response.subscriptionType,
-      title: response.title
-    };
-  }
+  }  
 
   protected mapChapterTexts(response: any): ChapterTexts {
     return {      
