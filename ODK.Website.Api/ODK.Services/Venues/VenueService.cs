@@ -26,7 +26,8 @@ namespace ODK.Services.Venues
             return await _cacheService.GetOrSetVersionedCollection(
                 () => _venueRepository.GetVenues(chapterId),
                 () => _venueRepository.GetVenuesVersion(chapterId),
-                currentVersion);
+                currentVersion,
+                chapterId);
         }
 
         public async Task<VersionedServiceResult<Venue>> GetVenue(long? currentVersion, Guid? currentMemberId, Guid id)
@@ -65,7 +66,8 @@ namespace ODK.Services.Venues
             return await _cacheService.GetOrSetVersionedCollection(
                 () => _venueRepository.GetVenues(chapterId),
                 () => _venueRepository.GetVenuesVersion(chapterId),
-                currentVersion);
+                currentVersion,
+                chapterId);
         }
     }
 }
