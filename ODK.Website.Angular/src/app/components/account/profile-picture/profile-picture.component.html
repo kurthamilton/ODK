@@ -1,4 +1,6 @@
-<div class="d-inline-block">
+<div class="d-inline-block overlay-container">
+  <app-loading-spinner *ngIf="updating" [options]="loadingOptions">
+  </app-loading-spinner>
   <img *ngIf="imageUrl" [attr.src]="imageUrl" />
   <div class="d-flex justify-content-center">
     <input type="file" accept="image/*" #file placeholder="Choose file" class="d-none"

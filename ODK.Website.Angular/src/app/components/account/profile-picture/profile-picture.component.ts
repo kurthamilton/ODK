@@ -4,6 +4,7 @@ import { AccountService } from 'src/app/services/account/account.service';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { MemberService } from 'src/app/services/members/member.service';
+import { LoadingSpinnerOptions } from 'src/app/modules/shared/components/elements/loading-spinner/loading-spinner-options';
 
 @Component({
   selector: 'app-profile-picture',
@@ -20,7 +21,11 @@ export class ProfilePictureComponent implements OnInit {
   }
 
   imageUrl: string;
-  
+  loadingOptions: LoadingSpinnerOptions = {
+    overlay: true
+  };
+  updating: boolean;
+
   private memberId: string;
 
   ngOnInit(): void {
@@ -30,7 +35,11 @@ export class ProfilePictureComponent implements OnInit {
   }
 
   onRotate(): void {
+    this.updating = true;
+    this.changeDetector.detectChanges();
+
     this.accountService.rotateImage().subscribe(() => {
+      this.updating = false;
       this.loadImage(true);
       this.changeDetector.detectChanges();
     });
@@ -41,7 +50,11 @@ export class ProfilePictureComponent implements OnInit {
       return;
     }
  
+    this.updating = true;
+    this.changeDetector.detectChanges();
+
     this.accountService.updateImage(files[0]).subscribe(() => {
+      this.updating = false;
       this.loadImage(true);
       this.changeDetector.detectChanges();
     });  
