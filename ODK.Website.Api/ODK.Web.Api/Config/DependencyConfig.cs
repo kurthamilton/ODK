@@ -117,7 +117,8 @@ namespace ODK.Web.Api.Config
             {
                 BaseUrl = urls.Base,
                 EventRsvpUrlFormat = urls.EventRsvp,
-                EventUrlFormat = urls.Event
+                EventUrlFormat = urls.Event,
+                UnsubscribeUrlFormat = urls.Unsubscribe
             });
 
             services.AddSingleton(new MemberServiceSettings

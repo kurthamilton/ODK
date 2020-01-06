@@ -1,5 +1,4 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
@@ -19,7 +18,6 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
 export class ProfileEmailsComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private route: ActivatedRoute,
     private chapterService: ChapterService,
     private accountService: AccountService
   ) {     
@@ -50,6 +48,11 @@ export class ProfileEmailsComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
+    if (this.profile.emailOptIn && !confirm('Are you sure you want to stop receiving event emails?')) {
+      this.formCallback.next(true);
+      return;
+    }
+
     const optIn: boolean = !this.profile.emailOptIn;
     this.accountService.updateEmailOptIn(optIn).subscribe(() => {
       this.profile.emailOptIn = optIn;

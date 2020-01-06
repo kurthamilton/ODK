@@ -10,6 +10,10 @@
         You have chosen not to receive event emails.
       </ngb-alert>             
     </p>
-    <app-form [form]="form" (formSubmit)="onFormSubmit()"></app-form>
+    <app-form [form]="form" (formSubmit)="onFormSubmit()">
+      <div app-button-row *ngIf="profile.emailOptIn" class="text-danger ml-1">
+        You will no longer receive emails informing you of upcoming events
+      </div>
+    </app-form>
   </ng-container>
 </app-body>
