@@ -186,6 +186,7 @@ namespace ODK.Services.Events
             AssertEventEmailsCanBeSent(@event);
 
             IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(@event.ChapterId);
+
             IReadOnlyCollection<EventResponse> responses = await _eventRepository.GetEventResponses(@event.Id);
             responses = responses.Where(x => responseTypes.Contains(x.ResponseTypeId)).ToArray();
 
@@ -200,7 +201,9 @@ namespace ODK.Services.Events
                 }
             }
 
-            IReadOnlyCollection<Member> to = members.Where(x => responseDictionary.ContainsKey(x.Id)).ToArray();
+            IReadOnlyCollection<Member> to = members
+                .Where(x => x.EmailOptIn && responseDictionary.ContainsKey(x.Id))
+                .ToArray();
 
             Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
 
@@ -231,9 +234,12 @@ namespace ODK.Services.Events
             }
             else
             {
+                IReadOnlyCollection<EventInvite> invites = await _eventRepository.GetEventInvites(@event.Id);
+                IDictionary<Guid, EventInvite> inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
+
                 IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(chapter.Id);
                 IReadOnlyCollection<Member> invited = members
-                    .Where(x => x.EmailOptIn)
+                    .Where(x => x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id))
                     .ToArray();
 
                 await _emailService.SendBulkEmail(currentMemberId, chapter, invited, EmailType.EventInvite, parameters);
