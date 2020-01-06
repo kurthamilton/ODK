@@ -30,6 +30,7 @@ export class JoinComponent implements OnInit, OnDestroy {
   submitted = false;
 
   private image: File;
+  private profile: AccountProfile;
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
@@ -46,14 +47,24 @@ export class JoinComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(profile: AccountProfile): void {    
-    this.accountService.register(this.chapter.id, profile, this.image).subscribe((result: ServiceResult<void>) => {
-      this.formCallback.next(result.messages);
-      this.submitted = result.success === true;
-      this.changeDetector.detectChanges();
-    });
+    this.profile = profile;
+    this.register();
   }
 
   onImageUpload(image: File): void {
     this.image = image;
+    this.register();
+  }
+
+  private register(): void {
+    if (!this.profile || !this.image) {      
+      return;
+    }
+
+    this.accountService.register(this.chapter.id, this.profile, this.image).subscribe((result: ServiceResult<void>) => {
+      this.formCallback.next(result.messages);
+      this.submitted = result.success === true;
+      this.changeDetector.detectChanges();
+    });
   }
 }

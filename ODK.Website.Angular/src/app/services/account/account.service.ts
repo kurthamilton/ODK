@@ -90,7 +90,7 @@ export class AccountService {
     const paramsObject: any = this.createProfileParams(profile);
     paramsObject.chapterId = chapterId;
     paramsObject.image = image;    
-
+    
     const formData: FormData = HttpUtils.createFormData(paramsObject);
 
     return this.http.post(endpoints.register, formData).pipe(
