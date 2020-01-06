@@ -2,7 +2,6 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from
 
 import { FileInputFormControlViewModel } from './file-input-form-control.view-model';
 import { InputBase } from '../input-base';
-import { join } from 'path';
 
 @Component({
   selector: 'app-file-input-form-control',
