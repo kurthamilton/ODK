@@ -66,6 +66,14 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task DeleteChapterSubscription(Guid id)
+        {
+            await Context
+                .Delete<ChapterSubscription>()
+                .Where(x => x.Id).EqualTo(id)
+                .ExecuteAsync();
+        }
+
         public async Task<Chapter> GetChapter(Guid id)
         {
             return await Context

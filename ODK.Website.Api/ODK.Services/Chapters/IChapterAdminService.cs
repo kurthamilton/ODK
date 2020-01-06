@@ -16,6 +16,8 @@ namespace ODK.Services.Chapters
 
         Task DeleteChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
 
+        Task DeleteChapterSubscription(Guid currentMemberId, Guid id);
+
         Task<ChapterAdminMember> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
 
         Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid currentMemberId, Guid chapterId);

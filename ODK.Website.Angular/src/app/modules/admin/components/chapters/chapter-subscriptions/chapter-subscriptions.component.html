@@ -1,9 +1,16 @@
+<p>
+  <a class="btn btn-primary" [routerLink]="paths.create">
+    Create
+  </a>
+</p>
+
 <table *appLoading="!subscriptions" class="table table-striped">
   <thead>
     <tr>
       <th>Name</th>
       <th>Amount</th>
       <th>Months</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
@@ -11,6 +18,11 @@
       <td><a [routerLink]="getSubscriptionLink(subscription)">{{subscription.name}}</a></td>
       <td>{{country.currencySymbol}}{{subscription.amount}}</td>
       <td>{{subscription.months}}</td>
+      <td>
+        <button class="btn-icon text-danger" (click)="onDeleteSubscription(subscription)" ngbTooltip="Delete">
+          <i class="fas fa-times"></i>
+        </button>
+      </td>
     </tr>
   </tbody>
 </table>

@@ -35,10 +35,10 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
   }
 
   breadcrumbs: MenuItem[];
-  chapterSubscriptions: ChapterSubscription[];
   completedSubject: Subject<void> = new Subject<void>();
   form: FormViewModel;
   subscription: MemberSubscription;
+  subscriptions: ChapterSubscription[];
   title: string;
 
   private chapter: Chapter;
@@ -55,9 +55,10 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
         tap((subscription: MemberSubscription) => this.subscription = subscription)
       ),
       this.chapterService.getChapterSubscriptions(this.chapter.id).pipe(
-        tap((chapterSubscriptions: ChapterSubscription[]) => this.chapterSubscriptions = chapterSubscriptions)
+        tap((subscriptions: ChapterSubscription[]) => this.subscriptions = subscriptions)
       )
     ]).subscribe(() => {
+      this.subscriptions = this.subscriptions.sort((a, b) => b.amount - a.amount);
       this.title = this.subscription.type === SubscriptionType.Trial ? 'Purchase membership' : 'Renew membership';
       this.buildForm();
       this.changeDetector.detectChanges();

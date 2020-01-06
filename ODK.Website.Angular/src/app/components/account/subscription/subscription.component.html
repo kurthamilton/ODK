@@ -1,8 +1,8 @@
 <app-body [breadcrumbs]="breadcrumbs">
   <app-form *ngIf="form" [form]="form"></app-form>
-  <ng-container *ngIf="chapterSubscriptions">
+  <ng-container *ngIf="subscriptions">
     <h2>{{title}}</h2>
-    <div class="mb-3" *ngFor="let chapterSubscription of chapterSubscriptions">
+    <div class="mb-3" *ngFor="let chapterSubscription of subscriptions">
       <app-purchase-subscription [chapterSubscription]="chapterSubscription" [close]="completedSubject"
           (purchase)="onPurchase(chapterSubscription, $event)">
       </app-purchase-subscription>

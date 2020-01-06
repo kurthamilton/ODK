@@ -127,6 +127,13 @@ namespace ODK.Web.Api.Admin.Chapters
             return NoContent();
         }
 
+        [HttpDelete("{id}/Subscriptions/{subscriptionId}")]
+        public async Task<IActionResult> DeleteSubscription(Guid id, Guid subscriptionId)
+        {
+            await _chapterAdminService.DeleteChapterSubscription(GetMemberId(), subscriptionId);
+            return NoContent();
+        }
+
         [HttpPut("{id}/Texts")]
         public async Task<ActionResult<ChapterTextsApiResponse>> UpdateChapterTexts(Guid id, [FromForm] UpdateChapterTextsApiRequest request)
         {

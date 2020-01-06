@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { forkJoin } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, switchMap } from 'rxjs/operators';
 
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
@@ -24,12 +24,18 @@ export class ChapterSubscriptionsComponent implements OnInit {
   }
 
   country: Country;
+  paths: {
+    create: string;
+  };
   subscriptions: ChapterSubscription[];
 
   private chapter: Chapter;
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
+    this.paths = {
+      create: adminUrls.chapterSubscriptionCreate(this.chapter)
+    };
 
     forkJoin([
       this.chapterAdminService.getChapterSubscriptions(this.chapter.id).pipe(
@@ -39,11 +45,28 @@ export class ChapterSubscriptionsComponent implements OnInit {
         tap((country: Country) => this.country = country)
       )
     ]).subscribe(() => {
+      this.subscriptions = this.subscriptions.sort((a, b) => b.amount - a.amount);
       this.changeDetector.detectChanges();
     });
   }
 
   getSubscriptionLink(subscription: ChapterSubscription): string {
     return adminUrls.chapterSubscription(this.chapter, subscription);
+  }
+
+  onDeleteSubscription(subscription: ChapterSubscription): void {
+    if (!confirm('Are you sure you want to delete this subscription?')) {
+      return;
+    }
+
+    this.subscriptions = null;
+    this.changeDetector.detectChanges();
+    
+    this.chapterAdminService.deleteChapterSubscription(subscription).pipe(
+      switchMap(() => this.chapterAdminService.getChapterSubscriptions(this.chapter.id))
+    ).subscribe((subscriptions: ChapterSubscription[]) => {
+      this.subscriptions = subscriptions.sort((a, b) => b.amount - a.amount);
+      this.changeDetector.detectChanges();
+    });
   }
 }

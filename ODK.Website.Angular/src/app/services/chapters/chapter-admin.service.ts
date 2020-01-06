@@ -25,6 +25,7 @@ const endpoints = {
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   questions: (id: string) => `${baseUrl}/${id}/questions`,
   subscription: (id: string, subscriptionId: string) => `${baseUrl}/${id}/subscriptions/${subscriptionId}`,
+  subscriptions: (id: string) => `${baseUrl}/${id}/subscriptions`,
   texts: (id: string) => `${baseUrl}/${id}/texts`,
 };
 
@@ -57,6 +58,30 @@ export class ChapterAdminService extends ChapterService {
       map(() => undefined)
     );
   }  
+
+  createChapterSubscription(chapterId: string, subscription: ChapterSubscription): Observable<ServiceResult<void>> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      amount: subscription.amount.toString(),
+      description: subscription.description,
+      months: subscription.months.toString(),
+      name: subscription.name,
+      title: subscription.title,
+      type: subscription.type.toString()
+    });
+
+    return this.http.post(endpoints.subscriptions(chapterId), params).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
+    );
+  }
+
+  deleteChapterSubscription(subscription: ChapterSubscription): Observable<void> {
+    return this.http.delete(endpoints.subscription(subscription.chapterId, subscription.id)).pipe(
+      map(() => undefined)
+    );
+  }
 
   getAdminChapters(): Observable<Chapter[]> {
     return this.http.get(endpoints.chapters).pipe(

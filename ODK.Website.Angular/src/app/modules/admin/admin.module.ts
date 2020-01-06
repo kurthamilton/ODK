@@ -21,6 +21,7 @@ import { ChapterPropertiesComponent } from './components/chapters/chapter-proper
 import { ChapterPropertyComponent } from './components/chapters/chapter-property/chapter-property.component';
 import { ChapterQuestionsComponent } from './components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from './components/chapters/chapter-settings/chapter-settings.component';
+import { ChapterSubscriptionCreateComponent } from './components/chapters/chapter-subscription-create/chapter-subscription-create.component';
 import { ChapterSubscriptionEditComponent } from './components/chapters/chapter-subscription-edit/chapter-subscription-edit.component';
 import { ChapterSubscriptionFormComponent } from './components/chapters/chapter-subscription-form/chapter-subscription-form.component';
 import { ChapterSubscriptionsComponent } from './components/chapters/chapter-subscriptions/chapter-subscriptions.component';
@@ -78,6 +79,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     ChapterPropertyComponent,
     ChapterQuestionsComponent,
     ChapterSettingsComponent,
+    ChapterSubscriptionCreateComponent,
     ChapterSubscriptionEditComponent,
     ChapterSubscriptionFormComponent,
     ChapterSubscriptionsComponent,

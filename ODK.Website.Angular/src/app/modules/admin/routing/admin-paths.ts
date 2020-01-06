@@ -34,13 +34,16 @@ export const adminPaths = {
         }
       }
     },
-    subscription: {
+    subscription: {      
       path: ':id',
       params: {
         id: 'id'
       }
     },
     subscriptions: {
+      create: {
+        path: 'create'
+      },
       path: 'subscriptions'
     }
   },
