@@ -5,6 +5,5 @@ export interface ChapterAdminMember {
   memberId: string;
   receiveContactEmails: boolean;
   receiveNewMemberEmails: boolean;
-  sendEventEmails: boolean;
   sendNewMemberEmails: boolean;
 }

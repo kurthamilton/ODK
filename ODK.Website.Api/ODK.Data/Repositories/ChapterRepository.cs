@@ -237,7 +237,6 @@ namespace ODK.Data.Repositories
                 .Set(x => x.AdminEmailAddress, adminMember.AdminEmailAddress)
                 .Set(x => x.ReceiveContactEmails, adminMember.ReceiveContactEmails)
                 .Set(x => x.ReceiveNewMemberEmails, adminMember.ReceiveNewMemberEmails)
-                .Set(x => x.SendEventEmails, adminMember.SendEventEmails)
                 .Set(x => x.SendNewMemberEmails, adminMember.SendNewMemberEmails)
                 .Where(x => x.MemberId).EqualTo(adminMember.MemberId)
                 .ExecuteAsync();

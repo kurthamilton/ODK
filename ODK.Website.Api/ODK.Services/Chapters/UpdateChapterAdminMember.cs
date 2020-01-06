@@ -8,8 +8,6 @@
 
         public bool ReceiveNewMemberEmails { get; set; }
 
-        public bool SendEventEmails { get; set; }
-
         public bool SendNewMemberEmails { get; set; }
     }
 }

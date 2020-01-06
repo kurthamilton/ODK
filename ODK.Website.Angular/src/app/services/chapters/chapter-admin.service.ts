@@ -105,7 +105,6 @@ export class ChapterAdminService extends ChapterService {
       adminEmailAddress: adminMember.adminEmailAddress,
       receiveContactEmails: adminMember.receiveContactEmails ? 'True' : 'False',
       receiveNewMemberEmails: adminMember.receiveNewMemberEmails ? 'True' : 'False',
-      sendEventEmails: adminMember.sendEventEmails ? 'True' : 'False',
       sendNewMemberEmails: adminMember.sendNewMemberEmails ? 'True' : 'False'
     });
 
@@ -162,7 +161,6 @@ export class ChapterAdminService extends ChapterService {
       memberId: response.memberId,
       receiveContactEmails: response.receiveContactEmails,
       receiveNewMemberEmails: response.receiveNewMemberEmails,
-      sendEventEmails: response.sendEventEmails,
       sendNewMemberEmails: response.sendNewMemberEmails
     };
   }

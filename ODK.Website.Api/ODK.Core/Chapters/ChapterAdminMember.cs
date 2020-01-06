@@ -11,7 +11,7 @@ namespace ODK.Core.Chapters
         }
 
         public ChapterAdminMember(Guid chapterId, Guid memberId, string firstName, string lastName, string adminEmailAddress, 
-            bool superAdmin, bool receiveContactEmails, bool receiveNewMemberEmails, bool sendEventEmails, bool sendNewMemberEmails)
+            bool superAdmin, bool receiveContactEmails, bool receiveNewMemberEmails, bool sendNewMemberEmails)
             : this(chapterId, memberId)
         {
             AdminEmailAddress = adminEmailAddress;
@@ -19,7 +19,6 @@ namespace ODK.Core.Chapters
             LastName = lastName;
             ReceiveContactEmails = receiveContactEmails;
             ReceiveNewMemberEmails = receiveNewMemberEmails;
-            SendEventEmails = sendEventEmails;
             SendNewMemberEmails = sendNewMemberEmails;
             SuperAdmin = superAdmin;
         }
@@ -37,8 +36,6 @@ namespace ODK.Core.Chapters
         public bool ReceiveContactEmails { get; set; }
 
         public bool ReceiveNewMemberEmails { get; set; }
-
-        public bool SendEventEmails { get; set; }
 
         public bool SendNewMemberEmails { get; set; }
 

@@ -40,7 +40,6 @@ export class ChapterAdminMemberComponent implements OnInit, OnDestroy {
     name: ReadOnlyFormControlViewModel;
     receiveContactEmails: CheckBoxFormControlViewModel;
     receiveNewMemberEmails: CheckBoxFormControlViewModel;
-    sendEventEmails: CheckBoxFormControlViewModel;
     sendNewMemberEmails: CheckBoxFormControlViewModel;
   };
   private memberId: string;
@@ -72,7 +71,6 @@ export class ChapterAdminMemberComponent implements OnInit, OnDestroy {
     this.adminMember.adminEmailAddress = this.formControls.adminEmailAddress.value;
     this.adminMember.receiveContactEmails = this.formControls.receiveContactEmails.value;
     this.adminMember.receiveNewMemberEmails = this.formControls.receiveNewMemberEmails.value;
-    this.adminMember.sendEventEmails = this.formControls.sendEventEmails.value;
     this.adminMember.sendNewMemberEmails = this.formControls.sendNewMemberEmails.value;
 
     this.chapterAdminService.updateChapterAdminMember(this.chapter.id, this.adminMember).subscribe(() => {
@@ -114,14 +112,6 @@ export class ChapterAdminMemberComponent implements OnInit, OnDestroy {
         },
         value: this.adminMember.receiveNewMemberEmails
       }),
-      sendEventEmails: new CheckBoxFormControlViewModel({
-        id: 'send-event-emails',
-        label: {
-          subtitle: 'Replies to an event email will go to this address',
-          text: 'Send event emails'
-        },
-        value: this.adminMember.sendEventEmails
-      }),
       sendNewMemberEmails: new CheckBoxFormControlViewModel({
         id: 'send-new-member-emails',
         label: {
@@ -141,7 +131,6 @@ export class ChapterAdminMemberComponent implements OnInit, OnDestroy {
         this.formControls.adminEmailAddress,
         this.formControls.receiveContactEmails,
         this.formControls.receiveNewMemberEmails,
-        this.formControls.sendEventEmails,
         this.formControls.sendNewMemberEmails
       ]
     };

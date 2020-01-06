@@ -163,7 +163,6 @@ namespace ODK.Services.Chapters
             existing.AdminEmailAddress = adminMember.AdminEmailAddress;
             existing.ReceiveContactEmails = adminMember.ReceiveContactEmails;
             existing.ReceiveNewMemberEmails = adminMember.ReceiveNewMemberEmails;
-            existing.SendEventEmails = adminMember.SendEventEmails;
             existing.SendNewMemberEmails = adminMember.SendNewMemberEmails;
 
             await _chapterRepository.UpdateChapterAdminMember(existing);

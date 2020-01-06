@@ -20,7 +20,6 @@ namespace ODK.Data.Mapping
             Property(x => x.SuperAdmin).From<Member>();
             Property(x => x.ReceiveContactEmails);
             Property(x => x.ReceiveNewMemberEmails);
-            Property(x => x.SendEventEmails);
             Property(x => x.SendNewMemberEmails);
 
             Join<Member, Guid>(x => x.MemberId, x => x.Id);
@@ -38,8 +37,7 @@ namespace ODK.Data.Mapping
                 superAdmin: reader.GetBoolean(5),
                 receiveContactEmails: reader.GetBoolean(6),
                 receiveNewMemberEmails: reader.GetBoolean(7),
-                sendEventEmails: reader.GetBoolean(8),
-                sendNewMemberEmails: reader.GetBoolean(9)
+                sendNewMemberEmails: reader.GetBoolean(8)
             );
         }
     }
