@@ -23,7 +23,6 @@ export class SendEmailComponent implements OnInit, OnDestroy {
   }
 
   form: FormViewModel;
-  sent: boolean;
 
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
@@ -42,17 +41,11 @@ export class SendEmailComponent implements OnInit, OnDestroy {
     this.formCallback.complete();
   }
 
-  onAlertClose(): void {
-    this.sent = false;
-    this.changeDetector.detectChanges();
-  }
-
   onFormSubmit(): void {
     this.emailAdminService.sendEmail(this.member.id, this.formControls.subject.value, 
       this.formControls.body.value
     ).subscribe(() => {
-      this.formCallback.next(true);
-      this.sent = true;
+      this.formCallback.next(true);      
       this.buildForm();
       this.changeDetector.detectChanges();
     })
@@ -88,7 +81,10 @@ export class SendEmailComponent implements OnInit, OnDestroy {
       controls: [
         this.formControls.subject,
         this.formControls.body
-      ]
+      ],
+      messages: {
+        success: 'Email sent'
+      }
     };
   }
 }

@@ -220,10 +220,12 @@ namespace ODK.Services.Members
 
             await _memberRepository.UpdateMemberSubscription(memberSubscription);
 
-            MemberSubscriptionRecord record = new MemberSubscriptionRecord(memberId, chapterSubscription.Type, DateTime.UtcNow);
+            MemberSubscriptionRecord record = new MemberSubscriptionRecord(memberId, chapterSubscription.Type, DateTime.UtcNow,
+                chapterSubscription.Amount, chapterSubscription.Months);
             await _memberRepository.AddMemberSubscriptionRecord(record);
 
             _cacheService.UpdatedVersionedItem(memberSubscription, memberId);
+            _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
 
             return memberSubscription;
         }

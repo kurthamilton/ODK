@@ -24,9 +24,10 @@ export class FormComponent implements OnInit, OnDestroy {
   loadingOptions: LoadingSpinnerOptions = {
     overlay: true
   };
-  messages: string[];
+  messages: string[];  
   state: FormStateViewModel = {};
   submitting = false;
+  successMessage: string;
   validateForm: Subject<void> = new Subject<void>();
 
   ngOnInit(): void {
@@ -42,8 +43,11 @@ export class FormComponent implements OnInit, OnDestroy {
         success = result;
       } else {
         this.messages = result;
-        this.changeDetector.detectChanges();
+        success = !this.messages || this.messages.length === 0;
       }
+
+      this.successMessage = (!!this.form.messages && !!this.form.messages.success) ? this.form.messages.success : '';
+      this.changeDetector.detectChanges();
 
       this.onFormCallback(success);
     });
@@ -67,6 +71,10 @@ export class FormComponent implements OnInit, OnDestroy {
     this.changeDetector.detectChanges();
 
     this.formSubmit.emit();
+  }
+
+  onSuccessMessageClose(): void {
+    this.successMessage = '';
   }
 
   private onFormCallback(success: boolean) {

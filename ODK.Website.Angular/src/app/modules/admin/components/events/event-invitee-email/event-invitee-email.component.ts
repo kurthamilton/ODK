@@ -24,7 +24,6 @@ export class EventInviteeEmailComponent implements OnInit, OnDestroy {
   }
 
   form: FormViewModel;
-  sent: boolean;
   statusLabel: FormControlLabelViewModel = {
     text: 'Response status'
   };
@@ -47,11 +46,6 @@ export class EventInviteeEmailComponent implements OnInit, OnDestroy {
     this.formCallback.complete();
   }
 
-  onAlertClose(): void {
-    this.sent = false;
-    this.changeDetector.detectChanges();
-  }
-
   onFormSubmit(): void {
     if (this.selectedStatusOptions.length === 0) {
       return;
@@ -62,7 +56,6 @@ export class EventInviteeEmailComponent implements OnInit, OnDestroy {
       .sendInviteeEmail(this.event.id, statuses, this.formControls.subject.value, this.formControls.body.value)
       .subscribe(() => {
         this.formCallback.next(true);
-        this.sent = true;
         this.changeDetector.detectChanges();
       });
   }
@@ -109,7 +102,10 @@ export class EventInviteeEmailComponent implements OnInit, OnDestroy {
       controls: [
         this.formControls.subject,
         this.formControls.body
-      ]
+      ],
+      messages: {
+        success: 'Email sent'
+      }
     };
   }
 }

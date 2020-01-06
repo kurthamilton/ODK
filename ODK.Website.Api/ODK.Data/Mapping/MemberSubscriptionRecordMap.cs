@@ -12,6 +12,8 @@ namespace ODK.Data.Mapping
             Property(x => x.MemberId);
             Property(x => x.Type).HasColumnName("SubscriptionTypeId");
             Property(x => x.PurchaseDate);
+            Property(x => x.Amount);
+            Property(x => x.Months);
         }
 
         public override MemberSubscriptionRecord Read(IDataReader reader)
@@ -20,7 +22,9 @@ namespace ODK.Data.Mapping
             (
                 memberId: reader.GetGuid(0),
                 type: (SubscriptionType)reader.GetInt32(1),
-                purchaseDate: reader.GetDateTime(2)
+                purchaseDate: reader.GetDateTime(2),
+                amount: reader.GetDouble(3),
+                months: reader.GetInt32(4)
             );
         }
     }

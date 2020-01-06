@@ -4,17 +4,18 @@ import { Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
+import { adminUrls } from '../../../routing/admin-urls';
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
+import { ServiceResult } from 'src/app/services/service-result';
 import { SubscriptionType } from 'src/app/core/account/subscription-type';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
-import { adminUrls } from '../../../routing/admin-urls';
-import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { Chapter } from 'src/app/core/chapters/chapter';
 
 @Component({
   selector: 'app-member-subscription',
@@ -35,7 +36,7 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
   member: Member;
 
   private chapter: Chapter;
-  private formCallback: Subject<boolean> = new Subject<boolean>();
+  private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
     expiryDate: TextInputFormControlViewModel;
     type: DropDownFormControlViewModel;
@@ -70,8 +71,8 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
   onFormSubmit(): void {
     this.subscription.expiryDate = this.formControls.expiryDate.value ? new Date(this.formControls.expiryDate.value) : null;
     this.subscription.type = <SubscriptionType>parseInt(this.formControls.type.value, 10);
-    this.memberAdminService.updateMemberSubscription(this.subscription).subscribe(() => {
-      this.formCallback.next(true);
+    this.memberAdminService.updateMemberSubscription(this.subscription).subscribe((result: ServiceResult<void>) => {
+      this.formCallback.next(result.messages);
       this.changeDetector.detectChanges();
     });
   }
@@ -112,7 +113,10 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
       controls: [
         this.formControls.type,
         this.formControls.expiryDate
-      ]
+      ],
+      messages: {
+        success: 'Member subscription updated'
+      }
     };
   }
 

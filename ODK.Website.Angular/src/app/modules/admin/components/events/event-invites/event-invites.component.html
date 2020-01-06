@@ -10,10 +10,6 @@
     </app-form>    
   </div>  
   
-  <ngb-alert *ngIf="sent" type="success" (close)="onSentAlertClose()">
-    Email sent
-  </ngb-alert>
-
   <ng-container *ngIf="invites.sentDate">
     <p>
       {{invites.sent}} invites were sent on {{invites.sentDate | date:'fullDate' }}

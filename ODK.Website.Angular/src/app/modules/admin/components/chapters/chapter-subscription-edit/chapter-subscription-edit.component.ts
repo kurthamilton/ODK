@@ -28,7 +28,6 @@ export class ChapterSubscriptionEditComponent implements OnInit, OnDestroy {
   breadcrumbs: MenuItem[];
   formCallback: Subject<string[]> = new Subject<string[]>();
   subscription: ChapterSubscription;
-  updated: boolean;
 
   private chapter: Chapter;  
 
@@ -54,15 +53,9 @@ export class ChapterSubscriptionEditComponent implements OnInit, OnDestroy {
     this.formCallback.complete();
   }
 
-  onAlertClose(): void {
-    this.updated = false;
-    this.changeDetector.detectChanges();  
-  }
-
   onFormSubmit(subscription: ChapterSubscription): void {    
     this.chapterAdminService.updateChapterSubscription(subscription).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
-      this.updated = result.success;
       this.changeDetector.detectChanges();
 
       if (result.success) {

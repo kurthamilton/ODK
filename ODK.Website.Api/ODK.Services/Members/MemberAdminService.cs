@@ -110,6 +110,7 @@ namespace ODK.Services.Members
             await _memberRepository.UpdateMemberSubscription(update);
 
             _cacheService.RemoveVersionedItem<MemberSubscription>(memberId);
+            _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
 
             return update;
         }

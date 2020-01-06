@@ -154,7 +154,10 @@ export class ChapterSubscriptionFormComponent implements OnChanges {
         this.formControls.amount,
         this.formControls.months,        
         this.formControls.description
-      ]
+      ],
+      messages: {
+        success: 'Updated'
+      }
     };
   }
 }

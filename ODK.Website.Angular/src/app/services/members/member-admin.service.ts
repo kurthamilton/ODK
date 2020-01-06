@@ -4,12 +4,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { catchApiError } from '../http/catchApiError';
 import { DateUtils } from 'src/app/utils/date-utils';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { Member } from 'src/app/core/members/member';
 import { MemberService } from './member.service';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
+import { ServiceResult } from '../service-result';
 
 const baseUrl: string = `${environment.apiBaseUrl}/admin/members`;
 
@@ -82,14 +84,17 @@ export class MemberAdminService extends MemberService {
     return HttpUtils.putBase64(this.http, endpoints.updateImage(memberId), formData);
   }
 
-  updateMemberSubscription(subscription: MemberSubscription): Observable<void> {
+  updateMemberSubscription(subscription: MemberSubscription): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
       expiryDate: DateUtils.toISODateString(subscription.expiryDate),
       type: subscription.type.toString()
     });
 
     return this.http.put(endpoints.memberSubscription(subscription.memberId), params).pipe(
-      map(() => undefined)
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
     );
   }
 

@@ -7,4 +7,7 @@ export interface FormViewModel {
   buttons: FormButtonViewModel[];
   callback: Observable<boolean | string[]>;
   controls: FormControlViewModel[];
+  messages?: {
+    success?: string;
+  };
 }
