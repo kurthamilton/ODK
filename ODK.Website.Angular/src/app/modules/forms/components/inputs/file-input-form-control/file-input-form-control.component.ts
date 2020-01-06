@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from
 
 import { FileInputFormControlViewModel } from './file-input-form-control.view-model';
 import { InputBase } from '../input-base';
+import { join } from 'path';
 
 @Component({
   selector: 'app-file-input-form-control',
@@ -22,9 +23,13 @@ export class FileInputFormControlComponent extends InputBase implements OnDestro
   
   onFileChange(files: FileList): void {
     this.files = files;
-    this.setValue(files);
+    if (!this.control.value) {
+      // hack - some browsers do not set the file input value
+      this.control.setValue(files);      
+    }       
+    this.onValidate();
   }
-
+  
   protected setValue(_: any): void {
     this.viewModel.value = this.files;
   }
