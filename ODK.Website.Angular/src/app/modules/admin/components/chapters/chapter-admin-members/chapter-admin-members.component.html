@@ -15,7 +15,7 @@
   <tbody>
     <tr *ngFor="let adminMember of adminMembers">
       <td>
-        <a [routerLink]="getAdminMemberLink(adminMember)">{{adminMember.firstName}} {{adminMember.lastName}}</a>
+        <a [routerLink]="getAdminMemberLink(adminMember)">{{adminMember.fullName}}</a>
       </td>
       <td>
         {{adminMember.adminEmailAddress}}

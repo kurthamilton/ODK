@@ -96,7 +96,7 @@ export class ChapterAdminMemberComponent implements OnInit, OnDestroy {
         label: {
           text: 'Name'
         },
-        value: `${this.adminMember.firstName} ${this.adminMember.lastName}`
+        value: this.adminMember.fullName
       }),
       receiveContactEmails: new CheckBoxFormControlViewModel({
         id: 'receive-contact-emails',

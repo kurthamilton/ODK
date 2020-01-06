@@ -157,6 +157,7 @@ export class ChapterAdminService extends ChapterService {
     return {
       adminEmailAddress: response.adminEmailAddress,
       firstName: response.firstName,
+      fullName: `${response.firstName} ${response.lastName}`,
       lastName: response.lastName,
       memberId: response.memberId,
       receiveContactEmails: response.receiveContactEmails,

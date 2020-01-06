@@ -33,7 +33,7 @@ export class ChapterAdminMembersComponent implements OnInit {
     };
 
     this.chapterAdminService.getChapterAdminMembers(this.chapter.id).subscribe((adminMembers: ChapterAdminMember[]) => {
-      this.adminMembers = adminMembers;
+      this.adminMembers = adminMembers.sort((a, b) => a.fullName.localeCompare(b.fullName));
       this.changeDetector.detectChanges();
     });
   }
