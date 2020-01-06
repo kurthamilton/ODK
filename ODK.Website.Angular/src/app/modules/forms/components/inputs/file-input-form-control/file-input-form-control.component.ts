@@ -22,6 +22,7 @@ export class FileInputFormControlComponent extends InputBase implements OnDestro
   
   onFileChange(files: FileList): void {
     this.files = files;
+    this.setValue(files);
   }
 
   protected setValue(_: any): void {
