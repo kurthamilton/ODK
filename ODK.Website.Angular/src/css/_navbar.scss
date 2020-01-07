@@ -1,132 +1,135 @@
 @mixin nav-item-separator() {
-    .nav-item:not(:first-child) {
-        border-left: 1px solid rgba(255, 255, 255, .5);
-    }
+  .nav-item:not(:first-child) {
+    border-left: 1px solid rgba(255, 255, 255, .5);
+  }
 }
 
 @mixin nav-link-vertical-padding() {
-    .nav-link {
-        padding-top: .1rem;
-        padding-bottom: .1rem;
-    }
+  .nav-link {
+    padding-top: .1rem;
+    padding-bottom: .1rem;
+  }
 }
 
 .navbar {
-    .navbar-nav {
-        flex-wrap: wrap;        
-        justify-content: center;
-    }    
+  .navbar-nav {
+    flex-wrap: wrap;        
+    justify-content: center;
+  }    
 }
 
 @include media-breakpoint-up(sm) {
-    .navbar-expand-sm {
-        .navbar-nav { 
-            margin-left: 2rem;           
-            margin-right: 2rem;
+  .navbar-expand-sm {
+    .navbar-nav { 
+      margin-left: 2rem;           
+      margin-right: 2rem;
 
-            @include nav-link-vertical-padding();
+      @include nav-link-vertical-padding();
 
-            .nav-link {
-                padding-left: 1rem;
-                padding-right: 1rem;
+      .nav-link {
+        padding-left: 1rem;
+        padding-right: 1rem;
 
-                @include media-breakpoint-up(md) {
-                    padding-left: 1.5rem;
-                    padding-right: 1.5rem;
-                }
-            }
-
-            @include nav-item-separator();
+        @include media-breakpoint-up(md) {
+          padding-left: 1.5rem;
+          padding-right: 1.5rem;
         }
-    }	
+      }
+
+      @include nav-item-separator();
+    }
+  }	
 }
 
 @include media-breakpoint-up(lg) {
-    .navbar-expand-lg {
-        .navbar-nav {
-            @include nav-link-vertical-padding();
+  .navbar-expand-lg {
+    .navbar-nav {
+      @include nav-link-vertical-padding();
 
-            @include nav-item-separator();
-        }
-    }	
+      @include nav-item-separator();
+    }
+  }	
 }
 
 .home {
-    .nav-item {
-        text-transform: uppercase;
-    }
+  .nav-item {
+    text-transform: uppercase;
+  }
 
-    .navbar {
-        .navbar-nav {
-            margin-left: 4rem;           
-            margin-right: 4rem;
-            margin-bottom: 0;
-            
-            .nav-item {
-                margin-bottom: 0.4rem;
-            }
+  .navbar {
+    .navbar-nav {
+      margin-left: 4rem;           
+      margin-right: 4rem;
+      margin-bottom: 0;
+      
+      .nav-item {
+        margin-bottom: 0.4rem;
+      }
 
-            .nav-link {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
-            }            
-        }        
-    }
+      .nav-link {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }            
+    }        
+  }
 }
 
 .account-links {
-    cursor: pointer;
-	position: absolute;
-	right: $grid-gutter-width / 2;
-    top: 0;
+  cursor: pointer;
+  right: 0;
+  top: 0;
+  
+  @include media-breakpoint-up(lg) {
+    position: absolute;    
+    right: $grid-gutter-width / 2;
+  }  
 
-    .dropdown-menu {
-        min-width: inherit;
-        text-align: right;
-    }
+  .dropdown-menu {
+    min-width: inherit;
+    text-align: right;
+  }
 }
 
 .account-links__user {    
-    opacity: 0.5;
-    
-    @include media-breakpoint-up(md) {
-        font-size: 0.9rem;
+  font-size: 2.4rem;
+  display: flex;
+  opacity: 0.5;  
+
+  @include media-breakpoint-up(lg) {
+    font-size: 1.7rem;
+  }
+
+  &:after {
+    // hide dropdown caret
+    display: none;
+  }
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.chapter {
+  @include media-breakpoint-up(sm) {
+    .account-links {
+      position: absolute;
     }
 
-    &:after {
-        // hide dropdown caret
-        display: none;
+    .account-links__user {
+      font-size: 1.7rem;
     }
-
-    &:hover {
-        opacity: 0.7;
-    }
+  }          
 }
 
 .anonymous-links {
-    display: flex;    
+  display: flex;    
 
-    .anonymous-link {
-        padding-top: 0.1rem;
-        padding-bottom: 0.1rem;
+  .anonymous-link {
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
 
-        &:not(:first-child) {
-            margin-left: 0.25rem;    
-        }
-    }    
-}
-
-.home {
-    .anonymous-links {
-        flex-direction: column;
-        
-        .anonymous-link {            
-            &:not(:first-child) {
-                flex-grow: 1;
-                flex-basis: 0;            
-                margin-left: 0;
-                margin-top: 0.25rem;    
-            }
-        }        
+    &:not(:first-child) {
+      margin-left: 0.25rem;    
     }
+  }    
 }

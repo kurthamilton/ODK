@@ -1,24 +1,18 @@
 .section--header,
 .section--footer {
-    padding: 1rem 0;
+  padding: 1rem 0;
 }
 
 .section--header {
 	color: #FFF;
-    background-color: #FF0000;    
+  background-color: #FF0000;    
 
-    h1 {
-        font-size: 2rem;
-        margin-bottom: 0;
-    }
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0;
+  }
 }
 
 .nav-container {
-    margin-bottom: 0.4rem;
-}
-
-.nav-account-menu {
-    position: absolute;
-    right: $grid-gutter-width / 2;
-    top: 0;
+  margin-bottom: 0.4rem;
 }

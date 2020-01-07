@@ -1,7 +1,7 @@
 <ng-container *ngIf="authenticated === true">
   <div ngbDropdown placement="bottom-right" class="account-links" display="dynamic">
     <div class="text-light account-links__user" ngbDropdownToggle>
-      <i class="fas fa-user fa-2x"></i>
+      <i class="fas fa-user"></i>
     </div>
     <div ngbDropdownMenu role="menu" *ngIf="links">
       <a class="dropdown-item" [routerLink]="links.profile">My profile</a>
