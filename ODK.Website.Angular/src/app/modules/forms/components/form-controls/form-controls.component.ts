@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ChangeDetectorRef, OnDestroy, SimpleChanges, EventEmitter } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ChangeDetectorRef, OnDestroy, SimpleChanges, EventEmitter, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
 import { Observable } from 'rxjs';
@@ -23,6 +23,7 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
   @Input() state: FormStateViewModel;
   @Input() validated: boolean;
   @Input() validateForm: Observable<void>;
+  @Output() change: EventEmitter<void> = new EventEmitter<void>();
 
   @ViewChild('container', { read: ViewContainerRef, static: true }) container;
 
@@ -58,5 +59,6 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
 
   private onFormGroupChanged(formGroup: FormGroup): void {
     this.state.valid = formGroup.valid;
+    this.change.emit();
   }
 }

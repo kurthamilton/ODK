@@ -19,6 +19,7 @@ export class FormComponent implements OnInit, OnDestroy {
   }
 
   @Input() form: FormViewModel;
+  @Output() formChange: EventEmitter<void> = new EventEmitter<void>();
   @Output() formSubmit: EventEmitter<void> = new EventEmitter<void>();
 
   loadingOptions: LoadingSpinnerOptions = {
@@ -55,6 +56,10 @@ export class FormComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.validateForm.complete();
+  }
+
+  onChange(): void {
+    this.formChange.emit();
   }
 
   onSubmit(): void {

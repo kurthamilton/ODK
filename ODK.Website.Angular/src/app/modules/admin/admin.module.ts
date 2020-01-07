@@ -28,7 +28,7 @@ import { ChapterSubscriptionsComponent } from './components/chapters/chapter-sub
 import { CreateEventComponent } from './components/events/create-event/create-event.component';
 import { CreateVenueComponent } from './components/venues/create-venue/create-venue.component';
 import { DefaultEmailsComponent } from './components/emails/default-emails/default-emails.component';
-import { DropDownMultiComponent } from './components/forms/inputs/drop-down-multi/drop-down-multi.component';
+import { DropDownMultiFormControlComponent } from './components/forms/inputs/drop-down-multi-form-control/drop-down-multi-form-control.component';
 import { EditEventComponent } from './components/events/edit-event/edit-event.component';
 import { EditMemberImageComponent } from './components/members/edit-member-image/edit-member-image.component';
 import { EditVenueComponent } from './components/venues/edit-venue/edit-venue.component';
@@ -86,7 +86,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     CreateEventComponent,
     CreateVenueComponent,
     DefaultEmailsComponent,
-    DropDownMultiComponent,
+    DropDownMultiFormControlComponent,
     EditEventComponent,
     EditMemberImageComponent,
     EditVenueComponent,
@@ -130,6 +130,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     NgSelectModule,
   ],
   entryComponents: [
+    DropDownMultiFormControlComponent,
     GoogleMapsTextInputFormControlComponent,
     HtmlEditorFormControlComponent
   ]

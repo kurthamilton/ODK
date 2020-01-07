@@ -1,26 +1,33 @@
-import { Component, ChangeDetectionStrategy, Input, OnChanges, Output, EventEmitter } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, OnChanges, Output, EventEmitter, OnDestroy } from '@angular/core';
+
+import { Subject } from 'rxjs';
 
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
-import { FormControlLabelViewModel } from 'src/app/modules/forms/components/form-control-label/form-control-label.view-model';
+import { DropDownMultiFormControlViewModel } from '../../forms/inputs/drop-down-multi-form-control/drop-down-multi-form-control.view-model';
+import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { MemberFilterViewModel } from './member-filter.view-model';
 import { SubscriptionType } from 'src/app/core/account/subscription-type';
+import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-member-filter',
   templateUrl: './member-filter.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MemberFilterComponent implements OnChanges {
+export class MemberFilterComponent implements OnChanges, OnDestroy {
 
   constructor() { }
 
   @Input() viewModel: MemberFilterViewModel;
   @Output() change: EventEmitter<MemberFilterViewModel> = new EventEmitter<MemberFilterViewModel>();
 
-  typeLabel: FormControlLabelViewModel = {
-    text: 'Type'
+  form: FormViewModel;
+
+  private formCallback: Subject<boolean> = new Subject<boolean>();
+  private formControls: {
+    name: TextInputFormControlViewModel;
+    types: DropDownMultiFormControlViewModel;
   };
-  typeOptions: DropDownFormControlOption[];
 
   ngOnChanges(): void {
     if (!this.viewModel) {
@@ -30,28 +37,55 @@ export class MemberFilterComponent implements OnChanges {
     this.buildForm();
   }
 
-  onChange(): void {
+  ngOnDestroy(): void {
+    this.formCallback.complete();
+  }
+
+  onFormChange(): void {
     const viewModel: MemberFilterViewModel = {
-      types: this.typeOptions.filter(x => x.selected).map(x => <SubscriptionType>parseInt(x.value, 10))
+      name: this.formControls.name.value,
+      types: this.formControls.types.value.map(x => <SubscriptionType>parseInt(x, 10))
     };
 
     this.change.emit(viewModel);
   }
-  
-  onTypeChange(selectedOptions: DropDownFormControlOption[]): void {
-    this.typeOptions.forEach(option => {
-      option.selected = !!selectedOptions.find(x => x.value === option.value);
-    });
-    this.onChange();
+
+  onFormSubmit(): void {
+    this.formCallback.next(true);
   }
 
   private buildForm(): void {
-    this.typeOptions = [
-      this.createTypeOption(SubscriptionType.Trial),
-      this.createTypeOption(SubscriptionType.Full),
-      this.createTypeOption(SubscriptionType.Partial),
-      this.createTypeOption(SubscriptionType.Alum)
-    ];
+    this.formControls = {
+      name: new TextInputFormControlViewModel({
+        id: 'name',
+        label: {
+          text: 'Name'
+        }        
+      }),
+      types: new DropDownMultiFormControlViewModel({
+        id: 'types',
+        label: {
+          text: 'Types'
+        },
+        options: [
+          this.createTypeOption(SubscriptionType.Trial),
+          this.createTypeOption(SubscriptionType.Full),
+          this.createTypeOption(SubscriptionType.Partial),
+          this.createTypeOption(SubscriptionType.Alum)
+        ],
+        value: this.viewModel.types.map(x => x.toString())
+      })
+    };
+
+    this.form = {
+      buttons: [],
+      callback: this.formCallback,
+      controls: [
+        this.formControls.types,
+        this.formControls.name
+      ],
+      display: 'inline'
+    };
   }
 
   private createTypeOption(type: SubscriptionType): DropDownFormControlOption {

@@ -59,6 +59,7 @@ export class MembersComponent implements OnInit {
     ]).subscribe(() => {      
       this.subscriptionMap = ArrayUtils.toMap(this.memberSubscriptions, x => x.memberId);
       this.filter = {
+        name: '',
         types: [
           SubscriptionType.Trial, SubscriptionType.Full, SubscriptionType.Partial
         ]
@@ -79,11 +80,13 @@ export class MembersComponent implements OnInit {
   onFilterChange(filter: MemberFilterViewModel): void {
     this.filterMembers(filter);
     this.sortMembers();
+    this.changeDetector.detectChanges();
   }
 
   onSort(sortBy: SortEvent) {
     this.sortBy = sortBy;
     this.sortMembers();
+    this.changeDetector.detectChanges();
   }
 
   onUploadPicture(files: FileList): void {
@@ -106,7 +109,17 @@ export class MembersComponent implements OnInit {
 
   private filterMembers(filter: MemberFilterViewModel): void {
     this.viewModels = this.members
-      .filter(x => !filter.types || !filter.types.length || filter.types.includes(this.subscriptionMap.get(x.id).type))
+      .filter(member => {
+        if (filter.types && filter.types.length && !filter.types.includes(this.subscriptionMap.get(member.id).type)) {
+          return false;
+        }
+
+        if (filter.name && !member.fullName.toLocaleLowerCase().includes(filter.name.toLocaleLowerCase())) {
+          return false;
+        }
+
+        return true;
+      })
       .map((member: Member): AdminListMemberViewModel => {
         return {
           member: member,

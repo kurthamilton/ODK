@@ -1,9 +1,0 @@
-<div class="form-group">
-  <app-form-control-label [controlId]="controlId" [viewModel]="label">
-  </app-form-control-label>
-  <ng-select *appLoading="!options" [labelForId]="controlId"
-    [multiple]="true" [items]="options" bindLabel="text" bindValue="value" [searchable]="false"
-    (change)="onChange()"
-    [(ngModel)]="selectedOptions">    
-  </ng-select>
-</div>

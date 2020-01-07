@@ -1,2 +1,3 @@
-<app-drop-down-multi controlId="type" [label]="typeLabel" [options]="typeOptions" (change)="onTypeChange($event)">
-</app-drop-down-multi>
+<ng-container *ngIf="viewModel">
+  <app-form [form]="form" (formChange)="onFormChange()" (formSubmit)="onFormSubmit()"></app-form>
+</ng-container>
