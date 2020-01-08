@@ -1,8 +1,9 @@
 import { FormControlOptions } from '../../form-control-options';
 import { InputGroupPrependViewModel } from '../../input-group-prepend/input-group-prepend.view-model';
+import { TextInputType } from './text-input-type';
 
 export interface TextInputFormControlOptions extends FormControlOptions {
-  inputType?: 'text' | 'date' | 'password';
+  inputType?: TextInputType;
   prefix?: InputGroupPrependViewModel;
   value?: string;
 }

@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppSharedModule } from '../shared/app-shared.module';
 import { CheckBoxFormControlComponent } from './components/inputs/check-box-form-control/check-box-form-control.component';
+import { DateInputFormControlComponent } from './components/inputs/date-input-form-control/date-input-form-control.component';
 import { DropDownFormControlComponent } from './components/inputs/drop-down-form-control/drop-down-form-control.component';
 import { ErrorMessagesComponent } from './components/error-messages/error-messages.component';
 import { FileInputFormControlComponent } from './components/inputs/file-input-form-control/file-input-form-control.component';
@@ -22,20 +23,21 @@ import { TextInputFormControlComponent } from './components/inputs/text-input-fo
 @NgModule({
   declarations: [
     CheckBoxFormControlComponent,
+    DateInputFormControlComponent,
     DropDownFormControlComponent,
     ErrorMessagesComponent,
     FileInputFormControlComponent,
+    FormButtonComponent,
     FormComponent,
     FormControlComponent,
     FormControlLabelComponent,
     FormControlsComponent,
     FormControlValidationComponent,
+    InputGroupPrependComponent,
+    NumberInputFormControlComponent,
     ReadOnlyFormControlComponent,
     TextAreaComponent,
     TextInputFormControlComponent,
-    FormButtonComponent,
-    NumberInputFormControlComponent,
-    InputGroupPrependComponent,
   ],
   imports: [
     AppSharedModule,
@@ -45,6 +47,7 @@ import { TextInputFormControlComponent } from './components/inputs/text-input-fo
   ],
   exports: [
     CheckBoxFormControlComponent,
+    DateInputFormControlComponent,
     DropDownFormControlComponent,
     FormComponent,
     FormControlsComponent,
@@ -61,6 +64,7 @@ import { TextInputFormControlComponent } from './components/inputs/text-input-fo
   ],
   entryComponents: [
     CheckBoxFormControlComponent,
+    DateInputFormControlComponent,
     DropDownFormControlComponent,
     FileInputFormControlComponent,
     NumberInputFormControlComponent,

@@ -5,9 +5,10 @@ import { InputBase } from '../input-base';
 import { InputGroupPrependViewModel } from '../../input-group-prepend/input-group-prepend.view-model';
 import { TextInputFormControlComponent } from './text-input-form-control.component';
 import { TextInputFormControlOptions } from './text-input-form-control-options';
+import { TextInputType } from './text-input-type';
 
 export class TextInputFormControlViewModel extends FormControlViewModel {
-  private _inputType: string;
+  private _inputType: TextInputType;
 
   constructor(options: TextInputFormControlOptions) {
     super(options);
@@ -16,7 +17,7 @@ export class TextInputFormControlViewModel extends FormControlViewModel {
     this.value = options.value;
   }
 
-  get inputType(): string { return this._inputType; }
+  get inputType(): TextInputType { return this._inputType; }
   prefix: InputGroupPrependViewModel;
   get type(): Type<InputBase> { return TextInputFormControlComponent; }
   value: string;

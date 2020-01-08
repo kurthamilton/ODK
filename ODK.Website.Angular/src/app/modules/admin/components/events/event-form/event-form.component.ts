@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges, ChangeDetectorRef } from '@angular/core';
 
 import { Observable } from 'rxjs';
@@ -6,6 +5,7 @@ import { Observable } from 'rxjs';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { CheckBoxFormControlViewModel } from 'src/app/modules/forms/components/inputs/check-box-form-control/check-box-form-control.view-model';
+import { DateInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/date-input-form-control/date-input-form-control.view-model';
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
 import { Event } from 'src/app/core/events/event';
@@ -23,12 +23,11 @@ import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 export class EventFormComponent implements OnChanges {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private datePipe: DatePipe,
     private chapterAdminService: ChapterAdminService,
     private venueAdminService: VenueAdminService
   ) {
   }
-
+  
   @Input() buttonText: string;  
   @Input() event: Event;
   @Input() formCallback: Observable<string[]>;
@@ -40,7 +39,7 @@ export class EventFormComponent implements OnChanges {
   private venues: Venue[];
 
   private formControls: {
-    date: TextInputFormControlViewModel;
+    date: DateInputFormControlViewModel;
     description: HtmlEditorFormControlViewModel;
     imageUrl: TextInputFormControlViewModel;
     isPublic: CheckBoxFormControlViewModel;
@@ -81,16 +80,15 @@ export class EventFormComponent implements OnChanges {
 
   private buildForm(): void {
     this.formControls = {
-      date: new TextInputFormControlViewModel({
+      date: new DateInputFormControlViewModel({
         id: 'date',
-        inputType: 'date',
         label: {
           text: 'Date'
         },
         validation: {
           required: true
         },
-        value: this.datePipe.transform(this.event ? this.event.date : new Date(), 'yyyy-MM-dd')
+        value: this.event ? this.event.date : new Date()
       }),
       description: new HtmlEditorFormControlViewModel({
         id: 'description',

@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -7,6 +6,7 @@ import { Subject } from 'rxjs';
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
+import { DateInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/date-input-form-control/date-input-form-control.view-model';
 import { DropDownFormControlOption } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control-option';
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
@@ -15,7 +15,6 @@ import { MemberAdminService } from 'src/app/services/members/member-admin.servic
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { ServiceResult } from 'src/app/services/service-result';
 import { SubscriptionType } from 'src/app/core/account/subscription-type';
-import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
   selector: 'app-member-subscription',
@@ -26,7 +25,6 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private router: Router,
-    private datePipe: DatePipe,
     private memberAdminService: MemberAdminService,
     private chapterAdminService: ChapterAdminService
   ) {     
@@ -38,7 +36,7 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
   private chapter: Chapter;
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
-    expiryDate: TextInputFormControlViewModel;
+    expiryDate: DateInputFormControlViewModel;
     type: DropDownFormControlViewModel;
   };
   private subscription: MemberSubscription;
@@ -69,7 +67,7 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
-    this.subscription.expiryDate = this.formControls.expiryDate.value ? new Date(this.formControls.expiryDate.value) : null;
+    this.subscription.expiryDate = this.formControls.expiryDate.value;
     this.subscription.type = <SubscriptionType>parseInt(this.formControls.type.value, 10);
     this.memberAdminService.updateMemberSubscription(this.subscription).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
@@ -79,13 +77,12 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
 
   private buildForm(): void {
     this.formControls = {
-      expiryDate: new TextInputFormControlViewModel({
+      expiryDate: new DateInputFormControlViewModel({
         id: 'expiry-date',
         label: {
           text: 'Expiry date'
         },
-        inputType: 'date',
-        value: this.datePipe.transform(this.subscription.expiryDate, 'yyyy-MM-dd')
+        value: this.subscription.expiryDate
       }),
       type: new DropDownFormControlViewModel({
         id: 'type',
