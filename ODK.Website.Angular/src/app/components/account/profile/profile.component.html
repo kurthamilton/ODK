@@ -4,8 +4,8 @@
       {{successMessage}}
     </ngb-alert>
     
-    <div class="row">
-      <div class="col-6" *ngIf="links">
+    <div class="row row-cols-2">
+      <div class="col" *ngIf="links">
         <div>
           <a [routerLink]="links.subscription">My subscription</a>
         </div>
@@ -23,7 +23,7 @@
         </div>
       </div>
 
-      <div class="col-6">
+      <div class="col">
         <div class="form-group text-right">
           <app-profile-picture></app-profile-picture>
         </div>

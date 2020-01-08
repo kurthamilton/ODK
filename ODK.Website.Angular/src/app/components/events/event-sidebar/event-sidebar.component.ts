@@ -112,6 +112,7 @@ export class EventSidebarComponent implements OnChanges {
 
     const memberMap: Map<string, Member> = ArrayUtils.toMap(this.members, x => x.id);
     this.responses
+      .filter(x => memberMap.has(x.memberId))
       .sort((a, b) => memberMap.get(a.memberId).fullName.localeCompare(memberMap.get(b.memberId).fullName))
       .forEach((response: EventMemberResponse) => {
         const member: Member = memberMap.get(response.memberId);
