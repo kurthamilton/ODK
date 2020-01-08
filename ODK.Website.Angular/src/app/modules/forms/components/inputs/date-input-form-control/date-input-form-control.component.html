@@ -1,8 +1,16 @@
 <div [formGroup]="formGroup">
-  <input
-      type="date" [attr.match]="match" [attr.pattern]="pattern" [attr.required]="required ? 'required' : null"
+  <div class="input-group">
+    <div class="input-group-prepend">
+      <button class="btn btn-outline-secondary" (click)="d.toggle()" type="button">
+        <i class="fas fa-calendar-alt"></i>
+      </button>
+    </div>
+    <input ngbDatepicker #d="ngbDatepicker"
+      [attr.match]="match" [attr.pattern]="pattern" [attr.required]="required ? 'required' : null"
       class="form-control"
       [id]="controlId" [name]="controlId"
-      [formControlName]="controlId"
-      (blur)="onValidate()" />
+      [formControlName]="controlId"      
+      (blur)="onValidate()" (click)="d.open()"
+       />    
+  </div>
 </div>

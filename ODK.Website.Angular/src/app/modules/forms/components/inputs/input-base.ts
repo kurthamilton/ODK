@@ -61,7 +61,7 @@ export abstract class InputBase implements OnDestroy {
     this.control.updateValueAndValidity();
   }
 
-  protected setValue(value: string): void {
+  protected setValue(value: any): void {
     this.viewModel.value = value;
   }
 

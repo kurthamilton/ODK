@@ -1,8 +1,9 @@
-import { DatePipe } from '@angular/common';
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
-import { InputBase } from '../input-base';
+import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+
 import { DateInputFormControlViewModel } from './date-input-form-control.view-model';
+import { InputBase } from '../input-base';
 
 @Component({
   selector: 'app-date-input-form-control',
@@ -11,8 +12,7 @@ import { DateInputFormControlViewModel } from './date-input-form-control.view-mo
 })
 export class DateInputFormControlComponent extends InputBase {
 
-  constructor(changeDetector: ChangeDetectorRef,
-    private datePipe: DatePipe) { 
+  constructor(changeDetector: ChangeDetectorRef) { 
     super(changeDetector);
   }
 
@@ -20,10 +20,18 @@ export class DateInputFormControlComponent extends InputBase {
 
   protected onInit(): void {
     this.dateInputFormControlViewModel = <DateInputFormControlViewModel>this.viewModel;
-    this.control.setValue(this.datePipe.transform(this.viewModel.value, 'yyyy-MM-dd'));
+
+    const date: Date = this.viewModel.value ? new Date(this.viewModel.value) : null;
+    const ngbDate: NgbDateStruct = date 
+      ? { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() }
+      : null;
+    this.control.setValue(ngbDate);
   }
 
-  protected setValue(value: string): void {
-    this.dateInputFormControlViewModel.value = value ? new Date(value) : null;
+  protected setValue(value: NgbDateStruct): void {
+    const date: Date = value 
+      ? new Date(value.year, value.month - 1, value.day) 
+      : null;
+    this.dateInputFormControlViewModel.value = value ? date : null;
   }
 }

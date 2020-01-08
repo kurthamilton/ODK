@@ -47,7 +47,7 @@ export class FormComponent implements OnInit, OnDestroy {
         success = !this.messages || this.messages.length === 0;
       }
 
-      this.successMessage = (!!this.form.messages && !!this.form.messages.success) ? this.form.messages.success : '';
+      this.successMessage = (success && !!this.form.messages && !!this.form.messages.success) ? this.form.messages.success : '';
       this.changeDetector.detectChanges();
 
       this.onFormCallback(success);
