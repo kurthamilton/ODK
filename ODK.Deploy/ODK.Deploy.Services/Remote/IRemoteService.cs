@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace ODK.Deploy.Services.Remote
 {
@@ -8,6 +7,8 @@ namespace ODK.Deploy.Services.Remote
         Task BackupDeployment(int deploymentId);
 
         Task<IRemoteFolder> GetFolder(string path);
+
+        Task ReleaseDeployment(int deploymentId, string fromPath);
 
         Task UploadDeployment(int deploymentId);
     }

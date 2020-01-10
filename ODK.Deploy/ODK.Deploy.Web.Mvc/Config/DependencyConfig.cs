@@ -31,6 +31,7 @@ namespace ODK.Deploy.Web.Mvc.Config
             {
                 BuildPath = x.BuildPath,
                 Name = x.Name,
+                OfflineFile = x.OfflineFile,
                 PreservedPaths = x.PreservedPaths,
                 RemotePath = x.RemotePath
             }).ToArray();

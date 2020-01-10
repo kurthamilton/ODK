@@ -6,6 +6,8 @@
 
         public string Name { get; set; }
 
+        public string OfflineFile { get; set; }
+
         public string[] PreservedPaths { get; set; } = new string[0];
 
         public string RemotePath { get; set; }

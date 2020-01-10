@@ -3,6 +3,7 @@
     public enum RemoteType
     {
         None,
-        Ftp
+        Ftp,
+        FileSystem
     }
 }

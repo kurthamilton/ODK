@@ -27,6 +27,11 @@ namespace ODK.Deploy.Services.Remote.Ftp
             await _client.CreateDirectoryAsync(path, true);
         }
 
+        public async Task DeleteFile(string path)
+        {
+            await _client.DeleteFileAsync(path);
+        }
+
         public async Task<bool> FolderExists(string path)
         {
             return await _client.DirectoryExistsAsync(path);
@@ -50,6 +55,11 @@ namespace ODK.Deploy.Services.Remote.Ftp
             }
 
             return folder;
+        }
+
+        public async Task MoveFile(string from, string to)
+        {
+            await _client.MoveFileAsync(from, to, FtpRemoteExists.Overwrite);
         }
 
         public async Task UploadFolder(IEnumerable<string> localFilePaths, string remotePath)

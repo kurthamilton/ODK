@@ -9,9 +9,13 @@ namespace ODK.Deploy.Services.Remote
 
         Task CreateFolder(string path);
 
+        Task DeleteFile(string path);
+
         Task<bool> FolderExists(string path);
 
         Task<IRemoteFolder> GetFolder(string path);
+
+        Task MoveFile(string from, string to);
 
         Task UploadFolder(IEnumerable<string> localFilePaths, string remotePath);
     }

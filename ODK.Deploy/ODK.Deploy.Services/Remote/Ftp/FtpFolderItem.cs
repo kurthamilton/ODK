@@ -16,6 +16,6 @@ namespace ODK.Deploy.Services.Remote.Ftp
 
         public string Path { get; }
 
-        protected string[] PathParts { get; }        
+        protected string[] PathParts { get; }
     }
 }
