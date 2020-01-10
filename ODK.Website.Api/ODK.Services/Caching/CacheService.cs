@@ -19,7 +19,7 @@ namespace ODK.Services.Caching
 
         public async Task<T> GetOrSetItem<T>(Func<Task<T>> getter, object instanceKey)
         {
-            return await GetOrSet<T>(getter, instanceKey, null, null);
+            return await GetOrSet(getter, instanceKey, null, null);
         }
 
         public async Task<VersionedServiceResult<IReadOnlyCollection<T>>> GetOrSetVersionedCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter,
