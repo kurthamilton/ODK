@@ -8,11 +8,11 @@ namespace ODK.Deploy.Services.Remote.Ftp
 {
     public class FtpRemoteClient : IFtpRemoteClient
     {
-        private readonly FtpClient _client;
+        private readonly FtpClient _client;        
 
         public FtpRemoteClient(FtpClientSettings settings)
         {
-            _client = new FtpClient(settings.Server, new NetworkCredential(settings.UserName, settings.Password));
+            _client = new FtpClient(settings.Server, new NetworkCredential(settings.UserName, settings.Password));        
         }
 
         public async Task CopyFile(string from, string to)
@@ -30,6 +30,11 @@ namespace ODK.Deploy.Services.Remote.Ftp
         public async Task DeleteFile(string path)
         {
             await _client.DeleteFileAsync(path);
+        }
+
+        public async Task DeleteFolder(string path)
+        {
+            await _client.DeleteDirectoryAsync(path);
         }
 
         public async Task<bool> FolderExists(string path)

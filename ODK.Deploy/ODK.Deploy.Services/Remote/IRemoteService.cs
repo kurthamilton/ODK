@@ -8,7 +8,9 @@ namespace ODK.Deploy.Services.Remote
 
         Task<IRemoteFolder> GetFolder(string path);
 
-        Task ReleaseDeployment(int deploymentId, string fromPath);
+        Task<string> GetLastUpload(int deploymentId);
+
+        Task ReleaseDeployment(int deploymentId);
 
         Task UploadDeployment(int deploymentId);
     }

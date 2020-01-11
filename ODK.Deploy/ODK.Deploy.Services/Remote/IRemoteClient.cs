@@ -11,6 +11,8 @@ namespace ODK.Deploy.Services.Remote
 
         Task DeleteFile(string path);
 
+        Task DeleteFolder(string path);
+
         Task<bool> FolderExists(string path);
 
         Task<IRemoteFolder> GetFolder(string path);

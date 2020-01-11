@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ODK.Deploy.Services.Remote.FileSystem
 {
-    public class RemoteFileSystemClient : IRemoteFileSystemClient
+    public class FileSystemRemoteClient : IFileSystemRemoteClient
     {
         public Task CopyFile(string from, string to)
         {
@@ -26,6 +25,13 @@ namespace ODK.Deploy.Services.Remote.FileSystem
         {
             FileInfo file = new FileInfo(path);
             file.Delete();
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteFolder(string path)
+        {
+            DirectoryInfo directory = new DirectoryInfo(path);
+            directory.Delete();
             return Task.CompletedTask;
         }
 
