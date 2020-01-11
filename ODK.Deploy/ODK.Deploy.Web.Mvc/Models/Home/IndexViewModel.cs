@@ -5,6 +5,8 @@ namespace ODK.Deploy.Web.Mvc.Models.Home
 {
     public class IndexViewModel
     {
+        public bool CanDeleteChildren { get; set; }
+
         public IEnumerable<DeploymentViewModel> Deployments { get; set; }
 
         public IRemoteFolder Folder { get; set; }

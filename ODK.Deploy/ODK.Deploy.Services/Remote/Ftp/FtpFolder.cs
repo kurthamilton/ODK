@@ -22,9 +22,9 @@ namespace ODK.Deploy.Services.Remote.Ftp
 
         public IReadOnlyCollection<IRemoteFolder> SubFolders => _subFolders.ToArray();
 
-        public void AddFile(string name)
+        public void AddFile(string name, DateTime lastModified)
         {
-            _files.Add(new FtpFile($"{Path}/{name}"));
+            _files.Add(new FtpFile($"{Path}/{name}", lastModified));
         }
 
         public void AddFolder(string name)

@@ -6,6 +6,8 @@
 
         public string Name { get; set; }
 
+        public string LastBackup { get; set; }
+
         public string LastUpload { get; set; }
 
         public string RemotePath { get; set; }

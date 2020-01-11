@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace ODK.Deploy.Services.Remote.FileSystem
 {
@@ -12,6 +13,8 @@ namespace ODK.Deploy.Services.Remote.FileSystem
         }
 
         public string Name => _file.Name;
+
+        public DateTime LastModified => _file.LastWriteTime;
 
         public string Path => _file.FullName;
     }

@@ -33,24 +33,28 @@ namespace ODK.Deploy.Web.Mvc.Controllers
             }
 
             IReadOnlyCollection<Deployment> deployments = await _deploymentService.GetDeployments();
+            IDictionary<int, string> lastBackups = new Dictionary<int, string>();
             IDictionary<int, string> lastUploads = new Dictionary<int, string>();
             foreach (Deployment deployment in deployments)
             {
+                lastBackups.Add(deployment.Id, await _remoteService.GetLastBackup(deployment.Id));
                 lastUploads.Add(deployment.Id, await _remoteService.GetLastUpload(deployment.Id));
             }
 
             return View(new IndexViewModel
             {
+                CanDeleteChildren = await _remoteService.CanDeleteFromFolder(path),
                 Deployments = deployments.Select(x => new DeploymentViewModel
                 {
                     Id = x.Id,
+                    LastBackup = lastBackups[x.Id],
                     LastUpload = lastUploads[x.Id],
                     Name = x.Name,
                     RemotePath = x.RemotePath
                 }),
                 Folder = folder,
                 Path = folder.Path
-            });
+            }); ;
         }
 
         [HttpPost]
@@ -58,6 +62,13 @@ namespace ODK.Deploy.Web.Mvc.Controllers
         {
             await _remoteService.BackupDeployment(id);
             return RedirectToAction(nameof(Index), new { path });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(string path, string parent)
+        {
+            await _remoteService.DeleteFolder(path);
+            return RedirectToAction(nameof(Index), new { path = parent });
         }
 
         [HttpPost]
