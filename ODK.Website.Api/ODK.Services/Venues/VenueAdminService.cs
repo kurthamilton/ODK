@@ -16,7 +16,7 @@ namespace ODK.Services.Venues
         private readonly IEventRepository _eventRepository;
         private readonly IVenueRepository _venueRepository;
 
-        public VenueAdminService(IChapterRepository chapterRepository, IVenueRepository venueRepository, 
+        public VenueAdminService(IChapterRepository chapterRepository, IVenueRepository venueRepository,
             ICacheService cacheService, IEventRepository eventRepository)
             : base(chapterRepository)
         {
@@ -35,7 +35,7 @@ namespace ODK.Services.Venues
 
             Guid id = await _venueRepository.CreateVenue(create);
 
-            _cacheService.RemoveVersionedCollection<Venue>();
+            _cacheService.RemoveVersionedCollection<Venue>(venue.ChapterId);
 
             return await _venueRepository.GetVenue(id);
         }
@@ -86,7 +86,7 @@ namespace ODK.Services.Venues
             await _venueRepository.UpdateVenue(update);
 
             _cacheService.RemoveVersionedItem<Venue>(id);
-            _cacheService.RemoveVersionedCollection<Venue>();
+            _cacheService.RemoveVersionedCollection<Venue>(update.ChapterId);
 
             return update;
         }
