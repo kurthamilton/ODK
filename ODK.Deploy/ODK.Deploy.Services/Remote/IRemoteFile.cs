@@ -1,9 +1,9 @@
-﻿namespace ODK.Deploy.Services.Remote
-{
-    public interface IRemoteFile
-    {
-        string Name { get; }
+﻿using System;
 
-        string Path { get; }
+namespace ODK.Deploy.Services.Remote
+{
+    public interface IRemoteFile : IRemoteItem
+    {
+        DateTime LastModified { get; }
     }
 }

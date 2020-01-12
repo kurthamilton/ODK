@@ -10,6 +10,8 @@ namespace ODK.Deploy.Core.Deployments
 
         public string Name { get; set; }
 
+        public string OfflineFile { get; set; }
+
         public IReadOnlyCollection<string> PreservedPaths { get; set; }
 
         public string RemotePath { get; set; }
