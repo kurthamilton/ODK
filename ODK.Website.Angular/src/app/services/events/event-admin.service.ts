@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { catchApiError } from '../http/catchApiError';
+import { DateUtils } from 'src/app/utils/date-utils';
 import { environment } from 'src/environments/environment';
 import { Event } from 'src/app/core/events/event';
 import { EventInvites } from 'src/app/core/events/event-invites';
@@ -71,7 +72,11 @@ export class EventAdminService extends EventService {
 
   getAllEvents(chapterId: string, page: number, pageCount: number): Observable<Event[]> {
     return this.http.get(endpoints.events(chapterId, page, pageCount)).pipe(
-      map((response: any) => response.map(x => this.mapEvent(x)))
+      map((response: any) => {
+        return response
+          .map(x => this.mapEvent(x))
+          .sort((a: Event, b: Event) => DateUtils.compare(b.date, a.date));
+      })
     );
   }
   

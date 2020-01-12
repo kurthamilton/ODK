@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { AccountDetails } from 'src/app/core/account/account-details';
 import { AuthenticationService } from '../authentication/authentication.service';
+import { DateUtils } from 'src/app/utils/date-utils';
 import { environment } from 'src/environments/environment';
 import { Event } from 'src/app/core/events/event';
 import { EventMemberResponse } from 'src/app/core/events/event-member-response';
@@ -51,7 +52,11 @@ export class EventService {
 
     return this.http.get(endpoints.events(chapterId))
       .pipe(
-        map((response: any) => response.map(x => this.mapEvent(x)))
+        map((response: any) => {
+          return response
+            .map(x => this.mapEvent(x))
+            .sort((a: Event, b: Event) => DateUtils.compare(a.date, b.date));
+        })
       )
   }
 
@@ -64,7 +69,11 @@ export class EventService {
   getPublicEvents(chapterId: string): Observable<Event[]> {
     return this.http.get(endpoints.publicEvents(chapterId))
       .pipe(
-        map((response: any) => response.map(x => this.mapEvent(x)))
+        map((response: any) => {
+          return response
+            .map(x => this.mapEvent(x))
+            .sort((a: Event, b: Event) => DateUtils.compare(a.date, b.date));
+        })
       )
   }  
 
