@@ -51,6 +51,11 @@ namespace ODK.Deploy.Services.Remote.FileSystem
             throw new NotImplementedException();
         }
 
+        public Task UploadFile(string localPath, string remotePath)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task UploadFolder(IEnumerable<string> localFilePaths, string remotePath)
         {
             throw new NotImplementedException();

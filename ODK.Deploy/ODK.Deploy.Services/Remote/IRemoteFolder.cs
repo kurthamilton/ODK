@@ -8,6 +8,8 @@ namespace ODK.Deploy.Services.Remote
 
         IReadOnlyCollection<IRemoteFile> Files { get; }
 
+        IRemoteFolder Parent { get; }
+
         IReadOnlyCollection<IRemoteFolder> SubFolders { get; }
     }
 }

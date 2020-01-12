@@ -19,6 +19,8 @@ namespace ODK.Deploy.Services.Remote.FileSystem
 
         public string Name => _directory.Name;
 
+        public IRemoteFolder Parent => throw new System.NotImplementedException();
+
         public string Path => _directory.FullName;
 
         public IReadOnlyCollection<IRemoteFolder> SubFolders => _directory.GetDirectories().Select(x => new FileSystemFolder(x.FullName)).ToArray();

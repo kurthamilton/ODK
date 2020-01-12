@@ -51,13 +51,35 @@
                             <button class="btn btn-sm btn-primary">Upload</button>
                         }
 
-                        @if (!string.IsNullOrEmpty(deployment.LastUpload))
+
+                        @using (Html.BeginForm("Release", null, FormMethod.Post))
                         {
-                            using (Html.BeginForm("Release", null, FormMethod.Post))
+                            <input type="hidden" name="id" value="@deployment.Id" />
+                            <input type="hidden" name="path" value="@Model.Path" />
+                            <button class="btn btn-sm btn-primary" disabled="@(string.IsNullOrEmpty(deployment.LastUpload) ? "disabled" : null)">
+                                Release
+                            </button>
+                        }
+
+                        @if (!string.IsNullOrEmpty(deployment.OfflineFile))
+                        {
+                            if (deployment.Offline)
                             {
-                                <input type="hidden" name="id" value="@deployment.Id" />
-                                <input type="hidden" name="path" value="@Model.Path" />
-                                <button class="btn btn-sm btn-primary">Release</button>
+                                using (Html.BeginForm("Online", null, FormMethod.Post))
+                                {
+                                    <input type="hidden" name="id" value="@deployment.Id" />
+                                    <input type="hidden" name="path" value="@Model.Path" />
+                                    <button class="btn btn-sm btn-success">Put online</button>
+                                }
+                            }
+                            else
+                            {
+                                using (Html.BeginForm("Offline", null, FormMethod.Post))
+                                {
+                                    <input type="hidden" name="id" value="@deployment.Id" />
+                                    <input type="hidden" name="path" value="@Model.Path" />
+                                    <button class="btn btn-sm btn-danger">Take offline</button>
+                                }
                             }
                         }
                     </div>

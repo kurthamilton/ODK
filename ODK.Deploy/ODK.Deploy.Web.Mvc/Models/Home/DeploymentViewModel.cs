@@ -10,6 +10,10 @@
 
         public string LastUpload { get; set; }
 
+        public bool Offline { get; set; }
+
+        public string OfflineFile { get; set; }
+
         public string RemotePath { get; set; }
     }
 }

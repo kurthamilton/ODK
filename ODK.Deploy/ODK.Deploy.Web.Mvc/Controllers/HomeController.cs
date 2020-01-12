@@ -35,10 +35,12 @@ namespace ODK.Deploy.Web.Mvc.Controllers
             IReadOnlyCollection<Deployment> deployments = await _deploymentService.GetDeployments();
             IDictionary<int, string> lastBackups = new Dictionary<int, string>();
             IDictionary<int, string> lastUploads = new Dictionary<int, string>();
+            IDictionary<int, bool> offline = new Dictionary<int, bool>();
             foreach (Deployment deployment in deployments)
             {
                 lastBackups.Add(deployment.Id, await _remoteService.GetLastBackup(deployment.Id));
                 lastUploads.Add(deployment.Id, await _remoteService.GetLastUpload(deployment.Id));
+                offline.Add(deployment.Id, await _remoteService.IsOffline(deployment.Id));
             }
 
             return View(new IndexViewModel
@@ -50,6 +52,8 @@ namespace ODK.Deploy.Web.Mvc.Controllers
                     LastBackup = lastBackups[x.Id],
                     LastUpload = lastUploads[x.Id],
                     Name = x.Name,
+                    Offline = offline[x.Id],
+                    OfflineFile = x.OfflineFile,
                     RemotePath = x.RemotePath
                 }),
                 Folder = folder,
@@ -69,6 +73,20 @@ namespace ODK.Deploy.Web.Mvc.Controllers
         {
             await _remoteService.DeleteFolder(path);
             return RedirectToAction(nameof(Index), new { path = parent });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Offline(int id, string path)
+        {
+            await _remoteService.TakeOffline(id);
+            return RedirectToAction(nameof(Index), new { path });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Online(int id, string path)
+        {
+            await _remoteService.PutOnline(id);
+            return RedirectToAction(nameof(Index), new { path });
         }
 
         [HttpPost]

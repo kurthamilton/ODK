@@ -16,7 +16,13 @@ namespace ODK.Deploy.Services.Remote
 
         Task<string> GetLastUpload(int deploymentId);
 
+        Task<bool> IsOffline(int deploymentId);
+
+        Task PutOnline(int deploymentId);
+
         Task ReleaseDeployment(int deploymentId);
+
+        Task TakeOffline(int deploymentId);
 
         Task UploadDeployment(int deploymentId);
     }
