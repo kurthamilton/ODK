@@ -41,7 +41,7 @@ namespace ODK.Services.Emails
 
             ChapterEmailProviderSettings settings = await _chapterRepository.GetChapterEmailProviderSettings(chapter.Id);
 
-            const int batchSize = 99;
+            const int batchSize = 90;
             int i = 0;
             List<string> toList = to.ToList();
             while (i < toList.Count)

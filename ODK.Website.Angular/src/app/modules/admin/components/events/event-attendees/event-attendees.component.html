@@ -1,5 +1,6 @@
 <div *appLoading="!attendees" class="row row-cols-3 row-cols-md-6">
-  <div *ngFor="let attendee of attendees" class="col text-center">
+  <div *ngFor="let attendee of attendees" class="col text-center overlay-container">
+    <app-loading-spinner *ngIf="attendee.updating" [options]="loadingOptions"></app-loading-spinner>
     <app-member-image [member]="attendee.member" [maxWidth]="100"></app-member-image>
     <div>{{attendee.member.fullName}}</div>
     <div>

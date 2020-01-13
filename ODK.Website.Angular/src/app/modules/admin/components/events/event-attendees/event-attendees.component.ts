@@ -9,6 +9,7 @@ import { EventAdminService } from 'src/app/services/events/event-admin.service';
 import { EventAttendeeViewModel } from './event-attendee.view-model';
 import { EventMemberResponse } from 'src/app/core/events/event-member-response';
 import { EventResponseType } from 'src/app/core/events/event-response-type';
+import { LoadingSpinnerOptions } from 'src/app/modules/shared/components/elements/loading-spinner/loading-spinner-options';
 import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
 
@@ -26,35 +27,46 @@ export class EventAttendeesComponent implements OnInit {
   }
 
   attendees: EventAttendeeViewModel[];
+  loadingOptions: LoadingSpinnerOptions = {
+    overlay: true
+  };
 
   private event: Event;
   private members: Member[];
-  private responses: EventMemberResponse[];
+  private responseMap: Map<string, EventResponseType>;
 
   ngOnInit(): void {
     this.event = this.eventAdminService.getActiveEvent();
 
     forkJoin([
       this.eventAdminService.getEventResponses(this.event.id).pipe(
-        tap((responses: EventMemberResponse[]) => this.responses = responses)
+        tap((responses: EventMemberResponse[]) => this.responseMap = ArrayUtils.toValueMap(responses, x => x.memberId, x => x.responseType))
       ),
       this.memberAdminService.getMembers(this.event.chapterId).pipe(
         tap((members: Member[]) => this.members = members.sort((a, b) => a.fullName.localeCompare(b.fullName)))
       )
     ]).subscribe(() => {
-      const responseMap: Map<string, EventMemberResponse> = ArrayUtils.toMap(this.responses, x => x.memberId);
-      this.attendees = this.members.map((x: Member): EventAttendeeViewModel => ({
-        member: x,
-        response: responseMap.get(x.id) ? responseMap.get(x.id).responseType : null
-      }));
+      this.setAttendees();
       this.changeDetector.detectChanges();
     });
   }
 
   onRespond(member: Member, responseType: EventResponseType): void {
-    this.eventAdminService.updateMemberResponse(this.event.id, member.id, responseType).subscribe((response: EventMemberResponse) => {
-      // TODO: integrate response into attendees array
-      // TODO: show loading spinner while updating
+    const viewModel: EventAttendeeViewModel = this.attendees.find(x => x.member.id === member.id);
+    viewModel.updating = true;
+    this.changeDetector.detectChanges();
+
+    this.eventAdminService.updateMemberResponse(this.event.id, member.id, responseType).subscribe((response: EventMemberResponse) => {      
+      viewModel.response = response.responseType;
+      viewModel.updating = false;
+      this.changeDetector.detectChanges();
     });
+  }
+
+  private setAttendees(): void {
+    this.attendees = this.members.map((x: Member): EventAttendeeViewModel => ({
+      member: x,
+      response: this.responseMap.get(x.id) ? this.responseMap.get(x.id) : null
+    }));
   }
 }

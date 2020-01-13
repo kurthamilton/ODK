@@ -54,10 +54,15 @@ export class ArrayUtils {
   }
 
   static toMap<TKey, T>(arr: T[], getKey: (item: T) => TKey): Map<TKey, T> {
-    return arr.reduce((map: Map<TKey, T>, current: T): Map<TKey, T> => {
+    return this.toValueMap(arr, getKey, x => x);
+  }
+
+  static toValueMap<TKey, T, TValue>(arr: T[], getKey: (item: T) => TKey, getValue: (item: T) => TValue): Map<TKey, TValue> {
+    return arr.reduce((map: Map<TKey, TValue>, current: T): Map<TKey, TValue> => {
       const key: TKey = getKey(current);
-      map.set(key, current);
+      const value: TValue = getValue(current);
+      map.set(key, value);
       return map;
-    }, new Map<TKey, T>());
-  }    
+    }, new Map<TKey, TValue>());
+  }
 }

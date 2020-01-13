@@ -4,4 +4,5 @@ import { Member } from 'src/app/core/members/member';
 export interface EventAttendeeViewModel {
   member: Member;
   response: EventResponseType;
+  updating?: boolean;
 }

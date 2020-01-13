@@ -166,7 +166,7 @@ export class EventAdminService extends EventService {
     const params: HttpParams = HttpUtils.createFormParams({
       type: responseType.toString()
     });
-
+    
     return this.http.put(endpoints.eventResponse(eventId, memberId), params).pipe(
       map((response: any) => this.mapEventMemberResponse(response))
     );
