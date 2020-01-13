@@ -41,17 +41,25 @@ namespace ODK.Services.Emails
 
             ChapterEmailProviderSettings settings = await _chapterRepository.GetChapterEmailProviderSettings(chapter.Id);
 
-            MimeMessage message = await CreateMessage(settings, from, subject, body);
-            if (bcc)
+            const int batchSize = 99;
+            int i = 0;
+            List<string> toList = to.ToList();
+            while (i < toList.Count)
             {
-                AddBulkEmailBccRecipients(message, message.From.First(), to);
-            }
-            else
-            {
-                AddBulkEmailRecipients(message, to);
-            }
+                IEnumerable<string> batch = toList.Skip(i).Take(batchSize);
+                MimeMessage message = await CreateMessage(settings, from, subject, body);
+                if (bcc)
+                {
+                    AddBulkEmailBccRecipients(message, message.From.First(), batch);
+                }
+                else
+                {
+                    AddBulkEmailRecipients(message, batch);
+                }
 
-            await SendEmail(settings, message);
+                await SendEmail(settings, message);
+                i += batchSize;
+            }
         }
 
         public async Task SendEmail(Chapter chapter, string to, string subject, string body)
