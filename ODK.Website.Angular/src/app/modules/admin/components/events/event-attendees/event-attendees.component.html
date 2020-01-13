@@ -1,0 +1,14 @@
+<div *appLoading="!attendees" class="row row-cols-3 row-cols-md-6">
+  <div *ngFor="let attendee of attendees" class="col text-center">
+    <app-member-image [member]="attendee.member" [maxWidth]="100"></app-member-image>
+    <div>{{attendee.member.fullName}}</div>
+    <div>
+      <app-event-response-icon [type]="1" [active]="attendee.response === 1" (respond)="onRespond(attendee.member, $event)">                                
+      </app-event-response-icon>
+      <app-event-response-icon [type]="2" [active]="attendee.response === 2" (respond)="onRespond(attendee.member, $event)">                                
+      </app-event-response-icon>
+      <app-event-response-icon [type]="3" [active]="attendee.response === 3" (respond)="onRespond(attendee.member, $event)">                                
+      </app-event-response-icon>
+    </div>
+  </div>
+</div>

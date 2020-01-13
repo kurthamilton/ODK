@@ -26,6 +26,7 @@ import { EditEventComponent } from '../components/events/edit-event/edit-event.c
 import { EditMemberImageComponent } from '../components/members/edit-member-image/edit-member-image.component';
 import { EditVenueComponent } from '../components/venues/edit-venue/edit-venue.component';
 import { EmailLayoutComponent } from '../components/emails/email-layout/email-layout.component';
+import { EventAttendeesComponent } from '../components/events/event-attendees/event-attendees.component';
 import { EventInvitesComponent } from '../components/events/event-invites/event-invites.component';
 import { EventLayoutComponent } from '../components/events/event-layout/event-layout.component';
 import { EventsComponent } from '../components/events/events/events.component';
@@ -75,6 +76,7 @@ const routes: Routes = [
       { path: adminPaths.events.create.path, component: CreateEventComponent },
       { path: adminPaths.events.event.path, component: EventLayoutComponent, children: [
         { path: '', component: EditEventComponent },
+        { path: adminPaths.events.event.attendees.path, component: EventAttendeesComponent },
         { path: adminPaths.events.event.invites.path, component: EventInvitesComponent }
       ] },
     ] },

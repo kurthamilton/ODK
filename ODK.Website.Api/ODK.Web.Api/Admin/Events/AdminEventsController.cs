@@ -71,7 +71,7 @@ namespace ODK.Web.Api.Admin.Events
         [HttpPost("{id}/Invitees/SendEmail")]
         public async Task<IActionResult> SendEventInviteeEmail(Guid id, [FromForm] SendEventInviteeEmailApiRequest request)
         {
-            await _eventAdminService.SendEventInviteeEmail(GetMemberId(), id, request.Statuses?.ToArray() ?? new EventResponseType[0], 
+            await _eventAdminService.SendEventInviteeEmail(GetMemberId(), id, request.Statuses?.ToArray() ?? new EventResponseType[0],
                 request.Subject, request.Body);
             return Created();
         }
@@ -102,6 +102,14 @@ namespace ODK.Web.Api.Admin.Events
         {
             IReadOnlyCollection<EventResponse> responses = await _eventAdminService.GetEventResponses(GetMemberId(), id);
             return responses.Select(_mapper.Map<EventResponseApiResponse>);
+        }
+
+        [HttpPut("{id}/Responses/{memberId}")]
+        public async Task<EventResponseApiResponse> UpdateEventResponse(Guid id, Guid memberId,
+            [FromForm] UpdateMemberResponseApiRequest request)
+        {
+            EventResponse response = await _eventAdminService.UpdateMemberResponse(GetMemberId(), id, memberId, request.Type);
+            return _mapper.Map<EventResponseApiResponse>(response);
         }
 
         [HttpGet("Count")]

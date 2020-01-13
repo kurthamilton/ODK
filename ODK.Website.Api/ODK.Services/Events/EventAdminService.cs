@@ -272,6 +272,17 @@ namespace ODK.Services.Events
             return update;
         }
 
+        public async Task<EventResponse> UpdateMemberResponse(Guid currentMemberId, Guid eventId, Guid memberId, EventResponseType responseType)
+        {
+            Event @event = await GetEvent(currentMemberId, eventId);
+
+            EventResponse response = new EventResponse(@event.Id, memberId, responseType);
+
+            await _eventRepository.UpdateEventResponse(response);
+
+            return response;
+        }
+
         private async Task ValidateEvent(Event @event)
         {
             Venue venue = await _venueRepository.GetVenue(@event.VenueId);
@@ -335,6 +346,14 @@ namespace ODK.Services.Events
             parameters.Add("unsubscribeUrl", (_settings.BaseUrl + _settings.UnsubscribeUrlFormat).Interpolate(parameters));
 
             return parameters;
+        }
+
+        private void ValidateEventResponse(EventResponse response)
+        {
+            if (!Enum.IsDefined(typeof(EventResponseType), response.ResponseTypeId) || response.ResponseTypeId <= EventResponseType.None)
+            {
+                throw new OdkServiceException("Invalid response type");
+            }
         }
     }
 }

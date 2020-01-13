@@ -38,6 +38,7 @@ export const adminUrls = {
   emails: (chapter: Chapter) => chapterUrl(chapter, adminPaths.emails.path),
   emailsDefault: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.default.path}`),
   event: (chapter: Chapter, event: Event) => eventPath(chapter, event),
+  eventAttendees: (chapter: Chapter, event: Event) => eventPath(chapter, event, adminPaths.events.event.attendees.path),
   eventCreate: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.events.path}/${adminPaths.events.create.path}`),
   eventInvites: (chapter: Chapter, event: Event) => eventPath(chapter, event, eventPaths.invites.path),
   events: (chapter: Chapter) => chapterUrl(chapter, adminPaths.events.path),

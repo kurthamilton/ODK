@@ -26,6 +26,7 @@ const endpoints = {
   createEvent: `${baseUrl}`,
   event: (id: string) => `${baseUrl}/${id}`,
   eventInvites: (eventId: string) => `${baseUrl}/${eventId}/invites`,
+  eventResponse: (eventId: string, memberId: string) => `${baseUrl}/${eventId}/responses/${memberId}`,
   eventResponses: (eventId: string) => `${baseUrl}/${eventId}/responses`,
   events: (chapterId: string, page: number, pageCount: number) => 
     `${baseUrl}?chapterId=${chapterId}&page=${page}&pageCount=${pageCount}`,
@@ -158,6 +159,16 @@ export class EventAdminService extends EventService {
         value: this.mapEvent(response)
       })),
       catchApiError()
+    );
+  }
+
+  updateMemberResponse(eventId: string, memberId: string, responseType: EventResponseType): Observable<EventMemberResponse> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      type: responseType.toString()
+    });
+
+    return this.http.put(endpoints.eventResponse(eventId, memberId), params).pipe(
+      map((response: any) => this.mapEventMemberResponse(response))
     );
   }
 
