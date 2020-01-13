@@ -35,5 +35,7 @@ namespace ODK.Services.Events
         Task SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false);
 
         Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event);
+
+        Task<EventResponse> UpdateMemberResponse(Guid currentMemberId, Guid eventId, Guid memberId, EventResponseType responseType);
     }
 }

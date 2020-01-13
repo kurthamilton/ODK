@@ -64,6 +64,9 @@ export const adminPaths = {
       }
     },
     event: {
+      attendees: {
+        path: 'attendees'
+      },
       invites: {
         path: 'invites'
       },
