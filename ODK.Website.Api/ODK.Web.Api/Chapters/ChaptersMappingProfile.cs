@@ -21,6 +21,8 @@ namespace ODK.Web.Api.Chapters
                 .ForMember(x => x.Instagram, opt => opt.MapFrom(x => x.InstagramName))
                 .ForMember(x => x.Twitter, opt => opt.MapFrom(x => x.TwitterName));
 
+            CreateMap<ChapterMembershipSettings, ChapterMembershipSettingsApiResponse>();
+
             CreateMap<ChapterPaymentSettings, ChapterPaymentSettingsApiResponse>();
 
             CreateMap<ChapterProperty, ChapterPropertyApiResponse>()

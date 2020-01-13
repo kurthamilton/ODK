@@ -7,6 +7,7 @@ import { tap } from 'rxjs/operators';
 import { AccountProfile } from 'src/app/core/account/account-profile';
 import { appUrls } from 'src/app/routing/app-urls';
 import { ArrayUtils } from 'src/app/utils/array-utils';
+import { ChapterMembershipSettings } from 'src/app/core/chapters/chapter-membership-settings';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
@@ -51,6 +52,7 @@ export class ProfileFormComponent implements OnChanges {
 
   form: FormViewModel;
 
+  private chapterMembershipSettings: ChapterMembershipSettings;
   private chapterProperties: ChapterProperty[];
   private chapterPropertyOptions: Map<string, ChapterPropertyOption[]>;
   private memberPropertyMap: Map<string, MemberProperty>;
@@ -82,6 +84,9 @@ export class ProfileFormComponent implements OnChanges {
       ),
       this.chapterService.getChapterPropertyOptions(this.chapterId).pipe(
         tap((options: ChapterPropertyOption[]) => this.chapterPropertyOptions = ArrayUtils.groupValues(options, x => x.chapterPropertyId, x => x))
+      ),
+      this.chapterService.getChapterMembershipSettings(this.chapterId).pipe(
+        tap((settings: ChapterMembershipSettings) => this.chapterMembershipSettings = settings)
       )
     ]).subscribe(() => {
       if (this.profile) {
@@ -200,7 +205,7 @@ export class ProfileFormComponent implements OnChanges {
         subscription: new CheckBoxFormControlViewModel({
           id: 'subscription',
           label: {
-            text: 'I agree to purchase a subscription after a one month trial period'
+            text: `I agree to purchase a subscription after a ${this.chapterMembershipSettings.trialPeriodMonths} month trial period`
           },
           validation: {
             message: 'Required',

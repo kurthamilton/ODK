@@ -62,7 +62,8 @@ namespace ODK.Services.Authorization
         public async Task<bool> MembershipIsActive(MemberSubscription subscription, Guid chapterId)
         {
             ChapterMembershipSettings membershipSettings = await _cacheService.GetOrSetItem(
-                () => _chapterRepository.GetChapterMembershipSettings(chapterId), chapterId);
+                () => _chapterRepository.GetChapterMembershipSettings(chapterId),
+                chapterId);
 
             return MembershipIsActive(subscription, membershipSettings);
         }
@@ -75,6 +76,11 @@ namespace ODK.Services.Authorization
             }
 
             if (subscription.ExpiryDate == null || subscription.ExpiryDate >= DateTime.UtcNow)
+            {
+                return true;
+            }
+
+            if (membershipSettings.MembershipDisabledAfterDaysExpired <= 0)
             {
                 return true;
             }

@@ -116,6 +116,13 @@ namespace ODK.Services.Chapters
             return await _chapterRepository.GetChapterAdminMembers(chapterId);
         }
 
+        public async Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _chapterRepository.GetChapterMembershipSettings(chapterId);
+        }
+
         public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
@@ -185,13 +192,27 @@ namespace ODK.Services.Chapters
             _cacheService.RemoveVersionedItem<ChapterLinks>(chapterId);
         }
 
+        public async Task UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, UpdateChapterMembershipSettings settings)
+        {
+            ChapterMembershipSettings update = await GetChapterMembershipSettings(currentMemberId, chapterId);
+
+            update.MembershipDisabledAfterDaysExpired = settings.MembershipDisabledAfterDaysExpired;
+            update.TrialPeriodMonths = settings.TrialPeriodMonths;
+
+            ValidateChapterMembershipSettings(update);
+
+            await _chapterRepository.UpdateChapterMembershipSettings(update);
+
+            _cacheService.UpdateItem(update, chapterId);
+        }
+
         public async Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId,
-            UpdateChapterPaymentSettings paymentSettings)
+            UpdateChapterPaymentSettings settings)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             ChapterPaymentSettings existing = await _chapterRepository.GetChapterPaymentSettings(chapterId);
-            ChapterPaymentSettings update = new ChapterPaymentSettings(chapterId, paymentSettings.ApiPublicKey, paymentSettings.ApiSecretKey, existing.Provider);
+            ChapterPaymentSettings update = new ChapterPaymentSettings(chapterId, settings.ApiPublicKey, settings.ApiSecretKey, existing.Provider);
 
             await _chapterRepository.UpdateChapterPaymentSettings(update);
 
@@ -243,6 +264,15 @@ namespace ODK.Services.Chapters
         {
             if (string.IsNullOrWhiteSpace(question.Name) ||
                 string.IsNullOrWhiteSpace(question.Answer))
+            {
+                throw new OdkServiceException("Some required fields are missing");
+            }
+        }
+
+        private void ValidateChapterMembershipSettings(ChapterMembershipSettings settings)
+        {
+            if (settings.MembershipDisabledAfterDaysExpired < 0 ||
+                settings.TrialPeriodMonths <= 0)
             {
                 throw new OdkServiceException("Some required fields are missing");
             }

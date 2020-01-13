@@ -79,11 +79,26 @@ namespace ODK.Web.Api.Admin.Chapters
             return NoContent();
         }
 
+        [HttpGet("{id}/Membership/Settings")]
+        public async Task<ChapterAdminMembershipSettingsApiResponse> GetMembershipSettings(Guid id)
+        {
+            ChapterMembershipSettings settings = await _chapterAdminService.GetChapterMembershipSettings(GetMemberId(), id);
+            return _mapper.Map<ChapterAdminMembershipSettingsApiResponse>(settings);
+        }
+
+        [HttpPut("{id}/Membership/Settings")]
+        public async Task<IActionResult> UpdateMembershipSettings(Guid id, [FromForm] UpdateChapterMembershipSettingsApiRequest request)
+        {
+            UpdateChapterMembershipSettings settings = _mapper.Map<UpdateChapterMembershipSettings>(request);
+            await _chapterAdminService.UpdateChapterMembershipSettings(GetMemberId(), id, settings);
+            return NoContent();
+        }
+
         [HttpGet("{id}/Payments/Settings")]
         public async Task<ChapterAdminPaymentSettingsApiResponse> PaymentSettings(Guid id)
         {
-            ChapterPaymentSettings paymentSettings = await _chapterAdminService.GetChapterPaymentSettings(GetMemberId(), id);
-            return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(paymentSettings);
+            ChapterPaymentSettings settings = await _chapterAdminService.GetChapterPaymentSettings(GetMemberId(), id);
+            return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(settings);
         }
 
         [HttpPut("{id}/Payments/Settings")]
@@ -91,8 +106,8 @@ namespace ODK.Web.Api.Admin.Chapters
             [FromForm] UpdateChapterPaymentSettingsApiRequest request)
         {
             UpdateChapterPaymentSettings update = _mapper.Map<UpdateChapterPaymentSettings>(request);
-            ChapterPaymentSettings paymentSettings = await _chapterAdminService.UpdateChapterPaymentSettings(GetMemberId(), id, update);
-            return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(paymentSettings);
+            ChapterPaymentSettings settings = await _chapterAdminService.UpdateChapterPaymentSettings(GetMemberId(), id, update);
+            return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(settings);
         }
 
         [HttpPost("{id}/Questions")]

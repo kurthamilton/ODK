@@ -91,7 +91,7 @@ namespace ODK.Services.Caching
 
         public void UpdateItem<T>(T item, object instanceKey)
         {
-            Set<T>(item, instanceKey, null, null);
+            Set(item, instanceKey, null, null);
         }
 
         public void UpdatedVersionedCollection<T>(IReadOnlyCollection<T> collection, long version, object key = null)

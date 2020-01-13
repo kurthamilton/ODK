@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators';
 import { catchApiError } from '../http/catchApiError';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminMember } from 'src/app/core/chapters/chapter-admin-member';
+import { ChapterAdminMembershipSettings } from 'src/app/core/chapters/chapter-admin-membership-settings';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterService } from './chapter.service';
@@ -22,6 +23,7 @@ const endpoints = {
   adminMember: (id: string, memberId: string) => `${baseUrl}/${id}/adminmembers/${memberId}`,
   adminMembers: (id: string) => `${baseUrl}/${id}/adminmembers`,
   chapters: baseUrl,  
+  membershipSettings: (id: string) => `${baseUrl}/${id}/membership/settings`,
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   questions: (id: string) => `${baseUrl}/${id}/questions`,
   subscription: (id: string, subscriptionId: string) => `${baseUrl}/${id}/subscriptions/${subscriptionId}`,
@@ -101,6 +103,12 @@ export class ChapterAdminService extends ChapterService {
     );
   }
 
+  getChapterAdminMembershipSettings(chapterId: string): Observable<ChapterAdminMembershipSettings> {
+    return this.http.get(endpoints.membershipSettings(chapterId)).pipe(
+      map((response: any) => this.mapChapterAdminMembershipSettings(response))
+    );
+  }
+
   getChapterAdminPaymentSettings(chapterId: string): Observable<ChapterAdminPaymentSettings> {
     return this.http.get(endpoints.paymentSettings(chapterId)).pipe(
       map((response: any) => this.mapChapterAdminPaymentSettings(response))
@@ -138,10 +146,24 @@ export class ChapterAdminService extends ChapterService {
     );
   }  
 
-  updateChapterAdminPaymentSettings(chapterId: string, paymentSettings: ChapterAdminPaymentSettings): Observable<ChapterAdminPaymentSettings> {
+  updateChapterAdminMembershipSettings(chapterId: string, settings: ChapterAdminMembershipSettings): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
-      apiPublicKey: paymentSettings.apiPublicKey,
-      apiSecretKey: paymentSettings.apiSecretKey
+      membershipDisabledAfterDaysExpired: settings.membershipDisabledAfterDaysExpired.toString(),
+      trialPeriodMonths: settings.trialPeriodMonths.toString()
+    });
+
+    return this.http.put(endpoints.membershipSettings(chapterId), params).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
+    );
+  }    
+
+  updateChapterAdminPaymentSettings(chapterId: string, settings: ChapterAdminPaymentSettings): Observable<ChapterAdminPaymentSettings> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      apiPublicKey: settings.apiPublicKey,
+      apiSecretKey: settings.apiSecretKey
     });
 
     return this.http.put(endpoints.paymentSettings(chapterId), params).pipe(
@@ -190,6 +212,13 @@ export class ChapterAdminService extends ChapterService {
       sendNewMemberEmails: response.sendNewMemberEmails
     };
   }
+
+  private mapChapterAdminMembershipSettings(response: any): ChapterAdminMembershipSettings {
+    return {
+      membershipDisabledAfterDaysExpired: response.membershipDisabledAfterDaysExpired,
+      trialPeriodMonths: response.trialPeriodMonths
+    };
+  }  
 
   private mapChapterAdminPaymentSettings(response: any): ChapterAdminPaymentSettings {
     return {

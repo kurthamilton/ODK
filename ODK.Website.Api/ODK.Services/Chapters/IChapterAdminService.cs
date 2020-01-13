@@ -22,6 +22,8 @@ namespace ODK.Services.Chapters
 
         Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid currentMemberId, Guid chapterId);
 
+        Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid currentMemberId, Guid chapterId);
+
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
 
         Task<IReadOnlyCollection<Chapter>> GetChapters(Guid currentMemberId);
@@ -34,7 +36,9 @@ namespace ODK.Services.Chapters
 
         Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links);
 
-        Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings paymentSettings);
+        Task UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, UpdateChapterMembershipSettings settings);
+
+        Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings settings);
 
         Task UpdateChapterSubscription(Guid currentMemberId, Guid id, CreateChapterSubscription subscription);
 

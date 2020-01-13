@@ -11,6 +11,8 @@ namespace ODK.Services.Chapters
 
         Task<VersionedServiceResult<ChapterLinks>> GetChapterLinks(long? currentVersion, Guid chapterId);
 
+        Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid chapterId);
+
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
 
         Task<VersionedServiceResult<IReadOnlyCollection<ChapterProperty>>> GetChapterProperties(long? currentVersion, Guid chapterId);

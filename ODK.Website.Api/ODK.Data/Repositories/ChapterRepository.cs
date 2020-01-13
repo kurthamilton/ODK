@@ -277,6 +277,7 @@ namespace ODK.Data.Repositories
                     .Set(x => x.FacebookName, links.FacebookName)
                     .Set(x => x.InstagramName, links.InstagramName)
                     .Set(x => x.TwitterName, links.TwitterName)
+                    .Where(x => x.ChapterId).EqualTo(links.ChapterId)
                     .ExecuteAsync();
             }
             else
@@ -287,12 +288,23 @@ namespace ODK.Data.Repositories
             }
         }
 
-        public async Task UpdateChapterPaymentSettings(ChapterPaymentSettings paymentSettings)
+        public async Task UpdateChapterMembershipSettings(ChapterMembershipSettings settings)
+        {
+            await Context
+                .Update<ChapterMembershipSettings>()
+                .Set(x => x.MembershipDisabledAfterDaysExpired, settings.MembershipDisabledAfterDaysExpired)
+                .Set(x => x.TrialPeriodMonths, settings.TrialPeriodMonths)
+                .Where(x => x.ChapterId).EqualTo(settings.ChapterId)
+                .ExecuteAsync();
+        }
+
+        public async Task UpdateChapterPaymentSettings(ChapterPaymentSettings settings)
         {
             await Context
                 .Update<ChapterPaymentSettings>()
-                .Set(x => x.ApiPublicKey, paymentSettings.ApiPublicKey)
-                .Set(x => x.ApiSecretKey, paymentSettings.ApiSecretKey)
+                .Set(x => x.ApiPublicKey, settings.ApiPublicKey)
+                .Set(x => x.ApiSecretKey, settings.ApiSecretKey)
+                .Where(x => x.ChapterId).EqualTo(settings.ChapterId)
                 .ExecuteAsync();
         }
 

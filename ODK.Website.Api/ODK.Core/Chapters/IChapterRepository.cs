@@ -68,7 +68,9 @@ namespace ODK.Core.Chapters
 
         Task UpdateChapterLinks(ChapterLinks links);
 
-        Task UpdateChapterPaymentSettings(ChapterPaymentSettings paymentSettings);
+        Task UpdateChapterMembershipSettings(ChapterMembershipSettings settings);
+
+        Task UpdateChapterPaymentSettings(ChapterPaymentSettings settings);
 
         Task UpdateChapterSubscription(ChapterSubscription subscription);
 

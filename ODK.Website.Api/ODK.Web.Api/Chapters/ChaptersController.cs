@@ -52,11 +52,19 @@ namespace ODK.Web.Api.Chapters
                 x => _mapper.Map<ChapterLinksApiResponse>(x));
         }
 
+        [AllowAnonymous]
+        [HttpGet("{id}/Membership/Settings")]
+        public async Task<ActionResult<ChapterMembershipSettingsApiResponse>> MembershipSettings(Guid id)
+        {
+            ChapterMembershipSettings settings = await _chapterService.GetChapterMembershipSettings(id);
+            return _mapper.Map<ChapterMembershipSettingsApiResponse>(settings);
+        }
+
         [HttpGet("{id}/Payments/Settings")]
         public async Task<ChapterPaymentSettingsApiResponse> PaymentSettings(Guid id)
         {
-            ChapterPaymentSettings paymentSettings = await _chapterService.GetChapterPaymentSettings(GetMemberId(), id);
-            return _mapper.Map<ChapterPaymentSettingsApiResponse>(paymentSettings);
+            ChapterPaymentSettings settings = await _chapterService.GetChapterPaymentSettings(GetMemberId(), id);
+            return _mapper.Map<ChapterPaymentSettingsApiResponse>(settings);
         }
 
         [AllowAnonymous]

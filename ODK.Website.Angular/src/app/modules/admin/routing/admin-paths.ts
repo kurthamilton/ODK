@@ -20,7 +20,7 @@ export const adminPaths = {
         }
       },
       path: 'admin-members'
-    },    
+    },
     path: 'chapter',
     payments: {
       path: 'payments'

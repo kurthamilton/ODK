@@ -4,7 +4,7 @@ namespace ODK.Core.Chapters
 {
     public class ChapterMembershipSettings
     {
-        public ChapterMembershipSettings(Guid chapterId, int trialPeriodMonths, 
+        public ChapterMembershipSettings(Guid chapterId, int trialPeriodMonths,
             int membershipDisabledAfterDaysExpired)
         {
             ChapterId = chapterId;
@@ -14,8 +14,8 @@ namespace ODK.Core.Chapters
 
         public Guid ChapterId { get; }
 
-        public int MembershipDisabledAfterDaysExpired { get; }
+        public int MembershipDisabledAfterDaysExpired { get; set; }
 
-        public int TrialPeriodMonths { get; }
+        public int TrialPeriodMonths { get; set; }
     }
 }

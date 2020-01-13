@@ -49,6 +49,13 @@ namespace ODK.Services.Chapters
             return await _cacheService.GetOrSetVersionedItem(() => GetChapterLinks(chapterId), chapterId, currentVersion);
         }
 
+        public async Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid chapterId)
+        {
+            return await _cacheService.GetOrSetItem(
+                () => _chapterRepository.GetChapterMembershipSettings(chapterId),
+                chapterId);
+        }
+
         public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
         {
             await _authorizationService.AssertMemberIsChapterMember(currentMemberId, chapterId);

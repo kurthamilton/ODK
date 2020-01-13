@@ -15,6 +15,7 @@ import { ChapterAdminMemberComponent } from './components/chapters/chapter-admin
 import { ChapterAdminMembersComponent } from './components/chapters/chapter-admin-members/chapter-admin-members.component';
 import { ChapterEmailProviderComponent } from './components/emails/chapter-email-provider/chapter-email-provider.component';
 import { ChapterEmailsComponent } from './components/emails/chapter-emails/chapter-emails.component';
+import { ChapterMembershipSettingsComponent } from './components/chapters/chapter-membership-settings/chapter-membership-settings.component';
 import { ChapterMenuComponent } from './components/chapters/chapter-menu/chapter-menu.component';
 import { ChapterPaymentSettingsComponent } from './components/chapters/chapter-payment-settings/chapter-payment-settings.component';
 import { ChapterPropertiesComponent } from './components/chapters/chapter-properties/chapter-properties.component';
@@ -73,6 +74,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     ChapterAdminMembersComponent,
     ChapterEmailProviderComponent,
     ChapterEmailsComponent,
+    ChapterMembershipSettingsComponent,
     ChapterMenuComponent,
     ChapterPaymentSettingsComponent,
     ChapterPropertiesComponent,
