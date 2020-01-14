@@ -1,5 +1,6 @@
 import { adminPaths } from './admin-paths';
 import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterEmailProvider } from 'src/app/core/emails/chapter-email-provider';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
 import { Event } from 'src/app/core/events/event';
@@ -34,7 +35,8 @@ export const adminUrls = {
   chapterSubscription: (chapter: Chapter, subscription: ChapterSubscription) => chapterPath(chapter, `${adminPaths.chapter.subscriptions.path}/${subscription.id}`),
   chapterSubscriptionCreate: (chapter: Chapter) => chapterPath(chapter, `${adminPaths.chapter.subscriptions.path}/${adminPaths.chapter.subscriptions.create.path}`),
   chapterSubscriptions: (chapter: Chapter) => chapterPath(chapter, adminPaths.chapter.subscriptions.path),
-  emailProvider: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.emailProvider.path}`),
+  emailProvider: (chapter: Chapter, provider: ChapterEmailProvider) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.emailProviders.path}/${provider.id}`),
+  emailProviders: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.emailProviders.path}`),
   emails: (chapter: Chapter) => chapterUrl(chapter, adminPaths.emails.path),
   emailsDefault: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.default.path}`),
   event: (chapter: Chapter, event: Event) => eventPath(chapter, event),

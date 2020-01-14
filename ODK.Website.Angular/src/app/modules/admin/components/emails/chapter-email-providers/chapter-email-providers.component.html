@@ -1,0 +1,14 @@
+<table *appLoading="!providers" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Provider</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let provider of providers">
+      <td>
+        <a [routerLink]="getChapterEmailProviderLink(provider)">{{provider.smtpServer}}</a>
+      </td>
+    </tr>
+  </tbody>
+</table>

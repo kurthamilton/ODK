@@ -14,6 +14,7 @@ import { ChapterAdminMemberAddComponent } from './components/chapters/chapter-ad
 import { ChapterAdminMemberComponent } from './components/chapters/chapter-admin-member/chapter-admin-member.component';
 import { ChapterAdminMembersComponent } from './components/chapters/chapter-admin-members/chapter-admin-members.component';
 import { ChapterEmailProviderComponent } from './components/emails/chapter-email-provider/chapter-email-provider.component';
+import { ChapterEmailProvidersComponent } from './components/emails/chapter-email-providers/chapter-email-providers.component';
 import { ChapterEmailsComponent } from './components/emails/chapter-emails/chapter-emails.component';
 import { ChapterMembershipSettingsComponent } from './components/chapters/chapter-membership-settings/chapter-membership-settings.component';
 import { ChapterMenuComponent } from './components/chapters/chapter-menu/chapter-menu.component';
@@ -35,6 +36,7 @@ import { EditMemberImageComponent } from './components/members/edit-member-image
 import { EditVenueComponent } from './components/venues/edit-venue/edit-venue.component';
 import { EmailLayoutComponent } from './components/emails/email-layout/email-layout.component';
 import { EmailMenuComponent } from './components/emails/email-menu/email-menu.component';
+import { EventAttendeesComponent } from './components/events/event-attendees/event-attendees.component';
 import { EventFormComponent } from './components/events/event-form/event-form.component';
 import { EventHeaderComponent } from './components/events/event-header/event-header.component';
 import { EventInviteeEmailComponent } from './components/events/event-invitee-email/event-invitee-email.component';
@@ -63,7 +65,6 @@ import { VenueFormComponent } from './components/venues/venue-form/venue-form.co
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
-import { EventAttendeesComponent } from './components/events/event-attendees/event-attendees.component';
 
 @NgModule({
   declarations: [
@@ -74,6 +75,7 @@ import { EventAttendeesComponent } from './components/events/event-attendees/eve
     ChapterAdminMemberComponent,
     ChapterAdminMembersComponent,
     ChapterEmailProviderComponent,
+    ChapterEmailProvidersComponent,
     ChapterEmailsComponent,
     ChapterMembershipSettingsComponent,
     ChapterMenuComponent,
@@ -95,6 +97,7 @@ import { EventAttendeesComponent } from './components/events/event-attendees/eve
     EditVenueComponent,
     EmailLayoutComponent,
     EmailMenuComponent,
+    EventAttendeesComponent,
     EventFormComponent,
     EventHeaderComponent,
     EventInviteeEmailComponent,
@@ -123,7 +126,6 @@ import { EventAttendeesComponent } from './components/events/event-attendees/eve
     VenueLayoutComponent,
     VenueMenuComponent,
     VenuesComponent,
-    EventAttendeesComponent,
   ],
   imports: [
     AdminRoutingModule,

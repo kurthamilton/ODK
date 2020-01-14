@@ -1,1 +1,4 @@
-<app-form *ngIf="form" [form]="form" (formSubmit)="onFormSubmit()"></app-form>
+<ng-container *appLoading="!provider">
+  <app-breadcrumbs [breadcrumbs]="breadcrumbs" [active]="provider.smtpServer"></app-breadcrumbs>
+  <app-form [form]="form" (formSubmit)="onFormSubmit()"></app-form>
+</ng-container>

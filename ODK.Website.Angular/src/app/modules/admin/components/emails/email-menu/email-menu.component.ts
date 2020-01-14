@@ -31,7 +31,7 @@ export class EmailMenuComponent implements OnInit {
 
     if (token.superAdmin) {
       this.menuItems.push(...[
-        { link: adminUrls.emailProvider(chapter), text: 'Provider' },
+        { link: adminUrls.emailProviders(chapter), text: 'Providers' },
         { link: adminUrls.emailsDefault(chapter), text: 'Default' }
       ]);
     }

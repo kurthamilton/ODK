@@ -10,7 +10,7 @@ namespace ODK.Data
         {
             AddMap(new ChapterAdminMemberMap());
             AddMap(new ChapterEmailMap());
-            AddMap(new ChapterEmailProviderSettingsMap());
+            AddMap(new ChapterEmailProviderMap());
             AddMap(new ChapterLinksMap());
             AddMap(new ChapterMap());
             AddMap(new ChapterMembershipSettingsMap());
@@ -39,6 +39,7 @@ namespace ODK.Data
             AddMap(new MemberSubscriptionMap());
             AddMap(new MemberSubscriptionRecordMap());
             AddMap(new PaymentMap());
+            AddMap(new SentEmailMap());
             AddMap(new SiteSettingsMap());
             AddMap(new VenueMap());
         }

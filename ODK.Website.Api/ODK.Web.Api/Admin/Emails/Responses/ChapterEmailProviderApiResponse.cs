@@ -1,10 +1,20 @@
-﻿namespace ODK.Services.Emails
+﻿using System;
+
+namespace ODK.Web.Api.Admin.Emails.Responses
 {
-    public class UpdateChapterEmailProviderSettings
+    public class ChapterEmailProviderApiResponse
     {
+        public int? BatchSize { get; set; }
+
+        public int DailyLimit { get; set; }
+
         public string FromEmailAddress { get; set; }
 
         public string FromName { get; set; }
+
+        public Guid Id { get; set; }
+
+        public int Order { get; set; }
 
         public string SmtpLogin { get; set; }
 

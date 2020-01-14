@@ -234,12 +234,15 @@ namespace ODK.Services.Events
             }
             else
             {
+                IReadOnlyCollection<EventResponse> responses = await _eventRepository.GetEventResponses(@event.Id);
+                IDictionary<Guid, EventResponse> memberResponses = responses.ToDictionary(x => x.MemberId, x => x);
+
                 IReadOnlyCollection<EventInvite> invites = await _eventRepository.GetEventInvites(@event.Id);
                 IDictionary<Guid, EventInvite> inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
 
                 IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(chapter.Id);
                 IReadOnlyCollection<Member> invited = members
-                    .Where(x => x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id))
+                    .Where(x => x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id) && !memberResponses.ContainsKey(x.Id))
                     .ToArray();
 
                 await _emailService.SendBulkEmail(currentMemberId, chapter, invited, EmailType.EventInvite, parameters);

@@ -20,7 +20,7 @@ namespace ODK.Web.Api.Admin.Emails
         {
             CreateMap<UpdateEmailApiRequest, UpdateEmail>();
 
-            CreateMap<UpdateChapterEmailProviderSettingsApiRequest, UpdateChapterEmailProviderSettings>();
+            CreateMap<UpdateChapterEmailProviderApiRequest, UpdateChapterEmailProvider>();
         }
 
         private void MapResponses()
@@ -28,7 +28,7 @@ namespace ODK.Web.Api.Admin.Emails
             CreateMap<ChapterEmail, ChapterEmailApiResponse>()
                 .ForMember(x => x.Id, opt => opt.Condition(x => x.Id != Guid.Empty));
 
-            CreateMap<ChapterEmailProviderSettings, ChapterEmailProviderSettingsApiResponse>();
+            CreateMap<ChapterEmailProvider, ChapterEmailProviderApiResponse>();
 
             CreateMap<Email, EmailApiResponse>()
                 .ForMember(x => x.HtmlContent, opt => opt.MapFrom(x => x.HtmlContent));

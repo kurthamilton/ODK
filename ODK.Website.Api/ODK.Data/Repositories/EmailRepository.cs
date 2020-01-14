@@ -20,6 +20,13 @@ namespace ODK.Data.Repositories
                 .GetIdentityAsync();
         }
 
+        public async Task AddSentEmail(SentEmail sentEmail)
+        {
+            await Context
+                .Insert(sentEmail)
+                .ExecuteAsync();
+        }
+
         public async Task DeleteChapterEmail(Guid chapterId, EmailType type)
         {
             await Context
@@ -70,6 +77,16 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<Email>()
                 .ToArrayAsync();
+        }
+
+        public async Task<int> GetEmailsSentTodayCount(Guid chapterEmailProviderId)
+        {
+            return await Context
+                .Select<SentEmail>()
+                .Where(x => x.ChapterEmailProviderId).EqualTo(chapterEmailProviderId)
+                .Where(x => x.SentDate).GreaterThanOrEqualTo(DateTime.Today)
+                .Where(x => x.SentDate).LessThan(DateTime.Today.AddDays(1))
+                .CountAsync();
         }
 
         public async Task UpdateChapterEmail(ChapterEmail chapterEmail)

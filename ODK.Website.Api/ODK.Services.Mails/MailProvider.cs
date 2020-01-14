@@ -39,15 +39,20 @@ namespace ODK.Services.Emails
         {
             body = await GetLayoutBody(chapter, body);
 
-            ChapterEmailProviderSettings settings = await _chapterRepository.GetChapterEmailProviderSettings(chapter.Id);
-
-            const int batchSize = 90;
             int i = 0;
             List<string> toList = to.ToList();
             while (i < toList.Count)
             {
+                (ChapterEmailProvider provider, int remaining) = await GetProvider(chapter.Id);
+
+                int batchSize = provider.BatchSize ?? (toList.Count - i);
+                if (batchSize > remaining)
+                {
+                    batchSize = remaining;
+                }
+
                 IEnumerable<string> batch = toList.Skip(i).Take(batchSize);
-                MimeMessage message = await CreateMessage(settings, from, subject, body);
+                MimeMessage message = await CreateMessage(provider, from, subject, body);
                 if (bcc)
                 {
                     AddBulkEmailBccRecipients(message, message.From.First(), batch);
@@ -57,7 +62,7 @@ namespace ODK.Services.Emails
                     AddBulkEmailRecipients(message, batch);
                 }
 
-                await SendEmail(settings, message);
+                await SendEmail(provider, message);
                 i += batchSize;
             }
         }
@@ -71,12 +76,12 @@ namespace ODK.Services.Emails
         {
             body = await GetLayoutBody(chapter, body);
 
-            ChapterEmailProviderSettings settings = await _chapterRepository.GetChapterEmailProviderSettings(chapter.Id);
+            (ChapterEmailProvider provider, int _) = await GetProvider(chapter.Id);
 
-            MimeMessage message = await CreateMessage(settings, from, subject, body);
+            MimeMessage message = await CreateMessage(provider, from, subject, body);
             AddEmailRecipient(message, new MailboxAddress(to));
 
-            await SendEmail(settings, message);
+            await SendEmail(provider, message);
         }
 
         private static void AddBulkEmailRecipients(MimeMessage message, IEnumerable<string> recipients)
@@ -102,7 +107,7 @@ namespace ODK.Services.Emails
             message.To.Add(to);
         }
 
-        private async Task AddEmailFrom(MimeMessage message, ChapterEmailProviderSettings settings, ChapterAdminMember from)
+        private async Task AddEmailFrom(MimeMessage message, ChapterEmailProvider provider, ChapterAdminMember from)
         {
             if (from != null)
             {
@@ -111,11 +116,11 @@ namespace ODK.Services.Emails
             }
             else
             {
-                message.From.Add(new MailboxAddress(settings.FromName, settings.FromEmailAddress));
+                message.From.Add(new MailboxAddress(provider.FromName, provider.FromEmailAddress));
             }
         }
 
-        private async Task<MimeMessage> CreateMessage(ChapterEmailProviderSettings settings, ChapterAdminMember from, string subject, string body)
+        private async Task<MimeMessage> CreateMessage(ChapterEmailProvider provider, ChapterAdminMember from, string subject, string body)
         {
             MimeMessage message = new MimeMessage
             {
@@ -126,7 +131,7 @@ namespace ODK.Services.Emails
                 Subject = subject
             };
 
-            await AddEmailFrom(message, settings, from);
+            await AddEmailFrom(message, provider, from);
 
             return message;
         }
@@ -144,7 +149,22 @@ namespace ODK.Services.Emails
             return layout.HtmlContent;
         }
 
-        private async Task SendEmail(ChapterEmailProviderSettings settings, MimeMessage message)
+        private async Task<(ChapterEmailProvider Provider, int Remaining)> GetProvider(Guid chapterId)
+        {
+            IReadOnlyCollection<ChapterEmailProvider> providers = await _chapterRepository.GetChapterEmailProviders(chapterId);
+            foreach (ChapterEmailProvider provider in providers)
+            {
+                int sentToday = await _emailRepository.GetEmailsSentTodayCount(provider.Id);
+                if (sentToday < provider.DailyLimit)
+                {
+                    return (provider, provider.DailyLimit - sentToday);
+                }
+            }
+
+            throw new OdkServiceException("No more emails can be sent today");
+        }
+
+        private async Task SendEmail(ChapterEmailProvider provider, MimeMessage message)
         {
             if (message.To.Count == 0)
             {
@@ -160,11 +180,17 @@ namespace ODK.Services.Emails
                 {
                     ServerCertificateValidationCallback = (s, c, h, e) => true
                 };
-                await client.ConnectAsync(settings.SmtpServer, settings.SmtpPort, SecureSocketOptions.StartTlsWhenAvailable);
-                client.Authenticate(settings.SmtpLogin, settings.SmtpPassword);
+                await client.ConnectAsync(provider.SmtpServer, provider.SmtpPort, SecureSocketOptions.StartTlsWhenAvailable);
+                client.Authenticate(provider.SmtpLogin, provider.SmtpPassword);
 
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
+
+                foreach (InternetAddress to in message.To.Union(message.Cc).Union(message.Bcc))
+                {
+                    SentEmail sentEmail = new SentEmail(provider.Id, DateTime.UtcNow, to.ToString(), message.Subject);
+                    await _emailRepository.AddSentEmail(sentEmail);
+                }
 
                 await _loggingService.LogDebug($"Email sent to {string.Join(", ", message.To)}");
             }

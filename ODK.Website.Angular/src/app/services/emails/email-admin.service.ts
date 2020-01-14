@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { ChapterEmail } from 'src/app/core/emails/chapter-email';
-import { ChapterEmailProviderSettings } from 'src/app/core/emails/chapter-email-provider-settings';
+import { ChapterEmailProvider } from 'src/app/core/emails/chapter-email-provider';
 import { Email } from 'src/app/core/emails/email';
 import { EmailType } from 'src/app/core/emails/email-type';
 import { environment } from 'src/environments/environment';
@@ -16,7 +16,8 @@ const baseUrl: string = `${environment.apiBaseUrl}/admin/emails`;
 const endpoints = {
   chapterEmail: (chapterId: string, type: EmailType) => `${baseUrl}/chapters/${chapterId}/${EmailType[type]}`,
   chapterEmails: (id: string) => `${baseUrl}/chapters/${id}`,
-  chapterProviderSettings: (chapterId: string) => `${baseUrl}/chapters/${chapterId}/provider/settings`,
+  chapterEmailProvider: (id: string, chapterEmailProviderId: string) => `${baseUrl}/chapters/${id}/providers/${chapterEmailProviderId}`,
+  chapterEmailProviders: (id: string) => `${baseUrl}/chapters/${id}/providers`,
   email: (type: EmailType, chapterId: string) => `${baseUrl}/${EmailType[type]}?chapterId=${chapterId}`,
   emails: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
   send: `${baseUrl}/send`
@@ -29,15 +30,44 @@ export class EmailAdminService {
 
   constructor(private http: HttpClient) { }
 
+  addChapterEmailProvider(chapterId: string, provider: ChapterEmailProvider): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      batchSize: provider.batchSize ? provider.batchSize.toString() : null,
+      dailyLimit: provider.dailyLimit.toString(),
+      fromEmailAddress: provider.fromEmailAddress,
+      fromName: provider.fromName,
+      smtpLogin: provider.smtpLogin,
+      smtpPassword: provider.smtpPassword,
+      smtpPort: provider.smtpPort.toString(),
+      smtpServer: provider.smtpServer
+    });
+
+    return this.http.post(endpoints.chapterEmailProviders(chapterId), params).pipe(
+      map(() => undefined)
+    );
+  }
+
   deleteChapterEmail(chapterId: string, type: EmailType): Observable<void> {
     return this.http.delete(endpoints.chapterEmail(chapterId, type)).pipe(
       map(() => undefined)
     );
   }
 
-  getChapterAdminEmailProviderSettings(chapterId: string): Observable<ChapterEmailProviderSettings> {
-    return this.http.get(endpoints.chapterProviderSettings(chapterId)).pipe(
-      map((response: any) => this.mapChapterEmailProviderSettings(response))
+  deleteChapterEmailProvider(chapterId: string, chapterEmailProviderId: string): Observable<void> {
+    return this.http.delete(endpoints.chapterEmailProvider(chapterId, chapterEmailProviderId)).pipe(
+      map(() => undefined)
+    );
+  }
+
+  getChapterAdminEmailProvider(chapterId: string, chapterEmailProviderId): Observable<ChapterEmailProvider> {
+    return this.http.get(endpoints.chapterEmailProvider(chapterId, chapterEmailProviderId)).pipe(
+      map((response: any) => this.mapChapterEmailProvider(response))
+    );
+  }
+
+  getChapterAdminEmailProviders(chapterId: string): Observable<ChapterEmailProvider[]> {
+    return this.http.get(endpoints.chapterEmailProviders(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapChapterEmailProvider(x)))
     );
   }
 
@@ -65,17 +95,19 @@ export class EmailAdminService {
     );
   }
 
-  updateChapterAdminEmailProviderSettings(chapterId: string, emailProviderSettings: ChapterEmailProviderSettings): Observable<void> {
+  updateChapterAdminEmailProvider(chapterId: string, provider: ChapterEmailProvider): Observable<void> {
     const params: HttpParams = HttpUtils.createFormParams({
-      fromEmailAddress: emailProviderSettings.fromEmailAddress,
-      fromName: emailProviderSettings.fromName,
-      smtpLogin: emailProviderSettings.smtpLogin,
-      smtpPassword: emailProviderSettings.smtpPassword,
-      smtpPort: emailProviderSettings.smtpPort.toString(),
-      smtpServer: emailProviderSettings.smtpServer
+      batchSize: provider.batchSize ? provider.batchSize.toString() : null,
+      dailyLimit: provider.dailyLimit.toString(),
+      fromEmailAddress: provider.fromEmailAddress,
+      fromName: provider.fromName,
+      smtpLogin: provider.smtpLogin,
+      smtpPassword: provider.smtpPassword,
+      smtpPort: provider.smtpPort.toString(),
+      smtpServer: provider.smtpServer
     });
 
-    return this.http.put(endpoints.chapterProviderSettings(chapterId), params).pipe(
+    return this.http.put(endpoints.chapterEmailProvider(chapterId, provider.id), params).pipe(
       map(() => undefined)
     );
   }
@@ -111,10 +143,14 @@ export class EmailAdminService {
     };
   }
 
-  private mapChapterEmailProviderSettings(response: any): ChapterEmailProviderSettings {
+  private mapChapterEmailProvider(response: any): ChapterEmailProvider {
     return {
+      batchSize: response.batchSize,
+      dailyLimit: response.dailyLimit,
       fromEmailAddress: response.fromEmailAddress,
       fromName: response.fromName,
+      id: response.id,
+      order: response.order,
       smtpLogin: response.smtpLogin,
       smtpPassword: response.smtpPassword,
       smtpPort: response.smtpPort,

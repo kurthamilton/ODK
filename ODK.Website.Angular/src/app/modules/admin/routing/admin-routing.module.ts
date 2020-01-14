@@ -9,6 +9,7 @@ import { ChapterAdminMemberAddComponent } from '../components/chapters/chapter-a
 import { ChapterAdminMemberComponent } from '../components/chapters/chapter-admin-member/chapter-admin-member.component';
 import { ChapterAdminMembersComponent } from '../components/chapters/chapter-admin-members/chapter-admin-members.component';
 import { ChapterEmailProviderComponent } from '../components/emails/chapter-email-provider/chapter-email-provider.component';
+import { ChapterEmailProvidersComponent } from '../components/emails/chapter-email-providers/chapter-email-providers.component';
 import { ChapterEmailsComponent } from '../components/emails/chapter-emails/chapter-emails.component';
 import { ChapterPaymentSettingsComponent } from '../components/chapters/chapter-payment-settings/chapter-payment-settings.component';
 import { ChapterPropertiesComponent } from '../components/chapters/chapter-properties/chapter-properties.component';
@@ -68,8 +69,11 @@ const routes: Routes = [
       { path: '', component: ChapterEmailsComponent },
       { path: adminPaths.emails.default.path, component: DefaultEmailsComponent, 
         canActivate: [ChapterSuperAdminGuardService] },
-      { path: adminPaths.emails.emailProvider.path, component: ChapterEmailProviderComponent, 
-        canActivate: [ChapterSuperAdminGuardService] }
+      { path: adminPaths.emails.emailProviders.path, 
+        canActivate: [ChapterSuperAdminGuardService], children: [
+          { path:'', component: ChapterEmailProvidersComponent },
+          { path: adminPaths.emails.emailProviders.emailProvider.path, component: ChapterEmailProviderComponent }
+        ] }
     ] },
     { path: adminPaths.events.path, children: [
       { path: '', component: EventsComponent },

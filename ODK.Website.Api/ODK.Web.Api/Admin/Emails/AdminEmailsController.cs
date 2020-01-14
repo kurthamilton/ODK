@@ -68,21 +68,41 @@ namespace ODK.Web.Api.Admin.Emails
             return NoContent();
         }
 
-        [HttpGet("Chapters/{id}/Provider/Settings")]
-        public async Task<ChapterEmailProviderSettingsApiResponse> GetChapterEmailProviderSettings(Guid id)
+        [HttpGet("Chapters/{id}/Providers")]
+        public async Task<IEnumerable<ChapterEmailProviderApiResponse>> GetChapterEmailProviders(Guid id)
         {
-            ChapterEmailProviderSettings settings = await _emailAdminService.GetChapterEmailProviderSettings(GetMemberId(), id);
-            return settings != null
-                ? _mapper.Map<ChapterEmailProviderSettingsApiResponse>(settings)
-                : new ChapterEmailProviderSettingsApiResponse();
+            IReadOnlyCollection<ChapterEmailProvider> providers = await _emailAdminService.GetChapterEmailProviders(GetMemberId(), id);
+            return providers.Select(_mapper.Map<ChapterEmailProviderApiResponse>);
         }
 
-        [HttpPut("Chapters/{id}/Provider/Settings")]
-        public async Task<IActionResult> UpdateChapterEmailProviderSettings(Guid id,
-            [FromForm] UpdateChapterEmailProviderSettingsApiRequest request)
+        [HttpPost("Chapters/{id}/Providers")]
+        public async Task<IActionResult> CreateChapterEmailProvider(Guid id, [FromForm] UpdateChapterEmailProviderApiRequest request)
         {
-            UpdateChapterEmailProviderSettings emailProviderSettings = _mapper.Map<UpdateChapterEmailProviderSettings>(request);
-            await _emailAdminService.UpdateChapterEmailProviderSettings(GetMemberId(), id, emailProviderSettings);
+            UpdateChapterEmailProvider provider = _mapper.Map<UpdateChapterEmailProvider>(request);
+            await _emailAdminService.AddChapterEmailProvider(GetMemberId(), id, provider);
+            return Created();
+        }
+
+        [HttpGet("Chapters/{id}/Providers/{chapterEmailProviderId}")]
+        public async Task<ChapterEmailProviderApiResponse> GetChapterEmailProvider(Guid id, Guid chapterEmailProviderId)
+        {
+            ChapterEmailProvider provider = await _emailAdminService.GetChapterEmailProvider(GetMemberId(), chapterEmailProviderId);
+            return _mapper.Map<ChapterEmailProviderApiResponse>(provider);
+        }
+
+        [HttpPut("Chapters/{id}/Providers/{chapterEmailProviderId}")]
+        public async Task<IActionResult> UpdateChapterEmailProvider(Guid id, Guid chapterEmailProviderId,
+            [FromForm] UpdateChapterEmailProviderApiRequest request)
+        {
+            UpdateChapterEmailProvider provider = _mapper.Map<UpdateChapterEmailProvider>(request);
+            await _emailAdminService.UpdateChapterEmailProvider(GetMemberId(), chapterEmailProviderId, provider);
+            return NoContent();
+        }
+
+        [HttpDelete("Chapters/{id}/Providers/{chapterEmailProviderId}")]
+        public async Task<IActionResult> DeleteChapterEmailProvider(Guid id, Guid chapterEmailProviderId)
+        {
+            await _emailAdminService.DeleteChapterEmailProvider(GetMemberId(), chapterEmailProviderId);
             return NoContent();
         }
 

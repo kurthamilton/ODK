@@ -1,14 +1,17 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 
-import { Subject, forkJoin } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
+import { adminPaths } from '../../../routing/admin-paths';
+import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
-import { ChapterEmailProviderSettings } from 'src/app/core/emails/chapter-email-provider-settings';
+import { ChapterEmailProvider } from 'src/app/core/emails/chapter-email-provider';
 import { EmailAdminService } from 'src/app/services/emails/email-admin.service';
 import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
+import { MenuItem } from 'src/app/core/menus/menu-item';
 import { NumberInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/number-input-form-control/number-input-form-control.view-model';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
@@ -20,33 +23,45 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router,
     private chapterAdminService: ChapterAdminService,
     private emailAdminService: EmailAdminService
   ) {
   }
 
+  breadcrumbs: MenuItem[];
   form: FormViewModel;
+  provider: ChapterEmailProvider;
 
-  private chapter: Chapter;
-  private emailProviderSettings: ChapterEmailProviderSettings;
+  private chapter: Chapter;  
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
+    batchSize: NumberInputFormControlViewModel;
+    dailyLimit: NumberInputFormControlViewModel;
     fromEmailAddress: TextInputFormControlViewModel;
     fromName: TextInputFormControlViewModel;
     smtpLogin: TextInputFormControlViewModel;
     smtpPassword: TextInputFormControlViewModel;
     smtpPort: NumberInputFormControlViewModel;
     smtpServer: TextInputFormControlViewModel;
-  };
+  };  
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
+    
+    const chapterEmailProviderId: string = this.route.snapshot.paramMap.get(adminPaths.emails.emailProviders.emailProvider.params.id);
+    this.emailAdminService.getChapterAdminEmailProvider(this.chapter.id, chapterEmailProviderId).subscribe((provider: ChapterEmailProvider) => {
+      if (!provider) {
+        this.router.navigateByUrl(adminUrls.emailProviders(this.chapter));
+        return;
+      }
 
-    forkJoin([
-      this.emailAdminService.getChapterAdminEmailProviderSettings(this.chapter.id).pipe(
-        tap((emailProviderSettings: ChapterEmailProviderSettings) => this.emailProviderSettings = emailProviderSettings)
-      )
-    ]).subscribe(() => {
+      this.breadcrumbs = [
+        { link: adminUrls.emailProviders(this.chapter), text: 'Providers' }
+      ];
+
+      this.provider = provider;
       this.buildForm();
       this.changeDetector.detectChanges();
     });
@@ -57,20 +72,39 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
-    this.emailProviderSettings.fromEmailAddress = this.formControls.fromEmailAddress.value;
-    this.emailProviderSettings.fromName = this.formControls.fromName.value;
-    this.emailProviderSettings.smtpLogin = this.formControls.smtpLogin.value;
-    this.emailProviderSettings.smtpPassword = this.formControls.smtpPassword.value;
-    this.emailProviderSettings.smtpPort = this.formControls.smtpPort.value;
-    this.emailProviderSettings.smtpServer = this.formControls.smtpServer.value;
+    this.provider.fromEmailAddress = this.formControls.fromEmailAddress.value;
+    this.provider.fromName = this.formControls.fromName.value;
+    this.provider.smtpLogin = this.formControls.smtpLogin.value;
+    this.provider.smtpPassword = this.formControls.smtpPassword.value;
+    this.provider.smtpPort = this.formControls.smtpPort.value;
+    this.provider.smtpServer = this.formControls.smtpServer.value;
 
-    this.emailAdminService.updateChapterAdminEmailProviderSettings(this.chapter.id, this.emailProviderSettings).subscribe(() => {
+    this.emailAdminService.updateChapterAdminEmailProvider(this.chapter.id, this.provider).subscribe(() => {
       this.formCallback.next(true);
     });
   }
 
   private buildForm(): void {
     this.formControls = {
+      batchSize: new NumberInputFormControlViewModel({
+        id: 'batch-size',
+        label: {
+          text: 'Batch size'
+        },
+        min: 0,
+        value: this.provider.batchSize
+      }),
+      dailyLimit: new NumberInputFormControlViewModel({
+        id: 'daily-limit',
+        label: {
+          text: 'Daily limit'
+        },
+        min: 1,
+        validation: {
+          required: true
+        },
+        value: this.provider.dailyLimit
+      }),
       fromEmailAddress: new TextInputFormControlViewModel({
         id: 'from-email-address',
         label: {
@@ -80,7 +114,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
           pattern: FormControlValidationPatterns.email,
           required: true
         },
-        value: this.emailProviderSettings.fromEmailAddress
+        value: this.provider.fromEmailAddress
       }),
       fromName: new TextInputFormControlViewModel({
         id: 'from-name',
@@ -90,7 +124,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
         validation: {
           required: true
         },
-        value: this.emailProviderSettings.fromName
+        value: this.provider.fromName
       }),
       smtpLogin: new TextInputFormControlViewModel({
         id: 'smtp-login',
@@ -100,7 +134,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
         validation: {
           required: true
         },
-        value: this.emailProviderSettings.smtpLogin
+        value: this.provider.smtpLogin
       }),
       smtpPassword: new TextInputFormControlViewModel({
         id: 'smtp-password',
@@ -110,7 +144,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
         validation: {
           required: true
         },
-        value: this.emailProviderSettings.smtpPassword
+        value: this.provider.smtpPassword
       }),
       smtpPort: new NumberInputFormControlViewModel({
         id: 'smtp-port',
@@ -120,7 +154,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
         validation: {
           required: true
         },
-        value: this.emailProviderSettings.smtpPort
+        value: this.provider.smtpPort
       }),
       smtpServer: new TextInputFormControlViewModel({
         id: 'smtp-server',
@@ -130,7 +164,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
         validation: {
           required: true
         },
-        value: this.emailProviderSettings.smtpServer
+        value: this.provider.smtpServer
       })
     };
 
@@ -145,7 +179,9 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
         this.formControls.smtpServer,
         this.formControls.smtpPort,
         this.formControls.smtpLogin,
-        this.formControls.smtpPassword
+        this.formControls.smtpPassword,
+        this.formControls.batchSize,
+        this.formControls.dailyLimit
       ]
     };
   }

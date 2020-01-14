@@ -20,10 +20,10 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        public async Task AddChapterEmailProviderSettings(ChapterEmailProviderSettings chapterEmailProviderSettings)
+        public async Task AddChapterEmailProvider(ChapterEmailProvider provider)
         {
             await Context
-                .Insert(chapterEmailProviderSettings)
+                .Insert(provider)
                 .ExecuteAsync();
         }
 
@@ -63,6 +63,14 @@ namespace ODK.Data.Repositories
                 .Delete<ChapterAdminMember>()
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .Where(x => x.MemberId).EqualTo(memberId)
+                .ExecuteAsync();
+        }
+
+        public async Task DeleteChapterEmailProvider(Guid id)
+        {
+            await Context
+                .Delete<ChapterEmailProvider>()
+                .Where(x => x.Id).EqualTo(id)
                 .ExecuteAsync();
         }
 
@@ -107,12 +115,21 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<ChapterEmailProviderSettings> GetChapterEmailProviderSettings(Guid chapterId)
+        public async Task<ChapterEmailProvider> GetChapterEmailProvider(Guid id)
         {
             return await Context
-                .Select<ChapterEmailProviderSettings>()
-                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .Select<ChapterEmailProvider>()
+                .Where(x => x.Id).EqualTo(id)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<IReadOnlyCollection<ChapterEmailProvider>> GetChapterEmailProviders(Guid chapterId)
+        {
+            return await Context
+                .Select<ChapterEmailProvider>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .OrderBy(x => x.Order)
+                .ToArrayAsync();
         }
 
         public async Task<ChapterLinks> GetChapterLinks(Guid chapterId)
@@ -250,17 +267,20 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
-        public async Task UpdateChapterEmailProviderSettings(ChapterEmailProviderSettings emailProviderSettings)
+        public async Task UpdateChapterEmailProvider(ChapterEmailProvider provider)
         {
             await Context
-                .Update<ChapterEmailProviderSettings>()
-                .Set(x => x.FromEmailAddress, emailProviderSettings.FromEmailAddress)
-                .Set(x => x.FromName, emailProviderSettings.FromName)
-                .Set(x => x.SmtpLogin, emailProviderSettings.SmtpLogin)
-                .Set(x => x.SmtpPassword, emailProviderSettings.SmtpPassword)
-                .Set(x => x.SmtpPort, emailProviderSettings.SmtpPort)
-                .Set(x => x.SmtpServer, emailProviderSettings.SmtpServer)
-                .Where(x => x.ChapterId).EqualTo(emailProviderSettings.ChapterId)
+                .Update<ChapterEmailProvider>()
+                .Set(x => x.BatchSize, provider.BatchSize)
+                .Set(x => x.DailyLimit, provider.DailyLimit)
+                .Set(x => x.FromEmailAddress, provider.FromEmailAddress)
+                .Set(x => x.FromName, provider.FromName)
+                .Set(x => x.Order, provider.Order)
+                .Set(x => x.SmtpLogin, provider.SmtpLogin)
+                .Set(x => x.SmtpPassword, provider.SmtpPassword)
+                .Set(x => x.SmtpPort, provider.SmtpPort)
+                .Set(x => x.SmtpServer, provider.SmtpServer)
+                .Where(x => x.Id).EqualTo(provider.Id)
                 .ExecuteAsync();
         }
 

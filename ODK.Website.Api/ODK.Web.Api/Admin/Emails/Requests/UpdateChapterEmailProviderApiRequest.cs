@@ -1,7 +1,11 @@
 ﻿namespace ODK.Web.Api.Admin.Emails.Requests
 {
-    public class UpdateChapterEmailProviderSettingsApiRequest
+    public class UpdateChapterEmailProviderApiRequest
     {
+        public int? BatchSize { get; set; }
+
+        public int DailyLimit { get; set; }
+
         public string FromEmailAddress { get; set; }
 
         public string FromName { get; set; }

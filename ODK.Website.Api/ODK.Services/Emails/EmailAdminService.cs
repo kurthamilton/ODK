@@ -20,6 +20,23 @@ namespace ODK.Services.Emails
             _emailRepository = emailRepository;
         }
 
+        public async Task AddChapterEmailProvider(Guid currentMemberId, Guid chapterId, UpdateChapterEmailProvider provider)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            ChapterEmailProvider create = new ChapterEmailProvider(Guid.Empty, chapterId, provider.SmtpServer, provider.SmtpPort,
+                provider.SmtpLogin, provider.SmtpPassword, provider.FromEmailAddress, provider.FromName,
+                provider.BatchSize, provider.DailyLimit, 0);
+
+            IReadOnlyCollection<ChapterEmailProvider> existing = await _chapterRepository.GetChapterEmailProviders(chapterId);
+
+            create.Order = existing.Count + 1;
+
+            ValidateChapterEmailProvider(create);
+
+            await _chapterRepository.AddChapterEmailProvider(create);
+        }
+
         public async Task DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
@@ -27,11 +44,27 @@ namespace ODK.Services.Emails
             await _emailRepository.DeleteChapterEmail(chapterId, type);
         }
 
-        public async Task<ChapterEmailProviderSettings> GetChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId)
+        public async Task DeleteChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId)
         {
-            await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
+            ChapterEmailProvider provider = await GetChapterEmailProvider(currentMemberId, chapterEmailProviderId);
 
-            return await _chapterRepository.GetChapterEmailProviderSettings(chapterId);
+            await _chapterRepository.DeleteChapterEmailProvider(provider.Id);
+        }
+
+        public async Task<ChapterEmailProvider> GetChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId)
+        {
+            ChapterEmailProvider provider = await _chapterRepository.GetChapterEmailProvider(chapterEmailProviderId);
+
+            await AssertMemberIsChapterAdmin(currentMemberId, provider.ChapterId);
+
+            return provider;
+        }
+
+        public async Task<IReadOnlyCollection<ChapterEmailProvider>> GetChapterEmailProviders(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _chapterRepository.GetChapterEmailProviders(chapterId);
         }
 
         public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid currentMemberId, Guid chapterId)
@@ -96,36 +129,23 @@ namespace ODK.Services.Emails
             }
         }
 
-        public async Task UpdateChapterEmailProviderSettings(Guid currentMemberId, Guid chapterId,
-            UpdateChapterEmailProviderSettings emailProviderSettings)
+        public async Task UpdateChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId,
+            UpdateChapterEmailProvider provider)
         {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+            ChapterEmailProvider update = await GetChapterEmailProvider(currentMemberId, chapterEmailProviderId);
 
-            ChapterEmailProviderSettings current = await _chapterRepository.GetChapterEmailProviderSettings(chapterId);
-            bool update = current != null;
+            update.BatchSize = provider.BatchSize;
+            update.DailyLimit = provider.DailyLimit;
+            update.FromEmailAddress = provider.FromEmailAddress;
+            update.FromName = provider.FromName;
+            update.SmtpLogin = provider.SmtpLogin;
+            update.SmtpPassword = provider.SmtpPassword;
+            update.SmtpPort = provider.SmtpPort;
+            update.SmtpServer = provider.SmtpServer;
 
-            if (current == null)
-            {
-                current = new ChapterEmailProviderSettings(chapterId);
-            }
+            ValidateChapterEmailProvider(update);
 
-            current.FromEmailAddress = emailProviderSettings.FromEmailAddress;
-            current.FromName = emailProviderSettings.FromName;
-            current.SmtpLogin = emailProviderSettings.SmtpLogin;
-            current.SmtpPassword = emailProviderSettings.SmtpPassword;
-            current.SmtpPort = emailProviderSettings.SmtpPort;
-            current.SmtpServer = emailProviderSettings.SmtpServer;
-
-            ValidateChapterEmailProviderSettings(current);
-
-            if (update)
-            {
-                await _chapterRepository.UpdateChapterEmailProviderSettings(current);
-            }
-            else
-            {
-                await _chapterRepository.AddChapterEmailProviderSettings(current);
-            }
+            await _chapterRepository.UpdateChapterEmailProvider(update);
         }
 
         public async Task UpdateEmail(Guid currentMemberId, Guid currentChapterId, EmailType type, UpdateEmail email)
@@ -156,13 +176,15 @@ namespace ODK.Services.Emails
             }
         }
 
-        private static void ValidateChapterEmailProviderSettings(ChapterEmailProviderSettings emailProviderSettings)
+        private static void ValidateChapterEmailProvider(ChapterEmailProvider provider)
         {
-            if (string.IsNullOrWhiteSpace(emailProviderSettings.FromEmailAddress) ||
-                string.IsNullOrWhiteSpace(emailProviderSettings.FromName) ||
-                string.IsNullOrWhiteSpace(emailProviderSettings.SmtpLogin) ||
-                string.IsNullOrWhiteSpace(emailProviderSettings.SmtpPassword) ||
-                emailProviderSettings.SmtpPort == 0)
+            if (string.IsNullOrWhiteSpace(provider.FromEmailAddress) ||
+                string.IsNullOrWhiteSpace(provider.FromName) ||
+                string.IsNullOrWhiteSpace(provider.SmtpLogin) ||
+                string.IsNullOrWhiteSpace(provider.SmtpPassword) ||
+                provider.SmtpPort == 0 ||
+                provider.DailyLimit <= 0 ||
+                provider.BatchSize <= 0)
             {
                 throw new OdkServiceException("Some required fields are missing");
             }
