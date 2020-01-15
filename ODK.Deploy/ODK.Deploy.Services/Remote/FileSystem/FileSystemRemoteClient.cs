@@ -21,17 +21,40 @@ namespace ODK.Deploy.Services.Remote.FileSystem
             from = GetPath(from);
             to = GetPath(to);
 
-            FileInfo file = new FileInfo(from);
-            file.CopyTo(to, true);
+            File.Copy(from, to, true);
             return Task.CompletedTask;
+        }
+
+        public async Task CopyFolder(string from, string to)
+        {
+            from = GetPath(from);
+            to = GetPath(to);
+
+            IRemoteFolder folder = await GetFolder(from);
+            if (folder == null)
+            {
+                return;
+            }
+
+            await CreateFolder(to);
+            foreach (IRemoteFolder subFolder in folder.SubFolders)
+            {
+                string path = Path.Combine(to, subFolder.Name);
+                await CopyFolder(subFolder.Path, path);
+            }
+
+            foreach (IRemoteFile file in folder.Files)
+            {
+                string path = Path.Combine(to, file.Name);
+                File.Copy(file.Path, path, true);
+            }
         }
 
         public Task CreateFolder(string path)
         {
             path = GetPath(path);
 
-            DirectoryInfo directory = new DirectoryInfo(path);
-            directory.Create();
+            Directory.CreateDirectory(path);
             return Task.CompletedTask;
         }
 
@@ -39,17 +62,19 @@ namespace ODK.Deploy.Services.Remote.FileSystem
         {
             path = GetPath(path);
 
-            FileInfo file = new FileInfo(path);
-            file.Delete();
+            File.Delete(path);
             return Task.CompletedTask;
         }
 
         public Task DeleteFolder(string path)
         {
             path = GetPath(path);
+            if (!Directory.Exists(path))
+            {
+                return Task.CompletedTask;
+            }
 
-            DirectoryInfo directory = new DirectoryInfo(path);
-            directory.Delete();
+            Directory.Delete(path, true);
             return Task.CompletedTask;
         }
 
@@ -57,16 +82,21 @@ namespace ODK.Deploy.Services.Remote.FileSystem
         {
             path = GetPath(path);
 
-            DirectoryInfo directory = new DirectoryInfo(path);
-            return Task.FromResult(directory.Exists);
+            bool exists = Directory.Exists(path);
+            return Task.FromResult(exists);
         }
 
         public Task<IRemoteFolder> GetFolder(string path)
         {
             path = GetPath(path);
 
-            RemoteFolder folder = new RemoteFolder(path, PathSeparator);
             DirectoryInfo directory = new DirectoryInfo(path);
+            if (!directory.Exists)
+            {
+                return Task.FromResult<IRemoteFolder>(null);
+            }
+
+            RemoteFolder folder = new RemoteFolder(path, PathSeparator, _settings.RootPath);
             foreach (DirectoryInfo subDirectory in directory.GetDirectories())
             {
                 folder.AddFolder(subDirectory.Name);
@@ -90,8 +120,7 @@ namespace ODK.Deploy.Services.Remote.FileSystem
                 File.Delete(to);
             }
 
-            FileInfo file = new FileInfo(from);
-            file.MoveTo(to);
+            File.Move(from, to);
             return Task.CompletedTask;
         }
 
@@ -107,6 +136,8 @@ namespace ODK.Deploy.Services.Remote.FileSystem
 
         private string GetPath(string path)
         {
+            path = path ?? "";
+
             if (path.StartsWith(_settings.RootPath))
             {
                 return path;
@@ -115,6 +146,11 @@ namespace ODK.Deploy.Services.Remote.FileSystem
             if (path.StartsWith(PathSeparator.ToString()))
             {
                 path = path.Substring(1);
+            }
+
+            while (path.EndsWith(PathSeparator.ToString()))
+            {
+                path = path.Substring(0, path.Length - 1);
             }
 
             return Path.Combine(_settings.RootPath, path);

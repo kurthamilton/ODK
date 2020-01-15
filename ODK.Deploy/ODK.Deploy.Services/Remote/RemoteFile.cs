@@ -4,15 +4,12 @@ namespace ODK.Deploy.Services.Remote
 {
     public class RemoteFile : RemoteItem, IRemoteFile
     {
-        public RemoteFile(string path, DateTime lastModified, char pathSeparator)
-            : base(path)
+        public RemoteFile(string path, DateTime lastModified, char pathSeparator, string rootPath = null)
+            : base(path, pathSeparator, rootPath)
         {
             LastModified = lastModified;
-            PathSeparator = pathSeparator;
         }
 
         public DateTime LastModified { get; }
-
-        protected override char PathSeparator { get; }
     }
 }

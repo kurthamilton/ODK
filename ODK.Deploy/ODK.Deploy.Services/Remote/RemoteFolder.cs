@@ -9,26 +9,23 @@ namespace ODK.Deploy.Services.Remote
         private readonly IList<IRemoteFile> _files = new List<IRemoteFile>();
         private readonly IList<IRemoteFolder> _subFolders = new List<IRemoteFolder>();
 
-        public RemoteFolder(string path, char pathSeparator)
-            : base(path)
+        public RemoteFolder(string path, char pathSeparator, string rootPath = null)
+            : base(path, pathSeparator, rootPath)
         {
-            PathSeparator = pathSeparator;
         }
 
         public IReadOnlyCollection<IRemoteFile> Files => _files.ToArray();
 
         public IReadOnlyCollection<IRemoteFolder> SubFolders => _subFolders.ToArray();
 
-        protected override char PathSeparator { get; }
-
         public void AddFile(string name, DateTime lastModified)
         {
-            _files.Add(new RemoteFile($"{Path}{PathSeparator}{name}", lastModified, PathSeparator));
+            _files.Add(new RemoteFile($"{Path}{PathSeparator}{name}", lastModified, PathSeparator, RootPath));
         }
 
         public void AddFolder(string name)
         {
-            _subFolders.Add(new RemoteFolder($"{Path}{PathSeparator}{name}", PathSeparator));
+            _subFolders.Add(new RemoteFolder($"{Path}{PathSeparator}{name}", PathSeparator, RootPath));
         }
     }
 }

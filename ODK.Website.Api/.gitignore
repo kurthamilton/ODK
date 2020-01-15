@@ -2,7 +2,6 @@
 *.user
 bin
 obj
-/ODK.Web.Api/appsettings.Production.json
-/ODK.Web.Api/appsettings.Staging.json
+appsettings.*.json
 /ODK.Web.Api/Logs
 *.pubxml

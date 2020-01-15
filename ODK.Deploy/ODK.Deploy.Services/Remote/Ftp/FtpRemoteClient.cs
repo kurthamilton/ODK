@@ -49,7 +49,7 @@ namespace ODK.Deploy.Services.Remote.Ftp
 
         public async Task<IRemoteFolder> GetFolder(string path)
         {
-            FtpFolder folder = new FtpFolder(path);
+            RemoteFolder folder = new RemoteFolder(path, PathSeparator);
 
             FtpListItem[] list = await _client.Value.GetListingAsync(path);
             foreach (FtpListItem listItem in list)

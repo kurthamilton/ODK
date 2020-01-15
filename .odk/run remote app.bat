@@ -1,3 +1,3 @@
-cd ../ODK.Deploy/ODK.Remote.Web.Mvc
+cd ../ODK.Deploy/ODK.Remote.Api
 dotnet watch run
 pause

@@ -5,5 +5,7 @@
         string Name { get; }
 
         string Path { get; }
+
+        string RelativePath { get; }
     }
 }

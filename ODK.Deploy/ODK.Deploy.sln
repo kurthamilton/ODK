@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Deploy.Core", "ODK.Depl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Deploy.Data", "ODK.Deploy.Data\ODK.Deploy.Data.csproj", "{741D69CB-8569-46DB-99A2-1169D6F5EA40}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Remote.Web.Mvc", "ODK.Remote.Web.Mvc\ODK.Remote.Web.Mvc.csproj", "{378E2DF3-8370-405A-8AB2-91765F994D1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Remote.Api", "ODK.Remote.Api\ODK.Remote.Api.csproj", "{CFE78A5F-2F69-43BC-A4AD-EC2F07CF958C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{741D69CB-8569-46DB-99A2-1169D6F5EA40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{741D69CB-8569-46DB-99A2-1169D6F5EA40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{741D69CB-8569-46DB-99A2-1169D6F5EA40}.Release|Any CPU.Build.0 = Release|Any CPU
-		{378E2DF3-8370-405A-8AB2-91765F994D1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{378E2DF3-8370-405A-8AB2-91765F994D1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{378E2DF3-8370-405A-8AB2-91765F994D1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{378E2DF3-8370-405A-8AB2-91765F994D1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFE78A5F-2F69-43BC-A4AD-EC2F07CF958C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFE78A5F-2F69-43BC-A4AD-EC2F07CF958C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFE78A5F-2F69-43BC-A4AD-EC2F07CF958C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFE78A5F-2F69-43BC-A4AD-EC2F07CF958C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
