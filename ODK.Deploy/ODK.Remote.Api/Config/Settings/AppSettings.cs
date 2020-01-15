@@ -2,7 +2,7 @@
 {
     public class AppSettings
     {
-        public AuthSettingsAuth Auth { get; set; }
+        public AppSettingsAuth Auth { get; set; }
 
         public AppSettingsPaths Paths { get; set; }
     }

@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -22,14 +21,14 @@ namespace ODK.Remote.Api.FileSystem
             _logger = logger;
         }
 
-        [HttpGet]
+        [HttpGet("Folder")]
         public async Task<FolderApiResponse> Get(string path)
         {
             IRemoteFolder folder = await _fileSystem.GetFolder(path) ?? await _fileSystem.GetFolder("");
             return MapFolder(folder);
         }
 
-        [HttpDelete]
+        [HttpDelete("Folder")]
         public async Task<FolderApiResponse> DeleteFolder(string path)
         {
             IRemoteFolder folder = await _fileSystem.GetFolder(path);
@@ -44,7 +43,7 @@ namespace ODK.Remote.Api.FileSystem
             return MapFolder(folder);
         }
 
-        [HttpPost("Copy")]
+        [HttpPost("Folder/Copy")]
         public async Task<FolderApiResponse> Copy(string from, string to)
         {
             IRemoteFolder folder = await _fileSystem.GetFolder(from);
@@ -58,12 +57,6 @@ namespace ODK.Remote.Api.FileSystem
 
             folder = await _fileSystem.GetFolder(to);
             return MapFolder(folder);
-        }
-
-        [HttpGet("Test")]
-        public string Test()
-        {
-            return Assembly.GetExecutingAssembly().Location;
         }
 
         private static FolderApiResponse MapFolder(IRemoteFolder folder)
