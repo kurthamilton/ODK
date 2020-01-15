@@ -19,42 +19,43 @@ namespace ODK.Remote.Web.Api.FileSystem
             _fileSystem = fileSystem;
         }
 
-        [HttpGet(FileSystemEndpoints.FolderEndpoint)]
-        public async Task<FolderApiResponse> Get(string path)
+        [HttpPost(FileSystemEndpoints.FileCopyEndpoint)]
+        public async Task<ActionResult> FileCopy(string from, string to)
         {
-            IRemoteFolder folder = await _fileSystem.GetFolder(path) ?? await _fileSystem.GetFolder("");
-            return MapFolder(folder);
+            await _fileSystem.CopyFile(from, to);
+            return NoContent();
         }
 
-        [HttpDelete(FileSystemEndpoints.FolderEndpoint)]
-        public async Task<FolderApiResponse> DeleteFolder(string path)
+        [HttpPost(FileSystemEndpoints.FolderEndpoint)]
+        public async Task<IActionResult> FolderCreate(string path)
+        {
+            await _fileSystem.CreateFolder(path);
+            return NoContent();
+        }
+
+        [HttpGet(FileSystemEndpoints.FolderEndpoint)]
+        public async Task<ActionResult<FileApiResponse>> FolderGet(string path)
         {
             IRemoteFolder folder = await _fileSystem.GetFolder(path);
             if (folder == null)
             {
-                folder = await _fileSystem.GetFolder("");
-                return MapFolder(folder);
+                return NotFound();
+            }
+            return Ok(MapFolder(folder));
+        }
+
+        [HttpDelete(FileSystemEndpoints.FolderEndpoint)]
+        public async Task<ActionResult<FileApiResponse>> FolderDelete(string path)
+        {
+            IRemoteFolder folder = await _fileSystem.GetFolder(path);
+            if (folder == null)
+            {
+                return NotFound();
             }
 
             await _fileSystem.DeleteFolder(path);
             folder = await _fileSystem.GetFolder(folder.Parent.Path);
-            return MapFolder(folder);
-        }
-
-        [HttpPost(FileSystemEndpoints.FolderCopyEndpoint)]
-        public async Task<FolderApiResponse> FolderCopy(string from, string to)
-        {
-            IRemoteFolder folder = await _fileSystem.GetFolder(from);
-            if (folder == null)
-            {
-                folder = await _fileSystem.GetFolder("");
-                return MapFolder(folder);
-            }
-
-            await _fileSystem.CopyFolder(from, to);
-
-            folder = await _fileSystem.GetFolder(to);
-            return MapFolder(folder);
+            return NoContent();
         }
 
         private static FolderApiResponse MapFolder(IRemoteFolder folder)
@@ -71,7 +72,7 @@ namespace ODK.Remote.Web.Api.FileSystem
                     Name = x.Name
                 }),
                 Parent = !string.IsNullOrEmpty(folder.RelativePath) ? folder.Parent?.RelativePath : null,
-                Path = folder.RelativePath
+                Path = folder.RelativePath.Replace('\\', '/')
             };
         }
     }

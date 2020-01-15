@@ -71,6 +71,13 @@ namespace ODK.Deploy.Web.Mvc.Config
                 RemoteDeploy = settings.Paths.RemoteDeploy,
                 Type = settings.RemoteType
             });
+
+            services.AddSingleton(new RestRemoteClientSettings
+            {
+                AuthHeaderKey = settings.Rest.AuthHeaderKey,
+                AuthHeaderValue = settings.Rest.AuthHeaderValue,
+                BaseUrl = settings.Rest.BaseUrl
+            });
         }
     }
 }

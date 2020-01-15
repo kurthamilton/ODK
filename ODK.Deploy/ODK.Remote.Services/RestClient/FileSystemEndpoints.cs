@@ -4,9 +4,9 @@
     {
         public const string BaseUrl = "FileSystem";
 
-        public const string FolderCopyEndpoint = "Folder/Copy";
+        public const string FileCopyEndpoint = "Files/Copy";
 
-        public const string FolderEndpoint = "Folder";
+        public const string FolderEndpoint = "Folders";
 
         public const string PathQueryParam = "Path";
     }

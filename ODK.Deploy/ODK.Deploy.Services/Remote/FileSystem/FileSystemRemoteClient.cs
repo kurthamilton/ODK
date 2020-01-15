@@ -138,6 +138,8 @@ namespace ODK.Deploy.Services.Remote.FileSystem
         {
             path = path ?? "";
 
+            path = path.Replace('/', PathSeparator);
+
             if (path.StartsWith(_settings.RootPath))
             {
                 return path;

@@ -19,14 +19,16 @@ namespace ODK.Remote.Services.RestClient
 
         public char PathSeparator => '/';
 
-        public Task CopyFile(string from, string to)
+        public async Task CopyFile(string from, string to)
         {
-            throw new NotImplementedException();
+            string url = $"{FileSystemEndpoints.FileCopyEndpoint}?from={from}&to={to}";
+            await GetResponse<FolderApiResponse>(url, Method.POST);
         }
 
-        public Task CreateFolder(string path)
+        public async Task CreateFolder(string path)
         {
-            throw new NotImplementedException();
+            string url = $"{FileSystemEndpoints.FolderEndpoint}?path={path}";
+            await GetResponse<FolderApiResponse>(url, Method.POST);
         }
 
         public Task DeleteFile(string path)
@@ -34,22 +36,28 @@ namespace ODK.Remote.Services.RestClient
             throw new NotImplementedException();
         }
 
-        public Task DeleteFolder(string path)
+        public async Task DeleteFolder(string path)
         {
-            throw new NotImplementedException();
+            string url = $"{FileSystemEndpoints.FolderEndpoint}?path={path}";
+            await GetResponse<FolderApiResponse>(url, Method.DELETE);
         }
 
-        public Task<bool> FolderExists(string path)
+        public async Task<bool> FolderExists(string path)
         {
-            throw new NotImplementedException();
+            IRemoteFolder folder = await GetFolder(path);
+            return folder != null;
         }
 
         public async Task<IRemoteFolder> GetFolder(string path)
         {
             string url = $"{FileSystemEndpoints.FolderEndpoint}?path={path}";
             FolderApiResponse response = await GetResponse<FolderApiResponse>(url);
+            if (response == null)
+            {
+                return null;
+            }
 
-            RemoteFolder folder = new RemoteFolder(path, PathSeparator);
+            RemoteFolder folder = new RemoteFolder(response.Path, PathSeparator);
             foreach (SubFolderApiResponse subFolder in response.Folders)
             {
                 folder.AddFolder(subFolder.Name);
@@ -78,17 +86,15 @@ namespace ODK.Remote.Services.RestClient
             throw new NotImplementedException();
         }
 
-        private IRestClient GetClient()
-        {
-            return new RestSharp.RestClient();
-        }
-
         private async Task<T> GetResponse<T>(string url, Method method = Method.GET) where T : new()
         {
-            url = $"{_settings.BaseUrl}{PathSeparator}{url}";
+            url = $"{_settings.BaseUrl}/{url}";
             IRestClient client = new RestSharp.RestClient();
             IRestRequest request = new RestRequest(url, method);
-            return await client.GetAsync<T>(request);
+            request.AddHeader(_settings.AuthHeaderKey, _settings.AuthHeaderValue);
+
+            IRestResponse<T> response = await client.ExecuteAsync<T>(request);
+            return response.IsSuccessful ? response.Data : default;
         }
     }
 }
