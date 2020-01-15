@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Deploy.Services", "ODK.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Deploy.Web.Mvc", "ODK.Deploy.Web.Mvc\ODK.Deploy.Web.Mvc.csproj", "{B0B3C322-A37C-4C02-B3EC-571E6AF69575}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Deploy.Core", "ODK.Deploy.Core\ODK.Deploy.Core.csproj", "{10831D54-8AEF-458F-AE59-E252E2E40570}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Deploy.Core", "ODK.Deploy.Core\ODK.Deploy.Core.csproj", "{10831D54-8AEF-458F-AE59-E252E2E40570}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Deploy.Data", "ODK.Deploy.Data\ODK.Deploy.Data.csproj", "{741D69CB-8569-46DB-99A2-1169D6F5EA40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Deploy.Data", "ODK.Deploy.Data\ODK.Deploy.Data.csproj", "{741D69CB-8569-46DB-99A2-1169D6F5EA40}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Remote.Web.Mvc", "ODK.Remote.Web.Mvc\ODK.Remote.Web.Mvc.csproj", "{378E2DF3-8370-405A-8AB2-91765F994D1C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{741D69CB-8569-46DB-99A2-1169D6F5EA40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{741D69CB-8569-46DB-99A2-1169D6F5EA40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{741D69CB-8569-46DB-99A2-1169D6F5EA40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{378E2DF3-8370-405A-8AB2-91765F994D1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{378E2DF3-8370-405A-8AB2-91765F994D1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{378E2DF3-8370-405A-8AB2-91765F994D1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{378E2DF3-8370-405A-8AB2-91765F994D1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

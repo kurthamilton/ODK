@@ -12,7 +12,7 @@ namespace ODK.Deploy.Services.Remote
 
         protected RemoteItem(string path)
         {
-            Path = path ?? "";                        
+            Path = path ?? "";
 
             _ancestors = new Lazy<IReadOnlyCollection<IRemoteFolder>>(() => GetAncestors().ToArray());
             _name = new Lazy<string>(() => PathParts.Last());

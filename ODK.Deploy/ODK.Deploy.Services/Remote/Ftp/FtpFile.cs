@@ -2,14 +2,11 @@
 
 namespace ODK.Deploy.Services.Remote.Ftp
 {
-    public class FtpFile : FtpFolderItem, IRemoteFile
+    public class FtpFile : RemoteFile, IRemoteFile
     {
         public FtpFile(string path, DateTime lastModified)
-            : base(path)
+            : base(path, lastModified, '/')
         {
-            LastModified = lastModified;
         }
-
-        public DateTime LastModified { get; }
     }
 }

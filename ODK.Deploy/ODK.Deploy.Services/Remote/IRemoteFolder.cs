@@ -6,7 +6,7 @@ namespace ODK.Deploy.Services.Remote
     {
         IReadOnlyCollection<IRemoteFolder> Ancestors { get; }
 
-        IReadOnlyCollection<IRemoteFile> Files { get; }
+        IReadOnlyCollection<IRemoteFile> Files { get; }        
 
         IRemoteFolder Parent { get; }
 
