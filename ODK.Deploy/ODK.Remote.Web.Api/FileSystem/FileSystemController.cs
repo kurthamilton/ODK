@@ -1,34 +1,32 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using ODK.Deploy.Services.Remote;
 using ODK.Deploy.Services.Remote.FileSystem;
-using ODK.Remote.Api.FileSystem.Responses;
+using ODK.Remote.Services.RestClient;
+using ODK.Remote.Services.RestClient.Responses;
 
-namespace ODK.Remote.Api.FileSystem
+namespace ODK.Remote.Web.Api.FileSystem
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route(FileSystemEndpoints.BaseUrl)]
     public class FileSystemController : ControllerBase
     {
         private readonly IFileSystemRemoteClient _fileSystem;
-        private readonly ILogger<FileSystemController> _logger;
 
-        public FileSystemController(ILogger<FileSystemController> logger, IFileSystemRemoteClient fileSystem)
+        public FileSystemController(IFileSystemRemoteClient fileSystem)
         {
             _fileSystem = fileSystem;
-            _logger = logger;
         }
 
-        [HttpGet("Folder")]
+        [HttpGet(FileSystemEndpoints.FolderEndpoint)]
         public async Task<FolderApiResponse> Get(string path)
         {
             IRemoteFolder folder = await _fileSystem.GetFolder(path) ?? await _fileSystem.GetFolder("");
             return MapFolder(folder);
         }
 
-        [HttpDelete("Folder")]
+        [HttpDelete(FileSystemEndpoints.FolderEndpoint)]
         public async Task<FolderApiResponse> DeleteFolder(string path)
         {
             IRemoteFolder folder = await _fileSystem.GetFolder(path);
@@ -43,8 +41,8 @@ namespace ODK.Remote.Api.FileSystem
             return MapFolder(folder);
         }
 
-        [HttpPost("Folder/Copy")]
-        public async Task<FolderApiResponse> Copy(string from, string to)
+        [HttpPost(FileSystemEndpoints.FolderCopyEndpoint)]
+        public async Task<FolderApiResponse> FolderCopy(string from, string to)
         {
             IRemoteFolder folder = await _fileSystem.GetFolder(from);
             if (folder == null)

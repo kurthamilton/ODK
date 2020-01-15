@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using ODK.Deploy.Services.Remote.FileSystem;
-using ODK.Remote.Api.Config.Settings;
+using ODK.Remote.Web.Api.Config.Settings;
 
-namespace ODK.Remote.Api.Config
+namespace ODK.Remote.Web.Api.Config
 {
     public static class DependencyConfig
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ODK.Remote.Api.FileSystem.Responses
+namespace ODK.Remote.Services.RestClient.Responses
 {
     public class FolderApiResponse
     {

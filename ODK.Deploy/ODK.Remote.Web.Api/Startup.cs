@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ODK.Remote.Api.Auth;
-using ODK.Remote.Api.Config;
-using ODK.Remote.Api.Config.Settings;
+using ODK.Remote.Web.Api.Auth;
+using ODK.Remote.Web.Api.Config;
+using ODK.Remote.Web.Api.Config.Settings;
 
-namespace ODK.Remote.Api
+namespace ODK.Remote.Web.Api
 {
     public class Startup
     {

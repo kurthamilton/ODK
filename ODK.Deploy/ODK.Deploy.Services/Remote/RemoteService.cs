@@ -7,6 +7,7 @@ using FluentFTP;
 using ODK.Deploy.Core.Deployments;
 using ODK.Deploy.Services.Remote.FileSystem;
 using ODK.Deploy.Services.Remote.Ftp;
+using ODK.Deploy.Services.Remote.Rest;
 
 namespace ODK.Deploy.Services.Remote
 {
@@ -16,15 +17,18 @@ namespace ODK.Deploy.Services.Remote
         private readonly IFileSystemRemoteClient _fileSystemClient;
         private readonly IFtpRemoteClient _ftpClient;
         private readonly IDictionary<string, IRemoteFolder> _remoteFolderCache;
+        private readonly IRestRemoteClient _restClient;
         private readonly RemoteServiceSettings _settings;
 
         public RemoteService(RemoteServiceSettings settings, IFtpRemoteClient ftpClient,
-            IDeploymentRepository deploymentRepository, IFileSystemRemoteClient fileSystemClient)
+            IDeploymentRepository deploymentRepository, IFileSystemRemoteClient fileSystemClient,
+            IRestRemoteClient restClient)
         {
             _deploymentRepository = deploymentRepository;
             _fileSystemClient = fileSystemClient;
             _ftpClient = ftpClient;
             _remoteFolderCache = new Dictionary<string, IRemoteFolder>(StringComparer.OrdinalIgnoreCase);
+            _restClient = restClient;
             _settings = settings;
         }
 
@@ -62,10 +66,7 @@ namespace ODK.Deploy.Services.Remote
                 return false;
             }
 
-            return folder.Ancestors.Any(x =>
-            {
-                return x.Path.Equals(_settings.RemoteDeploy) || x.Path.Equals(_settings.RemoteBackup);
-            });
+            return folder.Ancestors.Any(x => x.Path.Equals(_settings.RemoteDeploy) || x.Path.Equals(_settings.RemoteBackup));
         }
 
         public async Task DeleteFolder(string path)
@@ -296,6 +297,8 @@ namespace ODK.Deploy.Services.Remote
                     return _fileSystemClient;
                 case RemoteType.Ftp:
                     return _ftpClient;
+                case RemoteType.Rest:
+                    return _restClient;
                 default:
                     throw new NotSupportedException();
             }
@@ -409,12 +412,8 @@ namespace ODK.Deploy.Services.Remote
             }
 
             IRemoteFolder folder = await GetFolder(client, deployment.RemotePath);
-            if (folder == null)
-            {
-                return;
-            }
 
-            IRemoteFile offlineFile = folder.Files.FirstOrDefault(x => x.Name.Equals(deployment.OfflineFile));
+            IRemoteFile offlineFile = folder?.Files.FirstOrDefault(x => x.Name.Equals(deployment.OfflineFile));
             if (offlineFile == null)
             {
                 return;
@@ -432,12 +431,8 @@ namespace ODK.Deploy.Services.Remote
             }
 
             IRemoteFolder folder = await GetFolder(client, deployment.RemotePath);
-            if (folder == null)
-            {
-                return;
-            }
 
-            IRemoteFile offlineFile = folder.Files.FirstOrDefault(x => x.Name.StartsWith(deployment.OfflineFile, StringComparison.OrdinalIgnoreCase));
+            IRemoteFile offlineFile = folder?.Files.FirstOrDefault(x => x.Name.StartsWith(deployment.OfflineFile, StringComparison.OrdinalIgnoreCase));
             if (offlineFile == null)
             {
                 return;

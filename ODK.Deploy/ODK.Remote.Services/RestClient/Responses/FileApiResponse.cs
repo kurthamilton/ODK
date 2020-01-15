@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ODK.Remote.Api.FileSystem.Responses
+namespace ODK.Remote.Services.RestClient.Responses
 {
     public class FileApiResponse
     {

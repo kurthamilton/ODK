@@ -7,7 +7,9 @@ using ODK.Deploy.Services.Deployments;
 using ODK.Deploy.Services.Remote;
 using ODK.Deploy.Services.Remote.FileSystem;
 using ODK.Deploy.Services.Remote.Ftp;
+using ODK.Deploy.Services.Remote.Rest;
 using ODK.Deploy.Web.Mvc.Config.Settings;
+using ODK.Remote.Services.RestClient;
 
 namespace ODK.Deploy.Web.Mvc.Config
 {
@@ -46,6 +48,7 @@ namespace ODK.Deploy.Web.Mvc.Config
             services.AddScoped<IFileSystemRemoteClient, FileSystemRemoteClient>();
             services.AddScoped<IFtpRemoteClient, FtpRemoteClient>();
             services.AddScoped<IRemoteService, RemoteService>();
+            services.AddScoped<IRestRemoteClient, RestRemoteClient>();
         }
 
         private static void ConfigureServiceSettings(IServiceCollection services, AppSettings settings)

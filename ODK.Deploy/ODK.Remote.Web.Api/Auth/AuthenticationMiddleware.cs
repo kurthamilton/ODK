@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using ODK.Remote.Api.Config.Settings;
+using ODK.Remote.Web.Api.Config.Settings;
 
-namespace ODK.Remote.Api.Auth
+namespace ODK.Remote.Web.Api.Auth
 {
     public class AuthenticationMiddleware
     {

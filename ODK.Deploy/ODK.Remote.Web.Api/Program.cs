@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace ODK.Remote.Api
+namespace ODK.Remote.Web.Api
 {
     public class Program
     {

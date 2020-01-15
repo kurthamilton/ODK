@@ -11,5 +11,7 @@ namespace ODK.Deploy.Web.Mvc.Config.Settings
         public AppSettingsPaths Paths { get; set; } = new AppSettingsPaths();
 
         public RemoteType RemoteType { get; set; }
+
+        public AppSettingsRest Rest { get; set; } = new AppSettingsRest();
     }
 }

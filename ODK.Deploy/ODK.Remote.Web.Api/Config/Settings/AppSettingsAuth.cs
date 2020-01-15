@@ -1,4 +1,4 @@
-﻿namespace ODK.Remote.Api.Config.Settings
+﻿namespace ODK.Remote.Web.Api.Config.Settings
 {
     public class AppSettingsAuth
     {

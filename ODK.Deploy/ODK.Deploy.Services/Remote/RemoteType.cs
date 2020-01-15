@@ -4,6 +4,7 @@
     {
         None,
         Ftp,
-        FileSystem
+        FileSystem,
+        Rest
     }
 }
