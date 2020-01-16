@@ -124,6 +124,20 @@ namespace ODK.Deploy.Services.Remote.FileSystem
             return Task.CompletedTask;
         }
 
+        public Task SaveFile(byte[] data, string path)
+        {
+            path = GetPath(path);
+
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            File.WriteAllBytes(path, data);
+
+            return Task.CompletedTask;
+        }
+
         public Task UploadFile(string localPath, string remotePath)
         {
             throw new NotImplementedException();

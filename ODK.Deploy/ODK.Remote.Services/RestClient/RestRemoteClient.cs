@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using ODK.Deploy.Services.Remote;
 using ODK.Deploy.Services.Remote.Rest;
@@ -31,9 +31,10 @@ namespace ODK.Remote.Services.RestClient
             await GetResponse<FolderApiResponse>(url, Method.POST);
         }
 
-        public Task DeleteFile(string path)
+        public async Task DeleteFile(string path)
         {
-            throw new NotImplementedException();
+            string url = $"{FileSystemEndpoints.FileDeleteEndpoint}?path={path}";
+            await GetResponse<FolderApiResponse>(url, Method.DELETE);
         }
 
         public async Task DeleteFolder(string path)
@@ -71,28 +72,49 @@ namespace ODK.Remote.Services.RestClient
             return folder;
         }
 
-        public Task MoveFile(string from, string to)
+        public async Task MoveFile(string from, string to)
         {
-            throw new NotImplementedException();
+            string url = $"{FileSystemEndpoints.FileMoveEndpoint}?from={from}&to={to}";
+            await GetResponse<FolderApiResponse>(url, Method.POST);
         }
 
-        public Task UploadFile(string localPath, string remotePath)
+        public async Task UploadFile(string localPath, string remotePath)
         {
-            throw new NotImplementedException();
+            byte[] bytes = File.ReadAllBytes(localPath);
+
+            string url = $"{FileSystemEndpoints.FileUploadEndpoint}?path={remotePath}";
+            IRestRequest request = GetRequest(url, Method.POST);
+            request.AddFileBytes("file", bytes, "file");
+            await GetResponse<FileApiResponse>(request);
         }
 
-        public Task UploadFolder(IEnumerable<string> localFilePaths, string remotePath)
+        public async Task UploadFolder(IEnumerable<string> localFilePaths, string remotePath)
         {
-            throw new NotImplementedException();
+            foreach (string localFilePath in localFilePaths)
+            {
+                FileInfo file = new FileInfo(localFilePath);
+                string to = $"{remotePath}{PathSeparator}{file.Name}";
+                await UploadFile(localFilePath, to);
+            }
         }
 
-        private async Task<T> GetResponse<T>(string url, Method method = Method.GET) where T : new()
+        private IRestRequest GetRequest(string url, Method method = Method.GET)
         {
             url = $"{_settings.BaseUrl}/{url}";
-            IRestClient client = new RestSharp.RestClient();
             IRestRequest request = new RestRequest(url, method);
             request.AddHeader(_settings.AuthHeaderKey, _settings.AuthHeaderValue);
+            return request;
+        }
 
+        private async Task<T> GetResponse<T>(string url, Method method = Method.GET)
+        {
+            IRestRequest request = GetRequest(url, method);
+            return await GetResponse<T>(request);
+        }
+
+        private async Task<T> GetResponse<T>(IRestRequest request)
+        {
+            IRestClient client = new RestSharp.RestClient();
             IRestResponse<T> response = await client.ExecuteAsync<T>(request);
             return response.IsSuccessful ? response.Data : default;
         }

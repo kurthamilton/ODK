@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Deploy.Services.Remote;
 using ODK.Deploy.Services.Remote.FileSystem;
@@ -23,6 +25,35 @@ namespace ODK.Remote.Web.Api.FileSystem
         public async Task<ActionResult> FileCopy(string from, string to)
         {
             await _fileSystem.CopyFile(from, to);
+            return NoContent();
+        }
+
+        [HttpDelete(FileSystemEndpoints.FileDeleteEndpoint)]
+        public async Task<ActionResult> FileDelete(string path)
+        {
+            await _fileSystem.DeleteFile(path);
+            return NoContent();
+        }
+
+        [HttpPost(FileSystemEndpoints.FileMoveEndpoint)]
+        public async Task<ActionResult> FileMove(string from, string to)
+        {
+            await _fileSystem.MoveFile(from, to);
+            return NoContent();
+        }
+
+        [HttpPost(FileSystemEndpoints.FileUploadEndpoint)]
+        public async Task<ActionResult> FileUpload(string path, [FromForm] IFormFile file)
+        {
+            byte[] bytes;
+            using (MemoryStream stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+
+                bytes = stream.ToArray();
+            }
+
+            await _fileSystem.SaveFile(bytes, path);
             return NoContent();
         }
 

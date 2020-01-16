@@ -47,13 +47,11 @@ namespace ODK.Deploy.Services.Remote
             string backupPath = await GetVersionedRemotePath(client, deployment, _settings.RemoteBackup);
 
             IReadOnlyCollection<string> skipPaths = deployments
-                .Where(x => x.Id != deploymentId)
+                .Except(new[] { deployment })
                 .Select(x => x.RemotePath)
                 .ToArray();
-            DateTime start = DateTime.Now;
+
             await CopyRemoteFolder(client, deployment.RemotePath, backupPath, skipPaths);
-            DateTime end = DateTime.Now;
-            TimeSpan duration = end - start;
         }
 
         public async Task<bool> CanDeleteFromFolder(string path)
@@ -168,13 +166,8 @@ namespace ODK.Deploy.Services.Remote
 
             await TakeOffline(client, deployment);
 
-            IReadOnlyCollection<string> skipPaths = deployments
-                .Where(x => x.Id != deploymentId)
-                .Select(x => x.RemotePath)
-                .Union(
-                    deployment.OfflineFile != null
-                        ? new [] { $"{deployment.RemotePath}/{deployment.OfflineFile}" }
-                        : new string[0])
+            IReadOnlyCollection<string> skipPaths = GetPreservedPaths(client, deployments)
+                .Except(new[] { deployment.RemotePath })
                 .ToArray();
             await ClearRemoteFolder(client, deployment.RemotePath, skipPaths);
             await MoveRemoteFolder(client, from.Path, deployment.RemotePath, null);
@@ -245,6 +238,11 @@ namespace ODK.Deploy.Services.Remote
 
             foreach (IRemoteFile file in folder.Files)
             {
+                if (skipPaths != null && skipPaths.Contains(file.Path))
+                {
+                    continue;
+                }
+
                 await client.DeleteFile(file.Path);
             }
         }
@@ -358,6 +356,27 @@ namespace ODK.Deploy.Services.Remote
             }
 
             return null;
+        }
+
+        private IEnumerable<string> GetPreservedPaths(IRemoteClient client, IEnumerable<Deployment> deployments)
+        {
+            foreach (Deployment deployment in deployments)
+            {
+                yield return deployment.RemotePath;
+
+                if (deployment.PreservedPaths != null)
+                {
+                    foreach (string preservedPath in deployment.PreservedPaths)
+                    {
+                        yield return $"{deployment.RemotePath}{preservedPath}";
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(deployment.OfflineFile))
+                {
+                    yield return $"{deployment.RemotePath}{client.PathSeparator}{deployment.OfflineFile}";
+                }
+            }
         }
 
         private async Task<string> GetVersionedRemotePath(IRemoteClient client, Deployment deployment, string root)
