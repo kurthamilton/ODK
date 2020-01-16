@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ODK.Deploy.Core\ODK.Deploy.Core.csproj" />
     <ProjectReference Include="..\ODK.Deploy.Data\ODK.Deploy.Data.csproj" />
+    <ProjectReference Include="..\ODK.Deploy.Services\ODK.Deploy.Services.csproj" />
     <ProjectReference Include="..\ODK.Remote.Services\ODK.Remote.Services.csproj" />
   </ItemGroup>
 

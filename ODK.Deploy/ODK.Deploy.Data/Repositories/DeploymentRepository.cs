@@ -12,7 +12,7 @@ namespace ODK.Deploy.Data.Repositories
         private readonly IDictionary<string, IList<int>> _serverDeployments =
             new Dictionary<string, IList<int>>(StringComparer.OrdinalIgnoreCase);
 
-        public DeploymentRepository(IEnumerable<Deployment> deployments)
+        public DeploymentRepository(IReadOnlyCollection<Deployment> deployments)
         {
             int id = 1;
             foreach (Deployment deployment in deployments)

@@ -6,10 +6,12 @@
 
   <ItemGroup>
     <PackageReference Include="FluentFTP" Version="29.0.0" />
+    <PackageReference Include="RestSharp" Version="106.10.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ODK.Deploy.Core\ODK.Deploy.Core.csproj" />
+    <ProjectReference Include="..\ODK.Remote.Services\ODK.Remote.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>

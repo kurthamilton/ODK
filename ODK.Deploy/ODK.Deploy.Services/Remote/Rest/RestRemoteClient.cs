@@ -2,12 +2,11 @@
 using System.IO;
 using System.Threading.Tasks;
 using ODK.Deploy.Core.Servers;
-using ODK.Deploy.Services.Remote;
-using ODK.Deploy.Services.Remote.Rest;
+using ODK.Remote.Services.RestClient;
 using ODK.Remote.Services.RestClient.Responses;
 using RestSharp;
 
-namespace ODK.Remote.Services.RestClient
+namespace ODK.Deploy.Services.Remote.Rest
 {
     public class RestRemoteClient : IRestRemoteClient
     {

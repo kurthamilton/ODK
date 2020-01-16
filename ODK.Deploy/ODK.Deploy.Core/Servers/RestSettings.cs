@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ODK.Deploy.Core.Servers
+﻿namespace ODK.Deploy.Core.Servers
 {
     public class RestSettings
     {

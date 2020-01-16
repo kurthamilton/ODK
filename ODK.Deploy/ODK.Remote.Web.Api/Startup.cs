@@ -24,7 +24,7 @@ namespace ODK.Remote.Web.Api
             services.AddControllers();
 
             AppSettings settings = GetAppSettings();
-            services.ConfigureDependencies(settings);
+            services.ConfigureDependencies(settings.Paths);
 
             services.AddSingleton(settings.Auth);
         }

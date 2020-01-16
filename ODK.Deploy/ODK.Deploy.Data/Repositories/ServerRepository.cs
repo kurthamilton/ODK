@@ -11,7 +11,7 @@ namespace ODK.Deploy.Data.Repositories
         private readonly IDictionary<int, Server> _servers = new Dictionary<int, Server>();
         private readonly IDictionary<string, int> _serversByName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-        public ServerRepository(IEnumerable<Server> servers)
+        public ServerRepository(IReadOnlyCollection<Server> servers)
         {
             int id = 1;
             foreach (Server server in servers)

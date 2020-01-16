@@ -7,11 +7,7 @@ using ODK.Deploy.Core.Servers;
 using ODK.Deploy.Data.Repositories;
 using ODK.Deploy.Services.Deployments;
 using ODK.Deploy.Services.Remote;
-using ODK.Deploy.Services.Remote.FileSystem;
-using ODK.Deploy.Services.Remote.Ftp;
-using ODK.Deploy.Services.Remote.Rest;
 using ODK.Deploy.Web.Mvc.Config.Settings;
-using ODK.Remote.Services.RestClient;
 
 namespace ODK.Deploy.Web.Mvc.Config
 {
@@ -19,6 +15,8 @@ namespace ODK.Deploy.Web.Mvc.Config
     {
         public static void ConfigureDependencies(this IServiceCollection services, AppSettings appSettings)
         {
+            services.AddSingleton(appSettings);
+
             ConfigureDataSettings(services, appSettings);
             ConfigureData(services);
             ConfigureServices(services);
@@ -56,14 +54,15 @@ namespace ODK.Deploy.Web.Mvc.Config
             services.AddSingleton(servers);
 
             IReadOnlyCollection<Deployment> deployments = appSettings.Deployments
-                .Where(x => servers.Any(s => s.Name.Equals(x.Name, StringComparison.OrdinalIgnoreCase)))
+                .Where(x => servers.Any(s => s.Name.Equals(x.Server, StringComparison.OrdinalIgnoreCase)))
                 .Select(x => new Deployment
                 {
                     BuildPath = x.BuildPath,
                     Name = x.Name,
                     OfflineFile = x.OfflineFile,
                     PreservedPaths = x.PreservedPaths,
-                    RemotePath = x.RemotePath
+                    RemotePath = x.RemotePath,
+                    Server = x.Server
                 }).ToArray();
 
             services.AddSingleton(deployments);
@@ -72,10 +71,7 @@ namespace ODK.Deploy.Web.Mvc.Config
         private static void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IDeploymentService, DeploymentService>();
-            services.AddScoped<IFileSystemRemoteClient, FileSystemRemoteClient>();
-            services.AddScoped<IFtpRemoteClient, FtpRemoteClient>();
             services.AddScoped<IRemoteService, RemoteService>();
-            services.AddScoped<IRestRemoteClient, RestRemoteClient>();
         }
     }
 }

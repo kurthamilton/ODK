@@ -7,6 +7,8 @@ namespace ODK.Deploy.Web.Mvc.Models.Home
     {
         public bool CanDeleteChildren { get; set; }
 
+        public int DeploymentId { get; set; }
+
         public IEnumerable<DeploymentViewModel> Deployments { get; set; }
 
         public IRemoteFolder Folder { get; set; }

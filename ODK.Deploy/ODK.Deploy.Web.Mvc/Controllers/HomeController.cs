@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Deploy.Core.Deployments;
 using ODK.Deploy.Services.Deployments;
 using ODK.Deploy.Services.Remote;
+using ODK.Deploy.Web.Mvc.Config.Settings;
 using ODK.Deploy.Web.Mvc.Models;
 using ODK.Deploy.Web.Mvc.Models.Home;
 
@@ -16,7 +17,7 @@ namespace ODK.Deploy.Web.Mvc.Controllers
         private readonly IDeploymentService _deploymentService;
         private readonly IRemoteService _remoteService;
 
-        public HomeController(IRemoteService remoteService, IDeploymentService deploymentService)
+        public HomeController(IRemoteService remoteService, IDeploymentService deploymentService, AppSettings appSettings)
         {
             _deploymentService = deploymentService;
             _remoteService = remoteService;
@@ -26,13 +27,15 @@ namespace ODK.Deploy.Web.Mvc.Controllers
         {
             ModelState.Clear();
 
-            IRemoteFolder folder = await _remoteService.GetFolder(deploymentId, path);
+            IReadOnlyCollection<Deployment> deployments = await _deploymentService.GetDeployments();
+            Deployment current = deployments.FirstOrDefault(x => x.Id == deploymentId) ?? deployments.FirstOrDefault();
+
+            IRemoteFolder folder = await _remoteService.GetFolder(current?.Id ?? 0, path);
             if (folder == null)
             {
                 return RedirectToAction(nameof(Index));
             }
 
-            IReadOnlyCollection<Deployment> deployments = await _deploymentService.GetDeployments();
             IDictionary<int, string> lastBackups = new Dictionary<int, string>();
             IDictionary<int, string> lastUploads = new Dictionary<int, string>();
             IDictionary<int, bool> offline = new Dictionary<int, bool>();
@@ -45,7 +48,7 @@ namespace ODK.Deploy.Web.Mvc.Controllers
 
             return View(new IndexViewModel
             {
-                CanDeleteChildren = await _remoteService.CanDeleteFromFolder(deploymentId, path),
+                CanDeleteChildren = await _remoteService.CanDeleteFromFolder(current.Id, path),
                 Deployments = deployments.Select(x => new DeploymentViewModel
                 {
                     Id = x.Id,
@@ -62,9 +65,9 @@ namespace ODK.Deploy.Web.Mvc.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Backup(int id, string path)
+        public async Task<IActionResult> Backup(int deploymentId, string path)
         {
-            await _remoteService.BackupDeployment(id);
+            await _remoteService.BackupDeployment(deploymentId);
             return RedirectToAction(nameof(Index), new { path });
         }
 
@@ -76,30 +79,30 @@ namespace ODK.Deploy.Web.Mvc.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Offline(int id, string path)
+        public async Task<IActionResult> Offline(int deploymentId, string path)
         {
-            await _remoteService.TakeOffline(id);
+            await _remoteService.TakeOffline(deploymentId);
             return RedirectToAction(nameof(Index), new { path });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Online(int id, string path)
+        public async Task<IActionResult> Online(int deploymentId, string path)
         {
-            await _remoteService.PutOnline(id);
+            await _remoteService.PutOnline(deploymentId);
             return RedirectToAction(nameof(Index), new { path });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Release(int id, string path)
+        public async Task<IActionResult> Release(int deploymentId, string path)
         {
-            await _remoteService.ReleaseDeployment(id);
+            await _remoteService.ReleaseDeployment(deploymentId);
             return RedirectToAction(nameof(Index), new { path });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Upload(int id, string path)
+        public async Task<IActionResult> Upload(int deploymentId, string path)
         {
-            await _remoteService.UploadDeployment(id);
+            await _remoteService.UploadDeployment(deploymentId);
             return RedirectToAction(nameof(Index), new { path });
         }
 

@@ -8,6 +8,7 @@ using ODK.Deploy.Core.Deployments;
 using ODK.Deploy.Core.Servers;
 using ODK.Deploy.Services.Remote.FileSystem;
 using ODK.Deploy.Services.Remote.Ftp;
+using ODK.Deploy.Services.Remote.Rest;
 
 namespace ODK.Deploy.Services.Remote
 {
@@ -328,7 +329,7 @@ namespace ODK.Deploy.Services.Remote
                 case ServerType.Ftp:
                     return new FtpRemoteClient(server.Ftp);
                 case ServerType.Rest:
-                    return null;
+                    return new RestRemoteClient(server.Rest);
                 default:
                     throw new NotSupportedException();
             }
@@ -343,7 +344,7 @@ namespace ODK.Deploy.Services.Remote
                 case ServerType.Ftp:
                     return new FtpRemoteClient(server.Ftp);
                 case ServerType.Rest:
-                    return null;
+                    return new RestRemoteClient(server.Rest);
                 default:
                     throw new NotSupportedException();
             }
