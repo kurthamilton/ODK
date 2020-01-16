@@ -8,5 +8,7 @@ namespace ODK.Deploy.Core.Deployments
         Task<Deployment> GetDeployment(int id);
 
         Task<IReadOnlyCollection<Deployment>> GetDeployments();
+
+        Task<IReadOnlyCollection<Deployment>> GetServerDeployments(string serverName);
     }
 }

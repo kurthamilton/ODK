@@ -5,46 +5,40 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentFTP;
 using ODK.Deploy.Core.Deployments;
+using ODK.Deploy.Core.Servers;
 using ODK.Deploy.Services.Remote.FileSystem;
 using ODK.Deploy.Services.Remote.Ftp;
-using ODK.Deploy.Services.Remote.Rest;
 
 namespace ODK.Deploy.Services.Remote
 {
     public class RemoteService : IRemoteService
     {
         private readonly IDeploymentRepository _deploymentRepository;
-        private readonly IFileSystemRemoteClient _fileSystemClient;
-        private readonly IFtpRemoteClient _ftpClient;
         private readonly IDictionary<string, IRemoteFolder> _remoteFolderCache;
-        private readonly IRestRemoteClient _restClient;
-        private readonly RemoteServiceSettings _settings;
+        private readonly IServerRepository _serverRepository;
 
-        public RemoteService(RemoteServiceSettings settings, IFtpRemoteClient ftpClient,
-            IDeploymentRepository deploymentRepository, IFileSystemRemoteClient fileSystemClient,
-            IRestRemoteClient restClient)
+        public RemoteService(IServerRepository serverRepository, IDeploymentRepository deploymentRepository)
         {
             _deploymentRepository = deploymentRepository;
-            _fileSystemClient = fileSystemClient;
-            _ftpClient = ftpClient;
             _remoteFolderCache = new Dictionary<string, IRemoteFolder>(StringComparer.OrdinalIgnoreCase);
-            _restClient = restClient;
-            _settings = settings;
+            _serverRepository = serverRepository;
         }
 
         public async Task BackupDeployment(int deploymentId)
         {
-            IReadOnlyCollection<Deployment> deployments = await _deploymentRepository.GetDeployments();
-
-            Deployment deployment = deployments.FirstOrDefault(x => x.Id == deploymentId);
+            Deployment deployment = await _deploymentRepository.GetDeployment(deploymentId);
             if (deployment == null)
             {
                 return;
             }
 
-            IRemoteClient client = GetClient();
+            Server server = await _serverRepository.GetServer(deployment.Server);
 
-            string backupPath = await GetVersionedRemotePath(client, deployment, _settings.RemoteBackup);
+            IReadOnlyCollection<Deployment> deployments = await _deploymentRepository.GetServerDeployments(deployment.Server);
+
+            IRemoteClient client = GetClient(server);
+
+            string backupPath = await GetVersionedRemotePath(client, deployment, server.Paths.Backup);
 
             IReadOnlyCollection<string> skipPaths = deployments
                 .Except(new[] { deployment })
@@ -54,25 +48,34 @@ namespace ODK.Deploy.Services.Remote
             await CopyRemoteFolder(client, deployment.RemotePath, backupPath, skipPaths);
         }
 
-        public async Task<bool> CanDeleteFromFolder(string path)
+        public async Task<bool> CanDeleteFromFolder(int deploymentId, string path)
         {
-            IRemoteClient client = GetClient();
-
-            IRemoteFolder folder = await GetFolder(client, path);
-            if (folder == null)
+            Deployment deployment = await _deploymentRepository.GetDeployment(deploymentId);
+            if (deployment == null)
             {
                 return false;
             }
 
-            return folder.Ancestors
-                .Any(x => x.Path.Equals(_settings.RemoteDeploy) || x.Path.Equals(_settings.RemoteBackup));
+            Server server = await _serverRepository.GetServer(deployment.Server);
+
+            IRemoteClient client = GetClient(server);
+
+            return await CanDeleteFromFolder(client, server, path);
         }
 
-        public async Task DeleteFolder(string path)
+        public async Task DeleteFolder(int deploymentId, string path)
         {
-            IRemoteClient client = GetClient();
+            Deployment deployment = await _deploymentRepository.GetDeployment(deploymentId);
+            if (deployment == null)
+            {
+                return;
+            }
 
-            if (!await CanDeleteFromFolder(path))
+            Server server = await _serverRepository.GetServer(deployment.Server);
+
+            IRemoteClient client = GetClient(server);
+
+            if (!await CanDeleteFromFolder(client, server, path))
             {
                 return;
             }
@@ -81,9 +84,15 @@ namespace ODK.Deploy.Services.Remote
             _remoteFolderCache.Remove(path);
         }
 
-        public async Task<IRemoteFolder> GetFolder(string path)
+        public async Task<IRemoteFolder> GetFolder(int deploymentId, string path)
         {
-            IRemoteClient client = GetClient();
+            Deployment deployment = await _deploymentRepository.GetDeployment(deploymentId);
+            if (deployment == null)
+            {
+                return null;
+            }
+
+            IRemoteClient client = await GetClient(deployment);
             return await GetFolder(client, path);
         }
 
@@ -95,9 +104,11 @@ namespace ODK.Deploy.Services.Remote
                 return null;
             }
 
-            IRemoteClient client = GetClient();
+            Server server = await _serverRepository.GetServer(deployment.Server);
 
-            IRemoteFolder folder = await GetLastBackupFolder(client, deployment);
+            IRemoteClient client = GetClient(server);
+
+            IRemoteFolder folder = await GetLastBackupFolder(client, server, deployment);
             return folder?.Path;
         }
 
@@ -109,9 +120,11 @@ namespace ODK.Deploy.Services.Remote
                 return null;
             }
 
-            IRemoteClient client = GetClient();
+            Server server = await _serverRepository.GetServer(deployment.Server);
 
-            IRemoteFolder folder = await GetLastUploadFolder(client, deployment);
+            IRemoteClient client = GetClient(server);
+
+            IRemoteFolder folder = await GetLastUploadFolder(client, server, deployment);
             return folder?.Path;
         }
 
@@ -123,7 +136,7 @@ namespace ODK.Deploy.Services.Remote
                 return false;
             }
 
-            IRemoteClient client = GetClient();
+            IRemoteClient client = await GetClient(deployment);
 
             IRemoteFolder folder = await GetFolder(client, deployment.RemotePath);
             if (folder == null)
@@ -142,24 +155,26 @@ namespace ODK.Deploy.Services.Remote
                 return;
             }
 
-            IRemoteClient client = GetClient();
+            IRemoteClient client = await GetClient(deployment);
 
             await PutOnline(client, deployment);
         }
 
         public async Task ReleaseDeployment(int deploymentId)
         {
-            IReadOnlyCollection<Deployment> deployments = await _deploymentRepository.GetDeployments();
-
-            Deployment deployment = deployments.FirstOrDefault(x => x.Id == deploymentId);
+            Deployment deployment = await _deploymentRepository.GetDeployment(deploymentId);
             if (deployment == null)
             {
                 return;
             }
 
-            IRemoteClient client = GetClient();
+            Server server = await _serverRepository.GetServer(deployment.Server);
 
-            IRemoteFolder from = await GetLastUploadFolder(client, deployment);
+            IReadOnlyCollection<Deployment> deployments = await _deploymentRepository.GetServerDeployments(server.Name);
+
+            IRemoteClient client = GetClient(server);
+
+            IRemoteFolder from = await GetLastUploadFolder(client, server, deployment);
             if (from == null)
             {
                 return;
@@ -175,14 +190,14 @@ namespace ODK.Deploy.Services.Remote
 
             await PutOnline(client, deployment);
 
-            IRemoteFolder fromParent = await GetFolder(from.Parent.Path);
+            IRemoteFolder fromParent = await GetFolder(client, from.Parent.Path);
             if (fromParent.SubFolders.Count == 1)
             {
                 await DeleteFolder(client, from.Path);
             }
             else
             {
-                await DeleteFolder(from.Path);
+                await DeleteFolder(client, from.Path);
             }
         }
 
@@ -194,7 +209,7 @@ namespace ODK.Deploy.Services.Remote
                 return;
             }
 
-            IRemoteClient client = GetClient();
+            IRemoteClient client = await GetClient(deployment);
 
             await TakeOffline(client, deployment);
         }
@@ -207,11 +222,25 @@ namespace ODK.Deploy.Services.Remote
                 return;
             }
 
-            IRemoteClient client = GetClient();
+            Server server = await _serverRepository.GetServer(deployment.Server);
 
-            string deployPath = await GetVersionedRemotePath(client, deployment, _settings.RemoteDeploy);
+            IRemoteClient client = GetClient(server);
+
+            string deployPath = await GetVersionedRemotePath(client, deployment, server.Paths.Deploy);
 
             await UploadFolder(client, deployment.BuildPath, deployPath);
+        }
+
+        private async Task<bool> CanDeleteFromFolder(IRemoteClient client, Server server, string path)
+        {
+            IRemoteFolder folder = await GetFolder(client, path);
+            if (folder == null)
+            {
+                return false;
+            }
+
+            return folder.Ancestors
+                .Any(x => x.Path.Equals(server.Paths.Deploy) || x.Path.Equals(server.Paths.Backup));
         }
 
         private async Task ClearRemoteFolder(IRemoteClient client, string path, IReadOnlyCollection<string> skipPaths)
@@ -288,16 +317,33 @@ namespace ODK.Deploy.Services.Remote
             }
         }
 
-        private IRemoteClient GetClient()
+        private async Task<IRemoteClient> GetClient(Deployment deployment)
         {
-            switch (_settings.Type)
+            Server server = await _serverRepository.GetServer(deployment.Server);
+
+            switch (server.Type)
             {
-                case RemoteType.FileSystem:
-                    return _fileSystemClient;
-                case RemoteType.Ftp:
-                    return _ftpClient;
-                case RemoteType.Rest:
-                    return _restClient;
+                case ServerType.FileSystem:
+                    return new FileSystemRemoteClient(server.FileSystem);
+                case ServerType.Ftp:
+                    return new FtpRemoteClient(server.Ftp);
+                case ServerType.Rest:
+                    return null;
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        private IRemoteClient GetClient(Server server)
+        {
+            switch (server.Type)
+            {
+                case ServerType.FileSystem:
+                    return new FileSystemRemoteClient(server.FileSystem);
+                case ServerType.Ftp:
+                    return new FtpRemoteClient(server.Ftp);
+                case ServerType.Rest:
+                    return null;
                 default:
                     throw new NotSupportedException();
             }
@@ -323,9 +369,9 @@ namespace ODK.Deploy.Services.Remote
             }
         }
 
-        private async Task<IRemoteFolder> GetLastBackupFolder(IRemoteClient client, Deployment deployment)
+        private async Task<IRemoteFolder> GetLastBackupFolder(IRemoteClient client, Server server, Deployment deployment)
         {
-            string backupPath = _settings.RemoteBackup;
+            string backupPath = server.Paths.Backup;
             IRemoteFolder folder = await client.GetFolder(backupPath);
             if (folder == null)
             {
@@ -334,7 +380,7 @@ namespace ODK.Deploy.Services.Remote
 
             foreach (string dateFolderPath in folder.SubFolders.Reverse().Select(x => x.Path))
             {
-                IRemoteFolder dateFolder = await GetFolder(dateFolderPath);
+                IRemoteFolder dateFolder = await GetFolder(client, dateFolderPath);
                 IRemoteFolder backupFolder = dateFolder.SubFolders.Reverse()
                     .FirstOrDefault(x => x.Name.StartsWith(deployment.Name, StringComparison.OrdinalIgnoreCase));
                 if (backupFolder != null)
@@ -346,9 +392,9 @@ namespace ODK.Deploy.Services.Remote
             return null;
         }
 
-        private async Task<IRemoteFolder> GetLastUploadFolder(IRemoteClient client, Deployment deployment)
+        private async Task<IRemoteFolder> GetLastUploadFolder(IRemoteClient client, Server server, Deployment deployment)
         {
-            string uploadPath = _settings.RemoteDeploy;
+            string uploadPath = server.Paths.Deploy;
             IRemoteFolder folder = await client.GetFolder(uploadPath);
             if (folder == null)
             {
@@ -357,7 +403,7 @@ namespace ODK.Deploy.Services.Remote
 
             foreach (string dateFolderPath in folder.SubFolders.Reverse().Select(x => x.Path))
             {
-                IRemoteFolder dateFolder = await GetFolder(dateFolderPath);
+                IRemoteFolder dateFolder = await GetFolder(client, dateFolderPath);
                 IRemoteFolder uploadFolder = dateFolder.SubFolders.Reverse()
                     .FirstOrDefault(x => x.Name.StartsWith(deployment.Name, StringComparison.OrdinalIgnoreCase));
                 if (uploadFolder != null)

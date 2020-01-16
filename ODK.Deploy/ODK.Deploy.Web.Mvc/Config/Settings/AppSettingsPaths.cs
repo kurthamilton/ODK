@@ -5,7 +5,5 @@
         public string RemoteBackup { get; set; }
 
         public string RemoteDeploy { get; set; }
-
-        public string Root { get; set; }
     }
 }

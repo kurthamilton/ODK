@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using ODK.Deploy.Core.Servers;
 
 namespace ODK.Deploy.Services.Remote.FileSystem
 {
     public class FileSystemRemoteClient : IFileSystemRemoteClient
     {
-        private readonly FileSystemRemoteClientSettings _settings;
+        private readonly FileSystemSettings _settings;
 
-        public FileSystemRemoteClient(FileSystemRemoteClientSettings settings)
+        public FileSystemRemoteClient(FileSystemSettings settings)
         {
             _settings = settings;
         }

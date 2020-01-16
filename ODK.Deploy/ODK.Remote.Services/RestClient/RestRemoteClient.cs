@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using ODK.Deploy.Core.Servers;
 using ODK.Deploy.Services.Remote;
 using ODK.Deploy.Services.Remote.Rest;
 using ODK.Remote.Services.RestClient.Responses;
@@ -10,9 +11,9 @@ namespace ODK.Remote.Services.RestClient
 {
     public class RestRemoteClient : IRestRemoteClient
     {
-        private readonly RestRemoteClientSettings _settings;
+        private readonly RestSettings _settings;
 
-        public RestRemoteClient(RestRemoteClientSettings settings)
+        public RestRemoteClient(RestSettings settings)
         {
             _settings = settings;
         }
@@ -100,9 +101,9 @@ namespace ODK.Remote.Services.RestClient
 
         private IRestRequest GetRequest(string url, Method method = Method.GET)
         {
-            url = $"{_settings.BaseUrl}/{url}";
+            url = $"{_settings.Url}/{url}";
             IRestRequest request = new RestRequest(url, method);
-            request.AddHeader(_settings.AuthHeaderKey, _settings.AuthHeaderValue);
+            request.AddHeader("Authorization", _settings.AuthKey);
             return request;
         }
 

@@ -1,6 +1,6 @@
-﻿namespace ODK.Deploy.Services.Remote
+﻿namespace ODK.Deploy.Core.Servers
 {
-    public enum RemoteType
+    public enum ServerType
     {
         None,
         Ftp,

@@ -22,11 +22,11 @@ namespace ODK.Deploy.Web.Mvc.Controllers
             _remoteService = remoteService;
         }
 
-        public async Task<IActionResult> Index(string path = null)
+        public async Task<IActionResult> Index(int deploymentId, string path = null)
         {
             ModelState.Clear();
 
-            IRemoteFolder folder = await _remoteService.GetFolder(path);
+            IRemoteFolder folder = await _remoteService.GetFolder(deploymentId, path);
             if (folder == null)
             {
                 return RedirectToAction(nameof(Index));
@@ -45,7 +45,7 @@ namespace ODK.Deploy.Web.Mvc.Controllers
 
             return View(new IndexViewModel
             {
-                CanDeleteChildren = await _remoteService.CanDeleteFromFolder(path),
+                CanDeleteChildren = await _remoteService.CanDeleteFromFolder(deploymentId, path),
                 Deployments = deployments.Select(x => new DeploymentViewModel
                 {
                     Id = x.Id,
@@ -69,9 +69,9 @@ namespace ODK.Deploy.Web.Mvc.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Delete(string path, string parent)
+        public async Task<IActionResult> Delete(int deploymentId, string path, string parent)
         {
-            await _remoteService.DeleteFolder(path);
+            await _remoteService.DeleteFolder(deploymentId, path);
             return RedirectToAction(nameof(Index), new { path = parent });
         }
 

@@ -4,18 +4,19 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using FluentFTP;
+using ODK.Deploy.Core.Servers;
 
 namespace ODK.Deploy.Services.Remote.Ftp
 {
     public class FtpRemoteClient : IFtpRemoteClient
     {
         private readonly Lazy<FtpClient> _client;
-        private readonly FtpRemoteClientSettings _settings;
+        private readonly FtpSettings _settings;
 
-        public FtpRemoteClient(FtpRemoteClientSettings settings)
+        public FtpRemoteClient(FtpSettings settings)
         {
             _settings = settings;
-            _client = new Lazy<FtpClient>(() => CreateClient());
+            _client = new Lazy<FtpClient>(CreateClient);
         }
 
         public char PathSeparator => '/';
@@ -85,7 +86,7 @@ namespace ODK.Deploy.Services.Remote.Ftp
 
         private FtpClient CreateClient()
         {
-            return new FtpClient(_settings.Server, new NetworkCredential(_settings.UserName, _settings.Password));
+            return new FtpClient(_settings.Host, new NetworkCredential(_settings.UserName, _settings.Password));
         }
     }
 }
