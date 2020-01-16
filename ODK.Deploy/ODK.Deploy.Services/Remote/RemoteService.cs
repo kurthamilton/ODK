@@ -64,7 +64,8 @@ namespace ODK.Deploy.Services.Remote
                 return false;
             }
 
-            return folder.Ancestors.Any(x => x.Path.Equals(_settings.RemoteDeploy) || x.Path.Equals(_settings.RemoteBackup));
+            return folder.Ancestors
+                .Any(x => x.Path.Equals(_settings.RemoteDeploy) || x.Path.Equals(_settings.RemoteBackup));
         }
 
         public async Task DeleteFolder(string path)
@@ -326,6 +327,11 @@ namespace ODK.Deploy.Services.Remote
         {
             string backupPath = _settings.RemoteBackup;
             IRemoteFolder folder = await client.GetFolder(backupPath);
+            if (folder == null)
+            {
+                return null;
+            }
+
             foreach (string dateFolderPath in folder.SubFolders.Reverse().Select(x => x.Path))
             {
                 IRemoteFolder dateFolder = await GetFolder(dateFolderPath);
@@ -344,6 +350,11 @@ namespace ODK.Deploy.Services.Remote
         {
             string uploadPath = _settings.RemoteDeploy;
             IRemoteFolder folder = await client.GetFolder(uploadPath);
+            if (folder == null)
+            {
+                return null;
+            }
+
             foreach (string dateFolderPath in folder.SubFolders.Reverse().Select(x => x.Path))
             {
                 IRemoteFolder dateFolder = await GetFolder(dateFolderPath);
