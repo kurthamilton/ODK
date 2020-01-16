@@ -5,6 +5,8 @@ namespace ODK.Deploy.Services.Remote
 {
     public interface IRemoteClient
     {
+        char PathSeparator { get; }
+
         Task CopyFile(string from, string to);
 
         Task CreateFolder(string path);

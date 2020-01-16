@@ -5,8 +5,11 @@ using ODK.Deploy.Core.Deployments;
 using ODK.Deploy.Data.Repositories;
 using ODK.Deploy.Services.Deployments;
 using ODK.Deploy.Services.Remote;
+using ODK.Deploy.Services.Remote.FileSystem;
 using ODK.Deploy.Services.Remote.Ftp;
+using ODK.Deploy.Services.Remote.Rest;
 using ODK.Deploy.Web.Mvc.Config.Settings;
+using ODK.Remote.Services.RestClient;
 
 namespace ODK.Deploy.Web.Mvc.Config
 {
@@ -42,13 +45,20 @@ namespace ODK.Deploy.Web.Mvc.Config
         private static void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IDeploymentService, DeploymentService>();
+            services.AddScoped<IFileSystemRemoteClient, FileSystemRemoteClient>();
             services.AddScoped<IFtpRemoteClient, FtpRemoteClient>();
             services.AddScoped<IRemoteService, RemoteService>();
+            services.AddScoped<IRestRemoteClient, RestRemoteClient>();
         }
 
         private static void ConfigureServiceSettings(IServiceCollection services, AppSettings settings)
         {
-            services.AddSingleton(new FtpClientSettings
+            services.AddSingleton(new FileSystemRemoteClientSettings
+            {
+                RootPath = settings.Paths.Root
+            });
+
+            services.AddSingleton(new FtpRemoteClientSettings
             {
                 Password = settings.Ftp.Password,
                 Server = settings.Ftp.Server,
@@ -57,10 +67,16 @@ namespace ODK.Deploy.Web.Mvc.Config
 
             services.AddSingleton(new RemoteServiceSettings
             {
-                LocalTemp = settings.Paths.LocalTemp,
                 RemoteBackup = settings.Paths.RemoteBackup,
                 RemoteDeploy = settings.Paths.RemoteDeploy,
                 Type = settings.RemoteType
+            });
+
+            services.AddSingleton(new RestRemoteClientSettings
+            {
+                AuthHeaderKey = settings.Rest.AuthHeaderKey,
+                AuthHeaderValue = settings.Rest.AuthHeaderValue,
+                BaseUrl = settings.Rest.BaseUrl
             });
         }
     }

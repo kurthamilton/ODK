@@ -1,6 +1,6 @@
 ﻿namespace ODK.Deploy.Services.Remote.Ftp
 {
-    public class FtpClientSettings
+    public class FtpRemoteClientSettings
     {
         public string Password { get; set; }
 
