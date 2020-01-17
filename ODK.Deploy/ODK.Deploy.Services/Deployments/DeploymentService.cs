@@ -13,9 +13,9 @@ namespace ODK.Deploy.Services.Deployments
             _deploymentRepository = deploymentRepository;
         }
 
-        public async Task<IReadOnlyCollection<Deployment>> GetDeployments()
+        public async Task<IReadOnlyCollection<Deployment>> GetDeployments(string server)
         {
-            return await _deploymentRepository.GetDeployments();
+            return await _deploymentRepository.GetServerDeployments(server);
         }
     }
 }

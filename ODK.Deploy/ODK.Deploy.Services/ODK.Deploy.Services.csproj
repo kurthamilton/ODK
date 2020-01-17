@@ -14,8 +14,4 @@
     <ProjectReference Include="..\ODK.Remote.Services\ODK.Remote.Services.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Servers\" />
-  </ItemGroup>
-
 </Project>

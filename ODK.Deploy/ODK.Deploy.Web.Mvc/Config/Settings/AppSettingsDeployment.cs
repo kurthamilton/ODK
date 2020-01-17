@@ -11,7 +11,5 @@
         public string[] PreservedPaths { get; set; } = new string[0];
 
         public string RemotePath { get; set; }
-
-        public string Server { get; set; }
     }
 }

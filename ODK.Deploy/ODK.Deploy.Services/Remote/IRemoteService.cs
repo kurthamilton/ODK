@@ -6,11 +6,11 @@ namespace ODK.Deploy.Services.Remote
     {
         Task BackupDeployment(int deploymentId);
 
-        Task<bool> CanDeleteFromFolder(int deploymentId, string path);
+        Task<bool> CanDeleteFromFolder(string server, string path);
 
-        Task DeleteFolder(int deploymentId, string path);
+        Task DeleteFolder(string server, string path);
 
-        Task<IRemoteFolder> GetFolder(int deploymentId, string path);
+        Task<IRemoteFolder> GetFolder(string server, string path);
 
         Task<string> GetLastBackup(int deploymentId);
 

@@ -6,6 +6,6 @@ namespace ODK.Deploy.Services.Deployments
 {
     public interface IDeploymentService
     {
-        Task<IReadOnlyCollection<Deployment>> GetDeployments();
+        Task<IReadOnlyCollection<Deployment>> GetDeployments(string server);
     }
 }

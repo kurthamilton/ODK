@@ -1,6 +1,6 @@
 ﻿namespace ODK.Deploy.Web.Mvc.Models.Home
 {
-    public class DeploymentViewModel
+    public class ListDeploymentViewModel
     {
         public int Id { get; set; }
 
@@ -10,9 +10,7 @@
 
         public string LastUpload { get; set; }
 
-        public bool Offline { get; set; }
-
-        public string OfflineFile { get; set; }
+        public bool? Offline { get; set; }
 
         public string RemotePath { get; set; }
     }

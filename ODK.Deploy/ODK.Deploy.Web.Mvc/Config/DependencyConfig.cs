@@ -7,6 +7,7 @@ using ODK.Deploy.Core.Servers;
 using ODK.Deploy.Data.Repositories;
 using ODK.Deploy.Services.Deployments;
 using ODK.Deploy.Services.Remote;
+using ODK.Deploy.Services.Servers;
 using ODK.Deploy.Web.Mvc.Config.Settings;
 
 namespace ODK.Deploy.Web.Mvc.Config
@@ -37,14 +38,14 @@ namespace ODK.Deploy.Web.Mvc.Config
                         ? new FileSystemSettings { RootPath = x.FileSystem.RootPath }
                         : null,
                     Ftp = x.Type == ServerType.Ftp
-                        ? new FtpSettings { Host = x.Ftp.Server, Password = x.Ftp.Password, UserName = x.Ftp.UserName }
+                        ? new FtpSettings { Host = x.Ftp.Host, Password = x.Ftp.Password, UserName = x.Ftp.UserName }
                         : null,
                     Name = x.Name,
                     Type = x.Type,
                     Paths = new ServerPaths
                     {
-                        Backup = x.Paths?.RemoteBackup,
-                        Deploy = x.Paths?.RemoteDeploy
+                        Backup = x.Paths?.Backup,
+                        Deploy = x.Paths?.Deploy
                     },
                     Rest = x.Type == ServerType.Rest
                         ? new RestSettings { AuthKey = x.Rest.AuthHeaderKey, Url = x.Rest.BaseUrl }
@@ -53,25 +54,32 @@ namespace ODK.Deploy.Web.Mvc.Config
 
             services.AddSingleton(servers);
 
-            IReadOnlyCollection<Deployment> deployments = appSettings.Deployments
-                .Where(x => servers.Any(s => s.Name.Equals(x.Server, StringComparison.OrdinalIgnoreCase)))
-                .Select(x => new Deployment
-                {
-                    BuildPath = x.BuildPath,
-                    Name = x.Name,
-                    OfflineFile = x.OfflineFile,
-                    PreservedPaths = x.PreservedPaths,
-                    RemotePath = x.RemotePath,
-                    Server = x.Server
-                }).ToArray();
+            List<Deployment> deployments = new List<Deployment>();
+            foreach (AppSettingsServer server in appSettings.Servers)
+            {
+                IEnumerable<Deployment> serverDeployments = server
+                    .Deployments
+                    .Select(x => new Deployment
+                    {
+                        BuildPath = x.BuildPath,
+                        Name = x.Name,
+                        OfflineFile = x.OfflineFile,
+                        PreservedPaths = x.PreservedPaths,
+                        RemotePath = x.RemotePath,
+                        Server = server.Name
+                    });
 
-            services.AddSingleton(deployments);
+                deployments.AddRange(serverDeployments);
+            }
+
+            services.AddSingleton<IReadOnlyCollection<Deployment>>(deployments);
         }
 
         private static void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IDeploymentService, DeploymentService>();
             services.AddScoped<IRemoteService, RemoteService>();
+            services.AddScoped<IServerService, ServerService>();
         }
     }
 }

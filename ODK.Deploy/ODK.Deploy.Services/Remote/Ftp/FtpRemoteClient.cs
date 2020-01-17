@@ -45,7 +45,7 @@ namespace ODK.Deploy.Services.Remote.Ftp
 
         public async Task<bool> FolderExists(string path)
         {
-            return await _client.Value.DirectoryExistsAsync(path);
+            return path != null ? await _client.Value.DirectoryExistsAsync(path) : false;
         }
 
         public async Task<IRemoteFolder> GetFolder(string path)
