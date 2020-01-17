@@ -1,9 +1,13 @@
 <ng-container *appLoading="!invites">
 
   <div *ngIf="sendForm" class="mb-3">
-    <app-form [form]="sendForm" (formSubmit)="onSendFormSubmit()">      
+    <app-form [form]="sendForm" (formSubmit)="onSendFormSubmit()">           
     </app-form>
-  </div>  
+    <p class="text-muted ml-1">
+      Emails are batched and sent to your admin email address with members included on BCC. 
+      You will receive 1 email per batch as the admin recipient + your member invite.
+    </p> 
+  </div>
 
   <div *ngIf="sendTestForm" class="mb-3">
     <app-form [form]="sendTestForm" (formSubmit)="onSendTestFormSubmit()">      

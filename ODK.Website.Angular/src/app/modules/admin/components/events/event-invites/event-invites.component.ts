@@ -43,7 +43,7 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
 
   onSendFormSubmit(): void {
     if (!confirm('Are you sure you want to send invite emails for this event?')) {
-      this.invitesFormCallback.next(true);
+      this.invitesFormCallback.next(false);
       return;
     }
 
@@ -52,7 +52,7 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
 
   onSendTestFormSubmit(): void {
     if (!confirm('Are you sure you want to send a test invite email to yourself?')) {
-      this.testFormCallback.next(true);
+      this.testFormCallback.next(false);
       return;
     }
 
