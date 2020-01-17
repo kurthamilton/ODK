@@ -10,6 +10,7 @@ using ODK.Deploy.Services.Remote;
 using ODK.Deploy.Services.Servers;
 using ODK.Deploy.Web.Mvc.Models;
 using ODK.Deploy.Web.Mvc.Models.Home;
+using ODK.Deploy.Web.Mvc.Requests.Home;
 
 namespace ODK.Deploy.Web.Mvc.Controllers
 {
@@ -41,21 +42,24 @@ namespace ODK.Deploy.Web.Mvc.Controllers
             return View(viewModel);
         }
 
-        [HttpGet("Servers/{name}")]
-        public async Task<IActionResult> Server(string name, string path = null)
+        [HttpGet("Servers/{" + nameof(ServerPathRequest.Name) + "}")]
+        public async Task<IActionResult> Server(ServerPathRequest request)
         {
+            string name = request.Name;
+            string path = request.Path;
+
             ModelState.Clear();
 
             Server server = await _serverService.GetServer(name);
             if (server == null)
             {
-
+                return RedirectToIndex();
             }
 
             IRemoteFolder folder = await _remoteService.GetFolder(name, path);
             if (folder == null)
             {
-                return RedirectToAction(nameof(Index));
+                return RedirectToIndex();
             }
 
             return View("Server", new ServerViewModel
@@ -71,45 +75,57 @@ namespace ODK.Deploy.Web.Mvc.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Backup(string name, int deploymentId, string path)
+        public async Task<IActionResult> Backup(DeploymentRequest request)
         {
-            await _remoteService.BackupDeployment(deploymentId);
-            return RedirectToServer(name, path);
+            await _remoteService.BackupDeployment(request.DeploymentId);
+            return RedirectToServer(request);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Delete(string name, string path, string parent)
+        public async Task<IActionResult> Delete(ServerPathRequest request)
         {
+            string name = request.Name;
+            string path = request.Path;
+
+            IRemoteFolder folder = await _remoteService.GetFolder(name, path);
+            if (folder == null)
+            {
+                request.Path = null;
+                return RedirectToServer(request);
+            }
+
             await _remoteService.DeleteFolder(name, path);
-            return RedirectToServer(name, parent);
+
+            request.Path = folder.Parent?.Path;
+            return RedirectToServer(request);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Offline(string name, int deploymentId, string path)
+        public async Task<IActionResult> Offline(DeploymentRequest request)
         {
-            await _remoteService.TakeOffline(deploymentId);
-            return RedirectToServer(name, path);
+            await _remoteService.TakeOffline(request.DeploymentId);
+            return RedirectToServer(request);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Online(string name, int deploymentId, string path)
+        public async Task<IActionResult> Online(DeploymentRequest request)
         {
-            await _remoteService.PutOnline(deploymentId);
-            return RedirectToServer(name, path);
+            await _remoteService.PutOnline(request.DeploymentId);
+            return RedirectToServer(request);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Release(string name, int deploymentId, string path)
+        public async Task<IActionResult> Release(DeploymentRequest request)
         {
-            await _remoteService.ReleaseDeployment(deploymentId);
-            return RedirectToServer(name, path);
+            await _remoteService.ReleaseDeployment(request.DeploymentId);
+            return RedirectToServer(request);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Upload(string name, int deploymentId, string path)
+        public async Task<IActionResult> Upload(DeploymentRequest request)
         {
-            await _remoteService.UploadDeployment(deploymentId);
-            return RedirectToServer(name, path);
+            await _remoteService.UploadDeployment(request.DeploymentId);
+            return RedirectToServer(request);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -128,6 +144,7 @@ namespace ODK.Deploy.Web.Mvc.Controllers
             {
                 viewModels.Add(new ListDeploymentViewModel
                 {
+                    BuildPath = deployment.BuildPath,
                     Id = deployment.Id,
                     LastBackup = !string.IsNullOrEmpty(server.Paths.Backup) ? await _remoteService.GetLastBackup(deployment.Id) : null,
                     LastUpload = !string.IsNullOrEmpty(server.Paths.Deploy) ? await _remoteService.GetLastUpload(deployment.Id) : null,
@@ -145,9 +162,9 @@ namespace ODK.Deploy.Web.Mvc.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private IActionResult RedirectToServer(string name, string path)
+        private IActionResult RedirectToServer(ServerPathRequest request)
         {
-            return RedirectToAction(nameof(Server), new { name, path });
+            return RedirectToAction(nameof(Server), request);
         }
     }
 }

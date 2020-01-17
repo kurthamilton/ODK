@@ -12,6 +12,8 @@
 
         public const string FileUploadEndpoint = "Files/Upload";
 
+        public const string FolderCopyEndpoint = "Folder/Copy";
+
         public const string FolderEndpoint = "Folders";
 
         public const string PathQueryParam = "Path";

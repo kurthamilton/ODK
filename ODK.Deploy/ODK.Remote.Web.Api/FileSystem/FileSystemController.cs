@@ -64,6 +64,13 @@ namespace ODK.Remote.Web.Api.FileSystem
             return NoContent();
         }
 
+        [HttpPost(FileSystemEndpoints.FolderCopyEndpoint)]
+        public async Task<ActionResult> FolderCopy(string from, string to)
+        {
+            await _fileSystem.CopyFolder(from, to);
+            return NoContent();
+        }
+
         [HttpGet(FileSystemEndpoints.FolderEndpoint)]
         public async Task<ActionResult<FileApiResponse>> FolderGet(string path)
         {

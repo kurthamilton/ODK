@@ -1,4 +1,5 @@
 ﻿@using ODK.Deploy.Web.Mvc.Models.Home;
+@using ODK.Deploy.Web.Mvc.Requests.Home;
 @model IndexViewModel
 @{
     ViewData["Title"] = "Servers";
@@ -17,7 +18,7 @@
         {
             <tr>
                 <td>
-                    @Html.ActionLink(@server.Name, "Server", null, new { name = server.Name })
+                    @Html.ActionLink(@server.Name, "Server", null, new ServerPathRequest { Name = server.Name })
                 </td>
             </tr>
         }

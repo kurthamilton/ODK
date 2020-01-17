@@ -25,6 +25,12 @@ namespace ODK.Deploy.Services.Remote.Rest
             await GetResponse<FolderApiResponse>(url, Method.POST);
         }
 
+        public async Task CopyFolder(string from, string to)
+        {
+            string url = $"{FileSystemEndpoints.FolderCopyEndpoint}?from={from}&to={to}";
+            await GetResponse<FolderApiResponse>(url, Method.POST);
+        }
+
         public async Task CreateFolder(string path)
         {
             string url = $"{FileSystemEndpoints.FolderEndpoint}?path={path}";

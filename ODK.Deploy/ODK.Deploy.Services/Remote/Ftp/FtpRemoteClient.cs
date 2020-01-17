@@ -28,6 +28,11 @@ namespace ODK.Deploy.Services.Remote.Ftp
             await _client.Value.UploadAsync(stream, to, FtpRemoteExists.Overwrite);
         }
 
+        public Task CopyFolder(string from, string to)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task CreateFolder(string path)
         {
             await _client.Value.CreateDirectoryAsync(path, true);
