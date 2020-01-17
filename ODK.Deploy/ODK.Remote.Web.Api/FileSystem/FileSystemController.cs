@@ -46,7 +46,7 @@ namespace ODK.Remote.Web.Api.FileSystem
         public async Task<ActionResult> FileUpload(string path, [FromForm] IFormFile file)
         {
             byte[] bytes;
-            using (MemoryStream stream = new MemoryStream())
+            await using (MemoryStream stream = new MemoryStream())
             {
                 await file.CopyToAsync(stream);
 
@@ -61,6 +61,13 @@ namespace ODK.Remote.Web.Api.FileSystem
         public async Task<IActionResult> FolderCreate(string path)
         {
             await _fileSystem.CreateFolder(path);
+            return NoContent();
+        }
+
+        [HttpPost(FileSystemEndpoints.FolderCopyEndpoint)]
+        public async Task<ActionResult> FolderCopy(string from, string to)
+        {
+            await _fileSystem.CopyFolder(from, to);
             return NoContent();
         }
 
@@ -85,7 +92,6 @@ namespace ODK.Remote.Web.Api.FileSystem
             }
 
             await _fileSystem.DeleteFolder(path);
-            folder = await _fileSystem.GetFolder(folder.Parent.Path);
             return NoContent();
         }
 

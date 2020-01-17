@@ -1,6 +1,6 @@
-﻿namespace ODK.Deploy.Web.Mvc.Config.Settings
+﻿namespace ODK.Deploy.Core.Servers
 {
-    public class AppSettingsPaths
+    public class ServerPaths
     {
         public string Backup { get; set; }
 

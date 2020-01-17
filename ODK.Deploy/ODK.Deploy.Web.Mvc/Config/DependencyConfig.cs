@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using ODK.Deploy.Core.Deployments;
+using ODK.Deploy.Core.Servers;
 using ODK.Deploy.Data.Repositories;
 using ODK.Deploy.Services.Deployments;
 using ODK.Deploy.Services.Remote;
-using ODK.Deploy.Services.Remote.FileSystem;
-using ODK.Deploy.Services.Remote.Ftp;
-using ODK.Deploy.Services.Remote.Rest;
+using ODK.Deploy.Services.Servers;
 using ODK.Deploy.Web.Mvc.Config.Settings;
-using ODK.Remote.Services.RestClient;
 
 namespace ODK.Deploy.Web.Mvc.Config
 {
@@ -17,67 +16,70 @@ namespace ODK.Deploy.Web.Mvc.Config
     {
         public static void ConfigureDependencies(this IServiceCollection services, AppSettings appSettings)
         {
+            services.AddSingleton(appSettings);
+
             ConfigureDataSettings(services, appSettings);
             ConfigureData(services);
-            ConfigureServiceSettings(services, appSettings);
             ConfigureServices(services);
         }
 
         private static void ConfigureData(IServiceCollection services)
         {
             services.AddScoped<IDeploymentRepository, DeploymentRepository>();
+            services.AddScoped<IServerRepository, ServerRepository>();
         }
 
         private static void ConfigureDataSettings(IServiceCollection services, AppSettings appSettings)
         {
-            IReadOnlyCollection<Deployment> deployments = appSettings.Deployments.Select(x => new Deployment
-            {
-                BuildPath = x.BuildPath,
-                Name = x.Name,
-                OfflineFile = x.OfflineFile,
-                PreservedPaths = x.PreservedPaths,
-                RemotePath = x.RemotePath
-            }).ToArray();
+            IReadOnlyCollection<Server> servers = appSettings.Servers
+                .Select(x => new Server
+                {
+                    FileSystem = x.Type == ServerType.FileSystem
+                        ? new FileSystemSettings { RootPath = x.FileSystem.RootPath }
+                        : null,
+                    Ftp = x.Type == ServerType.Ftp
+                        ? new FtpSettings { Host = x.Ftp.Host, Password = x.Ftp.Password, UserName = x.Ftp.UserName }
+                        : null,
+                    Name = x.Name,
+                    Type = x.Type,
+                    Paths = new ServerPaths
+                    {
+                        Backup = x.Paths?.Backup,
+                        Deploy = x.Paths?.Deploy
+                    },
+                    Rest = x.Type == ServerType.Rest
+                        ? new RestSettings { AuthKey = x.Rest.AuthHeaderKey, Url = x.Rest.BaseUrl }
+                        : null
+                }).ToArray();
 
-            services.AddSingleton(deployments);
+            services.AddSingleton(servers);
+
+            List<Deployment> deployments = new List<Deployment>();
+            foreach (AppSettingsServer server in appSettings.Servers)
+            {
+                IEnumerable<Deployment> serverDeployments = server
+                    .Deployments
+                    .Select(x => new Deployment
+                    {
+                        BuildPath = x.BuildPath,
+                        Name = x.Name,
+                        OfflineFile = x.OfflineFile,
+                        PreservedPaths = x.PreservedPaths,
+                        RemotePath = x.RemotePath,
+                        Server = server.Name
+                    });
+
+                deployments.AddRange(serverDeployments);
+            }
+
+            services.AddSingleton<IReadOnlyCollection<Deployment>>(deployments);
         }
 
         private static void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IDeploymentService, DeploymentService>();
-            services.AddScoped<IFileSystemRemoteClient, FileSystemRemoteClient>();
-            services.AddScoped<IFtpRemoteClient, FtpRemoteClient>();
             services.AddScoped<IRemoteService, RemoteService>();
-            services.AddScoped<IRestRemoteClient, RestRemoteClient>();
-        }
-
-        private static void ConfigureServiceSettings(IServiceCollection services, AppSettings settings)
-        {
-            services.AddSingleton(new FileSystemRemoteClientSettings
-            {
-                RootPath = settings.Paths.Root
-            });
-
-            services.AddSingleton(new FtpRemoteClientSettings
-            {
-                Password = settings.Ftp.Password,
-                Server = settings.Ftp.Server,
-                UserName = settings.Ftp.UserName
-            });
-
-            services.AddSingleton(new RemoteServiceSettings
-            {
-                RemoteBackup = settings.Paths.RemoteBackup,
-                RemoteDeploy = settings.Paths.RemoteDeploy,
-                Type = settings.RemoteType
-            });
-
-            services.AddSingleton(new RestRemoteClientSettings
-            {
-                AuthHeaderKey = settings.Rest.AuthHeaderKey,
-                AuthHeaderValue = settings.Rest.AuthHeaderValue,
-                BaseUrl = settings.Rest.BaseUrl
-            });
+            services.AddScoped<IServerService, ServerService>();
         }
     }
 }

@@ -4,18 +4,19 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using FluentFTP;
+using ODK.Deploy.Core.Servers;
 
 namespace ODK.Deploy.Services.Remote.Ftp
 {
     public class FtpRemoteClient : IFtpRemoteClient
     {
         private readonly Lazy<FtpClient> _client;
-        private readonly FtpRemoteClientSettings _settings;
+        private readonly FtpSettings _settings;
 
-        public FtpRemoteClient(FtpRemoteClientSettings settings)
+        public FtpRemoteClient(FtpSettings settings)
         {
             _settings = settings;
-            _client = new Lazy<FtpClient>(() => CreateClient());
+            _client = new Lazy<FtpClient>(CreateClient);
         }
 
         public char PathSeparator => '/';
@@ -25,6 +26,11 @@ namespace ODK.Deploy.Services.Remote.Ftp
             MemoryStream stream = new MemoryStream();
             await _client.Value.DownloadAsync(stream, from);
             await _client.Value.UploadAsync(stream, to, FtpRemoteExists.Overwrite);
+        }
+
+        public Task CopyFolder(string from, string to)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task CreateFolder(string path)
@@ -44,7 +50,7 @@ namespace ODK.Deploy.Services.Remote.Ftp
 
         public async Task<bool> FolderExists(string path)
         {
-            return await _client.Value.DirectoryExistsAsync(path);
+            return path != null ? await _client.Value.DirectoryExistsAsync(path) : false;
         }
 
         public async Task<IRemoteFolder> GetFolder(string path)
@@ -85,7 +91,7 @@ namespace ODK.Deploy.Services.Remote.Ftp
 
         private FtpClient CreateClient()
         {
-            return new FtpClient(_settings.Server, new NetworkCredential(_settings.UserName, _settings.Password));
+            return new FtpClient(_settings.Host, new NetworkCredential(_settings.UserName, _settings.Password));
         }
     }
 }

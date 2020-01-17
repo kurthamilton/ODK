@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using ODK.Deploy.Services.Remote;
-using ODK.Deploy.Services.Remote.Rest;
+using ODK.Deploy.Core.Servers;
+using ODK.Remote.Services.RestClient;
 using ODK.Remote.Services.RestClient.Responses;
 using RestSharp;
 
-namespace ODK.Remote.Services.RestClient
+namespace ODK.Deploy.Services.Remote.Rest
 {
     public class RestRemoteClient : IRestRemoteClient
     {
-        private readonly RestRemoteClientSettings _settings;
+        private readonly RestSettings _settings;
 
-        public RestRemoteClient(RestRemoteClientSettings settings)
+        public RestRemoteClient(RestSettings settings)
         {
             _settings = settings;
         }
@@ -22,6 +22,12 @@ namespace ODK.Remote.Services.RestClient
         public async Task CopyFile(string from, string to)
         {
             string url = $"{FileSystemEndpoints.FileCopyEndpoint}?from={from}&to={to}";
+            await GetResponse<FolderApiResponse>(url, Method.POST);
+        }
+
+        public async Task CopyFolder(string from, string to)
+        {
+            string url = $"{FileSystemEndpoints.FolderCopyEndpoint}?from={from}&to={to}";
             await GetResponse<FolderApiResponse>(url, Method.POST);
         }
 
@@ -100,9 +106,9 @@ namespace ODK.Remote.Services.RestClient
 
         private IRestRequest GetRequest(string url, Method method = Method.GET)
         {
-            url = $"{_settings.BaseUrl}/{url}";
+            url = $"{_settings.Url}/{url}";
             IRestRequest request = new RestRequest(url, method);
-            request.AddHeader(_settings.AuthHeaderKey, _settings.AuthHeaderValue);
+            request.AddHeader("Authorization", _settings.AuthKey);
             return request;
         }
 

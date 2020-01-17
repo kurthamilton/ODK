@@ -1,6 +1,10 @@
-﻿namespace ODK.Deploy.Web.Mvc.Config.Settings
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace ODK.Deploy.Core.Servers
 {
-    public class AppSettingsFtp
+    public class FtpSettings
     {
         public string Host { get; set; }
 

@@ -15,5 +15,7 @@ namespace ODK.Deploy.Core.Deployments
         public IReadOnlyCollection<string> PreservedPaths { get; set; }
 
         public string RemotePath { get; set; }
+
+        public string Server { get; set; }
     }
 }

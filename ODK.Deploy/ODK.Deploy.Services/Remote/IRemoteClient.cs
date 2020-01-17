@@ -9,6 +9,8 @@ namespace ODK.Deploy.Services.Remote
 
         Task CopyFile(string from, string to);
 
+        Task CopyFolder(string from, string to);
+
         Task CreateFolder(string path);
 
         Task DeleteFile(string path);

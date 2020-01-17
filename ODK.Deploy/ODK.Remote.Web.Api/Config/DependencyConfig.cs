@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ODK.Deploy.Core.Servers;
 using ODK.Deploy.Services.Remote.FileSystem;
 using ODK.Remote.Web.Api.Config.Settings;
 
@@ -6,22 +7,18 @@ namespace ODK.Remote.Web.Api.Config
 {
     public static class DependencyConfig
     {
-        public static void ConfigureDependencies(this IServiceCollection services, AppSettings appSettings)
+        public static void ConfigureDependencies(this IServiceCollection services, AppSettingsPaths settings)
         {
-            ConfigureServiceSettings(services, appSettings);
-            ConfigureServices(services);
+            ConfigureServices(services, settings);
         }
 
-        private static void ConfigureServices(IServiceCollection services)
+        private static void ConfigureServices(IServiceCollection services, AppSettingsPaths settings)
         {
             services.AddScoped<IFileSystemRemoteClient, FileSystemRemoteClient>();
-        }
 
-        private static void ConfigureServiceSettings(IServiceCollection services, AppSettings settings)
-        {
-            services.AddSingleton(new FileSystemRemoteClientSettings
+            services.AddSingleton(new FileSystemSettings
             {
-                RootPath = settings.Paths.Root
+                RootPath = settings.Root
             });
         }
     }
