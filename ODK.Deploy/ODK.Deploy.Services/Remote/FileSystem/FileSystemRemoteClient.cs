@@ -139,14 +139,18 @@ namespace ODK.Deploy.Services.Remote.FileSystem
             return Task.CompletedTask;
         }
 
-        public Task UploadFile(string localPath, string remotePath)
+        public async Task UploadFile(string localPath, string remotePath)
         {
-            throw new NotImplementedException();
+            FileInfo file = new FileInfo(localPath);
+            await CopyFile(localPath, $"{remotePath}{PathSeparator}{file.Name}");
         }
 
-        public Task UploadFolder(IEnumerable<string> localFilePaths, string remotePath)
+        public async Task UploadFolder(IEnumerable<string> localFilePaths, string remotePath)
         {
-            throw new NotImplementedException();
+            foreach (string localFilePath in localFilePaths)
+            {
+                await UploadFile(localFilePath, remotePath);
+            }
         }
 
         private string GetPath(string path)
