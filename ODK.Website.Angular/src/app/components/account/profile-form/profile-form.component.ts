@@ -205,7 +205,7 @@ export class ProfileFormComponent implements OnChanges {
         subscription: new CheckBoxFormControlViewModel({
           id: 'subscription',
           label: {
-            text: `I agree to purchase a subscription after a ${this.chapterMembershipSettings.trialPeriodMonths} month trial period`
+            text: `If I choose to continue attending after my free ${this.chapterMembershipSettings.trialPeriodMonths} month trial period has expired, I agree to purchase a subscription.`
           },
           validation: {
             message: 'Required',
