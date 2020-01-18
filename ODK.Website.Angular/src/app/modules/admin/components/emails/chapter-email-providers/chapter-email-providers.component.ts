@@ -1,5 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
+import { switchMap } from 'rxjs/operators';
+
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
@@ -19,6 +21,9 @@ export class ChapterEmailProvidersComponent implements OnInit {
   ) {     
   }
 
+  links: {
+    createProvider: string;
+  };
   providers: ChapterEmailProvider[];
 
   private chapter: Chapter;
@@ -26,7 +31,24 @@ export class ChapterEmailProvidersComponent implements OnInit {
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
 
+    this.links = {
+      createProvider: adminUrls.emailProviderCreate(this.chapter)
+    };
+
     this.emailAdminService.getChapterAdminEmailProviders(this.chapter.id).subscribe((providers: ChapterEmailProvider[]) => {
+      this.providers = providers;
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  onDeleteProvider(provider: ChapterEmailProvider): void {
+    if (!confirm('Are you sure you want to delete this provider?')) {
+      return;
+    }
+
+    this.emailAdminService.deleteChapterEmailProvider(this.chapter.id, provider.id).pipe(
+      switchMap(() => this.emailAdminService.getChapterAdminEmailProviders(this.chapter.id))
+    ).subscribe((providers: ChapterEmailProvider[]) => {
       this.providers = providers;
       this.changeDetector.detectChanges();
     });

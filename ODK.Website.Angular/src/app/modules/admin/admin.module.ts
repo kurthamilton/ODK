@@ -14,6 +14,7 @@ import { ChapterAdminMemberAddComponent } from './components/chapters/chapter-ad
 import { ChapterAdminMemberComponent } from './components/chapters/chapter-admin-member/chapter-admin-member.component';
 import { ChapterAdminMembersComponent } from './components/chapters/chapter-admin-members/chapter-admin-members.component';
 import { ChapterEmailProviderComponent } from './components/emails/chapter-email-provider/chapter-email-provider.component';
+import { ChapterEmailProviderFormComponent } from './components/emails/chapter-email-provider-form/chapter-email-provider-form.component';
 import { ChapterEmailProvidersComponent } from './components/emails/chapter-email-providers/chapter-email-providers.component';
 import { ChapterEmailsComponent } from './components/emails/chapter-emails/chapter-emails.component';
 import { ChapterMembershipSettingsComponent } from './components/chapters/chapter-membership-settings/chapter-membership-settings.component';
@@ -27,6 +28,7 @@ import { ChapterSubscriptionCreateComponent } from './components/chapters/chapte
 import { ChapterSubscriptionEditComponent } from './components/chapters/chapter-subscription-edit/chapter-subscription-edit.component';
 import { ChapterSubscriptionFormComponent } from './components/chapters/chapter-subscription-form/chapter-subscription-form.component';
 import { ChapterSubscriptionsComponent } from './components/chapters/chapter-subscriptions/chapter-subscriptions.component';
+import { CreateChapterEmailProviderComponent } from './components/emails/create-chapter-email-provider/create-chapter-email-provider.component';
 import { CreateEventComponent } from './components/events/create-event/create-event.component';
 import { CreateVenueComponent } from './components/venues/create-venue/create-venue.component';
 import { DefaultEmailsComponent } from './components/emails/default-emails/default-emails.component';
@@ -75,6 +77,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     ChapterAdminMemberComponent,
     ChapterAdminMembersComponent,
     ChapterEmailProviderComponent,
+    ChapterEmailProviderFormComponent,
     ChapterEmailProvidersComponent,
     ChapterEmailsComponent,
     ChapterMembershipSettingsComponent,
@@ -88,6 +91,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     ChapterSubscriptionEditComponent,
     ChapterSubscriptionFormComponent,
     ChapterSubscriptionsComponent,
+    CreateChapterEmailProviderComponent,
     CreateEventComponent,
     CreateVenueComponent,
     DefaultEmailsComponent,

@@ -52,6 +52,9 @@ export const adminPaths = {
       path: 'default'
     },
     emailProviders: {
+      create: {
+        path: 'create'
+      },     
       path: 'email-providers',
       emailProvider: {
         params: {

@@ -1,0 +1,5 @@
+<app-breadcrumbs [breadcrumbs]="breadcrumbs" active="Create new email provider" ></app-breadcrumbs>
+<h2>Create new email provider</h2>
+<app-chapter-email-provider-form *ngIf="provider" [provider]="provider" [formCallback]="formCallback" buttonText="Create"
+  (formSubmit)="onFormSubmit($event)">
+</app-chapter-email-provider-form>

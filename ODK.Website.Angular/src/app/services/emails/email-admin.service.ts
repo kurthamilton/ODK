@@ -4,12 +4,14 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { catchApiError } from '../http/catchApiError';
 import { ChapterEmail } from 'src/app/core/emails/chapter-email';
 import { ChapterEmailProvider } from 'src/app/core/emails/chapter-email-provider';
 import { Email } from 'src/app/core/emails/email';
 import { EmailType } from 'src/app/core/emails/email-type';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
+import { ServiceResult } from '../service-result';
 
 const baseUrl: string = `${environment.apiBaseUrl}/admin/emails`;
 
@@ -30,7 +32,7 @@ export class EmailAdminService {
 
   constructor(private http: HttpClient) { }
 
-  addChapterEmailProvider(chapterId: string, provider: ChapterEmailProvider): Observable<void> {
+  addChapterEmailProvider(chapterId: string, provider: ChapterEmailProvider): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
       batchSize: provider.batchSize ? provider.batchSize.toString() : null,
       dailyLimit: provider.dailyLimit.toString(),
@@ -43,7 +45,10 @@ export class EmailAdminService {
     });
 
     return this.http.post(endpoints.chapterEmailProviders(chapterId), params).pipe(
-      map(() => undefined)
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
     );
   }
 

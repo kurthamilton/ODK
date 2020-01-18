@@ -36,6 +36,7 @@ export const adminUrls = {
   chapterSubscriptionCreate: (chapter: Chapter) => chapterPath(chapter, `${adminPaths.chapter.subscriptions.path}/${adminPaths.chapter.subscriptions.create.path}`),
   chapterSubscriptions: (chapter: Chapter) => chapterPath(chapter, adminPaths.chapter.subscriptions.path),
   emailProvider: (chapter: Chapter, provider: ChapterEmailProvider) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.emailProviders.path}/${provider.id}`),
+  emailProviderCreate: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.emailProviders.path}/${adminPaths.emails.emailProviders.create.path}`),
   emailProviders: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.emailProviders.path}`),
   emails: (chapter: Chapter) => chapterUrl(chapter, adminPaths.emails.path),
   emailsDefault: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.emails.path}/${adminPaths.emails.default.path}`),

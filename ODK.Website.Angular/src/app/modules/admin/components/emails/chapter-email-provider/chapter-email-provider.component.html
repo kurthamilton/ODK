@@ -1,4 +1,6 @@
 <ng-container *appLoading="!provider">
   <app-breadcrumbs [breadcrumbs]="breadcrumbs" [active]="provider.smtpServer"></app-breadcrumbs>
-  <app-form [form]="form" (formSubmit)="onFormSubmit()"></app-form>
+  <app-chapter-email-provider-form [provider]="provider" buttonText="Update" [formCallback]="formCallback" 
+    (formSubmit)="onFormSubmit($event)">
+  </app-chapter-email-provider-form>
 </ng-container>

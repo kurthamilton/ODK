@@ -20,6 +20,7 @@ import { ChapterSubscriptionCreateComponent } from '../components/chapters/chapt
 import { ChapterSubscriptionEditComponent } from '../components/chapters/chapter-subscription-edit/chapter-subscription-edit.component';
 import { ChapterSubscriptionsComponent } from '../components/chapters/chapter-subscriptions/chapter-subscriptions.component';
 import { ChapterSuperAdminGuardService } from 'src/app/routing/chapter-super-admin-guard.service';
+import { CreateChapterEmailProviderComponent } from '../components/emails/create-chapter-email-provider/create-chapter-email-provider.component';
 import { CreateEventComponent } from '../components/events/create-event/create-event.component';
 import { CreateVenueComponent } from '../components/venues/create-venue/create-venue.component';
 import { DefaultEmailsComponent } from '../components/emails/default-emails/default-emails.component';
@@ -72,6 +73,7 @@ const routes: Routes = [
       { path: adminPaths.emails.emailProviders.path, 
         canActivate: [ChapterSuperAdminGuardService], children: [
           { path:'', component: ChapterEmailProvidersComponent },
+          { path:adminPaths.emails.emailProviders.create.path, component: CreateChapterEmailProviderComponent },
           { path: adminPaths.emails.emailProviders.emailProvider.path, component: ChapterEmailProviderComponent }
         ] }
     ] },
