@@ -24,8 +24,8 @@ namespace ODK.Services.Venues
         public async Task<VersionedServiceResult<IReadOnlyCollection<Venue>>> GetPublicVenues(long? currentVersion, Guid chapterId)
         {
             return await _cacheService.GetOrSetVersionedCollection(
-                () => _venueRepository.GetVenues(chapterId),
-                () => _venueRepository.GetVenuesVersion(chapterId),
+                () => _venueRepository.GetPublicVenues(chapterId),
+                () => _venueRepository.GetPublicVenuesVersion(chapterId),
                 currentVersion,
                 chapterId);
         }

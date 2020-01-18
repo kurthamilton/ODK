@@ -9,7 +9,7 @@ import { environment } from 'src/environments/environment';
 const baseUrl: string = `${environment.apiBaseUrl}/maps`;
 
 const endpoints = {
-  googleApiKey: `${baseUrl}/google/apikey`
+  googleApiKey: (venueId: string) => `${baseUrl}/google/apikey?venueId=${venueId}`
 };
 
 @Injectable({
@@ -21,18 +21,18 @@ export class MapService {
 
   private apiKey: string;
 
-  getGoogleMapsUrl(query: string): Observable<string> {
-    return this.getApiKey().pipe(
+  getGoogleMapsUrl(venueId: string, query: string): Observable<string> {
+    return this.getApiKey(venueId).pipe(
       map((key: string) => `https://www.google.com/maps/embed/v1/place?key=${key}&q=${query}`)
     );
   }
 
-  private getApiKey(): Observable<string> {
+  private getApiKey(venueId: string): Observable<string> {
     if (this.apiKey) {
       return of(this.apiKey);
     }
 
-    return this.http.get(endpoints.googleApiKey).pipe(
+    return this.http.get(endpoints.googleApiKey(venueId)).pipe(
       map((response: any) => this.mapGoogleMapsApiKey(response))
     );
   }

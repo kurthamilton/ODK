@@ -11,7 +11,7 @@
         <app-raw-html [html]="event.description"></app-raw-html>
       </div>
       <p *ngIf="venue.mapQuery" class="d-none d-md-block">
-        <app-google-map [query]="venue.mapQuery"></app-google-map>
+        <app-google-map [venue]="venue"></app-google-map>
       </p>
     </ng-container>
 
