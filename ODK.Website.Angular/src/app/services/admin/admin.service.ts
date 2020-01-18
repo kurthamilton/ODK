@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { LogMessage } from 'src/app/core/logging/log-message';
 
-const baseUrl: string = `${environment.apiBaseUrl}/admin`;
+const baseUrl: string = environment.adminApiBaseUrl;
 
 const endpoints = {
   log: (level: string, page: number) => `${baseUrl}/log?level=${level ? level : ''}&page=${page ? page : ''}`

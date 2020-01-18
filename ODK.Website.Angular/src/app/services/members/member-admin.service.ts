@@ -13,7 +13,7 @@ import { MemberService } from './member.service';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { ServiceResult } from '../service-result';
 
-const baseUrl: string = `${environment.apiBaseUrl}/admin/members`;
+const baseUrl: string = `${environment.adminApiBaseUrl}/members`;
 
 const endpoints = {
   member: (memberId: string) => `${baseUrl}/${memberId}`,

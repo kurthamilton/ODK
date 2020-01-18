@@ -17,7 +17,7 @@ import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { ServiceResult } from '../service-result';
 
-const baseUrl = `${environment.apiBaseUrl}/admin/chapters`;
+const baseUrl = `${environment.adminApiBaseUrl}/chapters`;
 
 const endpoints = {
   adminMember: (id: string, memberId: string) => `${baseUrl}/${id}/adminmembers/${memberId}`,

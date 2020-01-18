@@ -13,7 +13,7 @@ import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { ServiceResult } from '../service-result';
 
-const baseUrl: string = `${environment.apiBaseUrl}/admin/emails`;
+const baseUrl: string = `${environment.adminApiBaseUrl}/emails`;
 
 const endpoints = {
   chapterEmail: (chapterId: string, type: EmailType) => `${baseUrl}/chapters/${chapterId}/${EmailType[type]}`,
