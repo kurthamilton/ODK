@@ -17,12 +17,12 @@ namespace ODK.Web.Api.Admin.Venues
     [Authorize]
     [ApiController]
     [Route("Venues")]
-    public class AdminVenuesController : OdkControllerBase
+    public class VenuesController : OdkControllerBase
     {
         private readonly IMapper _mapper;
         private readonly IVenueAdminService _venueAdminService;
 
-        public AdminVenuesController(IVenueAdminService venueAdminService, IMapper mapper)
+        public VenuesController(IVenueAdminService venueAdminService, IMapper mapper)
         {
             _mapper = mapper;
             _venueAdminService = venueAdminService;

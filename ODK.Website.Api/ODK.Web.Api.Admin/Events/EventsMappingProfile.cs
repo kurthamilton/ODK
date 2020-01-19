@@ -6,9 +6,9 @@ using ODK.Web.Api.Admin.Events.Responses;
 
 namespace ODK.Web.Api.Admin.Events
 {
-    public class AdminEventsMappingProfile : Profile
+    public class EventsMappingProfile : Profile
     {
-        public AdminEventsMappingProfile()
+        public EventsMappingProfile()
         {
             MapRequests();
             MapResponses();

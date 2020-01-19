@@ -6,9 +6,9 @@ using ODK.Web.Api.Admin.Chapters.Responses;
 
 namespace ODK.Web.Api.Admin.Chapters
 {
-    public class AdminChaptersMappingProfile : Profile
+    public class ChaptersMappingProfile : Profile
     {
-        public AdminChaptersMappingProfile()
+        public ChaptersMappingProfile()
         {
             MapRequests();
             MapResponses();

@@ -4,9 +4,9 @@ using ODK.Web.Api.Admin.Members.Requests;
 
 namespace ODK.Web.Api.Admin.Members
 {
-    public class AdminMembersMappingProfile : Profile
+    public class MembersMappingProfile : Profile
     {
-        public AdminMembersMappingProfile()
+        public MembersMappingProfile()
         {
             MapRequests();
         }

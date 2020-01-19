@@ -19,12 +19,12 @@ namespace ODK.Web.Api.Admin.Members
     [Authorize]
     [ApiController]
     [Route("Members")]
-    public class AdminMembersController : OdkControllerBase
+    public class MembersController : OdkControllerBase
     {
         private readonly IMapper _mapper;
         private readonly IMemberAdminService _memberAdminService;
 
-        public AdminMembersController(IMemberAdminService memberAdminService, IMapper mapper)
+        public MembersController(IMemberAdminService memberAdminService, IMapper mapper)
         {
             _mapper = mapper;
             _memberAdminService = memberAdminService;

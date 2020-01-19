@@ -18,13 +18,13 @@ namespace ODK.Web.Api.Admin.Events
     [Authorize]
     [ApiController]
     [Route("Events")]
-    public class AdminEventsController : OdkControllerBase
+    public class EventsController : OdkControllerBase
     {
         private readonly IEmailService _emailService;
         private readonly IEventAdminService _eventAdminService;
         private readonly IMapper _mapper;
 
-        public AdminEventsController(IEventAdminService eventAdminService, IMapper mapper, IEmailService emailService)
+        public EventsController(IEventAdminService eventAdminService, IMapper mapper, IEmailService emailService)
         {
             _emailService = emailService;
             _eventAdminService = eventAdminService;

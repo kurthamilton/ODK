@@ -4,9 +4,9 @@ using ODK.Web.Api.Admin.Logging.Responses;
 
 namespace ODK.Web.Api.Admin.Logging
 {
-    public class AdminMappingProfile : Profile
+    public class LoggingMappingProfile : Profile
     {
-        public AdminMappingProfile()
+        public LoggingMappingProfile()
         {
             CreateMap<LogMessage, LogMessageApiResponse>();
         }

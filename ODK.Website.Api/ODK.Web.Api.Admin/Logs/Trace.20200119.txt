@@ -298,3 +298,44 @@ t:2020-01-19 15:47:28.762 +00:00|ip:|u:|m:Application started. Press Ctrl+C to s
 t:2020-01-19 15:47:28.765 +00:00|ip:|u:|m:Hosting environment: Development|ex:
 t:2020-01-19 15:47:28.768 +00:00|ip:|u:|m:Content root path: C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin|ex:
 t:2020-01-19 15:49:09.485 +00:00|ip:|u:|m:Application is shutting down...|ex:
+t:2020-01-19 16:53:22.699 +00:00|ip:|u:|m:Starting up|ex:
+t:2020-01-19 16:53:23.901 +00:00|ip:|u:|m:Now listening on: https://localhost:5003|ex:
+t:2020-01-19 16:53:23.922 +00:00|ip:|u:|m:Now listening on: http://localhost:5002|ex:
+t:2020-01-19 16:53:23.925 +00:00|ip:|u:|m:Application started. Press Ctrl+C to shut down.|ex:
+t:2020-01-19 16:53:23.927 +00:00|ip:|u:|m:Hosting environment: Development|ex:
+t:2020-01-19 16:53:23.928 +00:00|ip:|u:|m:Content root path: C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin|ex:
+t:2020-01-19 16:54:11.376 +00:00|ip:127.0.0.1|u:anonymous|m:HTTP GET /chapters responded 401 in 30.0277 ms|ex:
+t:2020-01-19 16:54:12.391 +00:00|ip:127.0.0.1|u:Kurt Hamilton|m:HTTP GET /chapters responded 200 in 425.1206 ms|ex:
+t:2020-01-19 16:54:12.612 +00:00|ip:127.0.0.1|u:Kurt Hamilton|m:HTTP GET /chapters responded 200 in 11.3652 ms|ex:
+t:2020-01-19 16:54:53.584 +00:00|ip:127.0.0.1|u:Kurt Hamilton|m:HTTP GET /chapters responded 200 in 147.6075 ms|ex:
+t:2020-01-19 16:54:54.085 +00:00|ip:127.0.0.1|u:Kurt Hamilton|m:HTTP GET /chapters responded 200 in 8.3257 ms|ex:
+t:2020-01-19 16:55:44.174 +00:00|ip:|u:|m:Starting up|ex:
+t:2020-01-19 16:55:44.705 +00:00|ip:|u:|m:Now listening on: https://localhost:5003|ex:
+t:2020-01-19 16:55:44.720 +00:00|ip:|u:|m:Now listening on: http://localhost:5002|ex:
+t:2020-01-19 16:55:44.726 +00:00|ip:|u:|m:Application started. Press Ctrl+C to shut down.|ex:
+t:2020-01-19 16:55:44.728 +00:00|ip:|u:|m:Hosting environment: Development|ex:
+t:2020-01-19 16:55:44.730 +00:00|ip:|u:|m:Content root path: C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin|ex:
+t:2020-01-19 16:56:22.623 +00:00|ip:|u:|m:Starting up|ex:
+t:2020-01-19 16:56:23.297 +00:00|ip:|u:|m:Now listening on: https://localhost:5003|ex:
+t:2020-01-19 16:56:23.315 +00:00|ip:|u:|m:Now listening on: http://localhost:5002|ex:
+t:2020-01-19 16:56:23.319 +00:00|ip:|u:|m:Application started. Press Ctrl+C to shut down.|ex:
+t:2020-01-19 16:56:23.321 +00:00|ip:|u:|m:Hosting environment: Development|ex:
+t:2020-01-19 16:56:23.325 +00:00|ip:|u:|m:Content root path: C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin|ex:
+t:2020-01-19 16:56:36.425 +00:00|ip:|u:|m:Starting up|ex:
+t:2020-01-19 16:56:36.886 +00:00|ip:|u:|m:Now listening on: https://localhost:5003|ex:
+t:2020-01-19 16:56:36.916 +00:00|ip:|u:|m:Now listening on: http://localhost:5002|ex:
+t:2020-01-19 16:56:36.922 +00:00|ip:|u:|m:Application started. Press Ctrl+C to shut down.|ex:
+t:2020-01-19 16:56:36.931 +00:00|ip:|u:|m:Hosting environment: Development|ex:
+t:2020-01-19 16:56:36.938 +00:00|ip:|u:|m:Content root path: C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin|ex:
+t:2020-01-19 16:56:42.650 +00:00|ip:|u:|m:Starting up|ex:
+t:2020-01-19 16:56:43.108 +00:00|ip:|u:|m:Now listening on: https://localhost:5003|ex:
+t:2020-01-19 16:56:43.125 +00:00|ip:|u:|m:Now listening on: http://localhost:5002|ex:
+t:2020-01-19 16:56:43.129 +00:00|ip:|u:|m:Application started. Press Ctrl+C to shut down.|ex:
+t:2020-01-19 16:56:43.131 +00:00|ip:|u:|m:Hosting environment: Development|ex:
+t:2020-01-19 16:56:43.133 +00:00|ip:|u:|m:Content root path: C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin|ex:
+t:2020-01-19 16:56:57.844 +00:00|ip:|u:|m:Starting up|ex:
+t:2020-01-19 16:56:58.311 +00:00|ip:|u:|m:Now listening on: https://localhost:5003|ex:
+t:2020-01-19 16:56:58.329 +00:00|ip:|u:|m:Now listening on: http://localhost:5002|ex:
+t:2020-01-19 16:56:58.334 +00:00|ip:|u:|m:Application started. Press Ctrl+C to shut down.|ex:
+t:2020-01-19 16:56:58.335 +00:00|ip:|u:|m:Hosting environment: Development|ex:
+t:2020-01-19 16:56:58.339 +00:00|ip:|u:|m:Content root path: C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin|ex:

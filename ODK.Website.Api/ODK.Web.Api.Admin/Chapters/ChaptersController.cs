@@ -17,12 +17,12 @@ namespace ODK.Web.Api.Admin.Chapters
     [Authorize]
     [ApiController]
     [Route("Chapters")]
-    public class AdminChaptersController : OdkControllerBase
+    public class ChaptersController : OdkControllerBase
     {
         private readonly IChapterAdminService _chapterAdminService;
         private readonly IMapper _mapper;
 
-        public AdminChaptersController(IChapterAdminService chapterAdminService, IMapper mapper)
+        public ChaptersController(IChapterAdminService chapterAdminService, IMapper mapper)
         {
             _chapterAdminService = chapterAdminService;
             _mapper = mapper;

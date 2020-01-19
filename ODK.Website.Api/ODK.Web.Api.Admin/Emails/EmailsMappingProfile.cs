@@ -8,9 +8,9 @@ using ODK.Web.Api.Admin.Emails.Responses;
 
 namespace ODK.Web.Api.Admin.Emails
 {
-    public class AdminEmailsMappingProfile : Profile
+    public class EmailsMappingProfile : Profile
     {
-        public AdminEmailsMappingProfile()
+        public EmailsMappingProfile()
         {
             MapRequests();
             MapResponses();

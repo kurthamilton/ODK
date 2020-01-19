@@ -17,13 +17,13 @@ namespace ODK.Web.Api.Admin.Emails
     [Authorize]
     [ApiController]
     [Route("Emails")]
-    public class AdminEmailsController : OdkControllerBase
+    public class EmailsController : OdkControllerBase
     {
         private readonly IEmailAdminService _emailAdminService;
         private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
 
-        public AdminEmailsController(IEmailAdminService emailAdminService, IMapper mapper, IEmailService emailService)
+        public EmailsController(IEmailAdminService emailAdminService, IMapper mapper, IEmailService emailService)
         {
             _emailAdminService = emailAdminService;
             _emailService = emailService;

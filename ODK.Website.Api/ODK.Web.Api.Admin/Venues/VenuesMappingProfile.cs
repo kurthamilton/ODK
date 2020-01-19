@@ -5,9 +5,9 @@ using ODK.Web.Api.Admin.Venues.Responses;
 
 namespace ODK.Web.Api.Admin.Venues
 {
-    public class AdminVenuesMappingProfile : Profile
+    public class VenuesMappingProfile : Profile
     {
-        public AdminVenuesMappingProfile()
+        public VenuesMappingProfile()
         {
             MapRequests();
 
