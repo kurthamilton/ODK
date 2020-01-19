@@ -1,0 +1,198 @@
+t:2020-01-19 08:12:44.205 +00:00|ip:127.0.0.1|u:Kurt Hamilton|m:HTTP GET /chapters/4e151b19-c3a0-415f-b807-d23cc8b9ffb3/membership/settings responded 500 in 48.3331 ms|ex:AutoMapper.AutoMapperMappingException: Missing type map configuration or unsupported mapping.
+
+Mapping types:
+ChapterMembershipSettings -> ChapterAdminMembershipSettingsApiResponse
+ODK.Core.Chapters.ChapterMembershipSettings -> ODK.Web.Api.Admin.Chapters.Responses.ChapterAdminMembershipSettingsApiResponse
+   at lambda_method(Closure , ChapterMembershipSettings , ChapterAdminMembershipSettingsApiResponse , ResolutionContext )
+   at lambda_method(Closure , Object , Object , ResolutionContext )
+   at ODK.Web.Api.Admin.Chapters.AdminChaptersController.GetMembershipSettings(Guid id) in C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin\Chapters\AdminChaptersController.cs:line 87
+   at lambda_method(Closure , Object )
+   at Microsoft.Extensions.Internal.ObjectMethodExecutorAwaitable.Awaiter.GetResult()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|19_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+
+t:2020-01-19 08:12:44.291 +00:00|ip:|u:|m:An unhandled exception has occurred while executing the request.|ex:AutoMapper.AutoMapperMappingException: Missing type map configuration or unsupported mapping.
+
+Mapping types:
+ChapterMembershipSettings -> ChapterAdminMembershipSettingsApiResponse
+ODK.Core.Chapters.ChapterMembershipSettings -> ODK.Web.Api.Admin.Chapters.Responses.ChapterAdminMembershipSettingsApiResponse
+   at lambda_method(Closure , ChapterMembershipSettings , ChapterAdminMembershipSettingsApiResponse , ResolutionContext )
+   at lambda_method(Closure , Object , Object , ResolutionContext )
+   at ODK.Web.Api.Admin.Chapters.AdminChaptersController.GetMembershipSettings(Guid id) in C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin\Chapters\AdminChaptersController.cs:line 87
+   at lambda_method(Closure , Object )
+   at Microsoft.Extensions.Internal.ObjectMethodExecutorAwaitable.Awaiter.GetResult()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|19_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at ODK.Web.Common.Config.AppStartup.<>c.<<Configure>b__0_0>d.MoveNext() in C:\git\ODK\ODK.Website.Api\ODK.Web.Common\Config\AppStartup.cs:line 33
+--- End of stack trace from previous location where exception was thrown ---
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware.<Invoke>g__Awaited|6_0(ExceptionHandlerMiddleware middleware, HttpContext context, Task task)
+
+t:2020-01-19 08:16:34.731 +00:00|ip:127.0.0.1|u:Kurt Hamilton|m:HTTP GET /log?level=&page= responded 500 in 30046.0156 ms|ex:System.Data.SqlClient.SqlException (0x80131904): Timeout expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.
+ ---> System.ComponentModel.Win32Exception (258): The wait operation timed out.
+   at System.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__126_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at ODK.Data.Sql.SqlContext.<>c__DisplayClass19_0`2.<<ReadQueryAsync>b__0>d.MoveNext() in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 154
+--- End of stack trace from previous location where exception was thrown ---
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ReadQueryAsync[T,TResult](SqlQuery`1 query, Func`2 read, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 152
+   at ODK.Data.Sql.SqlContext.ReadRecordsAsync[T](SqlQuery`1 query) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 81
+   at ODK.Data.Sql.Queries.SqlQuery`1.ToArrayAsync() in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\Queries\SqlQuery.cs:line 98
+   at ODK.Data.Repositories.LoggingRepository.GetLogMessages(String level, Int32 page, Int32 pageSize) in C:\git\ODK\ODK.Website.Api\ODK.Data\Repositories\LoggingRepository.cs:line 17
+   at ODK.Services.Logging.LoggingService.GetLogMessages(Guid currentMemberId, String level, Int32 page, Int32 pageSize) in C:\git\ODK\ODK.Website.Api\ODK.Services\Logging\LoggingService.cs:line 34
+   at ODK.Web.Api.Admin.Logging.LogController.GetLogMessages(String level, Nullable`1 page) in C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin\Logging\LogController.cs:line 31
+   at lambda_method(Closure , Object )
+   at Microsoft.Extensions.Internal.ObjectMethodExecutorAwaitable.Awaiter.GetResult()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|19_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+ClientConnectionId:2079a6c5-afe9-4f4b-b970-3c73e70c1a46
+Error Number:-2,State:0,Class:11
+
+t:2020-01-19 08:16:34.905 +00:00|ip:|u:|m:An unhandled exception has occurred while executing the request.|ex:System.Data.SqlClient.SqlException (0x80131904): Timeout expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.
+ ---> System.ComponentModel.Win32Exception (258): The wait operation timed out.
+   at System.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__126_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at ODK.Data.Sql.SqlContext.<>c__DisplayClass19_0`2.<<ReadQueryAsync>b__0>d.MoveNext() in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 154
+--- End of stack trace from previous location where exception was thrown ---
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ReadQueryAsync[T,TResult](SqlQuery`1 query, Func`2 read, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 152
+   at ODK.Data.Sql.SqlContext.ReadRecordsAsync[T](SqlQuery`1 query) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 81
+   at ODK.Data.Sql.Queries.SqlQuery`1.ToArrayAsync() in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\Queries\SqlQuery.cs:line 98
+   at ODK.Data.Repositories.LoggingRepository.GetLogMessages(String level, Int32 page, Int32 pageSize) in C:\git\ODK\ODK.Website.Api\ODK.Data\Repositories\LoggingRepository.cs:line 17
+   at ODK.Services.Logging.LoggingService.GetLogMessages(Guid currentMemberId, String level, Int32 page, Int32 pageSize) in C:\git\ODK\ODK.Website.Api\ODK.Services\Logging\LoggingService.cs:line 34
+   at ODK.Web.Api.Admin.Logging.LogController.GetLogMessages(String level, Nullable`1 page) in C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin\Logging\LogController.cs:line 31
+   at lambda_method(Closure , Object )
+   at Microsoft.Extensions.Internal.ObjectMethodExecutorAwaitable.Awaiter.GetResult()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|19_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at ODK.Web.Common.Config.AppStartup.<>c.<<Configure>b__1_0>d.MoveNext() in C:\git\ODK\ODK.Website.Api\ODK.Web.Common\Config\AppStartup.cs:line 35
+--- End of stack trace from previous location where exception was thrown ---
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware.<Invoke>g__Awaited|6_0(ExceptionHandlerMiddleware middleware, HttpContext context, Task task)
+ClientConnectionId:2079a6c5-afe9-4f4b-b970-3c73e70c1a46
+Error Number:-2,State:0,Class:11
+
+t:2020-01-19 15:12:12.256 +00:00|ip:127.0.0.1|u:Kurt Hamilton|m:HTTP GET /log?level=&page= responded 500 in 30041.9005 ms|ex:System.Data.SqlClient.SqlException (0x80131904): Timeout expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.
+ ---> System.ComponentModel.Win32Exception (258): The wait operation timed out.
+   at System.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__126_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.Tasks.Task.<>c.<.cctor>b__274_0(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at ODK.Data.Sql.SqlContext.<>c__DisplayClass19_0`2.<<ReadQueryAsync>b__0>d.MoveNext() in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 154
+--- End of stack trace from previous location where exception was thrown ---
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ReadQueryAsync[T,TResult](SqlQuery`1 query, Func`2 read, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 152
+   at ODK.Data.Sql.SqlContext.ReadRecordsAsync[T](SqlQuery`1 query) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 81
+   at ODK.Data.Sql.Queries.SqlQuery`1.ToArrayAsync() in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\Queries\SqlQuery.cs:line 98
+   at ODK.Data.Repositories.LoggingRepository.GetLogMessages(String level, Int32 page, Int32 pageSize) in C:\git\ODK\ODK.Website.Api\ODK.Data\Repositories\LoggingRepository.cs:line 17
+   at ODK.Services.Logging.LoggingService.GetLogMessages(Guid currentMemberId, String level, Int32 page, Int32 pageSize) in C:\git\ODK\ODK.Website.Api\ODK.Services\Logging\LoggingService.cs:line 34
+   at ODK.Web.Api.Admin.Logging.LogController.GetLogMessages(String level, Nullable`1 page) in C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin\Logging\LogController.cs:line 31
+   at lambda_method(Closure , Object )
+   at Microsoft.Extensions.Internal.ObjectMethodExecutorAwaitable.Awaiter.GetResult()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|19_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+ClientConnectionId:adb76035-ba3a-4c38-ae94-bb033483a0df
+Error Number:-2,State:0,Class:11
+
+t:2020-01-19 15:12:12.419 +00:00|ip:|u:|m:An unhandled exception has occurred while executing the request.|ex:System.Data.SqlClient.SqlException (0x80131904): Timeout expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.
+ ---> System.ComponentModel.Win32Exception (258): The wait operation timed out.
+   at System.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__126_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.Tasks.Task.<>c.<.cctor>b__274_0(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at ODK.Data.Sql.SqlContext.<>c__DisplayClass19_0`2.<<ReadQueryAsync>b__0>d.MoveNext() in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 154
+--- End of stack trace from previous location where exception was thrown ---
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ExecuteQueryAsync[T](SqlQuery`1 query, Func`2 action, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 135
+   at ODK.Data.Sql.SqlContext.ReadQueryAsync[T,TResult](SqlQuery`1 query, Func`2 read, String appendSql) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 152
+   at ODK.Data.Sql.SqlContext.ReadRecordsAsync[T](SqlQuery`1 query) in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\SqlContext.cs:line 81
+   at ODK.Data.Sql.Queries.SqlQuery`1.ToArrayAsync() in C:\git\ODK\ODK.Website.Api\ODK.Data.Sql\Queries\SqlQuery.cs:line 98
+   at ODK.Data.Repositories.LoggingRepository.GetLogMessages(String level, Int32 page, Int32 pageSize) in C:\git\ODK\ODK.Website.Api\ODK.Data\Repositories\LoggingRepository.cs:line 17
+   at ODK.Services.Logging.LoggingService.GetLogMessages(Guid currentMemberId, String level, Int32 page, Int32 pageSize) in C:\git\ODK\ODK.Website.Api\ODK.Services\Logging\LoggingService.cs:line 34
+   at ODK.Web.Api.Admin.Logging.LogController.GetLogMessages(String level, Nullable`1 page) in C:\git\ODK\ODK.Website.Api\ODK.Web.Api.Admin\Logging\LogController.cs:line 31
+   at lambda_method(Closure , Object )
+   at Microsoft.Extensions.Internal.ObjectMethodExecutorAwaitable.Awaiter.GetResult()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|19_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at ODK.Web.Common.Config.AppStartup.<>c.<<Configure>b__1_0>d.MoveNext() in C:\git\ODK\ODK.Website.Api\ODK.Web.Common\Config\AppStartup.cs:line 35
+--- End of stack trace from previous location where exception was thrown ---
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware.<Invoke>g__Awaited|6_0(ExceptionHandlerMiddleware middleware, HttpContext context, Task task)
+ClientConnectionId:adb76035-ba3a-4c38-ae94-bb033483a0df
+Error Number:-2,State:0,Class:11
+

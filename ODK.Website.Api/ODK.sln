@@ -31,6 +31,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Utils", "ODK.Utils\ODK.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DC18A21B-4D37-48FD-B5A1-B86EB1E32AFC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Web.Api.Admin", "ODK.Web.Api.Admin\ODK.Web.Api.Admin.csproj", "{42E283DB-BF0B-4690-9002-44FF87610F4F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Web.Common", "ODK.Web.Common\ODK.Web.Common.csproj", "{2073C9B5-8987-4CAA-BD73-4B997A8B257C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +89,14 @@ Global
 		{812E00BE-7C75-41A5-BE4C-18C738432A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{812E00BE-7C75-41A5-BE4C-18C738432A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{812E00BE-7C75-41A5-BE4C-18C738432A4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42E283DB-BF0B-4690-9002-44FF87610F4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42E283DB-BF0B-4690-9002-44FF87610F4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42E283DB-BF0B-4690-9002-44FF87610F4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42E283DB-BF0B-4690-9002-44FF87610F4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2073C9B5-8987-4CAA-BD73-4B997A8B257C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2073C9B5-8987-4CAA-BD73-4B997A8B257C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2073C9B5-8987-4CAA-BD73-4B997A8B257C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2073C9B5-8987-4CAA-BD73-4B997A8B257C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

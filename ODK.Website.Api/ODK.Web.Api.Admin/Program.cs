@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using ODK.Web.Common.Config;
 using Serilog;
 
-namespace ODK.Web.Api
+namespace ODK.Web.Api.Admin
 {
     public class Program
     {

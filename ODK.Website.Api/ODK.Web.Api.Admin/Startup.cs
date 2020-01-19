@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ODK.Web.Common.Config;
 
-namespace ODK.Web.Api
+namespace ODK.Web.Api.Admin
 {
     public class Startup
     {
@@ -19,7 +19,7 @@ namespace ODK.Web.Api
         public void ConfigureServices(IServiceCollection services)
         {
             AppStartup.ConfigureServices(Configuration, services);
-            AppStartup.ConfigureMapping(services, typeof(AppStartup));
+            AppStartup.ConfigureMapping(services, typeof(Startup), typeof(AppStartup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
