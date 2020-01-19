@@ -31,7 +31,7 @@ namespace ODK.Core.Chapters
 
         public string Label { get; set; }
 
-        public string Name { get; }
+        public string Name { get; set; }
 
         public bool Required { get; set; }
 

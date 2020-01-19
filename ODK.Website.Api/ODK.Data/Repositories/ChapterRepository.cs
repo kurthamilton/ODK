@@ -27,6 +27,13 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task AddChapterProperty(ChapterProperty property)
+        {
+            await Context
+                .Insert(property)
+                .ExecuteAsync();
+        }
+
         public async Task<Guid> AddContactRequest(ContactRequest contactRequest)
         {
             return await Context
@@ -70,6 +77,14 @@ namespace ODK.Data.Repositories
         {
             await Context
                 .Delete<ChapterEmailProvider>()
+                .Where(x => x.Id).EqualTo(id)
+                .ExecuteAsync();
+        }
+
+        public async Task DeleteChapterProperty(Guid id)
+        {
+            await Context
+                .Delete<ChapterProperty>()
                 .Where(x => x.Id).EqualTo(id)
                 .ExecuteAsync();
         }
@@ -171,6 +186,14 @@ namespace ODK.Data.Repositories
                 .Select<ChapterProperty>()
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .VersionAsync();
+        }
+
+        public async Task<ChapterProperty> GetChapterProperty(Guid id)
+        {
+            return await Context
+                .Select<ChapterProperty>()
+                .Where(x => x.Id).EqualTo(id)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId)
@@ -325,6 +348,19 @@ namespace ODK.Data.Repositories
                 .Set(x => x.ApiPublicKey, settings.ApiPublicKey)
                 .Set(x => x.ApiSecretKey, settings.ApiSecretKey)
                 .Where(x => x.ChapterId).EqualTo(settings.ChapterId)
+                .ExecuteAsync();
+        }
+
+        public async Task UpdateChapterProperty(ChapterProperty property)
+        {
+            await Context
+                .Update<ChapterProperty>()
+                .Set(x => x.HelpText, property.HelpText)
+                .Set(x => x.Label, property.Label)
+                .Set(x => x.Name, property.Name)
+                .Set(x => x.Required, property.Required)
+                .Set(x => x.Subtitle, property.Subtitle)
+                .Where(x => x.Id).EqualTo(property.Id)
                 .ExecuteAsync();
         }
 

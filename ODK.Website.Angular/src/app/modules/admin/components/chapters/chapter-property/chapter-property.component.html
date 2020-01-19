@@ -1,4 +1,6 @@
 <ng-container *appLoading="!property">
   <app-breadcrumbs [breadcrumbs]="breadcrumbs" [active]="property.label"></app-breadcrumbs>
-  <app-form [form]="form" (formSubmit)="onFormSubmit()"></app-form>
+  <app-chapter-property-form [property]="property" [formCallback]="formCallback" 
+    (formSubmit)="onFormSubmit($event)">
+  </app-chapter-property-form>
 </ng-container>

@@ -9,6 +9,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminMember } from 'src/app/core/chapters/chapter-admin-member';
 import { ChapterAdminMembershipSettings } from 'src/app/core/chapters/chapter-admin-membership-settings';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
+import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterService } from './chapter.service';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
@@ -25,8 +26,9 @@ const endpoints = {
   chapters: baseUrl,  
   membershipSettings: (id: string) => `${baseUrl}/${id}/membership/settings`,
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
+  property: (id: string) => `${baseUrl}/properties/${id}`,
   questions: (id: string) => `${baseUrl}/${id}/questions`,
-  subscription: (id: string, subscriptionId: string) => `${baseUrl}/${id}/subscriptions/${subscriptionId}`,
+  subscription: (id: string) => `${baseUrl}/subscriptions/${id}`,
   subscriptions: (id: string) => `${baseUrl}/${id}/subscriptions`,
   texts: (id: string) => `${baseUrl}/${id}/texts`,
 };
@@ -80,7 +82,7 @@ export class ChapterAdminService extends ChapterService {
   }
 
   deleteChapterSubscription(subscription: ChapterSubscription): Observable<void> {
-    return this.http.delete(endpoints.subscription(subscription.chapterId, subscription.id)).pipe(
+    return this.http.delete(endpoints.subscription(subscription.id)).pipe(
       map(() => undefined)
     );
   }
@@ -115,8 +117,14 @@ export class ChapterAdminService extends ChapterService {
     );
   }  
 
-  getChapterSubscription(id: string, chapterId: string): Observable<ChapterSubscription> {
-    return this.http.get(endpoints.subscription(chapterId, id)).pipe(
+  getChapterProperty(id: string): Observable<ChapterProperty> {
+    return this.http.get(endpoints.property(id)).pipe(
+      map((response: any) => this.mapChapterProperty(response))
+    );
+  }
+
+  getChapterSubscription(id: string): Observable<ChapterSubscription> {
+    return this.http.get(endpoints.subscription(id)).pipe(
       map((response: any) => this.mapChapterSubscription(response))
     );
   }
@@ -170,7 +178,24 @@ export class ChapterAdminService extends ChapterService {
       map((response: any) => this.mapChapterAdminPaymentSettings(response))
     );
   }    
-  
+
+  updateChapterProperty(property: ChapterProperty): Observable<ServiceResult<void>> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      helpText: property.helpText,
+      label: property.label,
+      name: property.name,
+      required: property.required ? 'True' : 'False',
+      subtitle: property.subtitle
+    });
+
+    return this.http.put(endpoints.property(property.id), params).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
+    );
+  }
+
   updateChapterSubscription(subscription: ChapterSubscription): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
       amount: subscription.amount.toString(),
@@ -181,7 +206,7 @@ export class ChapterAdminService extends ChapterService {
       type: subscription.type.toString()
     });
 
-    return this.http.put(endpoints.subscription(subscription.chapterId, subscription.id), params).pipe(
+    return this.http.put(endpoints.subscription(subscription.id), params).pipe(
       map((): ServiceResult<void> => ({
         success: true
       })),

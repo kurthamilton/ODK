@@ -39,7 +39,7 @@ export class ChapterSubscriptionEditComponent implements OnInit, OnDestroy {
       { link: adminUrls.chapterSubscriptions(this.chapter), text: 'Subscriptions' }
     ];
 
-    this.chapterAdminService.getChapterSubscription(subscriptionId, this.chapter.id).subscribe((subscription: ChapterSubscription) => {
+    this.chapterAdminService.getChapterSubscription(subscriptionId).subscribe((subscription: ChapterSubscription) => {
       if (!subscription) {
         this.router.navigateByUrl(adminUrls.chapterSubscriptions(this.chapter));
         return;

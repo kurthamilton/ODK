@@ -28,6 +28,8 @@ namespace ODK.Web.Api.Admin.Chapters
 
             CreateMap<UpdateChapterPaymentSettingsApiRequest, UpdateChapterPaymentSettings>();
 
+            CreateMap<UpdateChapterPropertyApiRequest, UpdateChapterProperty>();
+
             CreateMap<UpdateChapterTextsApiRequest, UpdateChapterTexts>();
         }
 

@@ -160,6 +160,18 @@ export class ChapterService {
     }
   }  
 
+  protected mapChapterProperty(response: any): ChapterProperty {
+    return {
+      dataType: response.dataTypeId,
+      helpText: response.helpText,
+      id: response.id,
+      label: response.label,
+      name: response.name,
+      required: response.required === true,
+      subtitle: response.subtitle
+    };
+  }
+  
   protected mapChapterSubscription(response: any): ChapterSubscription {
     return {
       amount: response.amount,
@@ -192,19 +204,7 @@ export class ChapterService {
       apiPublicKey: response.apiPublicKey,
       provider: response.provider
     };
-  }
-
-  private mapChapterProperty(response: any): ChapterProperty {
-    return {
-      dataType: response.dataTypeId,
-      helpText: response.helpText,
-      id: response.id,
-      label: response.label,
-      name: response.name,
-      required: response.required === true,
-      subtitle: response.subtitle
-    };
-  }
+  }  
 
   private mapChapterPropertyOption(response: any): ChapterPropertyOption {
     return {

@@ -10,6 +10,8 @@ namespace ODK.Core.Chapters
 
         Task AddChapterEmailProvider(ChapterEmailProvider provider);
 
+        Task AddChapterProperty(ChapterProperty property);
+
         Task<Guid> AddContactRequest(ContactRequest contactRequest);
 
         Task ConfirmContactRequestSent(Guid contactRequestId);
@@ -21,6 +23,8 @@ namespace ODK.Core.Chapters
         Task DeleteChapterAdminMember(Guid chapterId, Guid memberId);
 
         Task DeleteChapterEmailProvider(Guid id);
+
+        Task DeleteChapterProperty(Guid id);
 
         Task DeleteChapterSubscription(Guid id);
 
@@ -45,6 +49,8 @@ namespace ODK.Core.Chapters
         Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId);
 
         Task<long> GetChapterPropertiesVersion(Guid chapterId);
+
+        Task<ChapterProperty> GetChapterProperty(Guid id);
 
         Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId);
 
@@ -75,6 +81,8 @@ namespace ODK.Core.Chapters
         Task UpdateChapterMembershipSettings(ChapterMembershipSettings settings);
 
         Task UpdateChapterPaymentSettings(ChapterPaymentSettings settings);
+
+        Task UpdateChapterProperty(ChapterProperty property);
 
         Task UpdateChapterSubscription(ChapterSubscription subscription);
 

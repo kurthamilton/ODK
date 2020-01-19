@@ -127,35 +127,49 @@ namespace ODK.Web.Api.Admin.Chapters
             return Created();
         }
 
-        [HttpGet("{id}/Subscriptions/{subscriptionId}")]
-        public async Task<ChapterSubscriptionApiResponse> GetSubscription(Guid id, Guid subscriptionId)
-        {
-            ChapterSubscription subscription = await _chapterAdminService.GetChapterSubscription(GetMemberId(), subscriptionId);
-            return _mapper.Map<ChapterSubscriptionApiResponse>(subscription);
-        }
-
-        [HttpPut("{id}/Subscriptions/{subscriptionId}")]
-        public async Task<IActionResult> UpdateSubscription(Guid id, Guid subscriptionId,
-            [FromForm] CreateChapterSubscriptionApiRequest request)
-        {
-            CreateChapterSubscription subscription = _mapper.Map<CreateChapterSubscription>(request);
-            await _chapterAdminService.UpdateChapterSubscription(GetMemberId(), subscriptionId, subscription);
-            return NoContent();
-        }
-
-        [HttpDelete("{id}/Subscriptions/{subscriptionId}")]
-        public async Task<IActionResult> DeleteSubscription(Guid id, Guid subscriptionId)
-        {
-            await _chapterAdminService.DeleteChapterSubscription(GetMemberId(), subscriptionId);
-            return NoContent();
-        }
-
         [HttpPut("{id}/Texts")]
         public async Task<ActionResult<ChapterTextsApiResponse>> UpdateChapterTexts(Guid id, [FromForm] UpdateChapterTextsApiRequest request)
         {
             UpdateChapterTexts texts = _mapper.Map<UpdateChapterTexts>(request);
             ChapterTexts updated = await _chapterAdminService.UpdateChapterTexts(GetMemberId(), id, texts);
             return _mapper.Map<ChapterTextsApiResponse>(updated);
+        }
+
+        [HttpGet("Properties/{id}")]
+        public async Task<ChapterPropertyApiResponse> GetProperty(Guid id)
+        {
+            ChapterProperty property = await _chapterAdminService.GetChapterProperty(GetMemberId(), id);
+            return _mapper.Map<ChapterPropertyApiResponse>(property);
+        }
+
+        [HttpPut("Properties/{id}")]
+        public async Task<IActionResult> UpdateProperty(Guid id, [FromForm] UpdateChapterPropertyApiRequest request)
+        {
+            UpdateChapterProperty property = _mapper.Map<UpdateChapterProperty>(request);
+            await _chapterAdminService.UpdateChapterProperty(GetMemberId(), id, property);
+            return NoContent();
+        }
+
+        [HttpGet("Subscriptions/{id}")]
+        public async Task<ChapterSubscriptionApiResponse> GetSubscription(Guid id)
+        {
+            ChapterSubscription subscription = await _chapterAdminService.GetChapterSubscription(GetMemberId(), id);
+            return _mapper.Map<ChapterSubscriptionApiResponse>(subscription);
+        }
+
+        [HttpPut("Subscriptions/{id}")]
+        public async Task<IActionResult> UpdateSubscription(Guid id, [FromForm] CreateChapterSubscriptionApiRequest request)
+        {
+            CreateChapterSubscription subscription = _mapper.Map<CreateChapterSubscription>(request);
+            await _chapterAdminService.UpdateChapterSubscription(GetMemberId(), id, subscription);
+            return NoContent();
+        }
+
+        [HttpDelete("Subscriptions/{id}")]
+        public async Task<IActionResult> DeleteSubscription(Guid id)
+        {
+            await _chapterAdminService.DeleteChapterSubscription(GetMemberId(), id);
+            return NoContent();
         }
     }
 }

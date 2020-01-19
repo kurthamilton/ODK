@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
+using ODK.Core.DataTypes;
 using ODK.Core.Members;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
@@ -44,6 +45,22 @@ namespace ODK.Services.Chapters
 
             ChapterAdminMember adminMember = new ChapterAdminMember(chapterId, memberId);
             await _chapterRepository.AddChapterAdminMember(adminMember);
+        }
+
+        public async Task CreateChapterProperty(Guid currentMemberId, Guid chapterId, CreateChapterProperty property)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            IReadOnlyCollection<ChapterProperty> existing = await _chapterRepository.GetChapterProperties(chapterId);
+
+            int displayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
+            ChapterProperty create = new ChapterProperty(Guid.Empty, chapterId, property.DataType, property.Name, property.Label,
+                displayOrder, property.Required, property.Subtitle, property.HelpText);
+
+            await ValidateChapterProperty(create);
+
+            await _chapterRepository.AddChapterProperty(create);
+            _cacheService.RemoveVersionedCollection<ChapterProperty>(chapterId);
         }
 
         public async Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question)
@@ -89,6 +106,14 @@ namespace ODK.Services.Chapters
             await _chapterRepository.DeleteChapterAdminMember(chapterId, memberId);
         }
 
+        public async Task DeleteChapterProperty(Guid currentMemberId, Guid id)
+        {
+            ChapterProperty property = await GetChapterProperty(currentMemberId, id);
+
+            await _chapterRepository.DeleteChapterProperty(id);
+            _cacheService.RemoveVersionedCollection<ChapterProperty>(property.ChapterId);
+        }
+
         public async Task DeleteChapterSubscription(Guid currentMemberId, Guid id)
         {
             ChapterSubscription subscription = await GetChapterSubscription(currentMemberId, id);
@@ -128,6 +153,19 @@ namespace ODK.Services.Chapters
             await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
 
             return await _chapterRepository.GetChapterPaymentSettings(chapterId);
+        }
+
+        public async Task<ChapterProperty> GetChapterProperty(Guid currentMemberId, Guid id)
+        {
+            ChapterProperty property = await _chapterRepository.GetChapterProperty(id);
+            if (property == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, property.ChapterId);
+
+            return property;
         }
 
         public async Task<IReadOnlyCollection<Chapter>> GetChapters(Guid currentMemberId)
@@ -219,6 +257,23 @@ namespace ODK.Services.Chapters
             return update;
         }
 
+        public async Task UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property)
+        {
+            ChapterProperty update = await GetChapterProperty(currentMemberId, propertyId);
+
+            update.HelpText = property.HelpText;
+            update.Label = property.Label;
+            update.Name = property.Name;
+            update.Required = property.Required;
+            update.Subtitle = property.Subtitle;
+
+            await ValidateChapterProperty(update);
+
+            await _chapterRepository.UpdateChapterProperty(update);
+
+            _cacheService.RemoveVersionedCollection<ChapterProperty>(update.ChapterId);
+        }
+
         public async Task UpdateChapterSubscription(Guid currentMemberId, Guid id, CreateChapterSubscription subscription)
         {
             ChapterSubscription existing = await _chapterRepository.GetChapterSubscription(id);
@@ -275,6 +330,22 @@ namespace ODK.Services.Chapters
                 settings.TrialPeriodMonths <= 0)
             {
                 throw new OdkServiceException("Some required fields are missing");
+            }
+        }
+
+        private async Task ValidateChapterProperty(ChapterProperty property)
+        {
+            if (string.IsNullOrEmpty(property.Name) ||
+                string.IsNullOrEmpty(property.Label) ||
+                !Enum.IsDefined(typeof(DataType), property.DataType) || property.DataType == DataType.None)
+            {
+                throw new OdkServiceException("Some required fields are missing");
+            }
+
+            IReadOnlyCollection<ChapterProperty> properties = await _chapterRepository.GetChapterProperties(property.ChapterId);
+            if (properties.Any(x => x.Name.Equals(property.Name, StringComparison.OrdinalIgnoreCase) && x.Id != property.Id))
+            {
+                throw new OdkServiceException("Name already exists");
             }
         }
 
