@@ -111,6 +111,14 @@ namespace ODK.Web.Api.Admin.Chapters
             return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(settings);
         }
 
+        [HttpPost("{id}/Properties")]
+        public async Task<IActionResult> CreateProperty(Guid id, [FromForm] CreateChapterPropertyApiRequest request)
+        {
+            CreateChapterProperty property = _mapper.Map<CreateChapterProperty>(request);
+            await _chapterAdminService.CreateChapterProperty(GetMemberId(), id, property);
+            return Created();
+        }
+
         [HttpPost("{id}/Questions")]
         public async Task<IActionResult> CreateQuestion(Guid id, [FromForm] CreateChapterQuestionApiRequest request)
         {
@@ -147,6 +155,13 @@ namespace ODK.Web.Api.Admin.Chapters
         {
             UpdateChapterProperty property = _mapper.Map<UpdateChapterProperty>(request);
             await _chapterAdminService.UpdateChapterProperty(GetMemberId(), id, property);
+            return NoContent();
+        }
+
+        [HttpDelete("Properties/{id}")]
+        public async Task<IActionResult> DeleteProperty(Guid id)
+        {
+            await _chapterAdminService.DeleteChapterProperty(GetMemberId(), id);
             return NoContent();
         }
 

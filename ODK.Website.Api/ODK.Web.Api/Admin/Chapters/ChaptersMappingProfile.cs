@@ -16,6 +16,9 @@ namespace ODK.Web.Api.Admin.Chapters
 
         private void MapRequests()
         {
+            CreateMap<CreateChapterPropertyApiRequest, CreateChapterProperty>()
+                .IncludeBase<UpdateChapterPropertyApiRequest, UpdateChapterProperty>();
+
             CreateMap<CreateChapterQuestionApiRequest, CreateChapterQuestion>();
 
             CreateMap<CreateChapterSubscriptionApiRequest, CreateChapterSubscription>();

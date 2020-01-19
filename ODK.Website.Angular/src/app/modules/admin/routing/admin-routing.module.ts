@@ -14,6 +14,7 @@ import { ChapterEmailsComponent } from '../components/emails/chapter-emails/chap
 import { ChapterPaymentSettingsComponent } from '../components/chapters/chapter-payment-settings/chapter-payment-settings.component';
 import { ChapterPropertiesComponent } from '../components/chapters/chapter-properties/chapter-properties.component';
 import { ChapterPropertyComponent } from '../components/chapters/chapter-property/chapter-property.component';
+import { ChapterPropertyCreateComponent } from '../components/chapters/chapter-property-create/chapter-property-create.component';
 import { ChapterQuestionsComponent } from '../components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from '../components/chapters/chapter-settings/chapter-settings.component';
 import { ChapterSubscriptionCreateComponent } from '../components/chapters/chapter-subscription-create/chapter-subscription-create.component';
@@ -58,6 +59,7 @@ const routes: Routes = [
         canActivate: [ChapterSuperAdminGuardService] },
       { path: adminPaths.chapter.properties.path, children: [
         { path: '', component: ChapterPropertiesComponent },
+        { path: adminPaths.chapter.properties.create.path, component: ChapterPropertyCreateComponent },
         { path: adminPaths.chapter.properties.property.path, component: ChapterPropertyComponent }
       ] },
       { path: adminPaths.chapter.subscriptions.path, children: [

@@ -3,7 +3,6 @@ import { Component, ChangeDetectionStrategy, OnChanges, Input, Output, EventEmit
 import { Subject } from 'rxjs';
 
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
-import { ChapterPropertyOption } from 'src/app/core/chapters/chapter-property-option';
 import { CheckBoxFormControlViewModel } from 'src/app/modules/forms/components/inputs/check-box-form-control/check-box-form-control.view-model';
 import { DataType } from 'src/app/core/data-types/data-type';
 import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/inputs/drop-down-form-control/drop-down-form-control.view-model';
@@ -34,17 +33,16 @@ export class ChapterPropertyFormComponent implements OnChanges {
     subtitle: TextInputFormControlViewModel;
   };
   
-  private propertyOptions: ChapterPropertyOption[];
-  
   ngOnChanges(): void {
     if (!this.property) {
       return;
     }
-
+    
     this.buildForm();
   }
 
   onFormSubmit(): void {
+    this.property.dataType = parseInt(this.formControls.dataType.value);
     this.property.helpText = this.formControls.helpText.value;
     this.property.label = this.formControls.label.value;
     this.property.name = this.formControls.name.value;
@@ -70,14 +68,15 @@ export class ChapterPropertyFormComponent implements OnChanges {
         validation: {
           required: true
         },
-        value: this.property.dataType.toString()
+        value: this.property ? this.property.dataType.toString() : DataType.None.toString()
       }),
       helpText: new TextInputFormControlViewModel({
         id: 'help-text',
         label: {
+          helpText: 'This is how help text is displayed',
           text: 'Help text'
         },
-        value: this.property.helpText
+        value: this.property ? this.property.helpText : ''
       }),
       label: new TextInputFormControlViewModel({
         id: 'label',
@@ -87,7 +86,7 @@ export class ChapterPropertyFormComponent implements OnChanges {
         validation: {
           required: true
         },
-        value: this.property.label
+        value: this.property ? this.property.label : ''
       }),
       name: new TextInputFormControlViewModel({
         id: 'name',
@@ -100,7 +99,7 @@ export class ChapterPropertyFormComponent implements OnChanges {
           pattern: '^\\w+$',
           required: true
         },
-        value: this.property.name
+        value: this.property ? this.property.name : ''
       }),
       required: new CheckBoxFormControlViewModel({
         id: 'required',
@@ -112,9 +111,10 @@ export class ChapterPropertyFormComponent implements OnChanges {
       subtitle: new TextInputFormControlViewModel({
         id: 'subtitle',
         label: {
+          subtitle: 'This is how a subtitle is displayed',
           text: 'Subtitle'
         },
-        value: this.property.subtitle
+        value: this.property ? this.property.subtitle : ''
       })
     };
 

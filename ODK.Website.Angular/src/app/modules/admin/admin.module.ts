@@ -22,6 +22,8 @@ import { ChapterMenuComponent } from './components/chapters/chapter-menu/chapter
 import { ChapterPaymentSettingsComponent } from './components/chapters/chapter-payment-settings/chapter-payment-settings.component';
 import { ChapterPropertiesComponent } from './components/chapters/chapter-properties/chapter-properties.component';
 import { ChapterPropertyComponent } from './components/chapters/chapter-property/chapter-property.component';
+import { ChapterPropertyCreateComponent } from './components/chapters/chapter-property-create/chapter-property-create.component';
+import { ChapterPropertyFormComponent } from './components/chapters/chapter-property-form/chapter-property-form.component';
 import { ChapterQuestionsComponent } from './components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from './components/chapters/chapter-settings/chapter-settings.component';
 import { ChapterSubscriptionCreateComponent } from './components/chapters/chapter-subscription-create/chapter-subscription-create.component';
@@ -67,7 +69,6 @@ import { VenueFormComponent } from './components/venues/venue-form/venue-form.co
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
-import { ChapterPropertyFormComponent } from './components/chapters/chapter-property-form/chapter-property-form.component';
 
 @NgModule({
   declarations: [
@@ -86,6 +87,8 @@ import { ChapterPropertyFormComponent } from './components/chapters/chapter-prop
     ChapterPaymentSettingsComponent,
     ChapterPropertiesComponent,
     ChapterPropertyComponent,
+    ChapterPropertyCreateComponent,
+    ChapterPropertyFormComponent,
     ChapterQuestionsComponent,
     ChapterSettingsComponent,
     ChapterSubscriptionCreateComponent,
@@ -131,7 +134,6 @@ import { ChapterPropertyFormComponent } from './components/chapters/chapter-prop
     VenueLayoutComponent,
     VenueMenuComponent,
     VenuesComponent,
-    ChapterPropertyFormComponent,
   ],
   imports: [
     AdminRoutingModule,

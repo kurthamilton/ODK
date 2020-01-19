@@ -26,6 +26,7 @@ const endpoints = {
   chapters: baseUrl,  
   membershipSettings: (id: string) => `${baseUrl}/${id}/membership/settings`,
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
+  properties: (id: string) => `${baseUrl}/${id}/properties`,
   property: (id: string) => `${baseUrl}/properties/${id}`,
   questions: (id: string) => `${baseUrl}/${id}/questions`,
   subscription: (id: string) => `${baseUrl}/subscriptions/${id}`,
@@ -50,6 +51,24 @@ export class ChapterAdminService extends ChapterService {
     return this.http.post(endpoints.adminMembers(chapterId), params).pipe(
       map(() => undefined)
     );
+  }
+
+  createChapterProperty(chapterId: string, property: ChapterProperty): Observable<ServiceResult<void>> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      dataType: property.dataType.toString(),
+      helpText: property.helpText,
+      label: property.label,
+      name: property.name,
+      required: property.required ? 'True' : 'False',
+      subtitle: property.subtitle
+    });
+
+    return this.http.post(endpoints.properties(chapterId), params).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
+    )
   }
 
   createChapterQuestion(chapterId: string, chapterQuestion: ChapterQuestion): Observable<void> {
@@ -78,6 +97,12 @@ export class ChapterAdminService extends ChapterService {
         success: true
       })),
       catchApiError()
+    );
+  }
+
+  deleteChapterProperty(property: ChapterProperty): Observable<void> {
+    return this.http.delete(endpoints.property(property.id)).pipe(
+      map(() => undefined)
     );
   }
 

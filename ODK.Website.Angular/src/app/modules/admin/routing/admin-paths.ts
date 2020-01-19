@@ -26,6 +26,9 @@ export const adminPaths = {
       path: 'payments'
     },
     properties: {
+      create: {
+        path: 'create'
+      },
       path: 'properties',
       property: {
         path: ':id',
