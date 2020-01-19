@@ -16,7 +16,7 @@ namespace ODK.Web.Api.Admin.Emails
 {
     [Authorize]
     [ApiController]
-    [Route("Emails")]
+    [Route("Admin/Emails")]
     public class EmailsController : OdkControllerBase
     {
         private readonly IEmailAdminService _emailAdminService;

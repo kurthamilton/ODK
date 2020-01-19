@@ -13,7 +13,7 @@ namespace ODK.Web.Api.Admin.Logging
 {
     [Authorize]
     [ApiController]
-    [Route("Log")]
+    [Route("Admin/Log")]
     public class LogController : OdkControllerBase
     {
         private readonly ILoggingService _loggingService;

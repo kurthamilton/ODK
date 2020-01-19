@@ -16,7 +16,7 @@ namespace ODK.Web.Api.Admin.Chapters
 {
     [Authorize]
     [ApiController]
-    [Route("Chapters")]
+    [Route("Admin/Chapters")]
     public class ChaptersController : OdkControllerBase
     {
         private readonly IChapterAdminService _chapterAdminService;

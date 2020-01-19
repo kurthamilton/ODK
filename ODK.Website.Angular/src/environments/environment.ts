@@ -3,7 +3,7 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  adminApiBaseUrl: 'https://localhost:5003',
+  adminApiBaseUrl: 'https://localhost:5001/admin',
   apiBaseUrl: 'https://localhost:5001',
   production: false,
   title: 'Drunken Knitwits'

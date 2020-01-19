@@ -17,7 +17,7 @@ namespace ODK.Web.Api.Admin.Events
 {
     [Authorize]
     [ApiController]
-    [Route("Events")]
+    [Route("Admin/Events")]
     public class EventsController : OdkControllerBase
     {
         private readonly IEmailService _emailService;

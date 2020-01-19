@@ -16,7 +16,7 @@ namespace ODK.Web.Api.Admin.Venues
 {
     [Authorize]
     [ApiController]
-    [Route("Venues")]
+    [Route("Admin/Venues")]
     public class VenuesController : OdkControllerBase
     {
         private readonly IMapper _mapper;

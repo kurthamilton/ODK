@@ -19,7 +19,7 @@ namespace ODK.Web.Api
         public void ConfigureServices(IServiceCollection services)
         {
             AppStartup.ConfigureServices(Configuration, services);
-            AppStartup.ConfigureMapping(services, typeof(AppStartup));
+            AppStartup.ConfigureMapping(services, typeof(AppStartup), typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
