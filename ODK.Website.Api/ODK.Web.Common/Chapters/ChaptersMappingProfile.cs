@@ -27,6 +27,7 @@ namespace ODK.Web.Common.Chapters
 
             CreateMap<ChapterProperty, ChapterPropertyApiResponse>()
                 .ForMember(x => x.DataTypeId, opt => opt.MapFrom(x => x.DataType))
+                .ForMember(x => x.Hidden, opt => opt.Condition(x => x.Hidden))
                 .ForMember(x => x.Required, opt => opt.Condition(x => x.Required));
 
             CreateMap<ChapterPropertyOption, ChapterPropertyOptionApiResponse>()

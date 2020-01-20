@@ -164,6 +164,7 @@ export class ChapterService {
     return {
       dataType: response.dataTypeId,
       helpText: response.helpText,
+      hidden: response.hidden === true,
       id: response.id,
       label: response.label,
       name: response.name,

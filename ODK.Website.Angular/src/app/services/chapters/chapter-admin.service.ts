@@ -28,6 +28,8 @@ const endpoints = {
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   properties: (id: string) => `${baseUrl}/${id}/properties`,
   property: (id: string) => `${baseUrl}/properties/${id}`,
+  propertyMoveDown: (id: string) => `${baseUrl}/properties/${id}/movedown`,
+  propertyMoveUp: (id: string) => `${baseUrl}/properties/${id}/moveup`,
   questions: (id: string) => `${baseUrl}/${id}/questions`,
   subscription: (id: string) => `${baseUrl}/subscriptions/${id}`,
   subscriptions: (id: string) => `${baseUrl}/${id}/subscriptions`,
@@ -57,6 +59,7 @@ export class ChapterAdminService extends ChapterService {
     const params: HttpParams = HttpUtils.createFormParams({
       dataType: property.dataType.toString(),
       helpText: property.helpText,
+      hidden: property.hidden ? 'True' : 'False',
       label: property.label,
       name: property.name,
       required: property.required ? 'True' : 'False',
@@ -112,6 +115,12 @@ export class ChapterAdminService extends ChapterService {
     );
   }
 
+  getAdminChapterProperties(chapterId: string): Observable<ChapterProperty[]> {
+    return this.http.get(endpoints.properties(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapChapterProperty(x)))
+    );
+  }
+
   getAdminChapters(): Observable<Chapter[]> {
     return this.http.get(endpoints.chapters).pipe(
       map((response: any) => response.map(x => this.mapChapter(x)))
@@ -158,6 +167,18 @@ export class ChapterAdminService extends ChapterService {
     return chapter ? this.getAdminChapters().pipe(
       map((chapters: Chapter[]) => !!chapters.find(x => x.id === chapter.id))
     ) : of(false);
+  }
+
+  moveChapterPropertyDown(id: string): Observable<ChapterProperty[]> {
+    return this.http.put(endpoints.propertyMoveDown(id), {}).pipe(
+      map((response: any) => response.map(x => this.mapChapterProperty(x)))
+    );
+  }
+
+  moveChapterPropertyUp(id: string): Observable<ChapterProperty[]> {
+    return this.http.put(endpoints.propertyMoveUp(id), {}).pipe(
+      map((response: any) => response.map(x => this.mapChapterProperty(x)))
+    );
   }
 
   removeChapterAdminMember(chapterId: string, adminMember: ChapterAdminMember): Observable<void> {
@@ -207,6 +228,7 @@ export class ChapterAdminService extends ChapterService {
   updateChapterProperty(property: ChapterProperty): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
       helpText: property.helpText,
+      hidden: property.hidden ? 'True' : 'False',
       label: property.label,
       name: property.name,
       required: property.required ? 'True' : 'False',

@@ -54,8 +54,8 @@ namespace ODK.Services.Chapters
             IReadOnlyCollection<ChapterProperty> existing = await _chapterRepository.GetChapterProperties(chapterId);
 
             int displayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
-            ChapterProperty create = new ChapterProperty(Guid.Empty, chapterId, property.DataType, property.Name, property.Label,
-                displayOrder, property.Required, property.Subtitle, property.HelpText);
+            ChapterProperty create = new ChapterProperty(Guid.Empty, chapterId, property.DataType, property.Name?.ToLowerInvariant(),
+                property.Label, displayOrder, property.Required, property.Subtitle, property.HelpText, property.Hidden);
 
             await ValidateChapterProperty(create);
 
@@ -111,6 +111,20 @@ namespace ODK.Services.Chapters
             ChapterProperty property = await GetChapterProperty(currentMemberId, id);
 
             await _chapterRepository.DeleteChapterProperty(id);
+
+            IReadOnlyCollection<ChapterProperty> properties = await _chapterRepository.GetChapterProperties(property.ChapterId, true);
+            int displayOrder = 1;
+            foreach (ChapterProperty reorder in properties.OrderBy(x => x.DisplayOrder))
+            {
+                if (reorder.DisplayOrder != displayOrder)
+                {
+                    reorder.DisplayOrder = displayOrder;
+                    await _chapterRepository.UpdateChapterProperty(reorder);
+                }
+
+                displayOrder++;
+            }
+
             _cacheService.RemoveVersionedCollection<ChapterProperty>(property.ChapterId);
         }
 
@@ -153,6 +167,13 @@ namespace ODK.Services.Chapters
             await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
 
             return await _chapterRepository.GetChapterPaymentSettings(chapterId);
+        }
+
+        public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _chapterRepository.GetChapterProperties(chapterId, true);
         }
 
         public async Task<ChapterProperty> GetChapterProperty(Guid currentMemberId, Guid id)
@@ -262,8 +283,9 @@ namespace ODK.Services.Chapters
             ChapterProperty update = await GetChapterProperty(currentMemberId, propertyId);
 
             update.HelpText = property.HelpText;
+            update.Hidden = property.Hidden;
             update.Label = property.Label;
-            update.Name = property.Name;
+            update.Name = property.Name?.ToLowerInvariant();
             update.Required = property.Required;
             update.Subtitle = property.Subtitle;
 
@@ -272,6 +294,52 @@ namespace ODK.Services.Chapters
             await _chapterRepository.UpdateChapterProperty(update);
 
             _cacheService.RemoveVersionedCollection<ChapterProperty>(update.ChapterId);
+        }
+
+        public async Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(Guid currentMemberId, Guid propertyId, int moveBy)
+        {
+            ChapterProperty property = await GetChapterProperty(currentMemberId, propertyId);
+            IReadOnlyCollection<ChapterProperty> properties = await _chapterRepository.GetChapterProperties(property.ChapterId);
+
+            if (moveBy == 0)
+            {
+                return properties;
+            }
+
+            ChapterProperty switchWith;
+            if (moveBy > 0)
+            {
+                switchWith = properties
+                    .Where(x => x.DisplayOrder > property.DisplayOrder)
+                    .OrderBy(x => x.DisplayOrder)
+                    .FirstOrDefault();
+
+            }
+            else
+            {
+                switchWith = properties
+                    .Where(x => x.DisplayOrder < property.DisplayOrder)
+                    .OrderByDescending(x => x.DisplayOrder)
+                    .FirstOrDefault();
+            }
+
+            if (switchWith == null)
+            {
+                return properties;
+            }
+
+            property = properties.First(x => x.Id == property.Id);
+
+            int displayOrder = switchWith.DisplayOrder;
+            switchWith.DisplayOrder = property.DisplayOrder;
+            property.DisplayOrder = displayOrder;
+
+            await _chapterRepository.UpdateChapterProperty(property);
+            await _chapterRepository.UpdateChapterProperty(switchWith);
+
+            _cacheService.RemoveVersionedCollection<ChapterProperty>(property.ChapterId);
+
+            return properties.OrderBy(x => x.DisplayOrder).ToArray();
         }
 
         public async Task UpdateChapterSubscription(Guid currentMemberId, Guid id, CreateChapterSubscription subscription)

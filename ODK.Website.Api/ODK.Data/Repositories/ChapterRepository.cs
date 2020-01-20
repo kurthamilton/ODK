@@ -171,20 +171,22 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId)
+        public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId, bool all = false)
         {
             return await Context
                 .Select<ChapterProperty>()
                 .Where(x => x.ChapterId).EqualTo(chapterId)
+                .ConditionalWhere(x => x.Hidden, !all).EqualTo(false)
                 .OrderBy(x => x.DisplayOrder)
                 .ToArrayAsync();
         }
 
-        public async Task<long> GetChapterPropertiesVersion(Guid chapterId)
+        public async Task<long> GetChapterPropertiesVersion(Guid chapterId, bool all = false)
         {
             return await Context
                 .Select<ChapterProperty>()
                 .Where(x => x.ChapterId).EqualTo(chapterId)
+                .ConditionalWhere(x => x.Hidden, !all).EqualTo(false)
                 .VersionAsync();
         }
 
@@ -355,7 +357,9 @@ namespace ODK.Data.Repositories
         {
             await Context
                 .Update<ChapterProperty>()
+                .Set(x => x.DisplayOrder, property.DisplayOrder)
                 .Set(x => x.HelpText, property.HelpText)
+                .Set(x => x.Hidden, property.Hidden)
                 .Set(x => x.Label, property.Label)
                 .Set(x => x.Name, property.Name)
                 .Set(x => x.Required, property.Required)

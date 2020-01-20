@@ -108,7 +108,8 @@ namespace ODK.Services.Tests.Members
                 1,
                 required,
                 null,
-                null);
+                null,
+                false);
         }
 
         private static IChapterRepository CreateMockChapterRepository(IEnumerable<ChapterProperty> chapterProperties = null)

@@ -55,6 +55,7 @@ export class ChapterPropertyCreateComponent implements OnInit, OnDestroy {
     return {
       dataType: DataType.None,
       helpText: '',
+      hidden: false,
       id: '',
       label: '',
       name: '',

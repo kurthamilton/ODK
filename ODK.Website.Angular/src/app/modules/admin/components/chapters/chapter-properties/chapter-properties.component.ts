@@ -32,7 +32,7 @@ export class ChapterPropertiesComponent implements OnInit {
       create: adminUrls.chapterPropertyCreate(this.chapter)
     };
 
-    this.chapterAdminService.getChapterProperties(this.chapter.id).subscribe((properties: ChapterProperty[]) => {
+    this.chapterAdminService.getAdminChapterProperties(this.chapter.id).subscribe((properties: ChapterProperty[]) => {
       this.properties = properties;
       this.changeDetector.detectChanges();
     });
@@ -48,10 +48,24 @@ export class ChapterPropertiesComponent implements OnInit {
     }
 
     this.chapterAdminService.deleteChapterProperty(property).pipe(
-      switchMap(() => this.chapterAdminService.getChapterProperties(this.chapter.id))
+      switchMap(() => this.chapterAdminService.getAdminChapterProperties(this.chapter.id))
     ).subscribe((properties: ChapterProperty[]) => {
       this.properties = properties;
       this.changeDetector.detectChanges();
     })
+  }
+
+  onMovePropertyDown(property: ChapterProperty): void {
+    this.chapterAdminService.moveChapterPropertyDown(property.id).subscribe((properties: ChapterProperty[]) => {
+      this.properties = properties;
+      this.changeDetector.detectChanges();
+    });
+  }
+
+  onMovePropertyUp(property: ChapterProperty): void {
+    this.chapterAdminService.moveChapterPropertyUp(property.id).subscribe((properties: ChapterProperty[]) => {
+      this.properties = properties;
+      this.changeDetector.detectChanges();
+    });
   }
 }

@@ -29,6 +29,8 @@ namespace ODK.Services.Chapters
 
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
 
+        Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid currentMemberId, Guid chapterId);
+
         Task<ChapterProperty> GetChapterProperty(Guid currentMemberId, Guid chapterPropertyId);
 
         Task<IReadOnlyCollection<Chapter>> GetChapters(Guid currentMemberId);
@@ -46,6 +48,8 @@ namespace ODK.Services.Chapters
         Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings settings);
 
         Task UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property);
+
+        Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(Guid currentMemberId, Guid propertyId, int moveBy);
 
         Task UpdateChapterSubscription(Guid currentMemberId, Guid subscriptionId, CreateChapterSubscription subscription);
 

@@ -20,6 +20,7 @@ namespace ODK.Data.Mapping
             Property(x => x.Required);
             Property(x => x.Subtitle);
             Property(x => x.HelpText);
+            Property(x => x.Hidden);
         }
 
         public override ChapterProperty Read(IDataReader reader)
@@ -34,7 +35,8 @@ namespace ODK.Data.Mapping
                 displayOrder: reader.GetInt32(5),
                 required: reader.GetBoolean(6),
                 subtitle: reader.GetStringOrDefault(7),
-                helpText: reader.GetStringOrDefault(8)
+                helpText: reader.GetStringOrDefault(8),
+                hidden: reader.GetBoolean(9)
             );
         }
     }

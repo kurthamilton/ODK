@@ -6,12 +6,13 @@ namespace ODK.Core.Chapters
     public class ChapterProperty
     {
         public ChapterProperty(Guid id, Guid chapterId, DataType dataType, string name, string label, int displayOrder,
-            bool required, string subtitle, string helpText)
+            bool required, string subtitle, string helpText, bool hidden)
         {
             ChapterId = chapterId;
             DataType = dataType;
             DisplayOrder = displayOrder;
             HelpText = helpText;
+            Hidden = hidden;
             Id = id;
             Label = label;
             Name = name;
@@ -26,6 +27,8 @@ namespace ODK.Core.Chapters
         public int DisplayOrder { get; set; }
 
         public string HelpText { get; set; }
+
+        public bool Hidden { get; set; }
 
         public Guid Id { get; }
 

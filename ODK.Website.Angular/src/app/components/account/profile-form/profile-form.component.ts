@@ -293,18 +293,20 @@ export class ProfileFormComponent implements OnChanges {
 
     if (chapterProperty.dataType === DataType.DropDown) {
       const chapterPropertyOptions: ChapterPropertyOption[] = this.chapterPropertyOptions.get(chapterProperty.id) || [];
-      const dropDownOptions = <DropDownFormControlOptions>options;
-      dropDownOptions.options = [
-        { default: true, text: 'Select...', value: '' },
-        ...chapterPropertyOptions.map((x): DropDownFormControlOption => ({
-          freeText: x.freeText,
-          selected: memberProperty ? memberProperty.value === x.value : false,
-          text: x.value,
-          value: x.value
-        }))
-      ];
-      dropDownOptions.value = memberProperty ? memberProperty.value : '';
-      return new DropDownFormControlViewModel(dropDownOptions);
+      if (chapterPropertyOptions.length > 0) {
+        const dropDownOptions = <DropDownFormControlOptions>options;
+        dropDownOptions.options = [
+          { default: true, text: 'Select...', value: '' },
+          ...chapterPropertyOptions.map((x): DropDownFormControlOption => ({
+            freeText: x.freeText,
+            selected: memberProperty ? memberProperty.value === x.value : false,
+            text: x.value,
+            value: x.value
+          }))
+        ];
+        dropDownOptions.value = memberProperty ? memberProperty.value : '';
+        return new DropDownFormControlViewModel(dropDownOptions);
+      }      
     }
 
     const textInputOptions = <TextInputFormControlOptions>options;

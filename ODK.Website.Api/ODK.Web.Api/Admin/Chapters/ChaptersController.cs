@@ -111,6 +111,13 @@ namespace ODK.Web.Api.Admin.Chapters
             return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(settings);
         }
 
+        [HttpGet("{id}/Properties")]
+        public async Task<IEnumerable<ChapterPropertyApiResponse>> GetProperties(Guid id)
+        {
+            IReadOnlyCollection<ChapterProperty> properties = await _chapterAdminService.GetChapterProperties(GetMemberId(), id);
+            return properties.Select(_mapper.Map<ChapterPropertyApiResponse>);
+        }
+
         [HttpPost("{id}/Properties")]
         public async Task<IActionResult> CreateProperty(Guid id, [FromForm] CreateChapterPropertyApiRequest request)
         {
@@ -156,6 +163,22 @@ namespace ODK.Web.Api.Admin.Chapters
             UpdateChapterProperty property = _mapper.Map<UpdateChapterProperty>(request);
             await _chapterAdminService.UpdateChapterProperty(GetMemberId(), id, property);
             return NoContent();
+        }
+
+        [HttpPut("Properties/{id}/MoveDown")]
+        public async Task<IEnumerable<ChapterPropertyApiResponse>> MovePropertyDown(Guid id)
+        {
+            IReadOnlyCollection<ChapterProperty> properties =
+                await _chapterAdminService.UpdateChapterPropertyDisplayOrder(GetMemberId(), id, 1);
+            return properties.Select(_mapper.Map<ChapterPropertyApiResponse>);
+        }
+
+        [HttpPut("Properties/{id}/MoveUp")]
+        public async Task<IEnumerable<ChapterPropertyApiResponse>> MovePropertyUp(Guid id)
+        {
+            IReadOnlyCollection<ChapterProperty> properties =
+                await _chapterAdminService.UpdateChapterPropertyDisplayOrder(GetMemberId(), id, -1);
+            return properties.Select(_mapper.Map<ChapterPropertyApiResponse>);
         }
 
         [HttpDelete("Properties/{id}")]

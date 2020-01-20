@@ -4,6 +4,8 @@
     {
         public string HelpText { get; set; }
 
+        public bool Hidden { get; set; }
+
         public string Label { get; set; }
 
         public string Name { get; set; }

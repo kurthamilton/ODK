@@ -27,6 +27,7 @@ export class ChapterPropertyFormComponent implements OnChanges {
   private formControls: {
     dataType: DropDownFormControlViewModel;
     helpText: TextInputFormControlViewModel;    
+    hidden: CheckBoxFormControlViewModel;
     label: TextInputFormControlViewModel;
     name: TextInputFormControlViewModel;    
     required: CheckBoxFormControlViewModel;
@@ -44,6 +45,7 @@ export class ChapterPropertyFormComponent implements OnChanges {
   onFormSubmit(): void {
     this.property.dataType = parseInt(this.formControls.dataType.value);
     this.property.helpText = this.formControls.helpText.value;
+    this.property.hidden = this.formControls.hidden.value;
     this.property.label = this.formControls.label.value;
     this.property.name = this.formControls.name.value;
     this.property.required = this.formControls.required.value;
@@ -77,6 +79,14 @@ export class ChapterPropertyFormComponent implements OnChanges {
           text: 'Help text'
         },
         value: this.property ? this.property.helpText : ''
+      }),
+      hidden: new CheckBoxFormControlViewModel({
+        id: 'hidden',
+        label: {
+          helpText: 'Hides this property from signup and profile forms',
+          text: 'Hidden'
+        },
+        value: this.property ? this.property.hidden : false
       }),
       label: new TextInputFormControlViewModel({
         id: 'label',
@@ -124,6 +134,7 @@ export class ChapterPropertyFormComponent implements OnChanges {
       ],
       callback: this.formCallback,
       controls: [
+        this.formControls.hidden,
         this.formControls.name,
         this.formControls.label,
         this.formControls.dataType,

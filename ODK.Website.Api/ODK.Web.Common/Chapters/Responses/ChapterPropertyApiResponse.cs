@@ -9,6 +9,8 @@ namespace ODK.Web.Common.Chapters.Responses
 
         public string HelpText { get; set; }
 
+        public bool? Hidden { get; set; }
+
         public Guid Id { get; set; }
 
         public string Label { get; set; }

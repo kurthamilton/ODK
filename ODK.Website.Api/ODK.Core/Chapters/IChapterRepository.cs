@@ -46,9 +46,9 @@ namespace ODK.Core.Chapters
 
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid chapterId);
 
-        Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId);
+        Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId, bool all = false);
 
-        Task<long> GetChapterPropertiesVersion(Guid chapterId);
+        Task<long> GetChapterPropertiesVersion(Guid chapterId, bool all = false);
 
         Task<ChapterProperty> GetChapterProperty(Guid id);
 
