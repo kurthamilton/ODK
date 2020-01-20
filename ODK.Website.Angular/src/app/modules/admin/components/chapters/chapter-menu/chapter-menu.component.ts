@@ -29,12 +29,12 @@ export class ChapterMenuComponent implements OnInit {
       { link: adminUrls.chapter(chapter), text: 'Settings', matchExactRoute: true },
       { link: adminUrls.chapterSubscriptions(chapter), text: 'Subscriptions' },
       { link: adminUrls.chapterAbout(chapter), text: 'About' },
+      { link: adminUrls.chapterProperties(chapter), text: 'Properties' },
       { link: adminUrls.chapterAdminMembers(chapter), text: 'Admin members' }
     ];
 
     if (token.superAdmin) {
-      this.menuItems.push({ link: adminUrls.chapterPayments(chapter), text: 'Payments' });
-      this.menuItems.push({ link: adminUrls.chapterProperties(chapter), text: 'Properties' });
+      this.menuItems.push({ link: adminUrls.chapterPayments(chapter), text: 'Payments' });      
     }
   }
 }
