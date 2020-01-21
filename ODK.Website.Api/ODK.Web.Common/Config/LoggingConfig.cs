@@ -52,6 +52,8 @@ namespace ODK.Web.Common.Config
                 .WriteTo.Providers(Providers)
                 .WriteTo.Console()
                 .WriteTo.MSSqlServer(connectionString, "Logs")
+                    .Filter
+                    .ByIncludingOnly(e => e.Level == LogEventLevel.Error)
                 .CreateLogger();
 
             Log.Logger = Logger;
