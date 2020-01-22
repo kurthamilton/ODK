@@ -21,14 +21,7 @@ namespace ODK.Deploy.Services.Remote.Ftp
 
         public char PathSeparator => '/';
 
-        public async Task CopyFile(string from, string to)
-        {
-            MemoryStream stream = new MemoryStream();
-            await _client.Value.DownloadAsync(stream, from);
-            await _client.Value.UploadAsync(stream, to, FtpRemoteExists.Overwrite);
-        }
-
-        public Task CopyFolder(string from, string to)
+        public Task CopyFolder(string from, string to, IReadOnlyCollection<string> skipPaths)
         {
             throw new NotImplementedException();
         }
@@ -76,6 +69,11 @@ namespace ODK.Deploy.Services.Remote.Ftp
         public async Task MoveFile(string from, string to)
         {
             await _client.Value.MoveFileAsync(from, to, FtpRemoteExists.Overwrite);
+        }
+
+        public Task MoveFolder(string from, string to)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task UploadFile(string localPath, string remotePath)

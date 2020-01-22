@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ODK.Deploy.Core.Servers;
 
@@ -26,7 +27,7 @@ namespace ODK.Deploy.Services.Remote.FileSystem
             return Task.CompletedTask;
         }
 
-        public async Task CopyFolder(string from, string to)
+        public async Task CopyFolder(string from, string to, IReadOnlyCollection<string> skipPaths)
         {
             from = GetPath(from);
             to = GetPath(to);
@@ -37,15 +38,25 @@ namespace ODK.Deploy.Services.Remote.FileSystem
                 return;
             }
 
+            if (skipPaths.Any(x => GetPath(x).Equals(folder.Path, StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+
             await CreateFolder(to);
             foreach (IRemoteFolder subFolder in folder.SubFolders)
             {
                 string path = Path.Combine(to, subFolder.Name);
-                await CopyFolder(subFolder.Path, path);
+                await CopyFolder(subFolder.Path, path, skipPaths);
             }
 
             foreach (IRemoteFile file in folder.Files)
             {
+                if (skipPaths.Any(x => GetPath(x).Equals(file.Path, StringComparison.OrdinalIgnoreCase)))
+                {
+                    continue;
+                }
+
                 string path = Path.Combine(to, file.Name);
                 File.Copy(file.Path, path, true);
             }
@@ -123,6 +134,33 @@ namespace ODK.Deploy.Services.Remote.FileSystem
 
             File.Move(from, to);
             return Task.CompletedTask;
+        }
+
+        public async Task MoveFolder(string from, string to)
+        {
+            from = GetPath(from);
+            to = GetPath(to);
+
+            IRemoteFolder folder = await GetFolder(from);
+            if (folder == null)
+            {
+                return;
+            }
+
+            await CreateFolder(to);
+            foreach (IRemoteFolder subFolder in folder.SubFolders)
+            {
+                string path = Path.Combine(to, subFolder.Name);
+                await MoveFolder(subFolder.Path, path);
+            }
+
+            foreach (IRemoteFile file in folder.Files)
+            {
+                string path = Path.Combine(to, file.Name);
+                File.Move(file.Path, path);
+            }
+
+            Directory.Delete(from);
         }
 
         public Task SaveFile(byte[] data, string path)

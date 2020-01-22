@@ -13,8 +13,8 @@ namespace ODK.Deploy.Services.Remote
         {
             Path = path ?? "";
             PathSeparator = pathSeparator;
-            PathParts = Path.Split(PathSeparator);
-            RelativePath = !string.IsNullOrEmpty(rootPath) ? Path.Replace(rootPath, "") : "";
+            RelativePath = !string.IsNullOrEmpty(rootPath) ? Path.Replace(rootPath, "") : Path;
+            PathParts = RelativePath.Split(PathSeparator);
             RootPath = rootPath ?? "";
 
             _ancestors = new Lazy<IReadOnlyCollection<IRemoteFolder>>(() => GetAncestors().ToArray());

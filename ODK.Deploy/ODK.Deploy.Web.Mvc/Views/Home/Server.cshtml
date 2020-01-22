@@ -49,25 +49,36 @@
                     }
                 </td>
                 <td>
-                    <div class="d-flex">
+                    <div class="btn-group">
                         @using (Html.BeginForm("Backup", null, deploymentRequest, FormMethod.Post))
                         {
-                            <button class="btn btn-sm btn-primary" disabled="@(string.IsNullOrEmpty(Model.BackupPath) ? "disabled" : null)">
-                                Backup
+                            <button class="btn btn-sm btn-primary" data-toggle="tooltip" title="Backup"
+                                    disabled="@(string.IsNullOrEmpty(Model.BackupPath) ? "disabled" : null)">
+                                <i class="fas fa-copy"></i>
                             </button>
                         }
 
                         @using (Html.BeginForm("Upload", null, deploymentRequest, FormMethod.Post))
                         {
-                            <button class="btn btn-sm btn-primary" disabled="@(string.IsNullOrEmpty(Model.DeployPath) || string.IsNullOrEmpty(deployment.BuildPath) ? "disabled" : null)">
-                                Upload
+                            <button class="btn btn-sm btn-primary" data-toggle="tooltip" title="Upload"
+                                    disabled="@(string.IsNullOrEmpty(Model.DeployPath) || string.IsNullOrEmpty(deployment.BuildPath) ? "disabled" : null)">
+                                <i class="fas fa-upload"></i>
                             </button>
                         }
 
                         @using (Html.BeginForm("Release", null, deploymentRequest, FormMethod.Post))
                         {
-                            <button class="btn btn-sm btn-primary" disabled="@(string.IsNullOrEmpty(deployment.LastUpload) ? "disabled" : null)">
-                                Release
+                            <button class="btn btn-sm btn-primary" data-toggle="tooltip" title="Release"
+                                    disabled="@(string.IsNullOrEmpty(deployment.LastUpload) ? "disabled" : null)">
+                                <i class="fas fa-arrow-circle-right"></i>
+                            </button>
+                        }
+
+                        @using (Html.BeginForm("Rollback", null, deploymentRequest, FormMethod.Post))
+                        {
+                            <button class="btn btn-sm btn-warning" data-toggle="tooltip" title="Rollback"
+                                    disabled="@(string.IsNullOrEmpty(deployment.LastBackup) ? "disabled" : null)">
+                                <i class="fas fa-arrow-circle-left"></i>
                             </button>
                         }
 
@@ -75,14 +86,18 @@
                         {
                             using (Html.BeginForm("Online", null, deploymentRequest, FormMethod.Post))
                             {
-                                <button class="btn btn-sm btn-success">Put online</button>
+                                <button class="btn btn-sm btn-success" data-toggle="tooltip" title="Put online">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
                             }
                         }
                         else if (deployment.Offline == false)
                         {
                             using (Html.BeginForm("Offline", null, deploymentRequest, FormMethod.Post))
                             {
-                                <button class="btn btn-sm btn-danger">Take offline</button>
+                                <button class="btn btn-sm btn-danger" data-toggle="tooltip" title="Take offline">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
                             }
                         }
                     </div>

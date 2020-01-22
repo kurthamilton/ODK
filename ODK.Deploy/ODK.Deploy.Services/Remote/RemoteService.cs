@@ -170,14 +170,55 @@ namespace ODK.Deploy.Services.Remote
                 .Except(new[] { deployment.RemotePath })
                 .ToArray();
             await ClearRemoteFolder(client, deployment.RemotePath, skipPaths);
-            await MoveRemoteFolder(client, from.Path, deployment.RemotePath, null);
+            await MoveRemoteFolder(client, from.Path, deployment.RemotePath);
 
             await PutOnline(client, deployment);
 
             IRemoteFolder fromParent = await GetFolder(client, from.Parent.Path);
             if (fromParent.SubFolders.Count == 1)
             {
+                await DeleteFolder(client, fromParent.Path);
+            }
+            else
+            {
                 await DeleteFolder(client, from.Path);
+            }
+        }
+
+        public async Task RollbackDeployment(int deploymentId)
+        {
+            Deployment deployment = await _deploymentRepository.GetDeployment(deploymentId);
+            if (deployment == null)
+            {
+                return;
+            }
+
+            Server server = await _serverRepository.GetServer(deployment.Server);
+
+            IReadOnlyCollection<Deployment> deployments = await _deploymentRepository.GetServerDeployments(server.Name);
+
+            IRemoteClient client = GetClient(server);
+
+            IRemoteFolder from = await GetLastBackupFolder(client, server, deployment);
+            if (from == null)
+            {
+                return;
+            }
+
+            await TakeOffline(client, deployment);
+
+            IReadOnlyCollection<string> skipPaths = GetPreservedPaths(client, deployments)
+                .Except(new[] { deployment.RemotePath })
+                .ToArray();
+            await ClearRemoteFolder(client, deployment.RemotePath, skipPaths);
+            await MoveRemoteFolder(client, from.Path, deployment.RemotePath);
+
+            await PutOnline(client, deployment);
+
+            IRemoteFolder fromParent = await GetFolder(client, from.Parent.Path);
+            if (fromParent.SubFolders.Count == 1)
+            {
+                await DeleteFolder(client, fromParent.Path);
             }
             else
             {
@@ -263,30 +304,7 @@ namespace ODK.Deploy.Services.Remote
 
         private async Task CopyRemoteFolder(IRemoteClient client, string from, string to, IReadOnlyCollection<string> skipPaths)
         {
-            if (skipPaths != null && skipPaths.Contains(from))
-            {
-                return;
-            }
-
-            IRemoteFolder fromFolder = await GetFolder(client, from);
-            if (fromFolder == null)
-            {
-                return;
-            }
-
-            await client.CreateFolder(to);
-
-            foreach (IRemoteFolder fromSubFolder in fromFolder.SubFolders)
-            {
-                string toPath = $"{to}{client.PathSeparator}{fromSubFolder.Name}";
-                await CopyRemoteFolder(client, fromSubFolder.Path, toPath, skipPaths);
-            }
-
-            foreach (IRemoteFile fromFile in fromFolder.Files)
-            {
-                string toFilePath = $"{to}{client.PathSeparator}{fromFile.Name}";
-                await client.CopyFile(fromFile.Path, toFilePath);
-            }
+            await client.CopyFolder(from, to, skipPaths);
         }
 
         private async Task DeleteFolder(IRemoteClient client, string path)
@@ -444,33 +462,9 @@ namespace ODK.Deploy.Services.Remote
             return backupPathVersion;
         }
 
-        private async Task MoveRemoteFolder(IRemoteClient client, string from, string to, IReadOnlyCollection<string> skipPaths)
+        private async Task MoveRemoteFolder(IRemoteClient client, string from, string to)
         {
-            if (skipPaths != null && skipPaths.Contains(from))
-            {
-                return;
-            }
-
-            IRemoteFolder fromFolder = await GetFolder(client, from);
-            if (fromFolder == null)
-            {
-                return;
-            }
-
-            await client.CreateFolder(to);
-
-            foreach (IRemoteFolder fromSubFolder in fromFolder.SubFolders)
-            {
-                string toPath = $"{to}{client.PathSeparator}{fromSubFolder.Name}";
-                await MoveRemoteFolder(client, fromSubFolder.Path, toPath, skipPaths);
-            }
-
-            foreach (IRemoteFile fromFile in fromFolder.Files)
-            {
-                string toFilePath = $"{to}{client.PathSeparator}{fromFile.Name}";
-                await client.MoveFile(fromFile.Path, toFilePath);
-            }
-
+            await client.MoveFolder(from, to);
             _remoteFolderCache.Remove(from);
         }
 

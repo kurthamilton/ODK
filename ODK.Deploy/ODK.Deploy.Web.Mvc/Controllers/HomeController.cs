@@ -122,6 +122,13 @@ namespace ODK.Deploy.Web.Mvc.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> Rollback(DeploymentRequest request)
+        {
+            await _remoteService.RollbackDeployment(request.DeploymentId);
+            return RedirectToServer(request);
+        }
+
+        [HttpPost]
         public async Task<IActionResult> Upload(DeploymentRequest request)
         {
             await _remoteService.UploadDeployment(request.DeploymentId);

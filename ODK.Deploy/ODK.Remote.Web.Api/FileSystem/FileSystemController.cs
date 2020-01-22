@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -65,9 +66,16 @@ namespace ODK.Remote.Web.Api.FileSystem
         }
 
         [HttpPost(FileSystemEndpoints.FolderCopyEndpoint)]
-        public async Task<ActionResult> FolderCopy(string from, string to)
+        public async Task<ActionResult> FolderCopy(string from, string to, [FromQuery] string[] skipPaths = null)
         {
-            await _fileSystem.CopyFolder(from, to);
+            await _fileSystem.CopyFolder(from, to, skipPaths);
+            return NoContent();
+        }
+
+        [HttpPost(FileSystemEndpoints.FolderMoveEndpoint)]
+        public async Task<ActionResult> FolderMove(string from, string to)
+        {
+            await _fileSystem.MoveFolder(from, to);
             return NoContent();
         }
 

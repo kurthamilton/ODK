@@ -7,9 +7,7 @@ namespace ODK.Deploy.Services.Remote
     {
         char PathSeparator { get; }
 
-        Task CopyFile(string from, string to);
-
-        Task CopyFolder(string from, string to);
+        Task CopyFolder(string from, string to, IReadOnlyCollection<string> skipPaths);
 
         Task CreateFolder(string path);
 
@@ -22,6 +20,8 @@ namespace ODK.Deploy.Services.Remote
         Task<IRemoteFolder> GetFolder(string path);
 
         Task MoveFile(string from, string to);
+
+        Task MoveFolder(string from, string to);
 
         Task UploadFile(string localPath, string remotePath);
 

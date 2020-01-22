@@ -22,6 +22,8 @@ namespace ODK.Deploy.Services.Remote
 
         Task ReleaseDeployment(int deploymentId);
 
+        Task RollbackDeployment(int deploymentId);
+
         Task TakeOffline(int deploymentId);
 
         Task UploadDeployment(int deploymentId);

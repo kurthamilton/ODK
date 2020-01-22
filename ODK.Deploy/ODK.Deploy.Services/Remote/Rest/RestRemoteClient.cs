@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ODK.Deploy.Core.Servers;
 using ODK.Remote.Services.RestClient;
@@ -19,15 +20,9 @@ namespace ODK.Deploy.Services.Remote.Rest
 
         public char PathSeparator => '/';
 
-        public async Task CopyFile(string from, string to)
+        public async Task CopyFolder(string from, string to, IReadOnlyCollection<string> skipPaths)
         {
-            string url = $"{FileSystemEndpoints.FileCopyEndpoint}?from={from}&to={to}";
-            await GetResponse<FolderApiResponse>(url, Method.POST);
-        }
-
-        public async Task CopyFolder(string from, string to)
-        {
-            string url = $"{FileSystemEndpoints.FolderCopyEndpoint}?from={from}&to={to}";
+            string url = $"{FileSystemEndpoints.FolderCopyEndpoint}?from={from}&to={to}{string.Join("", skipPaths.Select(x => $"&skipPaths={x}"))}";
             await GetResponse<FolderApiResponse>(url, Method.POST);
         }
 
@@ -84,6 +79,12 @@ namespace ODK.Deploy.Services.Remote.Rest
             await GetResponse<FolderApiResponse>(url, Method.POST);
         }
 
+        public async Task MoveFolder(string from, string to)
+        {
+            string url = $"{FileSystemEndpoints.FolderMoveEndpoint}?from={from}&to={to}";
+            await GetResponse<FolderApiResponse>(url, Method.POST);
+        }
+
         public async Task UploadFile(string localPath, string remotePath)
         {
             byte[] bytes = File.ReadAllBytes(localPath);
@@ -120,7 +121,7 @@ namespace ODK.Deploy.Services.Remote.Rest
 
         private async Task<T> GetResponse<T>(IRestRequest request)
         {
-            IRestClient client = new RestSharp.RestClient();
+            IRestClient client = new RestClient();
             IRestResponse<T> response = await client.ExecuteAsync<T>(request);
             return response.IsSuccessful ? response.Data : default;
         }

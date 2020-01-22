@@ -16,6 +16,8 @@
 
         public const string FolderEndpoint = "Folders";
 
+        public const string FolderMoveEndpoint = "Folder/Move";
+
         public const string PathQueryParam = "Path";
     }
 }
