@@ -89,6 +89,14 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task DeleteChapterQuestion(Guid id)
+        {
+            await Context
+                .Delete<ChapterQuestion>()
+                .Where(x => x.Id).EqualTo(id)
+                .ExecuteAsync();
+        }
+
         public async Task DeleteChapterSubscription(Guid id)
         {
             await Context
@@ -214,6 +222,14 @@ namespace ODK.Data.Repositories
                 .Select<ChapterPropertyOption>()
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .VersionAsync();
+        }
+
+        public async Task<ChapterQuestion> GetChapterQuestion(Guid id)
+        {
+            return await Context
+                .Select<ChapterQuestion>()
+                .Where(x => x.Id).EqualTo(id)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId)
@@ -365,6 +381,17 @@ namespace ODK.Data.Repositories
                 .Set(x => x.Required, property.Required)
                 .Set(x => x.Subtitle, property.Subtitle)
                 .Where(x => x.Id).EqualTo(property.Id)
+                .ExecuteAsync();
+        }
+
+        public async Task UpdateChapterQuestion(ChapterQuestion question)
+        {
+            await Context
+                .Update<ChapterQuestion>()
+                .Set(x => x.Answer, question.Answer)
+                .Set(x => x.DisplayOrder, question.DisplayOrder)
+                .Set(x => x.Name, question.Name)
+                .Where(x => x.Id).EqualTo(question.Id)
                 .ExecuteAsync();
         }
 

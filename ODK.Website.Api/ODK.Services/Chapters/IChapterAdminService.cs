@@ -19,6 +19,8 @@ namespace ODK.Services.Chapters
 
         Task DeleteChapterProperty(Guid currentMemberId, Guid id);
 
+        Task DeleteChapterQuestion(Guid currentMemberId, Guid id);
+
         Task DeleteChapterSubscription(Guid currentMemberId, Guid id);
 
         Task<ChapterAdminMember> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
@@ -32,6 +34,8 @@ namespace ODK.Services.Chapters
         Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid currentMemberId, Guid chapterId);
 
         Task<ChapterProperty> GetChapterProperty(Guid currentMemberId, Guid chapterPropertyId);
+
+        Task<ChapterQuestion> GetChapterQuestion(Guid currentMemberId, Guid questionId);
 
         Task<IReadOnlyCollection<Chapter>> GetChapters(Guid currentMemberId);
 
@@ -50,6 +54,10 @@ namespace ODK.Services.Chapters
         Task UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property);
 
         Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(Guid currentMemberId, Guid propertyId, int moveBy);
+
+        Task UpdateChapterQuestion(Guid currentMemberId, Guid questionId, CreateChapterQuestion question);
+
+        Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(Guid currentMemberId, Guid questionId, int moveBy);
 
         Task UpdateChapterSubscription(Guid currentMemberId, Guid subscriptionId, CreateChapterSubscription subscription);
 

@@ -26,6 +26,8 @@ namespace ODK.Core.Chapters
 
         Task DeleteChapterProperty(Guid id);
 
+        Task DeleteChapterQuestion(Guid id);
+
         Task DeleteChapterSubscription(Guid id);
 
         Task<Chapter> GetChapter(Guid id);
@@ -56,6 +58,8 @@ namespace ODK.Core.Chapters
 
         Task<long> GetChapterPropertyOptionsVersion(Guid chapterId);
 
+        Task<ChapterQuestion> GetChapterQuestion(Guid id);
+
         Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);
 
         Task<long> GetChapterQuestionsVersion(Guid chapterId);
@@ -83,6 +87,8 @@ namespace ODK.Core.Chapters
         Task UpdateChapterPaymentSettings(ChapterPaymentSettings settings);
 
         Task UpdateChapterProperty(ChapterProperty property);
+
+        Task UpdateChapterQuestion(ChapterQuestion question);
 
         Task UpdateChapterSubscription(ChapterSubscription subscription);
 

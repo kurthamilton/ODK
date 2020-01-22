@@ -173,6 +173,14 @@ export class ChapterService {
     };
   }
   
+  protected mapChapterQuestion(response: any): ChapterQuestion {
+    return {
+      answer: response.answer,
+      id: response.id,
+      name: response.name
+    };
+  }  
+  
   protected mapChapterSubscription(response: any): ChapterSubscription {
     return {
       amount: response.amount,
@@ -212,13 +220,6 @@ export class ChapterService {
       chapterPropertyId: response.chapterPropertyId,
       freeText: response.freeText === true,
       value: response.value
-    };
-  }
-
-  private mapChapterQuestion(response: any): ChapterQuestion {
-    return {
-      answer: response.answer,
-      name: response.name
     };
   }  
 

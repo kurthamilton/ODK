@@ -15,6 +15,8 @@ import { ChapterPaymentSettingsComponent } from '../components/chapters/chapter-
 import { ChapterPropertiesComponent } from '../components/chapters/chapter-properties/chapter-properties.component';
 import { ChapterPropertyComponent } from '../components/chapters/chapter-property/chapter-property.component';
 import { ChapterPropertyCreateComponent } from '../components/chapters/chapter-property-create/chapter-property-create.component';
+import { ChapterQuestionComponent } from '../components/chapters/chapter-question/chapter-question.component';
+import { ChapterQuestionCreateComponent } from '../components/chapters/chapter-question-create/chapter-question-create.component';
 import { ChapterQuestionsComponent } from '../components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from '../components/chapters/chapter-settings/chapter-settings.component';
 import { ChapterSubscriptionCreateComponent } from '../components/chapters/chapter-subscription-create/chapter-subscription-create.component';
@@ -48,8 +50,7 @@ const routes: Routes = [
     { path: '', pathMatch: 'full', redirectTo: adminPaths.chapter.path },
     { path: adminPaths.admin.path, component: LogComponent, canActivate: [ChapterSuperAdminGuardService] },
     { path: adminPaths.chapter.path, component: ChapterAdminLayoutComponent, children: [
-      { path: '', component: ChapterSettingsComponent },
-      { path: adminPaths.chapter.about.path, component: ChapterQuestionsComponent },
+      { path: '', component: ChapterSettingsComponent },      
       { path: adminPaths.chapter.adminMembers.path, children: [
         { path: '', component: ChapterAdminMembersComponent },
         { path: adminPaths.chapter.adminMembers.add.path, component: ChapterAdminMemberAddComponent },
@@ -61,6 +62,11 @@ const routes: Routes = [
         { path: '', component: ChapterPropertiesComponent },
         { path: adminPaths.chapter.properties.create.path, component: ChapterPropertyCreateComponent },
         { path: adminPaths.chapter.properties.property.path, component: ChapterPropertyComponent }
+      ] },
+      { path: adminPaths.chapter.questions.path, children: [
+        { path: '', component: ChapterQuestionsComponent },
+        { path: adminPaths.chapter.questions.create.path, component: ChapterQuestionCreateComponent },
+        { path: adminPaths.chapter.questions.question.path, component: ChapterQuestionComponent }
       ] },
       { path: adminPaths.chapter.subscriptions.path, children: [
         { path: '', component: ChapterSubscriptionsComponent },

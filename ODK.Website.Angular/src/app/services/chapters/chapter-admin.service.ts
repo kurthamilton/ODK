@@ -30,6 +30,9 @@ const endpoints = {
   property: (id: string) => `${baseUrl}/properties/${id}`,
   propertyMoveDown: (id: string) => `${baseUrl}/properties/${id}/movedown`,
   propertyMoveUp: (id: string) => `${baseUrl}/properties/${id}/moveup`,
+  question: (id: string) => `${baseUrl}/questions/${id}`,
+  questionMoveDown: (id: string) => `${baseUrl}/questions/${id}/movedown`,
+  questionMoveUp: (id: string) => `${baseUrl}/questions/${id}/moveup`,
   questions: (id: string) => `${baseUrl}/${id}/questions`,
   subscription: (id: string) => `${baseUrl}/subscriptions/${id}`,
   subscriptions: (id: string) => `${baseUrl}/${id}/subscriptions`,
@@ -74,14 +77,17 @@ export class ChapterAdminService extends ChapterService {
     )
   }
 
-  createChapterQuestion(chapterId: string, chapterQuestion: ChapterQuestion): Observable<void> {
+  createChapterQuestion(chapterId: string, chapterQuestion: ChapterQuestion): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
       answer: chapterQuestion.answer,
       name: chapterQuestion.name
     });
 
     return this.http.post(endpoints.questions(chapterId), params).pipe(
-      map(() => undefined)
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
     );
   }  
 
@@ -105,6 +111,12 @@ export class ChapterAdminService extends ChapterService {
 
   deleteChapterProperty(property: ChapterProperty): Observable<void> {
     return this.http.delete(endpoints.property(property.id)).pipe(
+      map(() => undefined)
+    );
+  }
+
+  deleteChapterQuestion(question: ChapterQuestion): Observable<void> {
+    return this.http.delete(endpoints.question(question.id)).pipe(
       map(() => undefined)
     );
   }
@@ -157,6 +169,12 @@ export class ChapterAdminService extends ChapterService {
     );
   }
 
+  getChapterQuestion(id: string): Observable<ChapterQuestion> {
+    return this.http.get(endpoints.question(id)).pipe(
+      map((response: any) => this.mapChapterQuestion(response))
+    );
+  }
+
   getChapterSubscription(id: string): Observable<ChapterSubscription> {
     return this.http.get(endpoints.subscription(id)).pipe(
       map((response: any) => this.mapChapterSubscription(response))
@@ -178,6 +196,18 @@ export class ChapterAdminService extends ChapterService {
   moveChapterPropertyUp(id: string): Observable<ChapterProperty[]> {
     return this.http.put(endpoints.propertyMoveUp(id), {}).pipe(
       map((response: any) => response.map(x => this.mapChapterProperty(x)))
+    );
+  }
+
+  moveChapterQuestionDown(id: string): Observable<ChapterQuestion[]> {
+    return this.http.put(endpoints.questionMoveDown(id), {}).pipe(
+      map((response: any) => response.map(x => this.mapChapterQuestion(x)))
+    );
+  }
+
+  moveChapterQuestionUp(id: string): Observable<ChapterQuestion[]> {
+    return this.http.put(endpoints.questionMoveUp(id), {}).pipe(
+      map((response: any) => response.map(x => this.mapChapterQuestion(x)))
     );
   }
 
@@ -236,6 +266,20 @@ export class ChapterAdminService extends ChapterService {
     });
 
     return this.http.put(endpoints.property(property.id), params).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
+    );
+  }
+
+  updateChapterQuestion(question: ChapterQuestion): Observable<ServiceResult<void>> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      answer: question.answer,
+      name: question.name
+    });
+
+    return this.http.put(endpoints.question(question.id), params).pipe(
       map((): ServiceResult<void> => ({
         success: true
       })),

@@ -5,10 +5,7 @@ export const adminPaths = {
       path: ''
     }
   },
-  chapter: {
-    about: {
-      path: 'about'
-    },
+  chapter: {    
     adminMembers: {
       add: {
         path: 'add'
@@ -35,6 +32,18 @@ export const adminPaths = {
         params: {
           id: 'id'
         }
+      }
+    },
+    questions: {
+      create: {
+        path: 'create'
+      },
+      path: 'questions',
+      question: {
+        path: ':id',
+        params: {
+          id: 'id'
+        }        
       }
     },
     subscription: {      

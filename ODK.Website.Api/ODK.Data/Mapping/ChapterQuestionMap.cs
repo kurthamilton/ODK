@@ -14,6 +14,7 @@ namespace ODK.Data.Mapping
             Property(x => x.Name);
             Property(x => x.Answer);
             Property(x => x.DisplayOrder);
+            Property(x => x.Version).IsRowVersion();
         }
 
         public override ChapterQuestion Read(IDataReader reader)
@@ -24,7 +25,8 @@ namespace ODK.Data.Mapping
                 chapterId: reader.GetGuid(1),
                 name: reader.GetString(2),
                 answer: reader.GetString(3),
-                displayOrder: reader.GetInt32(4)
+                displayOrder: reader.GetInt32(4),
+                version: reader.GetInt64(5)
             );
         }
     }

@@ -1,0 +1,6 @@
+<ng-container *appLoading="!question">
+  <app-breadcrumbs [breadcrumbs]="breadcrumbs" active="Question"></app-breadcrumbs>
+  <app-chapter-question-form [question]="question" [formCallback]="formCallback" buttonText="Update"
+    (formSubmit)="onFormSubmit($event)">
+  </app-chapter-question-form>
+</ng-container>

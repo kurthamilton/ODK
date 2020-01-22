@@ -188,6 +188,44 @@ namespace ODK.Web.Api.Admin.Chapters
             return NoContent();
         }
 
+        [HttpGet("Questions/{id}")]
+        public async Task<ChapterQuestionApiResponse> GetQuestion(Guid id)
+        {
+            ChapterQuestion question = await _chapterAdminService.GetChapterQuestion(GetMemberId(), id);
+            return _mapper.Map<ChapterQuestionApiResponse>(question);
+        }
+
+        [HttpPut("Questions/{id}")]
+        public async Task<IActionResult> UpdateQuestion(Guid id, [FromForm] CreateChapterQuestionApiRequest request)
+        {
+            CreateChapterQuestion question = _mapper.Map<CreateChapterQuestion>(request);
+            await _chapterAdminService.UpdateChapterQuestion(GetMemberId(), id, question);
+            return NoContent();
+        }
+
+        [HttpPut("Questions/{id}/MoveDown")]
+        public async Task<IEnumerable<ChapterQuestionApiResponse>> MoveQuestionDown(Guid id)
+        {
+            IReadOnlyCollection<ChapterQuestion> questions =
+                await _chapterAdminService.UpdateChapterQuestionDisplayOrder(GetMemberId(), id, 1);
+            return questions.Select(_mapper.Map<ChapterQuestionApiResponse>);
+        }
+
+        [HttpPut("Questions/{id}/MoveUp")]
+        public async Task<IEnumerable<ChapterQuestionApiResponse>> MoveQuestionUp(Guid id)
+        {
+            IReadOnlyCollection<ChapterQuestion> questions =
+                await _chapterAdminService.UpdateChapterQuestionDisplayOrder(GetMemberId(), id, -1);
+            return questions.Select(_mapper.Map<ChapterQuestionApiResponse>);
+        }
+
+        [HttpDelete("Questions/{id}")]
+        public async Task<IActionResult> DeleteQuestion(Guid id)
+        {
+            await _chapterAdminService.DeleteChapterQuestion(GetMemberId(), id);
+            return NoContent();
+        }
+
         [HttpGet("Subscriptions/{id}")]
         public async Task<ChapterSubscriptionApiResponse> GetSubscription(Guid id)
         {

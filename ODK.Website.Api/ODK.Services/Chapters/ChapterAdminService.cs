@@ -67,14 +67,10 @@ namespace ODK.Services.Chapters
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            int? displayOrder = question.DisplayOrder;
-            if (displayOrder == null)
-            {
-                IReadOnlyCollection<ChapterQuestion> existing = await _chapterRepository.GetChapterQuestions(chapterId);
-                displayOrder = existing.Count + 1;
-            }
+            IReadOnlyCollection<ChapterQuestion> existing = await _chapterRepository.GetChapterQuestions(chapterId);
 
-            ChapterQuestion create = new ChapterQuestion(Guid.Empty, chapterId, question.Name, question.Answer, displayOrder.Value);
+            int displayOrder = existing.Count  > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
+            ChapterQuestion create = new ChapterQuestion(Guid.Empty, chapterId, question.Name, question.Answer, displayOrder, 0);
 
             ValidateChapterQuestion(create);
 
@@ -126,6 +122,28 @@ namespace ODK.Services.Chapters
             }
 
             _cacheService.RemoveVersionedCollection<ChapterProperty>(property.ChapterId);
+        }
+
+        public async Task DeleteChapterQuestion(Guid currentMemberId, Guid id)
+        {
+            ChapterQuestion question = await GetChapterQuestion(currentMemberId, id);
+
+            await _chapterRepository.DeleteChapterQuestion(id);
+
+            IReadOnlyCollection<ChapterQuestion> questions = await _chapterRepository.GetChapterQuestions(question.ChapterId);
+            int displayOrder = 1;
+            foreach (ChapterQuestion reorder in questions.OrderBy(x => x.DisplayOrder))
+            {
+                if (reorder.DisplayOrder != displayOrder)
+                {
+                    reorder.DisplayOrder = displayOrder;
+                    await _chapterRepository.UpdateChapterQuestion(reorder);
+                }
+
+                displayOrder++;
+            }
+
+            _cacheService.RemoveVersionedCollection<ChapterQuestion>(question.ChapterId);
         }
 
         public async Task DeleteChapterSubscription(Guid currentMemberId, Guid id)
@@ -187,6 +205,19 @@ namespace ODK.Services.Chapters
             await AssertMemberIsChapterAdmin(currentMemberId, property.ChapterId);
 
             return property;
+        }
+
+        public async Task<ChapterQuestion> GetChapterQuestion(Guid currentMemberId, Guid questionId)
+        {
+            ChapterQuestion question = await _chapterRepository.GetChapterQuestion(questionId);
+            if (question == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, question.ChapterId);
+
+            return question;
         }
 
         public async Task<IReadOnlyCollection<Chapter>> GetChapters(Guid currentMemberId)
@@ -340,6 +371,66 @@ namespace ODK.Services.Chapters
             _cacheService.RemoveVersionedCollection<ChapterProperty>(property.ChapterId);
 
             return properties.OrderBy(x => x.DisplayOrder).ToArray();
+        }
+
+        public async Task UpdateChapterQuestion(Guid currentMemberId, Guid questionId, CreateChapterQuestion question)
+        {
+            ChapterQuestion update = await GetChapterQuestion(currentMemberId, questionId);
+
+            update.Answer = question.Answer;
+            update.Name = question.Name;
+
+            ValidateChapterQuestion(update);
+
+            await _chapterRepository.UpdateChapterQuestion(update);
+
+            _cacheService.RemoveVersionedCollection<ChapterQuestion>(update.ChapterId);
+        }
+
+        public async Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(Guid currentMemberId, Guid questionId, int moveBy)
+        {
+            ChapterQuestion question = await GetChapterQuestion(currentMemberId, questionId);
+            IReadOnlyCollection<ChapterQuestion> questions = await _chapterRepository.GetChapterQuestions(question.ChapterId);
+
+            if (moveBy == 0)
+            {
+                return questions;
+            }
+
+            ChapterQuestion switchWith;
+            if (moveBy > 0)
+            {
+                switchWith = questions
+                    .Where(x => x.DisplayOrder > question.DisplayOrder)
+                    .OrderBy(x => x.DisplayOrder)
+                    .FirstOrDefault();
+
+            }
+            else
+            {
+                switchWith = questions
+                    .Where(x => x.DisplayOrder < question.DisplayOrder)
+                    .OrderByDescending(x => x.DisplayOrder)
+                    .FirstOrDefault();
+            }
+
+            if (switchWith == null)
+            {
+                return questions;
+            }
+
+            question = questions.First(x => x.Id == question.Id);
+
+            int displayOrder = switchWith.DisplayOrder;
+            switchWith.DisplayOrder = question.DisplayOrder;
+            question.DisplayOrder = displayOrder;
+
+            await _chapterRepository.UpdateChapterQuestion(question);
+            await _chapterRepository.UpdateChapterQuestion(switchWith);
+
+            _cacheService.RemoveVersionedCollection<ChapterQuestion>(question.ChapterId);
+
+            return questions.OrderBy(x => x.DisplayOrder).ToArray();
         }
 
         public async Task UpdateChapterSubscription(Guid currentMemberId, Guid id, CreateChapterSubscription subscription)

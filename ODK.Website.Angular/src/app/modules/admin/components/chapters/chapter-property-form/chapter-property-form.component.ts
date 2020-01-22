@@ -16,8 +16,7 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class ChapterPropertyFormComponent implements OnChanges {
 
-  constructor() { }
-
+  @Input() buttonText: string;
   @Input() formCallback: Subject<boolean | string[]>;
   @Input() property: ChapterProperty;
   @Output() formSubmit: EventEmitter<ChapterProperty> = new EventEmitter<ChapterProperty>();
@@ -130,7 +129,7 @@ export class ChapterPropertyFormComponent implements OnChanges {
 
     this.form = {
       buttons: [
-        { text: 'Update' }
+        { text: this.buttonText }
       ],
       callback: this.formCallback,
       controls: [

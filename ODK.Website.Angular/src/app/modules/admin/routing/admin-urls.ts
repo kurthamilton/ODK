@@ -2,6 +2,7 @@ import { adminPaths } from './admin-paths';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterEmailProvider } from 'src/app/core/emails/chapter-email-provider';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
+import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
 import { Event } from 'src/app/core/events/event';
 import { Member } from 'src/app/core/members/member';
@@ -25,7 +26,6 @@ const eventPaths = adminPaths.events.event;
 export const adminUrls = {
   adminLog: (chapter: Chapter) => chapterUrl(chapter, adminPaths.admin.path),
   chapter: (chapter: Chapter) => chapterPath(chapter),
-  chapterAbout: (chapter: Chapter) => chapterPath(chapter, chapterPaths.about.path),
   chapterAdminMember: (chapter: Chapter, memberId: string) => chapterPath(chapter, `${chapterPaths.adminMembers.path}/${memberId}`),
   chapterAdminMemberAdd: (chapter: Chapter) => chapterPath(chapter, `${chapterPaths.adminMembers.path}/${adminPaths.chapter.adminMembers.add.path}`),
   chapterAdminMembers: (chapter: Chapter) => chapterPath(chapter, chapterPaths.adminMembers.path),
@@ -33,6 +33,9 @@ export const adminUrls = {
   chapterProperties: (chapter: Chapter) => chapterPath(chapter, chapterPaths.properties.path),
   chapterProperty: (chapter: Chapter, property: ChapterProperty) => chapterPath(chapter, `${chapterPaths.properties.path}/${property.id}`),
   chapterPropertyCreate: (chapter: Chapter) => chapterPath(chapter, `${chapterPaths.properties.path}/${adminPaths.chapter.properties.create.path}`),
+  chapterQuestion: (chapter: Chapter, question: ChapterQuestion) => chapterPath(chapter, `${chapterPaths.questions.path}/${question.id}`),
+  chapterQuestionCreate: (chapter: Chapter) => chapterPath(chapter, `${chapterPaths.questions.path}/${adminPaths.chapter.questions.create.path}`),
+  chapterQuestions: (chapter: Chapter) => chapterPath(chapter, chapterPaths.questions.path),
   chapterSubscription: (chapter: Chapter, subscription: ChapterSubscription) => chapterPath(chapter, `${adminPaths.chapter.subscriptions.path}/${subscription.id}`),
   chapterSubscriptionCreate: (chapter: Chapter) => chapterPath(chapter, `${adminPaths.chapter.subscriptions.path}/${adminPaths.chapter.subscriptions.create.path}`),
   chapterSubscriptions: (chapter: Chapter) => chapterPath(chapter, adminPaths.chapter.subscriptions.path),

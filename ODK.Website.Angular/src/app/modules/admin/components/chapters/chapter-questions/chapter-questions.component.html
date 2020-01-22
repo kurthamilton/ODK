@@ -1,13 +1,32 @@
-<h2>Frequently asked questions</h2>
-<ngb-accordion *appLoading="!questions" [closeOthers]="true">
-  <ngb-panel *ngFor="let question of questions" [title]="question.name">
-    <ng-template ngbPanelContent>
-      <app-raw-html [html]="question.answer"></app-raw-html>
-    </ng-template>
-  </ngb-panel>    
-</ngb-accordion>
-
-<div class="mt-5">
-  <h3>Add new question</h3>
-  <app-form *ngIf="form" [form]="form" (formSubmit)="onFormSubmit()"></app-form>
-</div>
+<ng-container *appLoading="!questions">
+  <p>
+    <a class="btn btn-primary" [routerLink]="links.create">Create question</a>
+  </p>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Question</th>
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let question of questions">
+        <td><a [routerLink]="getQuestionLink(question)">{{question.name}}</a></td>        
+        <td>
+          <button class="btn btn-icon text-secondary" (click)="onMoveQuestionUp(question)" ngbTooltip="Move up">
+            <i class="fas fa-arrow-circle-up"></i>
+          </button>
+          <button class="btn btn-icon text-secondary" (click)="onMoveQuestionDown(question)" ngbTooltip="Move down">
+            <i class="fas fa-arrow-circle-down"></i>
+          </button>
+        </td>
+        <td>
+          <button class="btn-icon text-danger" (click)="onDeleteQuestion(question)" ngbTooltip="Delete">
+            <i class="fas fa-times"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</ng-container>

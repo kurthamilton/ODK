@@ -24,6 +24,9 @@ import { ChapterPropertiesComponent } from './components/chapters/chapter-proper
 import { ChapterPropertyComponent } from './components/chapters/chapter-property/chapter-property.component';
 import { ChapterPropertyCreateComponent } from './components/chapters/chapter-property-create/chapter-property-create.component';
 import { ChapterPropertyFormComponent } from './components/chapters/chapter-property-form/chapter-property-form.component';
+import { ChapterQuestionComponent } from './components/chapters/chapter-question/chapter-question.component';
+import { ChapterQuestionCreateComponent } from './components/chapters/chapter-question-create/chapter-question-create.component';
+import { ChapterQuestionFormComponent } from './components/chapters/chapter-question-form/chapter-question-form.component';
 import { ChapterQuestionsComponent } from './components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from './components/chapters/chapter-settings/chapter-settings.component';
 import { ChapterSubscriptionCreateComponent } from './components/chapters/chapter-subscription-create/chapter-subscription-create.component';
@@ -134,6 +137,9 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     VenueLayoutComponent,
     VenueMenuComponent,
     VenuesComponent,
+    ChapterQuestionFormComponent,
+    ChapterQuestionComponent,
+    ChapterQuestionCreateComponent,
   ],
   imports: [
     AdminRoutingModule,
