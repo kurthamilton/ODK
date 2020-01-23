@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using ODK.Deploy.Core.Servers;
@@ -102,6 +103,33 @@ namespace ODK.Deploy.Services.Remote.Rest
                 FileInfo file = new FileInfo(localFilePath);
                 string to = $"{remotePath}{PathSeparator}{file.Name}";
                 await UploadFile(localFilePath, to);
+            }
+        }
+
+        public async Task UploadFolder(string from, string to)
+        {
+            DirectoryInfo folder = new DirectoryInfo(from);
+            if (!folder.Exists)
+            {
+                return;
+            }
+
+            string zipFileName = $"{folder.Parent.FullName}\\{folder.Name}.zip";
+            File.Delete(zipFileName);
+
+            try
+            {
+                ZipFile.CreateFromDirectory(from, zipFileName);
+
+                string toFileName = $"{to}/{folder.Name}.zip";
+                await UploadFile(zipFileName, toFileName);
+
+                string url = $"{FileSystemEndpoints.FileUnzipEndpoint}?path={toFileName}";
+                await GetResponse<FolderApiResponse>(url, Method.POST);
+            }
+            finally
+            {
+                File.Delete(zipFileName);
             }
         }
 

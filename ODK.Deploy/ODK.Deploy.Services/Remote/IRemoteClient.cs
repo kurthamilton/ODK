@@ -26,5 +26,7 @@ namespace ODK.Deploy.Services.Remote
         Task UploadFile(string localPath, string remotePath);
 
         Task UploadFolder(IEnumerable<string> localFilePaths, string remotePath);
+
+        Task UploadFolder(string from, string to);
     }
 }

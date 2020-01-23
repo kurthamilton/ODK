@@ -87,6 +87,11 @@ namespace ODK.Deploy.Services.Remote.Ftp
             await _client.Value.UploadFilesAsync(localFilePaths, remotePath);
         }
 
+        public Task UploadFolder(string from, string to)
+        {
+            throw new NotImplementedException();
+        }
+
         private FtpClient CreateClient()
         {
             return new FtpClient(_settings.Host, new NetworkCredential(_settings.UserName, _settings.Password));

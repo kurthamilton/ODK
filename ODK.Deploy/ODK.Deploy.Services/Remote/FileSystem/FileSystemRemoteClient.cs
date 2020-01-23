@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using ODK.Deploy.Core.Servers;
@@ -167,12 +168,27 @@ namespace ODK.Deploy.Services.Remote.FileSystem
         {
             path = GetPath(path);
 
-            if (File.Exists(path))
+            FileInfo fileInfo = new FileInfo(path);
+            Directory.CreateDirectory(fileInfo.Directory.FullName);
+
+            File.Delete(path);
+            File.WriteAllBytes(path, data);
+
+            return Task.CompletedTask;
+        }
+
+        public Task UnzipFile(string path)
+        {
+            path = GetPath(path);
+
+            FileInfo file = new FileInfo(path);
+            if (!file.Exists)
             {
-                File.Delete(path);
+                return Task.CompletedTask;
             }
 
-            File.WriteAllBytes(path, data);
+            ZipFile.ExtractToDirectory(path, file.DirectoryName);
+            file.Delete();
 
             return Task.CompletedTask;
         }
@@ -189,6 +205,11 @@ namespace ODK.Deploy.Services.Remote.FileSystem
             {
                 await UploadFile(localFilePath, remotePath);
             }
+        }
+
+        public Task UploadFolder(string from, string to)
+        {
+            throw new NotImplementedException();
         }
 
         private string GetPath(string path)

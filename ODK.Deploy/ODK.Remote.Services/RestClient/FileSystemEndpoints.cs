@@ -10,6 +10,8 @@
 
         public const string FileMoveEndpoint = "Files/Move";
 
+        public const string FileUnzipEndpoint = "Files/Unzip";
+
         public const string FileUploadEndpoint = "Files/Upload";
 
         public const string FolderCopyEndpoint = "Folder/Copy";

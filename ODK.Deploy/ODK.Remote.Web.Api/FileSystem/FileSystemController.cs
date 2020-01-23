@@ -30,16 +30,24 @@ namespace ODK.Remote.Web.Api.FileSystem
         }
 
         [HttpDelete(FileSystemEndpoints.FileDeleteEndpoint)]
-        public async Task<ActionResult> FileDelete(string path)
+        public async Task<IActionResult> FileDelete(string path)
         {
             await _fileSystem.DeleteFile(path);
             return NoContent();
         }
 
         [HttpPost(FileSystemEndpoints.FileMoveEndpoint)]
-        public async Task<ActionResult> FileMove(string from, string to)
+        public async Task<IActionResult> FileMove(string from, string to)
         {
             await _fileSystem.MoveFile(from, to);
+            return NoContent();
+        }
+
+        [HttpPost(FileSystemEndpoints.FileUnzipEndpoint)]
+        public async Task<IActionResult> FileUnzip(string path)
+        {
+            await _fileSystem.UnzipFile(path);
+            await _fileSystem.DeleteFile(path);
             return NoContent();
         }
 

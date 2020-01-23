@@ -7,5 +7,7 @@ namespace ODK.Deploy.Services.Remote.FileSystem
         Task CopyFile(string from, string to);
 
         Task SaveFile(byte[] data, string path);
+
+        Task UnzipFile(string path);
     }
 }

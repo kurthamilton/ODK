@@ -513,16 +513,7 @@ namespace ODK.Deploy.Services.Remote
 
         private async Task UploadFolder(IRemoteClient client, string localPath, string remotePath)
         {
-            DirectoryInfo directory = new DirectoryInfo(localPath);
-            foreach (DirectoryInfo subDirectory in directory.GetDirectories())
-            {
-                await UploadFolder(client, subDirectory.FullName, $"{remotePath}{client.PathSeparator}{subDirectory.Name}");
-            }
-
-            await client.CreateFolder(remotePath);
-
-            FileInfo[] files = directory.GetFiles();
-            await client.UploadFolder(files.Select(x => x.FullName), remotePath);
+            await client.UploadFolder(localPath, remotePath);
         }
     }
 }
