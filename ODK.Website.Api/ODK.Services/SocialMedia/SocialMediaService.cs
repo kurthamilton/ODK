@@ -31,6 +31,11 @@ namespace ODK.Services.SocialMedia
                 throw new OdkNotFoundException();
             }
 
+            if (string.IsNullOrEmpty(links.InstagramName))
+            {
+                return new SocialMediaImage[0];
+            }
+
             IInstaApi api = await OpenApi();
 
             PaginationParameters paginationParameters = PaginationParameters.MaxPagesToLoad(1);

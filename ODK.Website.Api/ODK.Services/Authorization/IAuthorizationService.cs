@@ -9,7 +9,7 @@ namespace ODK.Services.Authorization
     {
         Task AssertMemberIsChapterMember(Guid memberId, Guid chapterId);
 
-        void AssertMemberIsChapterMember(Member member, Guid chapterId);
+        Task AssertMemberIsChapterMember(Member member, Guid chapterId);
 
         Task AssertMemberIsCurrent(Guid memberId);
 

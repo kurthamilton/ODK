@@ -80,7 +80,8 @@ export class AuthenticationService {
   
   getAccountDetails(): AccountDetails {
     const token: AuthenticationToken = this.getToken();
-    return token ? {
+    return token ? {      
+      adminChapterIds: token.adminChapterIds || [],
       chapterId: token.chapterId,
       memberId: token.memberId,
       membershipActive: !token.membershipDisabled

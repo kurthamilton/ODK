@@ -36,6 +36,7 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<Venue>()
                 .Join<Event, Guid>(x => x.Id, x => x.VenueId)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
                 .Where<Event, bool>(x => x.IsPublic).EqualTo(true)
                 .ToArrayAsync();
         }
@@ -45,6 +46,7 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<Venue>()
                 .Join<Event, Guid>(x => x.Id, x => x.VenueId)
+                .Where(x => x.ChapterId).EqualTo(chapterId)
                 .Where<Event, bool>(x => x.IsPublic).EqualTo(true)
                 .VersionAsync();
         }

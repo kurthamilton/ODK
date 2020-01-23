@@ -209,7 +209,7 @@ namespace ODK.Services.Members
             }
 
             Member member = await GetMember(memberId);
-            _authorizationService.AssertMemberIsChapterMember(member, chapterSubscription.ChapterId);
+            await _authorizationService.AssertMemberIsChapterMember(member, chapterSubscription.ChapterId);
 
             await _paymentService.MakePayment(member, chapterSubscription.Amount, cardToken, chapterSubscription.Title);
 

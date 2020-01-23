@@ -28,15 +28,15 @@ export class SocialMediaService {
   }
 
   getFacebookAccountLink(username: string): string {
-    return `https://www.facebook.com/${username}`;
+    return username ? `https://www.facebook.com/${username}` : '';
   }
 
   getInstagramAccountLink(username: string): string {
-    return `https://www.instagram.com/${username}`;
+    return username ? `https://www.instagram.com/${username}` : '';
   }
 
   getTwitterAccountLink(username: string): string {
-    return `https://www.twitter.com/${username}`;
+    return username ? `https://www.twitter.com/${username}` : '';
   }
 
   private mapSocialMediaImage(response: any): SocialMediaImage {

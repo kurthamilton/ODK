@@ -1,5 +1,6 @@
 export interface AccountDetails {
-    chapterId: string;
-    memberId: string;
-    membershipActive: boolean;
+  adminChapterIds?: string[];  
+  chapterId: string;
+  memberId: string;
+  membershipActive: boolean;
 }

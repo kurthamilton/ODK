@@ -41,7 +41,13 @@ export class VenueService {
 
   getVenues(chapterId: string): Observable<Venue[]> {
     const accountDetails: AccountDetails = this.authenticationService.getAccountDetails();
-    if (!accountDetails || accountDetails.chapterId !== chapterId || !accountDetails.membershipActive) {
+
+    const loggedIn: boolean = !!accountDetails && accountDetails.membershipActive;
+    const chapterMember: boolean = loggedIn ? 
+      (accountDetails.chapterId === chapterId || accountDetails.adminChapterIds.includes(chapterId))
+      : false;
+
+    if (!chapterMember) {
       return this.getPublicVenues(chapterId);
     }
 

@@ -24,16 +24,24 @@ namespace ODK.Services.Authorization
         public async Task AssertMemberIsChapterMember(Guid memberId, Guid chapterId)
         {
             Member member = await GetMember(memberId);
-            AssertMemberIsChapterMember(member, chapterId);
+            await AssertMemberIsChapterMember(member, chapterId);
         }
 
-        public void AssertMemberIsChapterMember(Member member, Guid chapterId)
+        public async Task AssertMemberIsChapterMember(Member member, Guid chapterId)
         {
             AssertMemberIsCurrent(member);
-            if (member.ChapterId != chapterId)
+            if (member.ChapterId == chapterId)
             {
-                throw new OdkNotAuthorizedException();
+                return;
             }
+
+            ChapterAdminMember chapterAdminMember = await _chapterRepository.GetChapterAdminMember(chapterId, member.Id);
+            if (chapterAdminMember != null)
+            {
+                return;
+            }
+
+            throw new OdkNotAuthorizedException();
         }
 
         public async Task AssertMemberIsCurrent(Guid memberId)
