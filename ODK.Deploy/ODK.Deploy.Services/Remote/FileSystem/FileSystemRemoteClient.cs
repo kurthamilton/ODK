@@ -207,9 +207,9 @@ namespace ODK.Deploy.Services.Remote.FileSystem
             }
         }
 
-        public Task UploadFolder(string from, string to)
+        public async Task UploadFolder(string from, string to)
         {
-            throw new NotImplementedException();
+            await CopyFolder(from, to, new string[0]);
         }
 
         private string GetPath(string path)
