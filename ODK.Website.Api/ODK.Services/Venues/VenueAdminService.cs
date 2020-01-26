@@ -75,6 +75,13 @@ namespace ODK.Services.Venues
             return venue;
         }
 
+        public async Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _venueRepository.GetVenues(chapterId);
+        }
+
         public async Task<Venue> UpdateVenue(Guid memberId, Guid id, CreateVenue venue)
         {
             Venue update = await GetVenue(memberId, id);

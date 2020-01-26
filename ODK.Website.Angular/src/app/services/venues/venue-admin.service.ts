@@ -18,7 +18,8 @@ const baseUrl = `${environment.adminApiBaseUrl}/venues`;
 const endpoints = {
   chapterStats: (chapterId: string) => `${baseUrl}/stats?chapterId=${chapterId}`,
   create: baseUrl,
-  venue: (id: string) => `${baseUrl}/${id}`
+  venue: (id: string) => `${baseUrl}/${id}`,
+  venues: (id: string) => `${baseUrl}?chapterId=${id}`
 };
 
 @Injectable({
@@ -59,6 +60,12 @@ export class VenueAdminService extends VenueService {
   getVenue(id: string): Observable<Venue> {
     return this.http.get(endpoints.venue(id)).pipe(
       map((response: any) => this.mapVenue(response))
+    );
+  }
+
+  getAdminVenues(chapterId: string): Observable<Venue[]> {
+    return this.http.get(endpoints.venues(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapVenue(x)))
     );
   }
 

@@ -44,7 +44,7 @@ export class VenuesComponent implements OnInit {
     };
 
     forkJoin([
-      this.venueAdminService.getVenues(this.chapter.id).pipe(
+      this.venueAdminService.getAdminVenues(this.chapter.id).pipe(
         tap((venues: Venue[]) => this.venues = venues)
       ),
       this.venueAdminService.getChapterStats(this.chapter.id).pipe(

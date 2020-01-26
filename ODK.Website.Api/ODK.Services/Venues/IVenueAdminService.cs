@@ -11,7 +11,9 @@ namespace ODK.Services.Venues
 
         Task<IReadOnlyCollection<VenueStats>> GetChapterVenueStats(Guid currentMemberId, Guid chapterId);
 
-        Task<Venue> GetVenue(Guid currentMemberId, Guid venueId);        
+        Task<Venue> GetVenue(Guid currentMemberId, Guid venueId);
+
+        Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId);
 
         Task<Venue> UpdateVenue(Guid memberId, Guid id, CreateVenue venue);
     }

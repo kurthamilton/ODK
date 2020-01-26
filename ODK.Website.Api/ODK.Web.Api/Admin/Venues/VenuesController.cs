@@ -36,8 +36,15 @@ namespace ODK.Web.Api.Admin.Venues
             return _mapper.Map<VenueApiResponse>(created);
         }
 
+        [HttpGet]
+        public async Task<IEnumerable<VenueApiResponse>> GetVenues(Guid chapterId)
+        {
+            IReadOnlyCollection<Venue> venues = await _venueAdminService.GetVenues(GetMemberId(), chapterId);
+            return venues.Select(_mapper.Map<VenueApiResponse>);
+        }
+
         [HttpGet("{id}")]
-        public async Task<VenueApiResponse> Get(Guid id)
+        public async Task<VenueApiResponse> GetVenue(Guid id)
         {
             Venue venue = await _venueAdminService.GetVenue(GetMemberId(), id);
             return _mapper.Map<VenueApiResponse>(venue);
