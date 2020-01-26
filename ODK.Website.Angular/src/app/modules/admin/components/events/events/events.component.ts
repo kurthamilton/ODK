@@ -61,7 +61,7 @@ export class EventsComponent implements OnInit {
         this.eventAdminService.getChapterResponses(this.chapter.id).pipe(
           tap((responses: EventMemberResponse[]) => this.responses = responses)
         ),
-        this.venueAdminService.getVenues(this.chapter.id).pipe(
+        this.venueAdminService.getAdminVenues(this.chapter.id).pipe(
           tap((venues: Venue[]) => this.venues = venues)
         )
       ]),

@@ -55,7 +55,7 @@ export class EventFormComponent implements OnChanges {
 
     this.chapter = this.chapterAdminService.getActiveChapter();
 
-    this.venueAdminService.getVenues(this.chapter.id).subscribe((venues: Venue[]) => {
+    this.venueAdminService.getAdminVenues(this.chapter.id).subscribe((venues: Venue[]) => {
       this.venues = venues.sort((a, b) => a.name.localeCompare(b.name));
       this.buildForm();
       this.changeDetector.detectChanges();

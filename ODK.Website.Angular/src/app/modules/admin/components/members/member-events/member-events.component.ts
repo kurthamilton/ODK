@@ -51,7 +51,7 @@ export class MemberEventsComponent implements OnInit {
       this.eventAdminService.getAllMemberResponses(this.member.id).pipe(
         tap((responses: EventMemberResponse[]) => this.responses = responses)
       ),
-      this.venueAdminService.getVenues(this.member.chapterId).pipe(
+      this.venueAdminService.getAdminVenues(this.member.chapterId).pipe(
         tap((venues: Venue[]) => this.venues = venues)
       )
     ]).subscribe(() => {
