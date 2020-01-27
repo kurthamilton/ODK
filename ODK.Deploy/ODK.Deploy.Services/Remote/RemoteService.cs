@@ -293,7 +293,7 @@ namespace ODK.Deploy.Services.Remote
 
             foreach (IRemoteFile file in folder.Files)
             {
-                if (skipPaths != null && skipPaths.Contains(file.Path))
+                if (skipPaths != null && skipPaths.Contains(file.RelativePath))
                 {
                     continue;
                 }
