@@ -47,13 +47,12 @@ namespace ODK.Web.Common.Config
                 .WriteTo.Logger(config => config
                     .Filter
                     .ByIncludingOnly(e => e.Level == LogEventLevel.Error)
-                    .WriteTo.File(path: Path.Combine(logFileDirectory, $"Errors.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate))
+                    .WriteTo.File(path: Path.Combine(logFileDirectory, $"Errors.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate)
+                    .WriteTo.MSSqlServer(connectionString, "Logs")
+                )
                 .WriteTo.File(Path.Combine(logFileDirectory, $"Trace.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate)
                 .WriteTo.Providers(Providers)
                 .WriteTo.Console()
-                .WriteTo.MSSqlServer(connectionString, "Logs")
-                    .Filter
-                    .ByIncludingOnly(e => e.Level == LogEventLevel.Error)
                 .CreateLogger();
 
             Log.Logger = Logger;

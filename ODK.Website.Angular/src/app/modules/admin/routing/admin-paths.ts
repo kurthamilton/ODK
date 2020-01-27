@@ -101,6 +101,9 @@ export const adminPaths = {
   home: {
     path: 'chapter'
   },  
+  media: {
+    path: 'media'
+  },
   members: {
     path: 'members',
     member: {

@@ -30,6 +30,7 @@ using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Venues;
 using ODK.Web.Common.Config.Settings;
+using ODK.Services.Media;
 
 namespace ODK.Web.Common.Config
 {
@@ -82,6 +83,7 @@ namespace ODK.Web.Common.Config
             services.AddScoped<ILoggingService, LoggingService>();
             services.AddScoped<IMailProvider, MailProvider>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IMediaAdminService, MediaAdminService>();
             services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();
             services.AddScoped<IPaymentService, PaymentService>();
@@ -97,6 +99,7 @@ namespace ODK.Web.Common.Config
         {
             AuthSettings auth = appSettings.Auth;
             MembersSettings members = appSettings.Members;
+            PathSettings paths = appSettings.Paths;
             UrlSettings urls = appSettings.Urls;
 
             services.AddSingleton(new AuthenticationServiceSettings
@@ -126,6 +129,12 @@ namespace ODK.Web.Common.Config
                 ActivateAccountUrl = $"{urls.Base}{urls.ActivateAccount}",
                 ConfirmEmailAddressUpdateUrl = $"{urls.Base}{urls.ConfirmEmailAddressUpdate}",
                 MaxImageSize = members.MaxImageSize
+            });
+
+            services.AddSingleton(new MediaServiceSettings
+            {
+                RootMediaPath = paths.MediaRoot,
+                RootMediaUrl = $"{urls.Base}{urls.Media}"
             });
         }
     }

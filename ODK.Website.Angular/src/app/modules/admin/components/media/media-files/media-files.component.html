@@ -1,0 +1,8 @@
+<h2>Media</h2>
+<div *appLoading="!files" class="row row-cols-6">
+  <div *ngFor="let file of files">
+    <a [attr.href]="file.url" target="_blank">
+      <img [attr.src]="file.url" [style.max-width.px]="100" />
+    </a>
+  </div>
+</div>

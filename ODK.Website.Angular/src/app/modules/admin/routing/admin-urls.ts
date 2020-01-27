@@ -49,6 +49,7 @@ export const adminUrls = {
   eventCreate: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.events.path}/${adminPaths.events.create.path}`),
   eventInvites: (chapter: Chapter, event: Event) => eventPath(chapter, event, eventPaths.invites.path),
   events: (chapter: Chapter) => chapterUrl(chapter, adminPaths.events.path),
+  media: (chapter: Chapter) => chapterUrl(chapter, adminPaths.media.path),
   member: (chapter: Chapter, member: Member) => chapterUrl(chapter, `${adminPaths.members.path}/${member.id}`),
   memberEvents: (chapter: Chapter, member: Member) => chapterUrl(chapter, `${adminPaths.members.path}/${member.id}/${adminPaths.members.member.events.path}`),
   memberImage: (chapter: Chapter, member: Member) => chapterUrl(chapter, `${adminPaths.members.path}/${member.id}/${adminPaths.members.member.image.path}`),

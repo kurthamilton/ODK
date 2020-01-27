@@ -36,6 +36,7 @@ import { EventInvitesComponent } from '../components/events/event-invites/event-
 import { EventLayoutComponent } from '../components/events/event-layout/event-layout.component';
 import { EventsComponent } from '../components/events/events/events.component';
 import { LogComponent } from '../components/admin/log/log.component';
+import { MediaFilesComponent } from '../components/media/media-files/media-files.component';
 import { MemberEventsComponent } from '../components/members/member-events/member-events.component';
 import { MemberLayoutComponent } from '../components/members/member-layout/member-layout.component';
 import { MembersComponent } from '../components/members/members/members.component';
@@ -94,6 +95,7 @@ const routes: Routes = [
         { path: adminPaths.events.event.invites.path, component: EventInvitesComponent }
       ] },
     ] },
+    { path: adminPaths.media.path, component: MediaFilesComponent },
     { path: adminPaths.members.path, children: [
       { path: '', component: MembersComponent },
       { path: adminPaths.members.member.path, component: MemberLayoutComponent, children: [

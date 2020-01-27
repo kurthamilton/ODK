@@ -153,6 +153,13 @@ namespace ODK.Services.Chapters
             await _chapterRepository.DeleteChapterSubscription(subscription.Id);
         }
 
+        public async Task<Chapter> GetChapter(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _chapterRepository.GetChapter(chapterId);
+        }
+
         public async Task<ChapterAdminMember> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);

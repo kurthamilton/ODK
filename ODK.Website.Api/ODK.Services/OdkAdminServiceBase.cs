@@ -7,16 +7,16 @@ namespace ODK.Services
 {
     public abstract class OdkAdminServiceBase
     {
-        private readonly IChapterRepository _chapterRepository;
-
         protected OdkAdminServiceBase(IChapterRepository chapterRepository)
         {
-            _chapterRepository = chapterRepository;
+            ChapterRepository = chapterRepository;
         }
+
+        protected IChapterRepository ChapterRepository { get; }
 
         protected async Task AssertMemberIsChapterAdmin(Guid memberId, Guid chapterId)
         {
-            ChapterAdminMember chapterAdminMember = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
+            ChapterAdminMember chapterAdminMember = await ChapterRepository.GetChapterAdminMember(chapterId, memberId);
             if (chapterAdminMember == null)
             {
                 throw new OdkNotAuthorizedException();
@@ -25,7 +25,7 @@ namespace ODK.Services
 
         protected async Task AssertMemberIsChapterSuperAdmin(Guid memberId, Guid chapterId)
         {
-            ChapterAdminMember chapterAdminMember = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
+            ChapterAdminMember chapterAdminMember = await ChapterRepository.GetChapterAdminMember(chapterId, memberId);
             if (chapterAdminMember == null || !chapterAdminMember.SuperAdmin)
             {
                 throw new OdkNotAuthorizedException();

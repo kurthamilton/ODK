@@ -9,6 +9,7 @@ namespace ODK.Web.Common.Config.Settings
             Auth = configuration.Map<AuthSettings>("Auth");
             Cors = configuration.Map<CorsSettings>("Cors");
             Members = configuration.Map<MembersSettings>("Members");
+            Paths = configuration.Map<PathSettings>("Paths");
             Urls = configuration.Map<UrlSettings>("Urls");
         }
 
@@ -17,6 +18,8 @@ namespace ODK.Web.Common.Config.Settings
         public CorsSettings Cors { get; }
 
         public MembersSettings Members { get; }
+
+        public PathSettings Paths { get; }
 
         public UrlSettings Urls { get; }
     }

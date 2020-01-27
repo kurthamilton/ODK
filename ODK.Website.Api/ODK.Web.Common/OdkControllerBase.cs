@@ -19,13 +19,18 @@ namespace ODK.Web.Common
 
         protected static async Task<UpdateMemberImageApiRequest> FileToApiRequest(IFormFile file)
         {
-            byte[] imageData = await file.ToByteArrayAsync();
+            byte[] imageData = await GetFileData(file);
 
             return new UpdateMemberImageApiRequest
             {
                 ContentType = file.ContentType,
                 ImageData = imageData
             };
+        }
+
+        protected static async Task<byte[]> GetFileData(IFormFile file)
+        {
+            return await file.ToByteArrayAsync();
         }
 
         protected IActionResult Created()

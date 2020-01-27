@@ -14,6 +14,8 @@
 
         public string Events { get; set; }
 
+        public string Media { get; set; }
+
         public string PasswordReset { get; set; }
 
         public string Unsubscribe { get; set; }
