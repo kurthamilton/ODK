@@ -116,7 +116,7 @@ namespace ODK.Services.Tests.Members
         {
             Mock<IChapterRepository> mock = new Mock<IChapterRepository>();
 
-            mock.Setup(x => x.GetChapterProperties(It.IsAny<Guid>()))
+            mock.Setup(x => x.GetChapterProperties(It.IsAny<Guid>(), It.IsAny<bool>()))
                 .ReturnsAsync(chapterProperties?.ToArray() ?? new ChapterProperty[0]);
 
             return mock.Object;

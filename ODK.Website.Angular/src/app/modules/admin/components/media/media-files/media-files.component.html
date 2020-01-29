@@ -6,11 +6,15 @@
   <input type="file" accept="image/*" #file placeholder="Choose file" class="d-none"
       (change)="onFileUpload(file.files)" />
   <p>
-    <button class="btn btn-primary" type="button" (click)="file.click()">Upload image</button>
+    <button class="btn btn-primary" type="button" (click)="file.click()">
+      <i class="fas fa-upload mr-1"></i>
+      Upload image
+    </button>
   </p>
 
   <div class="row row-cols-6">
-    <div *ngFor="let file of files" class="position-relative d-flex justify-content-center">
+    <div *ngFor="let file of files" 
+      class="position-relative d-flex justify-content-center align-items-center media-file">
       <button class="btn-icon btn-overlay btn-overlay--top-right text-danger" ngbTooltip="Delete" 
         (click)="onFileDelete(file)">
         <i class="fas fa-times-circle"></i>
@@ -19,9 +23,9 @@
         ngxClipboard [cbContent]="file.url" (cbOnSuccess)="onFileUrlCopy(file)">
         <i class="far fa-copy"></i>
       </button>
-      <button class="btn-icon" [ngbTooltip]="file.name" (click)="onFileClick(file)" type="button">
+      <span class="media-file-thumbnail" [ngbTooltip]="file.name" (click)="onFileClick(file)">
         <img [attr.src]="file.url" [style.max-width.px]="100" />
-      </button>      
+      </span>      
     </div>
   </div>
   

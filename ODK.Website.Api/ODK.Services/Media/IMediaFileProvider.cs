@@ -9,6 +9,8 @@ namespace ODK.Services.Media
     {
         Task<MediaFile> GetMediaFile(Guid chapterId, string name);
 
+        Task<MediaFile> GetMediaFile(string chapter, string name);
+
         Task<string> GetMediaFilePath(Guid chapterId, string name);
 
         Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(Guid chapterId);

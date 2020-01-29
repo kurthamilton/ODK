@@ -28,6 +28,11 @@ namespace ODK.Services.Media
         {
             Chapter chapter = await GetChapter(chapterId);
 
+            return await GetMediaFile(chapter.Name, name);
+        }
+
+        public async Task<MediaFile> GetMediaFile(string chapter, string name)
+        {
             string filePath = GetMediaFilePath(chapter, name);
 
             if (!File.Exists(filePath))
@@ -42,20 +47,20 @@ namespace ODK.Services.Media
         {
             Chapter chapter = await GetChapter(chapterId);
 
-            return GetMediaFilePath(chapter, name);
+            return GetMediaFilePath(chapter.Name, name);
         }
 
         public async Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(Guid chapterId)
         {
             Chapter chapter = await GetChapter(chapterId);
 
-            string path = GetMediaPath(chapter);
+            string path = GetMediaPath(chapter.Name);
 
             List<MediaFile> mediaFiles = new List<MediaFile>();
 
             foreach (FileInfo file in new DirectoryInfo(path).GetFiles())
             {
-                MediaFile mediaFile = await GetMediaFile(chapter, file);
+                MediaFile mediaFile = await GetMediaFile(chapter.Name, file);
                 mediaFiles.Add(mediaFile);
             }
 
@@ -69,19 +74,22 @@ namespace ODK.Services.Media
                 chapterId);
         }
 
-        private Task<MediaFile> GetMediaFile(Chapter chapter, FileInfo file)
+        private Task<MediaFile> GetMediaFile(string chapter, FileInfo file)
         {
             string url = GetMediaUrl(chapter, file.Name);
             MediaFile mediaFile = new MediaFile(file.FullName, file.Name, url, file.CreationTime);
             return Task.FromResult(mediaFile);
         }
 
-        private string GetMediaFilePath(Chapter chapter, string name)
+        private string GetMediaFilePath(string chapter, string name)
         {
+            chapter = chapter.AlphaNumeric();
+            name = name.AlphaNumericImageFileName();
+
             string path = GetMediaPath(chapter);
             string filePath = Path.Combine(path, name);
 
-            if (!string.Equals(new FileInfo(filePath).Directory.FullName, path, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(new FileInfo(filePath).Directory?.FullName, path, StringComparison.OrdinalIgnoreCase))
             {
                 throw new OdkServiceException("Bad file name");
             }
@@ -89,17 +97,17 @@ namespace ODK.Services.Media
             return filePath;
         }
 
-        private string GetMediaPath(Chapter chapter)
+        private string GetMediaPath(string chapter)
         {
-            return Path.Combine(_settings.RootMediaPath, chapter.Name.ToLowerInvariant());
+            return Path.Combine(_settings.RootMediaPath, chapter.ToLowerInvariant());
         }
 
-        private string GetMediaUrl(Chapter chapter, string name)
+        private string GetMediaUrl(string chapter, string name)
         {
             return _settings.RootMediaUrl.Interpolate(new Dictionary<string, string>
             {
                 { "name", name.ToLowerInvariant() },
-                { "chapter.id", chapter.Id.ToString() }
+                { "chapter.name", chapter.ToLowerInvariant() }
             });
         }
     }

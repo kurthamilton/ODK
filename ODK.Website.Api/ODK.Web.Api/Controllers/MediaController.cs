@@ -22,10 +22,10 @@ namespace ODK.Web.Api.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("{name}")]
-        public async Task<IActionResult> GetMediaFile(string name, Guid chapterId)
+        [HttpGet("{chapter}/{name}")]
+        public async Task<IActionResult> GetMediaFile(string chapter, string name)
         {
-            (MediaFile file, byte[] data) = await _mediaService.GetMediaFile(chapterId, name);
+            (MediaFile file, byte[] data) = await _mediaService.GetMediaFile(chapter, name);
 
             new FileExtensionContentTypeProvider().TryGetContentType(file.FilePath, out string contentType);
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using ODK.Core.Media;
 
@@ -14,9 +13,9 @@ namespace ODK.Services.Media
             _mediaFileProvider = mediaFileProvider;
         }
 
-        public async Task<(MediaFile MediaFile, byte[] Data)> GetMediaFile(Guid chapterId, string name)
+        public async Task<(MediaFile MediaFile, byte[] Data)> GetMediaFile(string chapter, string name)
         {
-            MediaFile file = await _mediaFileProvider.GetMediaFile(chapterId, name);
+            MediaFile file = await _mediaFileProvider.GetMediaFile(chapter, name);
             byte[] data = await File.ReadAllBytesAsync(file.FilePath);
 
             return (file, data);
