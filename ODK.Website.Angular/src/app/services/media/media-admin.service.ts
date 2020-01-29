@@ -33,12 +33,12 @@ export class MediaAdminService {
     );
   }
 
-  uploadMediaFile(chapterId: string, file: File): Observable<MediaFile[]> {
-    const formData = new FormData();
+  uploadMediaFile(chapterId: string, file: File): Observable<MediaFile> {
+    const formData = new FormData();    
     formData.append('file', file, file.name);
 
     return this.http.post(endpoints.files(chapterId), formData).pipe(
-      map((response: any) => response.map(x => this.mapMediaFile(x)))
+      map((response: any) => this.mapMediaFile(response))
     );
   }
 

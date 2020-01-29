@@ -37,7 +37,7 @@ namespace ODK.Services.Media
             return await _mediaFileProvider.GetMediaFiles(chapterId);
         }
 
-        public async Task<IReadOnlyCollection<MediaFile>> SaveMediaFile(Guid currentMemberId, Guid chapterId, string name, byte[] data)
+        public async Task<MediaFile> SaveMediaFile(Guid currentMemberId, Guid chapterId, string name, byte[] data)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
@@ -58,7 +58,7 @@ namespace ODK.Services.Media
 
             await File.WriteAllBytesAsync(filePath, data);
 
-            return await _mediaFileProvider.GetMediaFiles(chapterId);
+            return await _mediaFileProvider.GetMediaFile(chapterId, new FileInfo(filePath).Name);
         }
     }
 }

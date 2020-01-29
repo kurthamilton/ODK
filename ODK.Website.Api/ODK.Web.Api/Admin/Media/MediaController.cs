@@ -35,11 +35,11 @@ namespace ODK.Web.Api.Admin.Members
         }
 
         [HttpPost]
-        public async Task<IEnumerable<MediaFileApiResponse>> UploadMediaFile(Guid chapterId, [FromForm] IFormFile file)
+        public async Task<MediaFileApiResponse> UploadMediaFile(Guid chapterId, [FromForm] IFormFile file)
         {
             byte[] data = await GetFileData(file);
-            IReadOnlyCollection<MediaFile> mediaFiles = await _mediaAdminService.SaveMediaFile(GetMemberId(), chapterId, file.FileName, data);
-            return mediaFiles.Select(_mapper.Map<MediaFileApiResponse>);
+            MediaFile mediaFile = await _mediaAdminService.SaveMediaFile(GetMemberId(), chapterId, file.FileName, data);
+            return _mapper.Map<MediaFileApiResponse>(mediaFile);
         }
 
         [HttpDelete("{name}")]

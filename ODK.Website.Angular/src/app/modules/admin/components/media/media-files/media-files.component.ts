@@ -1,5 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
+import { switchMap } from 'rxjs/operators';
+
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { MediaAdminService } from 'src/app/services/media/media-admin.service';
@@ -64,7 +66,9 @@ export class MediaFilesComponent implements OnInit {
       return;
     }
  
-    this.mediaAdminService.uploadMediaFile(this.chapter.id, files[0]).subscribe((files: MediaFile[]) => {
+    this.mediaAdminService.uploadMediaFile(this.chapter.id, files[0]).pipe(
+      switchMap(() => this.mediaAdminService.getMediaFiles(this.chapter.id))
+    ).subscribe((files: MediaFile[]) => {
       this.files = files.sort((a, b) => a.name.localeCompare(b.name));
       this.changeDetector.detectChanges();
     });  

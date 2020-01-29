@@ -4,7 +4,12 @@ import * as ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 import { InputBase } from 'src/app/modules/forms/components/inputs/input-base';
 import { takeUntil } from 'rxjs/operators';
+
+import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { MediaAdminService } from 'src/app/services/media/media-admin.service';
+import { UploadAdapter } from './upload-adapter';
 
 @Component({
   selector: 'app-html-editor-form-control',
@@ -13,7 +18,10 @@ import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 })
 export class HtmlEditorFormControlComponent extends InputBase implements OnInit, OnDestroy {
 
-  constructor(changeDetector: ChangeDetectorRef) {
+  constructor(changeDetector: ChangeDetectorRef,
+    private chapterAdminService: ChapterAdminService,
+    private mediaAdminService: MediaAdminService
+  ) {
     super(changeDetector);
   }
 
@@ -23,9 +31,12 @@ export class HtmlEditorFormControlComponent extends InputBase implements OnInit,
   isValid = false;
   sourceMode = false;
 
+  private chapter: Chapter;
   private submitted = false;
 
-  ngOnInit(): void {
+  ngOnInit(): void {    
+    this.chapter = this.chapterAdminService.getActiveChapter();
+
     this.validateForm.pipe(
       takeUntil(componentDestroyed(this))
     ).subscribe(() => {
@@ -42,6 +53,12 @@ export class HtmlEditorFormControlComponent extends InputBase implements OnInit,
     super.onValidate();
     this.validate();
     this.changeDetector.detectChanges();
+  }
+
+  onReady(editor): void {
+    editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+      return new UploadAdapter(loader, this.chapter, this.mediaAdminService);
+    };
   }
 
   onToggleMode(): void {
