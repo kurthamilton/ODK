@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { ClipboardModule } from 'ngx-clipboard';
+
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 import { NgSelectModule } from '@ng-select/ng-select';
 
@@ -150,6 +152,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     AppFormsModule,
     AppSharedModule,
     CKEditorModule,
+    ClipboardModule,
     CommonModule,
     NgSelectModule,
   ],

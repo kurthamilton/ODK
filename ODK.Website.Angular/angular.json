@@ -28,6 +28,7 @@
             ],
             "styles": [
               "node_modules/@fortawesome/fontawesome-free/css/solid.min.css",
+              "node_modules/@fortawesome/fontawesome-free/css/regular.min.css",
               "node_modules/@fortawesome/fontawesome-free/css/brands.min.css",
               "node_modules/@fortawesome/fontawesome-free/css/fontawesome.min.css",
               "node_modules/@ng-select/ng-select/themes/default.theme.css",

@@ -18,6 +18,7 @@ export class MediaFilesComponent implements OnInit {
   ) {     
   }
 
+  copiedFile: MediaFile;
   files: MediaFile[];
   selectedFile: MediaFile;
 
@@ -30,6 +31,11 @@ export class MediaFilesComponent implements OnInit {
       this.files = files.sort((a, b) => a.name.localeCompare(b.name));
       this.changeDetector.detectChanges();
     });
+  }
+
+  onAlertClose(): void {
+    this.copiedFile = null;
+    this.changeDetector.detectChanges();
   }
 
   onFileClick(file: MediaFile): void {
@@ -62,5 +68,10 @@ export class MediaFilesComponent implements OnInit {
       this.files = files.sort((a, b) => a.name.localeCompare(b.name));
       this.changeDetector.detectChanges();
     });  
+  }
+
+  onFileUrlCopy(file: MediaFile): void {
+    this.copiedFile = file;
+    this.changeDetector.detectChanges();
   }
 }

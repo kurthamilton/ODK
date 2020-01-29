@@ -1,5 +1,8 @@
 <h2>Media</h2>
 <ng-container *appLoading="!files">
+  <ngb-alert *ngIf="copiedFile" type="success" (close)="onAlertClose()">
+    {{copiedFile.url}} copied to clipboard
+  </ngb-alert>
   <input type="file" accept="image/*" #file placeholder="Choose file" class="d-none"
       (change)="onFileUpload(file.files)" />
   <p>
@@ -8,12 +11,17 @@
 
   <div class="row row-cols-6">
     <div *ngFor="let file of files" class="position-relative d-flex justify-content-center">
-      <button class="btn-icon btn-overlay text-danger" ngbTooltip="Delete" (click)="onFileDelete(file)">
+      <button class="btn-icon btn-overlay btn-overlay--top-right text-danger" ngbTooltip="Delete" 
+        (click)="onFileDelete(file)">
         <i class="fas fa-times-circle"></i>
+      </button>
+      <button class="btn-icon btn-overlay btn-overlay--bottom-right" ngbTooltip="Copy URL"
+        ngxClipboard [cbContent]="file.url" (cbOnSuccess)="onFileUrlCopy(file)">
+        <i class="far fa-copy"></i>
       </button>
       <button class="btn-icon" [ngbTooltip]="file.name" (click)="onFileClick(file)" type="button">
         <img [attr.src]="file.url" [style.max-width.px]="100" />
-      </button>
+      </button>      
     </div>
   </div>
   
