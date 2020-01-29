@@ -26,11 +26,12 @@ export class ChapterMenuComponent implements OnInit {
     const token: AuthenticationToken = this.authenticationService.getToken();
 
     this.menuItems = [
-      { link: adminUrls.chapter(chapter), text: 'Settings', matchExactRoute: true },
+      { link: adminUrls.chapter(chapter), text: 'Text', matchExactRoute: true },
       { link: adminUrls.chapterSubscriptions(chapter), text: 'Subscriptions' },
       { link: adminUrls.chapterQuestions(chapter), text: 'About' },
       { link: adminUrls.chapterProperties(chapter), text: 'Properties' },
-      { link: adminUrls.chapterAdminMembers(chapter), text: 'Admin members' }
+      { link: adminUrls.chapterAdminMembers(chapter), text: 'Admin members' },
+      { link: adminUrls.chapterMedia(chapter), text: 'Media' }
     ];
 
     if (token.superAdmin) {

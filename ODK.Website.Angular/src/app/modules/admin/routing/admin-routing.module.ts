@@ -73,7 +73,8 @@ const routes: Routes = [
         { path: '', component: ChapterSubscriptionsComponent },
         { path: adminPaths.chapter.subscriptions.create.path, component: ChapterSubscriptionCreateComponent },
         { path: adminPaths.chapter.subscription.path, component: ChapterSubscriptionEditComponent }
-      ] }
+      ] },
+      { path: adminPaths.chapter.media.path, component: MediaFilesComponent }
     ] },
     { path: adminPaths.emails.path, component: EmailLayoutComponent, children: [
       { path: '', component: ChapterEmailsComponent },
@@ -94,8 +95,7 @@ const routes: Routes = [
         { path: adminPaths.events.event.attendees.path, component: EventAttendeesComponent },
         { path: adminPaths.events.event.invites.path, component: EventInvitesComponent }
       ] },
-    ] },
-    { path: adminPaths.media.path, component: MediaFilesComponent },
+    ] },    
     { path: adminPaths.members.path, children: [
       { path: '', component: MembersComponent },
       { path: adminPaths.members.member.path, component: MemberLayoutComponent, children: [

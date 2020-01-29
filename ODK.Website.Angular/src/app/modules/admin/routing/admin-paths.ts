@@ -18,6 +18,9 @@ export const adminPaths = {
       },
       path: 'admin-members'
     },
+    media: {
+      path: 'media'
+    },
     path: 'chapter',
     payments: {
       path: 'payments'
@@ -100,10 +103,7 @@ export const adminPaths = {
   },
   home: {
     path: 'chapter'
-  },  
-  media: {
-    path: 'media'
-  },
+  },    
   members: {
     path: 'members',
     member: {

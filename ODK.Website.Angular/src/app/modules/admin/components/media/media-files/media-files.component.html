@@ -1,5 +1,7 @@
-<h2>Media</h2>
 <ng-container *appLoading="!files">
+  <p>
+    Images can be uploaded and referenced by URL. This is where images uploaded via the HTML editor end up.
+  </p>
   <ngb-alert *ngIf="copiedFile" type="success" (close)="onAlertClose()">
     {{copiedFile.url}} copied to clipboard
   </ngb-alert>
