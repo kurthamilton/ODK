@@ -48,9 +48,12 @@ namespace ODK.Services.Media
 
             string filePath = await _mediaFileProvider.GetMediaFilePath(chapterId, name);
 
-            if (File.Exists(filePath))
+            int version = 1;
+            while (File.Exists(filePath))
             {
-                throw new OdkServiceException("File already exists");
+                FileInfo file = new FileInfo(filePath);
+                string versionedFileName = $"{file.Name.Substring(0, file.Name.Length - file.Extension.Length)}{++version}{file.Extension}";
+                filePath = Path.Combine(file.Directory.FullName, versionedFileName);
             }
 
             await File.WriteAllBytesAsync(filePath, data);

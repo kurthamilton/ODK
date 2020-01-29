@@ -7,7 +7,13 @@ namespace ODK.Core.Utils
 {
     public static class StringUtils
     {
+        private static readonly Regex AlphaNumericRegex = new Regex("[^a-zA-Z0-9]", RegexOptions.Compiled);
         private static readonly Regex TokenRegex = new Regex(@"\{(.+?)\}", RegexOptions.Compiled);
+
+        public static string AlphaNumeric(this string text)
+        {
+            return AlphaNumericRegex.Replace(text, "");
+        }
 
         public static string Interpolate(this string text, IDictionary<string, string> values)
         {

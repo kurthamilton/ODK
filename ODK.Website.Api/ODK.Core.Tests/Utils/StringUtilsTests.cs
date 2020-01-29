@@ -6,6 +6,18 @@ namespace ODK.Core.Tests.Utils
 {
     public static class StringUtilsTests
     {
+        [TestCase("a2c")]
+        [TestCase(".a.2.c.")]
+        [TestCase("\\a.2.c/")]
+        [TestCase("\\a.2.c/")]
+        [TestCase("#a.2.c###################")]
+        public static void AlphaNumericReturnsAlphaNumericString(string text)
+        {
+            text = StringUtils.AlphaNumeric(text);
+
+            Assert.AreEqual("a2c", text);
+        }
+
         [Test]
         public static void Interpolate_ReplacesTokens()
         {
