@@ -39,7 +39,6 @@ import { LogoutComponent } from './components/account/logout/logout.component';
 import { MemberComponent } from './components/members/member/member.component';
 import { MemberProfileComponent } from './components/members/member-profile/member-profile.component';
 import { MembersComponent } from './components/members/members/members.component';
-import { ModalComponent } from './components/elements/modal/modal.component';
 import { NotificationComponent } from './components/notifications/notification/notification.component';
 import { NotificationsComponent } from './components/notifications/notifications/notifications.component';
 import { PageTitleComponent } from './components/structure/page-title/page-title.component';
@@ -95,7 +94,6 @@ import { DeleteAccountComponent } from './components/account/delete-account/dele
     MemberComponent,
     MemberProfileComponent,
     MembersComponent,
-    ModalComponent,
     NotificationComponent,
     NotificationsComponent,
     PageTitleComponent,

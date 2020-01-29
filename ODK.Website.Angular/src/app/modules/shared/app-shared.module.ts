@@ -13,6 +13,7 @@ import { LoadingDirective } from './directives/loading/loading.directive';
 import { LoadingSpinnerComponent } from './components/elements/loading-spinner/loading-spinner.component';
 import { MemberImageComponent } from './components/members/member-image/member-image.component';
 import { MemberListComponent } from './components/members/member-list/member-list.component';
+import { ModalComponent } from './components/elements/modal/modal.component';
 import { NavbarComponent } from './components/elements/navbar/navbar.component';
 import { RawHtmlComponent } from './components/elements/raw-html/raw-html.component';
 
@@ -25,6 +26,7 @@ import { RawHtmlComponent } from './components/elements/raw-html/raw-html.compon
     ListMemberComponent,
     MemberImageComponent,
     MemberListComponent,
+    ModalComponent,
     NavbarComponent,
     LoadingDirective,
     LoadingSpinnerComponent,
@@ -51,6 +53,7 @@ import { RawHtmlComponent } from './components/elements/raw-html/raw-html.compon
     LoadingSpinnerComponent,
     MemberImageComponent,
     MemberListComponent,
+    ModalComponent,
     NavbarComponent,
     NgbModule,
     NgbAlertModule,
