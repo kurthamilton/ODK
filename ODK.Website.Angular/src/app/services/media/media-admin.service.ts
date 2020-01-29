@@ -44,7 +44,7 @@ export class MediaAdminService {
 
   private mapMediaFile(response: any): MediaFile {
     return {
-      createdDate: new Date(response.date),
+      createdDate: new Date(response.createdDate),
       name: response.name,
       url: response.url
     };
