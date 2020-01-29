@@ -28,18 +28,25 @@ namespace ODK.Web.Api.Admin.Members
         }
 
         [HttpGet]
-        public async Task<IEnumerable<MediaFileApiResponse>> GetMedia(Guid chapterId)
+        public async Task<IEnumerable<MediaFileApiResponse>> GetMediaFiles(Guid chapterId)
         {
             IReadOnlyCollection<MediaFile> mediaFiles = await _mediaAdminService.GetMediaFiles(GetMemberId(), chapterId);
             return mediaFiles.Select(_mapper.Map<MediaFileApiResponse>);
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadMedia(Guid chapterId, [FromForm] IFormFile file)
+        public async Task<IEnumerable<MediaFileApiResponse>> UploadMediaFile(Guid chapterId, [FromForm] IFormFile file)
         {
             byte[] data = await GetFileData(file);
-            await _mediaAdminService.SaveMediaFile(GetMemberId(), chapterId, file.Name, data);
-            return NoContent();
+            IReadOnlyCollection<MediaFile> mediaFiles = await _mediaAdminService.SaveMediaFile(GetMemberId(), chapterId, file.FileName, data);
+            return mediaFiles.Select(_mapper.Map<MediaFileApiResponse>);
+        }
+
+        [HttpDelete("{name}")]
+        public async Task<IEnumerable<MediaFileApiResponse>> DeleteMediaFile(string name, Guid chapterId)
+        {
+            IReadOnlyCollection<MediaFile> mediaFiles = await _mediaAdminService.DeleteMediaFile(GetMemberId(), chapterId, name);
+            return mediaFiles.Select(_mapper.Map<MediaFileApiResponse>);
         }
     }
 }

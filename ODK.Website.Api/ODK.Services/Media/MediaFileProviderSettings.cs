@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Media
 {
-    public class MediaServiceSettings
+    public class MediaFileProviderSettings
     {
         public string RootMediaPath { get; set; }
 

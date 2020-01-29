@@ -1,15 +1,20 @@
-﻿namespace ODK.Core.Media
+﻿using System;
+
+namespace ODK.Core.Media
 {
     public class MediaFile
     {
-        public MediaFile(string name, byte[] data, string url)
+        public MediaFile(string filePath, string name, string url, DateTime createdDate)
         {
-            Data = data;
+            CreatedDate = createdDate;
+            FilePath = filePath;
             Name = name;
             Url = url;
         }
 
-        public byte[] Data { get; }
+        public DateTime CreatedDate { get; }
+
+        public string FilePath { get; }
 
         public string Name { get; }
 

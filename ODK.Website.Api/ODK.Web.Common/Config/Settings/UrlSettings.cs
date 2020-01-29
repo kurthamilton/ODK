@@ -4,7 +4,9 @@
     {
         public string ActivateAccount { get; set; }
 
-        public string Base { get; set; }
+        public string ApiBase { get; set; }
+
+        public string AppBase { get; set; }
 
         public string ConfirmEmailAddressUpdate { get; set; }
 

@@ -55,6 +55,7 @@ import { EventsComponent } from './components/events/events/events.component';
 import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
 import { HtmlEditorFormControlComponent } from './components/forms/inputs/html-editor-form-control/html-editor-form-control.component';
 import { LogComponent } from './components/admin/log/log.component';
+import { MediaFileComponent } from './components/media/media-file/media-file.component';
 import { MediaFilesComponent } from './components/media/media-files/media-files.component';
 import { MemberEventsComponent } from './components/members/member-events/member-events.component';
 import { MemberFilterComponent } from './components/members/member-filter/member-filter.component';
@@ -142,6 +143,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     VenueLayoutComponent,
     VenueMenuComponent,
     VenuesComponent,
+    MediaFileComponent,
   ],
   imports: [
     AdminRoutingModule,

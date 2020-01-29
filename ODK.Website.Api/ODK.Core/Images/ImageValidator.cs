@@ -38,6 +38,6 @@ namespace ODK.Core.Images
         public static bool IsValidMimeType(string mimeType)
         {
             return ValidMimeTypes.Contains(mimeType.ToLowerInvariant());
-        }        
+        }
     }
 }

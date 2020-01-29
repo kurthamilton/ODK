@@ -84,6 +84,8 @@ namespace ODK.Web.Common.Config
             services.AddScoped<IMailProvider, MailProvider>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IMediaAdminService, MediaAdminService>();
+            services.AddScoped<IMediaFileProvider, MediaFileProvider>();
+            services.AddScoped<IMediaService, MediaService>();
             services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();
             services.AddScoped<IPaymentService, PaymentService>();
@@ -105,9 +107,9 @@ namespace ODK.Web.Common.Config
             services.AddSingleton(new AuthenticationServiceSettings
             {
                 AccessTokenLifetimeMinutes = auth.AccessTokenLifetimeMinutes,
-                EventsUrl = $"{urls.Base}{urls.Events}",
+                EventsUrl = $"{urls.AppBase}{urls.Events}",
                 PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
-                PasswordResetUrl = $"{urls.Base}{urls.PasswordReset}",
+                PasswordResetUrl = $"{urls.AppBase}{urls.PasswordReset}",
                 RefreshTokenLifetimeDays = auth.RefreshTokenLifetimeDays
             });
 
@@ -118,7 +120,7 @@ namespace ODK.Web.Common.Config
 
             services.AddSingleton(new EventAdminServiceSettings
             {
-                BaseUrl = urls.Base,
+                BaseUrl = urls.AppBase,
                 EventRsvpUrlFormat = urls.EventRsvp,
                 EventUrlFormat = urls.Event,
                 UnsubscribeUrlFormat = urls.Unsubscribe
@@ -126,15 +128,15 @@ namespace ODK.Web.Common.Config
 
             services.AddSingleton(new MemberServiceSettings
             {
-                ActivateAccountUrl = $"{urls.Base}{urls.ActivateAccount}",
-                ConfirmEmailAddressUpdateUrl = $"{urls.Base}{urls.ConfirmEmailAddressUpdate}",
+                ActivateAccountUrl = $"{urls.AppBase}{urls.ActivateAccount}",
+                ConfirmEmailAddressUpdateUrl = $"{urls.AppBase}{urls.ConfirmEmailAddressUpdate}",
                 MaxImageSize = members.MaxImageSize
             });
 
-            services.AddSingleton(new MediaServiceSettings
+            services.AddSingleton(new MediaFileProviderSettings
             {
                 RootMediaPath = paths.MediaRoot,
-                RootMediaUrl = $"{urls.Base}{urls.Media}"
+                RootMediaUrl = $"{urls.ApiBase}{urls.Media}"
             });
         }
     }

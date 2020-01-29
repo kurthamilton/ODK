@@ -1,8 +1,10 @@
-﻿namespace ODK.Web.Api.Admin.Media.Responses
+﻿using System;
+
+namespace ODK.Web.Api.Admin.Media.Responses
 {
     public class MediaFileApiResponse
     {
-        public byte[] Data { get; set; }
+        public DateTime CreatedDate { get; set; }
 
         public string Name { get; set; }
 

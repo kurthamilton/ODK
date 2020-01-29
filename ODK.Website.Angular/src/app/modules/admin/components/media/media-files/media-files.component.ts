@@ -19,16 +19,48 @@ export class MediaFilesComponent implements OnInit {
   }
 
   files: MediaFile[];
+  selectedFile: MediaFile;
 
   private chapter: Chapter;  
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
 
-    this.mediaAdminService.getMedia(this.chapter.id).subscribe((files: MediaFile[]) => {
-      this.files = files;
+    this.mediaAdminService.getMediaFiles(this.chapter.id).subscribe((files: MediaFile[]) => {
+      this.files = files.sort((a, b) => a.name.localeCompare(b.name));
       this.changeDetector.detectChanges();
     });
   }
 
+  onFileClick(file: MediaFile): void {
+    this.selectedFile = file;
+    this.changeDetector.detectChanges();
+  }
+
+  onFileClose(): void {
+    this.selectedFile = null;
+    this.changeDetector.detectChanges();
+  }  
+
+  onFileDelete(file: MediaFile): void {
+    if (!confirm('Are you sure you want to delete this file?')) {
+      return;
+    }
+
+    this.mediaAdminService.deleteMediaFile(this.chapter.id, file).subscribe((files: MediaFile[]) => {
+      this.files = files.sort((a, b) => a.name.localeCompare(b.name));
+      this.changeDetector.detectChanges();
+    });
+  }  
+  
+  onFileUpload(files: FileList): void {
+    if (files.length === 0) {
+      return;
+    }
+ 
+    this.mediaAdminService.uploadMediaFile(this.chapter.id, files[0]).subscribe((files: MediaFile[]) => {
+      this.files = files.sort((a, b) => a.name.localeCompare(b.name));
+      this.changeDetector.detectChanges();
+    });  
+  }
 }

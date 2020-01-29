@@ -44,7 +44,7 @@ testem.log
 # sensitive data
 /src/environments/environment.production.ts
 /src/environments/environment.staging.ts
-src/environments/production/web.config
+/src/environments/production/web.config
 
 # System Files
 .DS_Store

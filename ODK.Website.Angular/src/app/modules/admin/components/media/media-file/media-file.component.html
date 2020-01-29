@@ -1,0 +1,5 @@
+<app-modal *ngIf="file" [title]="file.name" [fullWidth]="true" (close)="onClose()">
+  <p>
+    <img [attr.src]="file.url" />
+  </p>
+</app-modal>

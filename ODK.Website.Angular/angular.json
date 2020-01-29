@@ -38,9 +38,7 @@
           "configurations": {
             "production": {
               "assets": [
-                { "glob": "**/*", "input": "src/assets/", "output": "/assets/", "ignore": [ 
-                  "media/**/*"
-                ] },
+                { "glob": "**/*", "input": "src/assets/", "output": "/assets/" },
                 { "glob": "web.config", "input": "src/environments/production", "output": "/" }
               ],
               "fileReplacements": [
@@ -73,9 +71,7 @@
             },
             "staging": {
               "assets": [
-                { "glob": "**/*", "input": "src/assets/", "output": "/assets/", "ignore": [ 
-                  "media/**/*"
-                ] },
+                { "glob": "**/*", "input": "src/assets/", "output": "/assets/" },
                 { "glob": "web.config", "input": "src/environments/staging", "output": "/" }
               ],
               "fileReplacements": [
