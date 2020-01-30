@@ -99,7 +99,12 @@ namespace ODK.Services.Media
 
         private string GetMediaPath(string chapter)
         {
-            return Path.Combine(_settings.RootMediaPath, chapter.ToLowerInvariant());
+            string path = Path.Combine(_settings.RootMediaPath, chapter.ToLowerInvariant());
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            return path;
         }
 
         private string GetMediaUrl(string chapter, string name)
