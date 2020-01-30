@@ -16,23 +16,23 @@ import { ReadOnlyFormControlViewModel } from 'src/app/modules/forms/components/i
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
-  selector: 'app-chapter-admin-member',
-  templateUrl: './chapter-admin-member.component.html',
+  selector: 'app-admin-member',
+  templateUrl: './admin-member.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterAdminMemberComponent implements OnInit, OnDestroy {
+export class AdminMemberComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private router: Router,
     private route: ActivatedRoute,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   adminMember: ChapterAdminMember;
   breadcrumbs: MenuItem[];
   form: FormViewModel;
-  
+
   private chapter: Chapter;
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
@@ -45,18 +45,18 @@ export class ChapterAdminMemberComponent implements OnInit, OnDestroy {
   private memberId: string;
 
   ngOnInit(): void {
-    this.memberId = this.route.snapshot.paramMap.get(adminPaths.chapter.adminMembers.adminMember.params.memberId);
+    this.memberId = this.route.snapshot.paramMap.get(adminPaths.adminMembers.adminMember.params.memberId);
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.breadcrumbs = [
-      { link: adminUrls.chapterAdminMembers(this.chapter), text: 'Admin members' }
+      { link: adminUrls.adminMembers(this.chapter), text: 'Admin members' }
     ]
 
     this.chapterAdminService.getChapterAdminMember(this.chapter.id, this.memberId).subscribe((adminMember: ChapterAdminMember) => {
       if (!adminMember) {
-        this.router.navigateByUrl(adminUrls.chapterAdminMembers(this.chapter));
+        this.router.navigateByUrl(adminUrls.adminMembers(this.chapter));
         return;
       }
-      
+
       this.adminMember = adminMember;
       this.buildForm();
       this.changeDetector.detectChanges();

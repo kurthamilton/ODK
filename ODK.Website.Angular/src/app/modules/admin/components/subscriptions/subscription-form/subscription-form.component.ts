@@ -15,16 +15,16 @@ import { SubscriptionType } from 'src/app/core/account/subscription-type';
 import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/inputs/text-input-form-control/text-input-form-control.view-model';
 
 @Component({
-  selector: 'app-chapter-subscription-form',
-  templateUrl: './chapter-subscription-form.component.html',
+  selector: 'app-subscription-form',
+  templateUrl: './subscription-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterSubscriptionFormComponent implements OnChanges {
+export class SubscriptionFormComponent implements OnChanges {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private countryService: CountryService
-  ) {     
+  ) {
   }
 
   @Input() formCallback: Observable<boolean | string[]>;
@@ -50,7 +50,7 @@ export class ChapterSubscriptionFormComponent implements OnChanges {
       this.country = country;
       this.buildForm();
       this.changeDetector.detectChanges();
-    });    
+    });
   }
 
   onFormSubmit(): void {
@@ -152,7 +152,7 @@ export class ChapterSubscriptionFormComponent implements OnChanges {
         this.formControls.type,
         this.formControls.title,
         this.formControls.amount,
-        this.formControls.months,        
+        this.formControls.months,
         this.formControls.description
       ],
       messages: {

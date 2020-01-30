@@ -13,9 +13,9 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChapterAdminLayoutComponent implements OnInit {
-  
+
   constructor(private chapterAdminService: ChapterAdminService,
-    private authenticationService: AuthenticationService    
+    private authenticationService: AuthenticationService
   ) {
 
   }
@@ -28,15 +28,13 @@ export class ChapterAdminLayoutComponent implements OnInit {
 
     this.menuItems = [
       { link: adminUrls.chapter(chapter), text: 'Text', matchExactRoute: true },
-      { link: adminUrls.chapterSubscriptions(chapter), text: 'Subscriptions' },
       { link: adminUrls.chapterQuestions(chapter), text: 'About' },
       { link: adminUrls.chapterProperties(chapter), text: 'Properties' },
-      { link: adminUrls.chapterAdminMembers(chapter), text: 'Admin members' },
       { link: adminUrls.chapterMedia(chapter), text: 'Media' }
     ];
 
     if (token.superAdmin) {
-      this.menuItems.push({ link: adminUrls.chapterPayments(chapter), text: 'Payments' });      
+      this.menuItems.push({ link: adminUrls.chapterPayments(chapter), text: 'Payments' });
     }
   }
 }

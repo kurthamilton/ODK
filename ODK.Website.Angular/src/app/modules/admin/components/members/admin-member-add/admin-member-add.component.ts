@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { forkJoin, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
+import { adminUrls } from '../../../routing/admin-urls';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminMember } from 'src/app/core/chapters/chapter-admin-member';
@@ -13,21 +14,20 @@ import { DropDownFormControlViewModel } from 'src/app/modules/forms/components/i
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
 import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
-import { adminUrls } from '../../../routing/admin-urls';
 import { MenuItem } from 'src/app/core/menus/menu-item';
 
 @Component({
-  selector: 'app-chapter-admin-member-add',
-  templateUrl: './chapter-admin-member-add.component.html',
+  selector: 'app-admin-member-add',
+  templateUrl: './admin-member-add.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterAdminMemberAddComponent implements OnInit, OnDestroy {
+export class AdminMemberAddComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private router: Router,
     private chapterAdminService: ChapterAdminService,
     private memberAdminService: MemberAdminService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
@@ -44,7 +44,7 @@ export class ChapterAdminMemberAddComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.breadcrumbs = [
-      { link: adminUrls.chapterAdminMembers(this.chapter), text: 'Admin members' }
+      { link: adminUrls.adminMembers(this.chapter), text: 'Admin members' }
     ];
 
     forkJoin([
@@ -74,7 +74,7 @@ export class ChapterAdminMemberAddComponent implements OnInit, OnDestroy {
   onFormSubmit(): void {
     this.chapterAdminService.addChapterAdminMember(this.chapter.id, this.formControls.member.value).subscribe(() => {
       this.formCallback.next(true);
-      this.router.navigateByUrl(adminUrls.chapterAdminMembers(this.chapter));
+      this.router.navigateByUrl(adminUrls.adminMembers(this.chapter));
     });
   }
 

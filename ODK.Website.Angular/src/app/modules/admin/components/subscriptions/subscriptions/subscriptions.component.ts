@@ -12,15 +12,15 @@ import { CountryService } from 'src/app/services/countries/country.service';
 
 @Component({
   selector: 'app-chapter-subscriptions',
-  templateUrl: './chapter-subscriptions.component.html',
+  templateUrl: './subscriptions.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterSubscriptionsComponent implements OnInit {
+export class SubscriptionsComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private countryService: CountryService
-  ) {     
+  ) {
   }
 
   country: Country;
@@ -34,7 +34,7 @@ export class ChapterSubscriptionsComponent implements OnInit {
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.paths = {
-      create: adminUrls.chapterSubscriptionCreate(this.chapter)
+      create: adminUrls.subscriptionCreate(this.chapter)
     };
 
     forkJoin([
@@ -51,7 +51,7 @@ export class ChapterSubscriptionsComponent implements OnInit {
   }
 
   getSubscriptionLink(subscription: ChapterSubscription): string {
-    return adminUrls.chapterSubscription(this.chapter, subscription);
+    return adminUrls.subscription(this.chapter, subscription);
   }
 
   onDeleteSubscription(subscription: ChapterSubscription): void {
@@ -61,7 +61,7 @@ export class ChapterSubscriptionsComponent implements OnInit {
 
     this.subscriptions = null;
     this.changeDetector.detectChanges();
-    
+
     this.chapterAdminService.deleteChapterSubscription(subscription).pipe(
       switchMap(() => this.chapterAdminService.getChapterSubscriptions(this.chapter.id))
     ).subscribe((subscriptions: ChapterSubscription[]) => {

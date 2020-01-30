@@ -6,19 +6,20 @@ export const adminPaths = {
     }
   },
 
-  chapter: {    
-    adminMembers: {
-      add: {
-        path: 'add'
-      },
-      adminMember: {
-        path: ':memberId',
-        params: {
-          memberId: 'memberId'
-        }
-      },
-      path: 'admin-members'
+  adminMembers: {
+    add: {
+      path: 'add'
     },
+    adminMember: {
+      path: ':memberId',
+      params: {
+        memberId: 'memberId'
+      }
+    },
+    path: 'admin-members'
+  },
+
+  chapter: {
     media: {
       path: 'media'
     },
@@ -47,20 +48,8 @@ export const adminPaths = {
         path: ':id',
         params: {
           id: 'id'
-        }        
+        }
       }
-    },
-    subscription: {      
-      path: ':id',
-      params: {
-        id: 'id'
-      }
-    },
-    subscriptions: {
-      create: {
-        path: 'create'
-      },
-      path: 'subscriptions'
     }
   },
 
@@ -71,7 +60,7 @@ export const adminPaths = {
     emailProviders: {
       create: {
         path: 'create'
-      },     
+      },
       path: 'email-providers',
       emailProvider: {
         params: {
@@ -79,10 +68,10 @@ export const adminPaths = {
         },
         path: ':id'
       }
-    },  
+    },
     path: 'emails'
   },
-  
+
   events: {
     create: {
       path: 'create',
@@ -101,13 +90,13 @@ export const adminPaths = {
       params: {
         id: 'id'
       }
-    },        
+    },
     path: 'events'
   },
-  
+
   home: {
     path: 'chapter'
-  },    
+  },
 
   members: {
     path: 'members',
@@ -128,10 +117,23 @@ export const adminPaths = {
     }
   },
 
+  subscriptions: {
+    create: {
+      path: 'create'
+    },
+    path: 'subscriptions',
+    subscription: {
+      path: ':id',
+      params: {
+        id: 'id'
+      }
+    },
+  },
+
   venues: {
     create: {
       path: 'create'
-    },    
+    },
     path: 'venues',
     venue: {
       events: {

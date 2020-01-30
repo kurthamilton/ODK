@@ -8,17 +8,17 @@ import { ChapterAdminMember } from 'src/app/core/chapters/chapter-admin-member';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 
 @Component({
-  selector: 'app-chapter-admin-members',
-  templateUrl: './chapter-admin-members.component.html',
+  selector: 'app-admin-members',
+  templateUrl: './admin-members.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterAdminMembersComponent implements OnInit {
+export class AdminMembersComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
-  
+
   adminMembers: ChapterAdminMember[];
   links: {
     addAdminMember: string;
@@ -29,7 +29,7 @@ export class ChapterAdminMembersComponent implements OnInit {
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.links = {
-      addAdminMember: adminUrls.chapterAdminMemberAdd(this.chapter)
+      addAdminMember: adminUrls.adminMemberAdd(this.chapter)
     };
 
     this.chapterAdminService.getChapterAdminMembers(this.chapter.id).subscribe((adminMembers: ChapterAdminMember[]) => {
@@ -39,7 +39,7 @@ export class ChapterAdminMembersComponent implements OnInit {
   }
 
   getAdminMemberLink(adminMember: ChapterAdminMember): string {
-    return adminUrls.chapterAdminMember(this.chapter, adminMember.memberId);
+    return adminUrls.adminMember(this.chapter, adminMember.memberId);
   }
 
   onRemoveAdminMember(adminMember: ChapterAdminMember): void {

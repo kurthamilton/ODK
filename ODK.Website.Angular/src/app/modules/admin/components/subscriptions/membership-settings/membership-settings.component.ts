@@ -10,15 +10,15 @@ import { NumberInputFormControlViewModel } from 'src/app/modules/forms/component
 import { ServiceResult } from 'src/app/services/service-result';
 
 @Component({
-  selector: 'app-chapter-membership-settings',
-  templateUrl: './chapter-membership-settings.component.html',
+  selector: 'app-membership-settings',
+  templateUrl: './membership-settings.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterMembershipSettingsComponent implements OnInit, OnDestroy {
+export class MembershipSettingsComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   form: FormViewModel;
@@ -50,7 +50,7 @@ export class ChapterMembershipSettingsComponent implements OnInit, OnDestroy {
     this.membershipSettings.trialPeriodMonths = this.formControls.trialPeriodMonths.value;
 
     this.chapterAdminService.updateChapterAdminMembershipSettings(this.chapter.id, this.membershipSettings).subscribe((result: ServiceResult<void>) => {
-      this.formCallback.next(result.messages);      
+      this.formCallback.next(result.messages);
     });
   }
 

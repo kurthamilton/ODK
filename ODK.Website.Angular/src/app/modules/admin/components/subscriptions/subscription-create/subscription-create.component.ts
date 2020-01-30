@@ -11,16 +11,15 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
 import { ServiceResult } from 'src/app/services/service-result';
 
 @Component({
-  selector: 'app-chapter-subscription-create',
-  templateUrl: './chapter-subscription-create.component.html',
+  selector: 'app-subscription-create',
+  templateUrl: './subscription-create.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterSubscriptionCreateComponent implements OnInit, OnDestroy {
+export class SubscriptionCreateComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
-    private router: Router,
+  constructor(private router: Router,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
@@ -31,7 +30,7 @@ export class ChapterSubscriptionCreateComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.breadcrumbs = [
-      { link: adminUrls.chapterSubscriptions(this.chapter), text: 'Subscriptions' }
+      { link: adminUrls.subscriptions(this.chapter), text: 'Subscriptions' }
     ];
   }
 
@@ -43,7 +42,7 @@ export class ChapterSubscriptionCreateComponent implements OnInit, OnDestroy {
     this.chapterAdminService.createChapterSubscription(this.chapter.id, subscription).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
       if (result.success) {
-        this.router.navigateByUrl(adminUrls.chapterSubscriptions(this.chapter));
+        this.router.navigateByUrl(adminUrls.subscriptions(this.chapter));
         return;
       }
     });

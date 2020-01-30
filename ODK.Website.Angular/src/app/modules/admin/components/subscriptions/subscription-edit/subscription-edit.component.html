@@ -1,6 +1,6 @@
 <ng-container *appLoading="!subscription">
   <app-breadcrumbs [breadcrumbs]="breadcrumbs" [active]="subscription.name"></app-breadcrumbs>
-  <app-chapter-subscription-form [subscription]="subscription" [formCallback]="formCallback" 
+  <app-subscription-form [subscription]="subscription" [formCallback]="formCallback"
     (formSubmit)="onFormSubmit($event)">
-  </app-chapter-subscription-form>
+  </app-subscription-form>
 </ng-container>

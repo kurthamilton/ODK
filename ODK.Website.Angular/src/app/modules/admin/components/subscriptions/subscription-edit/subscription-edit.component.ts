@@ -12,36 +12,36 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
 import { ServiceResult } from 'src/app/services/service-result';
 
 @Component({
-  selector: 'app-chapter-subscription-edit',
-  templateUrl: './chapter-subscription-edit.component.html',
+  selector: 'app-subscription-edit',
+  templateUrl: './subscription-edit.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChapterSubscriptionEditComponent implements OnInit, OnDestroy {
+export class SubscriptionEditComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
   formCallback: Subject<string[]> = new Subject<string[]>();
   subscription: ChapterSubscription;
 
-  private chapter: Chapter;  
+  private chapter: Chapter;
 
   ngOnInit(): void {
-    const subscriptionId: string = this.route.snapshot.paramMap.get(adminPaths.chapter.subscription.params.id);
+    const subscriptionId: string = this.route.snapshot.paramMap.get(adminPaths.subscriptions.subscription.params.id);
 
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.breadcrumbs = [
-      { link: adminUrls.chapterSubscriptions(this.chapter), text: 'Subscriptions' }
+      { link: adminUrls.subscriptions(this.chapter), text: 'Subscriptions' }
     ];
 
     this.chapterAdminService.getChapterSubscription(subscriptionId).subscribe((subscription: ChapterSubscription) => {
       if (!subscription) {
-        this.router.navigateByUrl(adminUrls.chapterSubscriptions(this.chapter));
+        this.router.navigateByUrl(adminUrls.subscriptions(this.chapter));
         return;
       }
       this.subscription = subscription;
@@ -53,7 +53,7 @@ export class ChapterSubscriptionEditComponent implements OnInit, OnDestroy {
     this.formCallback.complete();
   }
 
-  onFormSubmit(subscription: ChapterSubscription): void {    
+  onFormSubmit(subscription: ChapterSubscription): void {
     this.chapterAdminService.updateChapterSubscription(subscription).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
       this.changeDetector.detectChanges();
