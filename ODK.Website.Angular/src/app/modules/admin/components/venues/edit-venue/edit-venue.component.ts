@@ -5,10 +5,10 @@ import { Subject } from 'rxjs';
 
 import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { ServiceResult } from 'src/app/services/service-result';
 import { Venue } from 'src/app/core/venues/venue';
 import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
-import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 
 @Component({
   selector: 'app-edit-venue',

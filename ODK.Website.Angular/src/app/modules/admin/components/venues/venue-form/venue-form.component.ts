@@ -15,9 +15,6 @@ import { Venue } from 'src/app/core/venues/venue';
 })
 export class VenueFormComponent implements OnChanges {
 
-  constructor() {
-  }
-
   @Input() buttonText: string;
   @Input() chapter: Chapter;
   @Input() venue: Venue;

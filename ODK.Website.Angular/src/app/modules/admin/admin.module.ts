@@ -20,7 +20,6 @@ import { ChapterEmailProviderFormComponent } from './components/emails/chapter-e
 import { ChapterEmailProvidersComponent } from './components/emails/chapter-email-providers/chapter-email-providers.component';
 import { ChapterEmailsComponent } from './components/emails/chapter-emails/chapter-emails.component';
 import { ChapterMembershipSettingsComponent } from './components/chapters/chapter-membership-settings/chapter-membership-settings.component';
-import { ChapterMenuComponent } from './components/chapters/chapter-menu/chapter-menu.component';
 import { ChapterPaymentSettingsComponent } from './components/chapters/chapter-payment-settings/chapter-payment-settings.component';
 import { ChapterPropertiesComponent } from './components/chapters/chapter-properties/chapter-properties.component';
 import { ChapterPropertyComponent } from './components/chapters/chapter-property/chapter-property.component';
@@ -76,6 +75,9 @@ import { VenueFormComponent } from './components/venues/venue-form/venue-form.co
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
+import { AdminSubMenuComponent } from './components/structure/admin-sub-menu/admin-sub-menu.component';
+import { AdminBodyComponent } from './components/structure/admin-body/admin-body.component';
+import { EventsAdminLayoutComponent } from './components/events/events-admin-layout/events-admin-layout.component';
 
 @NgModule({
   declarations: [
@@ -90,7 +92,6 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     ChapterEmailProvidersComponent,
     ChapterEmailsComponent,
     ChapterMembershipSettingsComponent,
-    ChapterMenuComponent,
     ChapterPaymentSettingsComponent,
     ChapterPropertiesComponent,
     ChapterPropertyComponent,
@@ -146,6 +147,9 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     VenueMenuComponent,
     VenuesComponent,
     MediaFileComponent,
+    AdminSubMenuComponent,
+    AdminBodyComponent,
+    EventsAdminLayoutComponent,
   ],
   imports: [
     AdminRoutingModule,

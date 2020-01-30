@@ -45,11 +45,14 @@ import { SendEmailComponent } from '../components/members/send-email/send-email.
 import { VenueEventsComponent } from '../components/venues/venue-events/venue-events.component';
 import { VenueLayoutComponent } from '../components/venues/venue-layout/venue-layout.component';
 import { VenuesComponent } from '../components/venues/venues/venues.component';
+import { EventsAdminLayoutComponent } from '../components/events/events-admin-layout/events-admin-layout.component';
 
 const routes: Routes = [
   { path: '', component: AdminLayoutComponent, canActivate: [ChapterAdminGuardService], children: [
     { path: '', pathMatch: 'full', redirectTo: adminPaths.chapter.path },
+    
     { path: adminPaths.admin.path, component: LogComponent, canActivate: [ChapterSuperAdminGuardService] },
+    
     { path: adminPaths.chapter.path, component: ChapterAdminLayoutComponent, children: [
       { path: '', component: ChapterSettingsComponent },      
       { path: adminPaths.chapter.adminMembers.path, children: [
@@ -76,6 +79,7 @@ const routes: Routes = [
       ] },
       { path: adminPaths.chapter.media.path, component: MediaFilesComponent }
     ] },
+    
     { path: adminPaths.emails.path, component: EmailLayoutComponent, children: [
       { path: '', component: ChapterEmailsComponent },
       { path: adminPaths.emails.default.path, component: DefaultEmailsComponent, 
@@ -87,15 +91,27 @@ const routes: Routes = [
           { path: adminPaths.emails.emailProviders.emailProvider.path, component: ChapterEmailProviderComponent }
         ] }
     ] },
-    { path: adminPaths.events.path, children: [
+    
+    { path: adminPaths.events.path, component: EventsAdminLayoutComponent, children: [
       { path: '', component: EventsComponent },
+
+      { path: adminPaths.venues.path, children: [
+        { path: '', component: VenuesComponent },
+        { path: adminPaths.venues.create.path, component: CreateVenueComponent },
+        { path: adminPaths.venues.venue.path, component: VenueLayoutComponent, children: [
+          { path: '', component: EditVenueComponent },
+          { path: adminPaths.venues.venue.events.path, component: VenueEventsComponent }
+        ] }
+      ] },
+
       { path: adminPaths.events.create.path, component: CreateEventComponent },
       { path: adminPaths.events.event.path, component: EventLayoutComponent, children: [
         { path: '', component: EditEventComponent },
         { path: adminPaths.events.event.attendees.path, component: EventAttendeesComponent },
         { path: adminPaths.events.event.invites.path, component: EventInvitesComponent }
-      ] },
+      ] }      
     ] },    
+    
     { path: adminPaths.members.path, children: [
       { path: '', component: MembersComponent },
       { path: adminPaths.members.member.path, component: MemberLayoutComponent, children: [
@@ -103,14 +119,6 @@ const routes: Routes = [
         { path: adminPaths.members.member.events.path, component: MemberEventsComponent  },
         { path: adminPaths.members.member.image.path, component: EditMemberImageComponent },
         { path: adminPaths.members.member.sendEmail.path, component: SendEmailComponent }
-      ] }
-    ] },
-    { path: adminPaths.venues.path, children: [
-      { path: '', component: VenuesComponent },
-      { path: adminPaths.venues.create.path, component: CreateVenueComponent },
-      { path: adminPaths.venues.venue.path, component: VenueLayoutComponent, children: [
-        { path: '', component: EditVenueComponent },
-        { path: adminPaths.venues.venue.events.path, component: VenueEventsComponent }
       ] }
     ] }
   ] }

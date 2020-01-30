@@ -15,7 +15,10 @@ export class NavbarComponent implements OnChanges {
   collapsed = true;
 
   @Input() breakpoint: string;
+  @Input() color: 'dark' | 'light';
+  @Input() compact: boolean;
   @Input() fluid: boolean;
+  @Input() hideAccountMenu: boolean;
   @Input() menuItems: MenuItem[];
   @Input() menuItemGroups: MenuItem[][];
 

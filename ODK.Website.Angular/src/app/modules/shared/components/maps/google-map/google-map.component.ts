@@ -28,7 +28,7 @@ export class GoogleMapComponent implements OnChanges {
     }
 
     const venueId: string = this.venue ? this.venue.id : null;
-    const query: string = this.query || (this.venue ? this.venue.mapQuery : null);
+    const query: string = this.query || (this.venue ? this.venue.mapQuery : null);    
 
     this.mapService.getGoogleMapsUrl(venueId, query).subscribe((url: string) => {
       this.url = this.sanitizer.bypassSecurityTrustResourceUrl(url);

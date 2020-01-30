@@ -55,10 +55,10 @@ export const adminUrls = {
   memberImage: (chapter: Chapter, member: Member) => chapterUrl(chapter, `${adminPaths.members.path}/${member.id}/${adminPaths.members.member.image.path}`),
   members: (chapter: Chapter) => chapterUrl(chapter, adminPaths.members.path),
   memberSendEmail: (chapter: Chapter, member: Member) => chapterUrl(chapter, `${adminPaths.members.path}/${member.id}/${adminPaths.members.member.sendEmail.path}`),
-  venue: (chapter: Chapter, venue: Venue) => chapterUrl(chapter, `${adminPaths.venues.path}/${venue.id}`),
-  venueEvents: (chapter: Chapter, venue: Venue) => chapterUrl(chapter, `${adminPaths.venues.path}/${venue.id}/${adminPaths.venues.venue.events.path}`),
-  venues: (chapter: Chapter) => chapterUrl(chapter, adminPaths.venues.path),
-  venueCreate: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.venues.path}/${adminPaths.venues.create.path}`)
+  venue: (chapter: Chapter, venue: Venue) => chapterUrl(chapter, `${adminPaths.events.path}/${adminPaths.venues.path}/${venue.id}`),
+  venueEvents: (chapter: Chapter, venue: Venue) => chapterUrl(chapter, `${adminPaths.events.path}/${adminPaths.venues.path}/${venue.id}/${adminPaths.venues.venue.events.path}`),
+  venues: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.events.path}/${adminPaths.venues.path}`),
+  venueCreate: (chapter: Chapter) => chapterUrl(chapter, `${adminPaths.events.path}/${adminPaths.venues.path}/${adminPaths.venues.create.path}`)
 };
 
 Object.freeze(adminUrls);

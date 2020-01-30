@@ -5,6 +5,7 @@ export const adminPaths = {
       path: ''
     }
   },
+
   chapter: {    
     adminMembers: {
       add: {
@@ -62,6 +63,7 @@ export const adminPaths = {
       path: 'subscriptions'
     }
   },
+
   emails: {
     default: {
       path: 'default'
@@ -80,6 +82,7 @@ export const adminPaths = {
     },  
     path: 'emails'
   },
+  
   events: {
     create: {
       path: 'create',
@@ -101,9 +104,11 @@ export const adminPaths = {
     },        
     path: 'events'
   },
+  
   home: {
     path: 'chapter'
   },    
+
   members: {
     path: 'members',
     member: {
@@ -122,6 +127,7 @@ export const adminPaths = {
       }
     }
   },
+
   venues: {
     create: {
       path: 'create'
