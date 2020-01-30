@@ -56,7 +56,7 @@ import { HtmlEditorFormControlComponent } from './components/forms/inputs/html-e
 import { LogComponent } from './components/admin/log/log.component';
 import { MediaFileComponent } from './components/media/media-file/media-file.component';
 import { MediaFilesComponent } from './components/media/media-files/media-files.component';
-import { MemberAdminLayoutComponent } from './components/members/member-admin-layout/member-admin-layout.component';
+import { MembersAdminLayoutComponent } from './components/members/members-admin-layout/members-admin-layout.component';
 import { MemberEventsComponent } from './components/members/member-events/member-events.component';
 import { MemberFilterComponent } from './components/members/member-filter/member-filter.component';
 import { MemberLayoutComponent } from './components/members/member-layout/member-layout.component';
@@ -129,7 +129,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     LogComponent,
     MediaFileComponent,
     MediaFilesComponent,
-    MemberAdminLayoutComponent,
+    MembersAdminLayoutComponent,
     MemberEventsComponent,
     MemberFilterComponent,
     MemberLayoutComponent,

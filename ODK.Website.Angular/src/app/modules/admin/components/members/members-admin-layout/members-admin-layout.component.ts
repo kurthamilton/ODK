@@ -6,11 +6,11 @@ import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.ser
 import { MenuItem } from 'src/app/core/menus/menu-item';
 
 @Component({
-  selector: 'app-member-admin-layout',
-  templateUrl: './member-admin-layout.component.html',
+  selector: 'app-members-admin-layout',
+  templateUrl: './members-admin-layout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MemberAdminLayoutComponent implements OnInit {
+export class MembersAdminLayoutComponent implements OnInit {
 
   constructor(private chapterAdminService: ChapterAdminService) { }
 
@@ -22,7 +22,7 @@ export class MemberAdminLayoutComponent implements OnInit {
     this.chapter = this.chapterAdminService.getActiveChapter();
 
     this.menuItems = [
-      { link: adminUrls.members(this.chapter), text: 'Members' },
+      { link: adminUrls.members(this.chapter), text: 'Members', matchExactRoute: true },
       { link: adminUrls.subscriptions(this.chapter), text: 'Subscriptions' },
       { link: adminUrls.adminMembers(this.chapter), text: 'Admin members' }
     ]

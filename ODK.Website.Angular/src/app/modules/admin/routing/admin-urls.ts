@@ -16,11 +16,11 @@ const memberPaths = membersPaths.member;
 
 const chapterPath = (chapter: Chapter, ...path: string[]): string => url(chapter, adminPaths.chapter.path, ...path);
 const eventPath = (chapter: Chapter, event: Event, ...path: string[]): string => eventsPath(chapter, event.id, ...path);
-const eventsPath = (chapter: Chapter, ...path: string[]): string => url(chapter, eventPaths.path, ...path);
+const eventsPath = (chapter: Chapter, ...path: string[]): string => url(chapter, eventsPaths.path, ...path);
 const memberPath = (chapter: Chapter, member: Member, ...path: string[]): string => membersPath(chapter, member.id, ...path);
 const membersPath = (chapter: Chapter, ...path: string[]): string => url(chapter, membersPaths.path, ...path);
-const subscriptionsPath = (chapter: Chapter, ...path: string[]): string => membersPath(chapter, ...path);
-const venuesPath = (chapter: Chapter, ...path: string[]): string => membersPath(chapter, adminPaths.venues.path, ...path);
+const subscriptionsPath = (chapter: Chapter, ...path: string[]): string => membersPath(chapter, adminPaths.subscriptions.path, ...path);
+const venuesPath = (chapter: Chapter, ...path: string[]): string => eventsPath(chapter, adminPaths.venues.path, ...path);
 
 const pathJoin = (parts: string[]): string =>parts.filter(x => !!x).join('/');
 
@@ -37,9 +37,9 @@ const url = (chapter: Chapter, ...path: string[]): string => {
 export const adminUrls = {
   adminLog: (chapter: Chapter) => url(chapter, adminPaths.admin.path),
 
-  adminMember: (chapter: Chapter, memberId: string) => chapterPath(chapter, adminPaths.adminMembers.path, memberId),
-  adminMemberAdd: (chapter: Chapter) => chapterPath(chapter, adminPaths.adminMembers.path, adminPaths.adminMembers.add.path),
-  adminMembers: (chapter: Chapter) => chapterPath(chapter, adminPaths.adminMembers.path),
+  adminMember: (chapter: Chapter, memberId: string) => membersPath(chapter, adminPaths.adminMembers.path, memberId),
+  adminMemberAdd: (chapter: Chapter) => membersPath(chapter, adminPaths.adminMembers.path, adminPaths.adminMembers.add.path),
+  adminMembers: (chapter: Chapter) => membersPath(chapter, adminPaths.adminMembers.path),
 
   chapter: (chapter: Chapter) => chapterPath(chapter),
   chapterMedia: (chapter: Chapter) => chapterPath(chapter, chapterPaths.media.path),

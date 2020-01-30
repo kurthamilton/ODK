@@ -37,6 +37,7 @@ import { LogComponent } from '../components/admin/log/log.component';
 import { MediaFilesComponent } from '../components/media/media-files/media-files.component';
 import { MemberEventsComponent } from '../components/members/member-events/member-events.component';
 import { MemberLayoutComponent } from '../components/members/member-layout/member-layout.component';
+import { MembersAdminLayoutComponent } from '../components/members/members-admin-layout/members-admin-layout.component';
 import { MembersComponent } from '../components/members/members/members.component';
 import { MemberSubscriptionComponent } from '../components/members/member-subscription/member-subscription.component';
 import { SendEmailComponent } from '../components/members/send-email/send-email.component';
@@ -70,13 +71,7 @@ const routes: Routes = [
         { path: '', component: ChapterQuestionsComponent },
         { path: adminPaths.chapter.questions.create.path, component: ChapterQuestionCreateComponent },
         { path: adminPaths.chapter.questions.question.path, component: ChapterQuestionComponent }
-      ] },
-
-      { path: adminPaths.subscriptions.path, children: [
-        { path: '', component: SubscriptionsComponent },
-        { path: adminPaths.subscriptions.create.path, component: SubscriptionCreateComponent },
-        { path: adminPaths.subscriptions.subscription.path, component: SubscriptionEditComponent }
-      ] },
+      ] },      
 
       { path: adminPaths.chapter.media.path, component: MediaFilesComponent }
     ] },
@@ -115,14 +110,20 @@ const routes: Routes = [
     ] },
 
 
-    { path: adminPaths.members.path, children: [
+    { path: adminPaths.members.path, component: MembersAdminLayoutComponent, children: [
       { path: adminPaths.adminMembers.path, children: [
         { path: '', component: AdminMembersComponent },
         { path: adminPaths.adminMembers.add.path, component: AdminMemberAddComponent },
         { path: adminPaths.adminMembers.adminMember.path, component: AdminMemberComponent }
       ] },
 
-      { path: '', component: MembersComponent },
+      { path: adminPaths.subscriptions.path, children: [
+        { path: '', component: SubscriptionsComponent },
+        { path: adminPaths.subscriptions.create.path, component: SubscriptionCreateComponent },
+        { path: adminPaths.subscriptions.subscription.path, component: SubscriptionEditComponent }
+      ] },
+      
+      { path: '', component: MembersComponent },      
       { path: adminPaths.members.member.path, component: MemberLayoutComponent, children: [
         { path: '', component: MemberSubscriptionComponent },
         { path: adminPaths.members.member.events.path, component: MemberEventsComponent  },
