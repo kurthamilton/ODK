@@ -37,7 +37,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     
-    const chapterEmailProviderId: string = this.route.snapshot.paramMap.get(adminPaths.emails.emailProviders.emailProvider.params.id);
+    const chapterEmailProviderId: string = this.route.snapshot.paramMap.get(adminPaths.emailProviders.emailProvider.params.id);
     this.emailAdminService.getChapterAdminEmailProvider(this.chapter.id, chapterEmailProviderId).subscribe((provider: ChapterEmailProvider) => {
       if (!provider) {
         this.router.navigateByUrl(adminUrls.emailProviders(this.chapter));
