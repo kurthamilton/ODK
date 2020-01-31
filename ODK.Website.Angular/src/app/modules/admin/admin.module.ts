@@ -39,8 +39,7 @@ import { DropDownMultiFormControlComponent } from './components/forms/inputs/dro
 import { EditEventComponent } from './components/events/edit-event/edit-event.component';
 import { EditMemberImageComponent } from './components/members/edit-member-image/edit-member-image.component';
 import { EditVenueComponent } from './components/venues/edit-venue/edit-venue.component';
-import { EmailLayoutComponent } from './components/emails/email-layout/email-layout.component';
-import { EmailMenuComponent } from './components/emails/email-menu/email-menu.component';
+import { ErrorLogComponent } from './components/super-admin/error-log/error-log.component';
 import { EventAttendeesComponent } from './components/events/event-attendees/event-attendees.component';
 import { EventFormComponent } from './components/events/event-form/event-form.component';
 import { EventHeaderComponent } from './components/events/event-header/event-header.component';
@@ -53,14 +52,13 @@ import { EventsAdminLayoutComponent } from './components/events/events-admin-lay
 import { EventsComponent } from './components/events/events/events.component';
 import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
 import { HtmlEditorFormControlComponent } from './components/forms/inputs/html-editor-form-control/html-editor-form-control.component';
-import { LogComponent } from './components/admin/log/log.component';
 import { MediaFileComponent } from './components/media/media-file/media-file.component';
 import { MediaFilesComponent } from './components/media/media-files/media-files.component';
-import { MembersAdminLayoutComponent } from './components/members/members-admin-layout/members-admin-layout.component';
 import { MemberEventsComponent } from './components/members/member-events/member-events.component';
 import { MemberFilterComponent } from './components/members/member-filter/member-filter.component';
 import { MemberLayoutComponent } from './components/members/member-layout/member-layout.component';
 import { MemberMenuComponent } from './components/members/member-menu/member-menu.component';
+import { MembersAdminLayoutComponent } from './components/members/members-admin-layout/members-admin-layout.component';
 import { MembersComponent } from './components/members/members/members.component';
 import { MembershipSettingsComponent } from './components/subscriptions/membership-settings/membership-settings.component';
 import { MemberSubscriptionComponent } from './components/members/member-subscription/member-subscription.component';
@@ -74,11 +72,13 @@ import { SubscriptionCreateComponent } from './components/subscriptions/subscrip
 import { SubscriptionEditComponent } from './components/subscriptions/subscription-edit/subscription-edit.component';
 import { SubscriptionFormComponent } from './components/subscriptions/subscription-form/subscription-form.component';
 import { SubscriptionsComponent } from './components/subscriptions/subscriptions/subscriptions.component';
+import { SuperAdminLayoutComponent } from './components/super-admin/super-admin-layout/super-admin-layout.component';
 import { VenueEventsComponent } from './components/venues/venue-events/venue-events.component';
 import { VenueFormComponent } from './components/venues/venue-form/venue-form.component';
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
+import { MediaAdminLayoutComponent } from './components/media/media-admin-layout/media-admin-layout.component';
 
 @NgModule({
   declarations: [
@@ -112,8 +112,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     EditEventComponent,
     EditMemberImageComponent,
     EditVenueComponent,
-    EmailLayoutComponent,
-    EmailMenuComponent,
+    ErrorLogComponent,
     EventAttendeesComponent,
     EventFormComponent,
     EventHeaderComponent,
@@ -126,14 +125,13 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     EventsComponent,
     GoogleMapsTextInputFormControlComponent,
     HtmlEditorFormControlComponent,
-    LogComponent,
     MediaFileComponent,
     MediaFilesComponent,
-    MembersAdminLayoutComponent,
     MemberEventsComponent,
     MemberFilterComponent,
     MemberLayoutComponent,
     MemberMenuComponent,
+    MembersAdminLayoutComponent,
     MembersComponent,
     MembershipSettingsComponent,
     MemberSubscriptionComponent,
@@ -147,11 +145,13 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     SubscriptionEditComponent,
     SubscriptionFormComponent,
     SubscriptionsComponent,
+    SuperAdminLayoutComponent,
     VenueEventsComponent,
     VenueFormComponent,
     VenueLayoutComponent,
     VenueMenuComponent,
     VenuesComponent,
+    MediaAdminLayoutComponent,
   ],
   imports: [
     AdminRoutingModule,

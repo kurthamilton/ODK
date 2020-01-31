@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EmailLayoutComponent } from './email-layout.component';
+import { MediaAdminLayoutComponent } from './media-admin-layout.component';
 
-describe('EmailLayoutComponent', () => {
-  let component: EmailLayoutComponent;
-  let fixture: ComponentFixture<EmailLayoutComponent>;
+describe('MediaAdminLayoutComponent', () => {
+  let component: MediaAdminLayoutComponent;
+  let fixture: ComponentFixture<MediaAdminLayoutComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ EmailLayoutComponent ]
+      declarations: [ MediaAdminLayoutComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(EmailLayoutComponent);
+    fixture = TestBed.createComponent(MediaAdminLayoutComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

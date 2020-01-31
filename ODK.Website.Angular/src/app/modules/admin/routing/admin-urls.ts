@@ -15,11 +15,13 @@ const membersPaths = adminPaths.members;
 const memberPaths = membersPaths.member;
 
 const chapterPath = (chapter: Chapter, ...path: string[]): string => url(chapter, adminPaths.chapter.path, ...path);
+const emailProvidersPath = (chapter: Chapter, ...path: string[]) => superAdminPath(chapter, adminPaths.emailProviders.path, ...path);
 const eventPath = (chapter: Chapter, event: Event, ...path: string[]): string => eventsPath(chapter, event.id, ...path);
 const eventsPath = (chapter: Chapter, ...path: string[]): string => url(chapter, eventsPaths.path, ...path);
 const memberPath = (chapter: Chapter, member: Member, ...path: string[]): string => membersPath(chapter, member.id, ...path);
 const membersPath = (chapter: Chapter, ...path: string[]): string => url(chapter, membersPaths.path, ...path);
 const subscriptionsPath = (chapter: Chapter, ...path: string[]): string => membersPath(chapter, adminPaths.subscriptions.path, ...path);
+const superAdminPath = (chapter: Chapter, ...path: string[]): string => url(chapter, adminPaths.superAdmin.path, ...path);
 const venuesPath = (chapter: Chapter, ...path: string[]): string => eventsPath(chapter, adminPaths.venues.path, ...path);
 
 const pathJoin = (parts: string[]): string =>parts.filter(x => !!x).join('/');
@@ -34,16 +36,13 @@ const url = (chapter: Chapter, ...path: string[]): string => {
   return `/${pathJoin(parts)}`;
 };
 
-export const adminUrls = {
-  adminLog: (chapter: Chapter) => url(chapter, adminPaths.admin.path),
-
+export const adminUrls = {  
   adminMember: (chapter: Chapter, memberId: string) => membersPath(chapter, adminPaths.adminMembers.path, memberId),
   adminMemberAdd: (chapter: Chapter) => membersPath(chapter, adminPaths.adminMembers.path, adminPaths.adminMembers.add.path),
   adminMembers: (chapter: Chapter) => membersPath(chapter, adminPaths.adminMembers.path),
 
   chapter: (chapter: Chapter) => chapterPath(chapter),
-  chapterMedia: (chapter: Chapter) => chapterPath(chapter, chapterPaths.media.path),
-  chapterPayments: (chapter: Chapter) => chapterPath(chapter, chapterPaths.payments.path),
+  chapterEmails: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emails.path),  
   chapterProperties: (chapter: Chapter) => chapterPath(chapter, chapterPaths.properties.path),
   chapterProperty: (chapter: Chapter, property: ChapterProperty) => chapterPath(chapter, chapterPaths.properties.path, property.id),
   chapterPropertyCreate: (chapter: Chapter) => chapterPath(chapter, chapterPaths.properties.path, chapterPaths.properties.create.path),
@@ -51,17 +50,17 @@ export const adminUrls = {
   chapterQuestionCreate: (chapter: Chapter) => chapterPath(chapter, chapterPaths.questions.path, chapterPaths.questions.create.path),
   chapterQuestions: (chapter: Chapter) => chapterPath(chapter, chapterPaths.questions.path),
 
-  emailProvider: (chapter: Chapter, provider: ChapterEmailProvider) => url(chapter, adminPaths.emails.path, adminPaths.emails.emailProviders.path, provider.id),
-  emailProviderCreate: (chapter: Chapter) => url(chapter, adminPaths.emails.path, adminPaths.emails.emailProviders.path, adminPaths.emails.emailProviders.create.path),
-  emailProviders: (chapter: Chapter) => url(chapter, adminPaths.emails.path, adminPaths.emails.emailProviders.path),
-  emails: (chapter: Chapter) => url(chapter, adminPaths.emails.path),
-  emailsDefault: (chapter: Chapter) => url(chapter, adminPaths.emails.path, adminPaths.emails.default.path),
+  emailProvider: (chapter: Chapter, provider: ChapterEmailProvider) => emailProvidersPath(chapter, provider.id),
+  emailProviderCreate: (chapter: Chapter) => emailProvidersPath(chapter, adminPaths.emailProviders.create.path),
+  emailProviders: (chapter: Chapter) => emailProvidersPath(chapter),  
 
   event: (chapter: Chapter, event: Event) => eventPath(chapter, event),
   eventAttendees: (chapter: Chapter, event: Event) => eventPath(chapter, event, eventPaths.attendees.path),
   eventCreate: (chapter: Chapter) => eventsPath(chapter, eventsPaths.create.path),
   eventInvites: (chapter: Chapter, event: Event) => eventPath(chapter, event, eventPaths.invites.path),
   events: (chapter: Chapter) => eventsPath(chapter),
+
+  media: (chapter: Chapter) => url(chapter, adminPaths.media.path),
 
   member: (chapter: Chapter, member: Member) => memberPath(chapter, member),
   memberEvents: (chapter: Chapter, member: Member) => memberPath(chapter, member, memberPaths.events.path),
@@ -73,6 +72,10 @@ export const adminUrls = {
   subscriptionCreate: (chapter: Chapter) => subscriptionsPath(chapter, adminPaths.subscriptions.create.path),
   subscriptions: (chapter: Chapter) => subscriptionsPath(chapter),
 
+  superAdminEmails: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.emails.path),
+  superAdminErrorLog: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.errorLog.path),
+  superAdminPaymentSettings: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.paymentSettings.path),  
+  
   venue: (chapter: Chapter, venue: Venue) => venuesPath(chapter, venue.id),
   venueCreate: (chapter: Chapter) => venuesPath(chapter, adminPaths.venues.create.path),
   venueEvents: (chapter: Chapter, venue: Venue) => venuesPath(chapter, venue.id, adminPaths.venues.venue.events.path),

@@ -1,10 +1,4 @@
-export const adminPaths = {
-  admin: {
-    path: 'admin',
-    log: {
-      path: ''
-    }
-  },
+export const adminPaths = {  
 
   adminMembers: {
     add: {
@@ -20,13 +14,10 @@ export const adminPaths = {
   },
 
   chapter: {
-    media: {
-      path: 'media'
-    },
-    path: 'chapter',
-    payments: {
-      path: 'payments'
-    },
+    emails: {
+      path: 'emails'
+    },    
+    path: 'chapter',    
     properties: {
       create: {
         path: 'create'
@@ -53,24 +44,18 @@ export const adminPaths = {
     }
   },
 
-  emails: {
-    default: {
-      path: 'default'
+  emailProviders: {
+    create: {
+      path: 'create'
     },
-    emailProviders: {
-      create: {
-        path: 'create'
+    path: 'email-providers',
+    emailProvider: {
+      params: {
+        id: 'id'
       },
-      path: 'email-providers',
-      emailProvider: {
-        params: {
-          id: 'id'
-        },
-        path: ':id'
-      }
-    },
-    path: 'emails'
-  },
+      path: ':id'
+    }
+  },    
 
   events: {
     create: {
@@ -98,6 +83,10 @@ export const adminPaths = {
     path: 'chapter'
   },
 
+  media: {
+    path: 'media'
+  },
+  
   members: {
     path: 'members',
     member: {
@@ -127,6 +116,19 @@ export const adminPaths = {
       params: {
         id: 'id'
       }
+    },
+  },
+
+  superAdmin: {
+    emails: {
+      path: 'emails'
+    },
+    errorLog: {
+      path: 'error-log'
+    },
+    path: 'super-admin',
+    paymentSettings: {
+      path: 'payment-settings'
     },
   },
 

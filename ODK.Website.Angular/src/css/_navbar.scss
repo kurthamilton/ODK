@@ -27,7 +27,7 @@
     @include nav-item-separator(rgba(0, 0, 0, 0.5));
 
     .nav-link.active {
-      text-decoration: underline;
+      font-weight: 700;
     }
   }
 }

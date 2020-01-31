@@ -2,7 +2,7 @@
   <h5>{{event.date | date:'fullDate'}}</h5>
   <h5 *ngIf="venue" class="d-flex justify-content-between">
     <a [routerLink]="links.venue">{{venue.name}}</a>
-    <a [routerLink]="links.live">View in site</a>
+    <a [routerLink]="links.live"><i class="fas fa-home"></i></a>
   </h5>  
 
   <div class="mt-3">

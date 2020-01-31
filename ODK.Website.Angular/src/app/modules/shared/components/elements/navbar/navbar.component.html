@@ -18,7 +18,8 @@
               [routerLink]="menuItem.link" [routerLinkActiveOptions]="{ exact: menuItem.matchExactRoute }"
               routerLinkActive="active"
               (click)="collapse()">
-              {{menuItem.text}}
+              <span *ngIf="menuItem.text">{{menuItem.text}}</span>
+              <i *ngIf="menuItem.icon" [ngClass]="menuItem.icon"></i>
             </a>
             <a *ngIf="menuItem.externalLink" class="nav-link" 
               [attr.href]="menuItem.externalLink" target="_blank">

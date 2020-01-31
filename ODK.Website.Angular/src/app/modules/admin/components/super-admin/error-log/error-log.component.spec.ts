@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EmailMenuComponent } from './email-menu.component';
+import { ErrorLogComponent } from './error-log.component';
 
-describe('EmailMenuComponent', () => {
-  let component: EmailMenuComponent;
-  let fixture: ComponentFixture<EmailMenuComponent>;
+describe('ErrorLogComponent', () => {
+  let component: ErrorLogComponent;
+  let fixture: ComponentFixture<ErrorLogComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ EmailMenuComponent ]
+      declarations: [ ErrorLogComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(EmailMenuComponent);
+    fixture = TestBed.createComponent(ErrorLogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

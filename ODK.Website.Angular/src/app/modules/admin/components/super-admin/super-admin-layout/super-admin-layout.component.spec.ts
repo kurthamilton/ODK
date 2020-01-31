@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LogComponent } from './log.component';
+import { SuperAdminLayoutComponent } from './super-admin-layout.component';
 
-describe('LogComponent', () => {
-  let component: LogComponent;
-  let fixture: ComponentFixture<LogComponent>;
+describe('SuperAdminLayoutComponent', () => {
+  let component: SuperAdminLayoutComponent;
+  let fixture: ComponentFixture<SuperAdminLayoutComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ LogComponent ]
+      declarations: [ SuperAdminLayoutComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(LogComponent);
+    fixture = TestBed.createComponent(SuperAdminLayoutComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

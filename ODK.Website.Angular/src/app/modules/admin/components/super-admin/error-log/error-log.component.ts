@@ -4,11 +4,11 @@ import { AdminService } from 'src/app/services/admin/admin.service';
 import { LogMessage } from 'src/app/core/logging/log-message';
 
 @Component({
-  selector: 'app-log',
-  templateUrl: './log.component.html',
+  selector: 'app-error-log',
+  templateUrl: './error-log.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LogComponent implements OnInit {
+export class ErrorLogComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
     private adminService: AdminService
