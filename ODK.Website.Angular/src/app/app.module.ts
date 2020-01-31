@@ -18,6 +18,7 @@ import { ChapterLayoutComponent } from './components/layouts/chapter-layout/chap
 import { ChapterMenuComponent } from './components/structure/chapter-menu/chapter-menu.component';
 import { ChapterSidebarComponent } from './components/chapters/chapter-sidebar/chapter-sidebar.component';
 import { ContactComponent } from './components/contact/contact/contact.component';
+import { DeleteAccountComponent } from './components/account/delete-account/delete-account.component';
 import { EventComponent } from './components/events/event/event.component';
 import { EventListComponent } from './components/events/event-list/event-list.component';
 import { EventsComponent } from './components/events/events/events.component';
@@ -58,7 +59,6 @@ import { SubscriptionAlertComponent } from './components/account/subscription-al
 import { SubscriptionComponent } from './components/account/subscription/subscription.component';
 import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenets.component';
 import { UpdateEmailAddressComponent } from './components/account/update-email-address/update-email-address.component';
-import { DeleteAccountComponent } from './components/account/delete-account/delete-account.component';
 
 @NgModule({
   declarations: [
@@ -74,6 +74,7 @@ import { DeleteAccountComponent } from './components/account/delete-account/dele
     ChapterMenuComponent,
     ChapterSidebarComponent,
     ContactComponent,
+    DeleteAccountComponent,
     EventComponent,
     EventListComponent,
     EventsComponent,
@@ -113,7 +114,6 @@ import { DeleteAccountComponent } from './components/account/delete-account/dele
     SubscriptionComponent,
     ThreeTenetsComponent,
     UpdateEmailAddressComponent,
-    DeleteAccountComponent,
   ],
   imports: [
     AppFormsModule,

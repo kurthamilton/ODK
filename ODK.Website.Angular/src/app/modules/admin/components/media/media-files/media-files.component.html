@@ -1,3 +1,4 @@
+<h2>Media</h2>
 <ng-container *appLoading="!files">
   <p>
     Images can be uploaded and referenced by URL. This is where images uploaded via the HTML editor end up.
@@ -9,7 +10,7 @@
       (change)="onFileUpload(file.files)" />
   <p>
     <button class="btn btn-primary" type="button" (click)="file.click()">
-      <i class="fas fa-upload mr-1"></i>
+      <i class="fas fa-file-upload mr-1"></i>
       Upload image
     </button>
   </p>

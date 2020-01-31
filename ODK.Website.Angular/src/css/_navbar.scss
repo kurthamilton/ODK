@@ -1,6 +1,6 @@
-@mixin nav-item-separator() {
+@mixin nav-item-separator($color) {
   .nav-item:not(:first-child) {
-    border-left: 1px solid rgba(255, 255, 255, .5);
+    border-left: 1px solid $color;
   }
 }
 
@@ -14,39 +14,52 @@
 .navbar {
   .navbar-nav {
     flex-wrap: wrap;        
-    justify-content: center;
+    justify-content: center;    
   }    
+}
+
+.navbar {
+  &.navbar-dark {
+    @include nav-item-separator(rgba(255, 255, 255, .5));
+  }
+
+  &.navbar-light {
+    @include nav-item-separator(rgba(0, 0, 0, 0.5));
+
+    .nav-link.active {
+      font-weight: 700;
+    }
+  }
 }
 
 @include media-breakpoint-up(sm) {
   .navbar-expand-sm {
-    .navbar-nav { 
-      margin-left: 2rem;           
-      margin-right: 2rem;
-
+    .navbar-nav {       
       @include nav-link-vertical-padding();
 
       .nav-link {
         padding-left: 1rem;
-        padding-right: 1rem;
-
-        @include media-breakpoint-up(md) {
-          padding-left: 1.5rem;
-          padding-right: 1.5rem;
-        }
-      }
-
-      @include nav-item-separator();
+        padding-right: 1rem;        
+      }      
     }
-  }	
+
+    &:not(.navbar-compact) {
+      .navbar-nav {
+        .nav-link {
+          @include media-breakpoint-up(md) {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+          }
+        }        
+      }      
+    }
+  }  
 }
 
 @include media-breakpoint-up(lg) {
   .navbar-expand-lg {
     .navbar-nav {
-      @include nav-link-vertical-padding();
-
-      @include nav-item-separator();
+      @include nav-link-vertical-padding();      
     }
   }	
 }

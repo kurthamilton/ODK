@@ -1,6 +1,12 @@
 <ng-container *ngIf="groups">
-  <nav class="navbar navbar-dark bg-dark" 
-      [class.navbar-expand-sm]="breakpoint === 'sm'" [class.navbar-expand-lg]="breakpoint === 'lg'">
+  <nav class="navbar" 
+      [class.navbar-dark]="!color || color === 'dark'"
+      [class.bg-dark]="!color || color === 'dark'"
+      [class.navbar-light]="color === 'light'"
+      [class.bg-light]="color === 'light'"
+      [class.navbar-expand-sm]="breakpoint === 'sm'" 
+      [class.navbar-expand-lg]="breakpoint === 'lg'"
+      [class.navbar-compact]="compact">
     <div class="position-relative nav-container" [class.container]="!fluid" [class.container-fluid]="fluid">
       <button class="navbar-toggler" type="button" (click)="collapsed = !collapsed">
         <span class="navbar-toggler-icon"></span>
@@ -12,7 +18,8 @@
               [routerLink]="menuItem.link" [routerLinkActiveOptions]="{ exact: menuItem.matchExactRoute }"
               routerLinkActive="active"
               (click)="collapse()">
-              {{menuItem.text}}
+              <span *ngIf="menuItem.text">{{menuItem.text}}</span>
+              <i *ngIf="menuItem.icon" [ngClass]="menuItem.icon"></i>
             </a>
             <a *ngIf="menuItem.externalLink" class="nav-link" 
               [attr.href]="menuItem.externalLink" target="_blank">
@@ -21,7 +28,7 @@
           </li>
         </ul>
       </div>
-      <div class="nav-account-menu">
+      <div *ngIf="!hideAccountMenu" class="nav-account-menu">
         <app-account-menu></app-account-menu>
       </div>
     </div>

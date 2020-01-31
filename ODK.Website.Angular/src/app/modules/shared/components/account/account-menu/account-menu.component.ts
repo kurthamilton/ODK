@@ -3,13 +3,13 @@ import { Router, NavigationEnd } from '@angular/router';
 
 import { takeUntil, filter } from 'rxjs/operators';
 
+import { adminUrls } from 'src/app/modules/admin/routing/admin-urls';
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
-import { adminUrls } from 'src/app/modules/admin/routing/admin-urls';
 
 @Component({
   selector: 'app-account-menu',
@@ -32,7 +32,8 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
   links: {
     admin: {
       eventCreate: string;
-      home: string;
+      events: string;
+      superAdmin: string;
     };
     chapter: string,
     logout: string;
@@ -104,7 +105,8 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
       if (token.adminChapterIds && token.adminChapterIds.includes(chapter.id)) {
         this.links.admin = {
           eventCreate: adminUrls.eventCreate(chapter),
-          home: adminUrls.chapter(chapter)
+          events: adminUrls.events(chapter),
+          superAdmin: token.superAdmin ? adminUrls.superAdminPaymentSettings(chapter) : null
         };
       }
 

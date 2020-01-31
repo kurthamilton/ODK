@@ -9,8 +9,9 @@
       <a class="dropdown-item" [routerLink]="links.logout">Sign Out</a>
       <ng-container *ngIf="links.admin">
         <div class="dropdown-divider"></div>
-        <a class="dropdown-item" [routerLink]="links.admin.home">{{chapter.name}} admin</a>
+        <a class="dropdown-item" [routerLink]="links.admin.events">{{chapter.name}} admin</a>
         <a class="dropdown-item" [routerLink]="links.admin.eventCreate">Create event</a>
+        <a *ngIf="links.admin.superAdmin" class="dropdown-item" [routerLink]="links.admin.superAdmin">Super admin</a>
       </ng-container>      
     </div>
   </div>
