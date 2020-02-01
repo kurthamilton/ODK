@@ -1,0 +1,11 @@
+<ng-container *appLoading="!email">
+  <app-breadcrumbs *ngIf="breadcrumbs" [breadcrumbs]="breadcrumbs" [active]="email.name">
+  </app-breadcrumbs>
+  
+  <p>
+    Chapter emails use the standard emails by default. Update the email below to customise the email for this chapter.
+  </p>
+
+  <app-email-form [chapterEmail]="email" [formCallback]="formCallback" (formSubmit)="onFormSubmit($event)">    
+  </app-email-form>
+</ng-container>

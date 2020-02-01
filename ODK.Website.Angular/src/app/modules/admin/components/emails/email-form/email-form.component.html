@@ -1,0 +1,15 @@
+<ngb-alert *ngIf="successMessage" type="success" (close)="onAlertClose()">
+  {{successMessage}}
+</ngb-alert>
+
+<app-form *appLoading="!form" [form]="form" (formSubmit)="onFormSubmit()">
+  <div app-button-row>    
+    <button type="button" class="btn btn-secondary ml-1" (click)="onSendTestEmail()">
+      Send test
+    </button>
+    <button *ngIf="chapterEmail && chapterEmail.id" type="button" class="btn btn-link ml-1" 
+      (click)="onRestoreDefaultClick()">
+      Restore default
+    </button>
+  </div>
+</app-form>

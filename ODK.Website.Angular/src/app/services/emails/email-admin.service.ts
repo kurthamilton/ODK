@@ -12,6 +12,7 @@ import { EmailType } from 'src/app/core/emails/email-type';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { ServiceResult } from '../service-result';
+import { StringUtils } from 'src/app/utils/string-utils';
 
 const baseUrl: string = `${environment.adminApiBaseUrl}/emails`;
 
@@ -20,7 +21,7 @@ const endpoints = {
   chapterEmails: (id: string) => `${baseUrl}/chapters/${id}`,
   chapterEmailProvider: (id: string, chapterEmailProviderId: string) => `${baseUrl}/chapters/${id}/providers/${chapterEmailProviderId}`,
   chapterEmailProviders: (id: string) => `${baseUrl}/chapters/${id}/providers`,
-  email: (type: EmailType, chapterId: string) => `${baseUrl}/${EmailType[type]}?chapterId=${chapterId}`,
+  email: (chapterId: string, type: EmailType) => `${baseUrl}/${EmailType[type]}?chapterId=${chapterId}`,
   emails: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
   send: `${baseUrl}/send`
 };
@@ -76,9 +77,21 @@ export class EmailAdminService {
     );
   }
 
+  getChapterEmail(chapterId: string, type: EmailType): Observable<ChapterEmail> {
+    return this.http.get(endpoints.chapterEmail(chapterId, type)).pipe(
+      map((response: any) => this.mapChapterEmail(response))
+    );
+  }
+
   getChapterEmails(chapterId: string): Observable<ChapterEmail[]> {
     return this.http.get(endpoints.chapterEmails(chapterId)).pipe(
       map((response: any) => response.map(x => this.mapChapterEmail(x)))
+    );
+  }
+
+  getEmail(currentChapterId: string, type: EmailType): Observable<Email> {
+    return this.http.get(endpoints.email(currentChapterId, type)).pipe(
+      map((response: any) => this.mapEmail(response))
     );
   }
 
@@ -134,15 +147,20 @@ export class EmailAdminService {
       subject: email.subject
     });
 
-    return this.http.put(endpoints.email(email.type, currentChapterId), params).pipe(
+    return this.http.put(endpoints.email(currentChapterId, email.type), params).pipe(
       map(() => undefined)
     );
+  }
+
+  private getEmailName(response: any): string {
+    return StringUtils.camelPad(EmailType[response.type] || 'Unknown');
   }
 
   private mapChapterEmail(response: any): ChapterEmail {
     return {
       htmlContent: response.htmlContent,
       id: response.id,
+      name: this.getEmailName(response),
       subject: response.subject,
       type: response.type
     };
@@ -166,6 +184,7 @@ export class EmailAdminService {
   private mapEmail(response: any): Email {
     return {
       htmlContent: response.htmlContent,
+      name: this.getEmailName(response),
       subject: response.subject,
       type: response.type
     };

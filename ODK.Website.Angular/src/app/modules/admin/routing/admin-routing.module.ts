@@ -8,6 +8,7 @@ import { AdminMembersComponent } from '../components/members/admin-members/admin
 import { adminPaths } from './admin-paths';
 import { ChapterAdminGuardService } from 'src/app/routing/chapter-admin-guard.service';
 import { ChapterAdminLayoutComponent } from '../components/chapters/chapter-admin-layout/chapter-admin-layout.component';
+import { ChapterEmailComponent } from '../components/emails/chapter-email/chapter-email.component';
 import { ChapterEmailProviderComponent } from '../components/emails/chapter-email-provider/chapter-email-provider.component';
 import { ChapterEmailProvidersComponent } from '../components/emails/chapter-email-providers/chapter-email-providers.component';
 import { ChapterEmailsComponent } from '../components/emails/chapter-emails/chapter-emails.component';
@@ -23,6 +24,7 @@ import { ChapterSuperAdminGuardService } from 'src/app/routing/chapter-super-adm
 import { CreateChapterEmailProviderComponent } from '../components/emails/create-chapter-email-provider/create-chapter-email-provider.component';
 import { CreateEventComponent } from '../components/events/create-event/create-event.component';
 import { CreateVenueComponent } from '../components/venues/create-venue/create-venue.component';
+import { DefaultEmailComponent } from '../components/emails/default-email/default-email.component';
 import { DefaultEmailsComponent } from '../components/emails/default-emails/default-emails.component';
 import { EditEventComponent } from '../components/events/edit-event/edit-event.component';
 import { EditMemberImageComponent } from '../components/members/edit-member-image/edit-member-image.component';
@@ -33,6 +35,7 @@ import { EventInvitesComponent } from '../components/events/event-invites/event-
 import { EventLayoutComponent } from '../components/events/event-layout/event-layout.component';
 import { EventsAdminLayoutComponent } from '../components/events/events-admin-layout/events-admin-layout.component';
 import { EventsComponent } from '../components/events/events/events.component';
+import { MediaAdminLayoutComponent } from '../components/media/media-admin-layout/media-admin-layout.component';
 import { MediaFilesComponent } from '../components/media/media-files/media-files.component';
 import { MemberEventsComponent } from '../components/members/member-events/member-events.component';
 import { MemberLayoutComponent } from '../components/members/member-layout/member-layout.component';
@@ -47,7 +50,6 @@ import { SuperAdminLayoutComponent } from '../components/super-admin/super-admin
 import { VenueEventsComponent } from '../components/venues/venue-events/venue-events.component';
 import { VenueLayoutComponent } from '../components/venues/venue-layout/venue-layout.component';
 import { VenuesComponent } from '../components/venues/venues/venues.component';
-import { MediaAdminLayoutComponent } from '../components/media/media-admin-layout/media-admin-layout.component';
 
 const routes: Routes = [
   { path: '', component: AdminLayoutComponent, canActivate: [ChapterAdminGuardService], children: [
@@ -57,7 +59,10 @@ const routes: Routes = [
     { path: adminPaths.chapter.path, component: ChapterAdminLayoutComponent, children: [
       { path: '', component: ChapterSettingsComponent },      
 
-      { path: adminPaths.chapter.emails.path, component: ChapterEmailsComponent },
+      { path: adminPaths.chapter.emails.path, children: [
+        { path: '', component: ChapterEmailsComponent },
+        { path: adminPaths.chapter.emails.email.path, component: ChapterEmailComponent }
+      ] },
 
       { path: adminPaths.chapter.properties.path, children: [
         { path: '', component: ChapterPropertiesComponent },
@@ -129,7 +134,11 @@ const routes: Routes = [
         { path: adminPaths.emailProviders.emailProvider.path, component: ChapterEmailProviderComponent }
       ] },
 
-      { path: adminPaths.superAdmin.emails.path, component: DefaultEmailsComponent },
+      { path: adminPaths.superAdmin.emails.path, children: [
+        { path: '', component: DefaultEmailsComponent },
+        { path: adminPaths.superAdmin.emails.email.path, component: DefaultEmailComponent }
+      ] },
+
       { path: adminPaths.superAdmin.errorLog.path, component: ErrorLogComponent },      
       { path: adminPaths.superAdmin.paymentSettings.path, component: ChapterPaymentSettingsComponent }
     ] },

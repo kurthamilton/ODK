@@ -13,8 +13,14 @@ export const adminPaths = {
     path: 'admin-members'
   },
 
-  chapter: {
+  chapter: {    
     emails: {
+      email: {
+        path: ':type',
+        params: {
+          type: 'type'
+        }      
+      },
       path: 'emails'
     },    
     path: 'chapter',    
@@ -121,6 +127,12 @@ export const adminPaths = {
 
   superAdmin: {
     emails: {
+      email: {
+        path: ':type',
+        params: {
+          type: 'type'
+        }
+      },
       path: 'emails'
     },
     errorLog: {

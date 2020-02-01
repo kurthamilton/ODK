@@ -17,6 +17,7 @@ import { AdminSubMenuComponent } from './components/structure/admin-sub-menu/adm
 import { AppFormsModule } from '../forms/app-forms.module';
 import { AppSharedModule } from '../shared/app-shared.module';
 import { ChapterAdminLayoutComponent } from './components/chapters/chapter-admin-layout/chapter-admin-layout.component';
+import { ChapterEmailComponent } from './components/emails/chapter-email/chapter-email.component';
 import { ChapterEmailProviderComponent } from './components/emails/chapter-email-provider/chapter-email-provider.component';
 import { ChapterEmailProviderFormComponent } from './components/emails/chapter-email-provider-form/chapter-email-provider-form.component';
 import { ChapterEmailProvidersComponent } from './components/emails/chapter-email-providers/chapter-email-providers.component';
@@ -34,11 +35,13 @@ import { ChapterSettingsComponent } from './components/chapters/chapter-settings
 import { CreateChapterEmailProviderComponent } from './components/emails/create-chapter-email-provider/create-chapter-email-provider.component';
 import { CreateEventComponent } from './components/events/create-event/create-event.component';
 import { CreateVenueComponent } from './components/venues/create-venue/create-venue.component';
+import { DefaultEmailComponent } from './components/emails/default-email/default-email.component';
 import { DefaultEmailsComponent } from './components/emails/default-emails/default-emails.component';
 import { DropDownMultiFormControlComponent } from './components/forms/inputs/drop-down-multi-form-control/drop-down-multi-form-control.component';
 import { EditEventComponent } from './components/events/edit-event/edit-event.component';
 import { EditMemberImageComponent } from './components/members/edit-member-image/edit-member-image.component';
 import { EditVenueComponent } from './components/venues/edit-venue/edit-venue.component';
+import { EmailFormComponent } from './components/emails/email-form/email-form.component';
 import { ErrorLogComponent } from './components/super-admin/error-log/error-log.component';
 import { EventAttendeesComponent } from './components/events/event-attendees/event-attendees.component';
 import { EventFormComponent } from './components/events/event-form/event-form.component';
@@ -52,6 +55,7 @@ import { EventsAdminLayoutComponent } from './components/events/events-admin-lay
 import { EventsComponent } from './components/events/events/events.component';
 import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
 import { HtmlEditorFormControlComponent } from './components/forms/inputs/html-editor-form-control/html-editor-form-control.component';
+import { MediaAdminLayoutComponent } from './components/media/media-admin-layout/media-admin-layout.component';
 import { MediaFileComponent } from './components/media/media-file/media-file.component';
 import { MediaFilesComponent } from './components/media/media-files/media-files.component';
 import { MemberEventsComponent } from './components/members/member-events/member-events.component';
@@ -78,7 +82,6 @@ import { VenueFormComponent } from './components/venues/venue-form/venue-form.co
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
-import { MediaAdminLayoutComponent } from './components/media/media-admin-layout/media-admin-layout.component';
 
 @NgModule({
   declarations: [
@@ -90,6 +93,7 @@ import { MediaAdminLayoutComponent } from './components/media/media-admin-layout
     AdminMenuComponent,
     AdminSubMenuComponent,
     ChapterAdminLayoutComponent,
+    ChapterEmailComponent,
     ChapterEmailProviderComponent,
     ChapterEmailProviderFormComponent,
     ChapterEmailProvidersComponent,
@@ -107,11 +111,13 @@ import { MediaAdminLayoutComponent } from './components/media/media-admin-layout
     CreateChapterEmailProviderComponent,
     CreateEventComponent,
     CreateVenueComponent,
+    DefaultEmailComponent,
     DefaultEmailsComponent,
     DropDownMultiFormControlComponent,
     EditEventComponent,
     EditMemberImageComponent,
     EditVenueComponent,
+    EmailFormComponent,
     ErrorLogComponent,
     EventAttendeesComponent,
     EventFormComponent,
@@ -125,6 +131,7 @@ import { MediaAdminLayoutComponent } from './components/media/media-admin-layout
     EventsComponent,
     GoogleMapsTextInputFormControlComponent,
     HtmlEditorFormControlComponent,
+    MediaAdminLayoutComponent,
     MediaFileComponent,
     MediaFilesComponent,
     MemberEventsComponent,
@@ -151,7 +158,6 @@ import { MediaAdminLayoutComponent } from './components/media/media-admin-layout
     VenueLayoutComponent,
     VenueMenuComponent,
     VenuesComponent,
-    MediaAdminLayoutComponent,
   ],
   imports: [
     AdminRoutingModule,

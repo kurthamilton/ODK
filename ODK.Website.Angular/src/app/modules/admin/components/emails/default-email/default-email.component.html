@@ -1,0 +1,7 @@
+<ng-container *appLoading="!email">
+  <app-breadcrumbs *ngIf="breadcrumbs" [breadcrumbs]="breadcrumbs" [active]="email.name">
+  </app-breadcrumbs>
+
+  <app-email-form [email]="email" [formCallback]="formCallback" (formSubmit)="onFormSubmit($event)">    
+  </app-email-form>
+</ng-container>

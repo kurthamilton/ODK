@@ -1,5 +1,6 @@
 import { adminPaths } from './admin-paths';
 import { Chapter } from 'src/app/core/chapters/chapter';
+import { ChapterEmail } from 'src/app/core/emails/chapter-email';
 import { ChapterEmailProvider } from 'src/app/core/emails/chapter-email-provider';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
@@ -7,6 +8,7 @@ import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription'
 import { Event } from 'src/app/core/events/event';
 import { Member } from 'src/app/core/members/member';
 import { Venue } from 'src/app/core/venues/venue';
+import { Email } from 'src/app/core/emails/email';
 
 const chapterPaths = adminPaths.chapter;
 const eventsPaths = adminPaths.events;
@@ -42,6 +44,7 @@ export const adminUrls = {
   adminMembers: (chapter: Chapter) => membersPath(chapter, adminPaths.adminMembers.path),
 
   chapter: (chapter: Chapter) => chapterPath(chapter),
+  chapterEmail: (chapter: Chapter, email: ChapterEmail) => chapterPath(chapter, chapterPaths.emails.path, email.type.toString()),  
   chapterEmails: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emails.path),  
   chapterProperties: (chapter: Chapter) => chapterPath(chapter, chapterPaths.properties.path),
   chapterProperty: (chapter: Chapter, property: ChapterProperty) => chapterPath(chapter, chapterPaths.properties.path, property.id),
@@ -72,6 +75,7 @@ export const adminUrls = {
   subscriptionCreate: (chapter: Chapter) => subscriptionsPath(chapter, adminPaths.subscriptions.create.path),
   subscriptions: (chapter: Chapter) => subscriptionsPath(chapter),
 
+  superAdminEmail: (chapter: Chapter, email: Email) => superAdminPath(chapter, adminPaths.superAdmin.emails.path, email.type.toString()),
   superAdminEmails: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.emails.path),
   superAdminErrorLog: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.errorLog.path),
   superAdminPaymentSettings: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.paymentSettings.path),  

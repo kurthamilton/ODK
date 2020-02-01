@@ -31,10 +31,17 @@ namespace ODK.Web.Api.Admin.Emails
         }
 
         [HttpGet]
-        public async Task<IEnumerable<EmailApiResponse>> Get(Guid chapterId)
+        public async Task<IEnumerable<EmailApiResponse>> GetEmails(Guid chapterId)
         {
             IReadOnlyCollection<Email> emails = await _emailAdminService.GetEmails(GetMemberId(), chapterId);
             return emails.Select(_mapper.Map<EmailApiResponse>);
+        }
+
+        [HttpGet("{type}")]
+        public async Task<EmailApiResponse> GetEmail(Guid chapterId, EmailType type)
+        {
+            Email email = await _emailAdminService.GetEmail(GetMemberId(), chapterId, type);
+            return _mapper.Map<EmailApiResponse>(email);
         }
 
         [HttpPut("{type}")]
@@ -51,6 +58,13 @@ namespace ODK.Web.Api.Admin.Emails
         {
             IReadOnlyCollection<ChapterEmail> emails = await _emailAdminService.GetChapterEmails(GetMemberId(), id);
             return emails.Select(_mapper.Map<ChapterEmailApiResponse>);
+        }
+
+        [HttpGet("Chapters/{id}/{type}")]
+        public async Task<ChapterEmailApiResponse> GetChapterEmail(Guid id, EmailType type)
+        {
+            ChapterEmail email = await _emailAdminService.GetChapterEmail(GetMemberId(), id, type);
+            return _mapper.Map<ChapterEmailApiResponse>(email);
         }
 
         [HttpPut("Chapters/{id}/{type}")]

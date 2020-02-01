@@ -51,6 +51,20 @@ namespace ODK.Services.Emails
             await _chapterRepository.DeleteChapterEmailProvider(provider.Id);
         }
 
+        public async Task<ChapterEmail> GetChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            ChapterEmail chapterEmail = await _emailRepository.GetChapterEmail(chapterId, type);
+            if (chapterEmail != null)
+            {
+                return chapterEmail;
+            }
+
+            Email email = await _emailRepository.GetEmail(type, chapterId);
+            return new ChapterEmail(Guid.Empty, chapterId, type, email.Subject, email.HtmlContent);
+        }
+
         public async Task<ChapterEmailProvider> GetChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId)
         {
             ChapterEmailProvider provider = await _chapterRepository.GetChapterEmailProvider(chapterEmailProviderId);
@@ -93,6 +107,13 @@ namespace ODK.Services.Emails
                 .Union(defaultEmails)
                 .OrderBy(x => x.Type)
                 .ToArray();
+        }
+
+        public async Task<Email> GetEmail(Guid currentMemberId, Guid currentChapterId, EmailType type)
+        {
+            await AssertMemberIsChapterSuperAdmin(currentMemberId, currentChapterId);
+
+            return await _emailRepository.GetEmail(type);
         }
 
         public async Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId, Guid currentChapterId)

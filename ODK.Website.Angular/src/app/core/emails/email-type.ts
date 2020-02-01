@@ -6,5 +6,6 @@ export enum EmailType {
   ContactRequest = 4,
   NewMember = 5,
   NewMemberAdmin = 6,
-  EmailAddressUpdate = 7
+  EmailAddressUpdate = 7,
+  Layout = 8
 }
