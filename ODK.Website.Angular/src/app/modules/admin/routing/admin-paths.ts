@@ -23,6 +23,9 @@ export const adminPaths = {
       },
       path: 'emails'
     },    
+    links: {
+      path: 'links'
+    },
     path: 'chapter',    
     properties: {
       create: {

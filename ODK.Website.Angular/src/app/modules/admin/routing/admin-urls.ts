@@ -46,6 +46,7 @@ export const adminUrls = {
   chapter: (chapter: Chapter) => chapterPath(chapter),
   chapterEmail: (chapter: Chapter, email: ChapterEmail) => chapterPath(chapter, chapterPaths.emails.path, email.type.toString()),  
   chapterEmails: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emails.path),  
+  chapterLinks: (chapter: Chapter) => chapterPath(chapter, chapterPaths.links.path),
   chapterProperties: (chapter: Chapter) => chapterPath(chapter, chapterPaths.properties.path),
   chapterProperty: (chapter: Chapter, property: ChapterProperty) => chapterPath(chapter, chapterPaths.properties.path, property.id),
   chapterPropertyCreate: (chapter: Chapter) => chapterPath(chapter, chapterPaths.properties.path, chapterPaths.properties.create.path),

@@ -20,6 +20,7 @@ import { ChapterQuestionComponent } from '../components/chapters/chapter-questio
 import { ChapterQuestionCreateComponent } from '../components/chapters/chapter-question-create/chapter-question-create.component';
 import { ChapterQuestionsComponent } from '../components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from '../components/chapters/chapter-settings/chapter-settings.component';
+import { ChapterSocialLinksComponent } from '../components/chapters/chapter-social-links/chapter-social-links.component';
 import { ChapterSuperAdminGuardService } from 'src/app/routing/chapter-super-admin-guard.service';
 import { CreateChapterEmailProviderComponent } from '../components/emails/create-chapter-email-provider/create-chapter-email-provider.component';
 import { CreateEventComponent } from '../components/events/create-event/create-event.component';
@@ -63,6 +64,8 @@ const routes: Routes = [
         { path: '', component: ChapterEmailsComponent },
         { path: adminPaths.chapter.emails.email.path, component: ChapterEmailComponent }
       ] },
+
+      { path: adminPaths.chapter.links.path, component: ChapterSocialLinksComponent },
 
       { path: adminPaths.chapter.properties.path, children: [
         { path: '', component: ChapterPropertiesComponent },

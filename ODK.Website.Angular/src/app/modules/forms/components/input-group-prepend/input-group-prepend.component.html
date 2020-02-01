@@ -1,6 +1,6 @@
 <div *ngIf="viewModel" class="input-group-prepend">
   <span class="input-group-text">
-    <span *ngIf="viewModel.icon" class="d-md-none">
+    <span *ngIf="viewModel.icon" [class.d-md-none]="viewModel.text">
       <i class="fas fab" [ngClass]="viewModel.icon"></i>
     </span>
     <span [class.d-none]="viewModel.icon" [class.d-md-inline]="viewModel.icon">{{viewModel.text}}</span>

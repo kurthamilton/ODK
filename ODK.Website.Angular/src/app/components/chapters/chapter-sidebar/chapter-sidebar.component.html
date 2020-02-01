@@ -3,7 +3,7 @@
     <div class="card sidebar-card" *ngIf="eventViewModels.length">
       <div class="card-header">Upcoming events</div>
       
-      <div class="card-body card-body-sm" *ngFor="let viewModel of eventViewModels">
+      <div *ngFor="let viewModel of eventViewModels" class="card-body card-body-sm">
         <h5 class="card-title">
           <app-event-response-icon *ngIf="viewModel.memberResponse" [type]="viewModel.memberResponse.responseType"
             [readOnly]="true">

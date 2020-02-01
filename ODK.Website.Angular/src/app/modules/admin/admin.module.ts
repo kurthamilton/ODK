@@ -82,6 +82,7 @@ import { VenueFormComponent } from './components/venues/venue-form/venue-form.co
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
+import { ChapterSocialLinksComponent } from './components/chapters/chapter-social-links/chapter-social-links.component';
 
 @NgModule({
   declarations: [
@@ -158,6 +159,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     VenueLayoutComponent,
     VenueMenuComponent,
     VenuesComponent,
+    ChapterSocialLinksComponent,
   ],
   imports: [
     AdminRoutingModule,

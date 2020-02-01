@@ -29,7 +29,7 @@ namespace ODK.Web.Api.Chapters
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ChapterApiResponse>>> Get()
+        public async Task<ActionResult<IEnumerable<ChapterApiResponse>>> GetChapters()
         {
             return await HandleVersionedRequest(
                 _chapterService.GetChapters,

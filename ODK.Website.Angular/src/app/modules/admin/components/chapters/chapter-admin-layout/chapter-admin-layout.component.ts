@@ -22,6 +22,7 @@ export class ChapterAdminLayoutComponent implements OnInit {
     this.menuItems = [
       { link: adminUrls.chapter(chapter), text: 'Text', matchExactRoute: true },
       { link: adminUrls.chapterQuestions(chapter), text: 'About' },
+      { link: adminUrls.chapterLinks(chapter), text: 'Links' },
       { link: adminUrls.chapterProperties(chapter), text: 'Properties' },
       { link: adminUrls.chapterEmails(chapter), text: 'Emails' }
     ];

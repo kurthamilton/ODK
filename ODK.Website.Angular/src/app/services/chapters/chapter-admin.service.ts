@@ -17,6 +17,7 @@ import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { ServiceResult } from '../service-result';
+import { ChapterLinks } from 'src/app/core/chapters/chapter-links';
 
 const baseUrl = `${environment.adminApiBaseUrl}/chapters`;
 
@@ -24,6 +25,7 @@ const endpoints = {
   adminMember: (id: string, memberId: string) => `${baseUrl}/${id}/adminmembers/${memberId}`,
   adminMembers: (id: string) => `${baseUrl}/${id}/adminmembers`,
   chapters: baseUrl,  
+  links: (id: string) => `${baseUrl}/${id}/links`,
   membershipSettings: (id: string) => `${baseUrl}/${id}/membership/settings`,
   paymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
   properties: (id: string) => `${baseUrl}/${id}/properties`,
@@ -254,6 +256,18 @@ export class ChapterAdminService extends ChapterService {
       map((response: any) => this.mapChapterAdminPaymentSettings(response))
     );
   }    
+
+  updateChapterLinks(chapterId: string, links: ChapterLinks): Observable<void> {
+    const params: HttpParams = HttpUtils.createFormParams({
+      facebook: links.facebook,
+      instagram: links.instagram,
+      twitter: links.twitter
+    });
+
+    return this.http.put(endpoints.links(chapterId), params).pipe(
+      map(() => undefined)
+    );
+  }
 
   updateChapterProperty(property: ChapterProperty): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
