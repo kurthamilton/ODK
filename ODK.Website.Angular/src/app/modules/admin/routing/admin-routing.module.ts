@@ -36,6 +36,7 @@ import { EventInvitesComponent } from '../components/events/event-invites/event-
 import { EventLayoutComponent } from '../components/events/event-layout/event-layout.component';
 import { EventsAdminLayoutComponent } from '../components/events/events-admin-layout/events-admin-layout.component';
 import { EventsComponent } from '../components/events/events/events.component';
+import { ImportMembersComponent } from '../components/members/import-members/import-members.component';
 import { MediaAdminLayoutComponent } from '../components/media/media-admin-layout/media-admin-layout.component';
 import { MediaFilesComponent } from '../components/media/media-files/media-files.component';
 import { MemberEventsComponent } from '../components/members/member-events/member-events.component';
@@ -112,6 +113,8 @@ const routes: Routes = [
         { path: adminPaths.adminMembers.add.path, component: AdminMemberAddComponent },
         { path: adminPaths.adminMembers.adminMember.path, component: AdminMemberComponent }
       ] },
+
+      { path: adminPaths.members.import.path, component: ImportMembersComponent },
 
       { path: adminPaths.subscriptions.path, children: [
         { path: '', component: SubscriptionsComponent },

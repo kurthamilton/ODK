@@ -12,7 +12,7 @@ namespace ODK.Services
             ChapterRepository = chapterRepository;
         }
 
-        private IChapterRepository ChapterRepository { get; }
+        protected IChapterRepository ChapterRepository { get; }
 
         protected async Task AssertMemberIsChapterAdmin(Guid memberId, Guid chapterId)
         {

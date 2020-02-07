@@ -97,6 +97,9 @@ export const adminPaths = {
   },
   
   members: {
+    import: {
+      path: 'import'
+    },
     path: 'members',
     member: {
       events: {

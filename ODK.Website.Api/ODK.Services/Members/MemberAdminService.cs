@@ -6,6 +6,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
+using ODK.Services.Files;
 
 namespace ODK.Services.Members
 {
@@ -53,6 +54,19 @@ namespace ODK.Services.Members
             return await GetMember(currentMemberId, memberId, false);
         }
 
+        public async Task<CsvFile> GetMemberImportFile(Guid currentMemberId, Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            IReadOnlyCollection<ChapterProperty> properties = await ChapterRepository.GetChapterProperties(chapterId);
+
+            MemberCsvFileHeaders headers = new MemberCsvFileHeaders(properties);
+
+            CsvFile file = new CsvFile();
+            file.Header.AddValues(headers.ToFields());
+            return file;
+        }
+
         public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
@@ -72,6 +86,63 @@ namespace ODK.Services.Members
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             return await _memberRepository.GetMemberSubscriptions(chapterId);
+        }
+
+        public async Task ImportMembers(Guid currentMemberId, Guid chapterId, CsvFile file)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            IReadOnlyCollection<ChapterProperty> chapterProperties = await ChapterRepository.GetChapterProperties(chapterId);
+
+            MemberCsvFileHeaders headers = new MemberCsvFileHeaders(chapterProperties);
+
+            IDictionary<string, int> headerIndexes = file.GetColumnIndexes();
+
+            IDictionary<int, Member> members = new Dictionary<int, Member>();
+
+            IDictionary<int, MemberSubscription> membersSubscriptions = new Dictionary<int, MemberSubscription>();
+
+            IDictionary<int, IReadOnlyCollection<MemberProperty>> membersProperties =
+                new Dictionary<int, IReadOnlyCollection<MemberProperty>>();
+
+            for (int i = 0; i < file.Rows.Count; i++)
+            {
+                CsvRow row = file.Rows.ElementAt(i);
+
+                members.Add(i, new Member(Guid.Empty, chapterId,
+                    row.Value(headerIndexes[MemberCsvFileHeaders.Email]),
+                    true,
+                    row.Value(headerIndexes[MemberCsvFileHeaders.FirstName]),
+                    row.Value(headerIndexes[MemberCsvFileHeaders.LastName]),
+                    DateTime.UtcNow,
+                    true,
+                    false,
+                    0));
+
+                if (DateTime.TryParse(row.Value(headerIndexes[MemberCsvFileHeaders.SubscriptionExpiry]), out DateTime subscriptionExpiry))
+                {
+                    membersSubscriptions.Add(i, new MemberSubscription(Guid.Empty, SubscriptionType.Full, subscriptionExpiry));
+                }
+
+                membersProperties.Add(i, chapterProperties
+                    .Select(x => new MemberProperty(Guid.Empty, Guid.Empty, x.Id, row.Value(headerIndexes[x.Label])))
+                    .ToArray());
+            }
+
+            // TODO: validate members
+
+            for (int i = 0; i < file.Rows.Count; i++)
+            {
+                Guid memberId = await _memberRepository.CreateMember(members[i]);
+
+                await _memberRepository.UpdateMemberProperties(memberId, membersProperties[i]);
+
+                if (membersSubscriptions.ContainsKey(i))
+                {
+                    MemberSubscription subscription = new MemberSubscription(memberId, membersSubscriptions[i].Type, membersSubscriptions[i].ExpiryDate);
+                    await _memberRepository.UpdateMemberSubscription(subscription);
+                }
+            }
         }
 
         public async Task<MemberImage> RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees)

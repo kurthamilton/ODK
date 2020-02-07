@@ -2,12 +2,14 @@
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
 using ODK.Services;
+using ODK.Services.Files;
 using ODK.Web.Common.Account.Requests;
 using ODK.Web.Common.Extensions;
 
@@ -41,6 +43,12 @@ namespace ODK.Web.Common
         protected ActionResult<T> Created<T>(T response)
         {
             return StatusCode(201, response);
+        }
+
+        protected IActionResult CsvResult(CsvFile file, string name)
+        {
+            byte[] buffer = Encoding.ASCII.GetBytes(file.ToString());
+            return File(buffer, "text/csv", name);
         }
 
         protected Guid GetMemberId()

@@ -24,6 +24,7 @@ export class MembersAdminLayoutComponent implements OnInit {
     this.menuItems = [
       { link: adminUrls.members(this.chapter), text: 'Members', matchExactRoute: true },
       { link: adminUrls.subscriptions(this.chapter), text: 'Subscriptions' },
+      { link: adminUrls.memberImport(this.chapter), text: 'Import' },
       { link: adminUrls.adminMembers(this.chapter), text: 'Admin members' }
     ]
   }

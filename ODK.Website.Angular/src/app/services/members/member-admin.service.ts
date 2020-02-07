@@ -17,6 +17,8 @@ const baseUrl: string = `${environment.adminApiBaseUrl}/members`;
 
 const endpoints = {
   member: (memberId: string) => `${baseUrl}/${memberId}`,
+  memberImport: (chapterId: string) => `${baseUrl}/import?chapterId=${chapterId}`,
+  memberImportTemplate: (chapterId: string) => `${baseUrl}/import/template?chapterId=${chapterId}`,
   members: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`,
   memberSubscription: (memberId: string) => `${baseUrl}/${memberId}/subscription`,
   memberSubscriptions: (chapterId: string) => `${baseUrl}/subscriptions?chapterId=${chapterId}`,
@@ -57,6 +59,10 @@ export class MemberAdminService extends MemberService {
     );
   }
 
+  getMemberImportTemplateUrl(chapterId: string): string {
+    return endpoints.memberImportTemplate(chapterId);
+  }
+
   getMemberSubscription(memberId: string): Observable<MemberSubscription> {
     return this.http.get(endpoints.memberSubscription(memberId)).pipe(
       map((response: any) => this.mapMemberSubscription(response))
@@ -66,6 +72,18 @@ export class MemberAdminService extends MemberService {
   getMemberSubscriptions(chapterId: string): Observable<MemberSubscription[]> {
     return this.http.get(endpoints.memberSubscriptions(chapterId)).pipe(
       map((response: any) => response.map(x => this.mapMemberSubscription(x)))
+    );
+  }
+
+  importMembers(chapterId: string, file: File): Observable<ServiceResult<void>> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post(endpoints.memberImport(chapterId), formData).pipe(
+      map((): ServiceResult<void> => ({
+        success: true
+      })),
+      catchApiError()
     );
   }
 

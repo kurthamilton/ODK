@@ -1,0 +1,10 @@
+<h2>Member import</h2>
+<p>
+  <app-file-download [file]="file" linkText="Download template">
+  </app-file-download>
+</p>
+<p>
+  <input type="file" accept=".csv" #upload placeholder="Choose file" class="d-none"
+    (change)="onUploadFile(upload.files)" />    
+  <button class="btn btn-primary" (click)="upload.click()">Import members</button>
+</p>

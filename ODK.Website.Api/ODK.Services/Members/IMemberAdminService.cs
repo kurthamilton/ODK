@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Members;
+using ODK.Services.Files;
 
 namespace ODK.Services.Members
 {
@@ -15,11 +16,15 @@ namespace ODK.Services.Members
 
         Task<Member> GetMember(Guid currentMemberId, Guid memberId);
 
+        Task<CsvFile> GetMemberImportFile(Guid currentMemberId, Guid chapterId);
+
         Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId);
 
         Task<MemberSubscription> GetMemberSubscription(Guid currentMemberId, Guid memberId);
 
         Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId);
+
+        Task ImportMembers(Guid currentMemberId, Guid chapterId, CsvFile file);
 
         Task<MemberImage> RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees);
 

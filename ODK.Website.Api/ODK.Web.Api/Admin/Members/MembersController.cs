@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
+using ODK.Services.Files;
 using ODK.Services.Members;
 using ODK.Web.Api.Admin.Members.Requests;
 using ODK.Web.Common;
@@ -21,11 +24,13 @@ namespace ODK.Web.Api.Admin.Members
     [Route("Admin/Members")]
     public class MembersController : OdkControllerBase
     {
+        private readonly ICsvService _csvService;
         private readonly IMapper _mapper;
         private readonly IMemberAdminService _memberAdminService;
 
-        public MembersController(IMemberAdminService memberAdminService, IMapper mapper)
+        public MembersController(IMemberAdminService memberAdminService, IMapper mapper, ICsvService csvService)
         {
+            _csvService = csvService;
             _mapper = mapper;
             _memberAdminService = memberAdminService;
         }
@@ -111,6 +116,24 @@ namespace ODK.Web.Api.Admin.Members
 
             MemberSubscription updated = await _memberAdminService.UpdateMemberSubscription(GetMemberId(), id, update);
             return _mapper.Map<SubscriptionApiResponse>(updated);
+        }
+
+        [HttpPost("Import")]
+        public async Task<IActionResult> ImportMembers(Guid chapterId, [FromForm] IFormFile file)
+        {
+            using Stream stream = file.OpenReadStream();
+
+            CsvFile csvFile = _csvService.ParseCsvFile(stream);
+
+            await _memberAdminService.ImportMembers(GetMemberId(), chapterId, csvFile);
+            return NoContent();
+        }
+
+        [HttpGet("Import/Template")]
+        public async Task<IActionResult> GetMemberImportTemplate(Guid chapterId)
+        {
+            CsvFile file = await _memberAdminService.GetMemberImportFile(GetMemberId(), chapterId);
+            return CsvResult(file, "Members.csv");
         }
     }
 }

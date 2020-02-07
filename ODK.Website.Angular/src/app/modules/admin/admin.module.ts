@@ -32,6 +32,7 @@ import { ChapterQuestionCreateComponent } from './components/chapters/chapter-qu
 import { ChapterQuestionFormComponent } from './components/chapters/chapter-question-form/chapter-question-form.component';
 import { ChapterQuestionsComponent } from './components/chapters/chapter-questions/chapter-questions.component';
 import { ChapterSettingsComponent } from './components/chapters/chapter-settings/chapter-settings.component';
+import { ChapterSocialLinksComponent } from './components/chapters/chapter-social-links/chapter-social-links.component';
 import { CreateChapterEmailProviderComponent } from './components/emails/create-chapter-email-provider/create-chapter-email-provider.component';
 import { CreateEventComponent } from './components/events/create-event/create-event.component';
 import { CreateVenueComponent } from './components/venues/create-venue/create-venue.component';
@@ -53,8 +54,10 @@ import { EventMenuComponent } from './components/events/event-menu/event-menu.co
 import { EventResponsesComponent } from './components/events/event-responses/event-responses.component';
 import { EventsAdminLayoutComponent } from './components/events/events-admin-layout/events-admin-layout.component';
 import { EventsComponent } from './components/events/events/events.component';
+import { FileDownloadComponent } from './components/elements/file-download/file-download.component';
 import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
 import { HtmlEditorFormControlComponent } from './components/forms/inputs/html-editor-form-control/html-editor-form-control.component';
+import { ImportMembersComponent } from './components/members/import-members/import-members.component';
 import { MediaAdminLayoutComponent } from './components/media/media-admin-layout/media-admin-layout.component';
 import { MediaFileComponent } from './components/media/media-file/media-file.component';
 import { MediaFilesComponent } from './components/media/media-files/media-files.component';
@@ -82,7 +85,6 @@ import { VenueFormComponent } from './components/venues/venue-form/venue-form.co
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
-import { ChapterSocialLinksComponent } from './components/chapters/chapter-social-links/chapter-social-links.component';
 
 @NgModule({
   declarations: [
@@ -160,6 +162,8 @@ import { ChapterSocialLinksComponent } from './components/chapters/chapter-socia
     VenueMenuComponent,
     VenuesComponent,
     ChapterSocialLinksComponent,
+    ImportMembersComponent,
+    FileDownloadComponent,
   ],
   imports: [
     AdminRoutingModule,

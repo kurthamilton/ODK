@@ -67,8 +67,9 @@ export const adminUrls = {
   media: (chapter: Chapter) => url(chapter, adminPaths.media.path),
 
   member: (chapter: Chapter, member: Member) => memberPath(chapter, member),
-  memberEvents: (chapter: Chapter, member: Member) => memberPath(chapter, member, memberPaths.events.path),
+  memberEvents: (chapter: Chapter, member: Member) => memberPath(chapter, member, memberPaths.events.path),  
   memberImage: (chapter: Chapter, member: Member) => memberPath(chapter, member, memberPaths.image.path),
+  memberImport: (chapter: Chapter) => membersPath(chapter, membersPaths.import.path),
   members: (chapter: Chapter) => membersPath(chapter),
   memberSendEmail: (chapter: Chapter, member: Member) => memberPath(chapter, member, memberPaths.sendEmail.path),
 

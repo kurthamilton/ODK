@@ -31,6 +31,7 @@ using ODK.Services.SocialMedia;
 using ODK.Services.Venues;
 using ODK.Web.Common.Config.Settings;
 using ODK.Services.Media;
+using ODK.Services.Files;
 
 namespace ODK.Web.Common.Config
 {
@@ -76,6 +77,7 @@ namespace ODK.Web.Common.Config
             services.AddScoped<IChapterAdminService, ChapterAdminService>();
             services.AddScoped<IChapterService, ChapterService>();
             services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<ICsvService, CsvService>();
             services.AddScoped<IEmailAdminService, EmailAdminService>();
             services.AddScoped<IEventAdminService, EventAdminService>();
             services.AddScoped<IEventService, EventService>();

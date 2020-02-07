@@ -74,6 +74,7 @@ namespace ODK.Services.Members
         public async Task CreateMember(Guid chapterId, CreateMemberProfile profile)
         {
             await ValidateMemberProfile(chapterId, profile);
+
             ValidateMemberImage(profile.Image.MimeType, profile.Image.ImageData);
 
             Member existing = await _memberRepository.FindMemberByEmailAddress(profile.EmailAddress);
