@@ -23,7 +23,7 @@ export class StripeFormComponent implements OnInit, OnDestroy {
   @Output() cardSubmit: EventEmitter<string> = new EventEmitter<string>();
   @Output() close: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  @ViewChild('card', { static: false }) card: ElementRef;
+  @ViewChild('card') card: ElementRef;
 
   error: string;
   loadingOptions: LoadingSpinnerOptions = {

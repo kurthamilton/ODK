@@ -1,4 +1,4 @@
-import { Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy, Directive } from '@angular/core';
 import { FormGroup, AbstractControl } from '@angular/forms';
 
 import { Observable } from 'rxjs';
@@ -8,6 +8,7 @@ import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 import { FormControlViewModel } from '../form-control.view-model';
 import { FormUtils } from '../../utils/form-utils';
 
+@Directive()
 export abstract class InputBase implements OnDestroy {
 
   private _viewModel: FormControlViewModel;

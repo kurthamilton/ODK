@@ -63,9 +63,6 @@ import { RawHtmlComponent } from './components/elements/raw-html/raw-html.compon
     NgbModalModule,
     NgbTooltipModule,
     RawHtmlComponent
-  ],
-  entryComponents: [
-    LoadingSpinnerComponent,
   ]
 })
 export class AppSharedModule { }

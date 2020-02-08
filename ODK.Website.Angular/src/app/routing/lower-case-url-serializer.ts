@@ -1,5 +1,7 @@
+import { Injectable } from '@angular/core';
 import { DefaultUrlSerializer, UrlTree } from '@angular/router';
 
+@Injectable()
 export class LowerCaseUrlSerializer extends DefaultUrlSerializer {
   parse(url: string): UrlTree {
     const parts: string[] = url.split('?');

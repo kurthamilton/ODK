@@ -130,11 +130,11 @@ export class MembersComponent implements OnInit {
 
   private sortMembers(): void {
     this.viewModels.sort((a, b) => {
-      if (this.sortBy.direction === 'desc') {
+      if (this.sortBy?.direction === 'desc') {
         [a, b] = [b, a];
       }
 
-      switch (this.sortBy.column) {
+      switch (this.sortBy?.column) {
         case 'expires':
           return DateUtils.compare(a.subscription.expiryDate, b.subscription.expiryDate);
         default:

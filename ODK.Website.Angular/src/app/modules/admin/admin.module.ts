@@ -173,11 +173,6 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     ClipboardModule,
     CommonModule,
     NgSelectModule,
-  ],
-  entryComponents: [
-    DropDownMultiFormControlComponent,
-    GoogleMapsTextInputFormControlComponent,
-    HtmlEditorFormControlComponent
   ]
 })
 export class AdminModule { }

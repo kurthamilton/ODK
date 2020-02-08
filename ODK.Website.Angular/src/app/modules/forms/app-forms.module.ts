@@ -61,16 +61,6 @@ import { TextInputFormControlComponent } from './components/inputs/text-input-fo
     ReadOnlyFormControlComponent,
     TextAreaComponent,
     TextInputFormControlComponent,
-  ],
-  entryComponents: [
-    CheckBoxFormControlComponent,
-    DateInputFormControlComponent,
-    DropDownFormControlComponent,
-    FileInputFormControlComponent,
-    NumberInputFormControlComponent,
-    ReadOnlyFormControlComponent,
-    TextAreaComponent,
-    TextInputFormControlComponent,
   ]
 })
 export class AppFormsModule { }

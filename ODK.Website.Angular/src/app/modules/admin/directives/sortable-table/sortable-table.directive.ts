@@ -11,13 +11,11 @@ import { SortableHeaderDirective } from '../sortable-header/sortable-header.dire
 })
 export class SortableTableDirective implements AfterContentInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef) {
-
-  }
+  constructor(private changeDetector: ChangeDetectorRef) { }
 
   @Input() sortable: string;
 
-  @ContentChildren(SortableHeaderDirective) headers: QueryList<SortableHeaderDirective>;
+  @ContentChildren(SortableHeaderDirective, { descendants: true }) headers: QueryList<SortableHeaderDirective>;
 
   ngAfterContentInit(): void {
     if (!this.headers) {
@@ -28,8 +26,8 @@ export class SortableTableDirective implements AfterContentInit, OnDestroy {
     if (initial) {
       initial.emit();
     }
-
-    this.headers.forEach(header => {
+    
+    this.headers.forEach(header => {      
       header.sort.pipe(
         takeUntil(componentDestroyed(this))
       ).subscribe((event: SortEvent) => {
