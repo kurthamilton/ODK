@@ -79,7 +79,7 @@ export class EventsComponent implements OnInit {
         venue: venueMap.get(event.venueId)
       }));
 
-      if (this.viewModels.some(x => !x.event || !x.venue)) {
+      if (this.viewModels.some(x => !x.event || !x.venue) && reloadIfError) {
        this.loadEvents(false);
        return;
       }
