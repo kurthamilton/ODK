@@ -52,6 +52,10 @@ export class EventsComponent implements OnInit {
       }
     };
 
+    this.loadEvents(true);
+  }
+
+  private loadEvents(reloadIfError: boolean): void {
     const token: AuthenticationToken = this.authenticationService.getToken();
     this.authenticated = !!token;
 
@@ -68,12 +72,17 @@ export class EventsComponent implements OnInit {
     ]).subscribe(() => {
       const venueMap: Map<string, Venue> = ArrayUtils.toMap(this.venues, x => x.id);
       const responseMap: Map<string, EventMemberResponse> = ArrayUtils.toMap(this.memberResponses || [], x => x.eventId);
-
+      
       this.viewModels = this.events.map((event: Event): ListEventViewModel => ({
         event: event,
         memberResponse: responseMap.get(event.id),
         venue: venueMap.get(event.venueId)
       }));
+
+      if (this.viewModels.some(x => !x.event || !x.venue)) {
+       this.loadEvents(false);
+       return;
+      }
 
       this.changeDetector.detectChanges();
     });

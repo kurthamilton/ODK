@@ -4,7 +4,6 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { AccountDetails } from 'src/app/core/account/account-details';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { environment } from 'src/environments/environment';
 import { Venue } from 'src/app/core/venues/venue';
@@ -39,15 +38,8 @@ export class VenueService {
     );
   }
 
-  getVenues(chapterId: string): Observable<Venue[]> {
-    const accountDetails: AccountDetails = this.authenticationService.getAccountDetails();
-
-    const loggedIn: boolean = !!accountDetails && accountDetails.membershipActive;
-    const chapterMember: boolean = loggedIn ? 
-      (accountDetails.chapterId === chapterId || accountDetails.adminChapterIds.includes(chapterId))
-      : false;
-
-    if (!chapterMember) {
+  getVenues(chapterId: string): Observable<Venue[]> {    
+    if (!this.authenticationService.isChapterMember(chapterId)) {
       return this.getPublicVenues(chapterId);
     }
 

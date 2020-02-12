@@ -43,7 +43,7 @@ export class ChapterSidebarComponent implements OnInit {
     
     const token: AuthenticationToken = this.authenticationService.getToken();
     if (token) {
-      this.loadMemberPage();
+      this.loadMemberPage(true);
     } else {
       this.loadPublicPage();
     }
@@ -53,7 +53,7 @@ export class ChapterSidebarComponent implements OnInit {
     return appUrls.event(this.chapter, event);
   }
 
-  private loadMemberPage(): void {
+  private loadMemberPage(reloadIfError: boolean): void {
     forkJoin([
       this.eventService.getEvents(this.chapter.id).pipe(
         tap((events: Event[]) => this.events = events)
@@ -66,6 +66,11 @@ export class ChapterSidebarComponent implements OnInit {
       )
     ]).subscribe(() => {
       this.setEvents();
+
+      if (this.eventViewModels.some(x => !x.event || !x.venue) && reloadIfError) {
+        this.loadMemberPage(false);
+        return;
+      }
       this.changeDetector.detectChanges();
     });
   }

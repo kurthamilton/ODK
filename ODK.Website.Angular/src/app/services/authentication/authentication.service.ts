@@ -99,6 +99,11 @@ export class AuthenticationService {
     return this.storageService.get<AuthenticationToken>(storageKeys.authToken);
   }
 
+  isChapterMember(chapterId: string): boolean {
+    const accountDetails: AccountDetails = this.getAccountDetails();
+    return (accountDetails?.chapterId === chapterId && accountDetails.membershipActive);
+  }
+
   login(username: string, password: string): Observable<ServiceResult<AuthenticationToken>> {
     const params: HttpParams = HttpUtils.createFormParams({
       username: username,

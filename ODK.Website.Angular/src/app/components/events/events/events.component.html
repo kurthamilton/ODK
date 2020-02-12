@@ -1,14 +1,14 @@
 <app-body>
-    <ng-container *appLoading="!viewModels">
-        <app-event-list *ngIf="viewModels.length > 0" [viewModels]="viewModels"></app-event-list>
-        <ng-container *ngIf="viewModels.length === 0">
-          <p *ngIf="authenticated">
-            There are no upcoming events
-          </p>
-          <p *ngIf="!authenticated">
-            There are no upcoming public events. 
-            <a [routerLink]="links.login" [queryParams]="links.loginQueryParams">Sign in</a>
-          </p>
-        </ng-container>    
+  <ng-container *appLoading="!viewModels">
+    <app-event-list *ngIf="viewModels.length > 0" [viewModels]="viewModels"></app-event-list>
+    <ng-container *ngIf="viewModels.length === 0">
+      <p *ngIf="authenticated">
+        There are no upcoming events
+      </p>
+      <p *ngIf="!authenticated">
+        There are no upcoming public events. 
+        <a [routerLink]="links.login" [queryParams]="links.loginQueryParams">Sign in</a>
+      </p>
     </ng-container>    
+  </ng-container>    
 </app-body>

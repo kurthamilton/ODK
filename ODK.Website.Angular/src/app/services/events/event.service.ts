@@ -4,7 +4,6 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { AccountDetails } from 'src/app/core/account/account-details';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { DateUtils } from 'src/app/utils/date-utils';
 import { environment } from 'src/environments/environment';
@@ -45,8 +44,7 @@ export class EventService {
   }
 
   getEvents(chapterId: string): Observable<Event[]> {
-    const accountDetails: AccountDetails = this.authenticationService.getAccountDetails();
-    if (!accountDetails || accountDetails.chapterId !== chapterId || !accountDetails.membershipActive) {
+    if (!this.authenticationService.isChapterMember(chapterId)) {
       return this.getPublicEvents(chapterId);
     }
 
