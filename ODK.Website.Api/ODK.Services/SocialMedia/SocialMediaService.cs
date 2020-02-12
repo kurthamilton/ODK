@@ -8,22 +8,32 @@ using InstaSharper.Classes;
 using InstaSharper.Classes.Models;
 using ODK.Core.Chapters;
 using ODK.Core.Settings;
+using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 
 namespace ODK.Services.SocialMedia
 {
     public class SocialMediaService : ISocialMediaService
     {
+        private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly ISettingsRepository _settingsRepository;
 
-        public SocialMediaService(IChapterRepository chapterRepository, ISettingsRepository settingsRepository)
+        public SocialMediaService(IChapterRepository chapterRepository, ISettingsRepository settingsRepository,
+            ICacheService cacheService)
         {
+            _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _settingsRepository = settingsRepository;
         }
 
         public async Task<IReadOnlyCollection<SocialMediaImage>> GetLatestInstagramImages(Guid chapterId)
+        {
+            return await _cacheService.GetOrSetItem(() => FetchInstagramImages(chapterId),
+                chapterId, TimeSpan.FromMinutes(60));
+        }
+
+        private async Task<IReadOnlyCollection<SocialMediaImage>> FetchInstagramImages(Guid chapterId)
         {
             ChapterLinks links = await _chapterRepository.GetChapterLinks(chapterId);
             if (links == null)

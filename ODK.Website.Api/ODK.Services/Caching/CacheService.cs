@@ -22,6 +22,11 @@ namespace ODK.Services.Caching
             return await GetOrSet(getter, instanceKey, null, null);
         }
 
+        public async Task<T> GetOrSetItem<T>(Func<Task<T>> getter, object instanceKey, TimeSpan lifetime)
+        {
+            return await GetOrSet(getter, instanceKey, null, lifetime);
+        }
+
         public async Task<VersionedServiceResult<IReadOnlyCollection<T>>> GetOrSetVersionedCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter,
             Func<Task<long>> getVersion, long? currentVersion, object key = null)
         {

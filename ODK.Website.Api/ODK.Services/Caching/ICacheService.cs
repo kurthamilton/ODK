@@ -9,6 +9,8 @@ namespace ODK.Services.Caching
     {
         Task<T> GetOrSetItem<T>(Func<Task<T>> getter, object instanceKey);
 
+        Task<T> GetOrSetItem<T>(Func<Task<T>> getter, object instanceKey, TimeSpan lifetime);
+
         Task<VersionedServiceResult<IReadOnlyCollection<T>>> GetOrSetVersionedCollection<T>(Func<Task<IReadOnlyCollection<T>>> getter, 
             Func<Task<long>> getVersion, long? currentVersion, object key = null);
 
