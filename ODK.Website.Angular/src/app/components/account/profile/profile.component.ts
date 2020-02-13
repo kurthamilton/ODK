@@ -75,4 +75,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
       window.scrollTo(0, 0);
     });
   }
+
+  onAlertClose(): void {
+    this.successMessage = null;
+    this.changeDetector.detectChanges();
+  }
 }

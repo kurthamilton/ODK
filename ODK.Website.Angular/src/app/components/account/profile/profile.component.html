@@ -1,6 +1,6 @@
 <app-body>
   <ng-container *appLoading="!profile">
-    <ngb-alert *ngIf="successMessage" type="success">
+    <ngb-alert *ngIf="successMessage" type="success" (close)="onAlertClose()">
       {{successMessage}}
     </ngb-alert>
     
