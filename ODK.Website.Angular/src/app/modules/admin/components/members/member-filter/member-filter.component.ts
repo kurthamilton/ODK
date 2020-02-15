@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input, OnChanges, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
@@ -16,7 +17,10 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class MemberFilterComponent implements OnChanges, OnDestroy {
 
-  constructor() { }
+  constructor(private route: ActivatedRoute,
+    private router: Router
+  ) { 
+  }
 
   @Input() viewModel: MemberFilterViewModel;
   @Output() change: EventEmitter<MemberFilterViewModel> = new EventEmitter<MemberFilterViewModel>();
@@ -47,6 +51,12 @@ export class MemberFilterComponent implements OnChanges, OnDestroy {
       types: this.formControls.types.value.map(x => <SubscriptionType>parseInt(x, 10))
     };
 
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        type: this.formControls.types.value.map(x => x)
+      }
+    })
     this.change.emit(viewModel);
   }
 

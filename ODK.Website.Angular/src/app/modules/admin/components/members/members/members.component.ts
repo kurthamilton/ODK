@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -26,6 +27,7 @@ import { SubscriptionType } from 'src/app/core/account/subscription-type';
 export class MembersComponent implements OnInit {
 
   constructor(private changeDetector: ChangeDetectorRef,
+    private route: ActivatedRoute,
     private chapterAdminService: ChapterAdminService,
     private memberAdminService: MemberAdminService,
     private authenticationService: AuthenticationService
@@ -60,9 +62,11 @@ export class MembersComponent implements OnInit {
       this.subscriptionMap = ArrayUtils.toMap(this.memberSubscriptions, x => x.memberId);
       this.filter = {
         name: '',
-        types: [
-          SubscriptionType.Trial, SubscriptionType.Full, SubscriptionType.Partial
-        ]
+        types: this.route.snapshot.queryParamMap.getAll('type').length 
+          ? this.route.snapshot.queryParamMap.getAll('type').map(x => parseInt(x, 10))
+          : [
+            SubscriptionType.Trial, SubscriptionType.Full, SubscriptionType.Partial
+          ]
       };
 
       this.filterMembers(this.filter);
