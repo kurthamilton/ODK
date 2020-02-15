@@ -1,7 +1,7 @@
-import { Member } from 'src/app/core/members/member';
+import { AdminMember } from 'src/app/core/members/admin-member';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 
 export interface AdminListMemberViewModel {
-  member: Member;
+  member: AdminMember;
   subscription: MemberSubscription;
 }

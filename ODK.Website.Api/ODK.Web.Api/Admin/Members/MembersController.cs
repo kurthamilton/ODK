@@ -12,6 +12,7 @@ using ODK.Core.Members;
 using ODK.Services.Files;
 using ODK.Services.Members;
 using ODK.Web.Api.Admin.Members.Requests;
+using ODK.Web.Api.Admin.Members.Responses;
 using ODK.Web.Common;
 using ODK.Web.Common.Account.Requests;
 using ODK.Web.Common.Account.Responses;
@@ -36,10 +37,10 @@ namespace ODK.Web.Api.Admin.Members
         }
 
         [HttpGet]
-        public async Task<IEnumerable<MemberApiResponse>> Get(Guid chapterId)
+        public async Task<IEnumerable<MemberAdminApiResponse>> Get(Guid chapterId)
         {
             IReadOnlyCollection<Member> members = await _memberAdminService.GetMembers(GetMemberId(), chapterId);
-            return members.Select(_mapper.Map<MemberApiResponse>);
+            return members.Select(_mapper.Map<MemberAdminApiResponse>);
         }
 
         [HttpGet("Subscriptions")]

@@ -4,6 +4,7 @@ import { forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { AdminListMemberViewModel } from './admin-list-member.view-model';
+import { AdminMember } from 'src/app/core/members/admin-member';
 import { adminUrls } from '../../../routing/admin-urls';
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
@@ -11,7 +12,6 @@ import { AuthenticationToken } from 'src/app/core/authentication/authentication-
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { DateUtils } from 'src/app/utils/date-utils';
-import { Member } from 'src/app/core/members/member';
 import { MemberAdminService } from 'src/app/services/members/member-admin.service';
 import { MemberFilterViewModel } from '../member-filter/member-filter.view-model';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
@@ -40,8 +40,8 @@ export class MembersComponent implements OnInit {
   viewModels: AdminListMemberViewModel[];
   
   private chapter: Chapter;
-  private imageQueue: Member[];
-  private members: Member[];
+  private imageQueue: AdminMember[];
+  private members: AdminMember[];
   private memberSubscriptions: MemberSubscription[];
   private sortBy: SortEvent;
   private subscriptionMap: Map<string, MemberSubscription>;
@@ -51,7 +51,7 @@ export class MembersComponent implements OnInit {
 
     forkJoin([
       this.memberAdminService.getAdminMembers(this.chapter.id).pipe(
-        tap((members: Member[]) => this.members = members)
+        tap((members: AdminMember[]) => this.members = members)
       ),
       this.memberAdminService.getMemberSubscriptions(this.chapter.id).pipe(
         tap((subscriptions: MemberSubscription[]) => this.memberSubscriptions = subscriptions)
@@ -73,7 +73,7 @@ export class MembersComponent implements OnInit {
     this.superAdmin = token.superAdmin === true;
   }
 
-  getMemberUrl(member: Member): string {
+  getMemberUrl(member: AdminMember): string {
     return adminUrls.member(this.chapter, member);
   }
 
@@ -99,7 +99,7 @@ export class MembersComponent implements OnInit {
     for (let i = 0; i < files.length; i++) {
       const file: File = files.item(i);
       const name: string = file.name.substr(0, file.name.indexOf('.'));
-      const member: Member = this.members.find(x => x.fullName.toLocaleLowerCase() === name.toLocaleLowerCase());
+      const member: AdminMember = this.members.find(x => x.fullName.toLocaleLowerCase() === name.toLocaleLowerCase());
       if (member) {
         this.imageQueue.push(member);
         this.uploadPicture(member, file);
@@ -120,7 +120,7 @@ export class MembersComponent implements OnInit {
 
         return true;
       })
-      .map((member: Member): AdminListMemberViewModel => {
+      .map((member: AdminMember): AdminListMemberViewModel => {
         return {
           member: member,
           subscription: this.subscriptionMap.get(member.id)
@@ -137,13 +137,16 @@ export class MembersComponent implements OnInit {
       switch (this.sortBy?.column) {
         case 'expires':
           return DateUtils.compare(a.subscription.expiryDate, b.subscription.expiryDate);
+        case 'emailOptIn':
+          return a.member.emailOptIn === b.member.emailOptIn ? 0 : 
+           (a.member.emailOptIn ? 1 : -1);
         default:
           return a.member.fullName.localeCompare(b.member.fullName);
       }      
     });
   }
 
-  private uploadPicture(member: Member, image: File): void {
+  private uploadPicture(member: AdminMember, image: File): void {
     this.memberAdminService.updateImage(member.id, image).subscribe(() => {
       this.imageQueue.splice(this.imageQueue.indexOf(member), 1);
     });

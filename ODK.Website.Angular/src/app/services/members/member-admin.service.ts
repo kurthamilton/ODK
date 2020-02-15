@@ -4,6 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { AdminMember } from 'src/app/core/members/admin-member';
 import { catchApiError } from '../http/catchApiError';
 import { DateUtils } from 'src/app/utils/date-utils';
 import { environment } from 'src/environments/environment';
@@ -53,9 +54,9 @@ export class MemberAdminService extends MemberService {
     );
   }
 
-  getAdminMembers(chapterId: string): Observable<Member[]> {
+  getAdminMembers(chapterId: string): Observable<AdminMember[]> {
     return this.http.get(endpoints.members(chapterId)).pipe(
-      map((response: any) => response.map(x => this.mapMember(x)))
+      map((response: any) => response.map(x => this.mapAdminMember(x)))
     );
   }
 
@@ -114,6 +115,12 @@ export class MemberAdminService extends MemberService {
       })),
       catchApiError()
     );
+  }
+
+  private mapAdminMember(response: any): AdminMember {
+    return Object.assign({
+      emailOptIn: response.emailOptIn
+    }, this.mapMember(response));
   }
 
   private mapMemberSubscription(response: any): MemberSubscription {

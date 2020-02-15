@@ -18,6 +18,9 @@
       <th sortable="expires" (sort)="onSort($event)">
         Expires
       </th>       
+      <th sortable="emailOptIn" (sort)="onSort($event)">
+        <span ngbTooltip="Opted in to event emails?">Emails</span>
+      </th>
     </tr>
   </thead>
   <tbody>
@@ -31,6 +34,12 @@
           [class.text-warning]="viewModel.subscription.expiryDate <= subscriptionWarningDate">
           {{viewModel.subscription.expiryDate | date:'yyyy-MM-dd' }}
         </span>              
+      </td>
+      <td>
+        <span>
+          <i *ngIf="viewModel.member.emailOptIn" class="fas fa-check-circle text-success"></i>
+          <i *ngIf="!viewModel.member.emailOptIn" class="fas fa-times-circle text-danger"></i>
+        </span>
       </td>
     </tr>
   </tbody>
