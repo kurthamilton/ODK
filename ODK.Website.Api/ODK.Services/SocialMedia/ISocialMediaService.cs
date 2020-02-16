@@ -6,6 +6,6 @@ namespace ODK.Services.SocialMedia
 {
     public interface ISocialMediaService
     {
-        Task<IReadOnlyCollection<SocialMediaImage>> GetLatestInstagramImages(Guid chapterId);
+        Task<IReadOnlyCollection<SocialMediaImage>> GetLatestInstagramImages(Guid chapterId);        
     }
 }

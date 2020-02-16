@@ -85,6 +85,7 @@ namespace ODK.Web.Common.Config
             services.AddScoped<ILoggingService, LoggingService>();
             services.AddScoped<IMailProvider, MailProvider>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IInstagramService, InstagramService>();
             services.AddScoped<IMediaAdminService, MediaAdminService>();
             services.AddScoped<IMediaFileProvider, MediaFileProvider>();
             services.AddScoped<IMediaService, MediaService>();
@@ -95,6 +96,7 @@ namespace ODK.Web.Common.Config
             services.AddScoped<IPaymentProvider, StripePaymentProvider>();
             services.AddScoped<ISettingsService, SettingsService>();
             services.AddScoped<ISocialMediaService, SocialMediaService>();
+            services.AddScoped<ISocialMediaAdminService, SocialMediaAdminService>();
             services.AddScoped<IVenueAdminService, VenueAdminService>();
             services.AddScoped<IVenueService, VenueService>();
         }

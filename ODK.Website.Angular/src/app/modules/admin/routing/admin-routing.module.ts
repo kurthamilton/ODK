@@ -52,6 +52,7 @@ import { SuperAdminLayoutComponent } from '../components/super-admin/super-admin
 import { VenueEventsComponent } from '../components/venues/venue-events/venue-events.component';
 import { VenueLayoutComponent } from '../components/venues/venue-layout/venue-layout.component';
 import { VenuesComponent } from '../components/venues/venues/venues.component';
+import { InstagramComponent } from '../components/social-media/instagram/instagram.component';
 
 const routes: Routes = [
   { path: '', component: AdminLayoutComponent, canActivate: [ChapterAdminGuardService], children: [
@@ -145,7 +146,8 @@ const routes: Routes = [
         { path: adminPaths.superAdmin.emails.email.path, component: DefaultEmailComponent }
       ] },
 
-      { path: adminPaths.superAdmin.errorLog.path, component: ErrorLogComponent },      
+      { path: adminPaths.superAdmin.errorLog.path, component: ErrorLogComponent },   
+      { path: adminPaths.superAdmin.socialMedia.instagram.path, component: InstagramComponent },
       { path: adminPaths.superAdmin.paymentSettings.path, component: ChapterPaymentSettingsComponent }
     ] },
   ] }

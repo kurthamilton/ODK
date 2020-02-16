@@ -79,6 +79,7 @@ export const adminUrls = {
 
   superAdminEmail: (chapter: Chapter, email: Email) => superAdminPath(chapter, adminPaths.superAdmin.emails.path, email.type.toString()),
   superAdminEmails: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.emails.path),
+  superAdminInstagram: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.socialMedia.instagram.path),
   superAdminErrorLog: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.errorLog.path),
   superAdminPaymentSettings: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.paymentSettings.path),  
   

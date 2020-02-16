@@ -1,0 +1,24 @@
+<div>
+  <button class="btn btn-default" (click)="onLogin()">
+    Login
+  </button>
+
+  <span *ngIf="loginMessage" class="text-danger">{{loginMessage}}</span>
+</div>
+
+<div>
+  <button class="btn btn-default" (click)="onTriggerVerifyCode()">
+    Trigger code
+  </button>
+</div>
+
+<div>
+  <div class="form form-inline">
+    <div class="form-group">
+      <input class="form-control" [(ngModel)]="code" />
+    </div>
+    <button class="btn btn-default" (click)="onSendVerifyCode()">
+      Send code
+    </button>
+  </div>  
+</div>

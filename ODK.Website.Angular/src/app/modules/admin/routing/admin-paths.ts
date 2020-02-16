@@ -144,6 +144,11 @@ export const adminPaths = {
     errorLog: {
       path: 'error-log'
     },
+    socialMedia: {
+      instagram: {
+        path: 'social-media/instagram'
+      }      
+    },
     path: 'super-admin',
     paymentSettings: {
       path: 'payment-settings'

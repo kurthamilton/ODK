@@ -85,6 +85,7 @@ import { VenueFormComponent } from './components/venues/venue-form/venue-form.co
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
+import { InstagramComponent } from './components/social-media/instagram/instagram.component';
 
 @NgModule({
   declarations: [
@@ -164,6 +165,7 @@ import { VenuesComponent } from './components/venues/venues/venues.component';
     ChapterSocialLinksComponent,
     ImportMembersComponent,
     FileDownloadComponent,
+    InstagramComponent,
   ],
   imports: [
     AdminRoutingModule,
