@@ -27,7 +27,7 @@ namespace ODK.Services.Venues
                 () => _venueRepository.GetPublicVenues(chapterId),
                 () => _venueRepository.GetPublicVenuesVersion(chapterId),
                 currentVersion,
-                chapterId);
+                $"public-{chapterId}");
         }
 
         public async Task<VersionedServiceResult<Venue>> GetVenue(long? currentVersion, Guid? currentMemberId, Guid id)
