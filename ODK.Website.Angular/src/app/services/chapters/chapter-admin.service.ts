@@ -9,6 +9,7 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminMember } from 'src/app/core/chapters/chapter-admin-member';
 import { ChapterAdminMembershipSettings } from 'src/app/core/chapters/chapter-admin-membership-settings';
 import { ChapterAdminPaymentSettings } from 'src/app/core/chapters/chapter-admin-payment-settings';
+import { ChapterLinks } from 'src/app/core/chapters/chapter-links';
 import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterService } from './chapter.service';
@@ -17,7 +18,6 @@ import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { ServiceResult } from '../service-result';
-import { ChapterLinks } from 'src/app/core/chapters/chapter-links';
 
 const baseUrl = `${environment.adminApiBaseUrl}/chapters`;
 
