@@ -18,7 +18,7 @@ namespace ODK.Services.Members
 
         Task<CsvFile> GetMemberImportFile(Guid currentMemberId, Guid chapterId);
 
-        Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId);
+        Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId, bool requireSuperAdmin = false);
 
         Task<MemberSubscription> GetMemberSubscription(Guid currentMemberId, Guid memberId);
 

@@ -37,8 +37,10 @@ import { EventLayoutComponent } from '../components/events/event-layout/event-la
 import { EventsAdminLayoutComponent } from '../components/events/events-admin-layout/events-admin-layout.component';
 import { EventsComponent } from '../components/events/events/events.component';
 import { ImportMembersComponent } from '../components/members/import-members/import-members.component';
+import { InstagramComponent } from '../components/social-media/instagram/instagram.component';
 import { MediaAdminLayoutComponent } from '../components/media/media-admin-layout/media-admin-layout.component';
 import { MediaFilesComponent } from '../components/media/media-files/media-files.component';
+import { MemberEmailsComponent } from '../components/super-admin/members/member-emails.component';
 import { MemberEventsComponent } from '../components/members/member-events/member-events.component';
 import { MemberLayoutComponent } from '../components/members/member-layout/member-layout.component';
 import { MembersAdminLayoutComponent } from '../components/members/members-admin-layout/members-admin-layout.component';
@@ -52,7 +54,6 @@ import { SuperAdminLayoutComponent } from '../components/super-admin/super-admin
 import { VenueEventsComponent } from '../components/venues/venue-events/venue-events.component';
 import { VenueLayoutComponent } from '../components/venues/venue-layout/venue-layout.component';
 import { VenuesComponent } from '../components/venues/venues/venues.component';
-import { InstagramComponent } from '../components/social-media/instagram/instagram.component';
 
 const routes: Routes = [
   { path: '', component: AdminLayoutComponent, canActivate: [ChapterAdminGuardService], children: [
@@ -147,6 +148,7 @@ const routes: Routes = [
       ] },
 
       { path: adminPaths.superAdmin.errorLog.path, component: ErrorLogComponent },   
+      { path: adminPaths.superAdmin.memberEmails.path, component: MemberEmailsComponent },   
       { path: adminPaths.superAdmin.socialMedia.instagram.path, component: InstagramComponent },
       { path: adminPaths.superAdmin.paymentSettings.path, component: ChapterPaymentSettingsComponent }
     ] },

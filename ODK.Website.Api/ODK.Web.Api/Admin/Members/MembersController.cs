@@ -43,6 +43,13 @@ namespace ODK.Web.Api.Admin.Members
             return members.Select(_mapper.Map<MemberAdminApiResponse>);
         }
 
+        [HttpGet("Emails")]
+        public async Task<IEnumerable<MemberEmailApiResponse>> GetEmails(Guid chapterId)
+        {
+            IReadOnlyCollection<Member> members = await _memberAdminService.GetMembers(GetMemberId(), chapterId, true);
+            return members.Select(_mapper.Map<MemberEmailApiResponse>);
+        }
+
         [HttpGet("Subscriptions")]
         public async Task<IEnumerable<SubscriptionApiResponse>> GetSubscriptions(Guid chapterId)
         {

@@ -24,6 +24,9 @@ namespace ODK.Web.Api.Admin.Members
         {
             CreateMap<Member, MemberAdminApiResponse>()
                 .IncludeBase<Member, MemberApiResponse>();
+
+            CreateMap<Member, MemberEmailApiResponse>()
+                .ForMember(x => x.MemberId, opt => opt.MapFrom(x => x.Id));
         }
     }
 }

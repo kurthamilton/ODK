@@ -144,15 +144,18 @@ export const adminPaths = {
     errorLog: {
       path: 'error-log'
     },
-    socialMedia: {
-      instagram: {
-        path: 'social-media/instagram'
-      }      
-    },
+    memberEmails: {
+      path: 'members'
+    },    
     path: 'super-admin',
     paymentSettings: {
       path: 'payment-settings'
     },
+    socialMedia: {
+      instagram: {
+        path: 'social-media/instagram'
+      }      
+    }
   },
 
   venues: {

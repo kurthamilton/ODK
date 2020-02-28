@@ -58,9 +58,11 @@ import { FileDownloadComponent } from './components/elements/file-download/file-
 import { GoogleMapsTextInputFormControlComponent } from './components/forms/inputs/google-maps-text-input-form-control/google-maps-text-input-form-control.component';
 import { HtmlEditorFormControlComponent } from './components/forms/inputs/html-editor-form-control/html-editor-form-control.component';
 import { ImportMembersComponent } from './components/members/import-members/import-members.component';
+import { InstagramComponent } from './components/social-media/instagram/instagram.component';
 import { MediaAdminLayoutComponent } from './components/media/media-admin-layout/media-admin-layout.component';
 import { MediaFileComponent } from './components/media/media-file/media-file.component';
 import { MediaFilesComponent } from './components/media/media-files/media-files.component';
+import { MemberEmailsComponent } from './components/super-admin/members/member-emails.component';
 import { MemberEventsComponent } from './components/members/member-events/member-events.component';
 import { MemberFilterComponent } from './components/members/member-filter/member-filter.component';
 import { MemberLayoutComponent } from './components/members/member-layout/member-layout.component';
@@ -85,7 +87,6 @@ import { VenueFormComponent } from './components/venues/venue-form/venue-form.co
 import { VenueLayoutComponent } from './components/venues/venue-layout/venue-layout.component';
 import { VenueMenuComponent } from './components/venues/venue-menu/venue-menu.component';
 import { VenuesComponent } from './components/venues/venues/venues.component';
-import { InstagramComponent } from './components/social-media/instagram/instagram.component';
 
 @NgModule({
   declarations: [
@@ -112,6 +113,7 @@ import { InstagramComponent } from './components/social-media/instagram/instagra
     ChapterQuestionFormComponent,
     ChapterQuestionsComponent,
     ChapterSettingsComponent,
+    ChapterSocialLinksComponent,
     CreateChapterEmailProviderComponent,
     CreateEventComponent,
     CreateVenueComponent,
@@ -133,11 +135,15 @@ import { InstagramComponent } from './components/social-media/instagram/instagra
     EventResponsesComponent,
     EventsAdminLayoutComponent,
     EventsComponent,
+    FileDownloadComponent,
     GoogleMapsTextInputFormControlComponent,
     HtmlEditorFormControlComponent,
+    ImportMembersComponent,
+    InstagramComponent,
     MediaAdminLayoutComponent,
     MediaFileComponent,
     MediaFilesComponent,
+    MemberEmailsComponent,
     MemberEventsComponent,
     MemberFilterComponent,
     MemberLayoutComponent,
@@ -162,10 +168,6 @@ import { InstagramComponent } from './components/social-media/instagram/instagra
     VenueLayoutComponent,
     VenueMenuComponent,
     VenuesComponent,
-    ChapterSocialLinksComponent,
-    ImportMembersComponent,
-    FileDownloadComponent,
-    InstagramComponent,
   ],
   imports: [
     AdminRoutingModule,

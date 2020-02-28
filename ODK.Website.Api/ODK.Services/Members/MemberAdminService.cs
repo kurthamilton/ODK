@@ -67,9 +67,16 @@ namespace ODK.Services.Members
             return file;
         }
 
-        public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId)
+        public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId, bool requireSuperAdmin = false)
         {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+            if (requireSuperAdmin)
+            {
+                await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
+            }
+            else
+            {
+                await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+            }
 
             return await _memberRepository.GetMembers(chapterId, true);
         }

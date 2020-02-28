@@ -1,0 +1,14 @@
+<table *appLoading="!memberEmails" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let memberEmail of memberEmails">
+      <td>{{memberEmail.member.fullName}}</td>
+      <td>{{memberEmail.memberEmail?.emailAddress}}</td>
+    </tr>
+  </tbody>
+</table>

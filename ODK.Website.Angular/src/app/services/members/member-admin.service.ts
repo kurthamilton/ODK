@@ -10,6 +10,7 @@ import { DateUtils } from 'src/app/utils/date-utils';
 import { environment } from 'src/environments/environment';
 import { HttpUtils } from '../http/http-utils';
 import { Member } from 'src/app/core/members/member';
+import { MemberEmail } from 'src/app/core/members/member-email';
 import { MemberService } from './member.service';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { ServiceResult } from '../service-result';
@@ -17,6 +18,7 @@ import { ServiceResult } from '../service-result';
 const baseUrl: string = `${environment.adminApiBaseUrl}/members`;
 
 const endpoints = {
+  emails: (chapterId: string) => `${baseUrl}/emails?chapterId=${chapterId}`,
   member: (memberId: string) => `${baseUrl}/${memberId}`,
   memberImport: (chapterId: string) => `${baseUrl}/import?chapterId=${chapterId}`,
   memberImportTemplate: (chapterId: string) => `${baseUrl}/import/template?chapterId=${chapterId}`,
@@ -57,6 +59,12 @@ export class MemberAdminService extends MemberService {
   getAdminMembers(chapterId: string): Observable<AdminMember[]> {
     return this.http.get(endpoints.members(chapterId)).pipe(
       map((response: any) => response.map(x => this.mapAdminMember(x)))
+    );
+  }
+
+  getMemberEmails(chapterId: string): Observable<MemberEmail[]> {
+    return this.http.get(endpoints.emails(chapterId)).pipe(
+      map((response: any) => response.map(x => this.mapMemberEmail(x)))
     );
   }
 
@@ -123,6 +131,13 @@ export class MemberAdminService extends MemberService {
     }, this.mapMember(response));
   }
 
+  private mapMemberEmail(response: any): MemberEmail {
+    return {
+      emailAddress: response.emailAddress,
+      memberId: response.memberId
+    };
+  }
+  
   private mapMemberSubscription(response: any): MemberSubscription {
     return {
       expiryDate: response.expiryDate ? new Date(response.expiryDate) : null,

@@ -24,6 +24,7 @@ export class SuperAdminLayoutComponent implements OnInit {
     this.menuItems = [
       { link: adminUrls.emailProviders(this.chapter), text: 'Email providers' },
       { link: adminUrls.superAdminEmails(this.chapter), text: 'Emails' },
+      { link: adminUrls.superAdminMembers(this.chapter), text: 'Members' },
       { link: adminUrls.superAdminInstagram(this.chapter), text: 'Instagram' },
       { link: adminUrls.superAdminPaymentSettings(this.chapter), text: 'Payment settings' },
       { link: adminUrls.superAdminErrorLog(this.chapter), text: 'Error log' }
