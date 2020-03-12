@@ -1,4 +1,7 @@
 export const appPaths = {
+  account: {
+    path: 'account'
+  },
   admin: {
     path: ':chapter/admin',
     params: {
@@ -10,11 +13,8 @@ export const appPaths = {
       about: {
         path: 'about'
       },
-      activateAccount: {
-        path: 'account/activate',
-        queryParams: {
-          token: 'token'
-        }
+      account: {
+        path: 'account'
       },
       contact: {
         path: 'contact'
@@ -30,16 +30,10 @@ export const appPaths = {
       },
       events: {
         path: 'events'
-      },
-      join: {
-        path: 'join'
-      },
+      },      
       login: {
         path: 'login'
-      },
-      logout: {
-        path: 'logout'
-      },
+      },      
       member: {
         path: 'knitwits/:id',
         params: {
@@ -48,40 +42,9 @@ export const appPaths = {
       },
       members: {
         path: 'knitwits'
-      },
-      password: {
-        forgotten: {
-          path: 'password/forgotten'
-        },
-        reset: {
-          path: 'password/reset',
-          queryParams: {
-            token: 'token'
-          }
-        }
-      },
-      profile: {
-        delete: {
-          path: 'delete'
-        },
-        emails: {
-          path: 'emails'
-        },
-        password: {
-          change: {
-            path: 'password/change'
-          }
-        },
-        path: 'profile',
-        subscription: {
-          path: 'subscription'
-        },
-        updateEmailAddress: {
-          path: 'update-email-address',
-          queryParams: {
-            token: 'token'
-          }
-        },
+      },      
+      profile: {        
+        path: 'profile'        
       }
     },
     path: ':chapter',
