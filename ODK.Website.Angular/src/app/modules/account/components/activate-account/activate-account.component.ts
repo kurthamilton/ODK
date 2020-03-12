@@ -3,8 +3,8 @@ import { ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
+import { accountPaths } from '../../routing/account-paths';
 import { AccountService } from 'src/app/services/account/account.service';
-import { appPaths } from 'src/app/routing/app-paths';
 import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
@@ -41,7 +41,7 @@ export class ActivateAccountComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
-    this.token = this.route.snapshot.queryParamMap.get(appPaths.chapter.childPaths.activateAccount.queryParams.token);
+    this.token = this.route.snapshot.queryParamMap.get(accountPaths.activate.queryParams.token);
     this.links = {
       login: appUrls.login(this.chapter)
     };

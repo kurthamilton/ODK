@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 
 import { AccountProfile } from 'src/app/core/account/account-profile';
 import { AccountService } from 'src/app/services/account/account.service';
-import { appUrls } from 'src/app/routing/app-urls';
+import { accountUrls } from '../../routing/account-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-model';
@@ -33,7 +33,7 @@ export class ProfileEmailsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {    
     this.chapter = this.chapterService.getActiveChapter();
     this.breadcrumbs = [
-      { link: appUrls.profile(this.chapter), text: 'Profile' }
+      { link: accountUrls.profile(this.chapter), text: 'Profile' }
     ];        
 
     this.accountService.getProfile().subscribe((profile: AccountProfile) => {

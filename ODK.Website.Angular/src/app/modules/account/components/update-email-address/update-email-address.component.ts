@@ -4,10 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
+import { accountPaths } from '../../routing/account-paths';
 import { AccountProfile } from 'src/app/core/account/account-profile';
 import { AccountService } from 'src/app/services/account/account.service';
-import { appPaths } from 'src/app/routing/app-paths';
-import { appUrls } from 'src/app/routing/app-urls';
+import { accountUrls } from '../../routing/account-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
 import { FormControlValidationPatterns } from 'src/app/modules/forms/components/form-control-validation/form-control-validation-patterns';
@@ -49,10 +49,10 @@ export class UpdateEmailAddressComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
     this.breadcrumbs = [
-      { link: appUrls.profile(this.chapter), text: 'Profile' }
+      { link: accountUrls.profile(this.chapter), text: 'Profile' }
     ];        
     
-    const token: string = RouteUtils.getQueryParam(this.route, appPaths.chapter.childPaths.profile.updateEmailAddress.queryParams.token);    
+    const token: string = RouteUtils.getQueryParam(this.route, accountPaths.updateEmailAddress.queryParams.token);    
     if (token) {
       this.status = 'confirming';
       this.accountService.confirmEmailAddressUpdate(token).pipe(
@@ -64,7 +64,7 @@ export class UpdateEmailAddressComponent implements OnInit, OnDestroy {
           return this.accountService.getProfile();
         })
       ).subscribe((profile: AccountProfile) => {
-        this.router.navigateByUrl(appUrls.updateEmailAddress(this.chapter));
+        this.router.navigateByUrl(accountUrls.updateEmailAddress(this.chapter));
         this.profile = profile;
         this.status = this.status !== 'confirmationError' ? 'updated' : this.status;
         this.buildForm();

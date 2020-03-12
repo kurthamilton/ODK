@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
-import { forkJoin, Subject } from 'rxjs';
+import { forkJoin, Subject, combineLatest } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { AccountProfile } from 'src/app/core/account/account-profile';
@@ -10,6 +10,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
+import { accountUrls } from '../../routing/account-urls';
 
 @Component({
   selector: 'app-profile',
@@ -53,11 +54,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
       )
     ]).subscribe(() => {
       this.links = {
-        changePassword: appUrls.password.change(this.chapter),
-        delete: appUrls.profileDelete(this.chapter),
-        emails: appUrls.emails(this.chapter),
-        subscription: appUrls.subscription(this.chapter),
-        updateEmailAddress: appUrls.updateEmailAddress(this.chapter)
+        changePassword: accountUrls.password.change(this.chapter),
+        delete: accountUrls.delete(this.chapter),
+        emails: accountUrls.emails(this.chapter),
+        subscription: accountUrls.subscription(this.chapter),
+        updateEmailAddress: accountUrls.updateEmailAddress(this.chapter)
       };
       this.changeDetector.detectChanges();
     });

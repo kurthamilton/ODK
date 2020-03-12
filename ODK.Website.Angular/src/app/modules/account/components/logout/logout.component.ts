@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { switchMap, tap } from 'rxjs/operators';
+import { tap, concatMap } from 'rxjs/operators';
 
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
@@ -33,7 +33,7 @@ export class LogoutComponent implements OnInit {
 
     this.chapterService.getChapterById(token.chapterId).pipe(
       tap((chapter: Chapter) => this.chapter = chapter),
-      switchMap(() => this.authenticationService.logout())
+      concatMap(() => this.authenticationService.logout())
     ).subscribe(() => {
       this.router.navigateByUrl(appUrls.home(this.chapter));
     });

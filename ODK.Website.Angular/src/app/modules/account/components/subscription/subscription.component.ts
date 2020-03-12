@@ -5,7 +5,7 @@ import { forkJoin, Subject } from 'rxjs';
 import { tap, switchMap } from 'rxjs/operators';
 
 import { AccountService } from 'src/app/services/account/account.service';
-import { appUrls } from 'src/app/routing/app-urls';
+import { accountUrls } from '../../routing/account-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
@@ -47,7 +47,7 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
     this.chapter = this.chapterService.getActiveChapter();
 
     this.breadcrumbs = [
-      { link: appUrls.profile(this.chapter), text: 'Profile' }
+      { link: accountUrls.profile(this.chapter), text: 'Profile' }
     ];
 
     forkJoin([
