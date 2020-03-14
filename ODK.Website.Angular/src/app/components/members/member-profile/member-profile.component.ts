@@ -1,5 +1,5 @@
-import { DatePipe } from '@angular/common';
-import { Component, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef } from '@angular/core';
+import { formatDate } from '@angular/common';
+import { Component, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef, Inject, LOCALE_ID } from '@angular/core';
 
 import { forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -24,10 +24,10 @@ import { SocialMediaService } from 'src/app/services/social-media/social-media.s
 export class MemberProfileComponent implements OnChanges {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private datePipe: DatePipe,
     private chapterService: ChapterService,
     private memberService: MemberService,
-    private socialMediaService: SocialMediaService
+    private socialMediaService: SocialMediaService,
+    @Inject(LOCALE_ID) private locale: string
   ) {
   }
   
@@ -81,7 +81,7 @@ export class MemberProfileComponent implements OnChanges {
           label: {
             text: 'Date joined'
           },          
-          value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy')
+          value: formatDate(this.profile.joined, 'dd MMMM yyyy', this.locale)
         })
       ]
     };

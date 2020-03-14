@@ -1,4 +1,4 @@
-import { DatePipe, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
@@ -82,8 +82,7 @@ import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenet
     HttpClientModule,
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptorService, multi: true },
-    { provide: DatePipe, useClass: DatePipe }
+    { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptorService, multi: true }
   ],
   bootstrap: [
     AppComponent

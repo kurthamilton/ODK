@@ -1,5 +1,5 @@
-import { DatePipe } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { formatDate } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, LOCALE_ID, Inject } from '@angular/core';
 
 import { forkJoin, Subject } from 'rxjs';
 import { tap, switchMap } from 'rxjs/operators';
@@ -26,11 +26,11 @@ import { SubscriptionType } from 'src/app/core/account/subscription-type';
 export class SubscriptionComponent implements OnInit, OnDestroy {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private datePipe: DatePipe,
     private accountService: AccountService,
     private chapterService: ChapterService,
     private authenticationService: AuthenticationService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    @Inject(LOCALE_ID) private locale: string
   ) {
   }
 
@@ -103,7 +103,7 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
         label: {
           text: 'End date'
         },
-        value: this.datePipe.transform(this.subscription.expiryDate, 'dd MMMM yyyy')
+        value: formatDate(this.subscription.expiryDate, 'dd MMMM yyyy', this.locale)
       }));
     }
     

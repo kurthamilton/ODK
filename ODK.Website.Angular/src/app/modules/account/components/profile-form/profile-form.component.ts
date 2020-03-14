@@ -1,5 +1,5 @@
-import { DatePipe } from '@angular/common';
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+import { formatDate } from '@angular/common';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, Input, OnChanges, Inject, LOCALE_ID } from '@angular/core';
 
 import { forkJoin, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -37,9 +37,9 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 export class ProfileFormComponent implements OnChanges {
 
   constructor(private changeDetector: ChangeDetectorRef,
-    private datePipe: DatePipe,
     private chapterService: ChapterService,
-    private socialMediaService: SocialMediaService
+    private socialMediaService: SocialMediaService,
+    @Inject(LOCALE_ID) private locale: string
   ) {
   }
 
@@ -153,7 +153,7 @@ export class ProfileFormComponent implements OnChanges {
         label: {
           text: 'Date joined'
         },
-        value: this.datePipe.transform(this.profile.joined, 'dd MMMM yyyy')
+        value: formatDate(this.profile.joined, 'dd MMMM yyyy', this.locale)
       }) : null,
       lastName: new TextInputFormControlViewModel({
         id: 'lastName',
