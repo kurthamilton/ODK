@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router } from '@angular/router';
 
-import { Observable, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 
 import { appPaths } from './app-paths';
 import { AuthenticationService } from '../services/authentication/authentication.service';
@@ -23,13 +23,10 @@ export class ChapterGuardService extends RouteGuardService {
     super(router);
   }
 
-  hasAccess(route: ActivatedRouteSnapshot): Observable<boolean> {    
+  hasAccess(route: ActivatedRouteSnapshot): Observable<boolean> {  
     const name: string = route.paramMap.get(appPaths.chapter.params.chapter);
     return this.chapterService.getChapter(name).pipe(
-      switchMap((chapter: Chapter) => {
-        this.chapterService.setActiveChapter(chapter);
-        return of(chapter);
-      }),
+      tap((chapter: Chapter) => this.chapterService.setActiveChapter(chapter)),
       map((chapter: Chapter) => this.hasChapterAccess(chapter))
     );
   }

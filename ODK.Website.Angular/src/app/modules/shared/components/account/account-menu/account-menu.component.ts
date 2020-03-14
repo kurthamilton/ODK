@@ -3,6 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 
 import { takeUntil, filter } from 'rxjs/operators';
 
+import { accountUrls } from 'src/app/modules/account/routing/account-urls';
 import { adminUrls } from 'src/app/modules/admin/routing/admin-urls';
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
@@ -98,8 +99,8 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
       this.links = {
         admin: null,
         chapter: appUrls.chapter(chapter),
-        logout: appUrls.logout(chapter),
-        profile: appUrls.profile(chapter)
+        logout: accountUrls.logout(chapter),
+        profile: accountUrls.profile(chapter)
       };
 
       if (token.adminChapterIds && token.adminChapterIds.includes(chapter.id)) {
@@ -117,7 +118,7 @@ export class AccountMenuComponent implements OnInit, OnDestroy {
   private setActiveChapter(chapter: Chapter): void {
     this.activeChapter = chapter;
     this.loginLink = appUrls.login(chapter);
-    this.joinLink = appUrls.join(chapter);
+    this.joinLink = accountUrls.join(chapter);
     this.setLoginParams();
   }
 

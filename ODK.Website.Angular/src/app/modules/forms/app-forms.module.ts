@@ -6,7 +6,6 @@ import { AppSharedModule } from '../shared/app-shared.module';
 import { CheckBoxFormControlComponent } from './components/inputs/check-box-form-control/check-box-form-control.component';
 import { DateInputFormControlComponent } from './components/inputs/date-input-form-control/date-input-form-control.component';
 import { DropDownFormControlComponent } from './components/inputs/drop-down-form-control/drop-down-form-control.component';
-import { ErrorMessagesComponent } from './components/error-messages/error-messages.component';
 import { FileInputFormControlComponent } from './components/inputs/file-input-form-control/file-input-form-control.component';
 import { FormButtonComponent } from './components/form-button/form-button.component';
 import { FormComponent } from './components/form/form.component';
@@ -25,7 +24,6 @@ import { TextInputFormControlComponent } from './components/inputs/text-input-fo
     CheckBoxFormControlComponent,
     DateInputFormControlComponent,
     DropDownFormControlComponent,
-    ErrorMessagesComponent,
     FileInputFormControlComponent,
     FormButtonComponent,
     FormComponent,
@@ -51,7 +49,6 @@ import { TextInputFormControlComponent } from './components/inputs/text-input-fo
     DropDownFormControlComponent,
     FormComponent,
     FormControlsComponent,
-    ErrorMessagesComponent,
     FileInputFormControlComponent,
     FormControlLabelComponent,
     FormControlValidationComponent,

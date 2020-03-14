@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 
 import { AccountProfile } from 'src/app/core/account/account-profile';
 import { AccountService } from 'src/app/services/account/account.service';
+import { accountUrls } from '../../routing/account-urls';
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
@@ -53,11 +54,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
       )
     ]).subscribe(() => {
       this.links = {
-        changePassword: appUrls.password.change(this.chapter),
-        delete: appUrls.profileDelete(this.chapter),
-        emails: appUrls.emails(this.chapter),
-        subscription: appUrls.subscription(this.chapter),
-        updateEmailAddress: appUrls.updateEmailAddress(this.chapter)
+        changePassword: accountUrls.password.change(this.chapter),
+        delete: accountUrls.delete(this.chapter),
+        emails: accountUrls.emails(this.chapter),
+        subscription: accountUrls.subscription(this.chapter),
+        updateEmailAddress: accountUrls.updateEmailAddress(this.chapter)
       };
       this.changeDetector.detectChanges();
     });

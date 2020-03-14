@@ -3,8 +3,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
+import { accountUrls } from 'src/app/modules/account/routing/account-urls';
 import { appPaths } from 'src/app/routing/app-paths';
-import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from '../../../services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
@@ -43,7 +43,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
     this.links = {
-      forgottenPassword: appUrls.password.forgotten(this.chapter)
+      forgottenPassword: accountUrls.password.forgotten(this.chapter)
     };
 
     this.formControls = {

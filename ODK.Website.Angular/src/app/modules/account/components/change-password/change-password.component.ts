@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter } from
 
 import { Subject } from 'rxjs';
 
-import { appUrls } from 'src/app/routing/app-urls';
+import { accountUrls } from '../../routing/account-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
@@ -40,7 +40,7 @@ export class ChangePasswordComponent implements OnInit {
   ngOnInit(): void {
     const chapter: Chapter = this.chapterService.getActiveChapter();
     this.breadcrumbs = [
-      { link: appUrls.profile(chapter), text: 'Profile' }
+      { link: accountUrls.profile(chapter), text: 'Profile' }
     ];
 
     this.buildForm();    

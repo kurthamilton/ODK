@@ -2,9 +2,10 @@ import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/
 import { Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { concatMap } from 'rxjs/operators';
 
 import { AccountService } from 'src/app/services/account/account.service';
+import { accountUrls } from '../../routing/account-urls';
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { Chapter } from 'src/app/core/chapters/chapter';
@@ -38,7 +39,7 @@ export class DeleteAccountComponent implements OnInit, OnDestroy {
     this.chapter = this.chapterService.getActiveChapter();
 
     this.breadcrumbs = [
-      { link: appUrls.profile(this.chapter), text: 'Profile' }
+      { link: accountUrls.profile(this.chapter), text: 'Profile' }
     ];    
 
     this.buildForm();
@@ -55,7 +56,7 @@ export class DeleteAccountComponent implements OnInit, OnDestroy {
     }
 
     this.accountService.deleteAccount().pipe(
-      switchMap(() => this.authenticationService.logout())
+      concatMap(() => this.authenticationService.logout())
     ).subscribe(() => {      
       this.formCallback.next(true);
       this.notificationService.schedule({

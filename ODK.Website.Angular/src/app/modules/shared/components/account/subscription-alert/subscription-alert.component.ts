@@ -4,7 +4,7 @@ import { forkJoin } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
 
 import { AccountService } from 'src/app/services/account/account.service';
-import { appUrls } from 'src/app/routing/app-urls';
+import { accountUrls } from 'src/app/modules/account/routing/account-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
@@ -80,7 +80,7 @@ export class SubscriptionAlertComponent implements OnInit, OnDestroy {
       )
     ]).subscribe(() => {
       this.links = {
-        subscription: appUrls.subscription(this.chapter)
+        subscription: accountUrls.subscription(this.chapter)
       };            
       
       this.action = this.memberSubscription.type === SubscriptionType.Trial ? 'Purchase membership' : 'Renew';
