@@ -1,16 +1,16 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
-import { forkJoin, Subject, combineLatest } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { AccountProfile } from 'src/app/core/account/account-profile';
 import { AccountService } from 'src/app/services/account/account.service';
+import { accountUrls } from '../../routing/account-urls';
 import { appUrls } from 'src/app/routing/app-urls';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { AuthenticationToken } from 'src/app/core/authentication/authentication-token';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterService } from 'src/app/services/chapters/chapter.service';
-import { accountUrls } from '../../routing/account-urls';
 
 @Component({
   selector: 'app-profile',
