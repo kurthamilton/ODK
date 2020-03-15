@@ -1,8 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { Observable, of, Subject, ReplaySubject } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { Observable, Subject, ReplaySubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterLinks } from 'src/app/core/chapters/chapter-links';
@@ -14,6 +14,7 @@ import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
 import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { environment } from 'src/environments/environment';
+import { HttpStore } from '../http/http-store';
 import { HttpUtils } from '../http/http-utils';
 
 const baseUrl = `${environment.apiBaseUrl}/chapters`;
@@ -36,14 +37,14 @@ const endpoints = {
 })
 export class ChapterService {
 
-  constructor(protected http: HttpClient) { }
+  constructor(protected http: HttpClient, 
+    private store: HttpStore
+  ) {     
+  }
 
   private activeChapter: Chapter;
   private activeChapterSubject: Subject<Chapter> = new ReplaySubject<Chapter>(1);
-  private chapterDetails: Map<string, ChapterTexts> = new Map<string, ChapterTexts>();
-  private chapterLinks: Map<string, ChapterLinks> = new Map<string, ChapterLinks>();
-  private chapters: Chapter[];
-
+  
   activeChapterChange(): Observable<Chapter> {
     return this.activeChapterSubject.asObservable();
   }
@@ -76,14 +77,7 @@ export class ChapterService {
   }
 
   getChapterLinks(chapterId: string): Observable<ChapterLinks> {
-    if (this.chapterLinks.has(chapterId)) {
-      return of(this.chapterLinks.get(chapterId));
-    }
-
-    return this.http.get(endpoints.chapterLinks(chapterId)).pipe(
-      map((response: any) => this.mapChapterLinks(response)),
-      tap((links: ChapterLinks) => this.chapterLinks.set(chapterId, links))
-    );
+    return this.store.get(endpoints.chapterLinks(chapterId), response => this.mapChapterLinks(response));
   }
 
   getChapterMembershipSettings(chapterId: string): Observable<ChapterMembershipSettings> {
@@ -117,15 +111,8 @@ export class ChapterService {
   }
 
   getChapters(): Observable<Chapter[]> {
-    if (this.chapters) {
-      return of(this.chapters);
-    }
-
-    return this.http.get(endpoints.chapters)
-      .pipe(
-        map((response: any): Chapter[] => response.map(x => this.mapChapter(x))),
-        tap((chapters: Chapter[]) => this.chapters = chapters)
-      )
+    return this.store.get(endpoints.chapters, 
+      response => response.map((x: any) => this.mapChapter(x)));
   }
 
   getChapterSubscriptions(chapterId: string): Observable<ChapterSubscription[]> {
@@ -135,14 +122,8 @@ export class ChapterService {
   }
 
   getChapterTexts(chapterId: string): Observable<ChapterTexts> {
-    if (this.chapterDetails.has(chapterId)) {
-      return of(this.chapterDetails.get(chapterId));
-    }
-
-    return this.http.get(endpoints.chapterTexts(chapterId)).pipe(
-      map((response: any) => this.mapChapterTexts(response)),
-      tap((details: ChapterTexts) => this.chapterDetails.set(chapterId, details))
-    );
+    return this.store.get(endpoints.chapterTexts(chapterId), 
+      response => this.mapChapterTexts(response));    
   }
 
   setActiveChapter(chapter: Chapter): void {

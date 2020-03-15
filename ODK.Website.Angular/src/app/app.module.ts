@@ -27,7 +27,8 @@ import { HomeFooterComponent } from './components/structure/home-footer/home-foo
 import { HomeHeaderComponent } from './components/structure/home-header/home-header.component';
 import { HomeLayoutComponent } from './components/layouts/home-layout/home-layout.component';
 import { HomeMenuComponent } from './components/structure/home-menu/home-menu.component';
-import { HttpAuthInterceptorService } from './services/http/http-auth-interceptor.service';
+import { HttpAuthInterceptor } from './services/http/http-auth-interceptor';
+import { HttpShareInterceptor } from './services/http/http-share-interceptor';
 import { ListEventComponent } from './components/events/list-event/list-event.component';
 import { LoginComponent } from './components/account/login/login.component';
 import { MemberComponent } from './components/members/member/member.component';
@@ -82,7 +83,8 @@ import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenet
     HttpClientModule,
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptorService, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: HttpShareInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptor, multi: true }
   ],
   bootstrap: [
     AppComponent

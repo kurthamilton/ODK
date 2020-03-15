@@ -1,4 +1,4 @@
-import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpHeaders, HttpEventType, HttpErrorResponse } from '@angular/common/http';
+import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { Observable, EMPTY, throwError } from 'rxjs';
@@ -8,17 +8,15 @@ import { AuthenticationService } from '../authentication/authentication.service'
 import { AuthenticationToken } from '../../core/authentication/authentication-token';
 import { HttpAuthInterceptorHeaders } from './http-auth-interceptor-headers';
 import { HttpAuthInterceptorOptions } from './http-auth-interceptor-options';
-import { PendingRequestsQueue } from './pending-requests-queue';
 
 @Injectable({
   providedIn: 'root'
 })
-export class HttpAuthInterceptorService implements HttpInterceptor {
+export class HttpAuthInterceptor implements HttpInterceptor {
 
   constructor(private authenticationService: AuthenticationService) {}
 
   private isRefreshing = false;
-  private pendingRequests: PendingRequestsQueue = new PendingRequestsQueue();
   
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token: AuthenticationToken = this.authenticationService.getToken();
@@ -27,40 +25,11 @@ export class HttpAuthInterceptorService implements HttpInterceptor {
 
   private handle(request: HttpRequest<any>, next: HttpHandler, token: AuthenticationToken): Observable<HttpEvent<any>> {
     request = this.setAuthenticationHeader(request, token);
-
-    const options: HttpAuthInterceptorOptions = HttpAuthInterceptorHeaders.getOptions(request.headers);
     request = this.removeInterceptorHeaders(request);
 
-    let pendingRequest: Observable<HttpEvent<any>>;
-    if (!options.isRetry && !options.isTokenRefresh) {
-      pendingRequest = this.pendingRequests.get(request);
-      if (pendingRequest) {
-        return pendingRequest;
-      }
-    }
-
-    pendingRequest = this.pendingRequests.enqueue(request);
-
-    let lastResponse: HttpEvent<any>;
-    next.handle(request)
-      .pipe(
-        catchError((err: any) => this.handleError(request, next, token, err))
-      ).subscribe({
-        next: ((response: HttpEvent<any>) => lastResponse = response),
-        error: (err: any) => {
-          this.pendingRequests.error(request, err);
-        },
-        complete: () => {
-          if (lastResponse && lastResponse.type === HttpEventType.Response) {
-            this.pendingRequests.complete(request, lastResponse);
-            return;
-          }
-
-          this.pendingRequests.abort(request);
-        }
-      });
-
-      return pendingRequest;
+    return next.handle(request).pipe(
+      catchError((err: any) => this.handleError(request, next, token, err))
+    );
   }
 
   private handleError(request: HttpRequest<any>, next: HttpHandler, token: AuthenticationToken,
@@ -87,7 +56,6 @@ export class HttpAuthInterceptorService implements HttpInterceptor {
 
   private handleRefreshedToken(request: HttpRequest<any>, next: HttpHandler, token: AuthenticationToken): Observable<HttpEvent<any>> {
     if (!token) {
-      this.pendingRequests.clear();
       return EMPTY;
     }
 

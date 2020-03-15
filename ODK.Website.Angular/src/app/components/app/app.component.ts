@@ -37,7 +37,7 @@ export class AppComponent implements OnInit, OnDestroy  {
     this.chapterService.getChapters().subscribe(() => {
       this.ready = true;
       this.changeDetector.detectChanges();
-    });
+    });    
   }
 
   ngOnDestroy(): void {}

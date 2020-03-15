@@ -16,6 +16,7 @@ import { ChapterService } from './chapter.service';
 import { ChapterSubscription } from 'src/app/core/chapters/chapter-subscription';
 import { ChapterTexts } from 'src/app/core/chapters/chapter-texts';
 import { environment } from 'src/environments/environment';
+import { HttpStore } from '../http/http-store';
 import { HttpUtils } from '../http/http-utils';
 import { ServiceResult } from '../service-result';
 
@@ -46,8 +47,8 @@ const endpoints = {
 })
 export class ChapterAdminService extends ChapterService {
 
-  constructor(http: HttpClient) {
-    super(http);
+  constructor(http: HttpClient, store: HttpStore) {
+    super(http, store);
   }
 
   addChapterAdminMember(chapterId: string, memberId: string): Observable<void> {
