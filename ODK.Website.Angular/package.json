@@ -28,6 +28,7 @@
     "@ng-select/ng-select": "^3.7.3",
     "@types/stripe-v3": "^3.1.17",
     "bootstrap": "^4.4.1",
+    "ng-lazyload-image": "^7.1.0",
     "ngx-clipboard": "^13.0.0",
     "rxjs": "~6.5.4",
     "tslib": "^1.11.1",

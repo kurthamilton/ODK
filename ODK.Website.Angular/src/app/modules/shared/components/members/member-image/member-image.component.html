@@ -2,7 +2,7 @@
   <app-loading-spinner *ngIf="loading" [options]="loadingOptions"></app-loading-spinner>
   <span [style.max-width.px]="maxWidth" class="d-inline-block">
     <img [class.card-img]="!isTop" [class.card-img-top]="isTop" 
-      [attr.src]="imageUrl" [attr.alt]="'Photo of ' + member.fullName" 
+      [lazyLoad]="imageUrl" [attr.alt]="'Photo of ' + member.fullName" 
       (load)="onLoad()" />
   </span>    
 </div>

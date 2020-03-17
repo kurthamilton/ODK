@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { NgbModule, NgbAlertModule, NgbCollapseModule, NgbDatepickerModule, NgbDropdownModule, NgbModalModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { LazyLoadImageModule } from 'ng-lazyload-image';
 
 import { AccountMenuComponent } from './components/account/account-menu/account-menu.component';
 import { BodyComponent } from './components/structure/body/body.component';
@@ -23,6 +23,7 @@ import { PageTitleComponent } from './components/structure/page-title/page-title
 import { PaymentButtonComponent } from './components/payments/payment-button/payment-button.component';
 import { RawHtmlComponent } from './components/elements/raw-html/raw-html.component';
 import { StripeFormComponent } from './components/payments/stripe-form/stripe-form.component';
+import { AppStyleModule } from '../style/app-style.module';
 import { SubscriptionAlertComponent } from './components/account/subscription-alert/subscription-alert.component';
 
 @NgModule({
@@ -49,18 +50,14 @@ import { SubscriptionAlertComponent } from './components/account/subscription-al
     SubscriptionAlertComponent,
   ],
   imports: [
-    CommonModule,
-    NgbModule,
-    NgbAlertModule,
-    NgbCollapseModule,
-    NgbDatepickerModule,
-    NgbDropdownModule,
-    NgbModalModule,
-    NgbTooltipModule,    
-    RouterModule
+    AppStyleModule,
+    CommonModule,        
+    LazyLoadImageModule,
+    RouterModule,
   ],
   exports: [
     AccountMenuComponent,
+    AppStyleModule,
     BodyComponent,
     BreadcrumbsComponent,
     ErrorMessagesComponent,
@@ -72,14 +69,7 @@ import { SubscriptionAlertComponent } from './components/account/subscription-al
     MemberImageComponent,
     MemberListComponent,
     ModalComponent,
-    NavbarComponent,
-    NgbAlertModule,
-    NgbCollapseModule,
-    NgbDatepickerModule,
-    NgbDropdownModule,
-    NgbModalModule,
-    NgbModule,
-    NgbTooltipModule,
+    NavbarComponent,    
     NotificationComponent,
     NotificationsComponent,
     PageTitleComponent,
