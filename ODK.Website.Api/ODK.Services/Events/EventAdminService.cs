@@ -305,7 +305,7 @@ namespace ODK.Services.Events
 
         private static void AssertEventEmailsCanBeSent(Event @event)
         {
-            if (@event.Date < DateTime.UtcNow)
+            if (@event.Date < DateTime.UtcNow.Date)
             {
                 throw new OdkServiceException("Invites cannot be sent to past events");
             }
