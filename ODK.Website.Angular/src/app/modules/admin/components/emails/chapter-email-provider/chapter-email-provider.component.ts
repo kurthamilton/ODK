@@ -19,7 +19,8 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
 })
 export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterAdminService: ChapterAdminService,
@@ -29,16 +30,21 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
 
   breadcrumbs: MenuItem[];
   form: FormViewModel;
-  formCallback: Subject<boolean> = new Subject<boolean>();    
+  formCallback: Subject<boolean> = new Subject<boolean>();
   provider: ChapterEmailProvider;
 
-  private chapter: Chapter;  
+  private chapter: Chapter;
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
-    
-    const chapterEmailProviderId: string = this.route.snapshot.paramMap.get(adminPaths.emailProviders.emailProvider.params.id);
-    this.emailAdminService.getChapterAdminEmailProvider(this.chapter.id, chapterEmailProviderId).subscribe((provider: ChapterEmailProvider) => {
+
+    const chapterEmailProviderId: string = this.route.snapshot.paramMap.get(
+      adminPaths.emailProviders.emailProvider.params.id
+    );
+    this.emailAdminService.getChapterAdminEmailProvider(
+      this.chapter.id,
+      chapterEmailProviderId
+    ).subscribe((provider: ChapterEmailProvider) => {
       if (!provider) {
         this.router.navigateByUrl(adminUrls.emailProviders(this.chapter));
         return;
@@ -48,7 +54,7 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
         { link: adminUrls.emailProviders(this.chapter), text: 'Providers' }
       ];
 
-      this.provider = provider;      
+      this.provider = provider;
       this.changeDetector.detectChanges();
     });
   }
@@ -61,5 +67,5 @@ export class ChapterEmailProviderComponent implements OnInit, OnDestroy {
     this.emailAdminService.updateChapterAdminEmailProvider(this.chapter.id, provider).subscribe(() => {
       this.formCallback.next(true);
     });
-  }  
+  }
 }

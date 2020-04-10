@@ -1,4 +1,4 @@
-export const accountPaths = {  
+export const accountPaths = {
   activate: {
     path: 'activate',
     queryParams: {
@@ -13,7 +13,7 @@ export const accountPaths = {
   },
   join: {
     path: 'join'
-  }, 
+  },
   logout: {
     path: 'logout'
   },

@@ -1,10 +1,10 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { adminUrls } from '../../../routing/admin-urls';
+import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { MenuItem } from 'src/app/core/menus/menu-item';
-import { appUrls } from 'src/app/routing/app-urls';
 
 @Component({
   selector: 'app-admin-menu',
@@ -19,7 +19,7 @@ export class AdminMenuComponent implements OnInit {
 
   ngOnInit(): void {
     const chapter: Chapter = this.chapterAdminService.getActiveChapter();
-    
+
     this.menuItems = [
       { link: appUrls.chapter(chapter), icon: 'fas fa-home', text: '' },
       { link: adminUrls.chapter(chapter), text: chapter.name },

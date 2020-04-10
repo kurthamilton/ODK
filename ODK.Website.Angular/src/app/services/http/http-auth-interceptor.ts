@@ -17,7 +17,7 @@ export class HttpAuthInterceptor implements HttpInterceptor {
   constructor(private authenticationService: AuthenticationService) {}
 
   private isRefreshing = false;
-  
+
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token: AuthenticationToken = this.authenticationService.getToken();
     return this.handle(request, next, token);
@@ -32,7 +32,10 @@ export class HttpAuthInterceptor implements HttpInterceptor {
     );
   }
 
-  private handleError(request: HttpRequest<any>, next: HttpHandler, token: AuthenticationToken,
+  private handleError(
+    request: HttpRequest<any>,
+    next: HttpHandler,
+    token: AuthenticationToken,
     err: HttpErrorResponse
   ): Observable<HttpEvent<any>> {
 
@@ -70,7 +73,7 @@ export class HttpAuthInterceptor implements HttpInterceptor {
     const headers: HttpHeaders = HttpAuthInterceptorHeaders.removeInterceptorHeaders(request.headers);
 
     return request.clone({
-      headers: headers
+      headers
     });
   }
 
@@ -86,7 +89,7 @@ export class HttpAuthInterceptor implements HttpInterceptor {
     const headers: HttpHeaders = HttpAuthInterceptorHeaders.setInterceptorHeaders(request.headers, options);
 
     return request.clone({
-      headers: headers
+      headers
     });
   }
 }

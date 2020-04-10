@@ -17,24 +17,25 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
 })
 export class ProfileEmailsComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private accountService: AccountService
-  ) {     
+  ) {
   }
 
-  breadcrumbs: MenuItem[];  
+  breadcrumbs: MenuItem[];
   form: FormViewModel;
   profile: AccountProfile;
 
   private chapter: Chapter;
   private formCallback: Subject<boolean> = new Subject<boolean>();
 
-  ngOnInit(): void {    
+  ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
     this.breadcrumbs = [
       { link: accountUrls.profile(this.chapter), text: 'Profile' }
-    ];        
+    ];
 
     this.accountService.getProfile().subscribe((profile: AccountProfile) => {
       this.profile = profile;
@@ -65,7 +66,7 @@ export class ProfileEmailsComponent implements OnInit, OnDestroy {
   private buildForm(): void {
     this.form = {
       buttons: [
-        { 
+        {
           text: this.profile.emailOptIn ? 'Unsubscribe' : 'Opt-in',
           type: this.profile.emailOptIn ? 'danger' : 'success'
         }

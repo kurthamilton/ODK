@@ -18,11 +18,12 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
 })
 export class CreateChapterEmailProviderComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private router: Router,
     private chapterAdminService: ChapterAdminService,
     private emailAdminService: EmailAdminService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
@@ -34,7 +35,7 @@ export class CreateChapterEmailProviderComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
-    
+
     this.breadcrumbs = [
       { link: adminUrls.emailProviders(this.chapter), text: 'Providers' }
     ];

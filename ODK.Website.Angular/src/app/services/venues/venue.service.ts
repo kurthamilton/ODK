@@ -21,9 +21,10 @@ const endpoints = {
 })
 export class VenueService {
 
-  constructor(protected http: HttpClient,
+  constructor(
+    protected http: HttpClient,
     private authenticationService: AuthenticationService
-  ) {     
+  ) {
   }
 
   getPublicVenues(chapterId: string): Observable<Venue[]> {
@@ -38,7 +39,7 @@ export class VenueService {
     );
   }
 
-  getVenues(chapterId: string): Observable<Venue[]> {    
+  getVenues(chapterId: string): Observable<Venue[]> {
     if (!this.authenticationService.isChapterMember(chapterId)) {
       return this.getPublicVenues(chapterId);
     }
@@ -46,7 +47,7 @@ export class VenueService {
     return this.http.get(endpoints.venues(chapterId))
       .pipe(
         map((response: any) => response.map(x => this.mapVenue(x)))
-      )
+      );
   }
 
   protected mapVenue(response: any): Venue {

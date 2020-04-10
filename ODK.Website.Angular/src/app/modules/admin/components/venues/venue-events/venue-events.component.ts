@@ -16,13 +16,14 @@ import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 })
 export class VenueEventsComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private eventAdminService: EventAdminService,
     private chapterAdminService: ChapterAdminService,
     private venueAdminService: VenueAdminService
-  ) {     
+  ) {
   }
-  
+
   events: Event[];
   links: {
     createEvent: string;

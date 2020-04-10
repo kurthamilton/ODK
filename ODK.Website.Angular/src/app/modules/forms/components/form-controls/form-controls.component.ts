@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ChangeDetectorRef, OnDestroy, SimpleChanges, EventEmitter, Output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnChanges, Input, ViewChild, ViewContainerRef, ChangeDetectorRef, OnDestroy,
+  SimpleChanges, EventEmitter, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
 import { Observable } from 'rxjs';
@@ -30,7 +31,7 @@ export class FormControlsComponent implements OnChanges, OnDestroy {
   formGroup: FormGroup;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['form']) {
+    if (changes.form) {
       this.formGroup = this.createFormGroup();
       this.onFormGroupChanged(this.formGroup);
     }

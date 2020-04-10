@@ -18,7 +18,8 @@ import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 })
 export class CreateVenueComponent implements OnInit {
 
-  constructor(private chapterAdminService: ChapterAdminService,
+  constructor(
+    private chapterAdminService: ChapterAdminService,
     private venueAdminService: VenueAdminService,
     private router: Router
   ) {
@@ -33,7 +34,7 @@ export class CreateVenueComponent implements OnInit {
     this.breadcrumbs = [
       { link: adminUrls.venues(this.chapter), text: 'Venues' }
     ];
-  }  
+  }
 
   onFormSubmit(venue: Venue): void {
     this.venueAdminService.createVenue(venue).subscribe((result: ServiceResult<Venue>) => {

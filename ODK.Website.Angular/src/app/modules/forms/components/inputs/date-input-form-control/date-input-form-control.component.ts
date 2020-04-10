@@ -12,25 +12,25 @@ import { InputBase } from '../input-base';
 })
 export class DateInputFormControlComponent extends InputBase {
 
-  constructor(changeDetector: ChangeDetectorRef) { 
+  constructor(changeDetector: ChangeDetectorRef) {
     super(changeDetector);
   }
 
   private dateInputFormControlViewModel: DateInputFormControlViewModel;
 
   protected onInit(): void {
-    this.dateInputFormControlViewModel = <DateInputFormControlViewModel>this.viewModel;
+    this.dateInputFormControlViewModel = this.viewModel as DateInputFormControlViewModel;
 
     const date: Date = this.viewModel.value ? new Date(this.viewModel.value) : null;
-    const ngbDate: NgbDateStruct = date 
+    const ngbDate: NgbDateStruct = date
       ? { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() }
       : null;
     this.control.setValue(ngbDate);
   }
 
   protected setValue(value: NgbDateStruct): void {
-    const date: Date = value 
-      ? new Date(value.year, value.month - 1, value.day) 
+    const date: Date = value
+      ? new Date(value.year, value.month - 1, value.day)
       : null;
     this.dateInputFormControlViewModel.value = value ? date : null;
   }

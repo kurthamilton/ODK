@@ -21,7 +21,8 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class LoginComponent implements OnInit {
 
-  constructor(private authenticationService: AuthenticationService,
+  constructor(
+    private authenticationService: AuthenticationService,
     private route: ActivatedRoute,
     private router: Router,
     private chapterService: ChapterService

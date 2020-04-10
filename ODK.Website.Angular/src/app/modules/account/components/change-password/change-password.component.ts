@@ -19,7 +19,8 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class ChangePasswordComponent implements OnInit {
 
-  constructor(private authenticationService: AuthenticationService,
+  constructor(
+    private authenticationService: AuthenticationService,
     private notificationService: NotificationService,
     private chapterService: ChapterService
   ) {
@@ -43,7 +44,7 @@ export class ChangePasswordComponent implements OnInit {
       { link: accountUrls.profile(chapter), text: 'Profile' }
     ];
 
-    this.buildForm();    
+    this.buildForm();
   }
 
   onFormSubmit(): void {

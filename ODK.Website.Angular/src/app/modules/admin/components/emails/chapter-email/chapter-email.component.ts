@@ -21,12 +21,13 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
 })
 export class ChapterEmailComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterAdminService: ChapterAdminService,
     private emailAdminService: EmailAdminService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
@@ -38,7 +39,8 @@ export class ChapterEmailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
 
-    const type: EmailType = <EmailType>parseInt(this.route.snapshot.paramMap.get(adminPaths.chapter.emails.email.params.type), 10);
+    const type: EmailType = parseInt(this.route.snapshot.paramMap.get(adminPaths.chapter.emails.email.params.type), 10);
+
     this.emailAdminService.getChapterEmail(this.chapter.id, type).subscribe((email: ChapterEmail) => {
       if (!email) {
         this.router.navigateByUrl(adminUrls.chapterEmails(this.chapter));
@@ -58,14 +60,14 @@ export class ChapterEmailComponent implements OnInit, OnDestroy {
     this.formCallback.complete();
   }
 
-  onFormSubmit(email: Email): void {    
+  onFormSubmit(email: Email): void {
     this.email.subject = email.subject;
     this.email.htmlContent = email.htmlContent;
 
     this.emailAdminService.updateChapterEmail(this.chapter.id, this.email).pipe(
       switchMap(() => this.emailAdminService.getChapterEmail(this.chapter.id, this.email.type))
-    ).subscribe((email: ChapterEmail) => {
-      this.email = email;
+    ).subscribe((updated: ChapterEmail) => {
+      this.email = updated;
       this.formCallback.next(true);
       this.changeDetector.detectChanges();
     });

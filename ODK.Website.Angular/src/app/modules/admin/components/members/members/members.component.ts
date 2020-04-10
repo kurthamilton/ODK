@@ -26,7 +26,8 @@ import { SubscriptionType } from 'src/app/core/account/subscription-type';
 })
 export class MembersComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private chapterAdminService: ChapterAdminService,
     private memberAdminService: MemberAdminService,
@@ -40,7 +41,7 @@ export class MembersComponent implements OnInit {
   superAdmin: boolean;
   today: Date = DateUtils.today();
   viewModels: AdminListMemberViewModel[];
-  
+
   private chapter: Chapter;
   private imageQueue: AdminMember[];
   private members: AdminMember[];
@@ -58,11 +59,11 @@ export class MembersComponent implements OnInit {
       this.memberAdminService.getMemberSubscriptions(this.chapter.id).pipe(
         tap((subscriptions: MemberSubscription[]) => this.memberSubscriptions = subscriptions)
       )
-    ]).subscribe(() => {      
+    ]).subscribe(() => {
       this.subscriptionMap = ArrayUtils.toMap(this.memberSubscriptions, x => x.memberId);
       this.filter = {
         name: '',
-        types: this.route.snapshot.queryParamMap.getAll('type').length 
+        types: this.route.snapshot.queryParamMap.getAll('type').length
           ? this.route.snapshot.queryParamMap.getAll('type').map(x => parseInt(x, 10))
           : [
             SubscriptionType.Trial, SubscriptionType.Full, SubscriptionType.Partial
@@ -126,7 +127,7 @@ export class MembersComponent implements OnInit {
       })
       .map((member: AdminMember): AdminListMemberViewModel => {
         return {
-          member: member,
+          member,
           subscription: this.subscriptionMap.get(member.id)
         };
       });
@@ -142,11 +143,11 @@ export class MembersComponent implements OnInit {
         case 'expires':
           return DateUtils.compare(a.subscription.expiryDate, b.subscription.expiryDate);
         case 'emailOptIn':
-          return a.member.emailOptIn === b.member.emailOptIn ? 0 : 
+          return a.member.emailOptIn === b.member.emailOptIn ? 0 :
            (a.member.emailOptIn ? 1 : -1);
         default:
           return a.member.fullName.localeCompare(b.member.fullName);
-      }      
+      }
     });
   }
 

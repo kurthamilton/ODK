@@ -5,7 +5,8 @@ import { MediaFile } from 'src/app/core/media/media-file';
 export class UploadAdapter {
   private loader;
 
-  constructor(loader: any, 
+  constructor(
+    loader: any,
     private chapter: Chapter,
     private mediaAdminService: MediaAdminService
   ) {
@@ -14,9 +15,9 @@ export class UploadAdapter {
 
   public upload(): Promise<any> {
     return this.loader.file.then(file => new Promise((resolve, reject) => {
-      this.mediaAdminService.uploadMediaFile(this.chapter.id, file).subscribe((file: MediaFile) => {
+      this.mediaAdminService.uploadMediaFile(this.chapter.id, file).subscribe((uploaded: MediaFile) => {
         resolve({
-          default: file.url
+          default: uploaded.url
         });
       });
     }));

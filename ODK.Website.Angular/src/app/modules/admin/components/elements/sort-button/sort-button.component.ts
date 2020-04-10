@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-sort-button',
@@ -8,7 +8,7 @@ import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input } from 
 export class SortButtonComponent {
 
   @Output() sort: EventEmitter<number> = new EventEmitter<number>();
-  
+
   onSort(): void {
     this.sort.emit();
   }

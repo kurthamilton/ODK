@@ -21,11 +21,12 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class EmailFormComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private authenticationService: AuthenticationService,
     private emailAdminService: EmailAdminService
-  ) {     
+  ) {
   }
 
   @Input() chapterEmail: ChapterEmail;
@@ -50,7 +51,7 @@ export class EmailFormComponent implements OnChanges {
     if (!this.email) {
       return;
     }
-    
+
     this.buildForm();
   }
 
@@ -69,7 +70,7 @@ export class EmailFormComponent implements OnChanges {
     if (!this.chapterEmail || !this.chapterEmail.id) {
       return;
     }
-    
+
     const chapter: Chapter = this.chapterAdminService.getActiveChapter();
 
     this.form = null;

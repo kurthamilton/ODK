@@ -1,5 +1,5 @@
 export interface ServiceResult<T> {
     messages?: string[];
-    success: boolean; 
+    success: boolean;
     value?: T;
 }

@@ -24,22 +24,23 @@ const expiringSubscriptionAlertId = 'subscription-expiring';
 })
 export class SubscriptionAlertComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private authenticationService: AuthenticationService,
     private chapterService: ChapterService,
     private notificationService: NotificationService,
     private accountService: AccountService
-  ) { 
+  ) {
   }
-    
+
   action: string;
   disabled: boolean;
   expiresIn: string;
   hide = false;
   links: {
     subscription: string
-  };  
-  status: string;  
+  };
+  status: string;
   type: string;
 
   private chapter: Chapter;
@@ -65,7 +66,7 @@ export class SubscriptionAlertComponent implements OnInit, OnDestroy {
     this.status = '';
 
     const today: Date = DateUtils.today();
-    const expires: Date = DateUtils.toDate(token.subscriptionExpiryDate);    
+    const expires: Date = DateUtils.toDate(token.subscriptionExpiryDate);
     if (!token.subscriptionExpiryDate || expires > DateUtils.addDays(today, 7)) {
       this.changeDetector.detectChanges();
       return;
@@ -81,8 +82,8 @@ export class SubscriptionAlertComponent implements OnInit, OnDestroy {
     ]).subscribe(() => {
       this.links = {
         subscription: accountUrls.subscription(this.chapter)
-      };            
-      
+      };
+
       this.action = this.memberSubscription.type === SubscriptionType.Trial ? 'Purchase membership' : 'Renew';
       this.disabled = token.membershipDisabled;
       this.type = this.memberSubscription.type === SubscriptionType.Trial ? 'trial' : 'subscription';
@@ -91,28 +92,28 @@ export class SubscriptionAlertComponent implements OnInit, OnDestroy {
         this.status = 'expired';
         this.changeDetector.detectChanges();
         return;
-      } 
-            
-      if (this.notificationService.alertIsDismissed(expiringSubscriptionAlertId)) {        
+      }
+
+      if (this.notificationService.alertIsDismissed(expiringSubscriptionAlertId)) {
         this.changeDetector.detectChanges();
         return;
       }
-        
+
       const expiresIn: number = DateUtils.daysBetween(today, expires);
       this.expiresIn = expiresIn === 1 ? 'tomorrow' : `in ${expiresIn} days`;
-      this.status = 'expiring';      
+      this.status = 'expiring';
       this.changeDetector.detectChanges();
-    });              
+    });
   }
 
   private onTokenChange(token: AuthenticationToken): void {
     this.status = '';
 
-    if (!token) {      
+    if (!token) {
       this.changeDetector.detectChanges();
       return;
     }
 
     this.loadDetails(token);
-  }  
+  }
 }

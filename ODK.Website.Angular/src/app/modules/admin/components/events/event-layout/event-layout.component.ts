@@ -16,12 +16,13 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
 })
 export class EventLayoutComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterAdminService: ChapterAdminService,
     private eventAdminService: EventAdminService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];

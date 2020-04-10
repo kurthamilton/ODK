@@ -15,7 +15,7 @@ import { MemberService } from './member.service';
 import { MemberSubscription } from 'src/app/core/members/member-subscription';
 import { ServiceResult } from '../service-result';
 
-const baseUrl: string = `${environment.adminApiBaseUrl}/members`;
+const baseUrl = `${environment.adminApiBaseUrl}/members`;
 
 const endpoints = {
   emails: (chapterId: string) => `${baseUrl}/emails?chapterId=${chapterId}`,
@@ -137,7 +137,7 @@ export class MemberAdminService extends MemberService {
       memberId: response.memberId
     };
   }
-  
+
   private mapMemberSubscription(response: any): MemberSubscription {
     return {
       expiryDate: response.expiryDate ? new Date(response.expiryDate) : null,

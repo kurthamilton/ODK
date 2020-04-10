@@ -23,12 +23,13 @@ import { VenueService } from 'src/app/services/venues/venue.service';
 })
 export class ChapterSidebarComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private authenticationService: AuthenticationService,
     private eventService: EventService,
     private venueService: VenueService
-  ) {     
+  ) {
   }
 
   eventViewModels: ListEventViewModel[];
@@ -40,7 +41,7 @@ export class ChapterSidebarComponent implements OnInit {
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
-    
+
     const token: AuthenticationToken = this.authenticationService.getToken();
     if (token) {
       this.loadMemberPage(true);
@@ -87,14 +88,14 @@ export class ChapterSidebarComponent implements OnInit {
       this.setEvents();
       this.changeDetector.detectChanges();
     });
-  } 
-  
+  }
+
   private setEvents(): void {
     const venueMap: Map<string, Venue> = ArrayUtils.toMap(this.venues, x => x.id);
     const responseMap: Map<string, EventMemberResponse> = ArrayUtils.toMap(this.memberResponses || [], x => x.eventId);
 
     this.eventViewModels = this.events.map((event: Event): ListEventViewModel => ({
-      event: event,
+      event,
       memberResponse: responseMap.get(event.id),
       venue: venueMap.get(event.venueId)
     }));

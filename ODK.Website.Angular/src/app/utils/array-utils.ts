@@ -11,11 +11,11 @@ export class ArrayUtils {
       return group;
     }, new Map<TKey, TValue[]>());
   }
-  
+
   static hasValues<T>(arr: T[]): boolean {
     return !!arr && arr.length > 0;
   }
-  
+
   static last<T>(arr: T[]): T {
     if (!this.hasValues(arr)) {
       return;
@@ -29,7 +29,7 @@ export class ArrayUtils {
     if (start > end) {
       modifier = -1;
     }
-    
+
     return Array.from(
       new Array(Math.abs(end - start) + 1),
       (_, index: number) => start + (modifier * index));

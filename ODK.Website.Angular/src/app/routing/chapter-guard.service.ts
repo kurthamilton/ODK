@@ -16,14 +16,15 @@ import { RouteGuardService } from './route-guard.service';
 })
 export class ChapterGuardService extends RouteGuardService {
 
-  constructor(router: Router, 
+  constructor(
+    router: Router,
     private chapterService: ChapterService,
     private authenticationService: AuthenticationService
-  ) { 
+  ) {
     super(router);
   }
 
-  hasAccess(route: ActivatedRouteSnapshot): Observable<boolean> {  
+  hasAccess(route: ActivatedRouteSnapshot): Observable<boolean> {
     const name: string = route.paramMap.get(appPaths.chapter.params.chapter);
     return this.chapterService.getChapter(name).pipe(
       tap((chapter: Chapter) => this.chapterService.setActiveChapter(chapter)),

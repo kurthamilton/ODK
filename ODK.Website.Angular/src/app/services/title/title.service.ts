@@ -10,12 +10,11 @@ import { environment } from 'src/environments/environment';
 })
 export class TitleService {
 
-  private _appTitle: string;
-
-  constructor(private title: Title,
+  constructor(
+    private title: Title,
     private chapterService: ChapterService
   ) {
-    this._appTitle = environment.title;
+    this.appTitle = environment.title;
 
     this.chapterService.activeChapterChange().subscribe((chapter: Chapter) => {
       this.chapter = chapter;
@@ -23,6 +22,7 @@ export class TitleService {
     });
   }
 
+  private appTitle: string;
   private chapter: Chapter;
   private routeTitle: string;
   private routeTitles: string[] = [];
@@ -40,7 +40,7 @@ export class TitleService {
 
   private getTitle(): string {
     const parts: string[] = [
-      `${this.chapter ? `${this.chapter.name} ` : ''}${this._appTitle}`
+      `${this.chapter ? `${this.chapter.name} ` : ''}${this.appTitle}`
     ];
 
     if (this.routeTitles.length) {

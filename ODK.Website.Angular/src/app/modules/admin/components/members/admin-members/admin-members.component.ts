@@ -14,7 +14,8 @@ import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.ser
 })
 export class AdminMembersComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
   ) {
   }
@@ -55,6 +56,6 @@ export class AdminMembersComponent implements OnInit {
     ).subscribe((adminMembers: ChapterAdminMember[]) => {
       this.adminMembers = adminMembers;
       this.changeDetector.detectChanges();
-    })
+    });
   }
 }

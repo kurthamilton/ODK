@@ -20,7 +20,7 @@ import { HttpUtils } from '../http/http-utils';
 const baseUrl = `${environment.apiBaseUrl}/chapters`;
 
 const endpoints = {
-  chapterContact: (id: string) => `${baseUrl}/${id}/contact`,  
+  chapterContact: (id: string) => `${baseUrl}/${id}/contact`,
   chapterLinks: (id: string) => `${baseUrl}/${id}/links`,
   chapterMembershipSettings: (id: string) => `${baseUrl}/${id}/membership/settings`,
   chapterPaymentSettings: (id: string) => `${baseUrl}/${id}/payments/settings`,
@@ -30,21 +30,22 @@ const endpoints = {
   chapters: baseUrl,
   chapterSubscriptions: (id: string) => `${baseUrl}/${id}/subscriptions`,
   chapterTexts: (id: string) => `${baseUrl}/${id}/texts`
-}
+};
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChapterService {
 
-  constructor(protected http: HttpClient, 
+  constructor(
+    protected http: HttpClient,
     private store: HttpStore
-  ) {     
+  ) {
   }
 
   private activeChapter: Chapter;
   private activeChapterSubject: Subject<Chapter> = new ReplaySubject<Chapter>(1);
-  
+
   activeChapterChange(): Observable<Chapter> {
     return this.activeChapterSubject.asObservable();
   }
@@ -52,7 +53,7 @@ export class ChapterService {
   contact(chapterId: string, email: string, message: string): Observable<void> {
     const params: HttpParams = HttpUtils.createFormParams({
       emailAddress: email,
-      message: message
+      message
     });
 
     return this.http.post(endpoints.chapterContact(chapterId), params).pipe(
@@ -68,7 +69,7 @@ export class ChapterService {
     return this.getChapters().pipe(
       map((chapters: Chapter[]) => chapters.find(x => x.name.toLocaleLowerCase() === name.toLocaleLowerCase()))
     );
-  }  
+  }
 
   getChapterById(id: string): Observable<Chapter> {
     return this.getChapters().pipe(
@@ -111,7 +112,7 @@ export class ChapterService {
   }
 
   getChapters(): Observable<Chapter[]> {
-    return this.store.get(endpoints.chapters, 
+    return this.store.get(endpoints.chapters,
       response => response.map((x: any) => this.mapChapter(x)));
   }
 
@@ -122,8 +123,8 @@ export class ChapterService {
   }
 
   getChapterTexts(chapterId: string): Observable<ChapterTexts> {
-    return this.store.get(endpoints.chapterTexts(chapterId), 
-      response => this.mapChapterTexts(response));    
+    return this.store.get(endpoints.chapterTexts(chapterId),
+      response => this.mapChapterTexts(response));
   }
 
   setActiveChapter(chapter: Chapter): void {
@@ -138,8 +139,8 @@ export class ChapterService {
       id: response.id,
       name: response.name,
       redirectUrl: response.redirectUrl
-    }
-  }  
+    };
+  }
 
   protected mapChapterProperty(response: any): ChapterProperty {
     return {
@@ -153,15 +154,15 @@ export class ChapterService {
       subtitle: response.subtitle
     };
   }
-  
+
   protected mapChapterQuestion(response: any): ChapterQuestion {
     return {
       answer: response.answer,
       id: response.id,
       name: response.name
     };
-  }  
-  
+  }
+
   protected mapChapterSubscription(response: any): ChapterSubscription {
     return {
       amount: response.amount,
@@ -174,7 +175,7 @@ export class ChapterService {
       type: response.type
     };
   }
-  
+
   private mapChapterLinks(response: any): ChapterLinks {
     return {
       facebook: response.facebook,
@@ -194,7 +195,7 @@ export class ChapterService {
       apiPublicKey: response.apiPublicKey,
       provider: response.provider
     };
-  }  
+  }
 
   private mapChapterPropertyOption(response: any): ChapterPropertyOption {
     return {
@@ -202,10 +203,10 @@ export class ChapterService {
       freeText: response.freeText === true,
       value: response.value
     };
-  }  
+  }
 
   protected mapChapterTexts(response: any): ChapterTexts {
-    return {      
+    return {
       registerText: response.registerText,
       welcomeText: response.welcomeText
     };

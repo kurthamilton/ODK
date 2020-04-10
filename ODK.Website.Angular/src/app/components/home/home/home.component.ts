@@ -15,8 +15,9 @@ import { CountryService } from 'src/app/services/countries/country.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent implements OnInit {
-  
-  constructor(private changeDetector: ChangeDetectorRef,
+
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private chapterService: ChapterService,
     private countryService: CountryService
@@ -34,7 +35,7 @@ export class HomeComponent implements OnInit {
       ),
       this.countryService.getCountries().pipe(
         tap((countries: Country[]) => this.countries = countries)
-      )  
+      )
     ]).subscribe(() => {
       this.continents = this.countries
         .map(x => x.continent)

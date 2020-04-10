@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, Input, OnChanges, OnDestroy, ChangeDetectorRef, Output, EventEmitter, ViewChild, ViewContainerRef, ComponentFactory, ComponentFactoryResolver, ComponentRef, SimpleChanges, SimpleChange } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, OnChanges, OnDestroy, ChangeDetectorRef, Output, EventEmitter, ViewChild,
+  ViewContainerRef, ComponentFactory, ComponentFactoryResolver, ComponentRef, SimpleChanges } from '@angular/core';
 import { FormGroup, AbstractControl } from '@angular/forms';
 
 import { Observable } from 'rxjs';
@@ -15,7 +16,8 @@ import { InputBase } from '../inputs/input-base';
 })
 export class FormControlComponent implements OnChanges, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private resolver: ComponentFactoryResolver
   ) {
   }
@@ -36,7 +38,7 @@ export class FormControlComponent implements OnChanges, OnDestroy {
       return;
     }
 
-    if (changes['viewModel']) {
+    if (changes.viewModel) {
       const instance: InputBase = this.createInput();
       this.control = instance.control;
       this.required = instance.required;
@@ -60,7 +62,7 @@ export class FormControlComponent implements OnChanges, OnDestroy {
     const factory: ComponentFactory<InputBase> = this.resolver.resolveComponentFactory(this.viewModel.type);
     const componentRef: ComponentRef<InputBase> = this.inputContainer.createComponent(factory);
 
-    const instance: InputBase = componentRef.instance;    
+    const instance: InputBase = componentRef.instance;
     instance.formGroup = this.formGroup;
     instance.validateForm = this.validateForm;
     instance.viewModel = this.viewModel;

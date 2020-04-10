@@ -9,7 +9,7 @@ import { InputBase } from 'src/app/modules/forms/components/inputs/input-base';
 })
 export class GoogleMapsTextInputFormControlComponent extends InputBase {
 
-  constructor(changeDetector: ChangeDetectorRef) { 
+  constructor(changeDetector: ChangeDetectorRef) {
     super(changeDetector);
   }
 

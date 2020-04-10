@@ -16,12 +16,13 @@ import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 })
 export class VenueLayoutComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterAdminService: ChapterAdminService,
     private venueAdminService: VenueAdminService
-  ) {       
+  ) {
   }
 
   breadcrumbs: MenuItem[];

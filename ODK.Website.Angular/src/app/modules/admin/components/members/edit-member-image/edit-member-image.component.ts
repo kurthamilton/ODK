@@ -12,12 +12,12 @@ import { MemberAdminService } from 'src/app/services/members/member-admin.servic
 })
 export class EditMemberImageComponent implements OnInit, OnDestroy {
 
-  constructor(private memberAdminService: MemberAdminService) {     
+  constructor(private memberAdminService: MemberAdminService) {
   }
 
   member: Member;
   updateImage: Subject<boolean> = new Subject<boolean>();
-  
+
   ngOnInit(): void {
     this.member = this.memberAdminService.getActiveMember();
   }

@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
 
@@ -19,9 +19,9 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class ResetPasswordComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private router: Router,
     private authenticationService: AuthenticationService,
     private chapterService: ChapterService
   ) {
@@ -37,7 +37,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   private formCallback: Subject<string[]> = new Subject<string[]>();
   private formControls: {
     password: TextInputFormControlViewModel;
-  };  
+  };
   private token: string;
 
   ngOnInit(): void {
@@ -54,7 +54,8 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
-    this.authenticationService.completePasswordReset(this.formControls.password.value, this.token).subscribe((result: ServiceResult<void>) => {
+    const password = this.formControls.password.value;
+    this.authenticationService.completePasswordReset(password, this.token).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
       this.updated = true;
       this.form = null;

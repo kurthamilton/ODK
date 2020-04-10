@@ -6,7 +6,7 @@ import { LowerCaseUrlSerializer } from './lower-case-url-serializer';
 
 @NgModule({
   imports: [RouterModule.forRoot(appRoutes, {
-    preloadingStrategy: PreloadAllModules,   
+    preloadingStrategy: PreloadAllModules,
     paramsInheritanceStrategy: 'always'
   })],
   exports: [RouterModule],

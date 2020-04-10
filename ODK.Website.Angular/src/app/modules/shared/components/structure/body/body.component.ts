@@ -10,7 +10,7 @@ import { TitleService } from 'src/app/services/title/title.service';
 })
 export class BodyComponent implements OnInit {
 
-  constructor(private titleService: TitleService) {  
+  constructor(private titleService: TitleService) {
   }
 
   @Input() breadcrumbs: MenuItem[];

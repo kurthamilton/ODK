@@ -17,11 +17,12 @@ import { TitleService } from 'src/app/services/title/title.service';
 })
 export class JoinComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private accountService: AccountService,
     private titleService: TitleService
-  ) {     
+  ) {
   }
 
   chapter: Chapter;
@@ -46,7 +47,7 @@ export class JoinComponent implements OnInit, OnDestroy {
     this.formCallback.complete();
   }
 
-  onFormSubmit(profile: AccountProfile): void {    
+  onFormSubmit(profile: AccountProfile): void {
     this.profile = profile;
     this.register();
   }
@@ -57,7 +58,7 @@ export class JoinComponent implements OnInit, OnDestroy {
   }
 
   private register(): void {
-    if (!this.profile || !this.image) {      
+    if (!this.profile || !this.image) {
       return;
     }
 

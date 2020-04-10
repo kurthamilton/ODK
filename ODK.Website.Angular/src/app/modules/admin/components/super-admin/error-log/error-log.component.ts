@@ -10,13 +10,14 @@ import { LogMessage } from 'src/app/core/logging/log-message';
 })
 export class ErrorLogComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private adminService: AdminService
-  ) {     
+  ) {
   }
 
   messages: LogMessage[];
-  
+
   ngOnInit(): void {
     this.adminService.getLogMessages().subscribe((messages: LogMessage[]) => {
       this.messages = messages;

@@ -16,10 +16,10 @@ import { EventService } from './event.service';
 import { HttpUtils } from 'src/app/services/http/http-utils';
 import { ServiceResult } from 'src/app/services/service-result';
 
-const baseUrl = `${environment.adminApiBaseUrl}/events`
+const baseUrl = `${environment.adminApiBaseUrl}/events`;
 
 const endpoints = {
-  chapterInvites: (chapterId: string, page: number, pageCount: number) => 
+  chapterInvites: (chapterId: string, page: number, pageCount: number) =>
     `${baseUrl}/invites?chapterId=${chapterId}&page=${page}&pageCount=${pageCount}`,
   chapterResponses: (chapterId: string) => `${baseUrl}/responses/chapters/${chapterId}`,
   count: (chapterId: string) => `${baseUrl}/count?chapterId=${chapterId}`,
@@ -28,7 +28,7 @@ const endpoints = {
   eventInvites: (eventId: string) => `${baseUrl}/${eventId}/invites`,
   eventResponse: (eventId: string, memberId: string) => `${baseUrl}/${eventId}/responses/${memberId}`,
   eventResponses: (eventId: string) => `${baseUrl}/${eventId}/responses`,
-  events: (chapterId: string, page: number, pageCount: number) => 
+  events: (chapterId: string, page: number, pageCount: number) =>
     `${baseUrl}?chapterId=${chapterId}&page=${page}&pageCount=${pageCount}`,
   eventsByVenue: (venueId: string) => `${baseUrl}/venues/${venueId}`,
   memberResponses: (memberId: string) => `${baseUrl}/responses/members/${memberId}`,
@@ -41,7 +41,8 @@ const endpoints = {
 })
 export class EventAdminService extends EventService {
 
-  constructor(http: HttpClient,
+  constructor(
+    http: HttpClient,
     authenticationService: AuthenticationService
   ) {
     super(http, authenticationService);
@@ -80,7 +81,7 @@ export class EventAdminService extends EventService {
       })
     );
   }
-  
+
   getAllMemberResponses(memberId: string): Observable<EventMemberResponse[]> {
     return this.http.get(endpoints.memberResponses(memberId)).pipe(
       map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
@@ -121,7 +122,7 @@ export class EventAdminService extends EventService {
     return this.http.get(endpoints.eventResponses(eventId)).pipe(
       map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
     );
-  }  
+  }
 
   getEventsByVenue(venueId: string): Observable<Event[]> {
     return this.http.get(endpoints.eventsByVenue(venueId)).pipe(
@@ -131,9 +132,9 @@ export class EventAdminService extends EventService {
 
   sendInviteeEmail(eventId: string, statuses: EventResponseType[], subject: string, body: string): Observable<void> {
     const params: HttpParams = HttpUtils.createFormParams({
-      body: body,
+      body,
       statuses: statuses.map(x => x.toString()),
-      subject: subject
+      subject
     });
 
     return this.http.post(endpoints.sendInviteeEmail(eventId), params).pipe(
@@ -166,7 +167,7 @@ export class EventAdminService extends EventService {
     const params: HttpParams = HttpUtils.createFormParams({
       type: responseType.toString()
     });
-    
+
     return this.http.put(endpoints.eventResponse(eventId, memberId), params).pipe(
       map((response: any) => this.mapEventMemberResponse(response))
     );

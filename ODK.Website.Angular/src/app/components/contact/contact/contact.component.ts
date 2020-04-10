@@ -16,7 +16,8 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ContactComponent implements OnInit, OnDestroy {
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService
   ) {
   }
@@ -24,7 +25,7 @@ export class ContactComponent implements OnInit, OnDestroy {
   form: FormViewModel;
   links: {
     about: string;
-  }
+  };
   submitted: boolean;
 
   private chapter: Chapter;
@@ -33,10 +34,10 @@ export class ContactComponent implements OnInit, OnDestroy {
     emailAddress: TextInputFormControlViewModel;
     message: TextAreaFormControlViewModel;
   };
-  
+
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
-    
+
     this.links = {
       about: appUrls.about(this.chapter)
     };
@@ -62,7 +63,7 @@ export class ContactComponent implements OnInit, OnDestroy {
       this.changeDetector.detectChanges();
     });
   }
-  
+
   private buildForm(): void {
     this.formControls = {
       emailAddress: new TextInputFormControlViewModel({

@@ -17,7 +17,8 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class ForgottenPasswordComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private authenticationService: AuthenticationService,
     private chapterService: ChapterService
   ) {

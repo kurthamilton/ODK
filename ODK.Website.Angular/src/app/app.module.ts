@@ -43,7 +43,7 @@ import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenet
 @NgModule({
   declarations: [
     AboutComponent,
-    AppComponent,    
+    AppComponent,
     ChapterComponent,
     ChapterFooterComponent,
     ChapterHeaderComponent,
@@ -67,11 +67,11 @@ import { ThreeTenetsComponent } from './components/home/three-tenets/three-tenet
     LoginComponent,
     MemberComponent,
     MemberProfileComponent,
-    MembersComponent,        
+    MembersComponent,
     PageWithSidebarComponent,
-    PrivacyComponent,    
+    PrivacyComponent,
     SectionComponent,
-    SocialMediaImageListComponent,        
+    SocialMediaImageListComponent,
     ThreeTenetsComponent,
   ],
   imports: [

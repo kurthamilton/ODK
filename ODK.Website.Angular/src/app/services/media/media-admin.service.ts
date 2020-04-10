@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { MediaFile } from 'src/app/core/media/media-file';
 
-const baseUrl: string = `${environment.adminApiBaseUrl}/media`;
+const baseUrl = `${environment.adminApiBaseUrl}/media`;
 
 const endpoints = {
   file: (chapterId: string, file: MediaFile) => `${baseUrl}/${file.name}?chapterId=${chapterId}`,
@@ -34,7 +34,7 @@ export class MediaAdminService {
   }
 
   uploadMediaFile(chapterId: string, file: File): Observable<MediaFile> {
-    const formData = new FormData();    
+    const formData = new FormData();
     formData.append('file', file, file.name);
 
     return this.http.post(endpoints.files(chapterId), formData).pipe(

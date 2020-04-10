@@ -16,7 +16,8 @@ import { ChapterService } from 'src/app/services/chapters/chapter.service';
 })
 export class LogoutComponent implements OnInit {
 
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private authenticationService: AuthenticationService,
     private chapterService: ChapterService
   ) {

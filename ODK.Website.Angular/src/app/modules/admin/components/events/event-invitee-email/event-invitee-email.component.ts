@@ -17,12 +17,13 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class EventInviteeEmailComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private eventAdminService: EventAdminService
-  ) {     
+  ) {
   }
 
-  form: FormViewModel;    
+  form: FormViewModel;
 
   private event: Event;
   private formCallback: Subject<boolean> = new Subject<boolean>();
@@ -30,8 +31,8 @@ export class EventInviteeEmailComponent implements OnInit, OnDestroy {
     body: HtmlEditorFormControlViewModel;
     status: DropDownMultiFormControlViewModel;
     subject: TextInputFormControlViewModel;
-  }
-  
+  };
+
   ngOnInit(): void {
     this.event = this.eventAdminService.getActiveEvent();
     this.buildForm();
@@ -42,7 +43,7 @@ export class EventInviteeEmailComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
-    const statuses: EventResponseType[] = this.formControls.status.value.map(x => <EventResponseType>parseInt(x, 10));
+    const statuses: EventResponseType[] = this.formControls.status.value.map(x => parseInt(x, 10));
     this.eventAdminService
       .sendInviteeEmail(this.event.id, statuses, this.formControls.subject.value, this.formControls.body.value)
       .subscribe(() => {
@@ -86,7 +87,7 @@ export class EventInviteeEmailComponent implements OnInit, OnDestroy {
         validation: {
           required: true
         }
-      })      
+      })
     };
 
     this.form = {

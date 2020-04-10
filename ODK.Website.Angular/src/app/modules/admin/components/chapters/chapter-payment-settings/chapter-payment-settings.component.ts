@@ -16,7 +16,8 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class ChapterPaymentSettingsComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
   ) {
   }
@@ -45,7 +46,10 @@ export class ChapterPaymentSettingsComponent implements OnInit {
     this.paymentSettings.apiPublicKey = this.controls.apiPublicKey.value;
     this.paymentSettings.apiSecretKey = this.controls.apiSecretKey.value;
 
-    this.chapterAdminService.updateChapterAdminPaymentSettings(this.chapter.id, this.paymentSettings).subscribe((paymentSettings: ChapterAdminPaymentSettings) => {
+    this.chapterAdminService.updateChapterAdminPaymentSettings(
+      this.chapter.id,
+      this.paymentSettings
+    ).subscribe((paymentSettings: ChapterAdminPaymentSettings) => {
       this.paymentSettings = paymentSettings;
       this.buildForm();
       this.changeDetector.detectChanges();
@@ -89,6 +93,6 @@ export class ChapterPaymentSettingsComponent implements OnInit {
         this.controls.apiPublicKey,
         this.controls.apiSecretKey
       ]
-    }
+    };
   }
 }

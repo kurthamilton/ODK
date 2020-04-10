@@ -14,9 +14,10 @@ import { ChapterProperty } from 'src/app/core/chapters/chapter-property';
 })
 export class ChapterPropertiesComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
-  ) { 
+  ) {
   }
 
   links: {
@@ -52,7 +53,7 @@ export class ChapterPropertiesComponent implements OnInit {
     ).subscribe((properties: ChapterProperty[]) => {
       this.properties = properties;
       this.changeDetector.detectChanges();
-    })
+    });
   }
 
   onMovePropertyDown(property: ChapterProperty): void {

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
@@ -18,10 +18,10 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class ChapterPropertyCreateComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
     private router: Router,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
@@ -32,7 +32,7 @@ export class ChapterPropertyCreateComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
-    this.property = this.createEmptyProperty();    
+    this.property = this.createEmptyProperty();
     this.breadcrumbs = [
       { link: adminUrls.chapterProperties(this.chapter), text: 'Properties' }
     ];
@@ -47,7 +47,7 @@ export class ChapterPropertyCreateComponent implements OnInit, OnDestroy {
       this.formCallback.next(result.messages);
       if (result.success) {
         this.router.navigateByUrl(adminUrls.chapterProperties(this.chapter));
-      }      
+      }
     });
   }
 

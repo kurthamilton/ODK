@@ -19,14 +19,15 @@ const endpoints = {
   memberResponses: `${baseUrl}/responses`,
   publicEvents: (chapterId: string) => `${baseUrl}/public?chapterId=${chapterId}`,
   respond: (eventId: string, type: number) => `${baseUrl}/${eventId}/respond?type=${type}`
-}
+};
 
 @Injectable({
   providedIn: 'root'
 })
 export class EventService {
 
-  constructor(protected http: HttpClient,
+  constructor(
+    protected http: HttpClient,
     private authenticationService: AuthenticationService
   ) {
   }
@@ -55,7 +56,7 @@ export class EventService {
             .map(x => this.mapEvent(x))
             .sort((a: Event, b: Event) => DateUtils.compare(a.date, b.date));
         })
-      )
+      );
   }
 
   getMemberResponses(): Observable<EventMemberResponse[]> {
@@ -63,7 +64,7 @@ export class EventService {
       map((response: any) => response.map(x => this.mapEventMemberResponse(x)))
     );
   }
-  
+
   getPublicEvents(chapterId: string): Observable<Event[]> {
     return this.http.get(endpoints.publicEvents(chapterId))
       .pipe(
@@ -72,13 +73,13 @@ export class EventService {
             .map(x => this.mapEvent(x))
             .sort((a: Event, b: Event) => DateUtils.compare(a.date, b.date));
         })
-      )
-  }  
+      );
+  }
 
   respond(eventId: string, responseType: EventResponseType): Observable<EventMemberResponse> {
     return this.http.put(endpoints.respond(eventId, responseType), null).pipe(
       map((response: any) => this.mapEventMemberResponse(response))
-    )
+    );
   }
 
   protected mapEvent(response: any): Event {
@@ -100,6 +101,6 @@ export class EventService {
       eventId: response.eventId,
       memberId: response.memberId,
       responseType: response.responseTypeId
-    }
+    };
   }
 }

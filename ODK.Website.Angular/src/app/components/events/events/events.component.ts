@@ -23,7 +23,8 @@ import { VenueService } from 'src/app/services/venues/venue.service';
 })
 export class EventsComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private eventService: EventService,
     private venueService: VenueService,
@@ -72,9 +73,9 @@ export class EventsComponent implements OnInit {
     ]).subscribe(() => {
       const venueMap: Map<string, Venue> = ArrayUtils.toMap(this.venues, x => x.id);
       const responseMap: Map<string, EventMemberResponse> = ArrayUtils.toMap(this.memberResponses || [], x => x.eventId);
-      
+
       this.viewModels = this.events.map((event: Event): ListEventViewModel => ({
-        event: event,
+        event,
         memberResponse: responseMap.get(event.id),
         venue: venueMap.get(event.venueId)
       }));

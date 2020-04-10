@@ -26,7 +26,7 @@ const subscriptionsPath = (chapter: Chapter, ...path: string[]): string => membe
 const superAdminPath = (chapter: Chapter, ...path: string[]): string => url(chapter, adminPaths.superAdmin.path, ...path);
 const venuesPath = (chapter: Chapter, ...path: string[]): string => eventsPath(chapter, adminPaths.venues.path, ...path);
 
-const pathJoin = (parts: string[]): string =>parts.filter(x => !!x).join('/');
+const pathJoin = (parts: string[]): string => parts.filter(x => !!x).join('/');
 
 const url = (chapter: Chapter, ...path: string[]): string => {
   const parts: string[] = [
@@ -38,14 +38,14 @@ const url = (chapter: Chapter, ...path: string[]): string => {
   return `/${pathJoin(parts)}`;
 };
 
-export const adminUrls = {  
+export const adminUrls = {
   adminMember: (chapter: Chapter, memberId: string) => membersPath(chapter, adminPaths.adminMembers.path, memberId),
   adminMemberAdd: (chapter: Chapter) => membersPath(chapter, adminPaths.adminMembers.path, adminPaths.adminMembers.add.path),
   adminMembers: (chapter: Chapter) => membersPath(chapter, adminPaths.adminMembers.path),
 
   chapter: (chapter: Chapter) => chapterPath(chapter),
-  chapterEmail: (chapter: Chapter, email: ChapterEmail) => chapterPath(chapter, chapterPaths.emails.path, email.type.toString()),  
-  chapterEmails: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emails.path),  
+  chapterEmail: (chapter: Chapter, email: ChapterEmail) => chapterPath(chapter, chapterPaths.emails.path, email.type.toString()),
+  chapterEmails: (chapter: Chapter) => chapterPath(chapter, chapterPaths.emails.path),
   chapterLinks: (chapter: Chapter) => chapterPath(chapter, chapterPaths.links.path),
   chapterProperties: (chapter: Chapter) => chapterPath(chapter, chapterPaths.properties.path),
   chapterProperty: (chapter: Chapter, property: ChapterProperty) => chapterPath(chapter, chapterPaths.properties.path, property.id),
@@ -56,7 +56,7 @@ export const adminUrls = {
 
   emailProvider: (chapter: Chapter, provider: ChapterEmailProvider) => emailProvidersPath(chapter, provider.id),
   emailProviderCreate: (chapter: Chapter) => emailProvidersPath(chapter, adminPaths.emailProviders.create.path),
-  emailProviders: (chapter: Chapter) => emailProvidersPath(chapter),  
+  emailProviders: (chapter: Chapter) => emailProvidersPath(chapter),
 
   event: (chapter: Chapter, event: Event) => eventPath(chapter, event),
   eventAttendees: (chapter: Chapter, event: Event) => eventPath(chapter, event, eventPaths.attendees.path),
@@ -67,7 +67,7 @@ export const adminUrls = {
   media: (chapter: Chapter) => url(chapter, adminPaths.media.path),
 
   member: (chapter: Chapter, member: Member) => memberPath(chapter, member),
-  memberEvents: (chapter: Chapter, member: Member) => memberPath(chapter, member, memberPaths.events.path),  
+  memberEvents: (chapter: Chapter, member: Member) => memberPath(chapter, member, memberPaths.events.path),
   memberImage: (chapter: Chapter, member: Member) => memberPath(chapter, member, memberPaths.image.path),
   memberImport: (chapter: Chapter) => membersPath(chapter, membersPaths.import.path),
   members: (chapter: Chapter) => membersPath(chapter),
@@ -82,8 +82,8 @@ export const adminUrls = {
   superAdminErrorLog: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.errorLog.path),
   superAdminInstagram: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.socialMedia.instagram.path),
   superAdminMembers: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.memberEmails.path),
-  superAdminPaymentSettings: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.paymentSettings.path),  
-  
+  superAdminPaymentSettings: (chapter: Chapter) => superAdminPath(chapter, adminPaths.superAdmin.paymentSettings.path),
+
   venue: (chapter: Chapter, venue: Venue) => venuesPath(chapter, venue.id),
   venueCreate: (chapter: Chapter) => venuesPath(chapter, adminPaths.venues.create.path),
   venueEvents: (chapter: Chapter, venue: Venue) => venuesPath(chapter, venue.id, adminPaths.venues.venue.events.path),

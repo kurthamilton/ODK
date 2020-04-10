@@ -13,7 +13,8 @@ export abstract class InputBase implements OnDestroy {
 
   private _viewModel: FormControlViewModel;
 
-  protected constructor(protected changeDetector: ChangeDetectorRef,
+  protected constructor(
+    protected changeDetector: ChangeDetectorRef,
     showLabel?: boolean
   ) {
     this.showLabel = showLabel !== false;
@@ -48,17 +49,17 @@ export abstract class InputBase implements OnDestroy {
   controlId: string;
   match: string;
   pattern: string;
-  ready = false
+  ready = false;
   required: boolean;
   showLabel: boolean;
-  
+
   ngOnDestroy(): void {}
 
   onValidate(): void {
     if (!this.control) {
       return;
     }
-    
+
     this.control.updateValueAndValidity();
   }
 

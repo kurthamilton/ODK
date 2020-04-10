@@ -23,14 +23,14 @@ export class ChapterQuestionFormComponent implements OnChanges {
 
   private formControls: {
     answer: HtmlEditorFormControlViewModel;
-    name: TextInputFormControlViewModel;    
+    name: TextInputFormControlViewModel;
   };
-  
+
   ngOnChanges(): void {
     if (!this.question) {
       return;
     }
-    
+
     this.buildForm();
   }
 

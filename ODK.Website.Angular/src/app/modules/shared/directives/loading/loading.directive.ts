@@ -8,7 +8,8 @@ import { LoadingSpinnerComponent } from '../../components/elements/loading-spinn
 })
 export class LoadingDirective implements OnDestroy {
 
-  constructor(componentFactoryResolver: ComponentFactoryResolver,
+  constructor(
+    componentFactoryResolver: ComponentFactoryResolver,
     private templateRef: TemplateRef<any>,
     private viewContainer: ViewContainerRef
   ) {

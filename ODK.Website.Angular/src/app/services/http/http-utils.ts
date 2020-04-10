@@ -15,7 +15,7 @@ export class HttpUtils {
         if (typeof(value) === 'string') {
           formData.append(key, values[key]);
         } else {
-          const file: File = <File>values[key];
+          const file: File = values[key] as File;
           formData.append(key, file, file.name);
         }
       }
@@ -27,7 +27,7 @@ export class HttpUtils {
   static createFormParams(values: { [name: string]: string | string[] }): HttpParams {
     for (const key in values) {
       if (values.hasOwnProperty(key)) {
-        values[key] = values[key] || ''
+        values[key] = values[key] || '';
       }
     }
 
@@ -53,7 +53,7 @@ export class HttpUtils {
         const contentType: string = response.headers.get('Content-Type');
 
         const bytes = new Uint8Array(response.body);
-        const stringBytes: string = String.fromCharCode(...bytes)
+        const stringBytes: string = String.fromCharCode(...bytes);
         const base64: string = btoa(stringBytes);
         return base64 ? `data:${contentType};base64,${base64}` : '';
       })

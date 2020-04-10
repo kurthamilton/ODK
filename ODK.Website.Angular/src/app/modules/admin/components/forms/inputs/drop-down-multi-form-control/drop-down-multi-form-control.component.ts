@@ -11,17 +11,17 @@ import { InputBase } from 'src/app/modules/forms/components/inputs/input-base';
 })
 export class DropDownMultiFormControlComponent extends InputBase {
 
-  constructor(changeDetector: ChangeDetectorRef) { 
-    super(changeDetector);    
+  constructor(changeDetector: ChangeDetectorRef) {
+    super(changeDetector);
   }
 
   options: DropDownFormControlOption[];
   selectedOptions: string[];
-  
+
   private dropDownMultiFormControlViewModel: DropDownMultiFormControlViewModel;
 
   protected onInit(): void {
-    this.dropDownMultiFormControlViewModel = <DropDownMultiFormControlViewModel>this.viewModel;
+    this.dropDownMultiFormControlViewModel = this.viewModel as DropDownMultiFormControlViewModel;
 
     this.options = this.dropDownMultiFormControlViewModel.options;
     this.selectedOptions = this.viewModel.value;

@@ -12,9 +12,10 @@ import { ChapterService } from 'src/app/services/chapters/chapter.service';
 })
 export class AboutComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService
-  ) {     
+  ) {
   }
 
   links: {
@@ -24,10 +25,11 @@ export class AboutComponent implements OnInit {
 
   ngOnInit(): void {
     const chapter: Chapter = this.chapterService.getActiveChapter();
-    
+
     this.links = {
       contact: appUrls.contact(chapter)
-    }
+    };
+
     this.chapterService.getChapterQuestions(chapter.id).subscribe((questions: ChapterQuestion[]) => {
       this.questions = questions;
       this.changeDetector.detectChanges();

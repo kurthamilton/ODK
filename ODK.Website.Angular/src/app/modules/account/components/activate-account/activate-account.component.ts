@@ -19,11 +19,12 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class ActivateAccountComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private chapterService: ChapterService,
     private accountService: AccountService
-  ) {     
+  ) {
   }
 
   form: FormViewModel;
@@ -45,7 +46,7 @@ export class ActivateAccountComponent implements OnInit, OnDestroy {
     this.links = {
       login: appUrls.login(this.chapter)
     };
-    this.buildForm();    
+    this.buildForm();
   }
 
   ngOnDestroy(): void {

@@ -11,12 +11,13 @@ import { Chapter } from 'src/app/core/chapters/chapter';
 })
 export class InstagramComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private socialMediaAdminService: SocialMediaAdminService
-  ) {     
+  ) {
   }
-  
+
   code: string;
   loginMessage: string;
 

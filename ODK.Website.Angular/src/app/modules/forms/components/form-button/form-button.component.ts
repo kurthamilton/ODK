@@ -9,8 +9,6 @@ import { FormButtonViewModel } from './form-button.view-model';
 })
 export class FormButtonComponent {
 
-  constructor() { }
-
   @Input() button: FormButtonViewModel;
-  
+
 }

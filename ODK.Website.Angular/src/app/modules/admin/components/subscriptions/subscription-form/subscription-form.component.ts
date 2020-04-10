@@ -21,7 +21,8 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class SubscriptionFormComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private countryService: CountryService
   ) {

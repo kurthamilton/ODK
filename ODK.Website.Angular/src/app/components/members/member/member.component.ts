@@ -17,7 +17,8 @@ import { TitleService } from 'src/app/services/title/title.service';
 })
 export class MemberComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterService: ChapterService,

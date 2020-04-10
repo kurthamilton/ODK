@@ -25,12 +25,13 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class UpdateEmailAddressComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterService: ChapterService,
     private accountService: AccountService
-  ) { 
+  ) {
   }
 
   breadcrumbs: MenuItem[];
@@ -50,9 +51,9 @@ export class UpdateEmailAddressComponent implements OnInit, OnDestroy {
     this.chapter = this.chapterService.getActiveChapter();
     this.breadcrumbs = [
       { link: accountUrls.profile(this.chapter), text: 'Profile' }
-    ];        
-    
-    const token: string = RouteUtils.getQueryParam(this.route, accountPaths.updateEmailAddress.queryParams.token);    
+    ];
+
+    const token: string = RouteUtils.getQueryParam(this.route, accountPaths.updateEmailAddress.queryParams.token);
     if (token) {
       this.status = 'confirming';
       this.accountService.confirmEmailAddressUpdate(token).pipe(
@@ -76,7 +77,7 @@ export class UpdateEmailAddressComponent implements OnInit, OnDestroy {
         this.buildForm();
         this.changeDetector.detectChanges();
       });
-    }        
+    }
   }
 
   ngOnDestroy(): void {
@@ -115,7 +116,7 @@ export class UpdateEmailAddressComponent implements OnInit, OnDestroy {
           message: 'Invalid email address format',
           pattern: FormControlValidationPatterns.email,
           required: true
-        }        
+        }
       })
     };
 

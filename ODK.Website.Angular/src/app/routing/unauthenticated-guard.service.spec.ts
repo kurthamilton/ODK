@@ -6,7 +6,7 @@ describe('UnauthenticatedGuardService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: UnauthenticatedGuardService = TestBed.get(UnauthenticatedGuardService);
+    const service: UnauthenticatedGuardService = TestBed.inject(UnauthenticatedGuardService);
     expect(service).toBeTruthy();
   });
 });

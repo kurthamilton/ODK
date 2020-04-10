@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, OnChanges } from '@angular/core';
 
 import { appUrls } from 'src/app/routing/app-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
@@ -12,9 +12,7 @@ import { ListEventViewModel } from './list-event.view-model';
 })
 export class ListEventComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef,
-    private chapterService: ChapterService
-  ) {
+  constructor(private chapterService: ChapterService) {
   }
 
   @Input() viewModel: ListEventViewModel;
@@ -27,6 +25,6 @@ export class ListEventComponent implements OnChanges {
     }
 
     const chapter: Chapter = this.chapterService.getActiveChapter();
-    this.link = appUrls.event(chapter, this.viewModel.event);    
+    this.link = appUrls.event(chapter, this.viewModel.event);
   }
 }

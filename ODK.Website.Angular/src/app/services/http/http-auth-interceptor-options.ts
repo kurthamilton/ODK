@@ -1,5 +1,4 @@
 export interface HttpAuthInterceptorOptions {
-    isRetry?: boolean;
-    isTokenRefresh?: boolean;
-  }
-  
+  isRetry?: boolean;
+  isTokenRefresh?: boolean;
+}

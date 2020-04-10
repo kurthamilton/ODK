@@ -12,8 +12,9 @@ import { MenuItem } from '../../../core/menus/menu-item';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeMenuComponent implements OnInit {
-  constructor(private changeDetector: ChangeDetectorRef, 
-    private chapterService: ChapterService) { 
+  constructor(
+    private changeDetector: ChangeDetectorRef,
+    private chapterService: ChapterService) {
   }
 
   menuItems: MenuItem[][];

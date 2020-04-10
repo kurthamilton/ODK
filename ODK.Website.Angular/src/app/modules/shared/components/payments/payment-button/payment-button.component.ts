@@ -18,7 +18,8 @@ import { Payment } from 'src/app/core/payments/payment';
 })
 export class PaymentButtonComponent implements OnChanges, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private countryService: CountryService,
   ) {

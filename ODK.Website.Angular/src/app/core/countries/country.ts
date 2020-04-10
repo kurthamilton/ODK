@@ -1,7 +1,7 @@
 export interface Country {
-  continent: string;  
+  continent: string;
   currencyCode: string;
-    currencySymbol: string;
-    id: string;
-    name: string;
+  currencySymbol: string;
+  id: string;
+  name: string;
 }

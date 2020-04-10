@@ -33,11 +33,11 @@ const endpoints = {
 })
 export class AccountService {
 
-  constructor(private http: HttpClient) { }  
+  constructor(private http: HttpClient) { }
 
   activateAccount(password: string, token: string): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
-      password: password,
+      password,
       activationToken: token
     });
 
@@ -46,7 +46,7 @@ export class AccountService {
         success: true
       })),
       catchApiError()
-    )
+    );
   }
 
   confirmEmailAddressUpdate(token: string): Observable<ServiceResult<void>> {
@@ -89,8 +89,8 @@ export class AccountService {
   register(chapterId: string, profile: AccountProfile, image: File): Observable<ServiceResult<void>> {
     const paramsObject: any = this.createProfileParams(profile);
     paramsObject.chapterId = chapterId;
-    paramsObject.image = image;    
-    
+    paramsObject.image = image;
+
     const formData: FormData = HttpUtils.createFormData(paramsObject);
 
     return this.http.post(endpoints.register, formData).pipe(
@@ -103,7 +103,7 @@ export class AccountService {
 
   requestEmailAddressUpdate(newEmailAddress: string): Observable<ServiceResult<void>> {
     const params: HttpParams = HttpUtils.createFormParams({
-      newEmailAddress: newEmailAddress
+      newEmailAddress
     });
 
     return this.http.post(endpoints.requestEmailAddressUpdate, params).pipe(

@@ -8,10 +8,10 @@ import { Member } from 'src/app/core/members/member';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListMemberComponent implements OnChanges {
-  
+
   @Input() link: string;
   @Input() maxWidth: number;
-  @Input() member: Member;   
+  @Input() member: Member;
   @Input() size: 'sm' | 'xs';
 
   hideName: boolean;

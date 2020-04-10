@@ -25,14 +25,15 @@ import { MemberService } from 'src/app/services/members/member.service';
 })
 export class EventSidebarComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private authenticationService: AuthenticationService,
     private chapterService: ChapterService,
     private eventService: EventService,
     private memberService: MemberService
-  ) { 
+  ) {
   }
 
   @Input() event: Event;
@@ -42,7 +43,7 @@ export class EventSidebarComponent implements OnChanges {
   going: Member[];
   maybe: Member[];
   memberResponse: EventResponseType;
-  
+
   private chapter: Chapter;
   private memberId: string;
   private members: Member[];
@@ -51,17 +52,17 @@ export class EventSidebarComponent implements OnChanges {
   ngOnChanges(): void {
     if (!this.event) {
       return;
-    }    
-    
+    }
+
     const token: AuthenticationToken = this.authenticationService.getToken();
     this.authenticated = !!token;
-    if (!token) {      
+    if (!token) {
       return;
     }
-  
+
     this.chapter = this.chapterService.getActiveChapter();
     this.memberId = token.memberId;
-    
+
     forkJoin([
       this.memberService.getMembers(token.chapterId).pipe(
         tap((members: Member[]) => this.members = members)
@@ -122,6 +123,6 @@ export class EventSidebarComponent implements OnChanges {
             this.memberResponse = response.responseType;
           }
         }
-      });        
+      });
   }
 }

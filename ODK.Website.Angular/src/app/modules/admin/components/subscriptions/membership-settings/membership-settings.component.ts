@@ -16,7 +16,8 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class MembershipSettingsComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
   ) {
   }
@@ -49,7 +50,10 @@ export class MembershipSettingsComponent implements OnInit, OnDestroy {
     this.membershipSettings.membershipDisabledAfterDaysExpired = this.formControls.membershipDisabledAfterDaysExpired.value;
     this.membershipSettings.trialPeriodMonths = this.formControls.trialPeriodMonths.value;
 
-    this.chapterAdminService.updateChapterAdminMembershipSettings(this.chapter.id, this.membershipSettings).subscribe((result: ServiceResult<void>) => {
+    this.chapterAdminService.updateChapterAdminMembershipSettings(
+      this.chapter.id,
+      this.membershipSettings
+    ).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
     });
   }

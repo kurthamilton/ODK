@@ -36,7 +36,7 @@ import { UpdateEmailAddressComponent } from './components/update-email-address/u
     SubscriptionComponent,
     UpdateEmailAddressComponent,
   ],
-  imports: [    
+  imports: [
     AccountRoutingModule,
     AppFormsModule,
     AppSharedModule,

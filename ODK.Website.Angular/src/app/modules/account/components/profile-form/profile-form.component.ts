@@ -36,7 +36,8 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class ProfileFormComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private socialMediaService: SocialMediaService,
     @Inject(LOCALE_ID) private locale: string
@@ -58,8 +59,8 @@ export class ProfileFormComponent implements OnChanges {
   private memberPropertyMap: Map<string, MemberProperty>;
 
   private formControls: {
-    emailAddress: FormControlViewModel;    
-    firstName: TextInputFormControlViewModel;    
+    emailAddress: FormControlViewModel;
+    firstName: TextInputFormControlViewModel;
     joined: ReadOnlyFormControlViewModel;
     lastName: TextInputFormControlViewModel;
     properties: FormControlViewModel[];
@@ -71,19 +72,21 @@ export class ProfileFormComponent implements OnChanges {
     privacy: CheckBoxFormControlViewModel;
     subscription: CheckBoxFormControlViewModel;
     threeTenets: CheckBoxFormControlViewModel;
-  }
+  };
 
   ngOnChanges(): void {
     if (!this.chapterId) {
       return;
-    }        
+    }
 
     forkJoin([
       this.chapterService.getChapterProperties(this.chapterId).pipe(
         tap((properties: ChapterProperty[]) => this.chapterProperties = properties)
       ),
       this.chapterService.getChapterPropertyOptions(this.chapterId).pipe(
-        tap((options: ChapterPropertyOption[]) => this.chapterPropertyOptions = ArrayUtils.groupValues(options, x => x.chapterPropertyId, x => x))
+        tap((options: ChapterPropertyOption[]) => {
+          this.chapterPropertyOptions = ArrayUtils.groupValues(options, x => x.chapterPropertyId, x => x);
+        })
       ),
       this.chapterService.getChapterMembershipSettings(this.chapterId).pipe(
         tap((settings: ChapterMembershipSettings) => this.chapterMembershipSettings = settings)
@@ -95,7 +98,7 @@ export class ProfileFormComponent implements OnChanges {
 
       this.buildForm();
       this.changeDetector.detectChanges();
-    });    
+    });
   }
 
   onFormSubmit(): void {
@@ -137,7 +140,7 @@ export class ProfileFormComponent implements OnChanges {
           required: true
         },
         value: ''
-      }),      
+      }),
       firstName: new TextInputFormControlViewModel({
         id: 'firstName',
         label: {
@@ -147,7 +150,7 @@ export class ProfileFormComponent implements OnChanges {
           required: true
         },
         value: this.profile ? this.profile.firstName : ''
-      }),      
+      }),
       joined: this.profile ? new ReadOnlyFormControlViewModel({
         id: 'joined',
         label: {
@@ -173,7 +176,7 @@ export class ProfileFormComponent implements OnChanges {
         emailOptIn: this.profile ? null : new CheckBoxFormControlViewModel({
           id: 'emailOptIn',
           label: {
-            helpText: "We recommend you leave this on. Once you're set up, we'll only send you one email per event.",
+            helpText: 'We recommend you leave this on. Once you\'re set up, we\'ll only send you one email per event.',
             text: 'Receive event emails',
             subtitle: 'Opt in to emails informing you of upcoming events'
           },
@@ -232,7 +235,7 @@ export class ProfileFormComponent implements OnChanges {
 
     const controls: FormControlViewModel[] = [
       this.formControls.emailAddress
-    ];        
+    ];
 
     if (this.joinFormControls) {
       controls.push(
@@ -243,12 +246,12 @@ export class ProfileFormComponent implements OnChanges {
     controls.push(...[
       this.formControls.firstName,
       this.formControls.lastName,
-      ...this.formControls.properties,        
+      ...this.formControls.properties,
     ]);
 
     if (this.formControls.joined) {
       controls.push(this.formControls.joined);
-    }    
+    }
 
     if (this.joinFormControls) {
       controls.push(...[
@@ -264,7 +267,7 @@ export class ProfileFormComponent implements OnChanges {
         { text: this.profile ? 'Update' : 'Create' }
       ],
       callback: this.formCallback,
-      controls: controls
+      controls
     };
   }
 
@@ -286,7 +289,7 @@ export class ProfileFormComponent implements OnChanges {
     };
 
     if (chapterProperty.dataType === DataType.LongText) {
-      const textAreaOptions = <TextAreaFormControlOptions>options;
+      const textAreaOptions = options as TextAreaFormControlOptions;
       textAreaOptions.value = memberProperty ? memberProperty.value : '';
       return new TextAreaFormControlViewModel(textAreaOptions);
     }
@@ -294,7 +297,7 @@ export class ProfileFormComponent implements OnChanges {
     if (chapterProperty.dataType === DataType.DropDown) {
       const chapterPropertyOptions: ChapterPropertyOption[] = this.chapterPropertyOptions.get(chapterProperty.id) || [];
       if (chapterPropertyOptions.length > 0) {
-        const dropDownOptions = <DropDownFormControlOptions>options;
+        const dropDownOptions = options as DropDownFormControlOptions;
         dropDownOptions.options = [
           { default: true, text: 'Select...', value: '' },
           ...chapterPropertyOptions.map((x): DropDownFormControlOption => ({
@@ -306,10 +309,10 @@ export class ProfileFormComponent implements OnChanges {
         ];
         dropDownOptions.value = memberProperty ? memberProperty.value : '';
         return new DropDownFormControlViewModel(dropDownOptions);
-      }      
+      }
     }
 
-    const textInputOptions = <TextInputFormControlOptions>options;
+    const textInputOptions = options as TextInputFormControlOptions;
     textInputOptions.prefix = chapterProperty.name === 'facebook' ? {
       icon: 'fa-facebook-f',
       text: this.socialMediaService.getFacebookAccountLink('')

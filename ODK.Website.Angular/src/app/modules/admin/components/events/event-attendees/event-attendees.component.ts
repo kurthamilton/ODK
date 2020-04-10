@@ -20,10 +20,11 @@ import { MemberAdminService } from 'src/app/services/members/member-admin.servic
 })
 export class EventAttendeesComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private eventAdminService: EventAdminService,
     private memberAdminService: MemberAdminService
-  ) {     
+  ) {
   }
 
   attendees: EventAttendeeViewModel[];
@@ -56,7 +57,7 @@ export class EventAttendeesComponent implements OnInit {
     viewModel.updating = true;
     this.changeDetector.detectChanges();
 
-    this.eventAdminService.updateMemberResponse(this.event.id, member.id, responseType).subscribe((response: EventMemberResponse) => {      
+    this.eventAdminService.updateMemberResponse(this.event.id, member.id, responseType).subscribe((response: EventMemberResponse) => {
       viewModel.response = response.responseType;
       viewModel.updating = false;
       this.changeDetector.detectChanges();

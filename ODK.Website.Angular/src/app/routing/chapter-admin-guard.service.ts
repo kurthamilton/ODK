@@ -15,7 +15,8 @@ import { RouteGuardService } from 'src/app/routing/route-guard.service';
 })
 export class ChapterAdminGuardService extends RouteGuardService implements CanLoad {
 
-  constructor(router: Router,
+  constructor(
+    router: Router,
     private chapterService: ChapterService,
     private chapterAdminService: ChapterAdminService
   ) {
@@ -25,7 +26,7 @@ export class ChapterAdminGuardService extends RouteGuardService implements CanLo
   canLoad(): Observable<boolean> {
     return this.chapterAdminService.getAdminChapters().pipe(
       map((chapters: Chapter[]) => chapters.length > 0)
-    )
+    );
   }
 
   hasAccess(route: ActivatedRouteSnapshot): Observable<boolean> {

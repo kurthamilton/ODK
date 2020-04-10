@@ -1,10 +1,10 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
+import { adminUrls } from '../../../routing/admin-urls';
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { Email } from 'src/app/core/emails/email';
 import { EmailAdminService } from 'src/app/services/emails/email-admin.service';
-import { adminUrls } from '../../../routing/admin-urls';
 
 @Component({
   selector: 'app-default-emails',
@@ -13,12 +13,13 @@ import { adminUrls } from '../../../routing/admin-urls';
 })
 export class DefaultEmailsComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private emailAdminService: EmailAdminService
-  ) {     
+  ) {
   }
-    
+
   emails: Email[];
 
   private chapter: Chapter;

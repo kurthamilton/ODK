@@ -10,25 +10,25 @@ import { InputBase } from '../input-base';
 })
 export class FileInputFormControlComponent extends InputBase implements OnDestroy {
 
-  constructor(changeDetector: ChangeDetectorRef) { 
+  constructor(changeDetector: ChangeDetectorRef) {
     super(changeDetector);
   }
 
-  get accept(): string { return (<FileInputFormControlViewModel>this.viewModel).accept; }
+  get accept(): string { return (this.viewModel as FileInputFormControlViewModel).accept; }
 
   private files: FileList;
 
   ngOnDestroy(): void {}
-  
+
   onFileChange(files: FileList): void {
     this.files = files;
     if (!this.control.value) {
       // hack - some browsers do not set the file input value
-      this.control.setValue(files);      
-    }       
+      this.control.setValue(files);
+    }
     this.onValidate();
   }
-  
+
   protected setValue(_: any): void {
     this.viewModel.value = this.files;
   }

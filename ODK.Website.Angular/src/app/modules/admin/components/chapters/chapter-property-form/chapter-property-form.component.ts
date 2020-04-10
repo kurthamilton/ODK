@@ -25,24 +25,24 @@ export class ChapterPropertyFormComponent implements OnChanges {
 
   private formControls: {
     dataType: DropDownFormControlViewModel;
-    helpText: TextInputFormControlViewModel;    
+    helpText: TextInputFormControlViewModel;
     hidden: CheckBoxFormControlViewModel;
     label: TextInputFormControlViewModel;
-    name: TextInputFormControlViewModel;    
+    name: TextInputFormControlViewModel;
     required: CheckBoxFormControlViewModel;
     subtitle: TextInputFormControlViewModel;
   };
-  
+
   ngOnChanges(): void {
     if (!this.property) {
       return;
     }
-    
+
     this.buildForm();
   }
 
   onFormSubmit(): void {
-    this.property.dataType = parseInt(this.formControls.dataType.value);
+    this.property.dataType = parseInt(this.formControls.dataType.value, 10);
     this.property.helpText = this.formControls.helpText.value;
     this.property.hidden = this.formControls.hidden.value;
     this.property.label = this.formControls.label.value;

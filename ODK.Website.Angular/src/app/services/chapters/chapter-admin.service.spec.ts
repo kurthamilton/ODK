@@ -6,7 +6,7 @@ describe('ChapterService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: ChapterAdminService = TestBed.get(ChapterAdminService);
+    const service: ChapterAdminService = TestBed.inject(ChapterAdminService);
     expect(service).toBeTruthy();
   });
 });

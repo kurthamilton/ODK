@@ -19,7 +19,8 @@ import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
 })
 export class AccountMenuComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private router: Router,
     private authenticationService: AuthenticationService,
     private chapterService: ChapterService

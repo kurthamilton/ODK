@@ -14,9 +14,10 @@ import { FormViewModel } from 'src/app/modules/forms/components/form/form.view-m
 })
 export class EventInvitesComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private eventAdminService: EventAdminService
-  ) {     
+  ) {
   }
 
   event: Event;
@@ -68,7 +69,7 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
 
     this.sendForm = {
       buttons: [
-        {  
+        {
           text: 'Send invites',
           type: 'success'
         }
@@ -82,7 +83,7 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
 
     this.sendTestForm = {
       buttons: [
-        {  
+        {
           text: 'Send test',
           type: 'secondary'
         }
@@ -105,12 +106,12 @@ export class EventInvitesComponent implements OnInit, OnDestroy {
 
   private sendEmails(test?: boolean): void {
     this.eventAdminService.sendInvites(this.event.id, test).subscribe(() => {
-      
+
       if (test) {
         this.testFormCallback.next(true);
       } else {
         this.invitesFormCallback.next(true);
-      }      
+      }
 
       this.loadStatistics();
     });

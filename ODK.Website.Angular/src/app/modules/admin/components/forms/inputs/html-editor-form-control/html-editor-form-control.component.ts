@@ -1,13 +1,12 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import * as ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-
-import { InputBase } from 'src/app/modules/forms/components/inputs/input-base';
 import { takeUntil } from 'rxjs/operators';
 
 import { Chapter } from 'src/app/core/chapters/chapter';
 import { ChapterAdminService } from 'src/app/services/chapters/chapter-admin.service';
 import { componentDestroyed } from 'src/app/rxjs/component-destroyed';
+import { InputBase } from 'src/app/modules/forms/components/inputs/input-base';
 import { MediaAdminService } from 'src/app/services/media/media-admin.service';
 import { UploadAdapter } from './upload-adapter';
 
@@ -18,7 +17,8 @@ import { UploadAdapter } from './upload-adapter';
 })
 export class HtmlEditorFormControlComponent extends InputBase implements OnInit, OnDestroy {
 
-  constructor(changeDetector: ChangeDetectorRef,
+  constructor(
+    changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private mediaAdminService: MediaAdminService
   ) {
@@ -34,7 +34,7 @@ export class HtmlEditorFormControlComponent extends InputBase implements OnInit,
   private chapter: Chapter;
   private submitted = false;
 
-  ngOnInit(): void {    
+  ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
 
     this.validateForm.pipe(

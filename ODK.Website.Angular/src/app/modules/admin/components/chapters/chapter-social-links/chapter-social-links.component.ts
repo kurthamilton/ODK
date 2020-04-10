@@ -15,13 +15,14 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class ChapterSocialLinksComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   form: FormViewModel;
-  
+
   private chapter: Chapter;
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
@@ -87,7 +88,7 @@ export class ChapterSocialLinksComponent implements OnInit, OnDestroy {
         prefix: {
           icon: 'fa-twitter',
           text: ''
-        },        
+        },
         value: this.links.twitter
       })
     };
@@ -104,7 +105,7 @@ export class ChapterSocialLinksComponent implements OnInit, OnDestroy {
       ],
       messages: {
         success: 'Updated'
-      }     
+      }
     };
   }
 }

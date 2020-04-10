@@ -13,7 +13,8 @@ import { TitleService } from 'src/app/services/title/title.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit, OnDestroy  {
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private router: Router,
     private route: ActivatedRoute,
     private titleService: TitleService,
@@ -31,13 +32,13 @@ export class AppComponent implements OnInit, OnDestroy  {
       filter((route: ActivatedRoute) => route.outlet === 'primary'),
       mergeMap((route: ActivatedRoute) => route.data)
     ).subscribe((event: {[name: string]: any}) => {
-      this.titleService.setRouteTitle(event['title']);
+      this.titleService.setRouteTitle(event.title);
     });
 
     this.chapterService.getChapters().subscribe(() => {
       this.ready = true;
       this.changeDetector.detectChanges();
-    });    
+    });
   }
 
   ngOnDestroy(): void {}

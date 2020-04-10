@@ -17,7 +17,7 @@ export class EventsAdminLayoutComponent implements OnInit {
   menuItems: MenuItem[];
 
   private chapter: Chapter;
-  
+
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
 

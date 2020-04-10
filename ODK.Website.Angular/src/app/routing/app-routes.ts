@@ -25,19 +25,19 @@ export const appRoutes: Routes = [
   {
     path: appPaths.home.path, component: HomeLayoutComponent, canActivate: [HomeGuardService], children: [
       { path: '', component: HomeComponent },
-      
+
       { path: '', canActivate: [UnauthenticatedGuardService], children: [
         {
           path: chapterPaths.account.path,
           loadChildren: () => import('../modules/account/account.module').then(m => m.AccountModule)
-        },        
+        },
 
         { path: appPaths.login.path, component: LoginComponent, data: { title: 'Login' } },
-      ] },        
+      ] },
       { path: appPaths.privacy.path, component: PrivacyComponent, data: { title: 'Privacy' } },
     ]
   },
-  
+
   {
     path: appPaths.chapter.path, component: ChapterLayoutComponent, canActivate: [ChapterGuardService], children: [
       { path: '', component: ChapterComponent },
@@ -45,18 +45,18 @@ export const appRoutes: Routes = [
 
       {
         path: chapterPaths.account.path,
-        loadChildren: () => import('../modules/account/account.module').then(m => m.AccountModule)          
+        loadChildren: () => import('../modules/account/account.module').then(m => m.AccountModule)
       },
-      
+
       { path: 'profile/emails', redirectTo: 'account/emails' },
 
       { path: chapterPaths.contact.path, component: ContactComponent, data: { title: 'Send us a message' } },
       { path: chapterPaths.events.path, component: EventsComponent, data: { title: 'Events' } },
-      { path: chapterPaths.event.path, component: EventComponent },        
-      { path: chapterPaths.login.path, component: LoginComponent, canActivate: [UnauthenticatedGuardService], 
-        data: { title: 'Login' } },        
+      { path: chapterPaths.event.path, component: EventComponent },
+      { path: chapterPaths.login.path, component: LoginComponent, canActivate: [UnauthenticatedGuardService],
+        data: { title: 'Login' } },
       { path: chapterPaths.members.path, component: MembersComponent, canActivate: [ChapterMemberGuardService] },
-      { path: chapterPaths.member.path, component: MemberComponent, canActivate: [ChapterMemberGuardService] }        
+      { path: chapterPaths.member.path, component: MemberComponent, canActivate: [ChapterMemberGuardService] }
     ]
   },
   {
@@ -69,4 +69,4 @@ export const appRoutes: Routes = [
   }
 ];
 
-  Object.freeze(appPaths);
+Object.freeze(appPaths);

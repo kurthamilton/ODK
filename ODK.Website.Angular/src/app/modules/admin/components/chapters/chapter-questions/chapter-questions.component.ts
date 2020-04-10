@@ -14,9 +14,10 @@ import { ChapterQuestion } from 'src/app/core/chapters/chapter-question';
 })
 export class ChapterQuestionsComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
-  ) { 
+  ) {
   }
 
   links: {
@@ -52,7 +53,7 @@ export class ChapterQuestionsComponent implements OnInit {
     ).subscribe((questions: ChapterQuestion[]) => {
       this.questions = questions;
       this.changeDetector.detectChanges();
-    })
+    });
   }
 
   onMoveQuestionDown(question: ChapterQuestion): void {

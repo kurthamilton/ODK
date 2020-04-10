@@ -27,7 +27,8 @@ const endpoints = {
 })
 export class VenueAdminService extends VenueService {
 
-  constructor(http: HttpClient,
+  constructor(
+    http: HttpClient,
     authenticationService: AuthenticationService
   ) {
     super(http, authenticationService);
@@ -50,7 +51,7 @@ export class VenueAdminService extends VenueService {
   getActiveVenue(): Venue {
     return this.activeVenue;
   }
-  
+
   getChapterStats(chapterId: string): Observable<VenueStats[]> {
     return this.http.get(endpoints.chapterStats(chapterId)).pipe(
       map((response: any) => response.map(x => this.mapVenueStats(x)))

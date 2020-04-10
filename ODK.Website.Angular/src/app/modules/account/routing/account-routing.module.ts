@@ -20,22 +20,22 @@ import { UpdateEmailAddressComponent } from '../components/update-email-address/
 const routes: Routes = [
   { path: '', canActivate: [AuthenticatedGuardService], children: [
     { path: '', component: ProfileComponent, data: { title: 'My profile' } },
-    { path: accountPaths.delete.path, component: DeleteAccountComponent, data: { title: 'Delete my account' } },  
+    { path: accountPaths.delete.path, component: DeleteAccountComponent, data: { title: 'Delete my account' } },
     { path: accountPaths.emails.path, component: ProfileEmailsComponent, data: { title: 'Email opt-in' } },
     { path: accountPaths.logout.path, component: LogoutComponent },
     { path: accountPaths.password.change.path, component: ChangePasswordComponent, data: { title: 'Change password' } },
     { path: accountPaths.subscription.path, component: SubscriptionComponent, data: { title: 'My subscription' } },
     { path: accountPaths.updateEmailAddress.path, component: UpdateEmailAddressComponent, data: { title: 'Update email address' } },
   ] },
-  
+
   { path: '', canActivate: [UnauthenticatedGuardService], children: [
-    { path: accountPaths.activate.path, component: ActivateAccountComponent, 
+    { path: accountPaths.activate.path, component: ActivateAccountComponent,
       data: { title: 'Activate account' } },
     { path: accountPaths.join.path, component: JoinComponent, canActivate: [ChapterGuardService] },
-    { path: accountPaths.password.forgotten.path, component: ForgottenPasswordComponent, 
+    { path: accountPaths.password.forgotten.path, component: ForgottenPasswordComponent,
       data: { title: 'Forgotten password' } },
     { path: accountPaths.password.reset.path, component: ResetPasswordComponent, data: { title: 'Reset password' } }
-  ] }          
+  ] }
 ];
 
 @NgModule({

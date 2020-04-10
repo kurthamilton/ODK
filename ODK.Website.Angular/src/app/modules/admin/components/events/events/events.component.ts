@@ -26,7 +26,8 @@ const pageSize = 10;
 })
 export class EventsComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private eventAdminService: EventAdminService,
     private venueAdminService: VenueAdminService
@@ -42,7 +43,7 @@ export class EventsComponent implements OnInit {
 
   private chapter: Chapter;
   private eventInvitesMap: Map<string, EventInvites>;
-  private eventResponseMap: Map<string, EventMemberResponse[]>;  
+  private eventResponseMap: Map<string, EventMemberResponse[]>;
   private events: Event[];
   private invites: EventInvites[];
   private responses: EventMemberResponse[];
@@ -77,13 +78,13 @@ export class EventsComponent implements OnInit {
       this.pageCount = Math.ceil(this.totalEventCount / pageSize);
 
       this.setViewModels();
-      
+
       this.changeDetector.detectChanges();
     });
   }
 
   getEventInvitesLink(event: Event): string {
-    return adminUrls.eventInvites(this.chapter, event);    
+    return adminUrls.eventInvites(this.chapter, event);
   }
 
   getEventLink(event: Event): string {
@@ -105,7 +106,7 @@ export class EventsComponent implements OnInit {
   private loadEvents(): Observable<{}> {
     this.viewModels = null;
     this.changeDetector.detectChanges();
-    
+
     return forkJoin([
       this.eventAdminService.getAllEvents(this.chapter.id, this.page, this.pageCount).pipe(
         tap((events: Event[]) => this.events = events)
@@ -122,7 +123,8 @@ export class EventsComponent implements OnInit {
     this.viewModels = this.events.map((event: Event): AdminListEventViewModel => {
       const eventInvites = this.eventInvitesMap.has(event.id) ? this.eventInvitesMap.get(event.id) : null;
       const eventResponses: EventMemberResponse[] = this.eventResponseMap.get(event.id) || [];
-      const responseTypeMap: Map<EventResponseType, EventMemberResponse[]> = ArrayUtils.groupValues(eventResponses, x => x.responseType, x => x);
+      const responseTypeMap: Map<EventResponseType, EventMemberResponse[]> =
+        ArrayUtils.groupValues(eventResponses, x => x.responseType, x => x);
 
       return {
         canSendInvites: event.date >= today && (!eventInvites || !eventInvites.sentDate),

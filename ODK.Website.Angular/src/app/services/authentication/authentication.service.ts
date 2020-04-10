@@ -21,7 +21,7 @@ const endpoints = {
   login: `${baseUrl}/login`,
   refreshToken: `${baseUrl}/refreshToken`,
   requestPasswordReset: `${baseUrl}/password/reset/request`
-}
+};
 
 const storageKeys = {
   authToken: '_auth.token'
@@ -32,7 +32,8 @@ const storageKeys = {
 })
 export class AuthenticationService {
 
-  constructor(private http: HttpClient,
+  constructor(
+    private http: HttpClient,
     private storageService: StorageService
   ) {
     const token: AuthenticationToken = this.getToken();
@@ -75,12 +76,12 @@ export class AuthenticationService {
     return this.http.post(endpoints.completePasswordReset, params).pipe(
       map((): ServiceResult<void> => ({ success: true })),
       catchApiError()
-    )
+    );
   }
-  
+
   getAccountDetails(): AccountDetails {
     const token: AuthenticationToken = this.getToken();
-    return token ? {      
+    return token ? {
       adminChapterIds: token.adminChapterIds || [],
       chapterId: token.chapterId,
       memberId: token.memberId,
@@ -106,8 +107,8 @@ export class AuthenticationService {
 
   login(username: string, password: string): Observable<ServiceResult<AuthenticationToken>> {
     const params: HttpParams = HttpUtils.createFormParams({
-      username: username,
-      password: password
+      username,
+      password
     });
 
     this.requestToken(endpoints.login, {
@@ -164,11 +165,11 @@ export class AuthenticationService {
 
     return this.refreshSubject
       .pipe(
-        take(1),        
+        take(1),
         map((result: ServiceResult<AuthenticationToken>) => {
           return result.success ? result : {
             messages: result.messages,
-            success: false            
+            success: false
           };
         }),
         tap((result: ServiceResult<AuthenticationToken>) => {

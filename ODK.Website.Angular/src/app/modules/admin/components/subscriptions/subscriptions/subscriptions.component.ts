@@ -17,7 +17,8 @@ import { CountryService } from 'src/app/services/countries/country.service';
 })
 export class SubscriptionsComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private countryService: CountryService
   ) {

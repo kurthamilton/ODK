@@ -17,13 +17,14 @@ import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 })
 export class EditVenueComponent implements OnInit, OnDestroy {
 
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private chapterAdminService: ChapterAdminService,
     private venueAdminService: VenueAdminService
   ) {
   }
 
-  chapter: Chapter;  
+  chapter: Chapter;
   formCallback: Subject<string[]> = new Subject<string[]>();
   venue: Venue;
 

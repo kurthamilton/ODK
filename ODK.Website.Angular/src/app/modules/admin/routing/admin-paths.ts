@@ -1,4 +1,4 @@
-export const adminPaths = {  
+export const adminPaths = {
 
   adminMembers: {
     add: {
@@ -13,20 +13,20 @@ export const adminPaths = {
     path: 'admin-members'
   },
 
-  chapter: {    
+  chapter: {
     emails: {
       email: {
         path: ':type',
         params: {
           type: 'type'
-        }      
+        }
       },
       path: 'emails'
-    },    
+    },
     links: {
       path: 'links'
     },
-    path: 'chapter',    
+    path: 'chapter',
     properties: {
       create: {
         path: 'create'
@@ -64,7 +64,7 @@ export const adminPaths = {
       },
       path: ':id'
     }
-  },    
+  },
 
   events: {
     create: {
@@ -95,7 +95,7 @@ export const adminPaths = {
   media: {
     path: 'media'
   },
-  
+
   members: {
     import: {
       path: 'import'
@@ -146,7 +146,7 @@ export const adminPaths = {
     },
     memberEmails: {
       path: 'members'
-    },    
+    },
     path: 'super-admin',
     paymentSettings: {
       path: 'payment-settings'
@@ -154,7 +154,7 @@ export const adminPaths = {
     socialMedia: {
       instagram: {
         path: 'social-media/instagram'
-      }      
+      }
     }
   },
 

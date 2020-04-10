@@ -22,7 +22,8 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class AdminMemberComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private router: Router,
     private route: ActivatedRoute,
     private chapterAdminService: ChapterAdminService
@@ -49,7 +50,7 @@ export class AdminMemberComponent implements OnInit, OnDestroy {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.breadcrumbs = [
       { link: adminUrls.adminMembers(this.chapter), text: 'Admin members' }
-    ]
+    ];
 
     this.chapterAdminService.getChapterAdminMember(this.chapter.id, this.memberId).subscribe((adminMember: ChapterAdminMember) => {
       if (!adminMember) {

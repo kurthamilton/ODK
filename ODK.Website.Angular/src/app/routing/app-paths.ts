@@ -30,10 +30,10 @@ export const appPaths = {
       },
       events: {
         path: 'events'
-      },      
+      },
       login: {
         path: 'login'
-      },      
+      },
       member: {
         path: 'knitwits/:id',
         params: {
@@ -42,9 +42,9 @@ export const appPaths = {
       },
       members: {
         path: 'knitwits'
-      },      
-      profile: {        
-        path: 'profile'        
+      },
+      profile: {
+        path: 'profile'
       }
     },
     path: ':chapter',

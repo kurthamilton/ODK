@@ -21,12 +21,13 @@ import { NotificationService } from 'src/app/services/notifications/notification
 })
 export class DeleteAccountComponent implements OnInit, OnDestroy {
 
-  constructor(private accountService: AccountService,
+  constructor(
+    private accountService: AccountService,
     private router: Router,
     private authenticationService: AuthenticationService,
     private chapterService: ChapterService,
     private notificationService: NotificationService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
@@ -40,7 +41,7 @@ export class DeleteAccountComponent implements OnInit, OnDestroy {
 
     this.breadcrumbs = [
       { link: accountUrls.profile(this.chapter), text: 'Profile' }
-    ];    
+    ];
 
     this.buildForm();
   }
@@ -49,7 +50,7 @@ export class DeleteAccountComponent implements OnInit, OnDestroy {
     this.formCallback.complete();
   }
 
-  onFormSubmit(): void {    
+  onFormSubmit(): void {
     if (!confirm('Are you sure you want to delete your account?')) {
       this.formCallback.next(true);
       return;
@@ -57,7 +58,7 @@ export class DeleteAccountComponent implements OnInit, OnDestroy {
 
     this.accountService.deleteAccount().pipe(
       concatMap(() => this.authenticationService.logout())
-    ).subscribe(() => {      
+    ).subscribe(() => {
       this.formCallback.next(true);
       this.notificationService.schedule({
         message: 'Your account has been deleted',

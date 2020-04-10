@@ -23,11 +23,12 @@ import { SubscriptionType } from 'src/app/core/account/subscription-type';
 })
 export class MemberSubscriptionComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private router: Router,
     private memberAdminService: MemberAdminService,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   form: FormViewModel;
@@ -44,7 +45,7 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.member = this.memberAdminService.getActiveMember();
-    
+
     this.memberAdminService.getMemberSubscription(this.member.id).subscribe((subscription: MemberSubscription) => {
       this.subscription = subscription;
       this.buildForm();
@@ -68,7 +69,7 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
 
   onFormSubmit(): void {
     this.subscription.expiryDate = this.formControls.expiryDate.value;
-    this.subscription.type = <SubscriptionType>parseInt(this.formControls.type.value, 10);
+    this.subscription.type = parseInt(this.formControls.type.value, 10);
     this.memberAdminService.updateMemberSubscription(this.subscription).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
       this.changeDetector.detectChanges();
@@ -118,9 +119,9 @@ export class MemberSubscriptionComponent implements OnInit, OnDestroy {
   }
 
   private createTypeOption(type: SubscriptionType): DropDownFormControlOption {
-    return { 
-      text: SubscriptionType[type], 
-      value: type.toString(), 
+    return {
+      text: SubscriptionType[type],
+      value: type.toString(),
       selected: this.subscription.type === type
     };
   }

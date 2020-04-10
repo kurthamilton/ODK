@@ -17,7 +17,7 @@ export class MemberListComponent implements OnChanges {
   @Input() isAdmin: boolean;
   @Input() members: Member[];
   @Input() size: 'sm' | 'xs';
-  
+
   maxWidth: number;
 
   ngOnChanges(): void {
@@ -32,7 +32,7 @@ export class MemberListComponent implements OnChanges {
   }
 
   getMemberLink(member: Member): string {
-    return this.isAdmin 
+    return this.isAdmin
       ? adminUrls.member(this.chapter, member)
       : appUrls.member(this.chapter, member);
   }

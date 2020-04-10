@@ -15,7 +15,8 @@ import { MemberService } from 'src/app/services/members/member.service';
 })
 export class MemberImageComponent implements OnChanges, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private memberService: MemberService
   ) {
   }
@@ -60,7 +61,7 @@ export class MemberImageComponent implements OnChanges, OnDestroy {
   }
 
   private loadImage(): void {
-    const forceReload: boolean = !!this.imageUrl;    
+    const forceReload: boolean = !!this.imageUrl;
     this.imageUrl = this.memberService.getMemberImageUrl(this.member.id, this.maxWidth, forceReload);
   }
 }

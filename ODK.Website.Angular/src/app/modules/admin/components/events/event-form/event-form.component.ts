@@ -22,13 +22,14 @@ import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 })
 export class EventFormComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private venueAdminService: VenueAdminService
   ) {
   }
-  
-  @Input() buttonText: string;  
+
+  @Input() buttonText: string;
   @Input() event: Event;
   @Input() formCallback: Observable<string[]>;
   @Output() formSubmit: EventEmitter<Event> = new EventEmitter<Event>();

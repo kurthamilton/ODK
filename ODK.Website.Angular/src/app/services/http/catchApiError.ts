@@ -9,8 +9,8 @@ export function catchApiError<T>(value?: T): OperatorFunction<ServiceResult<T>, 
     const result: ServiceResult<T> = {
       messages: response.messages,
       success: false,
-      value: value
+      value
     };
     return of(result);
-  })
+  });
 }

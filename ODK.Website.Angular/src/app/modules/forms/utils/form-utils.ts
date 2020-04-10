@@ -9,7 +9,7 @@ export class FormUtils {
     if (!formGroup) {
       return;
     }
-    
+
     let control: AbstractControl = formGroup.get(viewModel.id);
     if (control) {
       return control;

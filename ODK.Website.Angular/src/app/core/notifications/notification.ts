@@ -1,4 +1,4 @@
 export interface Notification {
-    message: string;
-    success?: boolean;
+  message: string;
+  success?: boolean;
 }

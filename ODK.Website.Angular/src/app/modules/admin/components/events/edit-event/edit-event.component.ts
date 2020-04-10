@@ -18,19 +18,20 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class EditEventComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private router: Router,
     private chapterAdminService: ChapterAdminService,
     private eventAdminService: EventAdminService
   ) {
   }
 
-  canDelete: boolean;  
+  canDelete: boolean;
   event: Event;
   formCallback: Subject<string[]> = new Subject<string[]>();
 
   private chapter: Chapter;
-  
+
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.event = this.eventAdminService.getActiveEvent();
@@ -40,10 +41,10 @@ export class EditEventComponent implements OnInit, OnDestroy {
       this.changeDetector.detectChanges();
     });
   }
-  
+
   ngOnDestroy(): void {
     this.formCallback.complete();
-  }  
+  }
 
   onDelete(): void {
     if (!confirm('Are you sure you want to delete this event?')) {

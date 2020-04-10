@@ -13,9 +13,10 @@ import { RouteGuardService } from './route-guard.service';
 })
 export class AuthenticatedGuardService extends RouteGuardService {
 
-  constructor(router: Router, 
+  constructor(
+    router: Router,
     private authenticationService: AuthenticationService
-  ) { 
+  ) {
     super(router);
   }
 

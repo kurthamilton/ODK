@@ -25,7 +25,7 @@ export class CountryService {
       map((response: any) => response.map(x => this.mapCountry(x)))
     );
   }
-  
+
   getCountry(id: string): Observable<Country> {
     return this.getCountries().pipe(
       map(countries => countries.find(x => x.id === id))

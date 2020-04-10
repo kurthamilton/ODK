@@ -12,17 +12,18 @@ import { SocialMediaService } from 'src/app/services/social-media/social-media.s
 })
 export class ChapterFooterComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private socialMediaService: SocialMediaService
-  ) { 
+  ) {
   }
 
   links: {
     facebook: string;
     facebookName: string;
     instagram: string;
-    instagramName: string;    
+    instagramName: string;
     twitter: string;
     twitterName: string;
   };
@@ -31,8 +32,8 @@ export class ChapterFooterComponent implements OnInit {
 
   ngOnInit(): void {
     const chapter: Chapter = this.chapterService.getActiveChapter();
-    this.chapterService.getChapterLinks(chapter.id).subscribe((links: ChapterLinks) => {   
-      this.chapterLinks = links;      
+    this.chapterService.getChapterLinks(chapter.id).subscribe((links: ChapterLinks) => {
+      this.chapterLinks = links;
       this.links = {
         facebook: this.socialMediaService.getFacebookAccountLink(this.chapterLinks.facebook),
         facebookName: this.chapterLinks.facebook,

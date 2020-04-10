@@ -13,21 +13,22 @@ import { EmailAdminService } from 'src/app/services/emails/email-admin.service';
 })
 export class ChapterEmailsComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private emailAdminService: EmailAdminService
-  ) {     
+  ) {
   }
-  
+
   emails: ChapterEmail[];
-  
-  private chapter: Chapter;  
-  
+
+  private chapter: Chapter;
+
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
 
     this.emailAdminService.getChapterEmails(this.chapter.id).subscribe((emails: ChapterEmail[]) => {
-      this.emails = emails.sort((a, b) => a.name.localeCompare(b.name));      
+      this.emails = emails.sort((a, b) => a.name.localeCompare(b.name));
       this.changeDetector.detectChanges();
     });
   }

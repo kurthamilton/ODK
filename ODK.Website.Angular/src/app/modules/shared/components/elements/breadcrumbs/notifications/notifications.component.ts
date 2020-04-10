@@ -13,9 +13,10 @@ import { NotificationService } from 'src/app/services/notifications/notification
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private notificationService: NotificationService
-  ) {    
+  ) {
   }
 
   notifications: Notification[] = [];

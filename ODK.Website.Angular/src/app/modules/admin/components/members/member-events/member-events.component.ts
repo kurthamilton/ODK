@@ -24,12 +24,13 @@ import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 })
 export class MemberEventsComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private memberAdminService: MemberAdminService,
     private eventAdminService: EventAdminService,
     private venueAdminService: VenueAdminService,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   viewModels: MemberEventViewModel[];
@@ -62,12 +63,12 @@ export class MemberEventsComponent implements OnInit {
         .filter(x => responseMap.has(x.id))
         .sort((a, b) => DateUtils.compare(b.date, a.date))
         .map((event: Event): MemberEventViewModel => ({
-          event: event,
+          event,
           response: responseMap.get(event.id),
           venue: venueMap.get(event.venueId)
         }));
       this.changeDetector.detectChanges();
-    });    
+    });
   }
 
   getEventLink(event: Event): string {

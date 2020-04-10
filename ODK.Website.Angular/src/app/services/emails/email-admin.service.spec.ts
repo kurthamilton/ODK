@@ -6,7 +6,7 @@ describe('EmailAdminService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: EmailAdminService = TestBed.get(EmailAdminService);
+    const service: EmailAdminService = TestBed.inject(EmailAdminService);
     expect(service).toBeTruthy();
   });
 });

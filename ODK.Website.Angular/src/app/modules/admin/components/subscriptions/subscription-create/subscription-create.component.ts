@@ -17,7 +17,8 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class SubscriptionCreateComponent implements OnInit, OnDestroy {
 
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private chapterAdminService: ChapterAdminService
   ) {
   }

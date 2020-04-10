@@ -11,7 +11,8 @@ import { LoadingSpinnerOptions } from 'src/app/modules/shared/components/element
 })
 export class FileDownloadComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private fileService: FileService
   ) {
   }

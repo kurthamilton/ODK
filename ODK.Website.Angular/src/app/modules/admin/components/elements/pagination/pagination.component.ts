@@ -1,4 +1,5 @@
-import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, OnChanges,
+  SimpleChanges } from '@angular/core';
 
 import { ArrayUtils } from 'src/app/utils/array-utils';
 import { PageGroup } from './page-group';
@@ -10,8 +11,7 @@ import { PageGroup } from './page-group';
 })
 export class PaginationComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef) {
-  }
+  constructor(private changeDetector: ChangeDetectorRef) { }
 
   @Input() container: HTMLElement;
   @Input() page: number;
@@ -25,7 +25,7 @@ export class PaginationComponent implements OnChanges {
   private neighbours = 1;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['page']) {
+    if (changes.page) {
       this.activePage = this.page;
     }
 

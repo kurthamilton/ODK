@@ -11,15 +11,16 @@ import { Venue } from 'src/app/core/venues/venue';
 })
 export class GoogleMapComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private mapService: MapService,
     private sanitizer: DomSanitizer
-  ) {     
+  ) {
   }
 
   @Input() query: string;
   @Input() venue: Venue;
-  
+
   url: SafeUrl;
 
   ngOnChanges(): void {
@@ -28,11 +29,11 @@ export class GoogleMapComponent implements OnChanges {
     }
 
     const venueId: string = this.venue ? this.venue.id : null;
-    const query: string = this.query || (this.venue ? this.venue.mapQuery : null);    
+    const query: string = this.query || (this.venue ? this.venue.mapQuery : null);
 
     this.mapService.getGoogleMapsUrl(venueId, query).subscribe((url: string) => {
       this.url = this.sanitizer.bypassSecurityTrustResourceUrl(url);
       this.changeDetector.detectChanges();
-    });    
+    });
   }
 }

@@ -18,12 +18,13 @@ import { MemberEmailViewModel } from './member-email.view-model';
 })
 export class MemberEmailsComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private memberAdminService: MemberAdminService
-  ) {     
+  ) {
   }
-  
+
   memberEmails: MemberEmailViewModel[];
 
   private chapter: Chapter;

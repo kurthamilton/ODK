@@ -18,7 +18,8 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class SubscriptionEditComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterAdminService: ChapterAdminService

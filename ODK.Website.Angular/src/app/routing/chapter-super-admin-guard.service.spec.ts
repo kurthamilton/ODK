@@ -6,7 +6,7 @@ describe('ChapterSuperAdminGuardService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: ChapterSuperAdminGuardService = TestBed.get(ChapterSuperAdminGuardService);
+    const service: ChapterSuperAdminGuardService = TestBed.inject(ChapterSuperAdminGuardService);
     expect(service).toBeTruthy();
   });
 });

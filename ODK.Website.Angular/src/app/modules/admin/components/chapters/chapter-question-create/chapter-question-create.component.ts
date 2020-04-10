@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
@@ -17,10 +17,10 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class ChapterQuestionCreateComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
     private router: Router,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
@@ -31,7 +31,7 @@ export class ChapterQuestionCreateComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
-    this.question = this.createEmptyQuestion();    
+    this.question = this.createEmptyQuestion();
     this.breadcrumbs = [
       { link: adminUrls.chapterQuestions(this.chapter), text: 'Questions' }
     ];
@@ -46,7 +46,7 @@ export class ChapterQuestionCreateComponent implements OnInit, OnDestroy {
       this.formCallback.next(result.messages);
       if (result.success) {
         this.router.navigateByUrl(adminUrls.chapterQuestions(this.chapter));
-      }      
+      }
     });
   }
 

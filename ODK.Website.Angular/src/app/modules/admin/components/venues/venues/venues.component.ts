@@ -21,7 +21,8 @@ import { VenueStats } from 'src/app/core/venues/venue-stats';
 })
 export class VenuesComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private venueAdminService: VenueAdminService
   ) {
@@ -57,7 +58,7 @@ export class VenuesComponent implements OnInit {
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((venue: Venue): ListVenueViewModel => ({
           stats: statsMap.get(venue.id),
-          venue: venue
+          venue
         }));
       this.changeDetector.detectChanges();
     });
@@ -70,7 +71,7 @@ export class VenuesComponent implements OnInit {
   onSort(sortBy: SortEvent): void {
     this.viewModels = this.viewModels.sort((a, b) => {
       if (sortBy.direction === 'desc') {
-        [a,b] = [b,a];
+        [a, b] = [b, a];
       }
 
       switch (sortBy.column) {
@@ -81,7 +82,7 @@ export class VenuesComponent implements OnInit {
         default:
           return a.venue.name.localeCompare(b.venue.name);
       }
-    });    
+    });
 
     this.changeDetector.detectChanges();
   }

@@ -21,7 +21,8 @@ import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 })
 export class CreateEventComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private router: Router,
     private route: ActivatedRoute,
     private chapterAdminService: ChapterAdminService,
@@ -37,7 +38,7 @@ export class CreateEventComponent implements OnInit {
   private chapter: Chapter;
   private venue: Venue;
 
-  ngOnInit(): void {    
+  ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.breadcrumbs = [
       { link: adminUrls.events(this.chapter), text: 'Events' }
@@ -53,7 +54,7 @@ export class CreateEventComponent implements OnInit {
     } else {
       this.event = this.createEmptyEvent();
     }
-  }  
+  }
 
   onFormSubmit(event: Event): void {
     this.eventAdminService.createEvent(event).subscribe((result: ServiceResult<Event>) => {

@@ -16,10 +16,11 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class SendEmailComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private memberAdminService: MemberAdminService,
     private emailAdminService: EmailAdminService
-  ) {     
+  ) {
   }
 
   form: FormViewModel;
@@ -27,12 +28,12 @@ export class SendEmailComponent implements OnInit, OnDestroy {
   private formCallback: Subject<boolean> = new Subject<boolean>();
   private formControls: {
     body: HtmlEditorFormControlViewModel;
-    subject: TextInputFormControlViewModel;    
+    subject: TextInputFormControlViewModel;
   };
   private member: Member;
 
   ngOnInit(): void {
-    this.member = this.memberAdminService.getActiveMember();    
+    this.member = this.memberAdminService.getActiveMember();
 
     this.buildForm();
   }
@@ -42,13 +43,13 @@ export class SendEmailComponent implements OnInit, OnDestroy {
   }
 
   onFormSubmit(): void {
-    this.emailAdminService.sendEmail(this.member.id, this.formControls.subject.value, 
+    this.emailAdminService.sendEmail(this.member.id, this.formControls.subject.value,
       this.formControls.body.value
     ).subscribe(() => {
-      this.formCallback.next(true);      
+      this.formCallback.next(true);
       this.buildForm();
       this.changeDetector.detectChanges();
-    })
+    });
   }
 
   private buildForm(): void {

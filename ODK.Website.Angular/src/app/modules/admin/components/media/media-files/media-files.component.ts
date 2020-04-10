@@ -14,17 +14,18 @@ import { MediaFile } from 'src/app/core/media/media-file';
 })
 export class MediaFilesComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private mediaAdminService: MediaAdminService
-  ) {     
+  ) {
   }
 
   copiedFile: MediaFile;
   files: MediaFile[];
   selectedFile: MediaFile;
 
-  private chapter: Chapter;  
+  private chapter: Chapter;
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
@@ -48,7 +49,7 @@ export class MediaFilesComponent implements OnInit {
   onFileClose(): void {
     this.selectedFile = null;
     this.changeDetector.detectChanges();
-  }  
+  }
 
   onFileDelete(file: MediaFile): void {
     if (!confirm('Are you sure you want to delete this file?')) {
@@ -59,19 +60,19 @@ export class MediaFilesComponent implements OnInit {
       this.files = files.sort((a, b) => a.name.localeCompare(b.name));
       this.changeDetector.detectChanges();
     });
-  }  
-  
+  }
+
   onFileUpload(files: FileList): void {
     if (files.length === 0) {
       return;
     }
- 
+
     this.mediaAdminService.uploadMediaFile(this.chapter.id, files[0]).pipe(
       switchMap(() => this.mediaAdminService.getMediaFiles(this.chapter.id))
-    ).subscribe((files: MediaFile[]) => {
-      this.files = files.sort((a, b) => a.name.localeCompare(b.name));
+    ).subscribe((uploaded: MediaFile[]) => {
+      this.files = uploaded.sort((a, b) => a.name.localeCompare(b.name));
       this.changeDetector.detectChanges();
-    });  
+    });
   }
 
   onFileUrlCopy(file: MediaFile): void {

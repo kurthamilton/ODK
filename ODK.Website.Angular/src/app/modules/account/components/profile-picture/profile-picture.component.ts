@@ -13,11 +13,12 @@ import { LoadingSpinnerOptions } from 'src/app/modules/shared/components/element
 })
 export class ProfilePictureComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private authenticationService: AuthenticationService,
     private memberService: MemberService,
     private accountService: AccountService
-  ) { 
+  ) {
   }
 
   imageUrl: string;
@@ -30,7 +31,7 @@ export class ProfilePictureComponent implements OnInit {
 
   ngOnInit(): void {
     const authenticationToken: AuthenticationToken = this.authenticationService.getToken();
-    this.memberId = authenticationToken.memberId;        
+    this.memberId = authenticationToken.memberId;
     this.loadImage();
   }
 
@@ -49,7 +50,7 @@ export class ProfilePictureComponent implements OnInit {
     if (files.length === 0) {
       return;
     }
- 
+
     this.updating = true;
     this.changeDetector.detectChanges();
 
@@ -57,9 +58,9 @@ export class ProfilePictureComponent implements OnInit {
       this.updating = false;
       this.loadImage(true);
       this.changeDetector.detectChanges();
-    });  
+    });
   }
-  
+
   private loadImage(forceReload?: boolean): void {
     this.imageUrl = this.memberService.getMemberImageUrl(this.memberId, 250, forceReload);
   }

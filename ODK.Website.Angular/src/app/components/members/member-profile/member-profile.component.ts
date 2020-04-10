@@ -23,14 +23,15 @@ import { SocialMediaService } from 'src/app/services/social-media/social-media.s
 })
 export class MemberProfileComponent implements OnChanges {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private memberService: MemberService,
     private socialMediaService: SocialMediaService,
     @Inject(LOCALE_ID) private locale: string
   ) {
   }
-  
+
   @Input() memberId: string;
 
   form: FormViewModel;
@@ -72,15 +73,15 @@ export class MemberProfileComponent implements OnChanges {
             label: {
               text: x.label
             },
-            value: x.name === 'facebook' 
-              ? this.socialMediaService.getFacebookAccountLink(memberPropertyMap.get(x.id).value) 
+            value: x.name === 'facebook'
+              ? this.socialMediaService.getFacebookAccountLink(memberPropertyMap.get(x.id).value)
               : memberPropertyMap.get(x.id).value
           }))),
         new ReadOnlyFormControlViewModel({
           id: 'joined',
           label: {
             text: 'Date joined'
-          },          
+          },
           value: formatDate(this.profile.joined, 'dd MMMM yyyy', this.locale)
         })
       ]

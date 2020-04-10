@@ -18,18 +18,19 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class ChapterQuestionComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
   formCallback: Subject<string[]> = new Subject<string[]>();
   question: ChapterQuestion;
 
-  private chapter: Chapter;    
+  private chapter: Chapter;
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
@@ -47,7 +48,7 @@ export class ChapterQuestionComponent implements OnInit, OnDestroy {
       this.breadcrumbs = [
         { link: adminUrls.chapterQuestions(this.chapter), text: 'Questions' }
       ];
-      
+
       this.changeDetector.detectChanges();
     });
   }
@@ -60,5 +61,5 @@ export class ChapterQuestionComponent implements OnInit, OnDestroy {
     this.chapterAdminService.updateChapterQuestion(question).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
     });
-  }  
+  }
 }

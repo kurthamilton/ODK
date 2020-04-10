@@ -26,8 +26,8 @@ export class SortableTableDirective implements AfterContentInit, OnDestroy {
     if (initial) {
       initial.emit();
     }
-    
-    this.headers.forEach(header => {      
+
+    this.headers.forEach(header => {
       header.sort.pipe(
         takeUntil(componentDestroyed(this))
       ).subscribe((event: SortEvent) => {
@@ -37,7 +37,7 @@ export class SortableTableDirective implements AfterContentInit, OnDestroy {
           }
         });
         this.changeDetector.detectChanges();
-      })
+      });
     });
   }
 

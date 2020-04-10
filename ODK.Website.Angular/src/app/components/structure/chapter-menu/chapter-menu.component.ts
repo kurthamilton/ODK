@@ -16,7 +16,8 @@ import { MenuItem } from '../../../core/menus/menu-item';
 })
 export class ChapterMenuComponent implements OnInit, OnChanges, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private authenticationService: AuthenticationService
   ) {
   }
@@ -26,7 +27,7 @@ export class ChapterMenuComponent implements OnInit, OnChanges, OnDestroy {
   menuItems: MenuItem[];
 
   private memberChapterId: string;
-  
+
   ngOnInit(): void {
     this.authenticationService.authenticationTokenChange().pipe(
       takeUntil(componentDestroyed(this))
@@ -52,7 +53,7 @@ export class ChapterMenuComponent implements OnInit, OnChanges, OnDestroy {
     this.menuItems = [
       { link: appUrls.events(this.chapter), text: 'Events' }
     ];
-    
+
     if (this.memberChapterId === this.chapter.id) {
       this.menuItems.push({ link: appUrls.members(this.chapter), text: 'Knitwits' });
     }

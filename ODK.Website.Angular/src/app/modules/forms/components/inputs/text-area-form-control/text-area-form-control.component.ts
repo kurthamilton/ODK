@@ -19,6 +19,6 @@ export class TextAreaComponent extends InputBase {
   get rows(): number { return this._rows; }
 
   protected onInit(): void {
-    this._rows = (<TextAreaFormControlViewModel>this.viewModel).rows || 3;
+    this._rows = (this.viewModel as TextAreaFormControlViewModel).rows || 3;
   }
 }

@@ -26,6 +26,6 @@ export class MembersAdminLayoutComponent implements OnInit {
       { link: adminUrls.subscriptions(this.chapter), text: 'Subscriptions' },
       { link: adminUrls.memberImport(this.chapter), text: 'Import' },
       { link: adminUrls.adminMembers(this.chapter), text: 'Admin members' }
-    ]
+    ];
   }
 }

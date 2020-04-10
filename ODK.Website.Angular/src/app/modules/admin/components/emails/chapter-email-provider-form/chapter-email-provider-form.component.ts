@@ -15,7 +15,7 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class ChapterEmailProviderFormComponent implements OnChanges {
 
-  @Input() buttonText: string;  
+  @Input() buttonText: string;
   @Input() formCallback: Observable<boolean | string[]>;
   @Input() provider: ChapterEmailProvider;
   @Output() formSubmit: EventEmitter<ChapterEmailProvider> = new EventEmitter<ChapterEmailProvider>();
@@ -32,7 +32,7 @@ export class ChapterEmailProviderFormComponent implements OnChanges {
     smtpPort: NumberInputFormControlViewModel;
     smtpServer: TextInputFormControlViewModel;
   };
-  
+
   ngOnChanges(): void {
     if (!this.provider) {
       return;

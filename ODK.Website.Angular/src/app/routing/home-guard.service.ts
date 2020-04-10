@@ -11,7 +11,7 @@ import { RouteGuardService } from './route-guard.service';
 })
 export class HomeGuardService extends RouteGuardService {
 
-  constructor(private chapterService: ChapterService) { 
+  constructor(private chapterService: ChapterService) {
     super(null);
   }
 

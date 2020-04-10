@@ -4,7 +4,7 @@ import { Script } from 'src/app/core/scripts/script';
 
 export const appScripts: { stripe: Script } = {
   stripe: { name: 'stripe', src: 'https://js.stripe.com/v3' }
-}
+};
 
 Object.freeze(appScripts);
 
@@ -37,16 +37,16 @@ export class ScriptService {
         return;
       }
 
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = this.scripts[name].src;
+      const scriptEl = document.createElement('script');
+      scriptEl.type = 'text/javascript';
+      scriptEl.src = this.scripts[name].src;
 
-      script.onload = () => {
+      scriptEl.onload = () => {
         this.scripts[name].loaded = true;
         resolve({ script: name, loaded: true, status: 'Loaded' });
       };
 
-      script.onerror = (_: any) => {
+      scriptEl.onerror = (_: any) => {
         reject({ script: name, loaded: false, status: 'Loaded' });
       };
 

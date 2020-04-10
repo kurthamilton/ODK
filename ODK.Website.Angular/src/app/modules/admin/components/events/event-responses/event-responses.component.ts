@@ -21,16 +21,17 @@ import { MemberService } from 'src/app/services/members/member.service';
 })
 export class EventResponsesComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private eventAdminService: EventAdminService,
     private memberService: MemberService
   ) {
-  }  
+  }
 
-  chapter: Chapter;  
-  event: Event;  
-  memberGroups: MemberResponseGroupViewModel[];  
+  chapter: Chapter;
+  event: Event;
+  memberGroups: MemberResponseGroupViewModel[];
   responses: EventMemberResponse[];
 
   private members: Member[];
@@ -38,20 +39,20 @@ export class EventResponsesComponent implements OnInit {
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
     this.event = this.eventAdminService.getActiveEvent();
-    
-    forkJoin(
+
+    forkJoin([
       this.memberService.getMembers(this.chapter.id).pipe(
         tap((members: Member[]) => this.members = members)
       ),
       this.eventAdminService.getEventResponses(this.event.id).pipe(
         tap((responses: EventMemberResponse[]) => this.responses = responses)
       )
-    ).subscribe(() => {
+    ]).subscribe(() => {
       const memberMap: Map<string, Member> = ArrayUtils.toMap(this.members, x => x.id);
 
       this.memberGroups = [];
 
-      const responseMap: Map<EventResponseType, MemberResponseGroupViewModel> = 
+      const responseMap: Map<EventResponseType, MemberResponseGroupViewModel> =
         new Map<EventResponseType, MemberResponseGroupViewModel>();
       responseMap.set(EventResponseType.Yes, this.memberGroups[this.memberGroups.push({
         members: [],
@@ -73,7 +74,7 @@ export class EventResponsesComponent implements OnInit {
         members: [],
         title: 'Not invited'
       }) - 1]);
-      
+
       this.responses
         .sort((a, b) => memberMap.get(a.memberId).fullName.localeCompare(memberMap.get(b.memberId).fullName))
         .forEach((response: EventMemberResponse) => {

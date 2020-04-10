@@ -14,7 +14,7 @@ import { HttpUtils } from '../http/http-utils';
 import { ServiceResult } from '../service-result';
 import { StringUtils } from 'src/app/utils/string-utils';
 
-const baseUrl: string = `${environment.adminApiBaseUrl}/emails`;
+const baseUrl = `${environment.adminApiBaseUrl}/emails`;
 
 const endpoints = {
   chapterEmail: (chapterId: string, type: EmailType) => `${baseUrl}/chapters/${chapterId}/${EmailType[type]}`,
@@ -103,9 +103,9 @@ export class EmailAdminService {
 
   sendEmail(memberId: string, subject: string, body: string): Observable<void> {
     const params: HttpParams = HttpUtils.createFormParams({
-      body: body,
-      memberId: memberId,
-      subject: subject
+      body,
+      memberId,
+      subject
     });
 
     return this.http.post(endpoints.send, params).pipe(

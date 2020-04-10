@@ -19,13 +19,13 @@ export class TextInputFormControlComponent extends InputBase {
 
   get prefix(): InputGroupPrependViewModel {
     return this.viewModel
-      ? (<TextInputFormControlViewModel>this.viewModel).prefix
+      ? (this.viewModel as TextInputFormControlViewModel).prefix
       : null;
   }
 
   get type(): string {
     return this.viewModel
-      ? (<TextInputFormControlViewModel>this.viewModel).inputType || 'text'
+      ? (this.viewModel as TextInputFormControlViewModel).inputType || 'text'
       : 'text';
   }
 

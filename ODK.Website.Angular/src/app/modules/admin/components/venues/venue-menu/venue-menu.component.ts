@@ -14,11 +14,12 @@ import { VenueAdminService } from 'src/app/services/venues/venue-admin.service';
 })
 export class VenueMenuComponent implements OnInit {
 
-  constructor(private chapterAdminService: ChapterAdminService,
+  constructor(
+    private chapterAdminService: ChapterAdminService,
     private venueAdminService: VenueAdminService
-  ) {     
+  ) {
   }
-  
+
   menuItems: MenuItem[];
 
   ngOnInit(): void {

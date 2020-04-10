@@ -7,13 +7,10 @@ export class RouteUtils {
       return queryParams.get(key);
     }
 
-    for (let i = 0; i < queryParams.keys.length; i++) {
-      const queryParamKey: string = queryParams.keys[i];
+    for (const queryParamKey of queryParams.keys) {
       if (queryParamKey.toLocaleLowerCase() === key.toLocaleLowerCase()) {
         return queryParams.get(queryParamKey);
       }
     }
-
-    return undefined;
   }
 }

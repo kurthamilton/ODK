@@ -12,6 +12,6 @@ export class ReadOnlyFormControlComponent extends InputBase {
   constructor(changeDetector: ChangeDetectorRef) {
     super(changeDetector);
   }
-  
-  get controlType(): string { return (<ReadOnlyFormControlViewModel>this.viewModel).controlType; }
+
+  get controlType(): string { return (this.viewModel as ReadOnlyFormControlViewModel).controlType; }
 }

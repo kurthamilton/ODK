@@ -11,7 +11,7 @@ const baseUrl: string = environment.adminApiBaseUrl;
 
 const endpoints = {
   log: (level: string, page: number) => `${baseUrl}/log?level=${level ? level : ''}&page=${page ? page : ''}`
-}
+};
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +19,7 @@ const endpoints = {
 export class AdminService {
 
   constructor(private http: HttpClient) { }
-  
+
   getLogMessages(level?: string, page?: number): Observable<LogMessage[]> {
     return this.http.get(endpoints.log(level, page)).pipe(
       map((response: any) => response.map(x => this.mapLogMessage(x)))

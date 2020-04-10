@@ -16,7 +16,7 @@ const endpoints = {
   memberImage: (memberId: string, size: number) => `${baseUrl}/${memberId}/image${size ? `?size=${size}` : ''}`,
   memberProfile: (memberId: string) => `${baseUrl}/${memberId}/profile`,
   members: (chapterId: string) => `${baseUrl}?chapterId=${chapterId}`
-}
+};
 
 @Injectable({
   providedIn: 'root'

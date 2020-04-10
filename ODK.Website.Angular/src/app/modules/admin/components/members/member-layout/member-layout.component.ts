@@ -16,7 +16,8 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
 })
 export class MemberLayoutComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private chapterAdminService: ChapterAdminService,
     private memberAdminService: MemberAdminService

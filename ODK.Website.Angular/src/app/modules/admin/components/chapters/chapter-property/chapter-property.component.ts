@@ -18,18 +18,19 @@ import { ServiceResult } from 'src/app/services/service-result';
 })
 export class ChapterPropertyComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterAdminService: ChapterAdminService
-  ) {     
+  ) {
   }
 
   breadcrumbs: MenuItem[];
   formCallback: Subject<string[]> = new Subject<string[]>();
   property: ChapterProperty;
 
-  private chapter: Chapter;    
+  private chapter: Chapter;
 
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
@@ -47,7 +48,7 @@ export class ChapterPropertyComponent implements OnInit, OnDestroy {
       this.breadcrumbs = [
         { link: adminUrls.chapterProperties(this.chapter), text: 'Properties' }
       ];
-      
+
       this.changeDetector.detectChanges();
     });
   }
@@ -60,5 +61,5 @@ export class ChapterPropertyComponent implements OnInit, OnDestroy {
     this.chapterAdminService.updateChapterProperty(property).subscribe((result: ServiceResult<void>) => {
       this.formCallback.next(result.messages);
     });
-  }  
+  }
 }

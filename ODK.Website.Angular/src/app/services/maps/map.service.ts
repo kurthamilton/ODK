@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
 
-const baseUrl: string = `${environment.apiBaseUrl}/maps`;
+const baseUrl = `${environment.apiBaseUrl}/maps`;
 
 const endpoints = {
   googleApiKey: (venueId: string) => `${baseUrl}/google/apikey${venueId ? `?venueId=${venueId}` : ''}`

@@ -22,7 +22,8 @@ import { TitleService } from 'src/app/services/title/title.service';
 })
 export class ChapterComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private memberService: MemberService,
     private authenticationService: AuthenticationService,
@@ -46,7 +47,7 @@ export class ChapterComponent implements OnInit {
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
     this.titleService.setRouteTitle(this.chapter.name);
-    
+
     const token: AuthenticationToken = this.authenticationService.getToken();
     this.isMember = !!token && token.chapterId === this.chapter.id;
 

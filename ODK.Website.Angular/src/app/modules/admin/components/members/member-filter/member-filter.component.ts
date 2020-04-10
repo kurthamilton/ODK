@@ -17,9 +17,10 @@ import { TextInputFormControlViewModel } from 'src/app/modules/forms/components/
 })
 export class MemberFilterComponent implements OnChanges, OnDestroy {
 
-  constructor(private route: ActivatedRoute,
+  constructor(
+    private route: ActivatedRoute,
     private router: Router
-  ) { 
+  ) {
   }
 
   @Input() viewModel: MemberFilterViewModel;
@@ -37,7 +38,7 @@ export class MemberFilterComponent implements OnChanges, OnDestroy {
     if (!this.viewModel) {
       return;
     }
-    
+
     this.buildForm();
   }
 
@@ -48,7 +49,7 @@ export class MemberFilterComponent implements OnChanges, OnDestroy {
   onFormChange(): void {
     const viewModel: MemberFilterViewModel = {
       name: this.formControls.name.value,
-      types: this.formControls.types.value.map(x => <SubscriptionType>parseInt(x, 10))
+      types: this.formControls.types.value.map(x => parseInt(x, 10))
     };
 
     this.router.navigate([], {
@@ -56,7 +57,7 @@ export class MemberFilterComponent implements OnChanges, OnDestroy {
       queryParams: {
         type: this.formControls.types.value.map(x => x)
       }
-    })
+    });
     this.change.emit(viewModel);
   }
 
@@ -70,7 +71,7 @@ export class MemberFilterComponent implements OnChanges, OnDestroy {
         id: 'name',
         label: {
           text: 'Name'
-        }        
+        }
       }),
       types: new DropDownMultiFormControlViewModel({
         id: 'types',
@@ -99,9 +100,9 @@ export class MemberFilterComponent implements OnChanges, OnDestroy {
   }
 
   private createTypeOption(type: SubscriptionType): DropDownFormControlOption {
-    return { 
-      text: SubscriptionType[type], 
-      value: type.toString(), 
+    return {
+      text: SubscriptionType[type],
+      value: type.toString(),
       selected: this.viewModel.types.includes(type)
     };
   }

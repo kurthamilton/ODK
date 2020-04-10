@@ -7,7 +7,7 @@ import { InputBase } from '../input-base';
 
 export class DateInputFormControlViewModel extends FormControlViewModel {
   constructor(options: DateInputFormControlOptions) {
-    super(options);    
+    super(options);
     this.value = options.value;
   }
 

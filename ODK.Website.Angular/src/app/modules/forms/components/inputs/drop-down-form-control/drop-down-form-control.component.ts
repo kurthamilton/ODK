@@ -39,7 +39,7 @@ export class DropDownFormControlComponent extends InputBase implements OnDestroy
   }
 
   protected onInit(): void {
-    this.dropDownViewModel = <DropDownFormControlViewModel>this.viewModel;
+    this.dropDownViewModel = this.viewModel as DropDownFormControlViewModel;
 
     this._options = this.dropDownViewModel.options;
     this.defaultOption = this._options.find(x => x.default);
@@ -51,7 +51,7 @@ export class DropDownFormControlComponent extends InputBase implements OnDestroy
     }
 
     this.control.setValue(selectedOption.value);
-    
+
     this.control.valueChanges.pipe(
       takeUntil(componentDestroyed(this))
     ).subscribe((value: string) => {

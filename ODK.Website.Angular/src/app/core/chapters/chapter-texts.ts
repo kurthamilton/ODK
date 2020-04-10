@@ -1,4 +1,4 @@
-export interface ChapterTexts {    
-  registerText: string;  
+export interface ChapterTexts {
+  registerText: string;
   welcomeText: string;
 }

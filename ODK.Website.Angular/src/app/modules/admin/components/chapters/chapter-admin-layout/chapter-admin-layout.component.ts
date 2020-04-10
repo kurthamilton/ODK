@@ -18,7 +18,7 @@ export class ChapterAdminLayoutComponent implements OnInit {
 
   ngOnInit(): void {
     const chapter: Chapter = this.chapterAdminService.getActiveChapter();
-    
+
     this.menuItems = [
       { link: adminUrls.chapter(chapter), text: 'Text', matchExactRoute: true },
       { link: adminUrls.chapterQuestions(chapter), text: 'About' },

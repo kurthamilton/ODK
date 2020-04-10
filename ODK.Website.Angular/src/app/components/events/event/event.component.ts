@@ -22,7 +22,8 @@ import { VenueService } from 'src/app/services/venues/venue.service';
 })
 export class EventComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     private chapterService: ChapterService,
@@ -39,7 +40,7 @@ export class EventComponent implements OnInit {
   venue: Venue;
 
   ngOnInit(): void {
-    this.eventId = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.event.params.id);    
+    this.eventId = this.route.snapshot.paramMap.get(appPaths.chapter.childPaths.event.params.id);
 
     this.chapter = this.chapterService.getActiveChapter();
     this.breadcrumbs = [

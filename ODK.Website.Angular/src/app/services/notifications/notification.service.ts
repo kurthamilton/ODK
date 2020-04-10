@@ -9,7 +9,7 @@ import { Notification } from 'src/app/core/notifications/notification';
   providedIn: 'root'
 })
 export class NotificationService {
-  
+
   private dismissedAlerts: string[] = [];
   private notificationsSubject: Subject<Notification> = new Subject<Notification>();
   private scheduled: Notification[] = [];
@@ -26,7 +26,7 @@ export class NotificationService {
     if (!notification) {
       return;
     }
-    
+
     this.notificationsSubject.next(notification);
   }
 

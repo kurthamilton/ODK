@@ -13,7 +13,8 @@ import { TitleService } from 'src/app/services/title/title.service';
 })
 export class MembersComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterService: ChapterService,
     private memberService: MemberService,
     private titleService: TitleService
@@ -25,7 +26,7 @@ export class MembersComponent implements OnInit {
 
   ngOnInit(): void {
     this.chapter = this.chapterService.getActiveChapter();
-    this.titleService.setRouteTitle(`${this.chapter.name} Knitwits`);    
+    this.titleService.setRouteTitle(`${this.chapter.name} Knitwits`);
     this.memberService.getMembers(this.chapter.id).subscribe((members: Member[]) => {
       this.members = members.sort((a, b) => a.fullName.localeCompare(b.fullName));
       this.changeDetector.detectChanges();

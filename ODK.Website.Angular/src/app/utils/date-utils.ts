@@ -3,7 +3,7 @@ export class DateUtils {
     if (!date) {
       return date;
     }
-    
+
     date = new Date(date.valueOf());
     date.setDate(date.getDate() + days);
     return date;
@@ -17,18 +17,18 @@ export class DateUtils {
     const result: number = date1.getTime() - date2.getTime();
     return result < 0 ? -1 : result > 0 ? 1 : 0;
   }
-  
+
   static daysBetween(date1: Date, date2: Date): number {
-    const difference: number = date2.getTime() - date1.getTime();   
-    return difference / (1000 * 3600 * 24); 
-  }   
+    const difference: number = date2.getTime() - date1.getTime();
+    return difference / (1000 * 3600 * 24);
+  }
 
   static toDate(date: Date): Date {
     if (!date) {
       return date;
     }
 
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
   static today(): Date {

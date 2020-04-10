@@ -25,7 +25,8 @@ import { SubscriptionType } from 'src/app/core/account/subscription-type';
 })
 export class SubscriptionComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private accountService: AccountService,
     private chapterService: ChapterService,
     private authenticationService: AuthenticationService,
@@ -73,15 +74,15 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
     this.accountService.purchaseSubscription(chapterSubscription.id, token).pipe(
       tap((subscription: MemberSubscription) => this.subscription = subscription),
       switchMap(() => this.authenticationService.refreshAccessToken(this.authenticationService.getToken()))
-    ).subscribe(() => {      
+    ).subscribe(() => {
       this.notificationService.publish({
         message: 'Thank you for purchasing a subscription',
         success: true
       });
       this.completedSubject.next();
       this.buildForm();
-      this.changeDetector.detectChanges();      
-      
+      this.changeDetector.detectChanges();
+
       window.setTimeout(() => window.scrollTo(0, 0), 0);
     });
   }
@@ -106,7 +107,7 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
         value: formatDate(this.subscription.expiryDate, 'dd MMMM yyyy', this.locale)
       }));
     }
-    
+
     this.form = {
       buttons: [],
       callback: null,

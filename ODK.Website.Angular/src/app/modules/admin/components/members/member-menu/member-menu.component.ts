@@ -14,9 +14,10 @@ import { MenuItem } from 'src/app/core/menus/menu-item';
 })
 export class MemberMenuComponent implements OnInit {
 
-  constructor(private chapterAdminService: ChapterAdminService,
+  constructor(
+    private chapterAdminService: ChapterAdminService,
     private memberAdminService: MemberAdminService
-  ) {     
+  ) {
   }
 
   menuItems: MenuItem[];

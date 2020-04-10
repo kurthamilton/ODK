@@ -57,11 +57,11 @@ import { VenuesComponent } from '../components/venues/venues/venues.component';
 
 const routes: Routes = [
   { path: '', component: AdminLayoutComponent, canActivate: [ChapterAdminGuardService], children: [
-    { path: '', pathMatch: 'full', redirectTo: adminPaths.chapter.path },    
+    { path: '', pathMatch: 'full', redirectTo: adminPaths.chapter.path },
 
 
     { path: adminPaths.chapter.path, component: ChapterAdminLayoutComponent, children: [
-      { path: '', component: ChapterSettingsComponent },      
+      { path: '', component: ChapterSettingsComponent },
 
       { path: adminPaths.chapter.emails.path, children: [
         { path: '', component: ChapterEmailsComponent },
@@ -80,7 +80,7 @@ const routes: Routes = [
         { path: '', component: ChapterQuestionsComponent },
         { path: adminPaths.chapter.questions.create.path, component: ChapterQuestionCreateComponent },
         { path: adminPaths.chapter.questions.question.path, component: ChapterQuestionComponent }
-      ] }      
+      ] }
     ] },
 
 
@@ -123,8 +123,8 @@ const routes: Routes = [
         { path: adminPaths.subscriptions.create.path, component: SubscriptionCreateComponent },
         { path: adminPaths.subscriptions.subscription.path, component: SubscriptionEditComponent }
       ] },
-      
-      { path: '', component: MembersComponent },      
+
+      { path: '', component: MembersComponent },
       { path: adminPaths.members.member.path, component: MemberLayoutComponent, children: [
         { path: '', component: MemberSubscriptionComponent },
         { path: adminPaths.members.member.events.path, component: MemberEventsComponent  },
@@ -137,7 +137,7 @@ const routes: Routes = [
     { path: adminPaths.superAdmin.path, component: SuperAdminLayoutComponent, canActivate: [ChapterSuperAdminGuardService],
     children: [
       { path: adminPaths.emailProviders.path, children: [
-        { path:'', component: ChapterEmailProvidersComponent },
+        { path: '', component: ChapterEmailProvidersComponent },
         { path: adminPaths.emailProviders.create.path, component: CreateChapterEmailProviderComponent },
         { path: adminPaths.emailProviders.emailProvider.path, component: ChapterEmailProviderComponent }
       ] },
@@ -147,8 +147,8 @@ const routes: Routes = [
         { path: adminPaths.superAdmin.emails.email.path, component: DefaultEmailComponent }
       ] },
 
-      { path: adminPaths.superAdmin.errorLog.path, component: ErrorLogComponent },   
-      { path: adminPaths.superAdmin.memberEmails.path, component: MemberEmailsComponent },   
+      { path: adminPaths.superAdmin.errorLog.path, component: ErrorLogComponent },
+      { path: adminPaths.superAdmin.memberEmails.path, component: MemberEmailsComponent },
       { path: adminPaths.superAdmin.socialMedia.instagram.path, component: InstagramComponent },
       { path: adminPaths.superAdmin.paymentSettings.path, component: ChapterPaymentSettingsComponent }
     ] },

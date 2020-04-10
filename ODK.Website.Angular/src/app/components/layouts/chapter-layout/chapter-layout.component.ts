@@ -9,11 +9,11 @@ import { ChapterService } from 'src/app/services/chapters/chapter.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChapterLayoutComponent implements OnInit {
-  constructor(private chapterService: ChapterService) {
-  }
+
+  constructor(private chapterService: ChapterService) { }
 
   @Input() title: string;
-  
+
   chapter: Chapter;
 
   ngOnInit(): void {

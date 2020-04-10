@@ -15,10 +15,11 @@ import { EmailAdminService } from 'src/app/services/emails/email-admin.service';
 })
 export class ChapterEmailProvidersComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private emailAdminService: EmailAdminService
-  ) {     
+  ) {
   }
 
   links: {
@@ -27,7 +28,7 @@ export class ChapterEmailProvidersComponent implements OnInit {
   providers: ChapterEmailProvider[];
 
   private chapter: Chapter;
-  
+
   ngOnInit(): void {
     this.chapter = this.chapterAdminService.getActiveChapter();
 

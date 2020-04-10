@@ -15,7 +15,8 @@ import { HtmlEditorFormControlViewModel } from '../../forms/inputs/html-editor-f
 })
 export class ChapterSettingsComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService
   ) {
   }

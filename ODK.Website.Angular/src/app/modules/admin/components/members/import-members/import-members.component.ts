@@ -12,10 +12,11 @@ import { MemberAdminService } from 'src/app/services/members/member-admin.servic
 })
 export class ImportMembersComponent implements OnInit {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private chapterAdminService: ChapterAdminService,
     private memberAdminService: MemberAdminService
-  ) {     
+  ) {
   }
 
   file: FileInfo;
@@ -31,13 +32,13 @@ export class ImportMembersComponent implements OnInit {
       name: 'Member import.csv',
       url: this.memberAdminService.getMemberImportTemplateUrl(this.chapter.id)
     };
-  }  
+  }
 
   onUploadFile(files: FileList): void {
     if (files.length === 0) {
       return;
     }
- 
+
     this.importing = true;
     this.changeDetector.detectChanges();
 

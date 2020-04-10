@@ -6,7 +6,7 @@ describe('HomeGuardService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: HomeGuardService = TestBed.get(HomeGuardService);
+    const service: HomeGuardService = TestBed.inject(HomeGuardService);
     expect(service).toBeTruthy();
   });
 });

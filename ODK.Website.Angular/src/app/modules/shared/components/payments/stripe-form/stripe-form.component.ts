@@ -10,11 +10,12 @@ import { ScriptService, appScripts } from 'src/app/services/scripts/script.servi
 })
 export class StripeFormComponent implements OnInit, OnDestroy {
 
-  constructor(private changeDetector: ChangeDetectorRef,
+  constructor(
+    private changeDetector: ChangeDetectorRef,
     private scriptService: ScriptService
   ) {
   }
-  
+
   @Input() amount: number;
   @Input() currencyCode: string;
   @Input() currencySymbol: string;
@@ -34,7 +35,7 @@ export class StripeFormComponent implements OnInit, OnDestroy {
 
   private stripe: stripe.Stripe;
   private stripeElement: stripe.elements.Element;
-  
+
   ngOnInit(): void {
     this.scriptService.load(appScripts.stripe)
       .then(() => {
@@ -42,7 +43,7 @@ export class StripeFormComponent implements OnInit, OnDestroy {
         this.changeDetector.detectChanges();
       })
       .catch((e) => {
-        this.error = 'An error has occurred while loading the form'
+        this.error = 'An error has occurred while loading the form';
         this.changeDetector.detectChanges();
       });
   }
@@ -57,7 +58,7 @@ export class StripeFormComponent implements OnInit, OnDestroy {
     this.paying = true;
     this.changeDetector.detectChanges();
 
-    this.stripe.createToken(this.stripeElement).then((result: stripe.TokenResponse) => {      
+    this.stripe.createToken(this.stripeElement).then((result: stripe.TokenResponse) => {
       if (result.error) {
         this.paying = false;
         this.error = result.error.message;

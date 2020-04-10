@@ -17,7 +17,7 @@ export class NumberInputFormControlComponent extends InputBase {
 
   @Output() blur: EventEmitter<void> = new EventEmitter<void>();
 
-  get min(): number { 
+  get min(): number {
     return this.viewModel
       ? this.numberInputViewModel.min
       : null;
@@ -29,14 +29,14 @@ export class NumberInputFormControlComponent extends InputBase {
       : null;
   }
 
-  get step(): number { 
+  get step(): number {
     return this.viewModel
       ? this.numberInputViewModel.step
       : null;
   }
 
-  private get numberInputViewModel(): NumberInputFormControlViewModel { 
-    return <NumberInputFormControlViewModel>this.viewModel;
+  private get numberInputViewModel(): NumberInputFormControlViewModel {
+    return this.viewModel as NumberInputFormControlViewModel;
   }
 
   onBlur(): void {

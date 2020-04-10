@@ -25,7 +25,7 @@ export class FormComponent implements OnInit, OnDestroy {
   loadingOptions: LoadingSpinnerOptions = {
     overlay: true
   };
-  messages: string[];  
+  messages: string[];
   state: FormStateViewModel = {};
   submitting = false;
   successMessage: string;

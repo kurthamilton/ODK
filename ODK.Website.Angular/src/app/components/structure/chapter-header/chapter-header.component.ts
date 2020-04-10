@@ -11,9 +11,8 @@ import { ChapterService } from 'src/app/services/chapters/chapter.service';
 })
 export class ChapterHeaderComponent implements OnInit {
 
-  constructor(private chapterService: ChapterService) { 
-  }
-  
+  constructor(private chapterService: ChapterService) { }
+
   chapter: Chapter;
   links: {
     chapter: string
