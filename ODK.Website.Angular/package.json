@@ -25,7 +25,7 @@
     "@ckeditor/ckeditor5-build-classic": "^18.0.0",
     "@ckeditor/ckeditor5-watchdog": "^18.0.0",
     "@ng-bootstrap/ng-bootstrap": "^6.0.2",
-    "@ng-select/ng-select": "^3.7.3",
+    "@ng-select/ng-select": "^4.0.0",
     "@types/stripe-v3": "^3.1.17",
     "bootstrap": "^4.4.1",
     "ng-lazyload-image": "^7.1.0",
