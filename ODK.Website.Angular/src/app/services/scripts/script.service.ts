@@ -39,7 +39,8 @@ export class ScriptService {
 
       const scriptEl = document.createElement('script');
       scriptEl.type = 'text/javascript';
-      scriptEl.src = this.scripts[name].src;
+
+      document.body.appendChild(scriptEl);
 
       scriptEl.onload = () => {
         this.scripts[name].loaded = true;
@@ -50,7 +51,7 @@ export class ScriptService {
         reject({ script: name, loaded: false, status: 'Loaded' });
       };
 
-      document.getElementsByTagName('head')[0].appendChild(script);
+      scriptEl.src = this.scripts[name].src;
     });
   }
 }
