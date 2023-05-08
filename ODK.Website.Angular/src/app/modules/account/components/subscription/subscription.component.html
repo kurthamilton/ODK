@@ -3,8 +3,9 @@
   <ng-container *ngIf="subscriptions">
     <h2>{{title}}</h2>
     <div class="mb-3" *ngFor="let chapterSubscription of subscriptions">
-      <app-purchase-subscription [chapterSubscription]="chapterSubscription" [close]="completedSubject"
-          (purchase)="onPurchase(chapterSubscription, $event)">
+      <app-purchase-subscription [chapterSubscription]="chapterSubscription" [title]="title"
+        [close]="completedSubject"
+        (purchase)="onPurchase(chapterSubscription, $event)">
       </app-purchase-subscription>
     </div>
   </ng-container>

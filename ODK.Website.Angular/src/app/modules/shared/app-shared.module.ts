@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 
 import { AccountMenuComponent } from './components/account/account-menu/account-menu.component';
+import { AppStyleModule } from '../style/app-style.module';
 import { BodyComponent } from './components/structure/body/body.component';
 import { BreadcrumbsComponent } from './components/elements/breadcrumbs/breadcrumbs.component';
 import { ErrorMessagesComponent } from './components/error-messages/error-messages.component';
@@ -21,9 +22,9 @@ import { NotificationComponent } from './components/elements/breadcrumbs/notific
 import { NotificationsComponent } from './components/elements/breadcrumbs/notifications/notifications.component';
 import { PageTitleComponent } from './components/structure/page-title/page-title.component';
 import { PaymentButtonComponent } from './components/payments/payment-button/payment-button.component';
+import { PaypalFormComponent } from './components/payments/paypal-form/paypal-form.component';
 import { RawHtmlComponent } from './components/elements/raw-html/raw-html.component';
 import { StripeFormComponent } from './components/payments/stripe-form/stripe-form.component';
-import { AppStyleModule } from '../style/app-style.module';
 import { SubscriptionAlertComponent } from './components/account/subscription-alert/subscription-alert.component';
 
 @NgModule({
@@ -45,9 +46,10 @@ import { SubscriptionAlertComponent } from './components/account/subscription-al
     NotificationsComponent,
     PageTitleComponent,
     PaymentButtonComponent,
+    PaypalFormComponent,
     RawHtmlComponent,
     StripeFormComponent,
-    SubscriptionAlertComponent,
+    SubscriptionAlertComponent
   ],
   imports: [
     AppStyleModule,
@@ -74,6 +76,7 @@ import { SubscriptionAlertComponent } from './components/account/subscription-al
     NotificationsComponent,
     PageTitleComponent,
     PaymentButtonComponent,
+    PaypalFormComponent,
     RawHtmlComponent,
     StripeFormComponent,
     SubscriptionAlertComponent,

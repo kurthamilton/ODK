@@ -27,6 +27,7 @@ export class PaymentButtonComponent implements OnChanges, OnDestroy {
 
   @Input() close: Observable<void>;
   @Input() payment: Payment;
+  @Input() title: string;
   @Output() cardSubmit: EventEmitter<string> = new EventEmitter<string>();
 
   country: Country;

@@ -14,6 +14,7 @@ export class PurchaseSubscriptionComponent implements OnChanges {
 
   @Input() chapterSubscription: ChapterSubscription;
   @Input() close: Observable<void>;
+  @Input() title: string;
   @Output() purchase: EventEmitter<string> = new EventEmitter<string>();
 
   payment: Payment;

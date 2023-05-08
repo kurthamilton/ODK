@@ -1,7 +1,18 @@
 <button class="btn btn-primary mr-1" (click)="onPurchase()">Purchase</button>
 <span>{{currencySymbol}}{{payment.amount | number:'1.2-2'}}</span>
 
-<app-stripe-form *ngIf="showForm"
+<app-paypal-form *ngIf="showForm && paymentSettings.provider === 'PayPal'"
+    [publicKey]="paymentSettings.apiPublicKey"
+    [amount]="payment.amount"
+    [currencyCode]="country.currencyCode"
+    [currencySymbol]="country.currencySymbol"
+    [name]="payment.name"
+    [title]="title"
+    (cardSubmit)="onCardSubmit($event)"
+    (close)="onFormClose()">
+</app-paypal-form>
+
+<app-stripe-form *ngIf="showForm && paymentSettings.provider === 'Stripe'"
     [publicKey]="paymentSettings.apiPublicKey"
     [amount]="payment.amount"
     [currencyCode]="country.currencyCode"

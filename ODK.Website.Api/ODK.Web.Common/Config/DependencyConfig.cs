@@ -32,6 +32,7 @@ using ODK.Services.Venues;
 using ODK.Web.Common.Config.Settings;
 using ODK.Services.Media;
 using ODK.Services.Files;
+using ODK.Services.Payments.PayPal;
 
 namespace ODK.Web.Common.Config
 {
@@ -41,6 +42,7 @@ namespace ODK.Web.Common.Config
             AppSettings appSettings)
         {
             ConfigureApi(services);
+            ConfigurePayments(services, appSettings);
             ConfigureServiceSettings(services, appSettings);
             ConfigureServices(services);
             ConfigureData(services, configuration);
@@ -68,6 +70,19 @@ namespace ODK.Web.Common.Config
             services.AddScoped<IVenueRepository, VenueRepository>();
         }
 
+        private static void ConfigurePayments(this IServiceCollection services, AppSettings appSettings)
+        {
+            PaymentsSettings payments = appSettings.Payments;
+
+            services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
+            services.AddScoped<IPayPalPaymentProvider, PayPalPaymentProvider>();
+            services.AddSingleton(new PayPalPaymentProviderSettings
+            {
+                ApiBaseUrl = payments.PayPalApiBaseUrl
+            });
+            services.AddScoped<IStripePaymentProvider, StripePaymentProvider>();
+        }
+
         private static void ConfigureServices(this IServiceCollection services)
         {
             services.AddScoped<IAuthenticationService, AuthenticationService>();
@@ -92,8 +107,6 @@ namespace ODK.Web.Common.Config
             services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();
             services.AddScoped<IPaymentService, PaymentService>();
-            // TODO: resolve via factory
-            services.AddScoped<IPaymentProvider, StripePaymentProvider>();
             services.AddScoped<ISettingsService, SettingsService>();
             services.AddScoped<ISocialMediaService, SocialMediaService>();
             services.AddScoped<ISocialMediaAdminService, SocialMediaAdminService>();

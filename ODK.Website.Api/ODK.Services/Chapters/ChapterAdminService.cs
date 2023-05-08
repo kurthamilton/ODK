@@ -304,12 +304,12 @@ namespace ODK.Services.Chapters
         }
 
         public async Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId,
-            UpdateChapterPaymentSettings settings)
+            UpdateChapterPaymentSettings paymentSettings)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             ChapterPaymentSettings existing = await _chapterRepository.GetChapterPaymentSettings(chapterId);
-            ChapterPaymentSettings update = new ChapterPaymentSettings(chapterId, settings.ApiPublicKey, settings.ApiSecretKey, existing.Provider);
+            ChapterPaymentSettings update = new ChapterPaymentSettings(chapterId, paymentSettings.ApiPublicKey, paymentSettings.ApiSecretKey, existing.Provider);
 
             await _chapterRepository.UpdateChapterPaymentSettings(update);
 

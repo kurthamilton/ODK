@@ -10,6 +10,7 @@ namespace ODK.Web.Common.Config.Settings
             Cors = configuration.Map<CorsSettings>("Cors");
             Members = configuration.Map<MembersSettings>("Members");
             Paths = configuration.Map<PathSettings>("Paths");
+            Payments = configuration.Map<PaymentsSettings>("Payments");
             Urls = configuration.Map<UrlSettings>("Urls");
         }
 
@@ -20,6 +21,8 @@ namespace ODK.Web.Common.Config.Settings
         public MembersSettings Members { get; }
 
         public PathSettings Paths { get; }
+
+        public PaymentsSettings Payments { get; }
 
         public UrlSettings Urls { get; }
     }

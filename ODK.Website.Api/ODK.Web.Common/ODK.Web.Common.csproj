@@ -21,7 +21,7 @@
     <ProjectReference Include="..\ODK.Data\ODK.Data.csproj" />
     <ProjectReference Include="..\ODK.Services.Imaging\ODK.Services.Imaging.csproj" />
     <ProjectReference Include="..\ODK.Services.Mails\ODK.Services.Mails.csproj" />
-    <ProjectReference Include="..\ODK.Services.Payments.Stripe\ODK.Services.Payments.Stripe.csproj" />
+    <ProjectReference Include="..\ODK.Services.Payments\ODK.Services.Payments.csproj" />
     <ProjectReference Include="..\ODK.Services\ODK.Services.csproj" />
   </ItemGroup>
 

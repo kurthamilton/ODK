@@ -32,6 +32,13 @@ export class ScriptService {
   load(script: Script): Promise<{ script: string, loaded: boolean, status: string }> {
     const name: string = script.name;
     return new Promise((resolve, reject) => {
+      if (!this.scripts[name]) {
+        this.scripts[name] = {
+          loaded: false,
+          src: script.src
+        };
+      }
+
       if (this.scripts[name].loaded) {
         resolve({ script: name, loaded: true, status: 'Already Loaded' });
         return;

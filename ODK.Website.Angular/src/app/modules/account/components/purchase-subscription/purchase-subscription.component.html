@@ -6,7 +6,9 @@
         <app-raw-html [html]="chapterSubscription.description"></app-raw-html>
       </div>
       <div>
-        <app-payment-button [payment]="payment" [close]="close" (cardSubmit)="onCardSubmit($event)"></app-payment-button>
+        <app-payment-button [payment]="payment" [title]="title" [close]="close"
+          (cardSubmit)="onCardSubmit($event)">
+        </app-payment-button>
       </div>
     </div>
   </div>

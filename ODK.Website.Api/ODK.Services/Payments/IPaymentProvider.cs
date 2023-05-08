@@ -1,10 +1,15 @@
 ﻿using System.Threading.Tasks;
+using ODK.Core.Chapters;
 
 namespace ODK.Services.Payments
 {
     public interface IPaymentProvider
     {
-        Task<string> MakePayment(string apiSecretKey, string currencyCode, double amount,
-            string cardToken, string description, string memberName);
+        bool HasExternalGateway { get; }
+
+        Task<bool> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken,
+            string description, string memberName);
+
+        Task<bool> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken);
     }
 }

@@ -217,7 +217,7 @@ namespace ODK.Services.Members
             MemberSubscription memberSubscription = await _memberRepository.GetMemberSubscription(member.Id);
 
             DateTime expiryDate = (memberSubscription?.ExpiryDate ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
-            memberSubscription = new MemberSubscription(member.Id, chapterSubscription.Type, expiryDate);
+            memberSubscription = new MemberSubscription(member.Id, chapterSubscription.Type, expiryDate);            
 
             await _memberRepository.UpdateMemberSubscription(memberSubscription);
 

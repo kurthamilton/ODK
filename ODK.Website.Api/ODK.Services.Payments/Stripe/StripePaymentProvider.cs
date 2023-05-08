@@ -1,15 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using ODK.Core.Chapters;
 using Stripe;
 
 namespace ODK.Services.Payments.Stripe
 {
-    public class StripePaymentProvider : IPaymentProvider
+    public class StripePaymentProvider : IStripePaymentProvider
     {
-        public async Task<string> MakePayment(string apiSecretKey, string currencyCode, double amount,
+        public bool HasExternalGateway => true;
+
+        public async Task<bool> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
             string cardToken, string description, string memberName)
         {
-            StripeClient client = new StripeClient(apiSecretKey);
+            StripeClient client = new StripeClient(paymentSettings.ApiSecretKey);
 
             PaymentIntentService intentService = new PaymentIntentService(client);
             PaymentIntent intent = await intentService.CreateAsync(new PaymentIntentCreateOptions
@@ -36,7 +40,13 @@ namespace ODK.Services.Payments.Stripe
             });
 
             intent = await intentService.ConfirmAsync(intent.Id);
-            return intent.Id;
+            return true;
+        }
+
+        public Task<bool> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
+            string cardToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

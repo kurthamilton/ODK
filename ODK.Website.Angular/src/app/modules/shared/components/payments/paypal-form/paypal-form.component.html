@@ -1,0 +1,15 @@
+<app-modal [title]="title" (close)="onClose()">
+  <div class="overlay-container">
+    <app-loading-spinner *ngIf="paying" [options]="loadingOptions"></app-loading-spinner>
+    <form (ngSubmit)="onSubmit()">
+      <app-error-messages [messages]="[error]"></app-error-messages>
+      <p>
+        {{name}}
+      </p>
+      <p>
+        {{currencySymbol}}{{amount | number:'1.2-2'}}
+      </p>
+      <div id="paypal-button-container"></div>
+    </form>
+  </div>
+</app-modal>

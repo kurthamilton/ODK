@@ -6,6 +6,6 @@ namespace ODK.Services.Payments
 {
     public interface IPaymentService
     {
-        Task<Guid> MakePayment(Member member, double amount, string cardToken, string reference);
+        Task<bool> MakePayment(Member member, double amount, string cardToken, string reference);
     }
 }
