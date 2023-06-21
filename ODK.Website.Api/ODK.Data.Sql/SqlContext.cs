@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using ODK.Data.Sql.Mapping;
 using ODK.Data.Sql.Queries;
 
