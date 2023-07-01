@@ -15,15 +15,27 @@ namespace ODK.Services.Members
 
         Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetLatestMembers(long? currentVersion, Guid currentMemberId, Guid chapterId);
 
+        Task<Member> GetMember(Guid memberId);
+
         Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size);
+
+        Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? width, int? height);
 
         Task<MemberProfile> GetMemberProfile(Guid currentMemberId, Guid memberId);
 
+        Task<MemberProfile> GetMemberProfile(Member currentMember, Member member);
+
+        Task<IReadOnlyCollection<MemberProperty>> GetMemberProperties(Guid memberId);
+
         Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetMembers(long? currentVersion, Guid currentMemberId, Guid chapterId);
+
+        Task<IReadOnlyCollection<Member>> GetMembers(Member currentMember, Guid chapterId);
 
         Task<MemberSubscription> GetMemberSubscription(Guid memberId);
 
-        Task<MemberSubscription> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId, string cardToken);
+        Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId, string cardToken);
+
+        Task<MemberSubscription> PurchaseSubscriptionOld(Guid memberId, Guid chapterSubscriptionId, string cardToken);
 
         Task RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress);
 

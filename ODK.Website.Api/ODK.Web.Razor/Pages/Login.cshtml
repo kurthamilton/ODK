@@ -1,0 +1,17 @@
+﻿@page "/Account/Login"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Login
+@model LoginModel
+@{
+    Layout = "Shared/_HomeLayout.cshtml";
+    Model.Title = "Login";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Login",
+    Content = await Html.PartialAsync("Account/_LoginForm", new LoginViewModel
+    {
+        ReturnUrl = Model.ReturnUrl
+    })
+})

@@ -7,9 +7,9 @@ namespace ODK.Services.Payments
     {
         bool HasExternalGateway { get; }
 
-        Task<bool> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken,
+        Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken,
             string description, string memberName);
 
-        Task<bool> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken);
+        Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken);
     }
 }

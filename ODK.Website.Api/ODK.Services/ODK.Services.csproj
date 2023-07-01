@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Notifications\" />
   </ItemGroup>
 
 </Project>

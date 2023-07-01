@@ -1,0 +1,17 @@
+﻿@using ODK.Core.Settings
+@using ODK.Services.Settings
+@model ODK.Web.Razor.Models.Components.GoogleMapViewModel
+@inject ISettingsService SettingsService
+@{
+    if (string.IsNullOrEmpty(Model.Query))
+    {
+        return;
+    }
+
+    SiteSettings settings = await SettingsService.GetSiteSettings();
+    string url = $"https://www.google.com/maps/embed/v1/place?key={settings.GoogleMapsApiKey}&q={Model.Query}";
+}
+
+<iframe height="450" frameborder="0" style="border:0; width: 100%;" 
+        src="@url" allowfullscreen>
+</iframe>

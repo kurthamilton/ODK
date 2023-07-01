@@ -1,0 +1,45 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Members
+@using ODK.Services.Members
+@model ODK.Web.Razor.Models.Members.MemberProfileViewModel
+@inject IMemberService MemberService
+@{
+    MemberProfile profile = await MemberService.GetMemberProfile(Model.CurrentMember, Model.Member);
+}
+
+<form>
+    @foreach (MemberProperty property in profile.MemberProperties.OrderBy(x => profile.ChapterProperties[x.ChapterPropertyId].DisplayOrder))
+    {
+        if (string.IsNullOrEmpty(property.Value))
+        {
+            continue;
+        }
+
+        if (!profile.ChapterProperties.TryGetValue(property.ChapterPropertyId, out ChapterProperty? chapterProperty))
+        {
+            continue;
+        }
+
+        <div class="form-group mb-3">
+            <label class="form-label">@chapterProperty.Label</label>
+            <div class="form-control-plaintext">
+                @if (chapterProperty.Name == "facebook")
+                {
+                    string url = $"https://www.facebook.com/{property.Value}";
+                    <a href="@url" target="_blank">@url</a>
+                }
+                else
+                {
+                    <span>@property.Value</span>   
+                }
+            </div>
+        </div>
+    }
+    
+    <div class="form-group mb-3">
+        <label class="form-label">Date joined</label>
+        <div class="form-control-plaintext">
+            <span>@profile.Joined.ToString("d MMMM yyyy")</span>
+        </div>
+    </div>
+</form>

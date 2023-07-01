@@ -1,0 +1,13 @@
+.media-file {  
+  button:hover ~ .media-file-thumbnail {
+    opacity: 0.5;
+  }
+}
+
+.media-file-thumbnail {
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.5;
+  }
+}

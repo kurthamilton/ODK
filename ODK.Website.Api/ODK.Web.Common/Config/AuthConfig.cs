@@ -10,6 +10,8 @@ namespace ODK.Web.Common.Config
     {
         public static void ConfigureAuthentication(this IServiceCollection services, AuthSettings settings)
         {
+            return;
+
             byte[] key = Encoding.ASCII.GetBytes(settings.Key);
 
             services.AddAuthentication(x =>

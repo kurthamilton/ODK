@@ -1,0 +1,35 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Models.Components.BodyWithSidebarViewModel
+
+<main>
+    @if (!string.IsNullOrEmpty(Model.Title))
+    {
+        @await Html.PartialAsync("Components/_PageTitle", Model.Title)
+    }
+
+    <section class="section--main">
+        <div class="container">
+            @if (Model.Breadcrumbs != null)
+            {
+                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel(Model.Breadcrumbs))
+            }
+            
+            @await Html.PartialAsync("Feedback/_Feedback")
+
+            <div class="row">
+                <div class="col-lg-9 col-md-8 order-2 order-md-1">
+                    @if (Model.Content != null)
+                    {
+                        @Model.Content
+                    }
+                </div>
+                <div class="col-lg-3 col-md-4 order-1 order-md-2">
+                    @if (Model.SidebarContent != null)
+                    {
+                        @Model.SidebarContent
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+</main>

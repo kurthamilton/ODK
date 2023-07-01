@@ -6,5 +6,7 @@ namespace ODK.Services.Settings
     public interface ISettingsService
     {
         Task<VersionedServiceResult<SiteSettings>> GetSiteSettings(long? currentVersion);
+
+        Task<SiteSettings> GetSiteSettings();
     }
 }

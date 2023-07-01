@@ -33,6 +33,7 @@ using ODK.Web.Common.Config.Settings;
 using ODK.Services.Media;
 using ODK.Services.Files;
 using ODK.Services.Payments.PayPal;
+using ODK.Web.Common.Account;
 
 namespace ODK.Web.Common.Config
 {
@@ -42,16 +43,26 @@ namespace ODK.Web.Common.Config
             AppSettings appSettings)
         {
             ConfigureApi(services);
+            ConfigureAuthentication(services);
             ConfigurePayments(services, appSettings);
             ConfigureServiceSettings(services, appSettings);
             ConfigureServices(services);
             ConfigureData(services, configuration);
         }
 
+        private static void ConfigureAuthentication(this IServiceCollection services)
+        {
+            services.AddScoped<ILoginHandler, LoginHandler>();
+        }
+
         private static void ConfigureApi(IServiceCollection services)
         {
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Directory.GetCurrentDirectory()));
-            services.AddSingleton(LoggingConfig.Logger);
+
+            if (LoggingConfig.Logger != null)
+            {
+                services.AddSingleton(LoggingConfig.Logger);
+            }
         }
 
         private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
@@ -107,6 +118,7 @@ namespace ODK.Web.Common.Config
             services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IRequestCache, RequestCache>();
             services.AddScoped<ISettingsService, SettingsService>();
             services.AddScoped<ISocialMediaService, SocialMediaService>();
             services.AddScoped<ISocialMediaAdminService, SocialMediaAdminService>();

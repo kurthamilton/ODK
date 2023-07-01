@@ -1,0 +1,13 @@
+﻿@page
+@using ODK.Web.Razor.Models.Components
+@model PrivacyModel
+@{
+    Layout = "Shared/_HomeLayout.cshtml";
+    Model.Title = "Privacy";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Privacy/_PrivacyBody", null),
+    Title = "Privacy"
+})

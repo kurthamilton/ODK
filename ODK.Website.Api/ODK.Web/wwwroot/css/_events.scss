@@ -1,0 +1,29 @@
+.event-response-option {
+	font-size: 1.2em;
+  display: inline-flex;
+  align-items: center;
+}
+
+.event-response-option:not(.active) {
+	opacity: .5;
+}
+
+.event-response-option--yes {
+    color: $success;
+}
+
+.event-response-option--maybe {
+    color: $warning;
+}
+
+.event-response-option--no {
+    color: $danger;
+}
+
+.icon--event-response {
+	font-size: 1.2rem;
+}
+
+.icon--event-response--sm {
+	font-size: 0.8rem;
+}

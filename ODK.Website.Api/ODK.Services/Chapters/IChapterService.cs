@@ -9,6 +9,8 @@ namespace ODK.Services.Chapters
     {
         Task<VersionedServiceResult<Chapter>> GetChapter(long? currentVersion, Guid id);
 
+        Task<VersionedServiceResult<Chapter>> GetChapter(long? currentVersion, string name);
+
         Task<VersionedServiceResult<ChapterLinks>> GetChapterLinks(long? currentVersion, Guid chapterId);
 
         Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid chapterId);
@@ -17,9 +19,15 @@ namespace ODK.Services.Chapters
 
         Task<VersionedServiceResult<IReadOnlyCollection<ChapterProperty>>> GetChapterProperties(long? currentVersion, Guid chapterId);
 
+        Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId);
+
         Task<VersionedServiceResult<IReadOnlyCollection<ChapterPropertyOption>>> GetChapterPropertyOptions(long? currentVersion, Guid chapterId);
 
+        Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId);
+
         Task<VersionedServiceResult<IReadOnlyCollection<ChapterQuestion>>> GetChapterQuestions(long? currentVersion, Guid chapterId);
+
+        Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);
 
         Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(long? currentVersion);
 

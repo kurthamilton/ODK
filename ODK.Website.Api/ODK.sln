@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29418.71
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Web.Api", "ODK.Web.Api\ODK.Web.Api.csproj", "{4C342813-4905-4FDC-A6AE-2A57B3C031C6}"
 EndProject
@@ -31,7 +31,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DC18A21B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Web.Common", "ODK.Web.Common\ODK.Web.Common.csproj", "{2073C9B5-8987-4CAA-BD73-4B997A8B257C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Services.Payments", "ODK.Services.Payments\ODK.Services.Payments.csproj", "{B0D5ACAE-78C7-46B0-B477-36E18CB6944E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Services.Payments", "ODK.Services.Payments\ODK.Services.Payments.csproj", "{B0D5ACAE-78C7-46B0-B477-36E18CB6944E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Web.Razor", "ODK.Web.Razor\ODK.Web.Razor.csproj", "{3FCDD709-E11E-4118-A7E7-9C53DA55A817}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +93,10 @@ Global
 		{B0D5ACAE-78C7-46B0-B477-36E18CB6944E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0D5ACAE-78C7-46B0-B477-36E18CB6944E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0D5ACAE-78C7-46B0-B477-36E18CB6944E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FCDD709-E11E-4118-A7E7-9C53DA55A817}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FCDD709-E11E-4118-A7E7-9C53DA55A817}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FCDD709-E11E-4118-A7E7-9C53DA55A817}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FCDD709-E11E-4118-A7E7-9C53DA55A817}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

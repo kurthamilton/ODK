@@ -34,10 +34,17 @@ namespace ODK.Core.Members
 
         public string FirstName { get; }
 
+        public string FullName => $"{FirstName?.Trim()} {LastName?.Trim()}".Trim();
+
         public Guid Id { get; }
 
         public string LastName { get; }
 
         public long Version { get; }
+
+        public bool CanBeViewedBy(Member currentMember)
+        {
+            return currentMember?.ChapterId == ChapterId;
+        }
     }
 }

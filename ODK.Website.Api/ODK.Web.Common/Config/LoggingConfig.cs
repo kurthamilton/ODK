@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Serilog;
@@ -16,7 +17,7 @@ namespace ODK.Web.Common.Config
 
         public static ILogger Logger { get; private set; }
 
-        public static LoggerProviderCollection Providers { get; } = new LoggerProviderCollection();
+        public static LoggerProviderCollection Providers { get; } = new();
 
         public static void AddRequestProperties(HttpContext context)
         {
@@ -27,14 +28,13 @@ namespace ODK.Web.Common.Config
             LogContext.PushProperty(IP, !string.IsNullOrWhiteSpace(ip) ? ip : "unknown");
         }
 
-        public static void Configure(string[] args)
+        public static void Configure(WebApplicationBuilder builder)
         {
             string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
             IConfigurationRoot builtConfig = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{environment}.json")
-                .AddCommandLine(args)
                 .Build();
 
             string logFileDirectory = builtConfig["Logging:Path"];
@@ -55,7 +55,7 @@ namespace ODK.Web.Common.Config
                 .WriteTo.Console()
                 .CreateLogger();
 
-            Log.Logger = Logger;
+            builder.Host.UseSerilog(Logger);
         }
     }
 }

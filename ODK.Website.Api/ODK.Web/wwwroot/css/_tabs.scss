@@ -1,0 +1,35 @@
+.tab-content {
+    margin-top: 30px;
+}
+
+
+.nav-tabs {
+  .nav-item {
+    margin-top: 1px; /* vertical margin if tabs overflow */
+  }
+
+  .nav-link {
+    background-color: $gray-100;
+    border: $nav-tabs-border-width solid $gray-300;
+    border-bottom-color: transparent;
+    border-radius: 0;
+    color: $body-color;
+    margin-right: 0.2rem;
+
+    &:hover {
+      border-top-color: $gray-300;
+    }
+
+    &.active {
+      background-color: #fff;
+      border-bottom-color: #fff;
+      border-top-color: $primary;
+      cursor: default;
+    }
+
+    &:hover,
+    &.active {
+      border-top-width: 2px;
+    }
+  }
+}

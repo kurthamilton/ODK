@@ -1,0 +1,16 @@
+﻿@model ODK.Web.Razor.Models.Members.MemberImageViewModel
+@{
+    string imageUrl = $"/{Model.Chapter.Name}/Members/{Model.Member.Id}/Image";
+    if (Model.MaxWidth > 0)
+    {
+        imageUrl += $"?size={Model.MaxWidth}";
+    }
+}
+
+<div class="overlay-container">
+    <span style="@(Model.MaxWidth > 0 ? $"max-width: {Model.MaxWidth}px" : null)" class="d-inline-block">
+        <img class="@(Model.IsTop ? "card-img-top" : "card-img")" 
+             src="@imageUrl" 
+             alt="Photo of @Model.Member.FullName" />
+    </span>    
+</div>

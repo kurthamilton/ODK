@@ -1,0 +1,25 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Models.Components.BodyViewModel
+
+<main>
+    @if (!string.IsNullOrEmpty(Model.Title))
+    {
+        @await Html.PartialAsync("Components/_PageTitle", Model.Title)
+    }
+
+    <section class="section--main">
+        <div class="container">
+            @if (Model.Breadcrumbs != null)
+            {
+                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel(Model.Breadcrumbs))
+            }
+            
+            @await Html.PartialAsync("Feedback/_Feedback")
+
+            @if (Model.Content != null)
+            {
+                @Model.Content
+            }
+        </div>
+    </section>
+</main>

@@ -1,0 +1,18 @@
+﻿@using ODK.Web.Razor.Models.Members
+@model ODK.Web.Razor.Models.Members.ListMemberViewModel
+
+<div class="card member-tile @(Model.HideName ? "member-tile-sm" : null)">
+    <a href="/@Model.Chapter.Name/Knitwits/@Model.Member.Id" 
+       data-bs-toggle="@(Model.HideName ? "tooltip" : "")" data-bs-title="@(Model.HideName ? Model.Member.FullName : "")" container="body">
+        @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, Model.Member)
+        {
+            IsTop = !Model.HideName,
+            MaxWidth = Model.MaxWidth
+        })
+            
+        @if (!Model.HideName)
+        {
+            <div>@Model.Member.FullName</div>
+        }
+    </a>
+</div>

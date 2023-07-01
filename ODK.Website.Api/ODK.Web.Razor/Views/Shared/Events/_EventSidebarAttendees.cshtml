@@ -1,0 +1,24 @@
+﻿@using ODK.Web.Razor.Models.Members
+@model ODK.Web.Razor.Models.Events.EventSidebarAttendeesViewModel
+@{
+    if (Model.Members.Count == 0)
+    {
+        return;
+    }
+
+    IEnumerable<ListMemberViewModel> members = Model.Members.Select(x => new ListMemberViewModel(Model.Chapter, x)
+    {
+        Size = "xs"
+    });
+}
+
+<div class="card sidebar-card">
+    <div class="card-header">@Model.Title</div>
+    <div class="card-body card-body-sm">        
+        @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel(Model.Chapter, members)
+        {
+            Cols = 4,
+            Size = "xs"
+        })
+    </div>
+</div>

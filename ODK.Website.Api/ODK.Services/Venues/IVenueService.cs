@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ODK.Core.Members;
 using ODK.Core.Venues;
 
 namespace ODK.Services.Venues
@@ -9,7 +10,9 @@ namespace ODK.Services.Venues
     {
         Task<VersionedServiceResult<IReadOnlyCollection<Venue>>> GetPublicVenues(long? currentVersion, Guid chapterId);
 
-        Task<VersionedServiceResult<Venue>> GetVenue(long? currentVersion, Guid? currentMemberId, Guid id);
+        Task<VersionedServiceResult<Venue>> GetVenue(long? currentVersion, Guid? currentMemberId, Guid venueId);
+
+        Task<Venue> GetVenue(Member currentMember, Guid venueId);
 
         Task<VersionedServiceResult<IReadOnlyCollection<Venue>>> GetVenues(long? currentVersion, Guid currentMemberId, Guid chapterId);
     }

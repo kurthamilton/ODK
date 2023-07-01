@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Countries;
 using ODK.Services.Caching;
@@ -22,6 +23,11 @@ namespace ODK.Services.Countries
                 _countryRepository.GetCountries,
                 _countryRepository.GetCountriesVersion,
                 currentVersion);
+        }
+
+        public async Task<Country> GetCountry(Guid countryId)
+        {
+            return await _countryRepository.GetCountry(countryId);
         }
     }
 }

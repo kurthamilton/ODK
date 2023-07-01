@@ -44,6 +44,22 @@ namespace ODK.Services.Chapters
             return new VersionedServiceResult<Chapter>(chapters.Version, chapter);
         }
 
+        public async Task<VersionedServiceResult<Chapter>> GetChapter(long? currentVersion, string name)
+        {
+            VersionedServiceResult<IReadOnlyCollection<Chapter>> chapters = await GetChapters(currentVersion);
+            if (chapters.Version == currentVersion)
+            {
+                return new VersionedServiceResult<Chapter>(chapters.Version);
+            }
+
+            Chapter chapter = chapters.Value.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            if (chapter == null)
+            {
+                throw new OdkNotFoundException();
+            }
+            return new VersionedServiceResult<Chapter>(chapters.Version, chapter);
+        }
+
         public async Task<VersionedServiceResult<ChapterLinks>> GetChapterLinks(long? currentVersion, Guid chapterId)
         {
             return await _cacheService.GetOrSetVersionedItem(() => GetChapterLinks(chapterId), chapterId, currentVersion);
@@ -71,6 +87,11 @@ namespace ODK.Services.Chapters
                 chapterId);
         }
 
+        public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId)
+        {
+            return await _chapterRepository.GetChapterProperties(chapterId);
+        }
+
         public async Task<VersionedServiceResult<IReadOnlyCollection<ChapterPropertyOption>>> GetChapterPropertyOptions(long? currentVersion, Guid chapterId)
         {
             return await _cacheService.GetOrSetVersionedCollection(
@@ -80,6 +101,11 @@ namespace ODK.Services.Chapters
                 chapterId);
         }
 
+        public async Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId)
+        {
+            return await _chapterRepository.GetChapterPropertyOptions(chapterId);
+        }
+
         public async Task<VersionedServiceResult<IReadOnlyCollection<ChapterQuestion>>> GetChapterQuestions(long? currentVersion, Guid chapterId)
         {
             return await _cacheService.GetOrSetVersionedCollection(
@@ -87,6 +113,14 @@ namespace ODK.Services.Chapters
                 () => _chapterRepository.GetChapterQuestionsVersion(chapterId),
                 currentVersion,
                 chapterId);
+        }
+
+        public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId)
+        {
+            IReadOnlyCollection<ChapterQuestion> questions = await _chapterRepository.GetChapterQuestions(chapterId);
+            return questions
+                .OrderBy(x => x.DisplayOrder)
+                .ToArray();
         }
 
         public async Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(long? currentVersion)

@@ -1,0 +1,136 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.DataTypes
+@using ODK.Core.Members
+@using ODK.Services.Chapters
+@using ODK.Services.Members
+@using ODK.Web.Razor.Models.Account
+@model ODK.Web.Razor.Models.Account.ProfileFormViewModel
+@inject IChapterService ChapterService
+@inject IMemberService MemberService
+@{
+    Task<IReadOnlyCollection<ChapterProperty>> chapterPropertiesTask = ChapterService.GetChapterProperties(Model.ChapterId);
+    Task<IReadOnlyCollection<ChapterPropertyOption>> chapterPropertyOptionsTask = ChapterService.GetChapterPropertyOptions(Model.ChapterId);
+    Task<IReadOnlyCollection<MemberProperty>> memberPropertiesTask = MemberService.GetMemberProperties(Model.MemberId);
+
+    await Task.WhenAll(chapterPropertiesTask, chapterPropertyOptionsTask, memberPropertiesTask);
+
+    IReadOnlyCollection<ChapterProperty> chapterProperties = chapterPropertiesTask
+        .Result
+        .Where(x => !x.Hidden)
+        .OrderBy(x => x.DisplayOrder)
+        .ToArray();
+
+    IDictionary<Guid, string> memberProperties = memberPropertiesTask
+        .Result
+        .ToDictionary(x => x.ChapterPropertyId, x => x.Value);
+
+    IDictionary<Guid, ChapterPropertyOption[]> chapterPropertyOptions = chapterPropertyOptionsTask
+        .Result
+        .GroupBy(x => x.ChapterPropertyId)
+        .ToDictionary(x => x.Key, x => x.OrderBy(y => y.DisplayOrder).ToArray());
+
+    Model.Properties.AddRange(chapterProperties
+        .Select(x => new ProfileFormPropertyViewModel
+        {
+            ChapterPropertyId = x.Id,
+            Value = memberProperties.TryGetValue(x.Id, out var value) ? value : "",
+        }));
+}
+
+<div class="form-group mb-3">
+    <label class="form-label">Email address</label>
+    <div class="form-control-plaintext">
+        @Model.EmailAddress
+    </div>
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.FirstName, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.FirstName, new { @class = "form-control" })
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.LastName, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.LastName, new { @class = "form-control" })
+</div>
+
+@for (int i = 0; i < chapterProperties.Count; i++)
+{
+    ChapterProperty chapterProperty = chapterProperties.ElementAt(i);
+
+    @Html.HiddenFor(x => x.Properties[i].ChapterPropertyId)
+
+    <div class="form-group mb-3 @(chapterProperty.Required ? "required" : null)">
+        @Html.LabelFor(x => x.Properties[i].Value, chapterProperty.Label, new { @class = "form-label" })
+        @if (!string.IsNullOrEmpty(chapterProperty.HelpText))
+        {
+            <span>
+                <i class="ml-1 icon--help fas fa-question-circle" data-bs-toggle="tooltip" data-bs-title="@chapterProperty.HelpText"></i>
+            </span>
+        }
+        
+        @if (!string.IsNullOrEmpty(chapterProperty.Subtitle))
+        {
+            <span class="ml-1 text-muted">@chapterProperty.Subtitle</span>
+        }
+        
+        @if (chapterProperty.DataType == DataType.DropDown)
+        {
+            IReadOnlyCollection<ChapterPropertyOption> options = chapterPropertyOptions.ContainsKey(chapterProperty.Id)
+                ? chapterPropertyOptions[chapterProperty.Id]
+                : Array.Empty<ChapterPropertyOption>();
+
+            IReadOnlyCollection<SelectListItem> selectList = options
+                .Select(x => new SelectListItem { Text = x.Value })
+                .ToArray();
+
+            string? selectedValue = Model.Properties[i].Value;
+            if (!string.IsNullOrEmpty(selectedValue) 
+                && selectList.All(x => x.Text != selectedValue)
+                && selectList.Any(x => x.Text == "Other"))
+            {
+                Model.Properties[i].OtherValue = selectedValue;
+                Model.Properties[i].Value = "Other";
+            }
+
+            @Html.DropDownListFor(x => x.Properties[i].Value, selectList, "Select...", new
+            {
+                @class = "form-control", 
+                data_select_freetext = $"#{Html.IdFor(x => x.Properties[i].OtherValue)}",
+                data_select_freetext_value = "Other"
+            })
+            @Html.TextBoxFor(x => x.Properties[i].OtherValue, new { @class = "form-control d-none" })
+        }
+        else if (chapterProperty.DataType == DataType.LongText)
+        {
+            @Html.TextAreaFor(x => x.Properties[i].Value, new { @class = "form-control", rows = 3 })
+        }
+        else if (chapterProperty.DataType == DataType.Url)
+        {
+            if (chapterProperty.Name == "facebook")
+            {
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fab fa-facebook-f"></i>
+                    </span>
+                    @Html.TextBoxFor(x => x.Properties[i].Value, new { @class = "form-control" })
+                </div>
+            }
+            else
+            {
+                @Html.TextBoxFor(x => x.Properties[i].Value, new { @class = "form-control" })
+            }
+        }
+        else
+        {
+            @Html.TextBoxFor(x => x.Properties[i].Value, new { @class = "form-control" })
+        }
+    </div>
+}
+
+<div class="form-group mb-3">
+    <label class="form-label">Date joined</label>
+    <div class="form-control-plaintext">
+        <span>@Model.DateJoined.ToString("d MMMM yyyy")</span>
+    </div>
+</div>

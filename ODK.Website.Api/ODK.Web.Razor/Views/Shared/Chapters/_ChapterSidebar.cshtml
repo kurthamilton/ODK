@@ -1,0 +1,43 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Events
+@using ODK.Web.Razor.Models.Events
+@model ODK.Web.Razor.Models.Chapters.ChapterSidebarViewModel
+@inject IEventService EventService
+@{
+    if (Model.Chapter == null)
+    {
+        return;
+    }
+
+    IReadOnlyCollection<EventResponseViewModel> events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter.Id);
+}
+
+<div class="sidebar">
+    @if (events.Count > 0)
+    {
+        <div class="card sidebar-card">
+            <div class="card-header">Upcoming events</div>
+
+            @foreach (EventResponseViewModel @event in events)
+            {
+                <div class="card-body card-body-sm">
+                    <h6 class="card-title">
+                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                        {
+                            ResponseType = @event.Response,
+                            ReadOnly = true
+                        })
+                        
+                        <a href="/@Model.Chapter.Name/Events/@(@event.EventId)">
+                            @(@event.EventName)
+                        </a>
+                    </h6>
+                    <div class="d-inline-block d-md-block">@(@event.Date.EventDate())</div>
+                    <span class="d-md-none">&nbsp;|&nbsp;</span>
+                    <div class="d-inline-block d-md-block">@(@event.VenueName)</div>
+                </div>
+            }
+        </div>
+    }
+</div>
+

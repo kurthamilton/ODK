@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using ODK.Core.Members;
 
 namespace ODK.Services.Authentication
 {
@@ -7,9 +10,13 @@ namespace ODK.Services.Authentication
     {
         Task ActivateAccount(string activationToken, string password);
 
-        Task ChangePassword(Guid memberId, string currentPassword, string newPassword);
+        Task<ServiceResult> ChangePassword(Guid memberId, string currentPassword, string newPassword);
 
         Task DeleteRefreshToken(string refreshToken);
+
+        Task<IReadOnlyCollection<Claim>> GetClaims(Member member);
+
+        Task<Member> GetMember(string username, string password);
 
         Task<AuthenticationToken> Login(string username, string password);
 

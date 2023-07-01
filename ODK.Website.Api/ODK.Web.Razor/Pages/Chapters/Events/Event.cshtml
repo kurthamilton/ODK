@@ -1,0 +1,27 @@
+﻿@page "/{chapterName}/Events/{id:guid}"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Core.Venues
+@using ODK.Services.Venues
+@using ODK.Web.Razor.Models.Events
+@model EventModel
+@inject IVenueService VenueService
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = Model.Event.Name;
+    
+    Venue? venue = await VenueService.GetVenue(Model.CurrentMember, Model.Event.VenueId);
+}
+
+@await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
+{
+    Title = Model.Event.Name,
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Events", Text = "Events" },
+        new MenuItem { Text = Model.Event.Name }
+    },
+    Content = await Html.PartialAsync("Events/_EventContent", new EventContentViewModel(Model.Chapter, Model.Event, venue)),
+    SidebarContent = await Html.PartialAsync("Events/_EventSidebar", new EventSidebarViewModel(Model.Chapter, Model.Event, Model.CurrentMember))
+})

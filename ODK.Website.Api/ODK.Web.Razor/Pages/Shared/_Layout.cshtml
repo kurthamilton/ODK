@@ -1,0 +1,45 @@
+﻿@using ODK.Web.Razor.Pages.Chapters
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using ODK.Core.Chapters
+@using ODK.Services.Caching
+@inject IRequestCache RequestCache
+@{
+    ChapterPageContext context = new ChapterPageContext(RequestCache, Context);
+    Chapter? chapter = await context.GetChapterAsync();
+    string title = "Drunken Knitwits";
+    if (chapter != null)
+    {
+        title = $"{chapter.Name} {title}";
+    }
+
+    string? pageTitle = ViewData["Title"] as string;
+    if (!string.IsNullOrEmpty(pageTitle))
+    {
+       title = $"{pageTitle} | {title}";
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title</title>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon32.png?v=3">
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
+</head>
+<body>
+    @(await RenderSectionAsync("header"))
+
+    @RenderBody()
+
+    @(await RenderSectionAsync("footer"))
+    
+    @await Html.PartialAsync("Feedback/_Notifications")
+
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.js"></script>
+    <script src="~/js/site.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

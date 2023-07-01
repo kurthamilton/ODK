@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Data;
 using System.Threading.Tasks;
+using ODK.Core.Members;
 using ODK.Core.Venues;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -57,6 +60,17 @@ namespace ODK.Services.Venues
                 () => _venueRepository.GetVenue(id),
                 id,
                 currentVersion);
+        }
+
+        public async Task<Venue> GetVenue(Member currentMember, Guid venueId)
+        {
+            Venue venue = await _venueRepository.GetVenue(venueId);
+            if (venue == null || venue.ChapterId != currentMember?.ChapterId)
+            {
+                return null;
+            }
+
+            return venue;
         }
 
         public async Task<VersionedServiceResult<IReadOnlyCollection<Venue>>> GetVenues(long? currentVersion, Guid currentMemberId, Guid chapterId)

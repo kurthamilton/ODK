@@ -1,0 +1,16 @@
+﻿@model ODK.Web.Razor.Models.Login.LoginViewModel
+
+<form method="post" action="/Account/Login?ReturnUrl=@Model.ReturnUrl">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group required mb-3">
+        @Html.LabelFor(x => x.Email, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.Email, new { @class = "form-control" })
+    </div>
+    <div class="mb-3">
+        @Html.LabelFor(x => x.Password, new { @class = "form-label" })
+        @Html.PasswordFor(x => x.Password, new { @class = "form-control" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Sign in</button>
+</form>

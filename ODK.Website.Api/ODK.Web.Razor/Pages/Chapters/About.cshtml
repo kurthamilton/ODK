@@ -1,0 +1,20 @@
+﻿@page "/{chapterName}/About"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.About
+@model ODK.Web.Razor.Pages.Chapters.AboutModel
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = "About";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "About",
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Text = "About" }
+    },
+    Content = await Html.PartialAsync("About/_AboutContent", new AboutContentViewModel(Model.Chapter))
+})

@@ -1,4 +1,5 @@
 ﻿using System;
+using ODK.Core.Members;
 
 namespace ODK.Core.Events
 {
@@ -44,5 +45,10 @@ namespace ODK.Core.Events
         public string Time { get; set; }
 
         public Guid VenueId { get; set; }
+
+        public bool IsAuthorized(Member member)
+        {
+            return IsPublic || member?.ChapterId == ChapterId;
+        }
     }
 }

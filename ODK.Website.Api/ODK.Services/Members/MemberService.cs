@@ -83,7 +83,7 @@ namespace ODK.Services.Members
                 return;
             }
 
-            Member create = new Member(Guid.Empty, chapterId, profile.EmailAddress, profile.EmailOptIn, profile.FirstName, profile.LastName,
+            Member create = new Member(Guid.Empty, chapterId, profile.EmailAddress, profile.EmailOptIn ?? false, profile.FirstName, profile.LastName,
                 DateTime.UtcNow, false, false, 0);
 
             Guid id = await _memberRepository.CreateMember(create);
@@ -154,7 +154,18 @@ namespace ODK.Services.Members
             return new VersionedServiceResult<IReadOnlyCollection<Member>>(members.Version, latestMembers);
         }
 
+        public async Task<Member> GetMember(Guid memberId)
+        {
+            return await GetMember(memberId, memberId);
+        }
+
         public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size)
+        {
+            return await GetMemberImage(currentVersion, memberId, size, size);
+        }
+
+        public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId,
+            int? width, int? height)
         {
             VersionedServiceResult<MemberImage> result = await _cacheService.GetOrSetVersionedItem(
                 () => _memberRepository.GetMemberImage(memberId),
@@ -167,9 +178,17 @@ namespace ODK.Services.Members
             }
 
             MemberImage image = result.Value;
-            if (size != null)
+            if (image == null)
             {
-                byte[] imageData = _imageService.Crop(image.ImageData, size.Value, size.Value);
+                return new VersionedServiceResult<MemberImage>(0, null);
+            }
+
+            if (width > 0 || height > 0)
+            {
+                int w = NumberUtils.FirstPositive(width, height) ?? 0;
+                int h = NumberUtils.FirstPositive(height, width) ?? 0;
+
+                byte[] imageData = _imageService.Crop(image.ImageData, w, h);
                 image = new MemberImage(image.MemberId, imageData, image.MimeType, image.Version);
             }
 
@@ -180,6 +199,21 @@ namespace ODK.Services.Members
         {
             Member member = await GetMember(currentMemberId, memberId);
             return await GetMemberProfile(member);
+        }
+
+        public async Task<MemberProfile> GetMemberProfile(Member currentMember, Member member)
+        {
+            if (member == null || !member.CanBeViewedBy(currentMember))
+            {
+                return null;
+            }
+
+            return await GetMemberProfile(member);
+        }
+
+        public async Task<IReadOnlyCollection<MemberProperty>> GetMemberProperties(Guid memberId)
+        {
+            return await _memberRepository.GetMemberProperties(memberId);
         }
 
         public async Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetMembers(long? currentVersion, Guid currentMemberId,
@@ -194,14 +228,61 @@ namespace ODK.Services.Members
                 chapterId);
         }
 
+        public async Task<IReadOnlyCollection<Member>> GetMembers(Member currentMember, Guid chapterId)
+        {
+            if (currentMember == null || currentMember.ChapterId != chapterId)
+            {
+                return Array.Empty<Member>();
+            }
+
+            return await _memberRepository.GetMembers(chapterId);
+        }
+
         public async Task<MemberSubscription> GetMemberSubscription(Guid memberId)
         {
-            await _authorizationService.AssertMemberIsCurrent(memberId);
-
             return await _memberRepository.GetMemberSubscription(memberId);
         }
 
-        public async Task<MemberSubscription> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId, string cardToken)
+        public async Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId,
+            string cardToken)
+        {
+            ChapterSubscription chapterSubscription = await _chapterRepository.GetChapterSubscription(chapterSubscriptionId);
+            if (chapterSubscription == null)
+            {
+                return ServiceResult.Failure("Payment not made: subscription not found");
+            }
+
+            Member member = await GetMember(memberId);
+            if (member.ChapterId != chapterSubscription.ChapterId)
+            {
+                return ServiceResult.Failure("Payment not made: you are not a member of this subscription's chapter");
+            }
+            
+            ServiceResult paymentResult = await _paymentService.MakePayment(member, chapterSubscription.Amount, cardToken, 
+                chapterSubscription.Title);
+            if (!paymentResult.Success)
+            {
+                return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
+            }
+
+            MemberSubscription memberSubscription = await _memberRepository.GetMemberSubscription(member.Id);
+
+            DateTime expiryDate = (memberSubscription?.ExpiryDate ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
+            memberSubscription = new MemberSubscription(member.Id, chapterSubscription.Type, expiryDate);
+
+            await _memberRepository.UpdateMemberSubscription(memberSubscription);
+
+            MemberSubscriptionRecord record = new MemberSubscriptionRecord(memberId, chapterSubscription.Type, DateTime.UtcNow,
+                chapterSubscription.Amount, chapterSubscription.Months);
+            await _memberRepository.AddMemberSubscriptionRecord(record);
+
+            _cacheService.UpdatedVersionedItem(memberSubscription, memberId);
+            _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
+
+            return ServiceResult.Successful();
+        }
+
+        public async Task<MemberSubscription> PurchaseSubscriptionOld(Guid memberId, Guid chapterSubscriptionId, string cardToken)
         {
             ChapterSubscription chapterSubscription = await _chapterRepository.GetChapterSubscription(chapterSubscriptionId);
             if (chapterSubscription == null)
@@ -367,7 +448,11 @@ namespace ODK.Services.Members
 
         private static void UpdateMemberProfile(MemberProfile existing, UpdateMemberProfile update)
         {
-            existing.EmailOptIn = update.EmailOptIn;
+            if (update.EmailOptIn != null)
+            {
+                existing.EmailOptIn = update.EmailOptIn.Value;
+            }
+
             existing.FirstName = update.FirstName.Trim();
             existing.LastName = update.LastName.Trim();
 
@@ -426,14 +511,9 @@ namespace ODK.Services.Members
             IEnumerable<MemberProperty> allMemberProperties = chapterProperties.Select(x =>
                 memberPropertyDictionary.ContainsKey(x.Id) ? memberPropertyDictionary[x.Id] : new MemberProperty(Guid.Empty, member.Id, x.Id, null));
 
-            return new MemberProfile(member, allMemberProperties);
+            return new MemberProfile(member, allMemberProperties, chapterProperties);
         }
-
-        private async Task<Member> GetMember(Guid memberId)
-        {
-            return await GetMember(memberId, memberId);
-        }
-
+        
         private async Task<MemberImage> UpdateMemberImage(Member member, byte[] imageData, string mimeType)
         {
             MemberImage update = CreateMemberImage(member.Id, mimeType, imageData);

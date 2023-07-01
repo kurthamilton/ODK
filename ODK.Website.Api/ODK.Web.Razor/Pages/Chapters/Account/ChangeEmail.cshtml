@@ -1,0 +1,21 @@
+﻿@page "/{chapterName}/Account/Email/Change"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Account
+@model ODK.Web.Razor.Pages.Chapters.Account.ChangeEmailModel
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = "Change email";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Update email address",
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Account", Text = "Profile" },
+        new MenuItem { Text = "Update email address" }
+    },
+    Content = await Html.PartialAsync("Account/_ChangeEmailContent", new ChangeEmailContentViewModel(Model.Chapter, Model.CurrentMember!))
+})

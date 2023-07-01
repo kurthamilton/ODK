@@ -24,7 +24,7 @@ namespace ODK.Services.Payments
             _paymentRepository = paymentRepository;
         }
 
-        public async Task<bool> MakePayment(Member member, double amount, string cardToken, string reference)
+        public async Task<ServiceResult> MakePayment(Member member, double amount, string cardToken, string reference)
         {
             ChapterPaymentSettings paymentSettings = await _chapterRepository.GetChapterPaymentSettings(member.ChapterId);
             Chapter chapter = await _chapterRepository.GetChapter(member.ChapterId);
@@ -34,17 +34,17 @@ namespace ODK.Services.Payments
 
             IPaymentProvider paymentProvider = _paymentProviderFactory.GetPaymentProvider(providerType);
 
-            bool success = await paymentProvider.MakePayment(paymentSettings, country.CurrencyCode, amount, cardToken, reference,
+            ServiceResult paymentResult = await paymentProvider.MakePayment(paymentSettings, country.CurrencyCode, amount, cardToken, reference,
                 $"{member.FirstName} {member.LastName}");
-            if (!success)
+            if (!paymentResult.Success)
             {
-                throw new OdkServiceException("Error making payment");
+                return paymentResult;
             }
 
             Payment payment = new Payment(Guid.Empty, member.Id, DateTime.UtcNow, country.CurrencyCode, amount, reference);
             await _paymentRepository.CreatePayment(payment);
 
-            return true;
+            return ServiceResult.Successful();
         }
     }
 }

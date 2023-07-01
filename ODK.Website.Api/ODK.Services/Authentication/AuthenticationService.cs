@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using ODK.Core.Chapters;
@@ -51,11 +52,16 @@ namespace ODK.Services.Authentication
             await SendNewMemberEmails(token.MemberId);
         }
 
-        public async Task ChangePassword(Guid memberId, string currentPassword, string newPassword)
+        public async Task<ServiceResult> ChangePassword(Guid memberId, string currentPassword, string newPassword)
         {
-            await _authorizationService.AssertMemberIsCurrent(memberId);
-            await AssertMemberPasswordMatches(memberId, currentPassword, "Current password is incorrect");
+            bool matches = await CheckPassword(memberId, currentPassword);
+            if (!matches)
+            {
+                return ServiceResult.Failure("Current password is incorrect");
+            }
+
             await UpdatePassword(memberId, newPassword);
+            return ServiceResult.Successful();
         }
 
         public async Task DeleteRefreshToken(string refreshToken)
@@ -67,6 +73,53 @@ namespace ODK.Services.Authentication
             }
 
             await _memberRepository.DeleteRefreshToken(token);
+        }
+
+        public async Task<Member> GetMember(string username, string password)
+        {
+            Member member = await _memberRepository.FindMemberByEmailAddress(username);
+            if (member == null)
+            {
+                return null;
+            }
+
+            bool passwordMatches = await CheckPassword(member.Id, password);
+            return passwordMatches ? member : null;
+        }
+
+        public async Task<IReadOnlyCollection<Claim>> GetClaims(Member member)
+        {
+            if (member == null)
+            {
+                return Array.Empty<Claim>();
+            }
+
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, member.Id.ToString()),
+                new Claim("ChapterId", member.ChapterId.ToString())
+            };
+
+            MemberSubscription subscription = await _memberRepository.GetMemberSubscription(member.Id);
+
+            bool isActive = await _authorizationService.MembershipIsActive(subscription, member.ChapterId);
+            if (isActive)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Member));
+
+                IReadOnlyCollection<ChapterAdminMember> adminChapterMembers = await _chapterRepository.GetChapterAdminMembersByMember(member.Id);
+                if (adminChapterMembers.Any())
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Admin));
+                }
+
+                if (adminChapterMembers.Any(x => x.SuperAdmin))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, OdkRoles.SuperAdmin));
+                }
+            }
+
+            return claims;
         }
 
         public async Task<AuthenticationToken> Login(string username, string password)
@@ -243,6 +296,23 @@ namespace ODK.Services.Authentication
             await _memberRepository.AddRefreshToken(token);
 
             return refreshToken;
+        }
+
+        private async Task<bool> CheckPassword(Guid? memberId, string password)
+        {
+            if (memberId == null)
+            {
+                return false;
+            }
+
+            MemberPassword memberPassword = await _memberRepository.GetMemberPassword(memberId.Value);
+            if (memberPassword == null)
+            {
+                return false;
+            }
+
+            string passwordHash = PasswordHasher.ComputeHash(password, memberPassword.Salt);
+            return memberPassword.Password == passwordHash;
         }
 
         private async Task SendNewMemberEmails(Guid memberId)

@@ -1,0 +1,81 @@
+﻿@page "/"
+@using ODK.Services.Caching
+@using ODK.Services.Countries
+@using ODK.Core.Countries
+@using ODK.Core.Chapters
+@using ODK.Web.Razor.Models.Components
+@model IndexModel
+@inject IRequestCache RequestCache
+@inject ICountryService CountryService
+@{
+    Layout = "Shared/_HomeLayout.cshtml";
+
+    var chaptersTask = RequestCache.GetChapters();
+    var countriesTask = CountryService.GetCountries(null);
+
+    await Task.WhenAll(chaptersTask, countriesTask);
+
+    IReadOnlyCollection<Country> countries = countriesTask.Result.Value;
+    IReadOnlyCollection<string> continents = countries
+        .Select(x => x.Continent)
+        .Distinct()
+        .ToArray();
+
+    IReadOnlyCollection<Chapter> chapters = chaptersTask.Result;
+}
+
+<main>
+    <img class="img--hero" src="/assets/img/home-hero.jpg" />
+    
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+    {
+        Content = @<p>
+                     We are the Oxford Drunken Knitwits, and we are knit-aholics.
+                     Sip by sip and stitch by stitch, we continue to pursue drunken,
+                     hand-cramping knit-thood, whereby all Knitwits have the holy grail of drunken knitting to show off to our friends: a hand-crafted item whose place,
+                     time, and method of construction cannot entirely be recalled.
+                     If you want to follow us on our path, we can show you the way...
+                 </p>,
+        Hero = true,
+        Theme = "dark",
+        Title = "The Drunken Knitifesto"
+    })
+    
+    @await Html.PartialAsync("Home/_ThreeTenetsSection", null)
+    
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+           {
+               Content = 
+                   @<div>
+                       <p>As the Romans used to say...</p>
+                       <p style="font-size: 1.2em; font-weight: bold;">"Veniimus, bibimus, knitimus"</p>
+                       <p>("We came, we drank, we knit")</p>
+                       <p>
+                           Most of our members will agree that the Drunken Knitwits are hands-down the best knitting clubs in existence today, and probably ever.
+                           The first chapter was established in Oxford, UK in 2012 to fill a desperate need for old-fashioned drunken knitting get-togethers.
+                           Break-out chapters have been popping up ever since and now we're in @continents.Count continents, @countries.Count countries, and @chapters.Count cities.
+                           There's no looking back! Whether you're a knitter who needs to add a social aspect to your hobby, someone who's always wanted to learn to knit,
+                           or someone who's new to town and wants to take on a new hobby while making friends, then the Drunken Knitwits are the people you’ve been looking for.
+                       </p>
+                   </div>,
+        Hero = true,
+        Theme = "light",
+        Title = "About the Drunken Knitwits"
+    })
+    
+    <img class="img--hero" src="assets/img/home-timeline.png" />
+    
+    @await Html.PartialAsync("Components/_Section", new SectionViewModel
+{
+    Content = @<div>
+                 <div class="small">-</div>
+                 <div class="small">Warnings and Disclaimers:</div>
+                 <p>&nbsp;</p>
+                 <div class="small">1. You may have to unpick some knitting mistakes after attending a DK event; we suggest bringing simple projects to avoid this hassle.</div>
+                 <div class="small">2. We use the term "knit" roughly; if you prefer crochet, that's cool.</div>
+                 <div class="small">3. Drinking is optional; crafting is not.</div>
+             </div>,
+        Hero = true,
+        Theme = "dark",
+    })
+</main>

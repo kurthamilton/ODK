@@ -1,0 +1,47 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Authentication
+@using ODK.Services.Caching
+@model ODK.Web.Razor.Models.Header.AccountMenuViewModel
+@inject IRequestCache RequestCache
+@{
+    Chapter? memberChapter = Model.Member != null 
+        ? Model.Chapter?.Id == Model.Member.ChapterId ? Model.Chapter : await RequestCache.GetChapter(Model.Member.ChapterId) 
+        : null;
+}
+
+@if (memberChapter != null)
+{
+    <div class="dropdown account-links">
+        <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="dropdown-menu dropdown-menu-end">
+            <a class="dropdown-item" href="/@memberChapter.Name/Account">My profile</a>
+            <a class="dropdown-item" href="/@memberChapter.Name">@memberChapter.Name</a>
+            <a class="dropdown-item" href="/@memberChapter.Name/Account/Logout">Sign Out</a>
+            
+            @if (User.IsInRole(OdkRoles.Admin))
+            {
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/@memberChapter.Name/Admin/Events">@memberChapter.Name admin</a>
+                <a class="dropdown-item" href="/@memberChapter.Name/Admin/Events/Create">Create event</a>
+            }
+            
+            @if (User.IsInRole(OdkRoles.SuperAdmin))
+            {
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/@memberChapter.Name/Admin/Super-Admin/Payment-Settings">Super admin</a>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="anonymous-links">
+        <a class="btn btn-primary anonymous-link" href="@(Model.Chapter != null ? $"/{Model.Chapter.Name}/Account/Login" : "/Account/Login")">Sign in</a>
+        @if (Model.Chapter != null)
+        {
+            <a class="btn btn-success anonymous-link" href="/@Model.Chapter.Name/Account/Join">Join</a>
+        }
+    </div>
+}

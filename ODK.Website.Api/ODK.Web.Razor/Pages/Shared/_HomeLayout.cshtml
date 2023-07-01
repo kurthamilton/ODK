@@ -1,0 +1,15 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+@RenderBody()
+
+@section header
+{
+    @await Html.PartialAsync("Header/_HomeHeader")
+}
+
+@section footer
+{
+    @await Html.PartialAsync("Footer/_HomeFooter")
+}

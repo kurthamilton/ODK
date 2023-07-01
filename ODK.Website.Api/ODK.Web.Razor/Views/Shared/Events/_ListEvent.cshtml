@@ -1,0 +1,15 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Events
+@model ListEventViewModel
+
+<h3 class="d-flex align-items-center">  
+    @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+    {
+        ReadOnly = true,
+        ResponseType = Model.EventResponse.Response
+    })
+    
+    <a href="/@Model.Chapter.Name/Events/@Model.EventResponse.EventId" class="@(Model.EventResponse.Response > 0 ? "ml-1" : null)">@Model.EventResponse.EventName</a>
+</h3>
+<h4>@Model.EventResponse.Date.EventDate(true)</h4>
+<div>@Model.EventResponse.VenueName</div>

@@ -16,36 +16,37 @@ namespace ODK.Services.Payments.PayPal
 
         public bool HasExternalGateway => false;
 
-        public async Task<bool> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken, string description, string memberName)
+        public async Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, 
+            string cardToken, string description, string memberName)
         {
             PayPalClient client = GetClient(paymentSettings);
 
             OrderJsonModel order = await client.GetOrderAsync(cardToken);
             if (order == null || order.PurchaseUnits.Length != 1)
             {
-                return false;
+                return ServiceResult.Failure("Payment not found in PayPal");
             }
 
             PurchaseUnitJsonModel purchase = order.PurchaseUnits[0];
 
-            bool verified = string.Equals(purchase.Amount.CurrencyCode, currencyCode, StringComparison.InvariantCultureIgnoreCase) &&
+            bool approved = string.Equals(purchase.Amount.CurrencyCode, currencyCode, StringComparison.InvariantCultureIgnoreCase) &&
                 purchase.Amount.Value == amount &&
                 string.Equals("APPROVED", order.Status, StringComparison.InvariantCultureIgnoreCase);
-            if (!verified)
+            if (!approved)
             {
-                return false;
+                return ServiceResult.Failure($"Payment not approved in PayPal. Current status: {order.Status}");
             }
 
             OrderCaptureJsonModel capture = await client.CaptureOrderPaymentAsync(order.Id);
             if (!string.Equals("COMPLETED", capture.Status, StringComparison.InvariantCultureIgnoreCase))
             {
-                return false;
+                return ServiceResult.Failure($"Payment not completed in PayPal. Current status: {order.Status}");
             }
 
-            return true;
+            return ServiceResult.Successful();
         }
 
-        public Task<bool> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken)
+        public Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken)
         {
             throw new NotImplementedException();
         }

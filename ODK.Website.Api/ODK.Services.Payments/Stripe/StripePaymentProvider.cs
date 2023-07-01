@@ -10,7 +10,7 @@ namespace ODK.Services.Payments.Stripe
     {
         public bool HasExternalGateway => true;
 
-        public async Task<bool> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
+        public async Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
             string cardToken, string description, string memberName)
         {
             StripeClient client = new StripeClient(paymentSettings.ApiSecretKey);
@@ -40,10 +40,10 @@ namespace ODK.Services.Payments.Stripe
             });
 
             intent = await intentService.ConfirmAsync(intent.Id);
-            return true;
+            return ServiceResult.Successful();
         }
 
-        public Task<bool> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
+        public Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
             string cardToken)
         {
             throw new NotImplementedException();

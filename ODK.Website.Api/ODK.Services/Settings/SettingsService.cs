@@ -22,5 +22,10 @@ namespace ODK.Services.Settings
                 "",
                 currentVersion);
         }
+
+        public async Task<SiteSettings> GetSiteSettings()
+        {
+            return await _settingsRepository.GetSiteSettings();
+        }
     }
 }

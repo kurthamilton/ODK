@@ -1,4 +1,5 @@
 using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using ODK.Web.Common.Config;
@@ -37,7 +38,7 @@ namespace ODK.Web.Api
 
         private static void ConfigureLogging(string[] args)
         {
-            LoggingConfig.Configure(args);
+            // LoggingConfig.Configure(new WebApplicationBuilder());
         }
     }
 }

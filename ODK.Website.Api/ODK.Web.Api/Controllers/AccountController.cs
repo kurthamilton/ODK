@@ -179,7 +179,7 @@ namespace ODK.Web.Api.Account
         [HttpPost("Subscriptions/{id}/Purchase")]
         public async Task<SubscriptionApiResponse> PurchaseSubscription(Guid id, [FromForm] PurchaseSubscriptionApiRequest request)
         {
-            MemberSubscription memberSubscription = await _memberService.PurchaseSubscription(GetMemberId(), id, request.Token);
+            MemberSubscription memberSubscription = await _memberService.PurchaseSubscriptionOld(GetMemberId(), id, request.Token);
             return _mapper.Map<SubscriptionApiResponse>(memberSubscription);
         }
     }

@@ -1,0 +1,37 @@
+﻿@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Header
+@model ChapterHeaderViewModel
+@{
+    bool isMember = Model.Member?.ChapterId == Model.Chapter.Id;
+
+    List<MenuItem> menuItems = new();
+
+    menuItems.Add(new MenuItem { Text = "Events", Link = $"/{Model.Chapter.Name}/Events" });
+
+    if (isMember)
+    {
+        menuItems.Add(new MenuItem { Text = "Knitwits", Link = $"/{Model.Chapter.Name}/Knitwits" });
+    }
+
+    menuItems.Add(new MenuItem { Text = "Contact", Link = $"/{Model.Chapter.Name}/Contact" });
+    menuItems.Add(new MenuItem { Text = "About", Link = $"/{Model.Chapter.Name}/About" });
+}
+
+@await Html.PartialAsync("Header/_Header", new HeaderViewModel
+{
+   ImageLink = $"/{Model.Chapter.Name}",
+   ImageUrl = Model.Chapter.BannerImageUrl,
+   Navbar = new NavbarViewModel
+   {
+       Breakpoint = "lg",
+       Chapter = Model.Chapter,
+       Color = "dark",
+       Compact = false,
+       CssClass = null,
+       Member = Model.Member,
+       MenuItems = new []
+       {
+           menuItems.ToArray()
+       }
+   }
+})

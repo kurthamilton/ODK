@@ -4,7 +4,7 @@ namespace ODK.Services.Members
 {
     public class UpdateMemberProfile
     {
-        public bool EmailOptIn { get; set; }
+        public bool? EmailOptIn { get; set; }
 
         public string FirstName { get; set; }
 

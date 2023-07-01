@@ -19,7 +19,7 @@ namespace ODK.Core.Venues
         Task<Venue> GetVenueByName(string name);
 
         Task<IReadOnlyCollection<Venue>> GetVenues(Guid chapterId);
-
+        
         Task<long> GetVenuesVersion(Guid chapterId);
 
         Task UpdateVenue(Venue venue);

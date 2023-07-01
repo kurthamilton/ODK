@@ -1,0 +1,19 @@
+﻿@model ODK.Web.Razor.Models.Events.EventResponseIconViewModel
+
+@if (Model.ResponseType > 0)
+{
+    if (!Model.ReadOnly)
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(x => x.ResponseType)
+    }
+
+    <button type="@(Model.ReadOnly ? "button" : "submit")"
+            class="btn-icon 
+                   event-response-option event-response-option--@Model.ResponseType.ToString()?.ToLowerInvariant() 
+                   @((Model.Active || Model.ReadOnly) ? "active" : null)">
+        <i class="fas icon--event-response @Model.IconClass @(Model.ReadOnly ? "icon--event-response--sm" : null)"
+           data-bs-toggle="tooltip" data-bs-title="@Model.Tooltip">
+        </i>
+    </button>
+}
