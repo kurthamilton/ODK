@@ -280,16 +280,20 @@ namespace ODK.Services.Events
             await _emailService.SendBulkEmail(currentMemberId, chapter, to, subject, body);
         }
 
-        public async Task SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false)
+        public async Task<ServiceResult> SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false)
         {
             Event @event = await GetEvent(currentMemberId, eventId);
 
-            AssertEventEmailsCanBeSent(@event);
+            ServiceResult validationResult = ValidateEventEmailCanBeSent(@event);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
             EventEmail eventEmail = await _eventRepository.GetEventEmail(@event.Id);
             if (!test && eventEmail?.SentDate != null)
             {
-                throw new OdkServiceException("Invites have already been sent for this event");
+                return ServiceResult.Failure("Invites have already been sent for this event");
             }
 
             Venue venue = await _venueRepository.GetVenue(@event.VenueId);
@@ -324,9 +328,34 @@ namespace ODK.Services.Events
                 // Add null event responses to indicate that members have been invited
                 await _eventRepository.AddEventInvites(@event.Id, invited.Select(x => x.Id), sentDate);
             }
+
+            return ServiceResult.Successful();
         }
 
-        public async Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
+        public async Task<ServiceResult> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
+        {
+            Event update = await GetEvent(memberId, id);
+
+            update.Date = @event.Date;
+            update.Description = @event.Description;
+            update.ImageUrl = @event.ImageUrl;
+            update.IsPublic = @event.IsPublic;
+            update.Name = @event.Name;
+            update.Time = @event.Time;
+            update.VenueId = @event.VenueId;
+
+            ServiceResult validationResult = await ValidateEvent(update);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
+
+            await _eventRepository.UpdateEvent(update);
+
+            return ServiceResult.Successful();
+        }
+
+        public async Task<Event> UpdateEventOld(Guid memberId, Guid id, CreateEvent @event)
         {
             Event update = await GetEvent(memberId, id);
 
@@ -354,6 +383,16 @@ namespace ODK.Services.Events
             await _eventRepository.UpdateEventResponse(response);
 
             return response;
+        }
+
+        private static ServiceResult ValidateEventEmailCanBeSent(Event @event)
+        {
+            if (@event.Date < DateTime.UtcNow.Date)
+            {
+                return ServiceResult.Failure("Invites cannot be sent to past events");
+            }
+
+            return ServiceResult.Successful();
         }
 
         private async Task<ServiceResult> ValidateEvent(Event @event)
@@ -389,9 +428,10 @@ namespace ODK.Services.Events
 
         private static void AssertEventEmailsCanBeSent(Event @event)
         {
-            if (@event.Date < DateTime.UtcNow.Date)
+            ServiceResult result = ValidateEventEmailCanBeSent(@event);
+            if (!result.Success)
             {
-                throw new OdkServiceException("Invites cannot be sent to past events");
+                throw new OdkServiceException(result.Message);
             }
         }
 

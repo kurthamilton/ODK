@@ -1,0 +1,35 @@
+﻿@using ODK.Web.Razor.Models.Admin.Events
+@model ODK.Web.Razor.Models.Admin.Events.AdminEventViewModel
+
+@await Html.PartialAsync("Admin/Events/_EventHeader")
+
+@await Html.PartialAsync("Admin/Events/_EventAdminTabs")
+
+<form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Events/_EventForm", new AdminEventFormViewModel
+    {
+        ChapterId = Model.Chapter.Id,
+        CurrentMemberId = Model.CurrentMember.Id,
+        Date = Model.Event.Date,
+        Description = Model.Event.Description,
+        ImageUrl = Model.Event.ImageUrl,
+        Name = Model.Event.Name,
+        Public = Model.Event.IsPublic,
+        Time = Model.Event.Time,
+        Venue = Model.Event.VenueId
+    })
+    
+    <div class="d-flex">
+        <button type="submit" class="btn btn-primary me-auto">Update</button>
+        <button type="button" class="btn btn-danger"
+                data-submit="#event-delete-form"
+                data-submit-confirm="Are you sure you want to delete this event?">
+            Delete
+        </button>
+    </div>
+</form>
+
+<form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Delete"
+      id="event-delete-form">
+</form>

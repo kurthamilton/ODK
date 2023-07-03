@@ -7,25 +7,22 @@ using ODK.Web.Razor.Models.Admin.Events;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events
 {
-    public class CreateEventModel : AdminPageModel
+    public class EventModel : AdminEventPageModel
     {
-        private readonly IEventAdminService _eventAdminService;
-
-        public CreateEventModel(IRequestCache requestCache, IEventAdminService eventAdminService)
-            : base(requestCache)
+        public EventModel(IRequestCache requestCache, IEventAdminService eventAdminService) 
+            : base(requestCache, eventAdminService)
         {
-            _eventAdminService = eventAdminService;
         }
 
         public void OnGet()
         {
         }
 
-        public async Task<IActionResult> OnPostAsync([FromForm] AdminEventFormViewModel viewModel)
+        public async Task<IActionResult> OnPostAsync(Guid id, [FromForm] AdminEventFormViewModel viewModel)
         {
-            ServiceResult result = await _eventAdminService.CreateEvent(CurrentMemberId, new CreateEvent
+            ServiceResult result = await EventAdminService.UpdateEvent(CurrentMemberId, id, new CreateEvent
             {
-                ChapterId = Chapter.Id,
+                ChapterId = viewModel.ChapterId,
                 Date = viewModel.Date,
                 Description = viewModel.Description,
                 ImageUrl = viewModel.ImageUrl,
@@ -34,14 +31,14 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Events
                 Time = viewModel.Time,
                 VenueId = viewModel.Venue
             });
-            
+
             if (!result.Success)
             {
                 AddFeedback(new FeedbackViewModel(result));
                 return Page();
             }
 
-            AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
+            AddFeedback(new FeedbackViewModel("Event updated", FeedbackType.Success));
             return Redirect($"/{Chapter.Name}/Admin/Events");
         }
     }

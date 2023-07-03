@@ -1,6 +1,6 @@
 ﻿@using ODK.Core.Venues
 @using ODK.Services.Venues
-@model ODK.Web.Razor.Models.Admin.Events.CreateEventFormViewModel
+@model ODK.Web.Razor.Models.Admin.Events.AdminEventFormViewModel
 @inject IVenueAdminService VenueAdminService
 @{
     IReadOnlyCollection<Venue> venues = await VenueAdminService.GetVenues(Model.CurrentMemberId, Model.ChapterId);
@@ -11,7 +11,7 @@
 }
 
 <div class="mb-3 form-check">
-    @Html.CheckBoxFor(x => x.Public, new { @class = "form-check-input" })
+    <input type="checkbox" class="form-check-input" name="@Html.NameFor(x => x.Public)" id="@Html.IdFor(x => x.Public)" />
     @Html.LabelFor(x => x.Public, new { @class = "form-check-label" })
 </div>
 

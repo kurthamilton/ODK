@@ -49,8 +49,20 @@
         const currentPath = window.location.pathname.toLocaleLowerCase();
         const $links = document.querySelectorAll('[data-menu-link]');
         $links.forEach($link => {
+            const type = $link.getAttribute('data-menu-link');
             const href = $link.getAttribute('href').toLocaleLowerCase();
-            if (currentPath.startsWith(href)) {
+
+            let match = false;
+            switch (type) {
+                case 'exact':
+                    match = currentPath == href;
+                    break;
+                default:
+                    match = currentPath.startsWith(href);
+                    break;
+            }
+
+            if (match) {
                 $link.classList.add('active');
             }
         });

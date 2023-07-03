@@ -14,7 +14,7 @@
 <form method="post" action="/@Model.Name/Admin/Events/Create">
     @Html.AntiForgeryToken()
     
-    @await Html.PartialAsync("Admin/Events/_CreateEventForm", new CreateEventFormViewModel
+    @await Html.PartialAsync("Admin/Events/_EventForm", new AdminEventFormViewModel
     {
         ChapterId = Model.Id,
         CurrentMemberId = memberId.Value,

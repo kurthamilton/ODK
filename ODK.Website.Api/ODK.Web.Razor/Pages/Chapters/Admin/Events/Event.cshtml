@@ -1,0 +1,20 @@
+﻿@page "/{chapterName}/Admin/Events/{id:guid}"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Admin.Events
+@model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventModel
+@{
+    Layout = "Admin/Events/_EventAdminLayout";
+    Model.Title = "Edit Event | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Events", Text = "Events" },
+        new MenuItem { Text = Model.Event.Name }
+    },
+    Content = await Html.PartialAsync("Admin/Events/_EventContent", 
+        new AdminEventViewModel(Model.Chapter, Model.CurrentMember, Model.Event))
+})

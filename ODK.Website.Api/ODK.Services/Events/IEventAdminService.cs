@@ -38,9 +38,11 @@ namespace ODK.Services.Events
         Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes, 
             string subject, string body);
 
-        Task SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false);
+        Task<ServiceResult> SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false);
 
-        Task<Event> UpdateEvent(Guid memberId, Guid id, CreateEvent @event);
+        Task<ServiceResult> UpdateEvent(Guid memberId, Guid id, CreateEvent @event);
+
+        Task<Event> UpdateEventOld(Guid memberId, Guid id, CreateEvent @event);
 
         Task<EventResponse> UpdateMemberResponse(Guid currentMemberId, Guid eventId, Guid memberId, EventResponseType responseType);
     }

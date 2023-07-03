@@ -58,7 +58,7 @@ namespace ODK.Web.Api.Admin.Events
         public async Task<EventApiResponse> UpdateEvent(Guid id, [FromForm] CreateEventApiRequest request)
         {
             CreateEvent @event = _mapper.Map<CreateEvent>(request);
-            Event updated = await _eventAdminService.UpdateEvent(GetMemberId(), id, @event);
+            Event updated = await _eventAdminService.UpdateEventOld(GetMemberId(), id, @event);
             return _mapper.Map<EventApiResponse>(updated);
         }
 
