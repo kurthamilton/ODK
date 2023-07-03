@@ -35,7 +35,7 @@ namespace ODK.Web.Api.Admin.Events
         public async Task<ActionResult<EventApiResponse>> Post([FromForm] CreateEventApiRequest request)
         {
             CreateEvent @event = _mapper.Map<CreateEvent>(request);
-            Event created = await _eventAdminService.CreateEvent(GetMemberId(), @event);
+            Event created = await _eventAdminService.CreateEventOld(GetMemberId(), @event);
             EventApiResponse response = _mapper.Map<EventApiResponse>(created);
             return Created(response);
         }

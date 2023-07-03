@@ -48,12 +48,35 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task<IReadOnlyCollection<EventInvite>> GetChapterInvites(Guid chapterId,
+            IEnumerable<Guid> eventIds)
+        {
+            return await Context
+                .Select<EventInvite>()
+                .Join<Event, Guid>(x => x.EventId, x => x.Id)
+                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
+                .Where<Event, Guid>(x => x.Id).In(eventIds)
+                .ToArrayAsync();
+
+        }
+
         public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid chapterId)
         {
             return await Context
                 .Select<EventResponse>()
                 .Join<Event, Guid>(x => x.EventId, x => x.Id)
                 .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
+                .ToArrayAsync();
+        }
+
+        public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid chapterId,
+            IEnumerable<Guid> eventIds)
+        {
+            return await Context
+                .Select<EventResponse>()
+                .Join<Event, Guid>(x => x.EventId, x => x.Id)
+                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
+                .Where<Event, Guid>(x => x.Id).In(eventIds)
                 .ToArrayAsync();
         }
 
@@ -88,6 +111,16 @@ namespace ODK.Data.Repositories
                 .Join<Event, Guid>(x => x.EventId, x => x.Id)
                 .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
                 .Where<Event, DateTime>(x => x.Date).GreaterThanOrEqualTo(after)
+                .ToArrayAsync();
+        }
+
+        public async Task<IReadOnlyCollection<EventEmail>> GetEventEmails(Guid chapterId, IEnumerable<Guid> eventIds)
+        {
+            return await Context
+                .Select<EventEmail>()
+                .Join<Event, Guid>(x => x.EventId, x => x.Id)
+                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
+                .Where<Event, Guid>(x => x.Id).In(eventIds)
                 .ToArrayAsync();
         }
 

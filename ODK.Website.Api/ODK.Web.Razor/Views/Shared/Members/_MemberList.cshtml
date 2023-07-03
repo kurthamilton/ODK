@@ -16,6 +16,7 @@
         <div class="@(Model.Cols > 0 ? "col" : null)">
             @await Html.PartialAsync("Members/_ListMember", new ListMemberViewModel(Model.Chapter, member.Member)
             {
+                ImageHeight = Model.ImageHeight,
                 MaxWidth = Model.MaxWidth,
                 Size = Model.Size
             })

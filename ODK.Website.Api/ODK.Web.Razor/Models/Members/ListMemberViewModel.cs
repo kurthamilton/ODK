@@ -15,6 +15,8 @@ namespace ODK.Web.Razor.Models.Members
 
         public bool HideName => Size is "sm" or "xs";
         
+        public int ImageHeight { get; set; }
+
         public int MaxWidth { get; set; }
 
         public Member Member { get; }

@@ -428,9 +428,7 @@ namespace ODK.Services.Chapters
 
             question = questions.First(x => x.Id == question.Id);
 
-            int displayOrder = switchWith.DisplayOrder;
-            switchWith.DisplayOrder = question.DisplayOrder;
-            question.DisplayOrder = displayOrder;
+            (switchWith.DisplayOrder, question.DisplayOrder) = (question.DisplayOrder, switchWith.DisplayOrder);
 
             await _chapterRepository.UpdateChapterQuestion(question);
             await _chapterRepository.UpdateChapterQuestion(switchWith);
@@ -479,6 +477,35 @@ namespace ODK.Services.Chapters
             _cacheService.RemoveVersionedItem<ChapterTexts>(chapterId);
 
             return update;
+        }
+
+        public async Task<ServiceResult> UpdateChapterTexts(Guid currentMemberId, string chapterName,
+            UpdateChapterTexts texts)
+        {
+            Chapter chapter = await _chapterRepository.GetChapter(chapterName);
+            if (chapter == null)
+            {
+                return ServiceResult.Failure("Chapter not found");
+            }
+
+            if (!await MemberIsChapterAdmin(currentMemberId, chapter.Id))
+            {
+                return ServiceResult.Failure("Not permitted");
+            }
+
+            if (string.IsNullOrWhiteSpace(texts.RegisterText) ||
+                string.IsNullOrWhiteSpace(texts.WelcomeText))
+            {
+                return ServiceResult.Failure("Some required fields are missing");
+            }
+
+            ChapterTexts update = new ChapterTexts(chapter.Id, texts.RegisterText, texts.WelcomeText);
+
+            await _chapterRepository.UpdateChapterTexts(update);
+
+            _cacheService.RemoveVersionedItem<ChapterTexts>(chapter.Id);
+
+            return ServiceResult.Successful();
         }
 
         private void ValidateChapterQuestion(ChapterQuestion question)

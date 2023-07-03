@@ -60,6 +60,11 @@ namespace ODK.Services.Chapters
             return new VersionedServiceResult<Chapter>(chapters.Version, chapter);
         }
 
+        public async Task<Chapter> GetChapter(string name)
+        {
+            return await _chapterRepository.GetChapter(name);
+        }
+
         public async Task<VersionedServiceResult<ChapterLinks>> GetChapterLinks(long? currentVersion, Guid chapterId)
         {
             return await _cacheService.GetOrSetVersionedItem(() => GetChapterLinks(chapterId), chapterId, currentVersion);
@@ -143,6 +148,11 @@ namespace ODK.Services.Chapters
                 _ => _chapterRepository.GetChapterTextsVersion(chapterId),
                 chapterId,
                 currentVersion);
+        }
+
+        public async Task<ChapterTexts> GetChapterTexts(Guid chapterId)
+        {
+            return await _chapterRepository.GetChapterTexts(chapterId);
         }
 
         public async Task SendContactMessage(Guid chapterId, string fromAddress, string message)

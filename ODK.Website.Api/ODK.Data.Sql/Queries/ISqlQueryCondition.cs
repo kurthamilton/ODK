@@ -2,6 +2,6 @@
 {
     public interface ISqlQueryCondition : ISqlComponent
     {
-        object Value { get; }
+        object GetValue(string parameter);
     }
 }

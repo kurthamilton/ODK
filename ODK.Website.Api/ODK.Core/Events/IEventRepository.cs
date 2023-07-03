@@ -10,11 +10,14 @@ namespace ODK.Core.Events
         Task AddEventInvites(Guid eventId, IEnumerable<Guid> memberIds, DateTime sentDate);
         Task<Event> CreateEvent(Event @event);
         Task DeleteEvent(Guid id);
+        Task<IReadOnlyCollection<EventInvite>> GetChapterInvites(Guid chapterId, IEnumerable<Guid> eventIds);
         Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid chapterId);
+        Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid chapterId, IEnumerable<Guid> eventIds);
         Task<Event> GetEvent(Guid id);
         Task<int> GetEventCount(Guid chapterId);
         Task<EventEmail> GetEventEmail(Guid eventId);
         Task<IReadOnlyCollection<EventEmail>> GetEventEmails(Guid chapterId, DateTime after);
+        Task<IReadOnlyCollection<EventEmail>> GetEventEmails(Guid chapterId, IEnumerable<Guid> eventIds);
         Task<IReadOnlyCollection<EventInvite>> GetEventInvites(Guid eventId);
         Task<IReadOnlyCollection<EventInvite>> GetEventInvites(Guid chapterId, DateTime after);
         Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid eventId);

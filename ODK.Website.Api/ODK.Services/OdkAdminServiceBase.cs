@@ -16,11 +16,17 @@ namespace ODK.Services
 
         protected async Task AssertMemberIsChapterAdmin(Guid memberId, Guid chapterId)
         {
-            ChapterAdminMember chapterAdminMember = await ChapterRepository.GetChapterAdminMember(chapterId, memberId);
-            if (chapterAdminMember == null)
+            bool isChapterAdmin = await MemberIsChapterAdmin(memberId, chapterId);
+            if (!isChapterAdmin)
             {
                 throw new OdkNotAuthorizedException();
             }
+        }
+
+        protected async Task<bool> MemberIsChapterAdmin(Guid memberId, Guid chapterId)
+        {
+            ChapterAdminMember chapterAdminMember = await ChapterRepository.GetChapterAdminMember(chapterId, memberId);
+            return chapterAdminMember != null;
         }
 
         protected async Task AssertMemberIsChapterSuperAdmin(Guid memberId, Guid chapterId)

@@ -11,6 +11,8 @@ namespace ODK.Services.Chapters
 
         Task<VersionedServiceResult<Chapter>> GetChapter(long? currentVersion, string name);
 
+        Task<Chapter> GetChapter(string name);
+
         Task<VersionedServiceResult<ChapterLinks>> GetChapterLinks(long? currentVersion, Guid chapterId);
 
         Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid chapterId);
@@ -34,6 +36,8 @@ namespace ODK.Services.Chapters
         Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid chapterId);
 
         Task<VersionedServiceResult<ChapterTexts>> GetChapterTexts(long? currentVersion, Guid chapterId);
+
+        Task<ChapterTexts> GetChapterTexts(Guid chapterId);
 
         Task SendContactMessage(Guid chapterId, string emailAddress, string message);
     }

@@ -32,6 +32,7 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link"
+                                   data-menu-link
                                    href="@(menuItem.Link ?? menuItem.ExternalLink)"
                                    target="@(!string.IsNullOrEmpty(menuItem.ExternalLink) ? "_blank" : null)">
                                     @if (!string.IsNullOrEmpty(menuItem.Text))
@@ -51,6 +52,9 @@
             </div>
         }
         
-        @await Html.PartialAsync("Header/_AccountMenu", accountMenu)
+        @if (!Model.HideAccountMenu)
+        {
+            @await Html.PartialAsync("Header/_AccountMenu", accountMenu)
+        }
     </div>
 </nav>

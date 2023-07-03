@@ -1,24 +1,24 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
-using ODK.Core.Members;
 using ODK.Services.Caching;
-using ODK.Web.Common.Extensions;
+using ODK.Web.Common.Account;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account
 {
     public class LogoutModel : ChapterPageModel
     {
-        public LogoutModel(IRequestCache requestCache)
+        private ILoginHandler _loginHandler;
+
+        public LogoutModel(IRequestCache requestCache, ILoginHandler loginHandler)
             : base(requestCache)
         {
+            _loginHandler = loginHandler;
         }
 
         public async Task<IActionResult> OnGet()
         {
-            await HttpContext.SignOutAsync();
-
-            return Redirect($"/{Chapter!.Name}");
+            await _loginHandler.Logout(HttpContext);
+            return Redirect($"/{Chapter.Name}");
         }
     }
 }

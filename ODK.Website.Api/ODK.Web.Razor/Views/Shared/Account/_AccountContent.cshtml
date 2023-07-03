@@ -14,7 +14,7 @@
             <a href="/@Model.Chapter.Name/Account/Email/Change">Update email address</a>
         </div>
         <div>
-            <a href="/@Model.Chapter.Name/Account/Emails">Email opt-in</a>
+            <a href="/@Model.Chapter.Name/Account/Emails">Email preferences</a>
         </div>
         <div>
             <a href="/@Model.Chapter.Name/Account/Delete">Delete my account</a>
@@ -51,14 +51,14 @@
     @Html.AntiForgeryToken()
 
     @await Html.PartialAsync("Account/_ProfileForm", new ProfileFormViewModel
-           {
-               ChapterId = Model.Chapter.Id,
-               DateJoined = Model.CurrentMember.CreatedDate,
-               EmailAddress = Model.CurrentMember.EmailAddress,
-               FirstName = Model.CurrentMember.FirstName,
-               LastName = Model.CurrentMember.LastName,
-               MemberId = Model.CurrentMember.Id
-           })
+    {
+        ChapterId = Model.Chapter.Id,
+        DateJoined = Model.CurrentMember.CreatedDate,
+        EmailAddress = Model.CurrentMember.EmailAddress,
+        FirstName = Model.CurrentMember.FirstName,
+        LastName = Model.CurrentMember.LastName,
+        MemberId = Model.CurrentMember.Id
+    })
 
     <button type="submit" class="btn btn-primary">Update</button>
 </form>

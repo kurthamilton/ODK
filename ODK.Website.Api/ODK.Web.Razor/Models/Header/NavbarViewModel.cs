@@ -18,6 +18,8 @@ namespace ODK.Web.Razor.Models.Header
 
         public bool Fluid { get; set; }
 
+        public bool HideAccountMenu { get; set; }
+
         public Member? Member { get; set; }
 
         public MenuItem[][]? MenuItems { get; set; }

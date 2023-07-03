@@ -113,6 +113,14 @@ namespace ODK.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<Chapter> GetChapter(string name)
+        {
+            return await Context
+                .Select<Chapter>()
+                .Where(x => x.Name).EqualTo(name)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<ChapterAdminMember> GetChapterAdminMember(Guid chapterId, Guid memberId)
         {
             return await Context

@@ -1,5 +1,6 @@
 ﻿(function () {
     bindForms();
+    bindMenuLinks();
     bindTooltips();
 
     function bindForms() {
@@ -41,6 +42,17 @@
             });
 
             setVisibility();
+        });
+    }
+
+    function bindMenuLinks() {
+        const currentPath = window.location.pathname.toLocaleLowerCase();
+        const $links = document.querySelectorAll('[data-menu-link]');
+        $links.forEach($link => {
+            const href = $link.getAttribute('href').toLocaleLowerCase();
+            if (currentPath.startsWith(href)) {
+                $link.classList.add('active');
+            }
         });
     }
 

@@ -7,5 +7,7 @@ namespace ODK.Web.Common.Account
     {
         Task<AuthenticationResult> Login(HttpContext httpContext, string username, string password, 
             bool rememberMe);
+
+        Task Logout(HttpContext httpContext);
     }
 }

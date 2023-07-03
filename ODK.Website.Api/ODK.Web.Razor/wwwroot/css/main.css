@@ -11953,6 +11953,11 @@ img {
   color: #dc3545;
 }
 
+.form-check.required .form-check-label:after {
+  content: " *";
+  color: #dc3545;
+}
+
 .form-control-custom {
   height: 100%;
   padding: 0;
@@ -11960,6 +11965,10 @@ img {
 
 .form-control-plaintext {
   padding-top: 0;
+}
+
+.field-validation-error {
+  font-style: normal;
 }
 
 .section--header,

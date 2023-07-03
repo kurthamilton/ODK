@@ -13,6 +13,8 @@ namespace ODK.Web.Razor.Models.Members
 
         public Chapter Chapter { get; }
 
+        public int ImageHeight { get; set; }
+
         public bool IsTop { get; set; }
 
         public int MaxWidth { get; set; }

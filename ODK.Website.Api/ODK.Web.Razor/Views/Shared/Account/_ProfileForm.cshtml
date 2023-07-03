@@ -10,9 +10,12 @@
 @{
     Task<IReadOnlyCollection<ChapterProperty>> chapterPropertiesTask = ChapterService.GetChapterProperties(Model.ChapterId);
     Task<IReadOnlyCollection<ChapterPropertyOption>> chapterPropertyOptionsTask = ChapterService.GetChapterPropertyOptions(Model.ChapterId);
-    Task<IReadOnlyCollection<MemberProperty>> memberPropertiesTask = MemberService.GetMemberProperties(Model.MemberId);
+    Task<IReadOnlyCollection<MemberProperty>> memberPropertiesTask = Model.MemberId != null 
+        ? MemberService.GetMemberProperties(Model.MemberId.Value)
+        : Task.FromResult((IReadOnlyCollection<MemberProperty>)Array.Empty<MemberProperty>());
+    Task<ChapterMembershipSettings> membershipSettingsTask = ChapterService.GetChapterMembershipSettings(Model.ChapterId);
 
-    await Task.WhenAll(chapterPropertiesTask, chapterPropertyOptionsTask, memberPropertiesTask);
+    await Task.WhenAll(chapterPropertiesTask, chapterPropertyOptionsTask, memberPropertiesTask, membershipSettingsTask);
 
     IReadOnlyCollection<ChapterProperty> chapterProperties = chapterPropertiesTask
         .Result
@@ -35,23 +38,51 @@
             ChapterPropertyId = x.Id,
             Value = memberProperties.TryGetValue(x.Id, out var value) ? value : "",
         }));
+
+    ChapterMembershipSettings membershipSettings = membershipSettingsTask.Result;
 }
 
-<div class="form-group mb-3">
-    <label class="form-label">Email address</label>
-    <div class="form-control-plaintext">
-        @Model.EmailAddress
-    </div>
+<div class="form-group mb-3 @(Model.MemberId == null ? "required" : null)">
+    @Html.LabelFor(x => x.EmailAddress, new { @class = "form-label" })
+    
+    @if (Model.MemberId != null)
+    {
+        <div class="form-control-plaintext">
+            @Model.EmailAddress
+        </div>
+    }
+    else
+    {
+        <span class="ml-1 text-muted">You will need access to this email to verify your account</span>
+        @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control", type = "Email" })
+        @Html.ValidationMessageFor(x => x.EmailAddress)
+    }
 </div>
+
+@if (Model.MemberId == null)
+{
+    <div class="mb-3 form-check">
+        @Html.CheckBoxFor(x => x.EmailOptIn, new { @class = "form-check-input" })
+        @Html.LabelFor(x => x.EmailOptIn, new { @class = "form-check-label" })
+        
+        <span>
+            @await Html.PartialAsync("Components/_Tooltip", "We recommend you leave this on. Once you're set up, we'll only send you one email per event.")
+        </span>
+
+        <span class="ml-1 text-muted">Opt in to emails informing you of upcoming events</span>
+    </div>
+}
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.FirstName, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.FirstName, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.FirstName)
 </div>
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.LastName, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.LastName, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.LastName)
 </div>
 
 @for (int i = 0; i < chapterProperties.Count; i++)
@@ -65,7 +96,7 @@
         @if (!string.IsNullOrEmpty(chapterProperty.HelpText))
         {
             <span>
-                <i class="ml-1 icon--help fas fa-question-circle" data-bs-toggle="tooltip" data-bs-title="@chapterProperty.HelpText"></i>
+                @await Html.PartialAsync("Components/_Tooltip", chapterProperty.HelpText)
             </span>
         }
         
@@ -128,9 +159,44 @@
     </div>
 }
 
-<div class="form-group mb-3">
-    <label class="form-label">Date joined</label>
-    <div class="form-control-plaintext">
-        <span>@Model.DateJoined.ToString("d MMMM yyyy")</span>
+@if (Model.MemberId == null)
+{
+    <div class="form-group mb-3 required">
+        <label class="form-label">Picture</label>
+        <input name="image" type="file" accept="image/*" required class="form-control" />
     </div>
-</div>
+
+    <div class="mb-3 form-check required">
+        @Html.CheckBoxFor(x => x.ThreeTenets, new { @class = "form-check-input" })
+        <label for="@Html.IdFor(x => x.ThreeTenets)" class="form-check-label">
+            I abide by the <a href="/#tenets" target="_blank">three tenets</a> of Drunken Knithood
+        </label>
+        @Html.ValidationMessageFor(x => x.ThreeTenets)
+    </div>
+
+    <div class="mb-3 form-check required">
+        @Html.CheckBoxFor(x => x.PrivacyPolicy, new { @class = "form-check-input" })
+        <label for="@Html.IdFor(x => x.PrivacyPolicy)" class="form-check-label">
+            I have read the <a href="/Privacy" target="_blank">privacy policy</a>
+        </label>
+        @Html.ValidationMessageFor(x => x.PrivacyPolicy)
+    </div>
+
+    <div class="mb-3 form-check required">
+        @Html.CheckBoxFor(x => x.SubscriptionPolicy, new { @class = "form-check-input" })
+        <label for="@Html.IdFor(x => x.SubscriptionPolicy)" class="form-check-label">
+            If I choose to continue attending after my free @membershipSettings.TrialPeriodMonths month trial period has expired, I agree to purchase a subscription.
+        </label>
+        @Html.ValidationMessageFor(x => x.SubscriptionPolicy)
+    </div>
+}
+
+@if (Model.DateJoined != null)
+{
+    <div class="form-group mb-3">
+        <label class="form-label">Date joined</label>
+        <div class="form-control-plaintext">
+            <span>@Model.DateJoined.Value.ToString("d MMMM yyyy")</span>
+        </div>
+    </div>
+}

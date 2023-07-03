@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace ODK.Data.Sql.Queries
@@ -10,16 +11,40 @@ namespace ODK.Data.Sql.Queries
             Expression = expression;
             Query = query;
         }
-
-        public object Value { get; private set; }
-
+        
         private Expression<Func<TEntity, TValue>> Expression { get; }
 
         private string Operator { get; set; }
 
         private string Parameter { get; set; }
 
+        private IDictionary<string, TValue> Values { get; } = new Dictionary<string, TValue>();
+
+        // Only used for IN operator
+        private List<string> Parameters { get; } = new List<string>();
+
         private TQuery Query { get; }
+
+        public object GetValue(string parameter)
+        {
+            return Values.TryGetValue(parameter, out TValue value)
+                ? value 
+                : default;
+        }
+
+        public TQuery In(IEnumerable<TValue> values)
+        {
+            Operator = "IN";
+
+            foreach (TValue value in values)
+            {
+                string parameter = Query.AddParameterValue(Expression, value);
+                Parameters.Add(parameter);
+                Values[parameter] = value;
+            }
+
+            return Query;
+        }
 
         public TQuery EqualTo(TValue value)
         {
@@ -60,14 +85,21 @@ namespace ODK.Data.Sql.Queries
         {
             SqlColumn column = context.GetColumn(Expression);
 
-            return $"{column.ToSql(context)} {Operator} {Parameter}".Trim();
+            string columnSql = column.ToSql(context);
+
+            if (Operator != "IN")
+            {
+                return $"{columnSql} {Operator} {Parameter}".Trim();
+            }
+
+            return $"{columnSql} {Operator} ({string.Join(",", Parameters)})".Trim();
         }
 
         private TQuery SetCondition(string @operator, TValue value)
         {
             SetCondition(@operator);
-            Value = value;
             Parameter = Query.AddParameterValue(Expression, value);
+            Values[Parameter] = value;
             return Query;
         }
 

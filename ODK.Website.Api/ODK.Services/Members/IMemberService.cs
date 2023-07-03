@@ -7,9 +7,9 @@ namespace ODK.Services.Members
 {
     public interface IMemberService
     {
-        Task ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
-
-        Task CreateMember(Guid chapterId, CreateMemberProfile profile);
+        Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
+        
+        Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile profile);
 
         Task DeleteMember(Guid memberId);
 
@@ -37,7 +37,7 @@ namespace ODK.Services.Members
 
         Task<MemberSubscription> PurchaseSubscriptionOld(Guid memberId, Guid chapterSubscriptionId, string cardToken);
 
-        Task RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress);
+        Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress);
 
         Task<MemberImage> RotateMemberImage(Guid memberId, int degrees);
 

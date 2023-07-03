@@ -17,7 +17,7 @@
             return new ServiceResult(false, message);
         }
 
-        public static ServiceResult Successful(string? message = null)
+        public static ServiceResult Successful(string message = null)
         {
             return new ServiceResult(true, message ?? "");
         }

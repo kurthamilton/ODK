@@ -1,10 +1,14 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using ODK.Services.Caching;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account
 {
-    public class EmailsModel : PageModel
+    public class EmailsModel : ChapterPageModel
     {
+        public EmailsModel(IRequestCache requestCache) 
+            : base(requestCache)
+        {
+        }
+
         public void OnGet()
         {
         }

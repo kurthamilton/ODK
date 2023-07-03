@@ -1,0 +1,18 @@
+﻿@page "/{chapterName}/Account/Pending"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model ODK.Web.Razor.Pages.Chapters.Account.PendingModel
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = "Join";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = $"Join the {Model.Chapter.Name} Drunken Knitwits",
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Text = "Join" }
+    },
+})

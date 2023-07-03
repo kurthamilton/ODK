@@ -75,6 +75,15 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
+        public async Task<IReadOnlyCollection<Venue>> GetVenues(Guid chapterId, IEnumerable<Guid> venueIds)
+        {
+            return await Context
+                .Select<Venue>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
+                .Where(x => x.Id).In(venueIds)
+                .ToArrayAsync();
+        }
+
         public async Task<long> GetVenuesVersion(Guid chapterId)
         {
             return await Context

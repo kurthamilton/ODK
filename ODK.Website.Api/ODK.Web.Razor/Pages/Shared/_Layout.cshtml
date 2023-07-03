@@ -27,19 +27,24 @@
     <title>@title</title>
     <link rel="icon" type="image/x-icon" href="/assets/favicon32.png?v=3">
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/aspnet-client-validation/dist/aspnet-validation.css"/>
     <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
+    @await RenderSectionAsync("styles", required: false)
 </head>
 <body>
-    @(await RenderSectionAsync("header"))
+    @await RenderSectionAsync("header")
 
     @RenderBody()
 
-    @(await RenderSectionAsync("footer"))
+    @await RenderSectionAsync("footer", required: false)
     
     @await Html.PartialAsync("Feedback/_Notifications")
 
     <script src="~/lib/bootstrap/js/bootstrap.bundle.js"></script>
+    <script src="~/lib/vanillajs-datepicker/dist/js/datepicker-full.js"></script>
+    <script src="~/lib/aspnet-client-validation/dist/aspnet-validation.js"></script>
     <script src="~/js/site.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/odk.forms.js"></script>
+    @await RenderSectionAsync("scripts", required: false)
 </body>
 </html>

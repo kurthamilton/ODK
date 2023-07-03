@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Web.Common.Extensions;
-using ODK.Web.Razor.Models.Feedback;
+using ODK.Web.Common.Feedback;
 
 namespace ODK.Web.Razor.Controllers
 {
@@ -10,13 +10,7 @@ namespace ODK.Web.Razor.Controllers
 
         protected void AddFeedback(FeedbackViewModel viewModel)
         {
-            int.TryParse(TempData["FeedbackCount"]?.ToString(), out int count);
-
-            string key = $"Feedback[{count}]";
-            TempData[$"{key}.Message"] = viewModel.Message;
-            TempData[$"{key}.Type"] = viewModel.Type;
-
-            TempData["FeedbackCount"] = count + 1;
+            TempData.AddFeedback(viewModel);
         }
         
         protected IActionResult RedirectToReferrer()

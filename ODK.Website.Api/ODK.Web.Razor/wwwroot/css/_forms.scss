@@ -19,6 +19,13 @@
 	}  
 }
 
+.form-check.required {
+	.form-check-label:after {
+		content: " *";
+		color: $danger;
+	}
+}
+
 .form-control-custom {
 	height: 100%;
 	padding: 0;
@@ -26,4 +33,8 @@
 
 .form-control-plaintext {
 	padding-top: 0;
+}
+
+.field-validation-error {
+	font-style: normal;
 }

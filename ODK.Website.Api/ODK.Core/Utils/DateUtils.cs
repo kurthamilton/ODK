@@ -11,8 +11,16 @@ namespace ODK.Core.Utils
 
         public static string EventDate(this DateTime date, bool @long = false)
         {
-            bool includeYear = date.Year > DateTime.UtcNow.Year;
-            string format = $"ddd {(@long ? "MMMM" : "MMM")} d";
+            bool includeYear = date.Year != DateTime.UtcNow.Year;
+            bool includeDayOfWeek = date.DayOfWeek != DayOfWeek.Wednesday;
+            string format = "";
+            if (includeDayOfWeek)
+            {
+                format = "ddd ";
+            }
+
+            format += $"{(@long ? "MMMM" : "MMM")} d";
+
             if (includeYear)
             {
                 format += " yyyy";

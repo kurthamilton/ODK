@@ -6,6 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Notifications\**" />
+    <EmbeddedResource Remove="Notifications\**" />
+    <None Remove="Notifications\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="InstaSharper-latest" Version="1.5.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.0.0" />
     <PackageReference Include="Serilog" Version="2.9.0" />
@@ -15,10 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Notifications\" />
   </ItemGroup>
 
 </Project>

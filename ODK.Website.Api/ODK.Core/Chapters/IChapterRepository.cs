@@ -32,6 +32,8 @@ namespace ODK.Core.Chapters
 
         Task<Chapter> GetChapter(Guid id);
 
+        Task<Chapter> GetChapter(string name);
+
         Task<ChapterAdminMember> GetChapterAdminMember(Guid chapterId, Guid memberId);
 
         Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid chapterId);

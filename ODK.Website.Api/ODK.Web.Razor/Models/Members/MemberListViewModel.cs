@@ -14,7 +14,9 @@ namespace ODK.Web.Razor.Models.Members
 
         public int Cols { get; set; }
 
-        public int MaxWidth => Size == "xs" ? 50 : 150;
+        public int ImageHeight => Size == "xs" ? 50 : 150;
+
+        public int MaxWidth => Size == "xs" ? 50 : 0;
 
         public IReadOnlyCollection<ListMemberViewModel> Members { get; }
 

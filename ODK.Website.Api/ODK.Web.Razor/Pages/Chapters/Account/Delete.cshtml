@@ -1,0 +1,23 @@
+﻿@page "/{chapterName}/Account/Delete"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Chapters.Account.DeleteModel
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = "Delete account";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Delete my account",
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Account", Text = "Profile" },
+        new MenuItem { Text = "Delete account" }
+    },
+    Content = await Html.PartialAsync("Account/_DeleteAccountContent", new DeleteAccountContentViewModel(Model.Chapter))
+})

@@ -38,6 +38,11 @@ namespace ODK.Web.Common.Account
             };
         }
 
+        public async Task Logout(HttpContext httpContext)
+        {
+            await httpContext.SignOutAsync();
+        }
+
         private async Task SetAuthCookieAsync(HttpContext httpContext, IReadOnlyCollection<Claim> claims)
         {
             if (claims.Count == 0)

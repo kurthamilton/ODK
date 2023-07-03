@@ -43,44 +43,52 @@ namespace ODK.Services.Members
             _settings = settings;
         }
 
-        public async Task ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
+        public async Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
         {
-            Member member = await GetMember(memberId, memberId);
-
-            MemberEmailAddressUpdateToken token = await _memberRepository.GetMemberEmailAddressUpdateToken(member.Id);
+            MemberEmailAddressUpdateToken token = await _memberRepository.GetMemberEmailAddressUpdateToken(memberId);
             if (token == null)
             {
-                return;
+                return ServiceResult.Failure("Invalid link");
             }
 
             if (token.ConfirmationToken != confirmationToken)
             {
-                throw new OdkServiceException("Token mismatch");
+                return ServiceResult.Failure("Invalid link");
             }
 
             Member existing = await _memberRepository.FindMemberByEmailAddress(token.NewEmailAddress);
             if (existing != null)
             {
-                await _memberRepository.DeleteEmailAddressUpdateToken(member.Id);
-                throw new OdkServiceException("Error updating email address: email address is already registered to an account");
+                await _memberRepository.DeleteEmailAddressUpdateToken(memberId);
+                return ServiceResult.Failure("Email not updated: new email address is already in use");
             }
 
-            await _memberRepository.UpdateMemberEmailAddress(member.Id, token.NewEmailAddress);
-            _cacheService.RemoveVersionedItem<Member>(member.Id);
+            await _memberRepository.UpdateMemberEmailAddress(memberId, token.NewEmailAddress);
+            _cacheService.RemoveVersionedItem<Member>(memberId);
 
-            await _memberRepository.DeleteEmailAddressUpdateToken(member.Id);
+            await _memberRepository.DeleteEmailAddressUpdateToken(memberId);
+
+            return ServiceResult.Successful();
         }
-
-        public async Task CreateMember(Guid chapterId, CreateMemberProfile profile)
+        
+        public async Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile profile)
         {
-            await ValidateMemberProfile(chapterId, profile);
+            ServiceResult validationResult = await ValidateMemberProfile(chapterId, profile);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
-            ValidateMemberImage(profile.Image.MimeType, profile.Image.ImageData);
+            ServiceResult imageResult = ValidateMemberImage(profile.Image.MimeType, profile.Image.ImageData);
+            if (!imageResult.Success)
+            {
+                return imageResult;
+            }
 
             Member existing = await _memberRepository.FindMemberByEmailAddress(profile.EmailAddress);
             if (existing != null)
             {
-                return;
+                return ServiceResult.Failure("Email address already in use");
             }
 
             Member create = new Member(Guid.Empty, chapterId, profile.EmailAddress, profile.EmailOptIn ?? false, profile.FirstName, profile.LastName,
@@ -118,6 +126,8 @@ namespace ODK.Services.Members
                 { "chapter.name", chapter.Name },
                 { "url", url }
             });
+
+            return ServiceResult.Successful();
         }
 
         public async Task DeleteMember(Guid memberId)
@@ -326,17 +336,17 @@ namespace ODK.Services.Members
             return await UpdateMemberImage(member, data, image.MimeType);
         }
 
-        public async Task RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress)
+        public async Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress)
         {
             Member member = await GetMember(memberId, memberId);
             if (member.EmailAddress.Equals(newEmailAddress, StringComparison.OrdinalIgnoreCase))
             {
-                return;
+                return ServiceResult.Successful("New email address matches old email address");
             }
 
             if (!MailUtils.ValidEmailAddress(newEmailAddress))
             {
-                throw new OdkServiceException("Invalid email address format");
+                return ServiceResult.Failure("Invalid email address format");
             }
 
             MemberEmailAddressUpdateToken existingToken = await _memberRepository.GetMemberEmailAddressUpdateToken(member.Id);
@@ -363,6 +373,8 @@ namespace ODK.Services.Members
                 { "chapter.name", chapter.Name },
                 { "url", url }
             });
+
+            return ServiceResult.Successful();
         }
 
         public async Task UpdateMemberEmailOptIn(Guid memberId, bool optIn)
@@ -469,12 +481,14 @@ namespace ODK.Services.Members
             }
         }
 
-        private static void ValidateMemberImage(string mimeType, byte[] data)
+        private static ServiceResult ValidateMemberImage(string mimeType, byte[] data)
         {
             if (!ImageValidator.IsValidMimeType(mimeType) || !ImageValidator.IsValidData(data))
             {
-                throw new OdkServiceException("File is not a valid image");
+                return ServiceResult.Failure("File is not a valid image");
             }
+
+            return ServiceResult.Successful();
         }
 
         private MemberImage CreateMemberImage(Guid memberId, string mimeType, byte[] imageData)
@@ -538,20 +552,22 @@ namespace ODK.Services.Members
             }
         }
 
-        private async Task ValidateMemberProfile(Guid chapterId, CreateMemberProfile profile)
+        private async Task<ServiceResult> ValidateMemberProfile(Guid chapterId, CreateMemberProfile profile)
         {
             IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(chapterId);
             IReadOnlyCollection<string> missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
 
             if (missingProperties.Count > 0)
             {
-                throw new OdkServiceException($"The following properties are required: {string.Join(", ", missingProperties)}");
+                return ServiceResult.Failure($"The following properties are required: {string.Join(", ", missingProperties)}");
             }
 
             if (!MailUtils.ValidEmailAddress(profile.EmailAddress))
             {
-                throw new OdkServiceException("Invalid email address format");
+                return ServiceResult.Failure("Invalid email address format");
             }
+
+            return ServiceResult.Successful();
         }
     }
 }

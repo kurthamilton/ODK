@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using ODK.Core.Members;
 using ODK.Services.Caching;
 using ODK.Web.Common.Extensions;
+using ODK.Web.Common.Feedback;
 
 namespace ODK.Web.Razor.Pages
 {
@@ -29,6 +30,11 @@ namespace ODK.Web.Razor.Pages
             CurrentMember = memberId.HasValue ? await RequestCache.GetMember(memberId.Value) : null;
 
             await base.OnPageHandlerExecutionAsync(context, next);
+        }
+
+        protected void AddFeedback(FeedbackViewModel viewModel)
+        {
+            TempData.AddFeedback(viewModel);
         }
     }
 }

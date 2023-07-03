@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
-using ODK.Core.Events;
 using ODK.Core.Emails;
+using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
@@ -35,7 +35,7 @@ namespace ODK.Services.Events
             _venueRepository = venueRepository;
         }
 
-        public async Task<Event> CreateEvent(Guid memberId, CreateEvent createEvent)
+        public async Task<ServiceResult> CreateEvent(Guid memberId, CreateEvent createEvent)
         {
             await AssertMemberIsChapterAdmin(memberId, createEvent.ChapterId);
 
@@ -45,7 +45,28 @@ namespace ODK.Services.Events
                 createEvent.Date, createEvent.VenueId, createEvent.Time, createEvent.ImageUrl,
                 createEvent.Description, createEvent.IsPublic);
 
-            await ValidateEvent(@event);
+            ServiceResult validationResult = await ValidateEvent(@event);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
+
+            await _eventRepository.CreateEvent(@event);
+
+            return ServiceResult.Successful();
+        }
+
+        public async Task<Event> CreateEventOld(Guid memberId, CreateEvent createEvent)
+        {
+            await AssertMemberIsChapterAdmin(memberId, createEvent.ChapterId);
+
+            Member member = await _memberRepository.GetMember(memberId);
+
+            Event @event = new Event(Guid.Empty, createEvent.ChapterId, $"{member.FirstName} {member.LastName}", createEvent.Name,
+                createEvent.Date, createEvent.VenueId, createEvent.Time, createEvent.ImageUrl,
+                createEvent.Description, createEvent.IsPublic);
+
+            await AssertValidEvent(@event);
 
             return await _eventRepository.CreateEvent(@event);
         }
@@ -64,10 +85,10 @@ namespace ODK.Services.Events
             IReadOnlyCollection<Event> events = await _eventRepository.GetEvents(chapterId, page, pageSize);
             IReadOnlyCollection<EventEmail> eventEmails = events.Count > 0
                 ? await _eventRepository.GetEventEmails(chapterId, events.Min(x => x.Date))
-                : new EventEmail[0];
+                : Array.Empty<EventEmail>();
             IReadOnlyCollection<EventInvite> eventInvites = events.Count > 0
                 ? await _eventRepository.GetEventInvites(chapterId, events.Min(x => x.Date))
-                : new EventInvite[0];
+                : Array.Empty<EventInvite>();
 
             IDictionary<Guid, DateTime?> eventEmailDictionary = eventEmails.ToDictionary(x => x.EventId, x => x.SentDate);
             IDictionary<Guid, int> eventInvitesDictionary = eventInvites
@@ -82,12 +103,61 @@ namespace ODK.Services.Events
             }).ToArray();
         }
 
+        public async Task<IReadOnlyCollection<EventInvites>> GetChapterInvites(Guid currentMemberId, Guid chapterId,
+            IReadOnlyCollection<Guid> eventIds)
+        {
+            if (eventIds.Count == 0)
+            {
+                return Array.Empty<EventInvites>();
+            }
+
+
+            Task<bool> authorisedTask = MemberIsChapterAdmin(currentMemberId, chapterId);
+            Task<IReadOnlyCollection<EventInvite>> eventInvitesTask = _eventRepository.GetChapterInvites(chapterId, eventIds);
+            Task<IReadOnlyCollection<EventEmail>> eventEmailsTask = _eventRepository.GetEventEmails(chapterId, eventIds);
+
+            await Task.WhenAll(authorisedTask, eventInvitesTask, eventEmailsTask);
+
+            if (!authorisedTask.Result)
+            {
+                throw new OdkNotAuthorizedException();
+            }
+
+            IDictionary<Guid, DateTime?> eventEmailDictionary = eventEmailsTask
+                .Result
+                .ToDictionary(x => x.EventId, x => x.SentDate);
+            IDictionary<Guid, int> eventInvitesDictionary = eventInvitesTask
+                .Result
+                .GroupBy(x => x.EventId)
+                .ToDictionary(x => x.Key, x => x.Count());
+
+            return eventIds.Select(x => new EventInvites
+            {
+                EventId = x,
+                Sent = eventInvitesDictionary.ContainsKey(x) ? eventInvitesDictionary[x] : 0,
+                SentDate = eventEmailDictionary.ContainsKey(x) ? eventEmailDictionary[x] : default
+            }).ToArray();
+        }
+
         public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid currentMemberId,
             Guid chapterId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             return await _eventRepository.GetChapterResponses(chapterId);
+        }
+
+        public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid currentMemberId,
+            Guid chapterId, IReadOnlyCollection<Guid> eventIds)
+        {
+            if (eventIds.Count == 0)
+            {
+                return Array.Empty<EventResponse>();
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _eventRepository.GetChapterResponses(chapterId, eventIds);
         }
 
         public async Task<Event> GetEvent(Guid currentMemberId, Guid id)
@@ -268,7 +338,7 @@ namespace ODK.Services.Events
             update.Time = @event.Time;
             update.VenueId = @event.VenueId;
 
-            await ValidateEvent(update);
+            await AssertValidEvent(update);
 
             await _eventRepository.UpdateEvent(update);
 
@@ -286,20 +356,34 @@ namespace ODK.Services.Events
             return response;
         }
 
-        private async Task ValidateEvent(Event @event)
+        private async Task<ServiceResult> ValidateEvent(Event @event)
         {
-            Venue venue = await _venueRepository.GetVenue(@event.VenueId);
-
-            if (string.IsNullOrWhiteSpace(@event.Name) ||
-                venue == null ||
-                @event.Date == DateTime.MinValue)
+            if (string.IsNullOrWhiteSpace(@event.Name))
             {
-                throw new OdkServiceException("Some required fields are missing");
+                return ServiceResult.Failure("Name is required");
             }
 
-            if (venue.ChapterId != @event.ChapterId)
+            if (@event.Date == DateTime.MinValue)
             {
-                throw new OdkServiceException("Events cannot be created for venues from other chapters");
+                return ServiceResult.Failure("Date is required");
+            }
+
+            Venue venue = await _venueRepository.GetVenue(@event.VenueId);
+
+            if (venue == null || venue.ChapterId != @event.ChapterId)
+            {
+                return ServiceResult.Failure("Venue not found");
+            }
+            
+            return ServiceResult.Successful();
+        }
+
+        private async Task AssertValidEvent(Event @event)
+        {
+            ServiceResult result = await ValidateEvent(@event);
+            if (!result.Success)
+            {
+                throw new OdkServiceException(result.Message);
             }
         }
 

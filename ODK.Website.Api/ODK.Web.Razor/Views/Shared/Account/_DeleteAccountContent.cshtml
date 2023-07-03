@@ -1,0 +1,9 @@
+﻿@model ODK.Web.Razor.Models.Account.DeleteAccountContentViewModel
+
+<p>If you delete your account we will delete all of your details from our site, including your current subscription.</p>
+
+<form method="post" action="/@Model.Chapter.Name/Account/Delete">
+    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete your account?');">
+        Delete my account
+    </button>
+</form>

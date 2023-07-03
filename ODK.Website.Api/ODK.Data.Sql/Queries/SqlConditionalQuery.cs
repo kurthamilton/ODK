@@ -18,7 +18,7 @@ namespace ODK.Data.Sql.Queries
         {
             return Where(expression, condition);
         }
-
+        
         public TQuery Join<TTo, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TTo, TValue>> toField)
         {
             return Join<T, TTo, TValue>(thisField, toField);

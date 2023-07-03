@@ -1,7 +1,9 @@
 ﻿@page "/{chapterName}/Account/Email/Change"
+@attribute [Authorize]
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
+@using Microsoft.AspNetCore.Authorization
 @model ODK.Web.Razor.Pages.Chapters.Account.ChangeEmailModel
 @{
     Layout = "_ChapterLayout";

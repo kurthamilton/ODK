@@ -7,10 +7,9 @@
     }
 }
 
-<div class="overlay-container">
-    <span style="@(Model.MaxWidth > 0 ? $"max-width: {Model.MaxWidth}px" : null)" class="d-inline-block">
-        <img class="@(Model.IsTop ? "card-img-top" : "card-img")" 
-             src="@imageUrl" 
-             alt="Photo of @Model.Member.FullName" />
-    </span>    
+<div style="@(Model.ImageHeight > 0 ? $"height: {Model.ImageHeight}px" : null)" class="d-flex align-items-end justify-content-center">
+    <img style="@(Model.MaxWidth > 0 ? $"max-width: {Model.MaxWidth}px" : null)"
+         class="@(Model.IsTop ? "card-img-top" : "card-img")" 
+         src="@imageUrl" 
+         alt="Photo of @Model.Member.FullName" />
 </div>

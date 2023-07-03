@@ -6,8 +6,9 @@
        data-bs-toggle="@(Model.HideName ? "tooltip" : "")" data-bs-title="@(Model.HideName ? Model.Member.FullName : "")" container="body">
         @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, Model.Member)
         {
+            ImageHeight = Model.ImageHeight,
             IsTop = !Model.HideName,
-            MaxWidth = Model.MaxWidth
+            MaxWidth = Model.MaxWidth,
         })
             
         @if (!Model.HideName)

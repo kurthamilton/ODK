@@ -64,5 +64,7 @@ namespace ODK.Services.Chapters
         Task UpdateChapterSubscription(Guid currentMemberId, Guid subscriptionId, CreateChapterSubscription subscription);
 
         Task<ChapterTexts> UpdateChapterTexts(Guid currentMemberId, Guid chapterId, UpdateChapterTexts texts);
+
+        Task<ServiceResult> UpdateChapterTexts(Guid currentMemberId, string chapterName, UpdateChapterTexts texts);
     }
 }
