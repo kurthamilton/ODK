@@ -7,11 +7,11 @@ using ODK.Web.Razor.Models.Admin.Events;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events
 {
-    public class CreateEventModel : AdminPageModel
+    public class EventCreateModel : AdminPageModel
     {
         private readonly IEventAdminService _eventAdminService;
 
-        public CreateEventModel(IRequestCache requestCache, IEventAdminService eventAdminService)
+        public EventCreateModel(IRequestCache requestCache, IEventAdminService eventAdminService)
             : base(requestCache)
         {
             _eventAdminService = eventAdminService;
@@ -21,7 +21,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Events
         {
         }
 
-        public async Task<IActionResult> OnPostAsync([FromForm] AdminEventFormViewModel viewModel)
+        public async Task<IActionResult> OnPostAsync([FromForm] EventFormViewModel viewModel)
         {
             ServiceResult result = await _eventAdminService.CreateEvent(CurrentMemberId, new CreateEvent
             {

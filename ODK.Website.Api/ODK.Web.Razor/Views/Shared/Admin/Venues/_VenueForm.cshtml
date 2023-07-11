@@ -1,0 +1,28 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Models.Admin.Venues.VenueFormViewModel
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Name, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Name)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Address, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_Tooltip", "Additional location information, if required")
+    @Html.TextBoxFor(x => x.Address, new { @class = "form-control" })
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.MapQuery, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_Tooltip", 
+               "The search term used if displaying a map. Be as specific as possible")
+    @Html.TextBoxFor(x => x.MapQuery, new { @class = "form-control" })
+</div>
+
+<div class="mb-3">
+    @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
+    {
+        QuerySource = "#" + Html.IdFor(x => x.MapQuery)
+    })
+</div>

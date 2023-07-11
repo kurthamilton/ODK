@@ -29,6 +29,11 @@
         "dist/aspnet-validation.min.js",
         "dist/aspnet-validation.min.js.map"
       ]
+    },
+    {
+      "provider": "cdnjs",
+      "library": "slim-select@2.5.1",
+      "destination": "wwwroot/lib/slim-select/"
     }
   ]
 }

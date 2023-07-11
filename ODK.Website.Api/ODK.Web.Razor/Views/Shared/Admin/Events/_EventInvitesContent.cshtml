@@ -1,6 +1,6 @@
 ﻿@using ODK.Core.Events
 @using ODK.Services.Events
-@model ODK.Web.Razor.Models.Admin.Events.AdminEventViewModel
+@model ODK.Web.Razor.Models.Admin.Events.EventViewModel
 @inject IEventAdminService EventAdminService
 @{
     EventInvites invites = await EventAdminService.GetEventInvites(Model.CurrentMember.Id, Model.Event.Id);

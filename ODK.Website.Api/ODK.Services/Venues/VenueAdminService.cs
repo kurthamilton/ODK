@@ -25,13 +25,32 @@ namespace ODK.Services.Venues
             _venueRepository = venueRepository;
         }
 
-        public async Task<Venue> CreateVenue(Guid currentMemberId, CreateVenue venue)
+        public async Task<ServiceResult> CreateVenue(Guid currentMemberId, CreateVenue venue)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, venue.ChapterId);
 
             Venue create = new Venue(Guid.Empty, venue.ChapterId, venue.Name, venue.Address, venue.MapQuery, 0);
 
-            await ValidateVenue(create);
+            ServiceResult validationResult = await ValidateVenue(create);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
+
+            await _venueRepository.CreateVenue(create);
+
+            _cacheService.RemoveVersionedCollection<Venue>(venue.ChapterId);
+
+            return ServiceResult.Successful();
+        }
+
+        public async Task<Venue> CreateVenueOld(Guid currentMemberId, CreateVenue venue)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, venue.ChapterId);
+
+            Venue create = new Venue(Guid.Empty, venue.ChapterId, venue.Name, venue.Address, venue.MapQuery, 0);
+
+            await AssertVenueIsValid(create);
 
             Guid id = await _venueRepository.CreateVenue(create);
 
@@ -90,13 +109,33 @@ namespace ODK.Services.Venues
             return await _venueRepository.GetVenues(chapterId, venueIds);
         }
 
-        public async Task<Venue> UpdateVenue(Guid memberId, Guid id, CreateVenue venue)
+        public async Task<ServiceResult> UpdateVenue(Guid memberId, Guid id, CreateVenue venue)
         {
             Venue update = await GetVenue(memberId, id);
 
             update.Update(venue.Name, venue.Address, venue.MapQuery);
 
-            await ValidateVenue(update);
+            ServiceResult validationResult = await ValidateVenue(update);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
+
+            await _venueRepository.UpdateVenue(update);
+
+            _cacheService.RemoveVersionedItem<Venue>(id);
+            _cacheService.RemoveVersionedCollection<Venue>(update.ChapterId);
+
+            return ServiceResult.Successful();
+        }
+
+        public async Task<Venue> UpdateVenueOld(Guid memberId, Guid id, CreateVenue venue)
+        {
+            Venue update = await GetVenue(memberId, id);
+
+            update.Update(venue.Name, venue.Address, venue.MapQuery);
+
+            await AssertVenueIsValid(update);
 
             await _venueRepository.UpdateVenue(update);
 
@@ -106,18 +145,29 @@ namespace ODK.Services.Venues
             return update;
         }
 
-        private async Task ValidateVenue(Venue venue)
+        private async Task AssertVenueIsValid(Venue venue)
+        {
+            ServiceResult result = await ValidateVenue(venue);
+            if (!result.Success)
+            {
+                throw new OdkServiceException(result.Message);
+            }
+        }
+
+        private async Task<ServiceResult> ValidateVenue(Venue venue)
         {
             if (string.IsNullOrWhiteSpace(venue.Name))
             {
-                throw new OdkServiceException("Name required");
+                return ServiceResult.Failure("Name required");
             }
 
             Venue existing = await _venueRepository.GetVenueByName(venue.Name);
             if (existing != null && existing.Id != venue.Id)
             {
-                throw new OdkServiceException("Venue with that name already exists");
+                return ServiceResult.Failure("Venue with that name already exists");
             }
+
+            return ServiceResult.Successful();
         }
     }
 }

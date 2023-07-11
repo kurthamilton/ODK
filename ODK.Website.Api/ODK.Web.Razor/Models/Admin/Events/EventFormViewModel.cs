@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ODK.Web.Razor.Models.Admin.Events
 {
-    public class AdminEventFormViewModel
+    public class EventFormViewModel
     {
         public Guid ChapterId { get; set; }
         public Guid CurrentMemberId { get; set; }

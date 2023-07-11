@@ -1,0 +1,18 @@
+﻿@page "/{chapterName}/Admin/Members/AdminMembers/{id:guid}"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model ODK.Web.Razor.Pages.Chapters.Admin.Members.AdminMemberModel
+@{
+    Layout = "Admin/Members/_MemberAdminLayout";
+    Model.Title = "Edit admin member | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members/AdminMembers", Text = "Admin members" },
+        new MenuItem { Text = Model.AdminMember.FullName }
+    },
+    Content = await Html.PartialAsync("Admin/Members/_AdminMemberContent", Model.AdminMember)
+})

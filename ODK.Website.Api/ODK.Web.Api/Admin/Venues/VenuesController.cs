@@ -32,7 +32,7 @@ namespace ODK.Web.Api.Admin.Venues
         public async Task<ActionResult<VenueApiResponse>> Create([FromForm] CreateVenueApiRequest request)
         {
             CreateVenue venue = _mapper.Map<CreateVenue>(request);
-            Venue created = await _venueAdminService.CreateVenue(GetMemberId(), venue);
+            Venue created = await _venueAdminService.CreateVenueOld(GetMemberId(), venue);
             return _mapper.Map<VenueApiResponse>(created);
         }
 
@@ -54,7 +54,7 @@ namespace ODK.Web.Api.Admin.Venues
         public async Task<VenueApiResponse> Update(Guid id, [FromForm] CreateVenueApiRequest request)
         {
             CreateVenue update = _mapper.Map<CreateVenue>(request);
-            Venue venue = await _venueAdminService.UpdateVenue(GetMemberId(), id, update);
+            Venue venue = await _venueAdminService.UpdateVenueOld(GetMemberId(), id, update);
             return _mapper.Map<VenueApiResponse>(venue);
         }
 

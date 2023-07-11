@@ -1,13 +1,13 @@
 ﻿@using ODK.Web.Razor.Models.Admin.Events
-@model ODK.Web.Razor.Models.Admin.Events.AdminEventViewModel
+@model ODK.Web.Razor.Models.Admin.Events.EventViewModel
 
-@await Html.PartialAsync("Admin/Events/_EventHeader")
+@await Html.PartialAsync("Admin/Events/_EventHeader", Model)
 
-@await Html.PartialAsync("Admin/Events/_EventAdminTabs")
+@await Html.PartialAsync("Admin/Events/_EventAdminTabs", Model)
 
 <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id">
     @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Events/_EventForm", new AdminEventFormViewModel
+    @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
     {
         ChapterId = Model.Chapter.Id,
         CurrentMemberId = Model.CurrentMember.Id,

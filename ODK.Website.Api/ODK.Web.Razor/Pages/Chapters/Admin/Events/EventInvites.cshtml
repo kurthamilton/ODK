@@ -16,5 +16,5 @@
        new MenuItem { Text = Model.Event.Name }
     },
     Content = await Html.PartialAsync("Admin/Events/_EventInvitesContent", 
-       new AdminEventViewModel(Model.Chapter, Model.CurrentMember, Model.Event))
+       new EventViewModel(Model.Chapter, Model.CurrentMember, Model.Event))
 })

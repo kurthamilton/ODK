@@ -7,7 +7,7 @@ using ODK.Web.Razor.Models.Admin.Events;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events
 {
-    public class EventModel : AdminEventPageModel
+    public class EventModel : EventAdminPageModel
     {
         public EventModel(IRequestCache requestCache, IEventAdminService eventAdminService) 
             : base(requestCache, eventAdminService)
@@ -18,7 +18,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Events
         {
         }
 
-        public async Task<IActionResult> OnPostAsync(Guid id, [FromForm] AdminEventFormViewModel viewModel)
+        public async Task<IActionResult> OnPostAsync(Guid id, [FromForm] EventFormViewModel viewModel)
         {
             ServiceResult result = await EventAdminService.UpdateEvent(CurrentMemberId, id, new CreateEvent
             {

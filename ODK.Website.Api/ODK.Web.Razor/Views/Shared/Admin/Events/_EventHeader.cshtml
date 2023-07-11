@@ -1,7 +1,7 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Core.Venues
 @using ODK.Services.Venues
-@model ODK.Web.Razor.Models.Admin.Events.AdminEventViewModel
+@model ODK.Web.Razor.Models.Admin.Events.EventViewModel
 @inject IVenueService VenueService
 @{
     Venue venue = await VenueService.GetVenue(Model.CurrentMember, Model.Event.VenueId);

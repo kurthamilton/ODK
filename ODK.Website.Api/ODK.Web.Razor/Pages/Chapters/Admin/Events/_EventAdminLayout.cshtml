@@ -15,7 +15,7 @@
 
 @await Html.PartialAsync("Header/_AdminSubMenu", new []
 {
-    new MenuItem { Link = $"/{chapter.Name}/Admin/Events", Text = "Events" },
+    new MenuItem { Link = $"/{chapter.Name}/Admin/Events", Text = "Events", ActiveIsExactMatch = true },
     new MenuItem { Link = $"/{chapter.Name}/Admin/Events/Venues", Text = "Venues" }
 })
 

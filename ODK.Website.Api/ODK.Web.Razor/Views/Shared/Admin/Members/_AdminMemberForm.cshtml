@@ -1,0 +1,28 @@
+﻿@using ODK.Web.Razor.Razor
+@model ODK.Web.Razor.Models.Admin.Members.AdminMemberFormViewModel
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Name, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Name, new { @class = "form-control-plaintext" })
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.AdminEmailAddress, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.AdminEmailAddress, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.AdminEmailAddress)
+</div>
+
+<div class="form-check mb-3">
+    @Html.OdkCheckBoxFor(x => x.ReceiveContactEmails, new { @class = "form-check-input" })
+    @Html.LabelFor(x => x.ReceiveContactEmails, new { @class = "form-check-label" })
+</div>
+
+<div class="form-check mb-3">
+    @Html.OdkCheckBoxFor(x => x.ReceiveNewMemberEmails, new { @class = "form-check-input" })
+    @Html.LabelFor(x => x.ReceiveNewMemberEmails, new { @class = "form-check-label" })
+</div>
+
+<div class="form-check mb-3">
+    @Html.OdkCheckBoxFor(x => x.SendNewMemberEmails, new { @class = "form-check-input" })
+    @Html.LabelFor(x => x.SendNewMemberEmails, new { @class = "form-check-label" })
+</div>

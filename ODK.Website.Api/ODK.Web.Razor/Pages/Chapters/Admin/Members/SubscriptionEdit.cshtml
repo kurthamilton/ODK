@@ -1,0 +1,20 @@
+﻿@page "/{chapterName}/Admin/Members/Subscriptions/{id:guid}"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Admin.Members
+@model ODK.Web.Razor.Pages.Chapters.Admin.Members.SubscriptionEditModel
+@{
+    Layout = "Admin/Members/_MemberAdminLayout";
+    Model.Title = "Edit subscription | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members/Subscriptions", Text = "Subscriptions" },
+        new MenuItem { Text = Model.Subscription.Name }
+    },
+    Content = await Html.PartialAsync("Admin/Members/_SubscriptionEditContent", 
+        new SubscriptionEditViewModel(Model.Chapter, Model.CurrentMember, Model.Subscription))
+})

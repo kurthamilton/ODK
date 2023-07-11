@@ -5,9 +5,9 @@ using ODK.Services.Events;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events
 {
-    public abstract class AdminEventPageModel : AdminPageModel
+    public abstract class EventAdminPageModel : AdminPageModel
     {
-        protected AdminEventPageModel(IRequestCache requestCache, IEventAdminService eventAdminService) 
+        protected EventAdminPageModel(IRequestCache requestCache, IEventAdminService eventAdminService) 
             : base(requestCache)
         {
             EventAdminService = eventAdminService;

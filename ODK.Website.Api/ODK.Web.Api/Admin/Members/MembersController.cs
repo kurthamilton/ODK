@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -122,7 +121,7 @@ namespace ODK.Web.Api.Admin.Members
         {
             UpdateMemberSubscription update = _mapper.Map<UpdateMemberSubscription>(request);
 
-            MemberSubscription updated = await _memberAdminService.UpdateMemberSubscription(GetMemberId(), id, update);
+            MemberSubscription updated = await _memberAdminService.UpdateMemberSubscriptionOld(GetMemberId(), id, update);
             return _mapper.Map<SubscriptionApiResponse>(updated);
         }
 

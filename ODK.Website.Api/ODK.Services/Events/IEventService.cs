@@ -16,6 +16,9 @@ namespace ODK.Services.Events
 
         Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member member, Guid chapterId);
 
+        Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member member, Guid chapterId, 
+            DateTime? after);
+
         Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId);
 
         Task<IReadOnlyCollection<EventResponse>> GetMemberResponses(Guid memberId);

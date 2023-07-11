@@ -234,7 +234,7 @@ namespace ODK.Services.Events
 
             return await _eventRepository.GetEventsByVenue(venueId);
         }
-
+        
         public async Task<IReadOnlyCollection<EventResponse>> GetMemberResponses(Guid currentMemberId, Guid memberId)
         {
             Member member = await _memberRepository.GetMember(memberId);

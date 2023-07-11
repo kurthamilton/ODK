@@ -4,9 +4,9 @@ using ODK.Core.Members;
 
 namespace ODK.Web.Razor.Models.Admin.Events
 {
-    public class AdminEventViewModel
+    public class EventViewModel
     {
-        public AdminEventViewModel(Chapter chapter, Member currentMember, Event @event)
+        public EventViewModel(Chapter chapter, Member currentMember, Event @event)
         {
             Chapter = chapter;
             CurrentMember = currentMember;

@@ -1,0 +1,18 @@
+﻿@using ODK.Web.Razor.Models.Admin.Venues
+@model ODK.Web.Razor.Models.Admin.Venues.VenueViewModel
+
+@await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", Model)
+
+<form method="post" action="/@Model.Chapter.Name/Admin/Events/Venues/@Model.Venue.Id">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel
+    {
+        Address = Model.Venue.Address,
+        ChapterId = Model.Chapter.Id,
+        CurrentMemberId = Model.CurrentMember.Id,
+        MapQuery = Model.Venue.MapQuery,
+        Name = Model.Venue.Name
+    })
+    
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>

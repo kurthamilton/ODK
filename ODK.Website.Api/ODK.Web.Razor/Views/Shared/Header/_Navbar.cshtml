@@ -14,17 +14,18 @@
             @(Model.IsDark ? "navbar-dark bg-dark" : null)
             @(Model.IsLight ? "navbar-light bg-light" : null)
             @(Model.Breakpoint == "sm" ? "navbar-expand-sm" : null)
+            @(Model.Breakpoint == "md" ? "navbar-expand-md" : null)
             @(Model.Breakpoint == "lg" ? "navbar-expand-lg" : null)
             @(Model.Compact ? "navbar-compact" : null)">
     <div class="position-relative nav-container
                 @(Model.Fluid ? "container-fluid" : "container")">
-        <button class="navbar-toggler" type="button">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-main">
             <span class="navbar-toggler-icon"></span>
         </button>
         
         @if (Model.MenuItems != null)
         {
-            <div class="collapse navbar-collapse flex-column">
+            <div class="collapse navbar-collapse flex-column" id="navbar-main">
                 @foreach (MenuItem[] group in Model.MenuItems)
                 {
                     <ul class="navbar-nav">
@@ -32,7 +33,7 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link"
-                                   data-menu-link
+                                   data-menu-link="@(menuItem.ActiveIsExactMatch ? "exact" : null)"
                                    href="@(menuItem.Link ?? menuItem.ExternalLink)"
                                    target="@(!string.IsNullOrEmpty(menuItem.ExternalLink) ? "_blank" : null)">
                                     @if (!string.IsNullOrEmpty(menuItem.Text))

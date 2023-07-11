@@ -1,0 +1,75 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Countries
+@using ODK.Services.Chapters
+@using ODK.Services.Countries
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin.Members
+@model ODK.Core.Chapters.Chapter
+@inject IChapterAdminService ChapterAdminService
+@inject ICountryService CountryService
+@{
+    Guid? memberId = User.MemberId();
+    
+    Task<IReadOnlyCollection<ChapterSubscription>> subscriptionsTask = ChapterAdminService.GetChapterSubscriptions(
+        memberId!.Value, Model.Id);
+    Task<Country> countryTask = CountryService.GetCountry(Model.CountryId);
+    Task<ChapterMembershipSettings> membershipSettingsTask = ChapterAdminService.GetChapterMembershipSettings(memberId!.Value, Model.Id);
+
+    await Task.WhenAll(subscriptionsTask, countryTask, membershipSettingsTask);
+
+    IReadOnlyCollection<ChapterSubscription> subscriptions = subscriptionsTask.Result;
+    Country country = countryTask.Result;
+    ChapterMembershipSettings membershipSettings = membershipSettingsTask.Result;
+}
+
+<h2>Subscriptions</h2>
+<p>
+    <a href="/@Model.Name/Admin/Members/Subscriptions/Create" class="btn btn-primary">
+        Create subscription
+    </a>
+</p>
+
+<table class="table table-striped mb-5">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Amount</th>
+        <th>Months</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (ChapterSubscription subscription in subscriptions)
+    {
+        <tr>
+            <td>
+                <a href="/@Model.Name/Admin/Members/Subscriptions/@subscription.Id">@subscription.Name</a>
+            </td>
+            <td>
+                @country.CurrencySymbol@subscription.Amount
+            </td>
+            <td>@subscription.Months</td>
+            <td>
+                <form method="post" action="/@Model.Name/Admin/Members/Subscriptions/@subscription.Id/Delete">
+                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                            onclick="return confirm('Are you sure you want to delete this subscription?');">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h3>Membership settings</h3>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Members/_MembershipSettingsForm", new MembershipSettingsFormViewModel
+    {
+        MembershipDisabledAfter = membershipSettings.MembershipDisabledAfterDaysExpired,
+        TrialPeriodMonths = membershipSettings.TrialPeriodMonths
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

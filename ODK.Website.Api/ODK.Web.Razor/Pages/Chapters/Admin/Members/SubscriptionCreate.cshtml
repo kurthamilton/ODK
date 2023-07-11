@@ -1,0 +1,18 @@
+﻿@page "/{chapterName}/Admin/Members/Subscriptions/Create"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model ODK.Web.Razor.Pages.Chapters.Admin.Members.SubscriptionCreateModel
+@{
+    Layout = "Admin/Members/_MemberAdminLayout";
+    Model.Title = "Create subscription | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members/Subscriptions", Text = "Subscriptions" },
+        new MenuItem { Text = "Create" }
+    },
+    Content = await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", Model.Chapter)
+})

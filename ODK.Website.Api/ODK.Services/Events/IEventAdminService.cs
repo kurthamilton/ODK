@@ -32,7 +32,7 @@ namespace ODK.Services.Events
         Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId, int page, int pageSize);
 
         Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId);
-
+        
         Task<IReadOnlyCollection<EventResponse>> GetMemberResponses(Guid currentMemberId, Guid memberId);
 
         Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes, 

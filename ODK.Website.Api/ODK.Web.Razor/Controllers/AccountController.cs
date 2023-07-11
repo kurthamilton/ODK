@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
-using ODK.Core.Members;
 using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;

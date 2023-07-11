@@ -1,7 +1,7 @@
 @mixin nav-item-separator($color) {
-  .nav-item:not(:first-child) {
-    border-left: 1px solid $color;
-  }
+    .nav-item:not(:first-child) {
+        border-left: 1px solid $color;
+    }
 }
 
 @mixin nav-link-vertical-padding() {
@@ -135,14 +135,19 @@
 }
 
 .anonymous-links {
-  display: flex;    
+    display: flex;
 
-  .anonymous-link {
-    padding-top: 0.1rem;
-    padding-bottom: 0.1rem;
-
-    &:not(:first-child) {
-      margin-left: 0.25rem;    
+    @include media-breakpoint-up(lg) {
+        position: absolute;
+        right: $grid-gutter-width / 2;
     }
-  }    
+
+    .anonymous-link {
+        padding-top: 0.1rem;
+        padding-bottom: 0.1rem;
+
+        &:not(:first-child) {
+            margin-left: 0.25rem;
+        }
+    }
 }

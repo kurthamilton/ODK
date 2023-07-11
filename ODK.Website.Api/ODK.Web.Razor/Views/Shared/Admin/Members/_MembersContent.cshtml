@@ -1,0 +1,88 @@
+﻿@using ODK.Core.Members
+@using ODK.Services.Members
+@using ODK.Web.Common.Extensions
+@model ODK.Core.Chapters.Chapter
+@inject IMemberAdminService MemberAdminService
+@{
+    Guid? memberId = User.MemberId();
+    if (memberId == null)
+    {
+        return;
+    }
+
+    Task<IReadOnlyCollection<Member>> membersTask = MemberAdminService.GetMembers(memberId.Value, Model.Id);
+    Task<IReadOnlyCollection<MemberSubscription>> subscriptionsTask = MemberAdminService.GetMemberSubscriptions(memberId.Value, Model.Id);
+    
+    await Task.WhenAll(membersTask, subscriptionsTask);
+
+    IReadOnlyCollection<Member> members = membersTask.Result;
+    IDictionary<Guid, MemberSubscription> subscriptions = subscriptionsTask.Result.ToDictionary(x => x.MemberId);
+
+    DateTime subscriptionWarningDate = DateTime.Today.AddDays(7);
+}
+
+<h2>Members</h2>
+<p>
+    <div class="row row-cols-lg-auto g-3 align-items-center">
+        <div class="col-12">
+            <label class="form-label">Name</label>
+            <input class="form-control" data-table-filter="#members-table" />
+        </div>
+        @*<div class="col-12">
+            <label class="form-label">Type</label>
+            <select class="form-control" multiple>
+                @foreach (SubscriptionType type in Enum.GetValues<SubscriptionType>())
+                {
+                    if (type == SubscriptionType.None)
+                    {
+                        continue;
+                    }
+
+                    <option>@type</option>
+                }
+            </select>
+        </div>*@
+    </div>
+</p>
+
+<table class="table" data-sortable id="members-table">
+    <thead>
+    <tr>
+        <th data-sortable-sort="default">Name</th>
+        <th data-sortable-sort>Type</th>
+        <th data-sortable-sort>Expires</th>
+        <th>Emails</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (Member member in members)
+    {
+        subscriptions.TryGetValue(member.Id, out MemberSubscription? subscription);
+
+        <tr>
+            <td>
+                <a href="/@Model.Name/Admin/Members/@member.Id" data-filter-value data-sort-value>
+                    @member.FullName
+                </a>
+            </td>
+            <td>@subscription?.Type</td>
+            <td>
+                <span class="@(subscription?.ExpiryDate < DateTime.Today ? "text-danger" : null)
+                             @(subscription?.ExpiryDate < subscriptionWarningDate ? "text-warning" : null)">
+                    @subscription?.ExpiryDate?.ToString("yyyy-MM-dd")
+                </span>
+            </td>
+            <td>
+                @if (member.EmailOptIn)
+                {
+                    <i class="fas fa-check-circle text-success"></i>
+                }
+                else
+                {
+                    <i class="fas fa-times-circle text-danger"></i>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

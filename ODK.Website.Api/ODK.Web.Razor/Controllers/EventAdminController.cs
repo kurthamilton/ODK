@@ -25,7 +25,7 @@ namespace ODK.Web.Razor.Controllers
         }
 
         [HttpPost("{chapterName}/Admin/Events/{id:guid}/Invites/Send")]
-        public async Task<IActionResult> SendInvites(Guid id)
+        public IActionResult SendInvites(Guid id)
         {
             return RedirectToReferrer();
         }

@@ -174,7 +174,34 @@ namespace ODK.Services.Members
             return updated;
         }
 
-        public async Task<MemberSubscription> UpdateMemberSubscription(Guid currentMemberId, Guid memberId,
+        public async Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid memberId,
+            UpdateMemberSubscription subscription)
+        {
+            Member member = await GetMember(currentMemberId, memberId);
+            if (member == null)
+            {
+                return ServiceResult.Failure("Member not found");
+            }
+
+            DateTime? expiryDate = subscription.Type == SubscriptionType.Alum ? new DateTime?() : subscription.ExpiryDate;
+
+            MemberSubscription update = new MemberSubscription(member.Id, subscription.Type, expiryDate);
+
+            ServiceResult validationResult = ValidateMemberSubscription(update);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
+
+            await _memberRepository.UpdateMemberSubscription(update);
+
+            _cacheService.RemoveVersionedItem<MemberSubscription>(memberId);
+            _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
+
+            return ServiceResult.Successful();
+        }
+
+        public async Task<MemberSubscription> UpdateMemberSubscriptionOld(Guid currentMemberId, Guid memberId,
             UpdateMemberSubscription subscription)
         {
             Member member = await GetMember(currentMemberId, memberId);
@@ -183,7 +210,7 @@ namespace ODK.Services.Members
 
             MemberSubscription update = new MemberSubscription(member.Id, subscription.Type, expiryDate);
 
-            ValidateMemberSubscription(update);
+            AssertValidMemberSubscription(update);
 
             await _memberRepository.UpdateMemberSubscription(update);
 
@@ -213,7 +240,7 @@ namespace ODK.Services.Members
             return member;
         }
 
-        private void ValidateMemberSubscription(MemberSubscription subscription)
+        private void AssertValidMemberSubscription(MemberSubscription subscription)
         {
             if (!Enum.IsDefined(typeof(SubscriptionType), subscription.Type) || subscription.Type == SubscriptionType.None)
             {
@@ -224,10 +251,31 @@ namespace ODK.Services.Members
             {
                 throw new OdkServiceException("Alum should not have expiry date");
             }
-            else if (subscription.Type != SubscriptionType.Alum && subscription.ExpiryDate < DateTime.UtcNow.Date)
+            
+            if (subscription.Type != SubscriptionType.Alum && subscription.ExpiryDate < DateTime.UtcNow.Date)
             {
                 throw new OdkServiceException("Expiry date should not be in the past");
             }
+        }
+
+        private ServiceResult ValidateMemberSubscription(MemberSubscription subscription)
+        {
+            if (!Enum.IsDefined(typeof(SubscriptionType), subscription.Type) || subscription.Type == SubscriptionType.None)
+            {
+                return ServiceResult.Failure("Invalid type");
+            }
+
+            if (subscription.Type == SubscriptionType.Alum && subscription.ExpiryDate != null)
+            {
+                return ServiceResult.Failure("Alum should not have expiry date");
+            }
+
+            if (subscription.Type != SubscriptionType.Alum && subscription.ExpiryDate < DateTime.UtcNow.Date)
+            {
+                return ServiceResult.Failure("Expiry date should not be in the past");
+            }
+
+            return ServiceResult.Successful();
         }
     }
 }

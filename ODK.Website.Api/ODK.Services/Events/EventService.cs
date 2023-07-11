@@ -48,32 +48,50 @@ namespace ODK.Services.Events
 
         public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member member, Guid chapterId)
         {
+            return await GetEventResponseViewModels(member, chapterId, DateTime.Today);
+        }
+
+        public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member member,
+            Guid chapterId, DateTime? after)
+        {
             IReadOnlyCollection<Event> events;
             if (member == null || member.ChapterId != chapterId)
             {
-                events = await _eventRepository.GetPublicEvents(chapterId, DateTime.UtcNow.Date);
+                events = await _eventRepository.GetPublicEvents(chapterId, after);
             }
             else
             {
-                events = await _eventRepository.GetEvents(chapterId, DateTime.UtcNow.Date);
+                events = await _eventRepository.GetEvents(chapterId, after);
             }
 
             IReadOnlyCollection<EventResponse> responses = Array.Empty<EventResponse>();
             if (member != null)
             {
-                responses = await _eventRepository.GetMemberResponses(member.Id);
+                bool allEvents = after == null;
+                responses = await _eventRepository.GetMemberResponses(member.Id, allEvents);
             }
 
-            IDictionary<Guid, EventResponseType> responseLookup = responses.ToDictionary(x => x.EventId, x => x.ResponseTypeId);
+            IDictionary<Guid, EventResponseType> responseLookup = responses
+                .ToDictionary(x => x.EventId, x => x.ResponseTypeId);
 
             IReadOnlyCollection<Venue> venues = await _venueRepository.GetVenues(chapterId);
             IDictionary<Guid, Venue> venueLookup = venues.ToDictionary(x => x.Id);
 
+            HashSet<Guid> invitedEventIds = new HashSet<Guid>();
+            if (member != null)
+            {
+                IReadOnlyCollection<EventInvite> eventInvites = await _eventRepository
+                    .GetEventInvitesForMemberId(member.Id);
+                invitedEventIds = new HashSet<Guid>(eventInvites.Select(x => x.EventId));
+            }
+
             List<EventResponseViewModel> viewModels = new List<EventResponseViewModel>();
             foreach (Event @event in events)
             {
+                bool invited = invitedEventIds.Contains(@event.Id);
                 responseLookup.TryGetValue(@event.Id, out EventResponseType responseType);
-                EventResponseViewModel viewModel = new EventResponseViewModel(@event, venueLookup[@event.VenueId], responseType);
+                EventResponseViewModel viewModel = new EventResponseViewModel(@event, venueLookup[@event.VenueId], 
+                    responseType, invited);
                 viewModels.Add(viewModel);
             }
 

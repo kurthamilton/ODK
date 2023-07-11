@@ -12105,6 +12105,12 @@ img {
 .anonymous-links {
   display: flex;
 }
+@media (min-width: 992px) {
+  .anonymous-links {
+    position: absolute;
+    right: 0.75rem;
+  }
+}
 .anonymous-links .anonymous-link {
   padding-top: 0.1rem;
   padding-bottom: 0.1rem;
@@ -12227,30 +12233,25 @@ img {
   border-top-width: 2px;
 }
 
-/*th[sortable] {
+th.sortable {
   cursor: pointer;
-  color: $link-color;
-  text-decoration: $link-decoration;
-
-  @include hover {
-    color: $link-hover-color;
-    text-decoration: $link-hover-decoration;
-  }
-
-  &.sort-asc:after,
-  &.sort-desc:after {
-    font-family: 'Font Awesome 5 Free';    
-  }
-
-  &.sort-asc:after {
-    content: '\f0d8'; // caret-up
-  }
-
-  &.sort-desc:after {
-    content: '\f0d7'; // caret-down
-  }
+  color: var(--bs-link-color);
+  text-decoration: var(--bs-link-decoration);
 }
-*/
+th.sortable:hover {
+  color: var(--bs-link-hover-color);
+  text-decoration: underline;
+}
+th.sortable.sort-asc:after, th.sortable.sort-desc:after {
+  font-family: "Font Awesome 5 Free";
+}
+th.sortable.sort-asc:after {
+  content: " \f0d8";
+}
+th.sortable.sort-desc:after {
+  content: " \f0d7";
+}
+
 .subscription-alerts .alert {
   margin-bottom: 0;
 }

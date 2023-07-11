@@ -1,0 +1,56 @@
+﻿@using ODK.Core.Events
+@using ODK.Core.Utils
+@using ODK.Core.Venues
+@using ODK.Services.Events
+@using ODK.Services.Venues
+@using ODK.Web.Common.Extensions
+@model ODK.Core.Chapters.Chapter
+@inject IEventAdminService EventAdminService
+@inject IVenueAdminService VenueAdminService
+@{
+    Guid? memberId = User.MemberId();
+    if (memberId == null)
+    {
+        return;
+    }
+
+    Task<IReadOnlyCollection<Venue>> venuesTask = VenueAdminService.GetVenues(memberId.Value, Model.Id);
+    Task<IReadOnlyCollection<Event>> eventsTask = EventAdminService.GetEvents(memberId.Value, Model.Id, 1, int.MaxValue);
+
+    await Task.WhenAll(venuesTask, eventsTask);
+
+    IReadOnlyCollection<Venue> venues = venuesTask.Result;
+    IReadOnlyCollection<Event> events = eventsTask.Result;
+    IDictionary<Guid, int> eventCounts = events
+        .GroupBy(x => x.VenueId)
+        .ToDictionary(x => x.Key, x => x.Count());
+    IDictionary<Guid, DateTime> lastEvents = events
+        .GroupBy(x => x.VenueId)
+        .ToDictionary(x => x.Key, x => x.Max(_ => _.Date));
+}
+
+<h2>Venues</h2>
+<p>
+    <a href="/@Model.Name/Admin/Events/Venues/Create" class="btn btn-primary">Create</a>
+</p>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Events</th>
+        <th>Last Event</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (Venue venue in venues.OrderBy(x => x.Name))
+    {
+        <tr>
+            <td><a href="/@Model.Name/Admin/Events/Venues/@venue.Id">@venue.Name</a></td>
+            <td>@venue.Address</td>
+            <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>
+            <td>@(lastEvents.ContainsKey(venue.Id) ? lastEvents[venue.Id].EventDate() : null)</td>
+        </tr>
+    }
+    </tbody>
+</table>

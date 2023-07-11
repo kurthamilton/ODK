@@ -9,19 +9,23 @@ namespace ODK.Services.Chapters
     {
         Task AddChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
 
+        Task<ServiceResult> AddChapterAdminMember(Guid currentMemberId, string chapterName, Guid memberId);
+
         Task CreateChapterProperty(Guid currentMemberId, Guid chapterId, CreateChapterProperty property);
 
         Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question);
 
-        Task CreateChapterSubscription(Guid currentMemberId, Guid chapterId, CreateChapterSubscription subscription);
+        Task<ServiceResult> CreateChapterSubscription(Guid currentMemberId, Guid chapterId, CreateChapterSubscription subscription);
 
         Task DeleteChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
+
+        Task<ServiceResult> DeleteChapterAdminMember(Guid currentMemberId, string chapterName, Guid memberId);
 
         Task DeleteChapterProperty(Guid currentMemberId, Guid id);
 
         Task DeleteChapterQuestion(Guid currentMemberId, Guid id);
 
-        Task DeleteChapterSubscription(Guid currentMemberId, Guid id);
+        Task<ServiceResult> DeleteChapterSubscription(Guid currentMemberId, Guid id);
 
         Task<Chapter> GetChapter(Guid currentMemberId, Guid chapterId);
 
@@ -45,11 +49,11 @@ namespace ODK.Services.Chapters
 
         Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid currentMemberId, Guid chapterId);
 
-        Task UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember adminMember);
+        Task<ServiceResult> UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember adminMember);
 
         Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links);
 
-        Task UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, UpdateChapterMembershipSettings settings);
+        Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, UpdateChapterMembershipSettings settings);
 
         Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings paymentSettings);
 
@@ -61,7 +65,7 @@ namespace ODK.Services.Chapters
 
         Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(Guid currentMemberId, Guid questionId, int moveBy);
 
-        Task UpdateChapterSubscription(Guid currentMemberId, Guid subscriptionId, CreateChapterSubscription subscription);
+        Task<ServiceResult> UpdateChapterSubscription(Guid currentMemberId, Guid subscriptionId, CreateChapterSubscription subscription);
 
         Task<ChapterTexts> UpdateChapterTexts(Guid currentMemberId, Guid chapterId, UpdateChapterTexts texts);
 

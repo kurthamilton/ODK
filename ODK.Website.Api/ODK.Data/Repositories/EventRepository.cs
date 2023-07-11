@@ -4,6 +4,7 @@ using System.Data.SqlTypes;
 using System.Threading.Tasks;
 using ODK.Core.Events;
 using ODK.Data.Sql;
+using ODK.Data.Sql.Queries;
 
 namespace ODK.Data.Repositories
 {
@@ -142,6 +143,14 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
+        public async Task<IReadOnlyCollection<EventInvite>> GetEventInvitesForMemberId(Guid memberId)
+        {
+            return await Context
+                .Select<EventInvite>()
+                .Where(x => x.MemberId).EqualTo(memberId)
+                .ToArrayAsync();
+        }
+
         public async Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid eventId)
         {
             return await Context
@@ -150,12 +159,18 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime after)
+        public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime? after)
         {
-            return await Context
+            SqlSelectQuery<Event> query = Context
                 .Select<Event>()
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .Where(x => x.Date).GreaterThanOrEqualTo(after)
+                .Where(x => x.ChapterId).EqualTo(chapterId);
+
+            if (after != null)
+            {
+                query = query.Where(x => x.Date).GreaterThanOrEqualTo(after.Value);
+            }
+
+            return await query
                 .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .ToArrayAsync();
         }
@@ -189,13 +204,19 @@ namespace ODK.Data.Repositories
                 .ToArrayAsync();
         }
 
-        public async Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId, DateTime after)
+        public async Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId, DateTime? after)
         {
-            return await Context
+            SqlSelectQuery<Event> query = Context
                 .Select<Event>()
                 .Where(x => x.ChapterId).EqualTo(chapterId)
-                .Where(x => x.Date).GreaterThanOrEqualTo(after)
-                .Where(x => x.IsPublic).EqualTo(true)
+                .Where(x => x.IsPublic).EqualTo(true);
+
+            if (after != null)
+            {
+                query = query.Where(x => x.Date).GreaterThanOrEqualTo(after.Value);
+            }
+
+            return await query
                 .OrderBy(x => x.Date, SqlSortDirection.Descending)
                 .ToArrayAsync();
         }

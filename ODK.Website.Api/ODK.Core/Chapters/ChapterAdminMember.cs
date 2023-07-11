@@ -29,6 +29,8 @@ namespace ODK.Core.Chapters
 
         public string FirstName { get; }
 
+        public string FullName => $"{FirstName} {LastName}".Trim();
+
         public string LastName { get; }
 
         public Guid MemberId { get; }

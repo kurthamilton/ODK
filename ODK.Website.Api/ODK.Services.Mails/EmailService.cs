@@ -59,12 +59,12 @@ namespace ODK.Services.Emails
             await _mailProvider.SendEmail(chapter, to, email.Subject, email.HtmlContent);
         }
 
-        public async Task SendMemberEmail(Guid currentMemberId, Guid memberId, string subject, string body)
+        public async Task<ServiceResult> SendMemberEmail(Guid currentMemberId, Guid memberId, string subject, string body)
         {
             Member to = await _memberRepository.GetMember(memberId);
             if (to == null)
             {
-                throw new OdkNotFoundException();
+                return ServiceResult.Failure("Member not found");
             }
 
             ChapterAdminMember from = await GetSender(to.ChapterId, currentMemberId);
@@ -72,6 +72,8 @@ namespace ODK.Services.Emails
             Chapter chapter = await _chapterRepository.GetChapter(from.ChapterId);
 
             await _mailProvider.SendEmail(chapter, to.EmailAddress, subject, body, from);
+
+            return ServiceResult.Successful();
         }
 
         public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, IDictionary<string, string> parameters)

@@ -30,6 +30,8 @@ namespace ODK.Services.Members
 
         Task<MemberImage> UpdateMemberImage(Guid currentMemberId, Guid memberId, UpdateMemberImage image);
 
-        Task<MemberSubscription> UpdateMemberSubscription(Guid currentMemberId, Guid memberId, UpdateMemberSubscription subscription);
+        Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid memberId, UpdateMemberSubscription subscription);
+
+        Task<MemberSubscription> UpdateMemberSubscriptionOld(Guid currentMemberId, Guid memberId, UpdateMemberSubscription subscription);
     }
 }
