@@ -29,13 +29,5 @@ namespace ODK.Services.Tests.Events
 
             return mock.Object;
         }
-
-        private static EventService CreateService(IEventRepository eventRepository = null,
-            IAuthorizationService authorizationService = null)
-        {
-            return new EventService(
-                eventRepository ?? CreateMockEventRepository(),
-                authorizationService ?? CreateMockAuthorizationService());
-        }
     }
 }

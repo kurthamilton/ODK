@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ODK.Web.Common.Config;
 using ODK.Web.Razor.Authentication;
 using Serilog;
-using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
