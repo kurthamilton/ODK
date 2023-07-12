@@ -28,6 +28,8 @@
     <link rel="icon" type="image/x-icon" href="/assets/favicon32.png?v=3">
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/aspnet-client-validation/dist/aspnet-validation.css"/>
+    
+    @await RenderSectionAsync("preStyles", required: false)
     <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
     @await RenderSectionAsync("styles", required: false)
 </head>

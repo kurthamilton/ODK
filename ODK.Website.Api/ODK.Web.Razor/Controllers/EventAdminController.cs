@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Events;
 using ODK.Services;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
@@ -14,6 +15,13 @@ namespace ODK.Web.Razor.Controllers
         public EventAdminController(IEventAdminService eventAdminService)
         {
             _eventAdminService = eventAdminService;
+        }
+
+        [HttpPost("{chapterName}/Admin/Events/{id:guid}/Attendees/{memberId:guid}")]
+        public async Task<IActionResult> UpdateMemberResponse(Guid id, Guid memberId, [FromForm] EventResponseType responseType)
+        {
+            await _eventAdminService.UpdateMemberResponse(MemberId, id, memberId, responseType);
+            return RedirectToReferrer();
         }
 
         [HttpPost("{chapterName}/Admin/Events/{id:guid}/Delete")]

@@ -33,13 +33,13 @@
 <p>
     <a href="/@Model.Name/Admin/Events/Venues/Create" class="btn btn-primary">Create</a>
 </p>
-<table class="table table-striped">
+<table class="table table-striped" data-sortable>
     <thead>
     <tr>
-        <th>Name</th>
+        <th data-sortable-sort="default">Name</th>
         <th>Address</th>
-        <th>Events</th>
-        <th>Last Event</th>
+        <th data-sortable-sort data-sortable-dir="desc">Events</th>
+        <th data-sortable-sort data-sortable-dir="desc">Last Event</th>
     </tr>
     </thead>
     <tbody>
@@ -49,7 +49,13 @@
             <td><a href="/@Model.Name/Admin/Events/Venues/@venue.Id">@venue.Name</a></td>
             <td>@venue.Address</td>
             <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>
-            <td>@(lastEvents.ContainsKey(venue.Id) ? lastEvents[venue.Id].EventDate() : null)</td>
+            <td>
+                @if (lastEvents.TryGetValue(venue.Id, out DateTime lastEventDate))
+                {
+                    <span class="d-none" data-sort-value="@lastEventDate.ToString("yyyy-MM-dd")"></span>
+                    @lastEventDate.EventDate()
+                }
+            </td>
         </tr>
     }
     </tbody>

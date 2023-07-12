@@ -11869,6 +11869,26 @@ textarea.form-control-lg {
     display: none !important;
   }
 }
+/*Style SlimSelect like Bootstrap 5*/
+.ss-main {
+  display: flex;
+}
+
+.ss-placeholder {
+  padding: 0 !important;
+  line-height: 1.5 !important;
+}
+
+.ss-value {
+  background-color: var(--bs-secondary) !important;
+}
+
+.ss-value-text,
+.ss-value-delete {
+  line-height: 1.5 !important;
+  font-size: 0.8rem !important;
+}
+
 @media (min-width: 992px) {
   html {
     font-size: 21px;
@@ -12250,6 +12270,10 @@ th.sortable.sort-asc:after {
 }
 th.sortable.sort-desc:after {
   content: " \f0d7";
+}
+
+.table-stripe > * {
+  background-color: var(--bs-table-striped-bg) !important;
 }
 
 .subscription-alerts .alert {

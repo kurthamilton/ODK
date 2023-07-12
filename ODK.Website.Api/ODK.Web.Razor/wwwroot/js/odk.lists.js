@@ -1,5 +1,34 @@
 ﻿(function () {
 
+    /*COMMON*/
+    function stripeTable($table) {
+        if (!$table.hasAttribute('data-table-striped')) {
+            return;
+        }
+
+        const $rows = $table
+            .querySelector('tbody')
+            .querySelectorAll('tr');
+
+        $rows.forEach($row => $row.classList.remove('table-stripe'));
+
+        let striped = true;
+        $rows.forEach($row => {
+            if ($row.classList.contains('d-none')) {
+                return;
+            }
+
+            if (striped) {
+                $row.classList.add('table-stripe');
+            }            
+
+            striped = !striped;
+        });
+    }
+
+    document.querySelectorAll('[data-table-striped]')
+        .forEach($table => stripeTable($table));
+
     /*FILTERING*/
     const $filters = document.querySelectorAll('[data-table-filter]');
     $filters.forEach($filter => {
@@ -9,23 +38,63 @@
             return;
         }        
 
-        $filter.addEventListener('input', () => {
-            filterTable($target, $filter.value);
-        });        
-    });
+        const elementType = $filter.tagName;
+        const trigger = elementType === 'SELECT' ? 'change' : 'input';
+        $filter.addEventListener(trigger, () => {
+            filterTable($target);
+        }); 
 
-    function filterTable($table, value) {
+        filterTable($target);
+    });    
+
+    function filterTable($table) {
         const $body = $table.querySelector('tbody');
         const $rows = $body.querySelectorAll('tr');
+
+        const filters = [];
+        $filters.forEach($filter => {
+            const rawValues = $filter.tagName === 'SELECT'
+                ? Array.from($filter.options).filter(x => x.selected).map(x => x.value)
+                : [$filter.value ?? ''];
+
+            filters.push({
+                field: $filter.getAttribute('data-table-filter-field'),
+                values: rawValues.map(x => x.toLocaleLowerCase())
+            });
+        });        
+
         $rows.forEach($row => {
-            const $values = [...$row.querySelectorAll('[data-filter-value]')];
-            const values = $values.map(x => x.innerHTML.toLocaleLowerCase());                        
-            if (values.find(x => x.includes(value.toLocaleLowerCase()))) {
+            let possibleMatches = 0;
+            let matches = 0;
+
+            filters.forEach(filter => {
+                const field = filter.field;
+                const values = filter.values;
+
+                if (!values.find(x => !!x)) {
+                    return;
+                }
+
+                possibleMatches++;
+
+                const rowValue = $row.getAttribute(`data-filter-${field}`);
+                if (!rowValue) {
+                    return;
+                }
+
+                if (values.find(x => rowValue.toLocaleLowerCase().includes(x.toLocaleLowerCase()))) {
+                    matches++;
+                }
+            });            
+
+            if (possibleMatches == 0 || matches === possibleMatches) {
                 $row.classList.remove('d-none');
             } else {
                 $row.classList.add('d-none');
             }
         });
+
+        stripeTable($table);
     }
 
     /*SORTING*/
@@ -48,11 +117,15 @@
             return;
         }
 
-        const $triggers = $header.querySelectorAll('th[data-sortable-sort]');
+        const $triggers = $header.querySelectorAll('th');
         
         const $rows = $body.querySelectorAll('tr');
         
         $triggers.forEach(($trigger, i) => {
+            if (!$trigger.hasAttribute('data-sortable-sort')) {
+                return;
+            }
+
             $trigger.classList.add('sortable');
             const options = $trigger.getAttribute('data-sortable-sort').split(',');
             if (options.indexOf('default') >= 0) {
@@ -65,9 +138,7 @@
         });
 
         function sort($trigger, i) {
-            const direction = $trigger.classList.contains(sortDirections.asc.class)
-                ? 'desc'
-                : 'asc';
+            const direction = getDirection($trigger);
 
             $triggers.forEach(x => {
                 x.classList.remove(sortDirections.asc.class);
@@ -81,7 +152,7 @@
             $rows.forEach($row => {
                 const $cell = $row.querySelectorAll('td')[i];
                 const $value = $cell.querySelector('[data-sort-value]');
-                const value = $value ? $value.innerHTML : $cell.innerHTML;
+                const value = $value ? $value.getAttribute('data-sort-value') : $cell.innerHTML;
                 sorted.push({ $row: $row, value: value.toString().toLocaleLowerCase().trim() });
             });
 
@@ -91,6 +162,29 @@
             $rows.forEach($row => $row.remove());
 
             sorted.forEach(row => $body.appendChild(row.$row));
+
+            stripeTable($list);
+        }
+
+        function getDirection($trigger) {
+            const existingDirection = $trigger.classList.contains(sortDirections.asc.class)
+                ? 'asc'
+                : $trigger.classList.contains(sortDirections.desc.class)
+                ? 'desc'
+                : '';
+
+            const direction = existingDirection === 'asc'
+                ? 'desc'
+                : existingDirection === 'desc'
+                ? 'asc'
+                : '';
+
+            if (direction) {
+                return direction;
+            }
+
+            const defaultDir = $trigger.getAttribute('data-sortable-dir');
+            return defaultDir || 'asc';
         }
     });
 })();

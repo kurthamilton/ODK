@@ -25,12 +25,12 @@
 <p>
     <div class="row row-cols-lg-auto g-3 align-items-center">
         <div class="col-12">
-            <label class="form-label">Name</label>
-            <input class="form-control" data-table-filter="#members-table" />
+            <label class="form-label" for="name-filter">Name</label>
+            <input class="form-control" id="name-filter" data-table-filter="#members-table" data-table-filter-field="name" />
         </div>
-        @*<div class="col-12">
-            <label class="form-label">Type</label>
-            <select class="form-control" multiple>
+        <div class="col-12">
+            <label class="form-label" for="type-filter">Type</label>
+            <select class="form-control" id="type-filter" multiple data-table-filter="#members-table" data-table-filter-field="type">
                 @foreach (SubscriptionType type in Enum.GetValues<SubscriptionType>())
                 {
                     if (type == SubscriptionType.None)
@@ -38,14 +38,21 @@
                         continue;
                     }
 
-                    <option>@type</option>
+                    if (type != SubscriptionType.Alum)
+                    {
+                        <option selected>@type</option>
+                    }
+                    else
+                    {
+                        <option>@type</option>
+                    }
                 }
             </select>
-        </div>*@
+        </div>
     </div>
 </p>
 
-<table class="table" data-sortable id="members-table">
+<table class="table" data-sortable id="members-table" data-table-striped>
     <thead>
     <tr>
         <th data-sortable-sort="default">Name</th>
@@ -59,14 +66,15 @@
     {
         subscriptions.TryGetValue(member.Id, out MemberSubscription? subscription);
 
-        <tr>
+        <tr data-filter-name="@member.FullName" data-filter-type="@subscription?.Type">
             <td>
-                <a href="/@Model.Name/Admin/Members/@member.Id" data-filter-value data-sort-value>
+                <a href="/@Model.Name/Admin/Members/@member.Id" data-sort-value="@member.FullName">
                     @member.FullName
                 </a>
             </td>
             <td>@subscription?.Type</td>
             <td>
+                <span class="d-none" data-sort-value="@(subscription?.ExpiryDate?.ToString("yyyy-MM-dd") ?? "")"></span>
                 <span class="@(subscription?.ExpiryDate < DateTime.Today ? "text-danger" : null)
                              @(subscription?.ExpiryDate < subscriptionWarningDate ? "text-warning" : null)">
                     @subscription?.ExpiryDate?.ToString("yyyy-MM-dd")
