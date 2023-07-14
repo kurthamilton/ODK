@@ -12,6 +12,7 @@
    Title = "Login",
    Content = await Html.PartialAsync("Account/_LoginForm", new LoginViewModel
    {
+       Chapter = Model.Chapter,
        ReturnUrl = Model.ReturnUrl
    })
 })

@@ -173,11 +173,11 @@ namespace ODK.Services.Authentication
             return authenticationToken;
         }
 
-        public async Task RequestPasswordReset(string emailAddress)
+        public async Task<ServiceResult> RequestPasswordReset(string emailAddress)
         {
             if (!MailUtils.ValidEmailAddress(emailAddress))
             {
-                throw new OdkServiceException("Invalid email address format");
+                return ServiceResult.Failure("Invalid email address format");
             }
 
             Member member = await _memberRepository.FindMemberByEmailAddress(emailAddress);
@@ -185,16 +185,7 @@ namespace ODK.Services.Authentication
             DateTime created = DateTime.UtcNow;
             DateTime expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
             string token = RandomStringGenerator.Generate(64);
-
-            try
-            {
-                _authorizationService.AssertMemberIsCurrent(member);
-            }
-            catch
-            {
-                return;
-            }
-
+            
             Chapter chapter = await _chapterRepository.GetChapter(member.ChapterId);
 
             await _memberRepository.AddPasswordResetRequest(member.Id, created, expires, token);
@@ -210,27 +201,36 @@ namespace ODK.Services.Authentication
                 { "chapter.name", chapter.Name },
                 { "url", url }
             });
+
+            return ServiceResult.Successful();
         }
 
-        public async Task ResetPassword(string token, string password)
+        public async Task<ServiceResult> ResetPassword(string token, string password)
         {
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                return ServiceResult.Failure("Password cannot be blank");
+            }
+
             const string message = "Link is invalid or has expired. Please request a new link using the password reset form.";
 
             MemberPasswordResetRequest request = await _memberRepository.GetPasswordResetRequest(token);
             if (request == null)
             {
-                throw new OdkServiceException(message);
+                return ServiceResult.Failure(message);
             }
 
             if (request.Expires < DateTime.UtcNow)
             {
                 await _memberRepository.DeletePasswordResetRequest(request.Id);
-                throw new OdkServiceException(message);
+                return ServiceResult.Failure(message);
             }
 
             await UpdatePassword(request.MemberId, password);
 
             await _memberRepository.DeletePasswordResetRequest(request.Id);
+
+            return ServiceResult.Successful();
         }
 
         private static void ValidatePassword(string password)

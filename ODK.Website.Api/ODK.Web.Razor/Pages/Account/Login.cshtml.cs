@@ -1,10 +1,10 @@
 ﻿using ODK.Services.Caching;
 
-namespace ODK.Web.Razor.Pages
+namespace ODK.Web.Razor.Pages.Account
 {
     public class LoginModel : OdkPageModel
     {
-        public LoginModel(IRequestCache requestCache) 
+        public LoginModel(IRequestCache requestCache)
             : base(requestCache)
         {
         }

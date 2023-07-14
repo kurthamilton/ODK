@@ -22,8 +22,8 @@ namespace ODK.Services.Authentication
 
         Task<AuthenticationToken> RefreshToken(string refreshToken);
 
-        Task RequestPasswordReset(string emailAddress);
+        Task<ServiceResult> RequestPasswordReset(string emailAddress);
 
-        Task ResetPassword(string token, string password);
+        Task<ServiceResult> ResetPassword(string token, string password);
     }
 }

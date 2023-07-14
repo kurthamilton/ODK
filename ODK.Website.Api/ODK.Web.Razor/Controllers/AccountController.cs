@@ -164,6 +164,25 @@ namespace ODK.Web.Razor.Controllers
             return RedirectToReferrer();
         }
 
+        [AllowAnonymous]
+        [HttpPost("/Account/Password/Forgotten")]
+        public async Task<IActionResult> ForgottenPassword([FromForm] ForgottenPasswordFormViewModel viewModel)
+        {
+            ServiceResult result = await _authenticationService.RequestPasswordReset(viewModel.EmailAddress);
+            if (result.Success)
+            {
+                string message = "An email containing password reset instructions has been sent to that email address " +
+                                 "if it is associated with an account";
+                AddFeedback(new FeedbackViewModel(message, FeedbackType.Success));
+            }
+            else
+            {
+                AddFeedback(new FeedbackViewModel(result));
+            }
+
+            return RedirectToReferrer();
+        }
+
         [HttpPost("{ChapterName}/Account/Picture/Change")]
         public async Task<IActionResult> UpdatePicture(List<IFormFile> files)
         {
