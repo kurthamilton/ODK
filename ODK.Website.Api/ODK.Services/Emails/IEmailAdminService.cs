@@ -12,6 +12,8 @@ namespace ODK.Services.Emails
 
         Task DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type);
 
+        Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, string chapterName, EmailType type);
+
         Task DeleteChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId);
 
         Task<ChapterEmail> GetChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type);
@@ -26,7 +28,7 @@ namespace ODK.Services.Emails
 
         Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId, Guid currentChapterId);
 
-        Task UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, UpdateEmail chapterEmail);
+        Task<ServiceResult> UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, UpdateEmail chapterEmail);
 
         Task UpdateChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId, UpdateChapterEmailProvider provider);
 

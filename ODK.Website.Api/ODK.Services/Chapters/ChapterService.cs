@@ -70,6 +70,17 @@ namespace ODK.Services.Chapters
             return await _cacheService.GetOrSetVersionedItem(() => GetChapterLinks(chapterId), chapterId, currentVersion);
         }
 
+        public async Task<ChapterLinks> GetChapterLinks(Guid chapterId)
+        {
+            ChapterLinks links = await _chapterRepository.GetChapterLinks(chapterId);
+            if (links == null)
+            {
+                throw new OdkNotFoundException();
+            }
+
+            return links;
+        }
+
         public async Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid chapterId)
         {
             return await _cacheService.GetOrSetItem(
@@ -179,17 +190,6 @@ namespace ODK.Services.Chapters
             };
 
             await _emailService.SendContactEmail(chapter.Value, fromAddress, message, parameters);
-        }
-
-        private async Task<ChapterLinks> GetChapterLinks(Guid chapterId)
-        {
-            ChapterLinks links = await _chapterRepository.GetChapterLinks(chapterId);
-            if (links == null)
-            {
-                throw new OdkNotFoundException();
-            }
-
-            return links;
         }
     }
 }

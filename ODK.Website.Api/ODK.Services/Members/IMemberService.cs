@@ -45,6 +45,8 @@ namespace ODK.Services.Members
 
         Task<MemberImage> UpdateMemberImage(Guid id, UpdateMemberImage image);
 
-        Task<MemberProfile> UpdateMemberProfile(Guid id, UpdateMemberProfile profile);
+        Task<ServiceResult> UpdateMemberProfile(Guid id, UpdateMemberProfile profile);
+
+        Task<MemberProfile> UpdateMemberProfileOld(Guid id, UpdateMemberProfile profile);
     }
 }

@@ -75,23 +75,29 @@ namespace ODK.Services.Chapters
             return ServiceResult.Successful();
         }
 
-        public async Task CreateChapterProperty(Guid currentMemberId, Guid chapterId, CreateChapterProperty property)
+        public async Task<ServiceResult> CreateChapterProperty(Guid currentMemberId, Guid chapterId, CreateChapterProperty property)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            IReadOnlyCollection<ChapterProperty> existing = await _chapterRepository.GetChapterProperties(chapterId);
+            IReadOnlyCollection<ChapterProperty> existing = await _chapterRepository.GetChapterProperties(chapterId, true);
 
             int displayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
             ChapterProperty create = new ChapterProperty(Guid.Empty, chapterId, property.DataType, property.Name?.ToLowerInvariant(),
                 property.Label, displayOrder, property.Required, property.Subtitle, property.HelpText, property.Hidden);
 
-            await ValidateChapterProperty(create);
+            ServiceResult validationResult = ValidateChapterProperty(create, existing);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
             await _chapterRepository.AddChapterProperty(create);
             _cacheService.RemoveVersionedCollection<ChapterProperty>(chapterId);
+
+            return ServiceResult.Successful();
         }
 
-        public async Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question)
+        public async Task<ServiceResult> CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
@@ -100,11 +106,17 @@ namespace ODK.Services.Chapters
             int displayOrder = existing.Count  > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
             ChapterQuestion create = new ChapterQuestion(Guid.Empty, chapterId, question.Name, question.Answer, displayOrder, 0);
 
-            ValidateChapterQuestion(create);
+            ServiceResult validationResult = ValidateChapterQuestion(create);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
             await _chapterRepository.CreateChapterQuestion(create);
 
             _cacheService.RemoveVersionedItem<ChapterQuestion>(chapterId);
+
+            return ServiceResult.Successful();
         }
 
         public async Task<ServiceResult> CreateChapterSubscription(Guid currentMemberId, Guid chapterId, CreateChapterSubscription subscription)
@@ -381,7 +393,7 @@ namespace ODK.Services.Chapters
             return update;
         }
 
-        public async Task UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property)
+        public async Task<ServiceResult> UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property)
         {
             ChapterProperty update = await GetChapterProperty(currentMemberId, propertyId);
 
@@ -392,11 +404,19 @@ namespace ODK.Services.Chapters
             update.Required = property.Required;
             update.Subtitle = property.Subtitle;
 
-            await ValidateChapterProperty(update);
+            IReadOnlyCollection<ChapterProperty> existing = await _chapterRepository.GetChapterProperties(update.ChapterId, true);
+
+            ServiceResult validationResult = ValidateChapterProperty(update, existing);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
             await _chapterRepository.UpdateChapterProperty(update);
 
             _cacheService.RemoveVersionedCollection<ChapterProperty>(update.ChapterId);
+
+            return ServiceResult.Successful();
         }
 
         public async Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(Guid currentMemberId, Guid propertyId, int moveBy)
@@ -445,18 +465,24 @@ namespace ODK.Services.Chapters
             return properties.OrderBy(x => x.DisplayOrder).ToArray();
         }
 
-        public async Task UpdateChapterQuestion(Guid currentMemberId, Guid questionId, CreateChapterQuestion question)
+        public async Task<ServiceResult> UpdateChapterQuestion(Guid currentMemberId, Guid questionId, CreateChapterQuestion question)
         {
             ChapterQuestion update = await GetChapterQuestion(currentMemberId, questionId);
 
             update.Answer = question.Answer;
             update.Name = question.Name;
 
-            ValidateChapterQuestion(update);
+            ServiceResult validationResult = ValidateChapterQuestion(update);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
             await _chapterRepository.UpdateChapterQuestion(update);
 
             _cacheService.RemoveVersionedCollection<ChapterQuestion>(update.ChapterId);
+
+            return ServiceResult.Successful();
         }
 
         public async Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(Guid currentMemberId, Guid questionId, int moveBy)
@@ -579,13 +605,24 @@ namespace ODK.Services.Chapters
             return ServiceResult.Successful();
         }
 
-        private void ValidateChapterQuestion(ChapterQuestion question)
+        private void AssertChapterQuestionValid(ChapterQuestion question)
+        {
+            ServiceResult result = ValidateChapterQuestion(question);
+            if (!result.Success)
+            {
+                throw new OdkServiceException(result.Message);
+            }
+        }
+
+        private ServiceResult ValidateChapterQuestion(ChapterQuestion question)
         {
             if (string.IsNullOrWhiteSpace(question.Name) ||
                 string.IsNullOrWhiteSpace(question.Answer))
             {
-                throw new OdkServiceException("Some required fields are missing");
+                return ServiceResult.Failure("Some required fields are missing");
             }
+
+            return ServiceResult.Successful();
         }
 
         private void AssertChapterMembershipSettingsValid(ChapterMembershipSettings settings)
@@ -608,20 +645,30 @@ namespace ODK.Services.Chapters
             return ServiceResult.Successful();
         }
 
-        private async Task ValidateChapterProperty(ChapterProperty property)
+        private void AssertChapterPropertyValid(ChapterProperty property, IReadOnlyCollection<ChapterProperty> existing)
+        {
+            ServiceResult result = ValidateChapterProperty(property, existing);
+            if (!result.Success)
+            {
+                throw new OdkServiceException(result.Message);
+            }
+        }
+
+        private ServiceResult ValidateChapterProperty(ChapterProperty property, IReadOnlyCollection<ChapterProperty> existing)
         {
             if (string.IsNullOrEmpty(property.Name) ||
                 string.IsNullOrEmpty(property.Label) ||
                 !Enum.IsDefined(typeof(DataType), property.DataType) || property.DataType == DataType.None)
             {
-                throw new OdkServiceException("Some required fields are missing");
+                return ServiceResult.Failure("Some required fields are missing");
             }
 
-            IReadOnlyCollection<ChapterProperty> properties = await _chapterRepository.GetChapterProperties(property.ChapterId);
-            if (properties.Any(x => x.Name.Equals(property.Name, StringComparison.OrdinalIgnoreCase) && x.Id != property.Id))
+            if (existing.Any(x => x.Name.Equals(property.Name, StringComparison.OrdinalIgnoreCase) && x.Id != property.Id))
             {
-                throw new OdkServiceException("Name already exists");
+                return ServiceResult.Failure("Name already exists");
             }
+
+            return ServiceResult.Successful();
         }
 
         private async Task AssertChapterSubscriptionValid(ChapterSubscription subscription)

@@ -10,8 +10,8 @@ namespace ODK.Services.Emails
 
         Task SendBulkEmail(Chapter chapter, IEnumerable<string> to, string subject, string body, ChapterAdminMember from, bool bcc = true);
 
-        Task SendEmail(Chapter chapter, string to, string subject, string body);
+        Task<ServiceResult> SendEmail(Chapter chapter, string to, string subject, string body);
 
-        Task SendEmail(Chapter chapter, string to, string subject, string body, ChapterAdminMember from);
+        Task<ServiceResult> SendEmail(Chapter chapter, string to, string subject, string body, ChapterAdminMember from);
     }
 }

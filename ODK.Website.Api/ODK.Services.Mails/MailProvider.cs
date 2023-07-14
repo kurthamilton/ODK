@@ -67,12 +67,12 @@ namespace ODK.Services.Emails
             }
         }
 
-        public async Task SendEmail(Chapter chapter, string to, string subject, string body)
+        public async Task<ServiceResult> SendEmail(Chapter chapter, string to, string subject, string body)
         {
-            await SendEmail(chapter, to, subject, body, null);
+            return await SendEmail(chapter, to, subject, body, null);
         }
 
-        public async Task SendEmail(Chapter chapter, string to, string subject, string body, ChapterAdminMember from)
+        public async Task<ServiceResult> SendEmail(Chapter chapter, string to, string subject, string body, ChapterAdminMember from)
         {
             body = await GetLayoutBody(chapter, body);
 
@@ -81,7 +81,7 @@ namespace ODK.Services.Emails
             MimeMessage message = await CreateMessage(provider, from, subject, body);
             AddEmailRecipient(message, new MailboxAddress(to));
 
-            await SendEmail(provider, message);
+            return await SendEmail(provider, message);
         }
 
         private static void AddBulkEmailRecipients(MimeMessage message, IEnumerable<string> recipients)
@@ -164,12 +164,12 @@ namespace ODK.Services.Emails
             throw new OdkServiceException("No more emails can be sent today");
         }
 
-        private async Task SendEmail(ChapterEmailProvider provider, MimeMessage message)
+        private async Task<ServiceResult> SendEmail(ChapterEmailProvider provider, MimeMessage message)
         {
             if (message.To.Count == 0)
             {
                 await _loggingService.LogDebug("Not sending email, no recipients set");
-                return;
+                return ServiceResult.Failure("No recipients set");
             }
 
             await _loggingService.LogDebug($"Sending email to {string.Join(", ", message.To)}");
@@ -181,7 +181,7 @@ namespace ODK.Services.Emails
                     ServerCertificateValidationCallback = (s, c, h, e) => true
                 };
                 await client.ConnectAsync(provider.SmtpServer, provider.SmtpPort, SecureSocketOptions.StartTlsWhenAvailable);
-                client.Authenticate(provider.SmtpLogin, provider.SmtpPassword);
+                await client.AuthenticateAsync(provider.SmtpLogin, provider.SmtpPassword);
 
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
@@ -193,11 +193,12 @@ namespace ODK.Services.Emails
                 }
 
                 await _loggingService.LogDebug($"Email sent to {string.Join(", ", message.To)}");
+                return ServiceResult.Successful();
             }
             catch (Exception ex)
             {
                 await _loggingService.LogError(ex, "Error sending email");
-                throw new OdkServiceException("Error sending email");
+                return ServiceResult.Failure($"Error sending email: {ex.Message}");
             }
         }
     }

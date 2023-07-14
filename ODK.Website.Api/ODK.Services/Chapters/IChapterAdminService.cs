@@ -11,9 +11,9 @@ namespace ODK.Services.Chapters
 
         Task<ServiceResult> AddChapterAdminMember(Guid currentMemberId, string chapterName, Guid memberId);
 
-        Task CreateChapterProperty(Guid currentMemberId, Guid chapterId, CreateChapterProperty property);
+        Task<ServiceResult> CreateChapterProperty(Guid currentMemberId, Guid chapterId, CreateChapterProperty property);
 
-        Task CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question);
+        Task<ServiceResult> CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question);
 
         Task<ServiceResult> CreateChapterSubscription(Guid currentMemberId, Guid chapterId, CreateChapterSubscription subscription);
 
@@ -57,11 +57,11 @@ namespace ODK.Services.Chapters
 
         Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings paymentSettings);
 
-        Task UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property);
+        Task<ServiceResult> UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property);
 
         Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(Guid currentMemberId, Guid propertyId, int moveBy);
 
-        Task UpdateChapterQuestion(Guid currentMemberId, Guid questionId, CreateChapterQuestion question);
+        Task<ServiceResult> UpdateChapterQuestion(Guid currentMemberId, Guid questionId, CreateChapterQuestion question);
 
         Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(Guid currentMemberId, Guid questionId, int moveBy);
 

@@ -89,6 +89,13 @@
 {
     ChapterProperty chapterProperty = chapterProperties.ElementAt(i);
 
+    IDictionary<string, object> htmlAttributes = new Dictionary<string, object>();
+    if (chapterProperty.Required)
+    {
+        htmlAttributes.Add("data-val", "true");
+        htmlAttributes.Add("data-val-required", $"The {chapterProperty.Label} field is required.");
+    }
+
     @Html.HiddenFor(x => x.Properties[i].ChapterPropertyId)
 
     <div class="form-group mb-3 @(chapterProperty.Required ? "required" : null)">
@@ -104,7 +111,7 @@
         {
             <span class="ml-1 text-muted">@chapterProperty.Subtitle</span>
         }
-        
+
         @if (chapterProperty.DataType == DataType.DropDown)
         {
             IReadOnlyCollection<ChapterPropertyOption> options = chapterPropertyOptions.ContainsKey(chapterProperty.Id)
@@ -124,38 +131,50 @@
                 Model.Properties[i].Value = "Other";
             }
 
-            @Html.DropDownListFor(x => x.Properties[i].Value, selectList, "Select...", new
-            {
-                @class = "form-control", 
-                data_select_freetext = $"#{Html.IdFor(x => x.Properties[i].OtherValue)}",
-                data_select_freetext_value = "Other"
-            })
-            @Html.TextBoxFor(x => x.Properties[i].OtherValue, new { @class = "form-control d-none" })
+            IDictionary<string, object> textBoxHtmlAttributes = new Dictionary<string, object>(htmlAttributes);
+            textBoxHtmlAttributes.Add("class", "form-control d-none");
+
+            htmlAttributes.Add("class", "form-select");
+            htmlAttributes.Add("data-select-freetext", $"#{Html.IdFor(x => x.Properties[i].OtherValue)}");
+            htmlAttributes.Add("data-select-freetext-value", "Other");
+
+            @Html.DropDownListFor(x => x.Properties[i].Value, selectList, "Select...", htmlAttributes)
+            @Html.TextBoxFor(x => x.Properties[i].OtherValue, textBoxHtmlAttributes)
+            @Html.ValidationMessageFor(x => x.Properties[i].OtherValue)
         }
         else if (chapterProperty.DataType == DataType.LongText)
         {
-            @Html.TextAreaFor(x => x.Properties[i].Value, new { @class = "form-control", rows = 3 })
+            htmlAttributes.Add("class", "form-control");
+            htmlAttributes.Add("rows", "3");
+
+            @Html.TextAreaFor(x => x.Properties[i].Value, htmlAttributes)
         }
         else if (chapterProperty.DataType == DataType.Url)
         {
+            htmlAttributes.Add("class", "form-control");
+
             if (chapterProperty.Name == "facebook")
             {
                 <div class="input-group">
                     <span class="input-group-text">
                         <i class="fab fa-facebook-f"></i>
                     </span>
-                    @Html.TextBoxFor(x => x.Properties[i].Value, new { @class = "form-control" })
+                    @Html.TextBoxFor(x => x.Properties[i].Value, htmlAttributes)
                 </div>
             }
             else
             {
-                @Html.TextBoxFor(x => x.Properties[i].Value, new { @class = "form-control" })
+                @Html.TextBoxFor(x => x.Properties[i].Value, htmlAttributes)
             }
         }
         else
         {
-            @Html.TextBoxFor(x => x.Properties[i].Value, new { @class = "form-control" })
+            htmlAttributes.Add("class", "form-control");
+
+            @Html.TextBoxFor(x => x.Properties[i].Value, htmlAttributes)
         }
+
+        @Html.ValidationMessageFor(x => x.Properties[i].Value)
     </div>
 }
 

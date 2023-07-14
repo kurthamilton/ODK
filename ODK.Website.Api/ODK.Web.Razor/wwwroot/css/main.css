@@ -12276,6 +12276,12 @@ th.sortable.sort-desc:after {
   background-color: var(--bs-table-striped-bg) !important;
 }
 
+/*Restore Bootstrap 4 thead style*/
+.table thead th {
+  border-top: 1px solid var(--bs-table-border-color);
+  border-bottom: 2px solid var(--bs-table-border-color);
+}
+
 .subscription-alerts .alert {
   margin-bottom: 0;
 }

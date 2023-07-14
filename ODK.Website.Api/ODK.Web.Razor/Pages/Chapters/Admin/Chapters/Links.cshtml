@@ -1,0 +1,12 @@
+﻿@page "/{chapterName}/Admin/Chapter/Links"
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.LinksModel
+@{
+    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Model.Title = "Links | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Admin/Chapter/_LinksContent", Model.Chapter)
+})

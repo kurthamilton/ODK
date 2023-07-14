@@ -52,11 +52,11 @@ namespace ODK.Services.Emails
             await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
         }
 
-        public async Task SendEmail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters)
+        public async Task<ServiceResult> SendEmail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters)
         {
             Email email = await GetEmail(type, chapter.Id, parameters);
 
-            await _mailProvider.SendEmail(chapter, to, email.Subject, email.HtmlContent);
+            return await _mailProvider.SendEmail(chapter, to, email.Subject, email.HtmlContent);
         }
 
         public async Task<ServiceResult> SendMemberEmail(Guid currentMemberId, Guid memberId, string subject, string body)
@@ -71,9 +71,7 @@ namespace ODK.Services.Emails
 
             Chapter chapter = await _chapterRepository.GetChapter(from.ChapterId);
 
-            await _mailProvider.SendEmail(chapter, to.EmailAddress, subject, body, from);
-
-            return ServiceResult.Successful();
+            return await _mailProvider.SendEmail(chapter, to.EmailAddress, subject, body, from);
         }
 
         public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, IDictionary<string, string> parameters)

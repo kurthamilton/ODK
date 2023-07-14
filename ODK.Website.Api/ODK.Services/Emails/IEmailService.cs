@@ -15,7 +15,7 @@ namespace ODK.Services.Emails
 
         Task SendContactEmail(Chapter chapter, string from, string message, IDictionary<string, string> parameters);
 
-        Task SendEmail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters);
+        Task<ServiceResult> SendEmail(Chapter chapter, string to, EmailType type, IDictionary<string, string> parameters);
 
         Task<ServiceResult> SendMemberEmail(Guid currentMemberId, Guid memberId, string subject, string body);
 

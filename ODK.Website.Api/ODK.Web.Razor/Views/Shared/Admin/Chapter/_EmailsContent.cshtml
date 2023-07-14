@@ -1,0 +1,41 @@
+﻿@using ODK.Core.Emails
+@using ODK.Services.Emails
+@using ODK.Web.Common.Extensions
+@model ODK.Core.Chapters.Chapter
+@inject IEmailAdminService EmailAdminService
+@{
+    Guid? memberId = User.MemberId();
+
+    IReadOnlyCollection<ChapterEmail> emails = await EmailAdminService.GetChapterEmails(memberId!.Value, Model.Id);
+}
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Email</th>
+        <th>Custom</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (ChapterEmail email in emails.OrderBy(x => x.Type.ToString()))
+    {
+        <tr>
+            <td>
+                <a href="/@Model.Name/Admin/Chapter/Emails/@email.Type">@email.Type</a>
+            </td>
+            <td>
+                @if (email.IsDefault())
+                {
+                    <span class="text-muted">Default</span>
+                }
+                else
+                {
+                    <span>
+                        <i class="fas fa-check-circle text-success"></i>
+                    </span>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

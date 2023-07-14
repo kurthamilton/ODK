@@ -22,5 +22,7 @@ namespace ODK.Core.Emails
         public string Subject { get; set; }
 
         public EmailType Type { get; }
+
+        public bool IsDefault() => Id == Guid.Empty;
     }
 }

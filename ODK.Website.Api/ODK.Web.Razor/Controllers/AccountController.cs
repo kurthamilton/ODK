@@ -192,26 +192,7 @@ namespace ODK.Web.Razor.Controllers
 
             return RedirectToReferrer();
         }
-
-        [HttpPost("{ChapterName}/Account/Profile")]
-        public async Task<IActionResult> UpdateProfile([FromForm] ProfileFormViewModel viewModel)
-        {
-            UpdateMemberProfile update = new UpdateMemberProfile
-            {
-                FirstName = viewModel.FirstName,
-                LastName = viewModel.LastName,
-                Properties = viewModel.Properties.Select(x => new UpdateMemberProperty
-                {
-                    ChapterPropertyId = x.ChapterPropertyId,
-                    Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) && !string.IsNullOrEmpty(x.OtherValue) ? x.OtherValue : x.Value
-                })
-            };
-
-            await _memberService.UpdateMemberProfile(MemberId, update);
-
-            return RedirectToReferrer();
-        }
-
+        
         [HttpPost("{ChapterName}/Account/Subscription/Purchase")]
         public async Task<IActionResult> PurchaseSubscription([FromForm] PurchaseSubscriptionRequest request)
         {

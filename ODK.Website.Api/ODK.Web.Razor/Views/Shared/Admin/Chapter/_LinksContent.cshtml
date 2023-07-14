@@ -1,0 +1,19 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin.Chapters
+@model ODK.Core.Chapters.Chapter
+@inject IChapterService ChapterService
+@{
+    ChapterLinks links = await ChapterService.GetChapterLinks(Model.Id);
+}
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel
+    {
+        Facebook = links.FacebookName,
+        Instagram = links.InstagramName,
+        Twitter = links.TwitterName
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

@@ -44,6 +44,21 @@ namespace ODK.Services.Emails
             await _emailRepository.DeleteChapterEmail(chapterId, type);
         }
 
+        public async Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, string chapterName, EmailType type)
+        {
+            Chapter chapter = await _chapterRepository.GetChapter(chapterName);
+            if (chapter == null)
+            {
+                return ServiceResult.Failure("Chapter not found");
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, chapter.Id);
+
+            await _emailRepository.DeleteChapterEmail(chapter.Id, type);
+
+            return ServiceResult.Successful();
+        }
+
         public async Task DeleteChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId)
         {
             ChapterEmailProvider provider = await GetChapterEmailProvider(currentMemberId, chapterEmailProviderId);
@@ -86,7 +101,7 @@ namespace ODK.Services.Emails
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             IReadOnlyCollection<ChapterEmail> chapterEmails = await _emailRepository.GetChapterEmails(chapterId);
-            IDictionary<EmailType, ChapterEmail> chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type, x => x);
+            IDictionary<EmailType, ChapterEmail> chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type);
 
             List<ChapterEmail> defaultEmails = new List<ChapterEmail>();
             foreach (EmailType type in Enum.GetValues(typeof(EmailType)))
@@ -123,7 +138,7 @@ namespace ODK.Services.Emails
             return await _emailRepository.GetEmails();
         }
 
-        public async Task UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, UpdateEmail chapterEmail)
+        public async Task<ServiceResult> UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, UpdateEmail chapterEmail)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
@@ -138,7 +153,11 @@ namespace ODK.Services.Emails
                 existing.Subject = chapterEmail.Subject;
             }
 
-            ValidateChapterEmail(existing);
+            ServiceResult validationResult = ValidateChapterEmail(existing);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
             if (existing.Id != Guid.Empty)
             {
@@ -148,6 +167,8 @@ namespace ODK.Services.Emails
             {
                 await _emailRepository.AddChapterEmail(existing);
             }
+
+            return ServiceResult.Successful();
         }
 
         public async Task UpdateChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId,
@@ -183,18 +204,29 @@ namespace ODK.Services.Emails
             await _emailRepository.UpdateEmail(existing);
         }
 
-        private static void ValidateChapterEmail(ChapterEmail chapterEmail)
+        private static void AssertChapterEmailValid(ChapterEmail chapterEmail)
+        {
+            ServiceResult result = ValidateChapterEmail(chapterEmail);
+            if (!result.Success)
+            {
+                throw new OdkServiceException(result.Message);
+            }
+        }
+
+        private static ServiceResult ValidateChapterEmail(ChapterEmail chapterEmail)
         {
             if (!Enum.IsDefined(typeof(EmailType), chapterEmail.Type) || chapterEmail.Type == EmailType.None)
             {
-                throw new OdkServiceException("Invalid type");
+                return ServiceResult.Failure("Invalid type");
             }
 
             if (string.IsNullOrWhiteSpace(chapterEmail.HtmlContent) ||
                 string.IsNullOrWhiteSpace(chapterEmail.Subject))
             {
-                throw new OdkServiceException("Some required fields are missing");
+                return ServiceResult.Failure("Some required fields are missing");
             }
+
+            return ServiceResult.Successful();
         }
 
         private static void ValidateChapterEmailProvider(ChapterEmailProvider provider)

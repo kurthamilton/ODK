@@ -121,7 +121,7 @@ namespace ODK.Web.Api.Account
         {
             UpdateMemberProfile update = _mapper.Map<UpdateMemberProfile>(request);
 
-            MemberProfile profile = await _memberService.UpdateMemberProfile(GetMemberId(), update);
+            MemberProfile profile = await _memberService.UpdateMemberProfileOld(GetMemberId(), update);
 
             return _mapper.Map<MemberProfileApiResponse>(profile);
         }

@@ -32,7 +32,7 @@ namespace ODK.Services.Tests.Members
                 Properties = new UpdateMemberProperty[0]
             };
 
-            Assert.ThrowsAsync<OdkServiceException>(() => service.UpdateMemberProfile(Guid.NewGuid(), profile));
+            Assert.ThrowsAsync<OdkServiceException>(() => service.UpdateMemberProfileOld(Guid.NewGuid(), profile));
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace ODK.Services.Tests.Members
                 })
             };
 
-            Assert.ThrowsAsync<OdkServiceException>(() => service.UpdateMemberProfile(Guid.NewGuid(), profile));
+            Assert.ThrowsAsync<OdkServiceException>(() => service.UpdateMemberProfileOld(Guid.NewGuid(), profile));
         }
 
         private static MemberService CreateService(IMemberRepository memberRepository = null,

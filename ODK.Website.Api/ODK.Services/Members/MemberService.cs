@@ -397,10 +397,34 @@ namespace ODK.Services.Members
             return await UpdateMemberImage(member, image.ImageData, image.MimeType);
         }
 
-        public async Task<MemberProfile> UpdateMemberProfile(Guid id, UpdateMemberProfile profile)
+        public async Task<ServiceResult> UpdateMemberProfile(Guid id, UpdateMemberProfile profile)
         {
             Member member = await GetMember(id);
-            await ValidateMemberProfile(member.ChapterId, profile);
+            ServiceResult validationResult = await ValidateMemberProfile(member.ChapterId, profile);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
+
+            MemberProfile existing = await GetMemberProfile(id);
+            UpdateMemberProfile(existing, profile);
+
+            await _memberRepository.UpdateMember(id, existing.EmailOptIn, existing.FirstName, existing.LastName);
+            await _memberRepository.UpdateMemberProperties(id, existing.MemberProperties);
+
+            IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(member.ChapterId);
+            long version = await _memberRepository.GetMembersVersion(member.ChapterId);
+            _cacheService.UpdatedVersionedCollection(members, version, member.ChapterId);
+
+            _cacheService.RemoveVersionedItem<Member>(member.Id);
+
+            return ServiceResult.Successful();
+        }
+
+        public async Task<MemberProfile> UpdateMemberProfileOld(Guid id, UpdateMemberProfile profile)
+        {
+            Member member = await GetMember(id);
+            await AssertMemberProfileValid(member.ChapterId, profile);
 
             MemberProfile existing = await GetMemberProfile(id);
             UpdateMemberProfile(existing, profile);
@@ -541,15 +565,26 @@ namespace ODK.Services.Members
             return updated;
         }
 
-        private async Task ValidateMemberProfile(Guid chapterId, UpdateMemberProfile profile)
+        private async Task AssertMemberProfileValid(Guid chapterId, UpdateMemberProfile profile)
+        {
+            ServiceResult result = await ValidateMemberProfile(chapterId, profile);
+            if (!result.Success)
+            {
+                throw new OdkServiceException(result.Message);
+            }
+        }
+
+        private async Task<ServiceResult> ValidateMemberProfile(Guid chapterId, UpdateMemberProfile profile)
         {
             IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(chapterId);
             IReadOnlyCollection<string> missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
 
             if (missingProperties.Count > 0)
             {
-                throw new OdkServiceException($"The following properties are required: {string.Join(", ", missingProperties)}");
+                return ServiceResult.Failure($"The following properties are required: {string.Join(", ", missingProperties)}");
             }
+
+            return ServiceResult.Successful();
         }
 
         private async Task<ServiceResult> ValidateMemberProfile(Guid chapterId, CreateMemberProfile profile)
