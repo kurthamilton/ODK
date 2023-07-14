@@ -1,0 +1,28 @@
+﻿@using ODK.Web.Razor.Models.Header
+@using ODK.Core.Chapters
+@using ODK.Core.Members
+@using ODK.Services.Caching
+@using ODK.Web.Common.Components
+@inject IRequestCache RequestCache
+@{
+    Layout = "Admin/_AdminLayout";
+
+    ChapterPageContext chapterContext = new ChapterPageContext(RequestCache, Context);
+    Chapter? chapter = await chapterContext.GetChapterAsync();
+    if (chapter == null)
+    {
+        return;
+    }
+}
+
+@await Html.PartialAsync("Header/_AdminSubMenu", new []
+{
+    new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/EmailProviders", Text = "Email providers" },
+    new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Emails", Text = "Emails" },
+    new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Members", Text = "Members" },
+    // new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Instagram", Text = "Instagram" },
+    new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/PaymentSettings", Text = "Payment settings" },
+    new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/ErrorLog", Text = "Error log" }
+})
+
+@RenderBody()

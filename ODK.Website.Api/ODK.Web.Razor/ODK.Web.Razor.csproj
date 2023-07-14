@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\Chapters\SuperAdmin\" />
     <Folder Include="wwwroot\lib\" />
   </ItemGroup>
 

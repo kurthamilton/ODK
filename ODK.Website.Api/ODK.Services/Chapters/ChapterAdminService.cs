@@ -380,7 +380,20 @@ namespace ODK.Services.Chapters
             return ServiceResult.Successful();
         }
 
-        public async Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId,
+        public async Task<ServiceResult> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId,
+            UpdateChapterPaymentSettings paymentSettings)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            ChapterPaymentSettings existing = await _chapterRepository.GetChapterPaymentSettings(chapterId);
+            ChapterPaymentSettings update = new ChapterPaymentSettings(chapterId, paymentSettings.ApiPublicKey, paymentSettings.ApiSecretKey, existing.Provider);
+
+            await _chapterRepository.UpdateChapterPaymentSettings(update);
+
+            return ServiceResult.Successful();
+        }
+
+        public async Task<ChapterPaymentSettings> UpdateChapterPaymentSettingsOld(Guid currentMemberId, Guid chapterId,
             UpdateChapterPaymentSettings paymentSettings)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);

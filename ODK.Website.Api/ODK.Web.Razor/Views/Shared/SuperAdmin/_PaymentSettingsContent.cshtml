@@ -1,0 +1,22 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.SuperAdmin
+@model ODK.Core.Chapters.Chapter
+@inject IChapterAdminService ChapterAdminService
+@{
+    Guid? memberId = User.MemberId();
+
+    ChapterPaymentSettings paymentSettings = await ChapterAdminService.GetChapterPaymentSettings(memberId!.Value, Model.Id);
+}
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
+    {
+        Provider = paymentSettings.Provider,
+        PublicKey = paymentSettings.ApiPublicKey,
+        SecretKey = paymentSettings.ApiSecretKey
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

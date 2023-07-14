@@ -55,7 +55,9 @@ namespace ODK.Services.Chapters
 
         Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, UpdateChapterMembershipSettings settings);
 
-        Task<ChapterPaymentSettings> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings paymentSettings);
+        Task<ServiceResult> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings paymentSettings);
+
+        Task<ChapterPaymentSettings> UpdateChapterPaymentSettingsOld(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings paymentSettings);
 
         Task<ServiceResult> UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property);
 

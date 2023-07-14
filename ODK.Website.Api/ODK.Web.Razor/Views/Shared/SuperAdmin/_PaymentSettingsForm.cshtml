@@ -1,0 +1,20 @@
+﻿@model ODK.Web.Razor.Models.SuperAdmin.PaymentSettingsFormViewModel
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Provider, new { @class = "form-label" })
+    <div class="form-control-plaintext">
+        @Model.Provider
+    </div>
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.PublicKey, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.PublicKey, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.PublicKey)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.SecretKey, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.SecretKey, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.SecretKey)
+</div>

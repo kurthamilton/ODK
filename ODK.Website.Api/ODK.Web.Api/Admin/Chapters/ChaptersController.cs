@@ -107,7 +107,7 @@ namespace ODK.Web.Api.Admin.Chapters
             [FromForm] UpdateChapterPaymentSettingsApiRequest request)
         {
             UpdateChapterPaymentSettings update = _mapper.Map<UpdateChapterPaymentSettings>(request);
-            ChapterPaymentSettings settings = await _chapterAdminService.UpdateChapterPaymentSettings(GetMemberId(), id, update);
+            ChapterPaymentSettings settings = await _chapterAdminService.UpdateChapterPaymentSettingsOld(GetMemberId(), id, update);
             return _mapper.Map<ChapterAdminPaymentSettingsApiResponse>(settings);
         }
 
