@@ -25,13 +25,13 @@ namespace ODK.Services.Emails
         Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid currentMemberId, Guid chapterId);
 
         Task<Email> GetEmail(Guid currentMemberId, Guid currentChapterId, EmailType type);
-
+        
         Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId, Guid currentChapterId);
 
         Task<ServiceResult> UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, UpdateEmail chapterEmail);
 
         Task<ServiceResult> UpdateChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId, UpdateChapterEmailProvider provider);
 
-        Task UpdateEmail(Guid currentMemberId, Guid currentChapterId, EmailType type, UpdateEmail email);
+        Task<ServiceResult> UpdateEmail(Guid currentMemberId, Guid currentChapterId, EmailType type, UpdateEmail email);
     }
 }

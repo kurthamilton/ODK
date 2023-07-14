@@ -202,7 +202,7 @@ namespace ODK.Services.Emails
             return ServiceResult.Successful();
         }
 
-        public async Task UpdateEmail(Guid currentMemberId, Guid currentChapterId, EmailType type, UpdateEmail email)
+        public async Task<ServiceResult> UpdateEmail(Guid currentMemberId, Guid currentChapterId, EmailType type, UpdateEmail email)
         {
             await AssertMemberIsChapterSuperAdmin(currentMemberId, currentChapterId);
 
@@ -211,9 +211,15 @@ namespace ODK.Services.Emails
             existing.HtmlContent = email.HtmlContent;
             existing.Subject = email.Subject;
 
-            ValidateEmail(existing);
+            ServiceResult validationResult = ValidateEmail(existing);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
             await _emailRepository.UpdateEmail(existing);
+
+            return ServiceResult.Successful();
         }
 
         private static void AssertChapterEmailValid(ChapterEmail chapterEmail)
@@ -266,7 +272,7 @@ namespace ODK.Services.Emails
             return ServiceResult.Successful();
         }
 
-        private static void ValidateEmail(Email email)
+        private static void AssertEmailValid(Email email)
         {
             if (!Enum.IsDefined(typeof(EmailType), email.Type) || email.Type == EmailType.None)
             {
@@ -278,6 +284,22 @@ namespace ODK.Services.Emails
             {
                 throw new OdkServiceException("Some required fields are missing");
             }
+        }
+
+        private static ServiceResult ValidateEmail(Email email)
+        {
+            if (!Enum.IsDefined(typeof(EmailType), email.Type) || email.Type == EmailType.None)
+            {
+                return ServiceResult.Failure("Invalid type");
+            }
+
+            if (string.IsNullOrWhiteSpace(email.HtmlContent) ||
+                string.IsNullOrWhiteSpace(email.Subject))
+            {
+                return ServiceResult.Failure("Some required fields are missing");
+            }
+
+            return ServiceResult.Successful();
         }
     }
 }

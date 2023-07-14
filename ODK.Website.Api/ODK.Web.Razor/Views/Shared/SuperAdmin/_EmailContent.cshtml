@@ -1,0 +1,21 @@
+﻿@using ODK.Web.Razor.Models.Admin.Chapters
+@model ODK.Web.Razor.Models.SuperAdmin.EmailContentViewModel
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Chapter/_EmailForm", new ChapterEmailFormViewModel
+    {
+        Content = Model.Email.HtmlContent,
+        Subject = Model.Email.Subject
+    })
+    <button class="btn btn-primary">Update</button>
+    <button class="btn btn-secondary" type="button"
+            data-submit="#send-test-form"
+            data-bs-toggle="tooltip" data-bs-title="Send a test email to yourself">
+        Send test
+    </button>
+</form>
+
+<form method="post" action="/@Model.Chapter.Name/Admin/Chapter/Emails/@Model.Email.Type/SendTest"
+      id="send-test-form">
+</form>

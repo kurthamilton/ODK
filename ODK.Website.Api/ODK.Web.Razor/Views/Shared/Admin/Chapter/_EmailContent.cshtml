@@ -17,10 +17,10 @@ else
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_EmailForm", new ChapterEmailFormViewModel
-           {
-                Content = Model.Email.HtmlContent,
-                Subject = Model.Email.Subject
-           })
+    {
+         Content = Model.Email.HtmlContent,
+         Subject = Model.Email.Subject
+    })
     <button class="btn btn-primary">Update</button>
     <button class="btn btn-secondary" type="button" 
             data-submit="#send-test-form"
