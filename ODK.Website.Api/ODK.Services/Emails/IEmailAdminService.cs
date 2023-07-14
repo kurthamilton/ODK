@@ -8,7 +8,7 @@ namespace ODK.Services.Emails
 {
     public interface IEmailAdminService
     {
-        Task AddChapterEmailProvider(Guid currentMemberId, Guid chapterId, UpdateChapterEmailProvider provider);
+        Task<ServiceResult> AddChapterEmailProvider(Guid currentMemberId, Guid chapterId, UpdateChapterEmailProvider provider);
 
         Task DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type);
 
@@ -30,7 +30,7 @@ namespace ODK.Services.Emails
 
         Task<ServiceResult> UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, UpdateEmail chapterEmail);
 
-        Task UpdateChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId, UpdateChapterEmailProvider provider);
+        Task<ServiceResult> UpdateChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId, UpdateChapterEmailProvider provider);
 
         Task UpdateEmail(Guid currentMemberId, Guid currentChapterId, EmailType type, UpdateEmail email);
     }

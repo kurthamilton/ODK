@@ -20,7 +20,7 @@ namespace ODK.Services.Emails
             _emailRepository = emailRepository;
         }
 
-        public async Task AddChapterEmailProvider(Guid currentMemberId, Guid chapterId, UpdateChapterEmailProvider provider)
+        public async Task<ServiceResult> AddChapterEmailProvider(Guid currentMemberId, Guid chapterId, UpdateChapterEmailProvider provider)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
@@ -32,9 +32,15 @@ namespace ODK.Services.Emails
 
             create.Order = existing.Count + 1;
 
-            ValidateChapterEmailProvider(create);
+            ServiceResult validationResult = ValidateChapterEmailProvider(create);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
             await _chapterRepository.AddChapterEmailProvider(create);
+
+            return ServiceResult.Successful();
         }
 
         public async Task DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type)
@@ -171,7 +177,7 @@ namespace ODK.Services.Emails
             return ServiceResult.Successful();
         }
 
-        public async Task UpdateChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId,
+        public async Task<ServiceResult> UpdateChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId,
             UpdateChapterEmailProvider provider)
         {
             ChapterEmailProvider update = await GetChapterEmailProvider(currentMemberId, chapterEmailProviderId);
@@ -185,9 +191,15 @@ namespace ODK.Services.Emails
             update.SmtpPort = provider.SmtpPort;
             update.SmtpServer = provider.SmtpServer;
 
-            ValidateChapterEmailProvider(update);
+            ServiceResult validationResult = ValidateChapterEmailProvider(update);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
             await _chapterRepository.UpdateChapterEmailProvider(update);
+            
+            return ServiceResult.Successful();
         }
 
         public async Task UpdateEmail(Guid currentMemberId, Guid currentChapterId, EmailType type, UpdateEmail email)
@@ -229,7 +241,16 @@ namespace ODK.Services.Emails
             return ServiceResult.Successful();
         }
 
-        private static void ValidateChapterEmailProvider(ChapterEmailProvider provider)
+        private static void AssertChapterEmailProviderValid(ChapterEmailProvider provider)
+        {
+            ServiceResult result = ValidateChapterEmailProvider(provider);
+            if (!result.Success)
+            {
+                throw new OdkServiceException("Some required fields are missing");
+            }
+        }
+
+        private static ServiceResult ValidateChapterEmailProvider(ChapterEmailProvider provider)
         {
             if (string.IsNullOrWhiteSpace(provider.FromEmailAddress) ||
                 string.IsNullOrWhiteSpace(provider.FromName) ||
@@ -239,8 +260,10 @@ namespace ODK.Services.Emails
                 provider.DailyLimit <= 0 ||
                 provider.BatchSize <= 0)
             {
-                throw new OdkServiceException("Some required fields are missing");
+                return ServiceResult.Failure("Some required fields are missing");
             }
+
+            return ServiceResult.Successful();
         }
 
         private static void ValidateEmail(Email email)
