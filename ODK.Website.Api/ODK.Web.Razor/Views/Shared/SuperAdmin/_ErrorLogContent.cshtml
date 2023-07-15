@@ -1,0 +1,28 @@
+﻿@using ODK.Core.Logging
+@using ODK.Services.Logging
+@using ODK.Web.Common.Extensions
+@inject ILoggingService LoggingService
+@{
+    Guid? memberId = User.MemberId();
+    IReadOnlyCollection<LogMessage> errors = await LoggingService.GetLogMessages(memberId!.Value, "Error", 1, 1000);
+}
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Time</th>
+        <th>Level</th>
+        <th>Message</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (LogMessage error in errors.OrderByDescending(x => x.TimeStamp))
+    {
+        <tr>
+            <td>@error.TimeStamp</td>
+            <td>@error.Level</td>
+            <td>@error.Message</td>
+        </tr>
+    }
+    </tbody>
+</table>

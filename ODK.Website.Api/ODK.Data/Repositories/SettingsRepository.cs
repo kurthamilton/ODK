@@ -17,5 +17,14 @@ namespace ODK.Data.Repositories
                 .Select<SiteSettings>()
                 .FirstOrDefaultAsync();
         }
+
+        public async Task UpdateSiteSettings(SiteSettings settings)
+        {
+            await Context
+                .Update<SiteSettings>()
+                .Set(x => x.ScrapeInstagram, settings.ScrapeInstagram)
+                .Set(x => x.InstagramScraperUserAgent, settings.InstagramScraperUserAgent)
+                .ExecuteAsync();
+        }
     }
 }

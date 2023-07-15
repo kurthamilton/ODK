@@ -1,0 +1,6 @@
+﻿@page "/TestException"
+@model ODK.Web.Razor.Pages.TestExceptionModel
+@{
+    Layout = "_Layout";
+    throw new Exception("Test exception");
+}

@@ -12,6 +12,8 @@ namespace ODK.Data.Mapping
             Property(x => x.GoogleMapsApiKey);
             Property(x => x.InstagramUsername);
             Property(x => x.InstagramPassword);
+            Property(x => x.InstagramScraperUserAgent);
+            Property(x => x.ScrapeInstagram);
             Property(x => x.Version).IsRowVersion();
         }
 
@@ -22,7 +24,9 @@ namespace ODK.Data.Mapping
                 googleMapsApiKey: reader.GetString(0),
                 instagramUsername: reader.GetString(1),
                 instagramPassword: reader.GetString(2),
-                version: reader.GetInt64(3)
+                instagramScraperUserAgent: reader.GetString(3),
+                scrapeInstagram: reader.GetBoolean(4),
+                version: reader.GetInt64(5)
             );
         }
     }

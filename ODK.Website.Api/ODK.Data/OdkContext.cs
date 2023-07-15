@@ -27,6 +27,8 @@ namespace ODK.Data
             AddMap(new EventInviteMap());
             AddMap(new EventMap());
             AddMap(new EventResponseMap());
+            AddMap(new InstagramImageMap());
+            AddMap(new InstagramPostMap());
             AddMap(new LogMessageMap());
             AddMap(new MemberActivationTokenMap());
             AddMap(new MemberEmailAddressUpdateTokenMap());

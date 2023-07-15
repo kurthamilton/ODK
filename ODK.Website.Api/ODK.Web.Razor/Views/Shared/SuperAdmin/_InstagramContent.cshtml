@@ -1,0 +1,18 @@
+﻿@using ODK.Core.Settings
+@using ODK.Services.Settings
+@using ODK.Web.Razor.Models.SuperAdmin
+@model ODK.Core.Chapters.Chapter
+@inject ISettingsService SettingsService
+@{
+    SiteSettings settings = await SettingsService.GetSiteSettings();
+}
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("SuperAdmin/_InstagramForm", new InstagramFormViewModel
+    {
+        Scrape = settings.ScrapeInstagram,
+        ScraperUserAgent = settings.InstagramScraperUserAgent
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

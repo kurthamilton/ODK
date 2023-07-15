@@ -1,0 +1,10 @@
+﻿@model ODK.Web.Razor.Models.SocialMedia.InstagramPostViewModel
+@{
+    string url = $"https://www.instagram.com/p/{Model.ExternalId}/?img_index=1";
+}
+
+<div class="social-media-image-tile">
+    <a href="@url" target="_blank">
+        <img src="/@Model.Chapter/Instagram/Images/@Model.InstagramPostId" />
+    </a>    
+</div>

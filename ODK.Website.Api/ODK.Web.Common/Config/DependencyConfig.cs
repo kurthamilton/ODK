@@ -10,6 +10,7 @@ using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Settings;
+using ODK.Core.SocialMedia;
 using ODK.Core.Venues;
 using ODK.Data;
 using ODK.Data.Repositories;
@@ -74,6 +75,7 @@ namespace ODK.Web.Common.Config
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IEmailRepository, EmailRepository>();
+            services.AddScoped<IInstagramRepository, InstagramRepository>();
             services.AddScoped<ILoggingRepository, LoggingRepository>();
             services.AddScoped<IMemberRepository, MemberRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
