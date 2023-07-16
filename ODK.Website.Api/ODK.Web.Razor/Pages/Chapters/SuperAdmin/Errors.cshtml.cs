@@ -2,9 +2,9 @@ using ODK.Services.Caching;
 
 namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin
 {
-    public class ErrorLogModel : SuperAdminPageModel
+    public class ErrorsModel : SuperAdminPageModel
     {
-        public ErrorLogModel(IRequestCache requestCache) 
+        public ErrorsModel(IRequestCache requestCache) 
             : base(requestCache)
         {
         }
