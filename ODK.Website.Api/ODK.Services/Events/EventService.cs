@@ -91,7 +91,7 @@ namespace ODK.Services.Events
                 bool invited = invitedEventIds.Contains(@event.Id);
                 responseLookup.TryGetValue(@event.Id, out EventResponseType responseType);
                 EventResponseViewModel viewModel = new EventResponseViewModel(@event, venueLookup[@event.VenueId], 
-                    responseType, invited);
+                    responseType, invited, @event.IsPublic);
                 viewModels.Add(viewModel);
             }
 
@@ -115,7 +115,7 @@ namespace ODK.Services.Events
             return await _eventRepository.GetPublicEvents(chapterId, DateTime.UtcNow.Date);
         }
 
-        public async Task<EventResponse> UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType)
+        public async Task<EventResponse> UpdateMemberResponseOld(Guid memberId, Guid eventId, EventResponseType responseType)
         {
             responseType = NormalizeResponseType(responseType);
 
@@ -131,7 +131,7 @@ namespace ODK.Services.Events
             return new EventResponse(eventId, memberId, responseType);
         }
 
-        public async Task UpdateMemberResponse(Member member, Guid eventId,
+        public async Task<ServiceResult> UpdateMemberResponse(Member member, Guid eventId,
             EventResponseType responseType)
         {
             responseType = NormalizeResponseType(responseType);
@@ -139,15 +139,17 @@ namespace ODK.Services.Events
             Event @event = await _eventRepository.GetEvent(eventId);
             if (@event == null || @event.Date < DateTime.Today)
             {
-                return;
+                return ServiceResult.Failure("Past events cannot be responded to");
             }
 
             if (!@event.IsAuthorized(member))
             {
-                return;
+                return ServiceResult.Failure("You are not permitted to respond to this event");
             }
 
             await _eventRepository.UpdateEventResponse(new EventResponse(eventId, member.Id, responseType));
+
+            return ServiceResult.Successful();
         }
 
         private static EventResponseType NormalizeResponseType(EventResponseType responseType)

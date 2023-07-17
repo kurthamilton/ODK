@@ -1,9 +1,11 @@
 ﻿@page "/{chapterName}/Events/{id:guid}"
+@attribute [Authorize]
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Core.Venues
 @using ODK.Services.Venues
 @using ODK.Web.Razor.Models.Events
+@using Microsoft.AspNetCore.Authorization
 @model EventModel
 @inject IVenueService VenueService
 @{

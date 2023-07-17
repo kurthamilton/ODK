@@ -4,16 +4,16 @@ using ODK.Services.Events;
 
 namespace ODK.Web.Razor.Pages.Chapters.Events
 {
-    public class EventModel : EventPageModel
+    public class PublicEventModel : EventPageModel
     {
-        public EventModel(IRequestCache requestCache, IEventService eventService)
+        public PublicEventModel(IRequestCache requestCache, IEventService eventService) 
             : base(requestCache, eventService)
         {
         }
 
         protected override IActionResult RedirectToSelf()
         {
-            return Redirect($"/{Chapter.Name}/Events/{Event.Id}");
+            return Redirect($"/{Chapter.Name}/Events/Public/{Event.Id}");
         }
     }
 }

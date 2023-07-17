@@ -7,14 +7,25 @@
 @inject IEventService EventService
 @inject IMemberService MemberService
 @{
+    if (Model.Member == null || Model.Member.ChapterId != Model.Chapter.Id)
+    {
+        return;
+    }
+
     IReadOnlyCollection<EventResponseType> responseTypes = new[] { EventResponseType.Yes, EventResponseType.Maybe, EventResponseType.No };
-    IReadOnlyCollection<EventResponse> responses = await EventService.GetEventResponses(Model.Event.Id);
-    IReadOnlyCollection<Member> allMembers = await MemberService.GetMembers(Model.Member, Model.Chapter.Id);
-    IDictionary<Guid, Member> membersById = allMembers.ToDictionary(x => x.Id);
-    IDictionary<EventResponseType, IReadOnlyCollection<Member>> membersByResponse = responses
+
+    Task<IReadOnlyCollection<EventResponse>> responsesTask = EventService.GetEventResponses(Model.Event.Id);
+    Task<IReadOnlyCollection<Member>> allMembersTask = MemberService.GetMembers(Model.Member, Model.Chapter.Id);
+
+    await Task.WhenAll(responsesTask, allMembersTask);
+
+    IDictionary<Guid, Member> membersById = allMembersTask.Result.ToDictionary(x => x.Id);
+    IDictionary<EventResponseType, IReadOnlyCollection<Member>> membersByResponse = responsesTask
+        .Result
         .GroupBy(x => x.ResponseTypeId)
         .ToDictionary(x => x.Key, x => (IReadOnlyCollection<Member>)x.Select(_ => membersById[_.MemberId]).ToArray());
-    EventResponseType? currentResponse = responses
+    EventResponseType? currentResponse = responsesTask
+        .Result
         .FirstOrDefault(x => x.MemberId == Model.Member?.Id)?.ResponseTypeId;
 }
 

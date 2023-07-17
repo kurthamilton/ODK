@@ -7,12 +7,13 @@ namespace ODK.Services.Events
     public class EventResponseViewModel
     {
         public EventResponseViewModel(Event @event, Venue venue, EventResponseType response,
-            bool invited)
+            bool invited, bool @public)
         {
             Date = @event.Date;
             EventId = @event.Id;
             EventName = @event.Name;
             Invited = invited;
+            Public = @public;
             Response = response;
             VenueId = venue.Id;
             VenueName = venue.Name;
@@ -25,6 +26,8 @@ namespace ODK.Services.Events
         public string EventName { get; }
 
         public bool Invited { get; }
+
+        public bool Public { get; }
 
         public EventResponseType Response { get; }
 

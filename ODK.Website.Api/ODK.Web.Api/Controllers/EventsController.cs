@@ -44,7 +44,7 @@ namespace ODK.Web.Api.Events
         [HttpPut("{id}/Respond")]
         public async Task<EventResponseApiResponse> Respond(Guid id, EventResponseType type)
         {
-            EventResponse response = await _eventService.UpdateMemberResponse(GetMemberId(), id, type);
+            EventResponse response = await _eventService.UpdateMemberResponseOld(GetMemberId(), id, type);
             return _mapper.Map<EventResponseApiResponse>(response);
         }
 
