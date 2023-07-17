@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Logging
 @using ODK.Services.Logging
 @using ODK.Web.Common.Extensions
+@model ODK.Core.Chapters.Chapter
 @inject ILoggingService LoggingService
 @{
     Guid? memberId = User.MemberId();
@@ -13,6 +14,7 @@
         <th>Time</th>
         <th>Level</th>
         <th>Message</th>
+        <th></th>
     </tr>
     </thead>
     <tbody>
@@ -21,7 +23,17 @@
         <tr>
             <td>@error.TimeStamp</td>
             <td>@error.Level</td>
-            <td>@error.Message</td>
+            <td>
+                <a href="/@Model.Name/Admin/SuperAdmin/Errors/@error.Id">@error.Message</a>
+            </td>
+            <td>
+                <form method="post" action="/@Model.Name/Admin/SuperAdmin/Errors/@error.Id/Delete">
+                    @Html.AntiForgeryToken()
+                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </form>
+            </td>
         </tr>
     }
     </tbody>

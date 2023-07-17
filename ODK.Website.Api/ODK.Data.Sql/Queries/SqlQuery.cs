@@ -168,6 +168,11 @@ namespace ODK.Data.Sql.Queries
 
         protected void AddPage(int page, int pageSize)
         {
+            if (pageSize < 1)
+            {
+                return;
+            }
+
             _fetch = pageSize;
             _offset = pageSize * (page - 1);
         }

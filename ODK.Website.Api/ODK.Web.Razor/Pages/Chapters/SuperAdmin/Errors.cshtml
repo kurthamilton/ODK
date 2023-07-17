@@ -8,5 +8,5 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("SuperAdmin/_ErrorsContent")
+    Content = await Html.PartialAsync("SuperAdmin/_ErrorsContent", Model.Chapter)
 })
