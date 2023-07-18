@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="compilerconfig.json" />
+	  <None Include="compilerconfig.json" />
   </ItemGroup>
 
   <ItemGroup>
