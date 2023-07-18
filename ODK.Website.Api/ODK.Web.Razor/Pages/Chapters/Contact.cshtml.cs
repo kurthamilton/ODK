@@ -24,11 +24,6 @@ namespace ODK.Web.Razor.Pages.Chapters
 
         public async Task<IActionResult> OnPostAsync(ContactFormViewModel viewModel)
         {
-            if (Chapter == null)
-            {
-                return RedirectToPage("/");
-            }
-            
             await _chapterService.SendContactMessage(Chapter.Id, viewModel.EmailAddress, viewModel.Message);
 
             return Redirect($"/{Chapter.Name}/Contact?Sent=True");

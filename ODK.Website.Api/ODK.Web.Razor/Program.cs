@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ODK.Web.Common.Config;
 using ODK.Web.Razor.Authentication;
@@ -27,7 +28,8 @@ AppStartup.ConfigureServices(builder.Configuration, builder.Services);
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
-app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<ErrorLoggingMiddleware>();
+app.UseMiddleware<ErrorPageMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

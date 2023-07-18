@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
 
 namespace ODK.Web.Razor.Pages.Chapters
@@ -10,14 +9,8 @@ namespace ODK.Web.Razor.Pages.Chapters
         {
         }
 
-        public IActionResult OnGet()
+        public void OnGet()
         {
-            if (Chapter == null)
-            {
-                return RedirectToPage("/");
-            }
-
-            return Page();
         }
     }
 }

@@ -25,7 +25,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Members
             ChapterSubscription? subscription = await _chapterAdminService.GetChapterSubscription(CurrentMemberId, id);
             if (subscription == null)
             {
-                return Redirect($"/{Chapter.Name}/Admin/Members/Subscriptions");
+                return NotFound();
             }
 
             Subscription = subscription;

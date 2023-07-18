@@ -12,11 +12,6 @@ namespace ODK.Web.Razor.Pages.Chapters.Events
 
         public IActionResult OnGet()
         {
-            if (Chapter == null)
-            {
-                return RedirectToPage("/");
-            }
-
             return Page();
         }
     }

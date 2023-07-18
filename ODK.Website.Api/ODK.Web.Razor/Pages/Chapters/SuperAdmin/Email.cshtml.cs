@@ -25,7 +25,7 @@ namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin
             Email = await _emailAdminService.GetEmail(CurrentMemberId, Chapter.Id, type);
             if (Email == null)
             {
-                return Redirect($"/{Chapter.Name}/Admin/SuperAdmin/Emails");
+                return NotFound();
             }
 
             return Page();

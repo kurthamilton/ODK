@@ -25,7 +25,7 @@ namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin
             Provider = await _emailAdminService.GetChapterEmailProvider(CurrentMemberId, id);
             if (Provider == null)
             {
-                return Redirect($"/{Chapter.Name}/Admin/SuperAdmin/EmailProviders");
+                return NotFound();
             }
 
             return Page();

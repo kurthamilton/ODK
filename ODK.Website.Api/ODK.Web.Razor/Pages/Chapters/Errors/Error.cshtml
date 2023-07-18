@@ -1,0 +1,20 @@
+﻿@page "/{chapterName}/Error/{statusCode}"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@model ODK.Web.Razor.Pages.Chapters.Errors.ErrorModel
+@{
+    Layout = "Chapters/_ChapterLayout";
+    Model.Title = "Error";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Text = Model.ErrorStatusCode.ErrorPageTitle() }
+    },
+    Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),
+    Title = Model.ErrorStatusCode.ErrorPageTitle()
+})

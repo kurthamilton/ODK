@@ -2,11 +2,11 @@
 
 namespace ODK.Web.Razor.Middleware
 {
-    public class ExceptionMiddleware
+    public class ErrorLoggingMiddleware
     {
         private readonly RequestDelegate _next;
         
-        public ExceptionMiddleware(RequestDelegate next)
+        public ErrorLoggingMiddleware(RequestDelegate next)
         {
             _next = next;
         }

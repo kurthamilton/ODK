@@ -25,7 +25,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Members
             AdminMember = await _chapterAdminService.GetChapterAdminMember(CurrentMemberId, Chapter.Id, id);
             if (AdminMember == null)
             {
-                return Redirect($"/{Chapter.Name}/Admin/Members/AdminMembers");
+                return NotFound();
             }
 
             return Page();

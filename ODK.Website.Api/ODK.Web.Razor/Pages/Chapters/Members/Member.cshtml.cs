@@ -22,7 +22,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Members
             Member = await _memberService.GetMember(id);
             if (Member == null)
             {
-                return Redirect($"/{Chapter.Name}/Knitwits");
+                return NotFound();
             }
 
             return Page();

@@ -25,7 +25,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters
             Question = await _chapterAdminService.GetChapterQuestion(CurrentMemberId, id);
             if (Question == null)
             {
-                return Redirect($"/{Chapter.Name}/Admin/Chapter/Questions");
+                return NotFound();
             }
 
             return Page();

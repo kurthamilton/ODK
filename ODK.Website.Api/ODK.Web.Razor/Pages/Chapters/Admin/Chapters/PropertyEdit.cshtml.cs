@@ -25,7 +25,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters
             Property = await _chapterAdminService.GetChapterProperty(CurrentMemberId, id);
             if (Property == null)
             {
-                return Redirect($"/{Chapter.Name}/Admin/Chapter/Properties");
+                return NotFound();
             }
 
             return Page();

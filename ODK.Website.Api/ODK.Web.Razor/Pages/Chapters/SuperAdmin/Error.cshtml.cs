@@ -22,7 +22,7 @@ namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin
             Error = await _loggingService.GetErrorMessage(CurrentMemberId, id);
             if (Error == null)
             {
-                return Redirect($"/{Chapter.Name}/Admin/SuperAdmin/Errors");
+                return NotFound();
             }
 
             return Page();
