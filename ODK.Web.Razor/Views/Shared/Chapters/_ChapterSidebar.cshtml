@@ -4,11 +4,6 @@
 @model ODK.Web.Razor.Models.Chapters.ChapterSidebarViewModel
 @inject IEventService EventService
 @{
-    if (Model.Chapter == null)
-    {
-        return;
-    }
-
     IReadOnlyCollection<EventResponseViewModel> events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter.Id);
 }
 
@@ -18,7 +13,7 @@
         <div class="card sidebar-card">
             <div class="card-header">Upcoming events</div>
 
-            @foreach (EventResponseViewModel @event in events)
+            @foreach (EventResponseViewModel @event in events.OrderBy(x => x.Date))
             {
                 <div class="card-body card-body-sm">
                     <h6 class="card-title">
