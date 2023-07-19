@@ -1,0 +1,18 @@
+﻿@using ODK.Core.Members
+@model ODK.Web.Razor.Models.Admin.Members.MemberFormViewModel
+@{
+    IEnumerable<SelectListItem> typeOptions = Enum.GetValues<SubscriptionType>()
+        .Where(x => x != SubscriptionType.None)
+        .Select(x => new SelectListItem { Text = x.ToString() });
+}
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.SubscriptionType, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.SubscriptionType, typeOptions, new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.SubscriptionType)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.SubscriptionExpiryDate, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.SubscriptionExpiryDate, new { @class = "form-control", data_datepicker = "" })
+    @Html.ValidationMessageFor(x => x.SubscriptionExpiryDate)
+</div>

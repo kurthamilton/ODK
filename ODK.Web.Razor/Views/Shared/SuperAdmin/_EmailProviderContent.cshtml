@@ -1,0 +1,18 @@
+﻿@using ODK.Web.Razor.Models.SuperAdmin
+@model ODK.Core.Chapters.ChapterEmailProvider
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("SuperAdmin/_EmailProviderForm", new EmailProviderFormViewModel
+    {
+        BatchSize = Model.BatchSize,
+        DailyLimit = Model.DailyLimit,
+        FromEmailAddress = Model.FromEmailAddress,
+        FromName = Model.FromName,
+        SmtpLogin = Model.SmtpLogin,
+        SmtpPassword = Model.SmtpPassword,
+        SmtpPort = Model.SmtpPort,
+        SmtpServer = Model.SmtpServer
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

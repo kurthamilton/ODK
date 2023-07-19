@@ -1,0 +1,36 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Models.Events.EventContentViewModel
+
+<h2>@Model.Venue.Name</h2>
+<h4>@Model.Event.Date.EventDate(true)</h4>
+@if (!string.IsNullOrEmpty(Model.Event.Time))
+{
+    <h5>@Model.Event.Time</h5>
+}
+
+@if (!string.IsNullOrEmpty(Model.Event.Description))
+{
+    <div>
+        @Html.Raw(Model.Event.Description)
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.Event.ImageUrl))
+{
+    <p *ngIf="event.imageUrl">
+        <img src="@Model.Event.ImageUrl" style="max-height: 500px;" />
+    </p>
+}
+
+@if (!string.IsNullOrEmpty(Model.Venue.MapQuery))
+{
+    <h3 class="mt-5">Location</h3>
+    <hr/>
+    <p class="d-none d-md-block">
+        @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
+        {
+            Query = Model.Venue.MapQuery
+        })
+    </p>
+}

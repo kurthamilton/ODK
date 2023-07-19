@@ -1,0 +1,21 @@
+﻿@page "/{chapterName}/Admin/Events/Venues/{id:guid}"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Razor.Models.Admin.Venues
+@model ODK.Web.Razor.Pages.Chapters.Admin.Events.VenueModel
+@{
+    Layout = "Admin/Events/_EventAdminLayout";
+    Model.Title = "Edit Venue | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+       new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Events/Venues", Text = "Venues" },
+       new MenuItem { Text = Model.Venue.Name }
+    },
+    Content = await Html.PartialAsync("Admin/Venues/_VenueContent", 
+       new VenueViewModel(Model.Chapter, Model.CurrentMember, Model.Venue))
+})

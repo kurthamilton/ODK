@@ -1,0 +1,64 @@
+﻿@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Members
+@model ODK.Web.Razor.Models.Account.AccountContentViewModel
+
+<div class="row row-cols-2">
+    <div class="col">
+        <div>
+            <a href="/@Model.Chapter.Name/Account/Subscription">My subscription</a>
+        </div>
+        <div>
+            <a href="/@Model.Chapter.Name/Account/Password/Change">Change password</a>
+        </div>
+        <div>
+            <a href="/@Model.Chapter.Name/Account/Email/Change">Update email address</a>
+        </div>
+        <div>
+            <a href="/@Model.Chapter.Name/Account/Emails">Email preferences</a>
+        </div>
+        <div>
+            <a href="/@Model.Chapter.Name/Account/Delete">Delete my account</a>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="form-group text-end">
+            <div class="d-inline-block">
+                @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, Model.CurrentMember))
+                
+                <div class="d-flex justify-content-center">
+                    <div class="d-flex">
+                        <form method="post" action="/@Model.Chapter.Name/Account/Picture/Change" enctype="multipart/form-data">
+                            <input id="picture-upload" name="files" class="d-none" type="file" accept="image/*" placeholder="Choose file" data-onchange="submit"/>
+                            <button class="btn btn-link" type="button" data-button-for="#picture-upload">
+                                Change picture
+                            </button>
+                        </form>
+
+                        <form class="d-flex align-items-center" method="post" action="/@Model.Chapter.Name/Account/Picture/Rotate">
+                            <button class="btn-icon" data-bs-toggle="tooltip" data-bs-title="Rotate right">
+                                <i class="fas fa-undo flip-horizontal"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+    @await Html.PartialAsync("Account/_ProfileForm", new ProfileFormViewModel
+    {
+        ChapterId = Model.Chapter.Id,
+        DateJoined = Model.CurrentMember.CreatedDate,
+        EmailAddress = Model.CurrentMember.EmailAddress,
+        FirstName = Model.CurrentMember.FirstName,
+        LastName = Model.CurrentMember.LastName,
+        MemberId = Model.CurrentMember.Id
+    })
+
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>

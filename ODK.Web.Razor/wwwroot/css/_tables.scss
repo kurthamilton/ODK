@@ -1,0 +1,33 @@
+th.sortable {
+    cursor: pointer;
+    color: var(--bs-link-color);
+    text-decoration: var(--bs-link-decoration);
+
+    &:hover {
+        color: var(--bs-link-hover-color);
+        text-decoration: underline;
+    }
+
+    &.sort-asc:after,
+    &.sort-desc:after {
+        font-family: 'Font Awesome 5 Free';
+    }
+
+    &.sort-asc:after {
+        content: ' \f0d8'; // caret-up
+    }
+
+    &.sort-desc:after {
+        content: ' \f0d7'; // caret-down
+    }
+}
+
+.table-stripe > * {
+    background-color: var(--bs-table-striped-bg) !important;
+}
+
+/*Restore Bootstrap 4 thead style*/
+.table thead th {
+    border-top: 1px solid var(--bs-table-border-color);
+    border-bottom: 2px solid var(--bs-table-border-color);
+}

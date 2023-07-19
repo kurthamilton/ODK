@@ -1,0 +1,40 @@
+.form-inline {
+  .form-group {
+    margin-right: 1rem;
+  }
+  
+  .form-label {
+    margin-right: 0.5rem;
+  }
+}
+
+.form-label {
+	font-weight: 700;
+}
+
+.form-group.required {
+	.form-label:after {
+		content: " *";
+		color: $danger;
+	}  
+}
+
+.form-check.required {
+	.form-check-label:after {
+		content: " *";
+		color: $danger;
+	}
+}
+
+.form-control-custom {
+	height: 100%;
+	padding: 0;
+}
+
+.form-control-plaintext {
+	padding-top: 0;
+}
+
+.field-validation-error {
+	font-style: normal;
+}

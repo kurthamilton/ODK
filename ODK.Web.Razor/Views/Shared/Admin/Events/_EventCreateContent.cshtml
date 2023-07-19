@@ -1,0 +1,25 @@
+﻿@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin.Events
+@model ODK.Core.Chapters.Chapter
+@{
+    Guid? memberId = User.MemberId();
+    if (memberId == null)
+    {
+        return;
+    }
+}
+
+<h2>Create new event</h2>
+
+<form method="post" action="/@Model.Name/Admin/Events/Create">
+    @Html.AntiForgeryToken()
+    
+    @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
+    {
+        ChapterId = Model.Id,
+        CurrentMemberId = memberId.Value,
+        Date = DateTime.Today
+    })
+    
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

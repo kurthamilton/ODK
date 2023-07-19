@@ -1,0 +1,29 @@
+﻿@model ODK.Web.Razor.Models.Account.EmailPreferencesContentViewModel
+
+@if (Model.CurrentMember.EmailOptIn)
+{
+    <div class="alert alert-success">You are currently receiving event emails.</div>
+
+    <form method="post" action="/@Model.Chapter.Name/Account/Emails/Unsubscribe">
+        <button class="btn btn-danger" type="submit"
+                onclick="return confirm('Are you sure you want to stop receiving event emails?');">
+            Unsubscribe
+        </button>
+        <span class="text-danger">
+            You will no longer receive emails informing you of upcoming events
+        </span>
+    </form>
+}
+else
+{
+    <div class="alert alert-danger">You have chosen not to receive event emails.</div>
+
+    <form method="post" action="/@Model.Chapter.Name/Account/Emails/Subscribe">
+        <button class="btn btn-success" type="submit">
+            Subscribe
+        </button>
+        <span class="text-success">
+            You will receive emails informing you of upcoming events
+        </span>
+    </form>
+}

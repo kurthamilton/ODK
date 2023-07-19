@@ -1,0 +1,19 @@
+﻿/*Style SlimSelect like Bootstrap 5*/
+.ss-main {
+    display: flex;
+}
+
+.ss-placeholder {
+    padding: 0 !important;
+    line-height: 1.5 !important;
+}
+
+.ss-value {
+    background-color: var(--bs-secondary) !important;
+}
+
+.ss-value-text,
+.ss-value-delete {
+    line-height: 1.5 !important;
+    font-size: 0.8rem !important;
+}

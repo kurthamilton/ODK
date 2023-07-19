@@ -1,0 +1,18 @@
+﻿@page "/{chapterName}/Admin/Chapter/Questions/Create"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.QuestionCreateModel
+@{
+    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Model.Title = "Create question | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Chapter/Questions", Text = "Questions" },
+        new MenuItem { Text = "Create question" }
+    },
+    Content = await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent", Model.Chapter)
+})

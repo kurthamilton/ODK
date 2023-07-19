@@ -1,0 +1,41 @@
+﻿@using ODK.Services.Authentication
+@model ODK.Web.Razor.Models.Header.AccountMenuViewModel
+
+@if (Model.MemberChapter != null)
+{
+    <div class="account-links">
+        <div class="dropdown">
+            <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="dropdown-menu dropdown-menu-end">
+                <a class="dropdown-item" href="/@Model.MemberChapter.Name/Account">My profile</a>
+                <a class="dropdown-item" href="/@Model.MemberChapter.Name">@Model.MemberChapter.Name</a>
+                <a class="dropdown-item" href="/@Model.MemberChapter.Name/Account/Logout">Sign Out</a>
+            
+                @if (User.IsInRole(OdkRoles.Admin))
+                {
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/@Model.MemberChapter.Name/Admin/Chapter/Text">@Model.MemberChapter.Name admin</a>
+                    <a class="dropdown-item" href="/@Model.MemberChapter.Name/Admin/Events/Create">Create event</a>
+                }
+            
+                @if (User.IsInRole(OdkRoles.SuperAdmin))
+                {
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/@Model.MemberChapter.Name/Admin/SuperAdmin/PaymentSettings">Super admin</a>
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="anonymous-links">
+        <a class="btn btn-primary anonymous-link" href="@(Model.CurrentChapter != null ? $"/{Model.CurrentChapter.Name}/Account/Login" : "/Account/Login")">Sign in</a>
+        @if (Model.CurrentChapter != null)
+        {
+            <a class="btn btn-success anonymous-link" href="/@Model.CurrentChapter.Name/Account/Join">Join</a>
+        }
+    </div>
+}

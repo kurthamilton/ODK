@@ -1,0 +1,17 @@
+﻿@using ODK.Web.Razor.Models.Admin.Chapters
+@model ODK.Core.Chapters.ChapterProperty
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
+    {
+        DataType = Model.DataType,
+        HelpText = Model.HelpText,
+        Hidden = Model.Hidden,
+        Label = Model.Label,
+        Name = Model.Name,
+        Required = Model.Required,
+        Subtitle = Model.Subtitle
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

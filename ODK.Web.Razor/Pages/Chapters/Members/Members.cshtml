@@ -1,0 +1,22 @@
+﻿@page "/{chapterName}/Knitwits"
+@attribute [Authorize]
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Members
+@using Microsoft.AspNetCore.Authorization
+@model MembersModel
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = "Knitwits";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+   Title = $"{Model.Chapter.Name} Knitwits",
+   Breadcrumbs = new []
+   {
+       new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+       new MenuItem { Text = "Knitwits" }
+   },
+   Content = await Html.PartialAsync("Members/_MembersContent", new MembersContentViewModel(Model.Chapter, Model.CurrentMember!))
+})

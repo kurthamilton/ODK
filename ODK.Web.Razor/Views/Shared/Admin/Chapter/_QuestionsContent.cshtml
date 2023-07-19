@@ -1,0 +1,55 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Chapters
+@model ODK.Core.Chapters.Chapter
+@inject IChapterService ChapterService
+@{
+    IReadOnlyCollection<ChapterQuestion> questions = await ChapterService.GetChapterQuestions(Model.Id);
+}
+
+<p>
+    <a href="/@Model.Name/Admin/Chapter/Questions/Create" class="btn btn-primary">Create question</a>
+</p>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Question</th>
+        <th></th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach (ChapterQuestion question in questions.OrderBy(x => x.DisplayOrder))
+        {
+            <tr>
+                <td>
+                    <a href="/@Model.Name/Admin/Chapter/Questions/@question.Id">@question.Name</a>
+                </td>
+                <td>
+                    <div class="d-flex">
+                        <form method="post" action="/@Model.Name/Admin/Chapter/Questions/@question.Id/MoveUp">
+                            @Html.AntiForgeryToken()
+                            <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
+                                <i class="fas fa-arrow-circle-up"></i>
+                            </button>
+                        </form>
+                        <form method="post" action="/@Model.Name/Admin/Chapter/Questions/@question.Id/MoveDown">
+                            @Html.AntiForgeryToken()
+                            <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
+                                <i class="fas fa-arrow-circle-down"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+                <td>
+                    <form method="post" action="/@Model.Name/Admin/Chapter/Questions/@question.Id/Delete">
+                        @Html.AntiForgeryToken()
+                        <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                onclick="return confirm('Are you sure you want to delete this question?');">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

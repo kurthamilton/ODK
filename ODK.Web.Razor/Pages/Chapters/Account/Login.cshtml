@@ -1,0 +1,18 @@
+﻿@page "/{chapterName}/Account/Login"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Login
+@model ODK.Web.Razor.Pages.Chapters.Account.LoginModel
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = "Login";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+   Title = "Login",
+   Content = await Html.PartialAsync("Account/_LoginForm", new LoginViewModel
+   {
+       Chapter = Model.Chapter,
+       ReturnUrl = Model.ReturnUrl
+   })
+})

@@ -1,0 +1,13 @@
+﻿@model ODK.Web.Razor.Models.Contact.ContactFormViewModel
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.EmailAddress, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.EmailAddress)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Message, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.Message, new { @class = "form-control", rows = 5 })
+    @Html.ValidationMessageFor(x => x.Message)
+</div>

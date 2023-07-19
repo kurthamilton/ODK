@@ -1,0 +1,31 @@
+﻿@model ODK.Web.Razor.Models.Components.SectionViewModel
+
+<section class="@(Model.Hero ? "section--hero" : null)
+                @(Model.Theme == "dark" ? "section--dark" : null)
+                @(Model.Theme == "light" ? "section--light" : null)"
+         id="@Model.Id">
+    @if (Model.Hero)
+    {
+        <div class="section--hero__content">
+            @if (!string.IsNullOrEmpty(Model.Title))
+            {
+                <h1>@Model.Title</h1>
+            }
+            @if (Model.Content != null)
+            {
+                @Model.Content.Invoke(null)
+            }
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(Model.Title))
+        {
+            <h1>@Model.Title</h1>
+        }
+        @if (Model.Content != null)
+        {
+            @Model.Content.Invoke(null)
+        }
+    }
+</section>

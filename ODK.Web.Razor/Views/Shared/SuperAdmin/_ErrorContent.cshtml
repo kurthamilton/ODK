@@ -1,0 +1,48 @@
+﻿@using ODK.Core.Logging
+@using ODK.Services.Logging
+@using ODK.Web.Common.Extensions
+@model ODK.Web.Razor.Models.SuperAdmin.ErrorContentViewModel
+@inject ILoggingService LoggingService
+@{
+    Guid? memberId = User.MemberId();
+    IReadOnlyCollection<LogMessage> similar = await LoggingService.GetSimilarErrorMessages(memberId!.Value, 
+        Model.Error);
+}
+
+<div class="mb-3">
+    <label class="form-label">Time</label>
+    <div class="form-control-plaintext">
+        @Model.Error.TimeStamp.ToString("dd/MM/yyyy HH:mm:ss")
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Message</label>
+    <div class="form-control-plaintext">
+        @Model.Error.Message
+    </div>
+</div>
+
+@if (similar.Count > 0)
+{
+    <h4>Similar errors (@similar.Count)</h4>
+    <form class="mb-3" method="post" action="/@Model.Chapter.Name/Admin/SuperAdmin/Errors/@Model.Error.Id/DeleteAll">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-danger">Delete all</button>
+    </form>
+    <table class="table table-striped">
+        <thead>
+        <tr><th>Date</th></tr>
+        </thead>
+        <tbody>
+        @foreach (LogMessage error in similar.OrderByDescending(x => x.TimeStamp))
+        {
+            <tr>
+                <td>
+                    @error.TimeStamp.ToString("dd/MM/yyyy HH:mm:ss")
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

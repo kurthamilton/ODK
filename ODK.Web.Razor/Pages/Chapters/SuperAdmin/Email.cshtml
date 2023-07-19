@@ -1,0 +1,19 @@
+﻿@page "/{chapterName}/Admin/SuperAdmin/Emails/{type}"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.SuperAdmin
+@model ODK.Web.Razor.Pages.Chapters.SuperAdmin.EmailModel
+@{
+    Layout = "SuperAdmin/_SuperAdminLayout";
+    Model.Title = "Edit email | SuperAdmin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/SuperAdmin/Emails", Text = "Emails" },
+        new MenuItem { Text = Model.Email.Type.ToString() }
+    },
+    Content = await Html.PartialAsync("SuperAdmin/_EmailContent", new EmailContentViewModel(Model.Chapter, Model.Email))
+})

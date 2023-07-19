@@ -1,0 +1,10 @@
+﻿@using ODK.Web.Razor.Models.Admin.Members
+@model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
+
+@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
+
+<form method="post" action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/SendEmail">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Members/_SendMemberEmailForm", new SendMemberEmailFormViewModel())
+    <button type="submit" class="btn btn-primary">Send</button>
+</form>

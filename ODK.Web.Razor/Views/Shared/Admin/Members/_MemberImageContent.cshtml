@@ -1,0 +1,18 @@
+﻿@using ODK.Web.Razor.Models.Members
+@model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
+
+@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
+
+<div class="d-inline-block">
+    @await Html.PartialAsync("~/Views/Shared/Members/_MemberImage.cshtml", new MemberImageViewModel(Model.Chapter, Model.Member)
+    {
+        MaxWidth = 250
+    })
+</div>
+<div>
+    <form method="post" action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/Picture/Rotate">
+        <button data-bs-toggle="tooltip" data-bs-title="Rotate right" class="btn-icon">
+            <i class="fas fa-undo flip-horizontal"></i>
+        </button>
+    </form>
+</div>

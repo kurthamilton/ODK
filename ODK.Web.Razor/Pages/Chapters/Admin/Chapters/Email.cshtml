@@ -1,0 +1,19 @@
+﻿@page "/{chapterName}/Admin/Chapter/Emails/{type}"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Admin.Chapters
+@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.EmailModel
+@{
+    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Model.Title = "Email | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Chapter/Emails", Text = "Emails" },
+        new MenuItem { Text = Model.Email.Type.ToString() }
+    },
+    Content = await Html.PartialAsync("Admin/Chapter/_EmailContent", new ChapterEmailContentViewModel(Model.Chapter, Model.Email))
+})

@@ -1,0 +1,20 @@
+﻿@page "/{chapterName}/Admin/Members/{id:guid}/Image"
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model ODK.Web.Razor.Pages.Chapters.Admin.Members.MemberImageModel
+@{
+    Layout = "Admin/Members/_MemberAdminLayout";
+    Model.Title = "Member image | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" },
+        new MenuItem { Text = Model.Member.FullName }
+    },
+    Content = await Html.PartialAsync("Admin/Members/_MemberImageContent", 
+        new MemberViewModel(Model.Chapter, Model.CurrentMember, Model.Member))
+})

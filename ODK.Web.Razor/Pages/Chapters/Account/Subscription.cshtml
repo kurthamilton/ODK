@@ -1,0 +1,23 @@
+﻿@page "/{chapterName}/Account/Subscription"
+@attribute [Authorize]
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Account
+@using Microsoft.AspNetCore.Authorization
+@model ODK.Web.Razor.Pages.Chapters.Account.SubscriptionModel
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = "Subscription";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+   Title = "My subscription",
+   Breadcrumbs = new []
+   {
+       new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+       new MenuItem { Link = $"/{Model.Chapter.Name}/Account", Text = "Profile" },
+       new MenuItem { Text = "Subscription" }
+   },
+   Content = await Html.PartialAsync("Account/_SubscriptionContent", new SubscriptionContentViewModel(Model.Chapter, Model.CurrentMember!))
+})

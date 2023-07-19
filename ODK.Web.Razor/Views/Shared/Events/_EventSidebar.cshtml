@@ -1,0 +1,61 @@
+﻿@using ODK.Core.Events
+@using ODK.Core.Members
+@using ODK.Services.Events
+@using ODK.Services.Members
+@using ODK.Web.Razor.Models.Events
+@model ODK.Web.Razor.Models.Events.EventSidebarViewModel
+@inject IEventService EventService
+@inject IMemberService MemberService
+@{
+    if (Model.Member == null || Model.Member.ChapterId != Model.Chapter.Id)
+    {
+        return;
+    }
+
+    IReadOnlyCollection<EventResponseType> responseTypes = new[] { EventResponseType.Yes, EventResponseType.Maybe, EventResponseType.No };
+
+    Task<IReadOnlyCollection<EventResponse>> responsesTask = EventService.GetEventResponses(Model.Event.Id);
+    Task<IReadOnlyCollection<Member>> allMembersTask = MemberService.GetMembers(Model.Member, Model.Chapter.Id);
+
+    await Task.WhenAll(responsesTask, allMembersTask);
+
+    IDictionary<Guid, Member> membersById = allMembersTask.Result.ToDictionary(x => x.Id);
+    IDictionary<EventResponseType, IReadOnlyCollection<Member>> membersByResponse = responsesTask
+        .Result
+        .GroupBy(x => x.ResponseTypeId)
+        .ToDictionary(x => x.Key, x => (IReadOnlyCollection<Member>)x.Select(_ => membersById[_.MemberId]).ToArray());
+    EventResponseType? currentResponse = responsesTask
+        .Result
+        .FirstOrDefault(x => x.MemberId == Model.Member?.Id)?.ResponseTypeId;
+}
+
+<div class="sidebar">
+    <div class="card sidebar-card">
+        <div class="card-header">RSVP</div>
+        <div class="card-body card-body-sm">
+            <div class="d-flex justify-content-around">
+                @foreach (EventResponseType responseType in responseTypes)
+                {
+                    <form method="post">
+                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                        {
+                            Active = currentResponse == responseType,
+                            ResponseType = responseType
+                        })
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+    
+    @foreach (EventResponseType responseType in responseTypes)
+    {
+        @if (membersByResponse.TryGetValue(responseType, out var members))
+        {
+            @await Html.PartialAsync("Events/_EventSidebarAttendees", new EventSidebarAttendeesViewModel(Model.Chapter, members)
+            {
+                Title = responseType.ToString(forAction: false)
+            })
+        }
+    }
+</div>

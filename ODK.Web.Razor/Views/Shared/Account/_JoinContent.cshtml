@@ -1,0 +1,26 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Account
+@model ODK.Web.Razor.Models.Account.JoinContentViewModel
+@inject IChapterService ChapterService
+@{
+    ChapterTexts texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
+}
+
+@if (!string.IsNullOrEmpty(texts?.RegisterText))
+{
+    <p>
+        @Html.Raw(texts.RegisterText)
+    </p>
+}
+
+<form method="post" action="/@Model.Chapter.Name/Account/Join" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    
+    @await Html.PartialAsync("Account/_ProfileForm", new ProfileFormViewModel
+    {
+        ChapterId = Model.Chapter.Id
+    })
+    
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

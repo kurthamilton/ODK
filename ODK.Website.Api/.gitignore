@@ -1,9 +1,0 @@
-/.vs
-*.user
-bin
-obj
-appsettings.*.json
-/ODK.Web.Api/Logs
-/ODK.Web.Api.Admin/Logs
-*.pubxml
-app_data

@@ -1,0 +1,12 @@
+﻿@page "/{chapterName}/Admin/SuperAdmin/PaymentSettings"
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Chapters.SuperAdmin.PaymentSettingsModel
+@{
+    Layout = "SuperAdmin/_SuperAdminLayout";
+    Model.Title = "Payment settings | SuperAdmin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("SuperAdmin/_PaymentSettingsContent", Model.Chapter)
+})

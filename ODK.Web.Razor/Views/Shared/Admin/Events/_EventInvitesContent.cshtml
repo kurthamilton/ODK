@@ -1,0 +1,37 @@
+﻿@using ODK.Core.Events
+@using ODK.Services.Events
+@model ODK.Web.Razor.Models.Admin.Events.EventViewModel
+@inject IEventAdminService EventAdminService
+@{
+    EventInvites invites = await EventAdminService.GetEventInvites(Model.CurrentMember.Id, Model.Event.Id);
+}
+
+@await Html.PartialAsync("Admin/Events/_EventHeader")
+@await Html.PartialAsync("Admin/Events/_EventAdminTabs")
+
+@if (invites.SentDate != null)
+{
+    <p>
+        @invites.Sent invites were sent on @invites.SentDate.Value.ToString("dddd, MMMM d, yyyy")
+    </p>
+    <h4>Responses</h4>
+}
+else
+{
+    <div class="mb-3">
+        <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Invites/Send">
+            <button type="submit" class="btn btn-success"
+                    onclick="return confirm('Are you sure you want to send invite emails for this event?');">
+                Send invites
+            </button>
+        </form>
+        <p class="text-muted ml-1">
+            Emails are batched and sent to your admin email address with members included on BCC. 
+            You will receive 1 email per batch as the admin recipient + your member invite.
+        </p>
+    </div>
+
+    <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Invites/SendTest">
+        <button type="submit" class="btn btn-secondary">Send test</button>
+    </form>
+}

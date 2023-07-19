@@ -1,0 +1,20 @@
+﻿@page "/{chapterName}/Events"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Events
+@using ODK.Web.Common.Components
+@model EventsModel
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = "Events";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Events",
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Text = "Events" }
+    },
+    Content = await Html.PartialAsync("Events/_EventsContent", new EventsContentViewModel(Model.Chapter, Model.CurrentMember))
+})

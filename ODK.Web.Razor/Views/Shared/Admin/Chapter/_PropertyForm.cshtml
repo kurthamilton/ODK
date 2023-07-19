@@ -1,0 +1,55 @@
+﻿@using ODK.Core.DataTypes
+@using ODK.Web.Razor.Razor
+@model ODK.Web.Razor.Models.Admin.Chapters.ChapterPropertyFormViewModel
+@{
+    IEnumerable<SelectListItem> dataTypeOptions = Enum.GetValues<DataType>()
+        .Where(x => x != DataType.None)
+        .Select(x => new SelectListItem { Value = ((int)x).ToString(), Text = x.ToString() });
+}
+
+<div class="mb-3 form-check">
+    @Html.OdkCheckBoxFor(x => x.Hidden, new { @class = "form-check-input" })
+    @Html.LabelFor(x => x.Hidden, new { @class = "form-check-label" })
+        
+    <span>
+        @await Html.PartialAsync("Components/_Tooltip", "Hides this property from signup and profile forms")
+    </span>
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Name, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_Tooltip", "How this property is referred to in new member emails")
+    @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Name)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Label, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Label, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Label)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.DataType, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.DataType, dataTypeOptions, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.DataType)
+</div>
+
+<div class="mb-3 form-check">
+    @Html.OdkCheckBoxFor(x => x.Required, new { @class = "form-check-input" })
+    @Html.LabelFor(x => x.Required, new { @class = "form-check-label" })
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.HelpText, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_Tooltip", "This is how help text is displayed")
+    @Html.TextBoxFor(x => x.HelpText, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.HelpText)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Subtitle, new { @class = "form-label" })
+    <span class="ml-1 text-muted">This is how a subtitle is displayed</span>
+    @Html.TextBoxFor(x => x.Subtitle, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Subtitle)
+</div>

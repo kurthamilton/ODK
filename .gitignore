@@ -1,0 +1,12 @@
+/.vs
+*.user
+bin
+obj
+appsettings.*.json
+/ODK.Web.Api/Logs/
+/ODK.Web.Api.Admin/Logs/
+/ODK.Web.Razor/Logs/
+*.pubxml
+app_data
+Errors.*.txt
+Trace.*.txt

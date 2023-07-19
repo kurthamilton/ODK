@@ -1,0 +1,31 @@
+﻿@using ODK.Core.Members
+@using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin.Members
+@inject IMemberAdminService MemberAdminService
+@model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
+@{
+    MemberSubscription? subscription = await MemberAdminService.GetMemberSubscription(Model.CurrentMember.Id, Model.Member.Id);
+}
+
+@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
+
+<form method="post" action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Members/_MemberForm", new MemberFormViewModel
+    {
+        SubscriptionExpiryDate = subscription?.ExpiryDate,
+        SubscriptionType = subscription?.Type
+    })
+    <div class="d-flex">
+        <button type="submit" class="btn btn-primary me-auto">Update</button>
+        <button type="button" class="btn btn-danger"
+                data-submit="#member-delete-form"
+                data-submit-confirm="Are you sure you want to delete this member?">
+            Delete
+        </button>
+    </div>
+</form>
+
+<form method="post" action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/Delete"
+      id="member-delete-form">
+</form>

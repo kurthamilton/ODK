@@ -1,0 +1,26 @@
+﻿@using ODK.Web.Common.Components
+@model ODK.Web.Razor.Models.Components.BreadcrumbsViewModel
+@{
+    if (Model.Breadcrumbs.Count == 0)
+    {
+        return;
+    }
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        @foreach (MenuItem breadcrumb in Model.Breadcrumbs)
+        {
+            <li class="breadcrumb-item @(breadcrumb.Active ? "active" : null)">
+                @if (breadcrumb.Active)
+                {
+                    @:item.Text
+                }
+                else
+                {
+                    <a href="@breadcrumb.Link">@breadcrumb.Text</a>
+                }
+            </li>
+        }
+    </ol>
+</nav>

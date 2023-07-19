@@ -1,0 +1,67 @@
+﻿@using ODK.Core.Events
+@using ODK.Core.Members
+@using ODK.Services.Events
+@using ODK.Services.Members
+@using ODK.Web.Razor.Models.Events
+@using ODK.Web.Razor.Models.Members
+@model ODK.Web.Razor.Models.Admin.Events.EventViewModel
+@inject IEventAdminService EventAdminService
+@inject IMemberAdminService MemberAdminService
+@{
+    Task<IReadOnlyCollection<Member>> membersTask = MemberAdminService.GetMembers(Model.CurrentMember.Id, Model.Chapter.Id);
+    Task<IReadOnlyCollection<EventResponse>> responsesTask = EventAdminService.GetEventResponses(Model.CurrentMember.Id, Model.Event.Id);
+
+    await Task.WhenAll(membersTask, responsesTask);
+
+    IDictionary<Guid, EventResponseType> responsesDictionary = responsesTask
+        .Result
+        .ToDictionary(x => x.MemberId, x => x.ResponseTypeId);
+}
+
+@await Html.PartialAsync("Admin/Events/_EventHeader")
+@await Html.PartialAsync("Admin/Events/_EventAdminTabs")
+
+<div class="row row-cols-3 row-cols-md-6">
+    @foreach (Member member in membersTask.Result.OrderBy(x => x.FullName))
+    {
+        responsesDictionary.TryGetValue(member.Id, out EventResponseType response);
+
+        <div class="col text-center overlay-container mb-3">
+            @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, member)
+            {
+                MaxWidth = 100
+            })
+            <div>
+                <a href="/@Model.Chapter.Name/Admin/Members/@member.Id">@member.FullName</a>
+            </div>
+            <div class="d-flex justify-content-center">
+                <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees/@member.Id">
+                    @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                    {
+                        Active = response == EventResponseType.Yes,
+                        ResponseType = EventResponseType.Yes,
+                        ReadOnly = false
+                    })
+                </form>
+
+                <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees/@member.Id">
+                    @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                    {
+                        Active = response == EventResponseType.Maybe,
+                        ResponseType = EventResponseType.Maybe,
+                        ReadOnly = false
+                    })
+                </form>
+
+                <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees/@member.Id">
+                    @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                    {
+                        Active = response == EventResponseType.No,
+                        ResponseType = EventResponseType.No,
+                        ReadOnly = false
+                    })
+                </form>
+            </div>
+        </div>
+    }
+</div>

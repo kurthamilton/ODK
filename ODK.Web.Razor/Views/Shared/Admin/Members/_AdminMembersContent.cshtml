@@ -1,0 +1,94 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Members
+@using ODK.Services.Chapters
+@using ODK.Services.Members
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin.Members
+@model ODK.Core.Chapters.Chapter
+@inject IChapterAdminService ChapterAdminService
+@inject IMemberAdminService MemberAdminService
+@{
+    Guid? memberId = User.MemberId();
+    Task<IReadOnlyCollection<Member>> membersTask = MemberAdminService.GetMembers(memberId!.Value, Model.Id);
+    Task<IReadOnlyCollection<ChapterAdminMember>> adminMembersTask = ChapterAdminService.GetChapterAdminMembers(memberId.Value, Model.Id);
+
+    await Task.WhenAll(membersTask, adminMembersTask);
+
+    IReadOnlyCollection<ChapterAdminMember> adminMembers = adminMembersTask.Result;
+    HashSet<Guid> adminMemberIds = new HashSet<Guid>(adminMembers.Select(x => x.MemberId));
+    IEnumerable<SelectListItem> adminMemberOptions = membersTask
+        .Result
+        .Where(x => !adminMemberIds.Contains(x.Id))
+        .OrderBy(x => x.FullName)
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName });
+}
+
+<h2>Admin members</h2>
+<p>
+    <a href="#" data-bs-toggle="collapse" data-bs-target="#add-admin-member-form">
+        Add new
+    </a>
+</p>
+<form method="post" action="/@Model.Name/Admin/Members/AdminMembers/Add"
+      id="add-admin-member-form"
+      class="collapse row row-cols-lg-auto g-3 mb-3">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Members/_AdminMemberAddForm", new AdminMemberAddFormViewModel
+    {
+        AdminMemberOptions = adminMemberOptions.ToArray()
+    })
+    <div class="col-12">
+        <button class="btn btn-primary">Add</button>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Admin email address</th>
+        <th>Receive contact emails</th>
+        <th>Receive new member emails</th>
+        <th>Send new member emails</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (ChapterAdminMember adminMember in adminMembers.OrderBy(x => x.FullName))
+    {
+        <tr>
+            <td>
+                <a href="/@Model.Name/Admin/Members/AdminMembers/@adminMember.MemberId">@adminMember.FullName</a>
+            </td>
+            <td>@adminMember.AdminEmailAddress</td>
+            <td>
+                @if (adminMember.ReceiveContactEmails)
+                {
+                    <i class="fa fa-check"></i>
+                }
+            </td>
+            <td>
+                @if (adminMember.ReceiveNewMemberEmails)
+                {
+                    <i class="fa fa-check"></i>
+                }
+            </td>
+            <td>
+                @if (adminMember.SendNewMemberEmails)
+                {
+                    <i class="fa fa-check"></i>
+                }
+            </td>
+            <td>
+                <form method="post" action="/@Model.Name/Admin/Members/AdminMembers/@adminMember.MemberId/Delete">
+                    <button data-bs-toggle="tooltip" data-bs-title="Remove" 
+                            class="btn-icon text-danger"
+                            onclick="return confirm('Are you sure you want to remove admin access for this member?');">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

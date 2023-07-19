@@ -1,0 +1,36 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Members
+@using ODK.Core.Utils
+@using ODK.Services.Caching
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Header
+@inject IRequestCache RequestCache
+@{
+    Guid? memberId = User.MemberId();
+    Member? member = memberId.HasValue ? await RequestCache.GetMember(memberId.Value) : null;
+
+    IReadOnlyCollection<Chapter> chapters = await RequestCache.GetChapters();
+    MenuItem[] menuItems = chapters.Select(c => new MenuItem
+    {
+        ExternalLink = !string.IsNullOrEmpty(c.RedirectUrl) ? c.RedirectUrl : null,
+        Link = string.IsNullOrEmpty(c.RedirectUrl) ? $"/{c.Name}" : null,
+        Text = c.Name,
+    }).ToArray();
+}
+
+@await Html.PartialAsync("Header/_Header", new HeaderViewModel
+{
+   ImageLink = "/",
+   ImageUrl = "/assets/img/home-banner.png",
+   Navbar = new NavbarViewModel
+   {
+       Breakpoint = "md",
+       Chapter = null,
+       Color = "dark",
+       Compact = false,
+       CssClass = "navbar--home",
+       Member = member,
+       MenuItems = menuItems.Segment(5).ToArray()
+   }
+})

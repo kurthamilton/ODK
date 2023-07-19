@@ -1,0 +1,12 @@
+﻿@page "/{chapterName}/Admin/Members"
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Chapters.Admin.Members.MembersModel
+@{
+    Layout = "Admin/Members/_MemberAdminLayout";
+    Model.Title = "Members | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Admin/Members/_MembersContent", Model.Chapter)
+})

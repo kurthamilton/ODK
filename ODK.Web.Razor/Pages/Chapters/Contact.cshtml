@@ -1,0 +1,23 @@
+﻿@page "/{chapterName}/Contact"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Contact
+@model ODK.Web.Razor.Pages.Chapters.ContactModel
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = "Contact";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Send us a message",
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Text = "Contact" }
+    },
+    Content = await Html.PartialAsync("Contact/_ContactContent", new ContactContentViewModel(Model.Chapter)
+    {
+        Sent = Model.Sent
+    })
+})

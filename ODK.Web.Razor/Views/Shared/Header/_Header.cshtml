@@ -1,0 +1,12 @@
+﻿@model ODK.Web.Razor.Models.Header.HeaderViewModel
+
+<header>
+    <div class="bg-dark text-center">
+        <a href="@Model.ImageLink">
+            <img src="@Model.ImageUrl">
+        </a>
+    </div>
+    <div>
+        @await Html.PartialAsync("Header/_Navbar", Model.Navbar)
+    </div>
+</header>

@@ -1,0 +1,15 @@
+﻿@using ODK.Web.Razor.Models.Account
+@model ODK.Web.Razor.Models.Account.ChangeEmailContentViewModel
+
+<form method="post" action="/@Model.Chapter.Name/Account/Email/Change">
+    @Html.AntiForgeryToken()
+    
+    <div class="form-group mb-3">
+        <label class="form-label">Current email address</label>
+        <div class="form-control-plaintext">@Model.CurrentMember.EmailAddress</div>
+    </div>
+    
+    @await Html.PartialAsync("Account/_ChangeEmailForm", new ChangeEmailFormViewModel())
+
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>

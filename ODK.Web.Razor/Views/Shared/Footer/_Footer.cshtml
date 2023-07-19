@@ -1,0 +1,49 @@
+﻿@using ODK.Services.Chapters
+@model ODK.Web.Razor.Models.Footer.FooterViewModel
+@inject IChapterService ChapterService
+@{
+    var result = Model.Chapter != null ? await ChapterService.GetChapterLinks(null, Model.Chapter.Id) : null;
+    var links = result?.Value;
+}
+
+<footer>
+    <section class="section--footer bg-light">
+        <div class="container">
+            <div class="row row-cols-1 row-cols-md-2">
+                <div class="col container">
+                    <div>
+                        <a href="/">Knitwits International Home</a>
+                    </div>
+                    <div>
+                        <a href="/Privacy">Privacy</a>
+                    </div>
+                </div>
+                <div class="col">
+                    @if (!string.IsNullOrEmpty(links?.InstagramName))
+                    {
+                        <div>
+                            <i class="fab fa-instagram mr-1"></i>
+                            <a href="https://www.instagram.com/@links.InstagramName" target="_blank">@links.InstagramName</a>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(links?.FacebookName))
+                    {
+                        <div>
+                            <i class="fab fa-facebook-f mr-1"></i>
+                            <a href="https://www.facebook.com/@links.FacebookName" target="_blank">@links.FacebookName</a>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(links?.TwitterName))
+                    {
+                        <div>
+                            <i class="fab fa-twitter mr-1"></i>
+                            <a href="https://www.twitter.com/@links.TwitterName" target="_blank">@links.TwitterName</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+</footer>

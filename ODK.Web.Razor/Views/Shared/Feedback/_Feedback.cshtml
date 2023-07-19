@@ -1,0 +1,21 @@
+﻿@using Newtonsoft.Json
+@using ODK.Web.Common.Feedback
+@{
+    if (!int.TryParse(TempData["FeedbackCount"]?.ToString(), out int feedbackCount))
+    {
+        return;
+    }
+}
+
+@for (int i = 0; i < feedbackCount; i++)
+{
+    string? message = TempData[$"Feedback[{i}].Message"]?.ToString();
+    FeedbackType type = Enum.Parse<FeedbackType>(TempData[$"Feedback[{i}].Type"]?.ToString() ?? string.Empty, true);
+
+    <div class="alert 
+                @(type == FeedbackType.Success ? "alert-success" : null)
+                @(type == FeedbackType.Warning ? "alert-warning" : null)
+                @(type == FeedbackType.Error ? "alert-danger" : null)">
+        @message
+    </div>
+}

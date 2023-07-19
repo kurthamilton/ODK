@@ -1,0 +1,13 @@
+﻿@model ODK.Web.Razor.Models.Admin.Chapters.ChapterEmailFormViewModel
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Subject, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Subject, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Subject)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Content, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.Content, new { @class = "form-control", rows = 15 })
+    @Html.ValidationMessageFor(x => x.Content)
+</div>

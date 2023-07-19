@@ -1,0 +1,18 @@
+﻿@page "/{chapterName}/Admin/Chapter/Questions/{id:guid}"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.QuestionEditModel
+@{
+    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Model.Title = "Edit question | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Chapter/Questions", Text = "Questions" },
+        new MenuItem { Text = "Edit" }
+    },
+    Content = await Html.PartialAsync("Admin/Chapter/_QuestionEditContent", Model.Question)
+})

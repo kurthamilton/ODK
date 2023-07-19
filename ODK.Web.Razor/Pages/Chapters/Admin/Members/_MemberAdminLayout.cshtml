@@ -1,0 +1,24 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Caching
+@using ODK.Web.Common.Components
+@inject IRequestCache RequestCache
+@{
+    Layout = "Admin/_AdminLayout";
+
+    ChapterPageContext chapterContext = new ChapterPageContext(RequestCache, Context);
+    Chapter? chapter = await chapterContext.GetChapterAsync();
+    if (chapter == null)
+    {
+        return;
+    }
+}
+
+@await Html.PartialAsync("Header/_AdminSubMenu", new []
+{
+    new MenuItem { Link = $"/{chapter.Name}/Admin/Members", Text = "Members", ActiveIsExactMatch = true },
+    new MenuItem { Link = $"/{chapter.Name}/Admin/Members/Subscriptions", Text = "Subscriptions" },
+    // new MenuItem { Link = $"/{chapter.Name}/Admin/Members/Import", Text = "Import" },
+    new MenuItem { Link = $"/{chapter.Name}/Admin/Members/AdminMembers", Text = "Admin members" }
+})
+
+@RenderBody()

@@ -1,0 +1,26 @@
+﻿@using ODK.Services.Events
+@using ODK.Web.Razor.Models.Events
+@model ODK.Web.Razor.Models.Events.EventsContentViewModel
+@inject IEventService EventService
+@{
+    IReadOnlyCollection<EventResponseViewModel> events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter.Id);
+}
+
+@if (events.Count > 0)
+{
+    @await Html.PartialAsync("Events/_EventList", new EventListViewModel(Model.Chapter, events))
+}
+else
+{
+    if (Model.Member?.ChapterId == Model.Chapter.Id)
+    {
+        <p>There are no upcoming events</p>
+    }
+    else
+    {
+        <p>
+            There are no upcoming public events.
+            <a href="/@Model.Chapter.Name/Account/Login?returnUrl=/@Model.Chapter.Name/Events">Sign in</a>
+        </p>
+    }
+}

@@ -1,0 +1,13 @@
+﻿@using ODK.Core.Members
+@using ODK.Web.Razor.Models.Admin.Members
+@model ODK.Core.Chapters.Chapter
+
+<form method="post" action="/@Model.Name/Admin/Members/Subscriptions/Create">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
+    {
+        CountryId = Model.CountryId,
+        Type = SubscriptionType.Full    
+    })
+    <button class="btn btn-primary">Create</button>
+</form>

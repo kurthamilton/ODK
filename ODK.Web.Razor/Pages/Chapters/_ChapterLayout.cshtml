@@ -1,0 +1,35 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Members
+@using ODK.Services.Caching
+@using ODK.Web.Razor.Models.Footer
+@using ODK.Web.Razor.Models.Header
+@inject IRequestCache RequestCache
+@{
+    Layout = "_Layout";
+
+    ChapterPageContext chapterContext = new ChapterPageContext(RequestCache, Context);
+    Chapter? chapter = await chapterContext.GetChapterAsync();
+    if (chapter == null)
+    {
+        return;
+    }
+
+    Member? member = await chapterContext.GetMemberAsync();
+}
+
+@section header
+{
+    @await Html.PartialAsync("Header/_ChapterHeader", new ChapterHeaderViewModel(chapter, member))
+}
+
+<div class="chapter chapter-theme--@chapter.Name.ToLowerInvariant()">
+    @RenderBody()
+</div>
+
+@section footer
+{
+    @await Html.PartialAsync("Footer/_ChapterFooter", new FooterViewModel
+    {
+        Chapter = chapter
+    })
+}
