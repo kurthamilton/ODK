@@ -44,16 +44,17 @@ namespace ODK.Web.Common.Config
             AppSettings appSettings)
         {
             ConfigureApi(services);
-            ConfigureAuthentication(services);
+            ConfigureAuthentication(services, appSettings);
             ConfigurePayments(services, appSettings);
             ConfigureServiceSettings(services, appSettings);
             ConfigureServices(services);
             ConfigureData(services, configuration);
         }
 
-        private static void ConfigureAuthentication(this IServiceCollection services)
+        private static void ConfigureAuthentication(this IServiceCollection services, AppSettings appSettings)
         {
             services.AddScoped<ILoginHandler, LoginHandler>();
+            services.AddSingleton(new LoginHandlerSettings(appSettings.Auth.CookieLifetimeDays));
         }
 
         private static void ConfigureApi(IServiceCollection services)

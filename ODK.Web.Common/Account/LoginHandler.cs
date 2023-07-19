@@ -13,10 +13,12 @@ namespace ODK.Web.Common.Account
     public class LoginHandler : ILoginHandler
     {
         private readonly IAuthenticationService _authenticationService;
+        private readonly LoginHandlerSettings _settings; 
 
-        public LoginHandler(IAuthenticationService authenticationService)
+        public LoginHandler(IAuthenticationService authenticationService, LoginHandlerSettings settings)
         {
             _authenticationService = authenticationService;
+            _settings = settings;
         }
 
         public async Task<AuthenticationResult> Login(HttpContext httpContext, string username, string password, 
@@ -55,7 +57,7 @@ namespace ODK.Web.Common.Account
             var authProperties = new AuthenticationProperties
             {
                 AllowRefresh = true,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(10),
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(_settings.CookieLifetimeDays),
                 IsPersistent = true
             };
 
