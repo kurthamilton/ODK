@@ -12027,19 +12027,26 @@ img {
     margin-left: 1.75rem;
   }
 }
+.navbar .navbar-toggler:focus {
+  box-shadow: none;
+}
 .navbar .navbar-nav {
   flex-wrap: wrap;
   justify-content: center;
 }
-
-.navbar.navbar-dark .nav-item:not(:first-child) {
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
-}
-.navbar.navbar-light .nav-item:not(:first-child) {
-  border-left: 1px solid rgba(0, 0, 0, 0.5);
-}
-.navbar.navbar-light .nav-link.active {
+.navbar .nav-link.active {
   font-weight: 700;
+}
+.navbar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+@media (min-width: 768px) {
+  .navbar.navbar-dark .nav-item:not(:first-child) {
+    border-left: 1px solid rgba(255, 255, 255, 0.5);
+  }
+  .navbar.navbar-light .nav-item:not(:first-child) {
+    border-left: 1px solid rgba(0, 0, 0, 0.5);
+  }
 }
 
 @media (min-width: 576px) {
@@ -12083,13 +12090,8 @@ img {
 .account-links {
   cursor: pointer;
   right: 0;
-  top: 0;
-}
-@media (min-width: 992px) {
-  .account-links {
-    position: absolute;
-    right: 0.75rem;
-  }
+  position: absolute;
+  padding: 1rem;
 }
 .account-links .dropdown-menu {
   min-width: inherit;
@@ -12097,14 +12099,9 @@ img {
 }
 
 .account-links__user {
-  font-size: 2.4rem;
+  font-size: 1.6rem;
   display: flex;
   opacity: 0.5;
-}
-@media (min-width: 992px) {
-  .account-links__user {
-    font-size: 1.7rem;
-  }
 }
 .account-links__user:after {
   display: none;

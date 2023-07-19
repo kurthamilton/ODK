@@ -1,12 +1,19 @@
-﻿@using ODK.Web.Common.Components
+﻿@using ODK.Services.Caching
+@using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Header
 @model ODK.Web.Razor.Models.Header.NavbarViewModel
+@inject IRequestCache RequestCache
 @{
     AccountMenuViewModel accountMenu = new AccountMenuViewModel
     {
-        Chapter = Model.Chapter,
-        Member = Model.Member
+        CurrentChapter = Model.Chapter,
+        Member = Model.Member,
+        MemberChapter = Model.Member != null
+            ? Model.Chapter?.Id == Model.Member.ChapterId ? Model.Chapter : await RequestCache.GetChapter(Model.Member.ChapterId)
+            : null
     };
+
+    string id = Model.Id ?? "navbar-main";
 }
 
 <nav class="navbar
@@ -19,13 +26,20 @@
             @(Model.Compact ? "navbar-compact" : null)">
     <div class="position-relative nav-container
                 @(Model.Fluid ? "container-fluid" : "container")">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-main">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        
+        <div class="d-flex align-items-center">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#@id">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            @if (!Model.HideAccountMenu)
+            {
+                @await Html.PartialAsync("Header/_AccountMenu", accountMenu)
+            }
+        </div>
+
         @if (Model.MenuItems != null)
         {
-            <div class="collapse navbar-collapse flex-column" id="navbar-main">
+            <div class="collapse navbar-collapse flex-column" id="@id">
                 @foreach (MenuItem[] group in Model.MenuItems)
                 {
                     <ul class="navbar-nav">
@@ -51,11 +65,6 @@
                     </ul>
                 }
             </div>
-        }
-        
-        @if (!Model.HideAccountMenu)
-        {
-            @await Html.PartialAsync("Header/_AccountMenu", accountMenu)
         }
     </div>
 </nav>

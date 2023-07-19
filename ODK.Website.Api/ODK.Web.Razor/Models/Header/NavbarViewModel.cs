@@ -20,6 +20,8 @@ namespace ODK.Web.Razor.Models.Header
 
         public bool HideAccountMenu { get; set; }
 
+        public string? Id { get; set; }
+
         public Member? Member { get; set; }
 
         public MenuItem[][]? MenuItems { get; set; }

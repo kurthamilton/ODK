@@ -12,24 +12,34 @@
 }
 
 .navbar {
-  .navbar-nav {
-    flex-wrap: wrap;        
-    justify-content: center;    
-  }    
-}
-
-.navbar {
-  &.navbar-dark {
-    @include nav-item-separator(rgba(255, 255, 255, .5));
-  }
-
-  &.navbar-light {
-    @include nav-item-separator(rgba(0, 0, 0, 0.5));
-
-    .nav-link.active {
-      font-weight: 700;
+    .navbar-toggler:focus {
+        box-shadow: none;
+    } 
+    
+    .navbar-nav {
+        flex-wrap: wrap;
+        justify-content: center;
     }
-  }
+
+    .nav-link {
+        &.active {
+            font-weight: 700;
+        }
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.2)
+        }
+    }
+
+    @include media-breakpoint-up(md) {
+        &.navbar-dark {
+            @include nav-item-separator(rgba(255, 255, 255, .5));
+        }
+
+        &.navbar-light {
+            @include nav-item-separator(rgba(0, 0, 0, 0.5));
+        }
+    }
 }
 
 @include media-breakpoint-up(sm) {
@@ -88,29 +98,22 @@
 }
 
 .account-links {
-  cursor: pointer;
-  right: 0;
-  top: 0;
+    cursor: pointer;
+    right: 0;
   
-  @include media-breakpoint-up(lg) {
-    position: absolute;    
-    right: $grid-gutter-width / 2;
-  }  
+    position: absolute;
+    padding: 1rem; 
 
-  .dropdown-menu {
-    min-width: inherit;
-    text-align: right;
-  }
+    .dropdown-menu {
+        min-width: inherit;
+        text-align: right;
+    }
 }
 
 .account-links__user {    
-  font-size: 2.4rem;
+  font-size: 1.6rem;
   display: flex;
   opacity: 0.5;  
-
-  @include media-breakpoint-up(lg) {
-    font-size: 1.7rem;
-  }
 
   &:after {
     // hide dropdown caret

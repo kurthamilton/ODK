@@ -20,13 +20,7 @@ namespace ODK.Web.Razor.Middleware
             catch (Exception ex)
             {
                 await logger.LogError(ex, ex.Message);
-                await HandleExceptionAsync(httpContext, ex);
             }
-        }
-
-        private async Task HandleExceptionAsync(HttpContext context, Exception exception)
-        {
-            
         }
     }
 }
