@@ -1,3 +1,3 @@
-cd ../ODK.Website.Api/ODK.Web.Razor
+cd ../ODK.Web.Razor
 dotnet watch run
 pause
