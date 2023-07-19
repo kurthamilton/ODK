@@ -26,29 +26,7 @@ namespace ODK.Services.SocialMedia
 
         public async Task<IReadOnlyCollection<SocialMediaImage>> FetchInstagramImages(Guid chapterId)
         {
-            ChapterLinks links = await _chapterRepository.GetChapterLinks(chapterId);
-            if (links == null)
-            {
-                return Array.Empty<SocialMediaImage>();
-            }
-
-            if (string.IsNullOrEmpty(links.InstagramName))
-            {
-                return Array.Empty<SocialMediaImage>();
-            }
-
-            Task<SiteSettings> settingsTask = _settingsRepository.GetSiteSettings();
-            Task<DateTime?> mostRecentPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
-
-            await Task.WhenAll(settingsTask, mostRecentPostDateTask);
-
-            DateTime? after = mostRecentPostDateTask.Result;
-
-            if (settingsTask.Result.ScrapeInstagram)
-            {
-                await DownloadNewImages(chapterId, settingsTask.Result.InstagramScraperUserAgent,
-                    links.InstagramName, after);
-            }
+            await ScrapeLatestInstagramPosts(chapterId);
 
             IReadOnlyCollection<InstagramPost> posts = await _instagramRepository.GetPosts(chapterId, 8);
 
@@ -94,7 +72,18 @@ namespace ODK.Services.SocialMedia
 
             return await _instagramRepository.GetPosts(chapterId, pageSize);
         }
-        
+
+        public async Task ScrapeLatestInstagramPosts(string chapterName)
+        {
+            Chapter chapter = await _chapterRepository.GetChapter(chapterName);
+            if (chapter == null)
+            {
+                return;
+            }
+
+            await ScrapeLatestInstagramPosts(chapter.Id);
+        }
+
         private async Task DownloadNewImages(Guid chapterId, string userAgent, string username, DateTime? after)
         {
             string json;
@@ -202,6 +191,33 @@ namespace ODK.Services.SocialMedia
             catch
             {
                 return null;
+            }
+        }
+
+        private async Task ScrapeLatestInstagramPosts(Guid chapterId)
+        {
+            ChapterLinks links = await _chapterRepository.GetChapterLinks(chapterId);
+            if (links == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(links.InstagramName))
+            {
+                return;
+            }
+
+            Task<SiteSettings> settingsTask = _settingsRepository.GetSiteSettings();
+            Task<DateTime?> mostRecentPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
+
+            await Task.WhenAll(settingsTask, mostRecentPostDateTask);
+
+            DateTime? after = mostRecentPostDateTask.Result;
+
+            if (settingsTask.Result.ScrapeInstagram)
+            {
+                await DownloadNewImages(chapterId, settingsTask.Result.InstagramScraperUserAgent,
+                    links.InstagramName, after);
             }
         }
     }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Emails;
 using ODK.Services.Logging;
+using ODK.Services.SocialMedia;
 using ODK.Web.Common.Feedback;
 
 namespace ODK.Web.Razor.Controllers
@@ -10,12 +11,14 @@ namespace ODK.Web.Razor.Controllers
     public class SuperAdminController : OdkControllerBase
     {
         private readonly IEmailAdminService _emailAdminService;
+        private readonly IInstagramService _instagramService;
         private readonly ILoggingService _loggingService;
 
         public SuperAdminController(IEmailAdminService emailAdminService, 
-            ILoggingService loggingService)
+            ILoggingService loggingService, IInstagramService instagramService)
         {
             _emailAdminService = emailAdminService;
+            _instagramService = instagramService;
             _loggingService = loggingService;
         }
 
@@ -43,6 +46,14 @@ namespace ODK.Web.Razor.Controllers
             await _loggingService.DeleteAllErrors(MemberId, id);
 
             return Redirect($"/{chapterName}/Admin/SuperAdmin/Errors");
+        }
+
+        [HttpPost("{chapterName}/Admin/SuperAdmin/Instagram/Scrape")]
+        public async Task<IActionResult> ScrapeInstagram(string chapterName)
+        {
+            await _instagramService.ScrapeLatestInstagramPosts(chapterName);
+
+            return RedirectToReferrer();
         }
     }
 }

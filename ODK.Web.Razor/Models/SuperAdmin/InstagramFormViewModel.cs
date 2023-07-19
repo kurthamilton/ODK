@@ -4,6 +4,7 @@ namespace ODK.Web.Razor.Models.SuperAdmin
 {
     public class InstagramFormViewModel
     {
+        [Display(Name = "Scrape on demand")]
         public bool Scrape { get; set; }
 
         [Required]

@@ -12,5 +12,7 @@ namespace ODK.Services.SocialMedia
         Task<InstagramImage> GetInstagramImage(Guid instagramPostId);
 
         Task<IReadOnlyCollection<InstagramPost>> GetInstagramPosts(Guid chapterId, int pageSize);
+
+        Task ScrapeLatestInstagramPosts(string chapterName);
     }
 }

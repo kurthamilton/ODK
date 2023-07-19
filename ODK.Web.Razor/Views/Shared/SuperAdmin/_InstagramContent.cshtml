@@ -7,12 +7,21 @@
     SiteSettings settings = await SettingsService.GetSiteSettings();
 }
 
-<form method="post">
+<form method="post" class="mb-3">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("SuperAdmin/_InstagramForm", new InstagramFormViewModel
-    {
-        Scrape = settings.ScrapeInstagram,
-        ScraperUserAgent = settings.InstagramScraperUserAgent
-    })
+           {
+               Scrape = settings.ScrapeInstagram,
+               ScraperUserAgent = settings.InstagramScraperUserAgent
+           })
     <button class="btn btn-primary">Update</button>
 </form>
+
+<form method="post" action="/@Model.Name/Admin/SuperAdmin/Instagram/Scrape">
+    @Html.AntiForgeryToken()
+    <button class="btn btn-secondary">Scrape</button>
+</form>
+<p class="text-muted">
+    Download the latest Instagram images into the database.
+    Don't do this too frequently otherwise the account will be temporarily suspended.
+</p>
