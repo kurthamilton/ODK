@@ -24,6 +24,16 @@ namespace ODK.Web.Razor.Controllers
             _memberAdminService = memberAdminService;
         }
 
+        [HttpPost("{chapterName}/Admin/Members/{id:guid}/Delete")]
+        public async Task<IActionResult> DeleteMember(string chapterName, Guid id)
+        {
+            await _memberAdminService.DeleteMember(MemberId, id);
+
+            AddFeedback(new FeedbackViewModel("Member deleted", FeedbackType.Success));
+
+            return Redirect($"/{chapterName}/Admin/Members");
+        }
+
         [HttpPost("{chapterName}/Admin/Members/{id:guid}/Picture/Rotate")]
         public async Task<IActionResult> RotatePicture(Guid id)
         {
