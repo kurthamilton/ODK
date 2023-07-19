@@ -38,7 +38,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Events
                     // do nothing
                 }
 
-                return RedirectToSelf();
+                return RedirectToSelf(id);
             }
 
             return Page();
@@ -51,9 +51,9 @@ namespace ODK.Web.Razor.Pages.Chapters.Events
                 await EventService.UpdateMemberResponse(CurrentMember, id, responseType);
             }
 
-            return RedirectToSelf();
+            return RedirectToSelf(id);
         }
 
-        protected abstract IActionResult RedirectToSelf();
+        protected abstract IActionResult RedirectToSelf(Guid id);
     }
 }

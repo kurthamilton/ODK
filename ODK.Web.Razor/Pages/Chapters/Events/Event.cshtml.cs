@@ -11,9 +11,9 @@ namespace ODK.Web.Razor.Pages.Chapters.Events
         {
         }
 
-        protected override IActionResult RedirectToSelf()
+        protected override IActionResult RedirectToSelf(Guid id)
         {
-            return Redirect($"/{Chapter.Name}/Events/{Event.Id}");
+            return Redirect($"/{Chapter.Name}/Events/{id}");
         }
     }
 }
