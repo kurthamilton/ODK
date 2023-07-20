@@ -2,8 +2,14 @@
 {
     public class CacheItem<T>
     {
-        public T Value { get; set; }
+        public CacheItem(T value, long? version = null)
+        {
+            Value = value;
+            Version = version;
+        }
 
-        public long? Version { get; set; }
+        public T Value { get; }
+
+        public long? Version { get; }
     }
 }

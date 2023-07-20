@@ -87,15 +87,7 @@ namespace ODK.Data.Repositories
                 .Where(x => x.Id).EqualTo(id)
                 .FirstOrDefaultAsync();
         }
-
-        public async Task<int> GetEventCount(Guid chapterId)
-        {
-            return await Context
-                .Select<Event>()
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .CountAsync();
-        }
-
+        
         public async Task<EventEmail> GetEventEmail(Guid eventId)
         {
             return await Context
@@ -103,17 +95,7 @@ namespace ODK.Data.Repositories
                 .Where(x => x.EventId).EqualTo(eventId)
                 .FirstOrDefaultAsync();
         }
-
-        public async Task<IReadOnlyCollection<EventEmail>> GetEventEmails(Guid chapterId, DateTime after)
-        {
-            return await Context
-                .Select<EventEmail>()
-                .Join<Event, Guid>(x => x.EventId, x => x.Id)
-                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
-                .Where<Event, DateTime>(x => x.Date).GreaterThanOrEqualTo(after)
-                .ToArrayAsync();
-        }
-
+        
         public async Task<IReadOnlyCollection<EventEmail>> GetEventEmails(Guid chapterId, IEnumerable<Guid> eventIds)
         {
             return await Context
@@ -131,17 +113,7 @@ namespace ODK.Data.Repositories
                 .Where(x => x.EventId).EqualTo(eventId)
                 .ToArrayAsync();
         }
-
-        public async Task<IReadOnlyCollection<EventInvite>> GetEventInvites(Guid chapterId, DateTime after)
-        {
-            return await Context
-                .Select<EventInvite>()
-                .Join<Event, Guid>(x => x.EventId, x => x.Id)
-                .Where<Event, Guid>(x => x.ChapterId).EqualTo(chapterId)
-                .Where<Event, DateTime>(x => x.Date).GreaterThanOrEqualTo(after)
-                .ToArrayAsync();
-        }
-
+        
         public async Task<IReadOnlyCollection<EventInvite>> GetEventInvitesForMemberId(Guid memberId)
         {
             return await Context
@@ -222,16 +194,7 @@ namespace ODK.Data.Repositories
                 .Where(x => x.Id).EqualTo(@event.Id)
                 .ExecuteAsync();
         }
-
-        public async Task UpdateEventEmail(EventEmail eventEmail)
-        {
-            await Context
-                .Update<EventEmail>()
-                .Set(x => x.SentDate, eventEmail.SentDate)
-                .Where(x => x.Id).EqualTo(eventEmail.Id)
-                .ExecuteAsync();
-        }
-
+        
         public async Task UpdateEventResponse(EventResponse response)
         {
             if (await MemberEventResponseExists(response.EventId, response.MemberId))

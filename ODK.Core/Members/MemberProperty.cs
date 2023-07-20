@@ -4,7 +4,7 @@ namespace ODK.Core.Members
 {
     public class MemberProperty
     {
-        public MemberProperty(Guid id, Guid memberId, Guid chapterPropertyId, string value)
+        public MemberProperty(Guid id, Guid memberId, Guid chapterPropertyId, string? value)
         {
             ChapterPropertyId = chapterPropertyId;
             Id = id;
@@ -18,7 +18,7 @@ namespace ODK.Core.Members
 
         public Guid MemberId { get; }
 
-        public string Value { get; private set; }
+        public string? Value { get; private set; }
 
         public void Update(string value)
         {

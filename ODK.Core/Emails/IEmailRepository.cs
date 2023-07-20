@@ -12,7 +12,7 @@ namespace ODK.Core.Emails
 
         Task DeleteChapterEmail(Guid chapterId, EmailType type);
 
-        Task<ChapterEmail> GetChapterEmail(Guid chapterId, EmailType type);
+        Task<ChapterEmail?> GetChapterEmail(Guid chapterId, EmailType type);
 
         Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid chapterId);
 

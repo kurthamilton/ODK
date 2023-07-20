@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Services.Chapters;
@@ -24,14 +23,14 @@ namespace ODK.Services.Caching
             _memberService = memberService;
         }
 
-        public async Task<Chapter> GetChapter(Guid chapterId)
+        public async Task<Chapter?> GetChapter(Guid chapterId)
         {
             IReadOnlyCollection<Chapter> chapters = await GetChapters();
             return chapters
                 .FirstOrDefault(x => x.Id == chapterId);
         }
 
-        public async Task<Chapter> GetChapter(string name)
+        public async Task<Chapter?> GetChapter(string name)
         {
             IReadOnlyCollection<Chapter> chapters = await GetChapters();
             return chapters
@@ -45,8 +44,8 @@ namespace ODK.Services.Caching
                 return _chapters.Values.ToArray();
             }
 
-            VersionedServiceResult<IReadOnlyCollection<Chapter>> result = await _chapterService.GetChapters(null);
-            foreach (Chapter chapter in result.Value)
+            IReadOnlyCollection<Chapter> chapters = await _chapterService.GetChapters();
+            foreach (Chapter chapter in chapters)
             {
                 _chapters[chapter.Name] = chapter;
             }
@@ -54,15 +53,20 @@ namespace ODK.Services.Caching
             return _chapters.Values.ToArray();
         }
 
-        public async Task<Member> GetMember(Guid memberId)
+        public async Task<Member?> GetMember(Guid memberId)
         {
-            if (_members.TryGetValue(memberId, out Member member))
+            if (_members.TryGetValue(memberId, out Member? member))
             {
                 return member;
             }
 
             member = await _memberService.GetMember(memberId);
-            _members[memberId] = member;
+            
+            if (member != null)
+            {
+                _members[memberId] = member;
+            }
+            
             return member;
         }
     }

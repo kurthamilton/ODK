@@ -35,7 +35,7 @@ namespace ODK.Services.Authentication
 
         public async Task<ServiceResult> ActivateAccount(string activationToken, string password)
         {
-            MemberActivationToken token = await _memberRepository.GetMemberActivationToken(activationToken);
+            MemberActivationToken? token = await _memberRepository.GetMemberActivationToken(activationToken);
             if (token == null)
             {
                 return ServiceResult.Failure("The link you followed is no longer valid");
@@ -63,9 +63,9 @@ namespace ODK.Services.Authentication
             return ServiceResult.Successful();
         }
 
-        public async Task<Member> GetMember(string username, string password)
+        public async Task<Member?> GetMember(string username, string password)
         {
-            Member member = await _memberRepository.FindMemberByEmailAddress(username);
+            Member? member = await _memberRepository.FindMemberByEmailAddress(username);
             if (member == null)
             {
                 return null;
@@ -75,7 +75,7 @@ namespace ODK.Services.Authentication
             return passwordMatches ? member : null;
         }
 
-        public async Task<IReadOnlyCollection<Claim>> GetClaims(Member member)
+        public async Task<IReadOnlyCollection<Claim>> GetClaims(Member? member)
         {
             if (member == null)
             {
@@ -88,9 +88,9 @@ namespace ODK.Services.Authentication
                 new Claim("ChapterId", member.ChapterId.ToString())
             };
 
-            MemberSubscription subscription = await _memberRepository.GetMemberSubscription(member.Id);
+            MemberSubscription? subscription = await _memberRepository.GetMemberSubscription(member.Id);
 
-            bool isActive = await _authorizationService.MembershipIsActive(subscription, member.ChapterId);
+            bool isActive = subscription != null && await _authorizationService.MembershipIsActive(subscription, member.ChapterId);
             if (isActive)
             {
                 claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Member));
@@ -117,13 +117,22 @@ namespace ODK.Services.Authentication
                 return ServiceResult.Failure("Invalid email address format");
             }
 
-            Member member = await _memberRepository.FindMemberByEmailAddress(emailAddress);
+            Member? member = await _memberRepository.FindMemberByEmailAddress(emailAddress);
+            if (member == null)
+            {
+                // return fake success to avoid leaking valid email addresses
+                return ServiceResult.Successful();
+            }
 
             DateTime created = DateTime.UtcNow;
             DateTime expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
             string token = RandomStringGenerator.Generate(64);
             
-            Chapter chapter = await _chapterRepository.GetChapter(member.ChapterId);
+            Chapter? chapter = await _chapterRepository.GetChapter(member.ChapterId);
+            if (chapter == null)
+            {
+                throw new OdkNotFoundException();
+            }
 
             await _memberRepository.AddPasswordResetRequest(member.Id, created, expires, token);
 
@@ -133,7 +142,7 @@ namespace ODK.Services.Authentication
                 { "token", HttpUtility.UrlEncode(token) }
             });
 
-            await _emailService.SendEmail(chapter, member.EmailAddress, EmailType.PasswordReset, new Dictionary<string, string>
+            await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.PasswordReset, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "url", url }
@@ -151,7 +160,7 @@ namespace ODK.Services.Authentication
 
             const string message = "Link is invalid or has expired. Please request a new link using the password reset form.";
 
-            MemberPasswordResetRequest request = await _memberRepository.GetPasswordResetRequest(token);
+            MemberPasswordResetRequest? request = await _memberRepository.GetPasswordResetRequest(token);
             if (request == null)
             {
                 return ServiceResult.Failure(message);
@@ -186,7 +195,7 @@ namespace ODK.Services.Authentication
                 return false;
             }
 
-            MemberPassword memberPassword = await _memberRepository.GetMemberPassword(memberId.Value);
+            MemberPassword? memberPassword = await _memberRepository.GetMemberPassword(memberId.Value);
             if (memberPassword == null)
             {
                 return false;
@@ -198,15 +207,24 @@ namespace ODK.Services.Authentication
 
         private async Task SendNewMemberEmails(Guid memberId)
         {
-            Member member = await _memberRepository.GetMember(memberId);
-            Chapter chapter = await _chapterRepository.GetChapter(member.ChapterId);
+            Member? member = await _memberRepository.GetMember(memberId);
+            if (member == null)
+            {
+                return;
+            }
+
+            Chapter? chapter = await _chapterRepository.GetChapter(member.ChapterId);
+            if (chapter == null)
+            {
+                return;
+            }
 
             string eventsUrl = _settings.EventsUrl.Interpolate(new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name }
             });
 
-            await _emailService.SendEmail(chapter, member.EmailAddress, EmailType.NewMember, new Dictionary<string, string>
+            await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.NewMember, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "eventsUrl", eventsUrl },
@@ -226,7 +244,7 @@ namespace ODK.Services.Authentication
 
             foreach (ChapterProperty chapterProperty in chapterProperties)
             {
-                string value = memberProperties.FirstOrDefault(x => x.ChapterPropertyId == chapterProperty.Id)?.Value;
+                string? value = memberProperties.FirstOrDefault(x => x.ChapterPropertyId == chapterProperty.Id)?.Value;
                 newMemberAdminEmailParameters.Add($"member.properties.{chapterProperty.Name}", HttpUtility.HtmlEncode(value ?? ""));
             }
 

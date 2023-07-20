@@ -10,18 +10,18 @@ namespace ODK.Web.Razor.Models.Account
         public DateTime? DateJoined { get; set; }
 
         [DisplayName("Email address")] 
-        public string? EmailAddress { get; set; }
+        public string EmailAddress { get; set; } = "";
 
         [DisplayName("Receive event emails")] 
         public bool EmailOptIn { get; set; } = true;
 
         [Required] 
         [DisplayName("First Name")] 
-        public string? FirstName { get; set; }
+        public string FirstName { get; set; } = "";
 
         [Required] 
         [DisplayName("Last Name")] 
-        public string? LastName { get; set; }
+        public string LastName { get; set; } = "";
 
         public Guid? MemberId { get; set; }
 

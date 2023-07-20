@@ -46,7 +46,7 @@ namespace ODK.Services.SocialMedia
 
         public async Task<IReadOnlyCollection<InstagramPost>> GetInstagramPosts(Guid chapterId, int pageSize)
         {
-            ChapterLinks links = await _chapterRepository.GetChapterLinks(chapterId);
+            ChapterLinks? links = await _chapterRepository.GetChapterLinks(chapterId);
             if (links == null)
             {
                 return Array.Empty<InstagramPost>();
@@ -57,14 +57,14 @@ namespace ODK.Services.SocialMedia
                 return Array.Empty<InstagramPost>();
             }
 
-            Task<SiteSettings> settingsTask = _settingsRepository.GetSiteSettings();
+            Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettings();
             Task<DateTime?> latestPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
 
             await Task.WhenAll(settingsTask, latestPostDateTask);
 
             DateTime? latest = latestPostDateTask.Result;
 
-            if (settingsTask.Result.ScrapeInstagram)
+            if (settingsTask.Result!.ScrapeInstagram)
             {
                 await DownloadNewImages(chapterId, settingsTask.Result.InstagramScraperUserAgent,
                     links.InstagramName, latest);
@@ -75,7 +75,7 @@ namespace ODK.Services.SocialMedia
 
         public async Task ScrapeLatestInstagramPosts(string chapterName)
         {
-            Chapter chapter = await _chapterRepository.GetChapter(chapterName);
+            Chapter? chapter = await _chapterRepository.GetChapter(chapterName);
             if (chapter == null)
             {
                 return;
@@ -100,7 +100,7 @@ namespace ODK.Services.SocialMedia
                 }
             }
 
-            JArray edges;
+            JArray? edges;
             try
             {
                 JObject data = JObject.Parse(json);
@@ -117,15 +117,15 @@ namespace ODK.Services.SocialMedia
 
             foreach (JToken edge in edges)
             {
-                JToken node = edge["node"];
+                JToken? node = edge["node"];
 
-                InstagramPost post = ParsePost(chapterId, node);
+                InstagramPost? post = ParsePost(chapterId, node);
                 if (post == null || post.Date <= after)
                 {
                     continue;
                 }
 
-                InstagramImage image = await ParseImage(post, userAgent, node);
+                InstagramImage? image = await ParseImage(post, userAgent, node);
                 if (image == null)
                 {
                     continue;
@@ -136,11 +136,16 @@ namespace ODK.Services.SocialMedia
             }
         }
 
-        private async Task<InstagramImage> ParseImage(InstagramPost post, string userAgent, JToken node)
+        private async Task<InstagramImage?> ParseImage(InstagramPost post, string userAgent, JToken? node)
         {
+            if (node == null)
+            {
+                return null;
+            }
+
             try
             {
-                string thumbnailUrl = node["thumbnail_src"]?.ToString();
+                string? thumbnailUrl = node["thumbnail_src"]?.ToString();
                 if (string.IsNullOrEmpty(thumbnailUrl))
                 {
                     return null;
@@ -171,20 +176,25 @@ namespace ODK.Services.SocialMedia
             }
         }
 
-        private static InstagramPost ParsePost(Guid chapterId, JToken node)
+        private static InstagramPost? ParsePost(Guid chapterId, JToken? node)
         {
+            if (node == null)
+            {
+                return null;
+            }
+
             try
             {
-                int timestamp = node["taken_at_timestamp"].ToObject<int>();
+                int timestamp = node["taken_at_timestamp"]?.ToObject<int>() ?? 0;
                 DateTime date = new DateTime(1970, 1, 1).AddSeconds(timestamp);
-                string shortcode = node["shortcode"].ToString();
+                string shortcode = node["shortcode"]?.ToString() ?? "";
 
                 return new InstagramPost(
                     id: Guid.NewGuid(),
                     chapterId: chapterId,
                     externalId: shortcode,
                     date: date,
-                    caption: node["edge_media_to_caption"]["edges"].FirstOrDefault()?["node"]["text"].ToString(),
+                    caption: node["edge_media_to_caption"]?["edges"]?.FirstOrDefault()?["node"]?["text"]?.ToString() ?? "",
                     url: $"https://www.instagram.com/p/{shortcode}/?img_index=1"
                 );
             }
@@ -196,7 +206,7 @@ namespace ODK.Services.SocialMedia
 
         private async Task ScrapeLatestInstagramPosts(Guid chapterId)
         {
-            ChapterLinks links = await _chapterRepository.GetChapterLinks(chapterId);
+            ChapterLinks? links = await _chapterRepository.GetChapterLinks(chapterId);
             if (links == null)
             {
                 return;
@@ -207,14 +217,14 @@ namespace ODK.Services.SocialMedia
                 return;
             }
 
-            Task<SiteSettings> settingsTask = _settingsRepository.GetSiteSettings();
+            Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettings();
             Task<DateTime?> mostRecentPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
 
             await Task.WhenAll(settingsTask, mostRecentPostDateTask);
 
             DateTime? after = mostRecentPostDateTask.Result;
 
-            if (settingsTask.Result.ScrapeInstagram)
+            if (settingsTask.Result!.ScrapeInstagram)
             {
                 await DownloadNewImages(chapterId, settingsTask.Result.InstagramScraperUserAgent,
                     links.InstagramName, after);

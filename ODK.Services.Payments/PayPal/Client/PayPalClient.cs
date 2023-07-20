@@ -21,9 +21,9 @@ namespace ODK.Services.Payments.PayPal.Client
             _clientSecret = clientSecret;
         }
 
-        private AuthenticationJsonModel Authentication { get; set; }
+        private AuthenticationJsonModel? Authentication { get; set; }
 
-        public async Task<OrderCaptureJsonModel> CaptureOrderPaymentAsync(string orderId)
+        public async Task<OrderCaptureJsonModel?> CaptureOrderPaymentAsync(string orderId)
         {
             string url = $"{GetOrderUrl(orderId)}/capture";
 
@@ -31,12 +31,12 @@ namespace ODK.Services.Payments.PayPal.Client
             {
                 HttpResponseMessage response = await client.PostAsync(url, GetStringContent(""));
 
-                OrderCaptureJsonModel capture = await MapJsonResponseAsync<OrderCaptureJsonModel>(response);
+                OrderCaptureJsonModel? capture = await MapJsonResponseAsync<OrderCaptureJsonModel>(response);
                 return capture;
             }
         }
 
-        public async Task<OrderJsonModel> GetOrderAsync(string orderId)
+        public async Task<OrderJsonModel?> GetOrderAsync(string orderId)
         {
             string url = GetOrderUrl(orderId);
 
@@ -44,7 +44,7 @@ namespace ODK.Services.Payments.PayPal.Client
             {
                 HttpResponseMessage response = await client.GetAsync(url);
 
-                OrderJsonModel order = await MapJsonResponseAsync<OrderJsonModel>(response);
+                OrderJsonModel? order = await MapJsonResponseAsync<OrderJsonModel>(response);
                 return order;
             }
         }
@@ -72,7 +72,7 @@ namespace ODK.Services.Payments.PayPal.Client
                 }));
 
                 Authentication = await MapJsonResponseAsync<AuthenticationJsonModel>(response);
-                return Authentication?.AccessToken;
+                return Authentication!.AccessToken;
             }
         }
 
@@ -90,13 +90,7 @@ namespace ODK.Services.Payments.PayPal.Client
             HttpClient client = new HttpClient();
             return client;
         }
-
-        private HttpContent GetJsonContent<T>(T obj)
-        {
-            string content = JsonConvert.SerializeObject(obj);
-            return GetStringContent(content);
-        }
-
+        
         private HttpContent GetStringContent(string content)
         {
             HttpContent httpContent = new StringContent(content);
@@ -119,7 +113,7 @@ namespace ODK.Services.Payments.PayPal.Client
             return $"{_apiBaseUrl}{path}";
         }
 
-        private async Task<T> MapJsonResponseAsync<T>(HttpResponseMessage response)
+        private async Task<T?> MapJsonResponseAsync<T>(HttpResponseMessage response) where T : class
         {
             response.EnsureSuccessStatusCode();
 

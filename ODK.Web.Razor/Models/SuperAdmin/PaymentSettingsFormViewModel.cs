@@ -9,10 +9,10 @@ namespace ODK.Web.Razor.Models.SuperAdmin
 
         [Required]
         [DisplayName("Public key")]
-        public string? PublicKey { get; set;}
+        public string PublicKey { get; set;} = "";
 
         [Required]
         [DisplayName("Secret key")]
-        public string? SecretKey { get; set; }
+        public string SecretKey { get; set; } = "";
     }
 }

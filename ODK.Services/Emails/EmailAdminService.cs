@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
-using ODK.Services.Exceptions;
 
 namespace ODK.Services.Emails
 {
@@ -52,7 +51,7 @@ namespace ODK.Services.Emails
 
         public async Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, string chapterName, EmailType type)
         {
-            Chapter chapter = await _chapterRepository.GetChapter(chapterName);
+            Chapter? chapter = await _chapterRepository.GetChapter(chapterName);
             if (chapter == null)
             {
                 return ServiceResult.Failure("Chapter not found");
@@ -76,7 +75,7 @@ namespace ODK.Services.Emails
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            ChapterEmail chapterEmail = await _emailRepository.GetChapterEmail(chapterId, type);
+            ChapterEmail? chapterEmail = await _emailRepository.GetChapterEmail(chapterId, type);
             if (chapterEmail != null)
             {
                 return chapterEmail;
@@ -130,7 +129,7 @@ namespace ODK.Services.Emails
                 .ToArray();
         }
 
-        public async Task<Email> GetEmail(Guid currentMemberId, Guid currentChapterId, EmailType type)
+        public async Task<Email?> GetEmail(Guid currentMemberId, Guid currentChapterId, EmailType type)
         {
             await AssertMemberIsChapterSuperAdmin(currentMemberId, currentChapterId);
 
@@ -148,7 +147,7 @@ namespace ODK.Services.Emails
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            ChapterEmail existing = await _emailRepository.GetChapterEmail(chapterId, type);
+            ChapterEmail? existing = await _emailRepository.GetChapterEmail(chapterId, type);
             if (existing == null)
             {
                 existing = new ChapterEmail(Guid.Empty, chapterId, type, chapterEmail.Subject, chapterEmail.HtmlContent);
@@ -221,16 +220,7 @@ namespace ODK.Services.Emails
 
             return ServiceResult.Successful();
         }
-
-        private static void AssertChapterEmailValid(ChapterEmail chapterEmail)
-        {
-            ServiceResult result = ValidateChapterEmail(chapterEmail);
-            if (!result.Success)
-            {
-                throw new OdkServiceException(result.Message);
-            }
-        }
-
+        
         private static ServiceResult ValidateChapterEmail(ChapterEmail chapterEmail)
         {
             if (!Enum.IsDefined(typeof(EmailType), chapterEmail.Type) || chapterEmail.Type == EmailType.None)
@@ -246,16 +236,7 @@ namespace ODK.Services.Emails
 
             return ServiceResult.Successful();
         }
-
-        private static void AssertChapterEmailProviderValid(ChapterEmailProvider provider)
-        {
-            ServiceResult result = ValidateChapterEmailProvider(provider);
-            if (!result.Success)
-            {
-                throw new OdkServiceException("Some required fields are missing");
-            }
-        }
-
+        
         private static ServiceResult ValidateChapterEmailProvider(ChapterEmailProvider provider)
         {
             if (string.IsNullOrWhiteSpace(provider.FromEmailAddress) ||
@@ -271,21 +252,7 @@ namespace ODK.Services.Emails
 
             return ServiceResult.Successful();
         }
-
-        private static void AssertEmailValid(Email email)
-        {
-            if (!Enum.IsDefined(typeof(EmailType), email.Type) || email.Type == EmailType.None)
-            {
-                throw new OdkServiceException("Invalid type");
-            }
-
-            if (string.IsNullOrWhiteSpace(email.HtmlContent) ||
-                string.IsNullOrWhiteSpace(email.Subject))
-            {
-                throw new OdkServiceException("Some required fields are missing");
-            }
-        }
-
+        
         private static ServiceResult ValidateEmail(Email email)
         {
             if (!Enum.IsDefined(typeof(EmailType), email.Type) || email.Type == EmailType.None)

@@ -8,7 +8,7 @@ namespace ODK.Web.Common.Extensions
     {
         public static Guid? MemberId(this ClaimsPrincipal user)
         {
-            Claim claim = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+            Claim? claim = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
             if (claim == null)
             {
                 return null;

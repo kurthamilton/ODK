@@ -2,6 +2,6 @@
 {
     public class PaymentsSettings
     {
-        public string PayPalApiBaseUrl { get; set; }
+        public string PayPalApiBaseUrl { get; set; } = "";
     }
 }

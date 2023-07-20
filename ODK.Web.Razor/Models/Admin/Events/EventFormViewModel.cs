@@ -10,17 +10,17 @@ namespace ODK.Web.Razor.Models.Admin.Events
 
         public DateTime Date { get; set; }
 
-        public string? Description { get; set; }
+        public string Description { get; set; } = "";
 
         [DisplayName("Image URL")]
-        public string? ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = "";
 
         [Required]
-        public string? Name { get; set; }
+        public string Name { get; set; } = "";
 
         public bool Public { get; set; }
 
-        public string? Time { get; set; }
+        public string Time { get; set; } = "";
 
         [Required]
         public Guid Venue { get; set; }

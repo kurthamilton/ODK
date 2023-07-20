@@ -1,9 +1,9 @@
-﻿@using ODK.Services.Chapters
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Chapters
 @model ODK.Web.Razor.Models.Footer.FooterViewModel
 @inject IChapterService ChapterService
 @{
-    var result = Model.Chapter != null ? await ChapterService.GetChapterLinks(null, Model.Chapter.Id) : null;
-    var links = result?.Value;
+    ChapterLinks? links = Model.Chapter != null ? await ChapterService.GetChapterLinks(Model.Chapter.Id) : null;
 }
 
 <footer>

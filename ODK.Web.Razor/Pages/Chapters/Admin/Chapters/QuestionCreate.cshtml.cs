@@ -23,11 +23,8 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters
 
         public async Task<IActionResult> OnPostAsync(ChapterQuestionFormViewModel viewModel)
         {
-            ServiceResult result = await _chapterAdminService.CreateChapterQuestion(CurrentMemberId, Chapter.Id, new CreateChapterQuestion
-            {
-                Answer = viewModel.Answer,
-                Name = viewModel.Question
-            });
+            ServiceResult result = await _chapterAdminService.CreateChapterQuestion(CurrentMemberId, Chapter.Id, 
+                new CreateChapterQuestion(viewModel.Answer, viewModel.Question));
 
             if (!result.Success)
             {

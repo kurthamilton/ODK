@@ -6,8 +6,8 @@ namespace ODK.Web.Razor.Models.Account
     {
         [Required]
         [Display(Name = "New password")]
-        public string? NewPassword { get; set; }
+        public string NewPassword { get; set; } = "";
 
-        public string? Token { get; set; }
+        public string Token { get; set; } = "";
     }
 }

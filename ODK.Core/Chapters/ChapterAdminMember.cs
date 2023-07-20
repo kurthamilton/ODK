@@ -23,15 +23,15 @@ namespace ODK.Core.Chapters
             SuperAdmin = superAdmin;
         }
 
-        public string AdminEmailAddress { get; set; }
+        public string AdminEmailAddress { get; set; } = "";
 
         public Guid ChapterId { get; }
 
-        public string FirstName { get; }
+        public string FirstName { get; } = "";
 
         public string FullName => $"{FirstName} {LastName}".Trim();
 
-        public string LastName { get; }
+        public string LastName { get; } = "";
 
         public Guid MemberId { get; }
 

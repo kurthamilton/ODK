@@ -10,19 +10,13 @@ namespace ODK.Core.Venues
 
         Task<Venue> GetPublicVenue(Guid id);
 
-        Task<IReadOnlyCollection<Venue>> GetPublicVenues(Guid chapterId);
+        Task<Venue?> GetVenue(Guid id);
 
-        Task<long> GetPublicVenuesVersion(Guid chapterId);
-
-        Task<Venue> GetVenue(Guid id);
-
-        Task<Venue> GetVenueByName(string name);
+        Task<Venue?> GetVenueByName(string name);
 
         Task<IReadOnlyCollection<Venue>> GetVenues(Guid chapterId);
 
         Task<IReadOnlyCollection<Venue>> GetVenues(Guid chapterId, IEnumerable<Guid> venueIds);
-
-        Task<long> GetVenuesVersion(Guid chapterId);
 
         Task UpdateVenue(Venue venue);
     }

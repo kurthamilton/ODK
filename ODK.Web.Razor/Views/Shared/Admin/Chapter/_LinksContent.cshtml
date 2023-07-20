@@ -4,7 +4,11 @@
 @model ODK.Core.Chapters.Chapter
 @inject IChapterService ChapterService
 @{
-    ChapterLinks links = await ChapterService.GetChapterLinks(Model.Id);
+    ChapterLinks? links = await ChapterService.GetChapterLinks(Model.Id);
+    if (links == null)
+    {
+        return;
+    }
 }
 
 <form method="post">

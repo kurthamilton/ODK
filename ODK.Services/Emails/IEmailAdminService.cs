@@ -24,7 +24,7 @@ namespace ODK.Services.Emails
 
         Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid currentMemberId, Guid chapterId);
 
-        Task<Email> GetEmail(Guid currentMemberId, Guid currentChapterId, EmailType type);
+        Task<Email?> GetEmail(Guid currentMemberId, Guid currentChapterId, EmailType type);
         
         Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId, Guid currentChapterId);
 

@@ -9,10 +9,10 @@ namespace ODK.Web.Razor.Models.Admin.Chapters
 
         [Required]
         [DisplayName("Register message")]
-        public string? RegisterMessage { get; set; }
+        public string RegisterMessage { get; set; } = "";
 
         [Required]
         [DisplayName("Welcome message")]
-        public string? WelcomeMessage { get; set; }
+        public string WelcomeMessage { get; set; } = "";
     }
 }

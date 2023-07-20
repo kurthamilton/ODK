@@ -35,15 +35,15 @@ namespace ODK.Web.Razor.Controllers
         [HttpPost("/Account/Login")]
         public async Task<IActionResult> Login([FromForm] LoginViewModel viewModel, string? returnUrl)
         {
-            AuthenticationResult result = await _loginHandler.Login(HttpContext, viewModel.Email,
-                viewModel.Password, true);
+            AuthenticationResult result = await _loginHandler.Login(HttpContext, viewModel.Email ?? "",
+                viewModel.Password ?? "", true);
 
-            if (result.Success)
+            if (result.Success && result.Member != null)
             {
                 if (string.IsNullOrEmpty(returnUrl))
                 {
-                    Chapter chapter = await _requestCache.GetChapter(result.Member.ChapterId);
-                    return Redirect($"/{chapter.Name}");
+                    Chapter? chapter = await _requestCache.GetChapter(result.Member.ChapterId);
+                    return Redirect($"/{chapter?.Name}");
                 }
 
                 return Redirect(returnUrl);
@@ -65,7 +65,7 @@ namespace ODK.Web.Razor.Controllers
         [HttpPost("{ChapterName}/Account/Email/Change")]
         public async Task<IActionResult> RequestEmailChange([FromForm] ChangeEmailFormViewModel viewModel)
         {
-            ServiceResult result = await _memberService.RequestMemberEmailAddressUpdate(MemberId, viewModel.Email);
+            ServiceResult result = await _memberService.RequestMemberEmailAddressUpdate(MemberId, viewModel.Email ?? "");
             if (result.Success)
             {
                 string message = !string.IsNullOrEmpty(result.Message)
@@ -123,27 +123,29 @@ namespace ODK.Web.Razor.Controllers
                 return RedirectToReferrer();
             }
 
-            ServiceResult result = await _memberService.CreateMember(chapter.Id, new CreateMemberProfile
+            ServiceResult result = await _memberService.CreateMember(chapter.Id, new CreateMemberProfile(new UpdateMemberImage
+            {
+                ImageData = await image.ToByteArrayAsync() ?? Array.Empty<byte>(),
+                MimeType = image.ContentType
+            })
             {
                 EmailAddress = viewModel.EmailAddress,
                 EmailOptIn = viewModel.EmailOptIn,
                 FirstName = viewModel.FirstName,
                 LastName = viewModel.LastName,
-                Image = new UpdateMemberImage
-                {
-                    ImageData = await image.ToByteArrayAsync(),
-                    MimeType = image.ContentType
-                },
                 Properties = viewModel.Properties.Select(x => new UpdateMemberProperty
                 {
                     ChapterPropertyId = x.ChapterPropertyId,
-                    Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) && !string.IsNullOrEmpty(x.OtherValue) ? x.OtherValue : x.Value
+                    Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) && 
+                            !string.IsNullOrEmpty(x.OtherValue) ? x.OtherValue : x.Value
                 })
             });
 
             if (result.Success)
             {
-                AddFeedback(new FeedbackViewModel("Thank you for signing up. An email has been sent to your email address containing a link to activate your account.", FeedbackType.Success));
+                string message = "Thank you for signing up. " +
+                                 "An email has been sent to your email address containing a link to activate your account.";
+                AddFeedback(new FeedbackViewModel(message, FeedbackType.Success));
             }
             else
             {
@@ -156,7 +158,8 @@ namespace ODK.Web.Razor.Controllers
         [HttpPost("{ChapterName}/Account/Password/Change")]
         public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordFormViewModel viewModel)
         {
-            ServiceResult result = await _authenticationService.ChangePassword(MemberId, viewModel.CurrentPassword, viewModel.NewPassword);
+            ServiceResult result = await _authenticationService.ChangePassword(MemberId, 
+                viewModel.CurrentPassword ?? "", viewModel.NewPassword ?? "");
             AddFeedback(result.Success
                 ? new FeedbackViewModel("Password changed", FeedbackType.Success)
                 : new FeedbackViewModel(result));
@@ -168,7 +171,7 @@ namespace ODK.Web.Razor.Controllers
         [HttpPost("/Account/Password/Forgotten")]
         public async Task<IActionResult> ForgottenPassword([FromForm] ForgottenPasswordFormViewModel viewModel)
         {
-            ServiceResult result = await _authenticationService.RequestPasswordReset(viewModel.EmailAddress);
+            ServiceResult result = await _authenticationService.RequestPasswordReset(viewModel.EmailAddress ?? "");
             if (result.Success)
             {
                 string message = "An email containing password reset instructions has been sent to that email address " +
@@ -195,7 +198,7 @@ namespace ODK.Web.Razor.Controllers
             
             UpdateMemberImage update = new UpdateMemberImage
             {
-                ImageData = await file.ToByteArrayAsync(),
+                ImageData = await file.ToByteArrayAsync() ?? Array.Empty<byte>(),
                 MimeType = file.ContentType
             };
 

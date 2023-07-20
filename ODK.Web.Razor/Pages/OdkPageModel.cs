@@ -34,7 +34,7 @@ namespace ODK.Web.Razor.Pages
 
         protected void AddFeedback(FeedbackViewModel viewModel)
         {
-            TempData.AddFeedback(viewModel);
+            TempData!.AddFeedback(viewModel);
         }
     }
 }

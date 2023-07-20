@@ -21,7 +21,7 @@ namespace ODK.Services.Payments.PayPal
         {
             PayPalClient client = GetClient(paymentSettings);
 
-            OrderJsonModel order = await client.GetOrderAsync(cardToken);
+            OrderJsonModel? order = await client.GetOrderAsync(cardToken);
             if (order == null || order.PurchaseUnits.Length != 1)
             {
                 return ServiceResult.Failure("Payment not found in PayPal");
@@ -29,16 +29,16 @@ namespace ODK.Services.Payments.PayPal
 
             PurchaseUnitJsonModel purchase = order.PurchaseUnits[0];
 
-            bool approved = string.Equals(purchase.Amount.CurrencyCode, currencyCode, StringComparison.InvariantCultureIgnoreCase) &&
-                purchase.Amount.Value == amount &&
+            bool approved = string.Equals(purchase.Amount?.CurrencyCode, currencyCode, StringComparison.InvariantCultureIgnoreCase) &&
+                purchase.Amount?.Value == amount &&
                 string.Equals("APPROVED", order.Status, StringComparison.InvariantCultureIgnoreCase);
             if (!approved)
             {
                 return ServiceResult.Failure($"Payment not approved in PayPal. Current status: {order.Status}");
             }
 
-            OrderCaptureJsonModel capture = await client.CaptureOrderPaymentAsync(order.Id);
-            if (!string.Equals("COMPLETED", capture.Status, StringComparison.InvariantCultureIgnoreCase))
+            OrderCaptureJsonModel? capture = await client.CaptureOrderPaymentAsync(order.Id);
+            if (!string.Equals("COMPLETED", capture?.Status, StringComparison.InvariantCultureIgnoreCase))
             {
                 return ServiceResult.Failure($"Payment not completed in PayPal. Current status: {order.Status}");
             }

@@ -54,7 +54,7 @@ namespace ODK.Web.Razor.Controllers
             return match.Success ? long.Parse(match.Groups["version"].Value) : new long?();
         }
 
-        protected async Task<IActionResult> HandleVersionedRequest<T>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T, IActionResult> map)
+        protected async Task<IActionResult> HandleVersionedRequest<T>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T?, IActionResult> map) where T : class
         {
             long? version = GetRequestVersion();
 

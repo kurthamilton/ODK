@@ -5,54 +5,62 @@ using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Media;
 using ODK.Core.Utils;
-using ODK.Services.Caching;
-using ODK.Services.Exceptions;
 
 namespace ODK.Services.Media
 {
     public class MediaFileProvider : IMediaFileProvider
     {
-        private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly MediaFileProviderSettings _settings;
 
-        public MediaFileProvider(IChapterRepository chapterRepository, ICacheService cacheService,
+        public MediaFileProvider(IChapterRepository chapterRepository,
             MediaFileProviderSettings settings)
         {
-            _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _settings = settings;
         }
 
-        public async Task<MediaFile> GetMediaFile(Guid chapterId, string name)
+        public async Task<MediaFile?> GetMediaFile(Guid chapterId, string name)
         {
-            Chapter chapter = await GetChapter(chapterId);
+            Chapter? chapter = await GetChapter(chapterId);
+            if (chapter == null)
+            {
+                return null;
+            }
 
             return await GetMediaFile(chapter.Name, name);
         }
 
-        public async Task<MediaFile> GetMediaFile(string chapter, string name)
+        public async Task<MediaFile?> GetMediaFile(string chapter, string name)
         {
-            string filePath = GetMediaFilePath(chapter, name);
+            string? filePath = GetMediaFilePath(chapter, name);
 
-            if (!File.Exists(filePath))
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             {
-                throw new OdkNotFoundException();
+                return null;
             }
 
             return await GetMediaFile(chapter, new FileInfo(filePath));
         }
 
-        public async Task<string> GetMediaFilePath(Guid chapterId, string name)
+        public async Task<string?> GetMediaFilePath(Guid chapterId, string name)
         {
-            Chapter chapter = await GetChapter(chapterId);
+            Chapter? chapter = await GetChapter(chapterId);
+            if (chapter == null)
+            {
+                return null;
+            }
 
             return GetMediaFilePath(chapter.Name, name);
         }
 
         public async Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(Guid chapterId)
         {
-            Chapter chapter = await GetChapter(chapterId);
+            Chapter? chapter = await GetChapter(chapterId);
+            if (chapter == null)
+            {
+                return Array.Empty<MediaFile>();
+            }
 
             string path = GetMediaPath(chapter.Name);
 
@@ -67,11 +75,9 @@ namespace ODK.Services.Media
             return mediaFiles.ToArray();
         }
 
-        private async Task<Chapter> GetChapter(Guid chapterId)
+        private async Task<Chapter?> GetChapter(Guid chapterId)
         {
-            return await _cacheService.GetOrSetItem(
-                () => _chapterRepository.GetChapter(chapterId),
-                chapterId);
+            return await _chapterRepository.GetChapter(chapterId);
         }
 
         private Task<MediaFile> GetMediaFile(string chapter, FileInfo file)
@@ -81,7 +87,7 @@ namespace ODK.Services.Media
             return Task.FromResult(mediaFile);
         }
 
-        private string GetMediaFilePath(string chapter, string name)
+        private string? GetMediaFilePath(string chapter, string name)
         {
             chapter = chapter.AlphaNumeric();
             name = name.AlphaNumericImageFileName();
@@ -91,7 +97,7 @@ namespace ODK.Services.Media
 
             if (!string.Equals(new FileInfo(filePath).Directory?.FullName, path, StringComparison.OrdinalIgnoreCase))
             {
-                throw new OdkServiceException("Bad file name");
+                return null;
             }
 
             return filePath;

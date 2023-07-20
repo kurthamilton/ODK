@@ -22,11 +22,13 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Members
 
         public async Task<IActionResult> OnGetAsync(Guid id)
         {
-            AdminMember = await _chapterAdminService.GetChapterAdminMember(CurrentMemberId, Chapter.Id, id);
-            if (AdminMember == null)
+            ChapterAdminMember? adminMember = await _chapterAdminService.GetChapterAdminMember(CurrentMemberId, Chapter.Id, id);
+            if (adminMember == null)
             {
                 return NotFound();
             }
+
+            AdminMember = adminMember;
 
             return Page();
         }

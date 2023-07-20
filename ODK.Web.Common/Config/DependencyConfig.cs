@@ -90,10 +90,7 @@ namespace ODK.Web.Common.Config
 
             services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
             services.AddScoped<IPayPalPaymentProvider, PayPalPaymentProvider>();
-            services.AddSingleton(new PayPalPaymentProviderSettings
-            {
-                ApiBaseUrl = payments.PayPalApiBaseUrl
-            });
+            services.AddSingleton(new PayPalPaymentProviderSettings(payments.PayPalApiBaseUrl));
             services.AddScoped<IStripePaymentProvider, StripePaymentProvider>();
         }
 
@@ -122,7 +119,6 @@ namespace ODK.Web.Common.Config
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IRequestCache, RequestCache>();
             services.AddScoped<ISettingsService, SettingsService>();
-            services.AddScoped<ISocialMediaService, SocialMediaService>();
             services.AddScoped<IVenueAdminService, VenueAdminService>();
             services.AddScoped<IVenueService, VenueService>();
         }
@@ -134,12 +130,10 @@ namespace ODK.Web.Common.Config
             PathSettings paths = appSettings.Paths;
             UrlSettings urls = appSettings.Urls;
 
-            services.AddSingleton(new AuthenticationServiceSettings
-            {
-                EventsUrl = $"{urls.AppBase}{urls.Events}",
-                PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
-                PasswordResetUrl = $"{urls.AppBase}{urls.PasswordReset}",
-            });
+            services.AddSingleton(new AuthenticationServiceSettings(
+                eventsUrl: $"{urls.AppBase}{urls.Events}",
+                passwordResetTokenLifetimeMinutes: auth.PasswordResetTokenLifetimeMinutes,
+                passwordResetUrl: $"{urls.AppBase}{urls.PasswordReset}"));
             
             services.AddSingleton(new EventAdminServiceSettings
             {

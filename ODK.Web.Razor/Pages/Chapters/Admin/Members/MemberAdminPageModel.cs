@@ -20,12 +20,14 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Members
         public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
         {
             Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id);
-            Member = await MemberAdminService.GetMember(CurrentMemberId, id);
-            if (Member == null)
+            Member? member = await MemberAdminService.GetMember(CurrentMemberId, id);
+            if (member == null)
             {
-                Response.Redirect($"{Request.RouteValues["chapterName"]}/Admin/Members");
+                Response.StatusCode = 404;
                 return;
             }
+
+            Member = member;
 
             await base.OnPageHandlerExecutionAsync(context, next);
         }

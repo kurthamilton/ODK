@@ -22,11 +22,13 @@ namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin
 
         public async Task<IActionResult> OnGetAsync(EmailType type)
         {
-            Email = await _emailAdminService.GetEmail(CurrentMemberId, Chapter.Id, type);
-            if (Email == null)
+            Email? email = await _emailAdminService.GetEmail(CurrentMemberId, Chapter.Id, type);
+            if (email == null)
             {
                 return NotFound();
             }
+
+            Email = email;
 
             return Page();
         }

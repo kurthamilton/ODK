@@ -39,7 +39,11 @@ namespace ODK.Services.Events
         {
             await AssertMemberIsChapterAdmin(memberId, createEvent.ChapterId);
 
-            Member member = await _memberRepository.GetMember(memberId);
+            Member? member = await _memberRepository.GetMember(memberId);
+            if (member == null)
+            {
+                throw new OdkServiceException("Invalid member id");
+            }
 
             Event @event = new Event(Guid.Empty, createEvent.ChapterId, $"{member.FirstName} {member.LastName}", createEvent.Name,
                 createEvent.Date, createEvent.VenueId, createEvent.Time, createEvent.ImageUrl,
@@ -55,54 +59,14 @@ namespace ODK.Services.Events
 
             return ServiceResult.Successful();
         }
-
-        public async Task<Event> CreateEventOld(Guid memberId, CreateEvent createEvent)
-        {
-            await AssertMemberIsChapterAdmin(memberId, createEvent.ChapterId);
-
-            Member member = await _memberRepository.GetMember(memberId);
-
-            Event @event = new Event(Guid.Empty, createEvent.ChapterId, $"{member.FirstName} {member.LastName}", createEvent.Name,
-                createEvent.Date, createEvent.VenueId, createEvent.Time, createEvent.ImageUrl,
-                createEvent.Description, createEvent.IsPublic);
-
-            await AssertValidEvent(@event);
-
-            return await _eventRepository.CreateEvent(@event);
-        }
-
+        
         public async Task DeleteEvent(Guid currentMemberId, Guid id)
         {
             await AssertEventCanBeDeleted(currentMemberId, id);
 
             await _eventRepository.DeleteEvent(id);
         }
-
-        public async Task<IReadOnlyCollection<EventInvites>> GetChapterInvites(Guid currentMemberId, Guid chapterId, int page, int pageSize)
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
-
-            IReadOnlyCollection<Event> events = await _eventRepository.GetEvents(chapterId, page, pageSize);
-            IReadOnlyCollection<EventEmail> eventEmails = events.Count > 0
-                ? await _eventRepository.GetEventEmails(chapterId, events.Min(x => x.Date))
-                : Array.Empty<EventEmail>();
-            IReadOnlyCollection<EventInvite> eventInvites = events.Count > 0
-                ? await _eventRepository.GetEventInvites(chapterId, events.Min(x => x.Date))
-                : Array.Empty<EventInvite>();
-
-            IDictionary<Guid, DateTime?> eventEmailDictionary = eventEmails.ToDictionary(x => x.EventId, x => x.SentDate);
-            IDictionary<Guid, int> eventInvitesDictionary = eventInvites
-                .GroupBy(x => x.EventId)
-                .ToDictionary(x => x.Key, x => x.Count());
-
-            return events.Select(x => new EventInvites
-            {
-                EventId = x.Id,
-                Sent = eventInvitesDictionary.ContainsKey(x.Id) ? eventInvitesDictionary[x.Id] : 0,
-                SentDate = eventEmailDictionary.ContainsKey(x.Id) ? eventEmailDictionary[x.Id] : default
-            }).ToArray();
-        }
-
+        
         public async Task<IReadOnlyCollection<EventInvites>> GetChapterInvites(Guid currentMemberId, Guid chapterId,
             IReadOnlyCollection<Guid> eventIds)
         {
@@ -138,15 +102,7 @@ namespace ODK.Services.Events
                 SentDate = eventEmailDictionary.ContainsKey(x) ? eventEmailDictionary[x] : default
             }).ToArray();
         }
-
-        public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid currentMemberId,
-            Guid chapterId)
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
-
-            return await _eventRepository.GetChapterResponses(chapterId);
-        }
-
+        
         public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid currentMemberId,
             Guid chapterId, IReadOnlyCollection<Guid> eventIds)
         {
@@ -162,7 +118,7 @@ namespace ODK.Services.Events
 
         public async Task<Event> GetEvent(Guid currentMemberId, Guid id)
         {
-            Event @event = await _eventRepository.GetEvent(id);
+            Event? @event = await _eventRepository.GetEvent(id);
             if (@event == null)
             {
                 throw new OdkNotFoundException();
@@ -172,18 +128,11 @@ namespace ODK.Services.Events
 
             return @event;
         }
-
-        public async Task<int> GetEventCount(Guid currentMemberId, Guid chapterId)
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
-
-            return await _eventRepository.GetEventCount(chapterId);
-        }
-
+        
         public async Task<EventInvites> GetEventInvites(Guid currentMemberId, Guid eventId)
         {
             Event @event = await GetEvent(currentMemberId, eventId);
-            EventEmail eventEmail = await _eventRepository.GetEventEmail(@event.Id);
+            EventEmail? eventEmail = await _eventRepository.GetEventEmail(@event.Id);
             IReadOnlyCollection<EventInvite> invites = await _eventRepository.GetEventInvites(@event.Id);
             return new EventInvites
             {
@@ -224,7 +173,7 @@ namespace ODK.Services.Events
 
         public async Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId)
         {
-            Venue venue = await _venueRepository.GetVenue(venueId);
+            Venue? venue = await _venueRepository.GetVenue(venueId);
             if (venue == null)
             {
                 throw new OdkNotFoundException();
@@ -235,19 +184,6 @@ namespace ODK.Services.Events
             return await _eventRepository.GetEventsByVenue(venueId);
         }
         
-        public async Task<IReadOnlyCollection<EventResponse>> GetMemberResponses(Guid currentMemberId, Guid memberId)
-        {
-            Member member = await _memberRepository.GetMember(memberId);
-            if (member == null)
-            {
-                throw new OdkNotFoundException();
-            }
-
-            await AssertMemberIsChapterAdmin(currentMemberId, member.ChapterId);
-
-            return await _eventRepository.GetMemberResponses(memberId, true);
-        }
-
         public async Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes,
             string subject, string body)
         {
@@ -275,9 +211,9 @@ namespace ODK.Services.Events
                 .Where(x => x.EmailOptIn && responseDictionary.ContainsKey(x.Id))
                 .ToArray();
 
-            Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
+            Chapter? chapter = await _chapterRepository.GetChapter(@event.ChapterId);
 
-            await _emailService.SendBulkEmail(currentMemberId, chapter, to, subject, body);
+            await _emailService.SendBulkEmail(currentMemberId, chapter!, to, subject, body);
         }
 
         public async Task<ServiceResult> SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false)
@@ -290,21 +226,21 @@ namespace ODK.Services.Events
                 return validationResult;
             }
 
-            EventEmail eventEmail = await _eventRepository.GetEventEmail(@event.Id);
+            EventEmail? eventEmail = await _eventRepository.GetEventEmail(@event.Id);
             if (!test && eventEmail?.SentDate != null)
             {
                 return ServiceResult.Failure("Invites have already been sent for this event");
             }
 
-            Venue venue = await _venueRepository.GetVenue(@event.VenueId);
-            Chapter chapter = await _chapterRepository.GetChapter(@event.ChapterId);
+            Venue? venue = await _venueRepository.GetVenue(@event.VenueId);
+            Chapter? chapter = await _chapterRepository.GetChapter(@event.ChapterId);
 
-            IDictionary<string, string> parameters = GetEventEmailParameters(chapter, @event, venue);
+            IDictionary<string, string> parameters = GetEventEmailParameters(chapter!, @event, venue!);
 
             if (test)
             {
-                Member member = await _memberRepository.GetMember(currentMemberId);
-                await _emailService.SendEmail(chapter, member.EmailAddress, EmailType.EventInvite, parameters);
+                Member? member = await _memberRepository.GetMember(currentMemberId);
+                await _emailService.SendEmail(chapter!, member!.GetEmailAddressee(), EmailType.EventInvite, parameters);
             }
             else
             {
@@ -314,7 +250,7 @@ namespace ODK.Services.Events
                 IReadOnlyCollection<EventInvite> invites = await _eventRepository.GetEventInvites(@event.Id);
                 IDictionary<Guid, EventInvite> inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
 
-                IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(chapter.Id);
+                IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(chapter!.Id);
                 IReadOnlyCollection<Member> invited = members
                     .Where(x => x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id) && !memberResponses.ContainsKey(x.Id))
                     .ToArray();
@@ -407,8 +343,7 @@ namespace ODK.Services.Events
                 return ServiceResult.Failure("Date is required");
             }
 
-            Venue venue = await _venueRepository.GetVenue(@event.VenueId);
-
+            Venue? venue = await _venueRepository.GetVenue(@event.VenueId);
             if (venue == null || venue.ChapterId != @event.ChapterId)
             {
                 return ServiceResult.Failure("Venue not found");
@@ -437,7 +372,7 @@ namespace ODK.Services.Events
 
         private async Task AssertEventCanBeDeleted(Guid currentMemberId, Guid eventId)
         {
-            EventEmail eventEmail = await _eventRepository.GetEventEmail(eventId);
+            EventEmail? eventEmail = await _eventRepository.GetEventEmail(eventId);
             if (eventEmail?.SentDate != null)
             {
                 throw new OdkServiceException("Events that have had invite emails sent cannot be deleted");
@@ -449,7 +384,7 @@ namespace ODK.Services.Events
                 throw new OdkServiceException("Events with responses cannot be deleted");
             }
 
-            Event @event = await _eventRepository.GetEvent(eventId);
+            Event? @event = await _eventRepository.GetEvent(eventId);
             if (@event != null)
             {
                 await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
@@ -473,14 +408,6 @@ namespace ODK.Services.Events
             parameters.Add("unsubscribeUrl", (_settings.BaseUrl + _settings.UnsubscribeUrlFormat).Interpolate(parameters));
 
             return parameters;
-        }
-
-        private void ValidateEventResponse(EventResponse response)
-        {
-            if (!Enum.IsDefined(typeof(EventResponseType), response.ResponseTypeId) || response.ResponseTypeId <= EventResponseType.None)
-            {
-                throw new OdkServiceException("Invalid response type");
-            }
         }
     }
 }

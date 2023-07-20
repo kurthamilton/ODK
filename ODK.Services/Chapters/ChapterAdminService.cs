@@ -26,30 +26,10 @@ namespace ODK.Services.Chapters
             _chapterService = chapterService;
             _memberRepository = memberRepository;
         }
-
-        public async Task AddChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
-
-            Member member = await _memberRepository.GetMember(memberId);
-            if (member == null)
-            {
-                throw new OdkNotFoundException();
-            }
-
-            ChapterAdminMember existing = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
-            if (existing != null)
-            {
-                return;
-            }
-
-            ChapterAdminMember adminMember = new ChapterAdminMember(chapterId, memberId);
-            await _chapterRepository.AddChapterAdminMember(adminMember);
-        }
-
+        
         public async Task<ServiceResult> AddChapterAdminMember(Guid currentMemberId, string chapterName, Guid memberId)
         {
-            Chapter chapter = await _chapterRepository.GetChapter(chapterName);
+            Chapter? chapter = await _chapterRepository.GetChapter(chapterName);
             if (chapter == null)
             {
                 return ServiceResult.Failure("Chapter not found");
@@ -57,13 +37,13 @@ namespace ODK.Services.Chapters
 
             await AssertMemberIsChapterAdmin(currentMemberId, chapter.Id);
 
-            Member member = await _memberRepository.GetMember(memberId);
+            Member? member = await _memberRepository.GetMember(memberId);
             if (member == null)
             {
                 return ServiceResult.Failure("Member not found");
             }
 
-            ChapterAdminMember existing = await _chapterRepository.GetChapterAdminMember(chapter.Id, memberId);
+            ChapterAdminMember? existing = await _chapterRepository.GetChapterAdminMember(chapter.Id, memberId);
             if (existing != null)
             {
                 return ServiceResult.Failure("Member is already a chapter admin");
@@ -82,7 +62,7 @@ namespace ODK.Services.Chapters
             IReadOnlyCollection<ChapterProperty> existing = await _chapterRepository.GetChapterProperties(chapterId, true);
 
             int displayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
-            ChapterProperty create = new ChapterProperty(Guid.Empty, chapterId, property.DataType, property.Name?.ToLowerInvariant(),
+            ChapterProperty create = new ChapterProperty(Guid.Empty, chapterId, property.DataType, property.Name.ToLowerInvariant(),
                 property.Label, displayOrder, property.Required, property.Subtitle, property.HelpText, property.Hidden);
 
             ServiceResult validationResult = ValidateChapterProperty(create, existing);
@@ -136,28 +116,17 @@ namespace ODK.Services.Chapters
 
             return ServiceResult.Successful();
         }
-
-        public async Task DeleteChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
-        {
-            ChapterAdminMember adminMember = await GetChapterAdminMember(currentMemberId, chapterId, memberId);
-            if (adminMember.SuperAdmin)
-            {
-                return;
-            }
-
-            await _chapterRepository.DeleteChapterAdminMember(chapterId, memberId);
-        }
-
+        
         public async Task<ServiceResult> DeleteChapterAdminMember(Guid currentMemberId, string chapterName,
             Guid memberId)
         {
-            Chapter chapter = await _chapterRepository.GetChapter(chapterName);
+            Chapter? chapter = await _chapterRepository.GetChapter(chapterName);
             if (chapter == null)
             {
                 return ServiceResult.Failure("Chapter not found");
             }
 
-            ChapterAdminMember adminMember = await GetChapterAdminMember(currentMemberId, chapter.Id, memberId);
+            ChapterAdminMember? adminMember = await GetChapterAdminMember(currentMemberId, chapter.Id, memberId);
             if (adminMember == null)
             {
                 return ServiceResult.Failure("Admin member not found");
@@ -226,18 +195,18 @@ namespace ODK.Services.Chapters
             return ServiceResult.Successful();
         }
 
-        public async Task<Chapter> GetChapter(Guid currentMemberId, Guid chapterId)
+        public async Task<Chapter?> GetChapter(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             return await _chapterRepository.GetChapter(chapterId);
         }
 
-        public async Task<ChapterAdminMember> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
+        public async Task<ChapterAdminMember?> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            ChapterAdminMember adminMember = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
+            ChapterAdminMember? adminMember = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
             if (adminMember == null)
             {
                 throw new OdkNotFoundException();
@@ -253,7 +222,7 @@ namespace ODK.Services.Chapters
             return await _chapterRepository.GetChapterAdminMembers(chapterId);
         }
 
-        public async Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid currentMemberId, Guid chapterId)
+        public async Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid currentMemberId, Guid chapterId)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
@@ -307,15 +276,15 @@ namespace ODK.Services.Chapters
             {
                 throw new OdkNotAuthorizedException();
             }
-            VersionedServiceResult<IReadOnlyCollection<Chapter>> chapters = await _chapterService.GetChapters(null);
+            IReadOnlyCollection<Chapter> chapters = await _chapterService.GetChapters();
             return chapterAdminMembers
-                .Select(x => chapters.Value.Single(chapter => chapter.Id == x.ChapterId))
+                .Select(x => chapters.Single(chapter => chapter.Id == x.ChapterId))
                 .ToArray();
         }
 
         public async Task<ChapterSubscription> GetChapterSubscription(Guid currentMemberId, Guid id)
         {
-            ChapterSubscription subscription = await _chapterRepository.GetChapterSubscription(id);
+            ChapterSubscription? subscription = await _chapterRepository.GetChapterSubscription(id);
             if (subscription == null)
             {
                 throw new OdkNotFoundException();
@@ -338,7 +307,7 @@ namespace ODK.Services.Chapters
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            ChapterAdminMember existing = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
+            ChapterAdminMember? existing = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
             if (existing == null)
             {
                 return ServiceResult.Failure("Chapter admin member not found");
@@ -366,12 +335,17 @@ namespace ODK.Services.Chapters
 
         public async Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, UpdateChapterMembershipSettings settings)
         {
-            ChapterMembershipSettings update = await GetChapterMembershipSettings(currentMemberId, chapterId);
+            ChapterMembershipSettings update = await GetChapterMembershipSettings(currentMemberId, chapterId) ?? 
+                                               new ChapterMembershipSettings(chapterId, 0, 0);
 
             update.MembershipDisabledAfterDaysExpired = settings.MembershipDisabledAfterDaysExpired;
             update.TrialPeriodMonths = settings.TrialPeriodMonths;
 
             ServiceResult validationResult = ValidateChapterMembershipSettings(update);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
 
             await _chapterRepository.UpdateChapterMembershipSettings(update);
 
@@ -392,20 +366,7 @@ namespace ODK.Services.Chapters
 
             return ServiceResult.Successful();
         }
-
-        public async Task<ChapterPaymentSettings> UpdateChapterPaymentSettingsOld(Guid currentMemberId, Guid chapterId,
-            UpdateChapterPaymentSettings paymentSettings)
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
-
-            ChapterPaymentSettings existing = await _chapterRepository.GetChapterPaymentSettings(chapterId);
-            ChapterPaymentSettings update = new ChapterPaymentSettings(chapterId, paymentSettings.ApiPublicKey, paymentSettings.ApiSecretKey, existing.Provider);
-
-            await _chapterRepository.UpdateChapterPaymentSettings(update);
-
-            return update;
-        }
-
+        
         public async Task<ServiceResult> UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property)
         {
             ChapterProperty update = await GetChapterProperty(currentMemberId, propertyId);
@@ -413,7 +374,7 @@ namespace ODK.Services.Chapters
             update.HelpText = property.HelpText;
             update.Hidden = property.Hidden;
             update.Label = property.Label;
-            update.Name = property.Name?.ToLowerInvariant();
+            update.Name = property.Name.ToLowerInvariant();
             update.Required = property.Required;
             update.Subtitle = property.Subtitle;
 
@@ -442,7 +403,7 @@ namespace ODK.Services.Chapters
                 return properties;
             }
 
-            ChapterProperty switchWith;
+            ChapterProperty? switchWith;
             if (moveBy > 0)
             {
                 switchWith = properties
@@ -466,9 +427,7 @@ namespace ODK.Services.Chapters
 
             property = properties.First(x => x.Id == property.Id);
 
-            int displayOrder = switchWith.DisplayOrder;
-            switchWith.DisplayOrder = property.DisplayOrder;
-            property.DisplayOrder = displayOrder;
+            (switchWith.DisplayOrder, property.DisplayOrder) = (property.DisplayOrder, switchWith.DisplayOrder);
 
             await _chapterRepository.UpdateChapterProperty(property);
             await _chapterRepository.UpdateChapterProperty(switchWith);
@@ -508,7 +467,7 @@ namespace ODK.Services.Chapters
                 return questions;
             }
 
-            ChapterQuestion switchWith;
+            ChapterQuestion? switchWith;
             if (moveBy > 0)
             {
                 switchWith = questions
@@ -544,7 +503,7 @@ namespace ODK.Services.Chapters
 
         public async Task<ServiceResult> UpdateChapterSubscription(Guid currentMemberId, Guid id, CreateChapterSubscription subscription)
         {
-            ChapterSubscription existing = await _chapterRepository.GetChapterSubscription(id);
+            ChapterSubscription? existing = await _chapterRepository.GetChapterSubscription(id);
             if (existing == null)
             {
                 return ServiceResult.Failure("Not found");
@@ -569,30 +528,11 @@ namespace ODK.Services.Chapters
 
             return ServiceResult.Successful();
         }
-
-        public async Task<ChapterTexts> UpdateChapterTexts(Guid currentMemberId, Guid chapterId, UpdateChapterTexts texts)
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
-
-            if (string.IsNullOrWhiteSpace(texts.RegisterText) ||
-                string.IsNullOrWhiteSpace(texts.WelcomeText))
-            {
-                throw new OdkServiceException("Some required fields are missing");
-            }
-
-            ChapterTexts update = new ChapterTexts(chapterId, texts.RegisterText, texts.WelcomeText);
-
-            await _chapterRepository.UpdateChapterTexts(update);
-
-            _cacheService.RemoveVersionedItem<ChapterTexts>(chapterId);
-
-            return update;
-        }
-
+        
         public async Task<ServiceResult> UpdateChapterTexts(Guid currentMemberId, string chapterName,
             UpdateChapterTexts texts)
         {
-            Chapter chapter = await _chapterRepository.GetChapter(chapterName);
+            Chapter? chapter = await _chapterRepository.GetChapter(chapterName);
             if (chapter == null)
             {
                 return ServiceResult.Failure("Chapter not found");
@@ -617,16 +557,7 @@ namespace ODK.Services.Chapters
 
             return ServiceResult.Successful();
         }
-
-        private void AssertChapterQuestionValid(ChapterQuestion question)
-        {
-            ServiceResult result = ValidateChapterQuestion(question);
-            if (!result.Success)
-            {
-                throw new OdkServiceException(result.Message);
-            }
-        }
-
+        
         private ServiceResult ValidateChapterQuestion(ChapterQuestion question)
         {
             if (string.IsNullOrWhiteSpace(question.Name) ||
@@ -637,16 +568,7 @@ namespace ODK.Services.Chapters
 
             return ServiceResult.Successful();
         }
-
-        private void AssertChapterMembershipSettingsValid(ChapterMembershipSettings settings)
-        {
-            ServiceResult result = ValidateChapterMembershipSettings(settings);
-            if (!result.Success)
-            {
-                throw new OdkServiceException(result.Message);
-            }
-        }
-
+        
         private ServiceResult ValidateChapterMembershipSettings(ChapterMembershipSettings settings)
         {
             if (settings.MembershipDisabledAfterDaysExpired < 0 ||
@@ -657,16 +579,7 @@ namespace ODK.Services.Chapters
 
             return ServiceResult.Successful();
         }
-
-        private void AssertChapterPropertyValid(ChapterProperty property, IReadOnlyCollection<ChapterProperty> existing)
-        {
-            ServiceResult result = ValidateChapterProperty(property, existing);
-            if (!result.Success)
-            {
-                throw new OdkServiceException(result.Message);
-            }
-        }
-
+        
         private ServiceResult ValidateChapterProperty(ChapterProperty property, IReadOnlyCollection<ChapterProperty> existing)
         {
             if (string.IsNullOrEmpty(property.Name) ||
@@ -683,16 +596,7 @@ namespace ODK.Services.Chapters
 
             return ServiceResult.Successful();
         }
-
-        private async Task AssertChapterSubscriptionValid(ChapterSubscription subscription)
-        {
-            ServiceResult result = await ValidateChapterSubscription(subscription);
-            if (!result.Success)
-            {
-                throw new OdkServiceException(result.Message);
-            }
-        }
-
+        
         private async Task<ServiceResult> ValidateChapterSubscription(ChapterSubscription subscription)
         {
             if (!Enum.IsDefined(typeof(SubscriptionType), subscription.Type) || subscription.Type == SubscriptionType.None)

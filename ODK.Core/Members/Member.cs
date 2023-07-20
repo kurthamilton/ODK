@@ -1,4 +1,5 @@
 ﻿using System;
+using ODK.Core.Emails;
 
 namespace ODK.Core.Members
 {
@@ -45,6 +46,11 @@ namespace ODK.Core.Members
         public bool CanBeViewedBy(Member currentMember)
         {
             return currentMember?.ChapterId == ChapterId;
+        }
+
+        public EmailAddressee GetEmailAddressee()
+        {
+            return new EmailAddressee(EmailAddress, FullName);
         }
     }
 }

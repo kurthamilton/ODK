@@ -30,27 +30,7 @@ namespace ODK.Data.Repositories
                 .Where<Event, bool>(x => x.IsPublic).EqualTo(true)
                 .FirstOrDefaultAsync();
         }
-
-        public async Task<IReadOnlyCollection<Venue>> GetPublicVenues(Guid chapterId)
-        {
-            return await Context
-                .Select<Venue>()
-                .Join<Event, Guid>(x => x.Id, x => x.VenueId)
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .Where<Event, bool>(x => x.IsPublic).EqualTo(true)
-                .ToArrayAsync();
-        }
-
-        public async Task<long> GetPublicVenuesVersion(Guid chapterId)
-        {
-            return await Context
-                .Select<Venue>()
-                .Join<Event, Guid>(x => x.Id, x => x.VenueId)
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .Where<Event, bool>(x => x.IsPublic).EqualTo(true)
-                .VersionAsync();
-        }
-
+        
         public async Task<Venue> GetVenue(Guid id)
         {
             return await Context
@@ -83,15 +63,7 @@ namespace ODK.Data.Repositories
                 .Where(x => x.Id).In(venueIds)
                 .ToArrayAsync();
         }
-
-        public async Task<long> GetVenuesVersion(Guid chapterId)
-        {
-            return await Context
-                .Select<Venue>()
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .VersionAsync();
-        }
-
+        
         public async Task UpdateVenue(Venue venue)
         {
             await Context

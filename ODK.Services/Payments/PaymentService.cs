@@ -4,7 +4,6 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
-using ODK.Services.Exceptions;
 
 namespace ODK.Services.Payments
 {
@@ -27,8 +26,8 @@ namespace ODK.Services.Payments
         public async Task<ServiceResult> MakePayment(Member member, double amount, string cardToken, string reference)
         {
             ChapterPaymentSettings paymentSettings = await _chapterRepository.GetChapterPaymentSettings(member.ChapterId);
-            Chapter chapter = await _chapterRepository.GetChapter(member.ChapterId);
-            Country country = await _countryRepository.GetCountry(chapter.CountryId);
+            Chapter? chapter = await _chapterRepository.GetChapter(member.ChapterId);
+            Country country = await _countryRepository.GetCountry(chapter!.CountryId);
 
             PaymentProviderType providerType = (PaymentProviderType)Enum.Parse(typeof(PaymentProviderType), paymentSettings.Provider, true);
 

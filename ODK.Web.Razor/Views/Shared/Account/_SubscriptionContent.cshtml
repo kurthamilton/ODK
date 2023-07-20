@@ -10,17 +10,22 @@
 @inject ICountryService CountryService
 @inject IMemberService MemberService
 @{
-    Task<MemberSubscription> memberSubscriptionTask = MemberService.GetMemberSubscription(Model.CurrentMember.Id);
+    Task<MemberSubscription?> memberSubscriptionTask = MemberService.GetMemberSubscription(Model.CurrentMember.Id);
     Task<IReadOnlyCollection<ChapterSubscription>> chapterSubscriptionsTask = ChapterService.GetChapterSubscriptions(Model.Chapter.Id);
     Task<Country> countryTask = CountryService.GetCountry(Model.Chapter.CountryId);
     Task<ChapterPaymentSettings> paymentSettingsTask = ChapterService.GetChapterPaymentSettings(Model.CurrentMember.Id, Model.Chapter.Id);
 
     await Task.WhenAll(memberSubscriptionTask, chapterSubscriptionsTask, countryTask, paymentSettingsTask);
 
-    MemberSubscription memberSubscription = memberSubscriptionTask.Result;
+    MemberSubscription? memberSubscription = memberSubscriptionTask.Result;
     IReadOnlyCollection<ChapterSubscription> chapterSubscriptions = chapterSubscriptionsTask.Result;
     Country country = countryTask.Result;
     ChapterPaymentSettings paymentSettings = paymentSettingsTask.Result;
+
+    if (memberSubscription == null)
+    {
+        return;
+    }
 
     string title = memberSubscription.Type == SubscriptionType.Trial ? "Purchase membership" : "Renew membership";
 }

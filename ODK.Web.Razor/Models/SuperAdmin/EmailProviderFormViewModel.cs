@@ -16,19 +16,19 @@ namespace ODK.Web.Razor.Models.SuperAdmin
         [Required]
         [EmailAddress]
         [Display(Name = "From email address")]
-        public string? FromEmailAddress { get; set; }
+        public string FromEmailAddress { get; set; } = "";
 
         [Required]
         [Display(Name = "From name")]
-        public string? FromName { get; set; }
+        public string FromName { get; set; } = "";
 
         [Required]
         [Display(Name = "SMTP login")]
-        public string? SmtpLogin { get; set; }
+        public string SmtpLogin { get; set; } = "";
 
         [Required]
         [Display(Name = "SMTP password")]
-        public string? SmtpPassword { get; set; }
+        public string SmtpPassword { get; set; } = "";
 
         [Required]
         [Range(1, int.MaxValue)]
@@ -37,6 +37,6 @@ namespace ODK.Web.Razor.Models.SuperAdmin
 
         [Required]
         [Display(Name = "SMTP server")]
-        public string? SmtpServer { get; set; }
+        public string SmtpServer { get; set; } = "";
     }
 }

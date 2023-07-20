@@ -19,7 +19,8 @@
 else
 {
     <div class="mb-3">
-        <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Invites/Send">
+        <form method="post">
+            @Html.AntiForgeryToken()
             <button type="submit" class="btn btn-success"
                     onclick="return confirm('Are you sure you want to send invite emails for this event?');">
                 Send invites
@@ -32,6 +33,7 @@ else
     </div>
 
     <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Invites/SendTest">
+        @Html.AntiForgeryToken()
         <button type="submit" class="btn btn-secondary">Send test</button>
     </form>
 }

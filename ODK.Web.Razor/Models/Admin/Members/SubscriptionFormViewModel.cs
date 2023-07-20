@@ -12,17 +12,17 @@ namespace ODK.Web.Razor.Models.Admin.Members
         public Guid CountryId { get; set; }
 
         [Required]
-        public string? Description { get; set; }
+        public string Description { get; set; } = "";
 
         [DisplayName("Duration (months)")]
         [Required]
         public int? DurationMonths { get; set; }
 
         [Required]
-        public string? Name { get; set; }
+        public string Name { get; set; } = "";
 
         [Required]
-        public string? Title { get; set; }
+        public string Title { get; set; } = "";
 
         [Required]
         public SubscriptionType Type { get; set; }

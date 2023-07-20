@@ -12,9 +12,9 @@ namespace ODK.Services.Authentication
 
         Task<ServiceResult> ChangePassword(Guid memberId, string currentPassword, string newPassword);
         
-        Task<IReadOnlyCollection<Claim>> GetClaims(Member member);
+        Task<IReadOnlyCollection<Claim>> GetClaims(Member? member);
 
-        Task<Member> GetMember(string username, string password);
+        Task<Member?> GetMember(string username, string password);
         
         Task<ServiceResult> RequestPasswordReset(string emailAddress);
 

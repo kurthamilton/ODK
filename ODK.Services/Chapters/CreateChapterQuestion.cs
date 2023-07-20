@@ -2,8 +2,14 @@
 {
     public class CreateChapterQuestion
     {
-        public string Answer { get; set; }
+        public CreateChapterQuestion(string? answer, string? name)
+        {
+            Answer = answer ?? "";
+            Name = name ?? "";
+        }
 
-        public string Name { get; set; }
+        public string Answer { get; }
+
+        public string Name { get; }
     }
 }

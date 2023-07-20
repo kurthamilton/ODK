@@ -13,7 +13,7 @@
     Task<IReadOnlyCollection<MemberProperty>> memberPropertiesTask = Model.MemberId != null 
         ? MemberService.GetMemberProperties(Model.MemberId.Value)
         : Task.FromResult((IReadOnlyCollection<MemberProperty>)Array.Empty<MemberProperty>());
-    Task<ChapterMembershipSettings> membershipSettingsTask = ChapterService.GetChapterMembershipSettings(Model.ChapterId);
+    Task<ChapterMembershipSettings?> membershipSettingsTask = ChapterService.GetChapterMembershipSettings(Model.ChapterId);
 
     await Task.WhenAll(chapterPropertiesTask, chapterPropertyOptionsTask, memberPropertiesTask, membershipSettingsTask);
 
@@ -23,7 +23,7 @@
         .OrderBy(x => x.DisplayOrder)
         .ToArray();
 
-    IDictionary<Guid, string> memberProperties = memberPropertiesTask
+    Dictionary<Guid, string?> memberProperties = memberPropertiesTask
         .Result
         .ToDictionary(x => x.ChapterPropertyId, x => x.Value);
 
@@ -36,10 +36,10 @@
         .Select(x => new ProfileFormPropertyViewModel
         {
             ChapterPropertyId = x.Id,
-            Value = memberProperties.TryGetValue(x.Id, out var value) ? value : "",
+            Value = memberProperties.TryGetValue(x.Id, out string? value) ? value ?? "" : "",
         }));
 
-    ChapterMembershipSettings membershipSettings = membershipSettingsTask.Result;
+    ChapterMembershipSettings? membershipSettings = membershipSettingsTask.Result;
 }
 
 <div class="form-group mb-3 @(Model.MemberId == null ? "required" : null)">
@@ -203,9 +203,13 @@
 
     <div class="mb-3 form-check required">
         @Html.CheckBoxFor(x => x.SubscriptionPolicy, new { @class = "form-check-input" })
-        <label for="@Html.IdFor(x => x.SubscriptionPolicy)" class="form-check-label">
-            If I choose to continue attending after my free @membershipSettings.TrialPeriodMonths month trial period has expired, I agree to purchase a subscription.
-        </label>
+        
+        @if (membershipSettings != null)
+        {
+            <label for="@Html.IdFor(x => x.SubscriptionPolicy)" class="form-check-label">
+                If I choose to continue attending after my free @membershipSettings.TrialPeriodMonths month trial period has expired, I agree to purchase a subscription.
+            </label>
+        }
         @Html.ValidationMessageFor(x => x.SubscriptionPolicy)
     </div>
 }

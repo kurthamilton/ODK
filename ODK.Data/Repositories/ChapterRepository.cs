@@ -40,16 +40,7 @@ namespace ODK.Data.Repositories
                 .Insert(contactRequest)
                 .GetIdentityAsync();
         }
-
-        public async Task ConfirmContactRequestSent(Guid contactRequestId)
-        {
-            await Context
-                .Update<ContactRequest>()
-                .Set(x => x.Sent, true)
-                .Where(x => x.Id).EqualTo(contactRequestId)
-                .ExecuteAsync();
-        }
-
+        
         public async Task<Guid> CreateChapterQuestion(ChapterQuestion question)
         {
             return await Context
@@ -196,16 +187,7 @@ namespace ODK.Data.Repositories
                 .OrderBy(x => x.DisplayOrder)
                 .ToArrayAsync();
         }
-
-        public async Task<long> GetChapterPropertiesVersion(Guid chapterId, bool all = false)
-        {
-            return await Context
-                .Select<ChapterProperty>()
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .ConditionalWhere(x => x.Hidden, !all).EqualTo(false)
-                .VersionAsync();
-        }
-
+        
         public async Task<ChapterProperty> GetChapterProperty(Guid id)
         {
             return await Context
@@ -223,15 +205,7 @@ namespace ODK.Data.Repositories
                 .OrderBy(x => x.DisplayOrder)
                 .ToArrayAsync();
         }
-
-        public async Task<long> GetChapterPropertyOptionsVersion(Guid chapterId)
-        {
-            return await Context
-                .Select<ChapterPropertyOption>()
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .VersionAsync();
-        }
-
+        
         public async Task<ChapterQuestion> GetChapterQuestion(Guid id)
         {
             return await Context
@@ -247,14 +221,6 @@ namespace ODK.Data.Repositories
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .OrderBy(x => x.DisplayOrder)
                 .ToArrayAsync();
-        }
-
-        public async Task<long> GetChapterQuestionsVersion(Guid chapterId)
-        {
-            return await Context
-                .Select<ChapterQuestion>()
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .VersionAsync();
         }
 
         public async Task<IReadOnlyCollection<Chapter>> GetChapters()
@@ -280,14 +246,7 @@ namespace ODK.Data.Repositories
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .ToArrayAsync();
         }
-
-        public async Task<long> GetChaptersVersion()
-        {
-            return await Context
-                .Select<Chapter>()
-                .VersionAsync();
-        }
-
+        
         public async Task<ChapterTexts> GetChapterTexts(Guid chapterId)
         {
             return await Context
@@ -295,15 +254,7 @@ namespace ODK.Data.Repositories
                 .Where(x => x.ChapterId).EqualTo(chapterId)
                 .FirstOrDefaultAsync();
         }
-
-        public async Task<long> GetChapterTextsVersion(Guid chapterId)
-        {
-            return await Context
-                .Select<ChapterTexts>()
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .VersionAsync();
-        }
-
+        
         public async Task UpdateChapterAdminMember(ChapterAdminMember adminMember)
         {
             await Context

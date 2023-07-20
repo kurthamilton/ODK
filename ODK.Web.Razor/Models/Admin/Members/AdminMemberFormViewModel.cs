@@ -8,7 +8,7 @@ namespace ODK.Web.Razor.Models.Admin.Members
         [DisplayName("Admin email address")]
         [Required]
         [EmailAddress]
-        public string? AdminEmailAddress { get; set; }
+        public string AdminEmailAddress { get; set; } = "";
 
         public string? Name { get; set; }
 

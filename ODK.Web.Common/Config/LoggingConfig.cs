@@ -15,22 +15,22 @@ namespace ODK.Web.Common.Config
         private const string IP = "IP";
         private const string Name = "Name";
 
-        public static ILogger Logger { get; private set; }
+        public static ILogger? Logger { get; private set; }
 
         public static LoggerProviderCollection Providers { get; } = new();
 
         public static void AddRequestProperties(HttpContext context)
         {
-            string name = context.User.Identity.IsAuthenticated ? context.User.Identity.Name : "anonymous";
+            string? name = context.User.Identity?.IsAuthenticated == true ? context.User.Identity.Name : "anonymous";
             LogContext.PushProperty(Name, name);
 
-            string ip = context.Connection.RemoteIpAddress.ToString();
+            string? ip = context.Connection.RemoteIpAddress?.ToString();
             LogContext.PushProperty(IP, !string.IsNullOrWhiteSpace(ip) ? ip : "unknown");
         }
 
         public static void Configure(WebApplicationBuilder builder)
         {
-            string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
             IConfigurationRoot builtConfig = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")

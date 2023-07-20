@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ODK.Services.Members
 {
@@ -6,10 +7,10 @@ namespace ODK.Services.Members
     {
         public bool? EmailOptIn { get; set; }
 
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = "";
 
-        public string LastName { get; set; }
+        public string LastName { get; set; } = "";
 
-        public IEnumerable<UpdateMemberProperty> Properties { get; set; }
+        public IEnumerable<UpdateMemberProperty> Properties { get; set; } = Enumerable.Empty<UpdateMemberProperty>();
     }
 }

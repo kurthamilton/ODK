@@ -31,7 +31,10 @@ namespace ODK.Web.Razor.Pages.Chapters.Account
                 Properties = viewModel.Properties.Select(x => new UpdateMemberProperty
                 {
                     ChapterPropertyId = x.ChapterPropertyId,
-                    Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) && !string.IsNullOrEmpty(x.OtherValue) ? x.OtherValue : x.Value
+                    Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) && 
+                            !string.IsNullOrEmpty(x.OtherValue) 
+                        ? x.OtherValue 
+                        : x.Value
                 })
             };
 

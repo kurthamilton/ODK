@@ -2,21 +2,18 @@
 using System.Threading.Tasks;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 
 namespace ODK.Services.Authorization
 {
     public class AuthorizationService : IAuthorizationService
     {
-        private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IMemberRepository _memberRepository;
 
-        public AuthorizationService(IMemberRepository memberRepository, ICacheService cacheService,
+        public AuthorizationService(IMemberRepository memberRepository, 
             IChapterRepository chapterRepository)
         {
-            _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _memberRepository = memberRepository;
         }
@@ -35,7 +32,7 @@ namespace ODK.Services.Authorization
                 return;
             }
 
-            ChapterAdminMember chapterAdminMember = await _chapterRepository.GetChapterAdminMember(chapterId, member.Id);
+            ChapterAdminMember? chapterAdminMember = await _chapterRepository.GetChapterAdminMember(chapterId, member.Id);
             if (chapterAdminMember != null)
             {
                 return;
@@ -50,7 +47,7 @@ namespace ODK.Services.Authorization
             AssertMemberIsCurrent(member);
         }
 
-        public void AssertMemberIsCurrent(Member member)
+        public void AssertMemberIsCurrent(Member? member)
         {
             if (member == null || !member.Activated || member.Disabled)
             {
@@ -60,8 +57,8 @@ namespace ODK.Services.Authorization
 
         public async Task AssertMembershipIsActive(Guid memberId, Guid chapterId)
         {
-            MemberSubscription subscription = await GetMemberSubscription(memberId);
-            if (!await MembershipIsActive(subscription, chapterId))
+            MemberSubscription? subscription = await GetMemberSubscription(memberId);
+            if (subscription == null || !await MembershipIsActive(subscription, chapterId))
             {
                 throw new OdkNotAuthorizedException();
             }
@@ -69,14 +66,12 @@ namespace ODK.Services.Authorization
 
         public async Task<bool> MembershipIsActive(MemberSubscription subscription, Guid chapterId)
         {
-            ChapterMembershipSettings membershipSettings = await _cacheService.GetOrSetItem(
-                () => _chapterRepository.GetChapterMembershipSettings(chapterId),
-                chapterId);
+            ChapterMembershipSettings? membershipSettings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
 
             return MembershipIsActive(subscription, membershipSettings);
         }
 
-        public bool MembershipIsActive(MemberSubscription subscription, ChapterMembershipSettings membershipSettings)
+        public bool MembershipIsActive(MemberSubscription subscription, ChapterMembershipSettings? membershipSettings)
         {
             if (subscription.Type == SubscriptionType.Alum)
             {
@@ -86,6 +81,11 @@ namespace ODK.Services.Authorization
             if (subscription.ExpiryDate == null || subscription.ExpiryDate >= DateTime.UtcNow)
             {
                 return true;
+            }
+
+            if (membershipSettings == null)
+            {
+                return false;
             }
 
             if (membershipSettings.MembershipDisabledAfterDaysExpired <= 0)
@@ -98,17 +98,14 @@ namespace ODK.Services.Authorization
 
         private async Task<Member> GetMember(Guid id)
         {
-            VersionedServiceResult<Member> member = await _cacheService.GetOrSetVersionedItem(
-                () => _memberRepository.GetMember(id, true), id, null);
-            AssertMemberIsCurrent(member.Value);
-            return member.Value;
+            Member? member = await _memberRepository.GetMember(id, true);
+            AssertMemberIsCurrent(member);
+            return member!;
         }
 
-        private async Task<MemberSubscription> GetMemberSubscription(Guid memberId)
+        private async Task<MemberSubscription?> GetMemberSubscription(Guid memberId)
         {
-            VersionedServiceResult<MemberSubscription> subscription = await _cacheService.GetOrSetVersionedItem(
-                () => _memberRepository.GetMemberSubscription(memberId), memberId, null);
-            return subscription.Value;
+            return await _memberRepository.GetMemberSubscription(memberId);
         }
     }
 }

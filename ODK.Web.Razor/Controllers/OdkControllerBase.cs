@@ -10,7 +10,7 @@ namespace ODK.Web.Razor.Controllers
 
         protected void AddFeedback(FeedbackViewModel viewModel)
         {
-            TempData.AddFeedback(viewModel);
+            TempData!.AddFeedback(viewModel);
         }
         
         protected IActionResult RedirectToReferrer()

@@ -33,11 +33,8 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters
 
         public async Task<IActionResult> OnPostAsync(Guid id, ChapterQuestionFormViewModel viewModel)
         {
-            ServiceResult result = await _chapterAdminService.UpdateChapterQuestion(CurrentMemberId, id, new CreateChapterQuestion
-            {
-                Answer = viewModel.Answer,
-                Name = viewModel.Question
-            });
+            ServiceResult result = await _chapterAdminService.UpdateChapterQuestion(CurrentMemberId, id,
+                new CreateChapterQuestion(viewModel.Answer, viewModel.Question));
 
             if (!result.Success)
             {

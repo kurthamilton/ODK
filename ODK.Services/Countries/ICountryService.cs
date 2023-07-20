@@ -7,7 +7,7 @@ namespace ODK.Services.Countries
 {
     public interface ICountryService
     {
-        Task<VersionedServiceResult<IReadOnlyCollection<Country>>> GetCountries(long? currentVersion);
+        Task<IReadOnlyCollection<Country>> GetCountries();
 
         Task<Country> GetCountry(Guid countryId);
     }

@@ -6,6 +6,6 @@ namespace ODK.Services.Members
     {
         public Guid ChapterPropertyId { get; set; }
 
-        public string Value { get; set; }
+        public string Value { get; set; } = "";
     }
 }

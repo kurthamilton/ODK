@@ -2,6 +2,6 @@
 {
     public class PathSettings
     {
-        public string MediaRoot { get; set; }
+        public string MediaRoot { get; set; } = "";
     }
 }

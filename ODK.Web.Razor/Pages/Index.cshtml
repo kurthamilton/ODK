@@ -10,12 +10,12 @@
 @{
     Layout = "Shared/_HomeLayout.cshtml";
 
-    var chaptersTask = RequestCache.GetChapters();
-    var countriesTask = CountryService.GetCountries(null);
+    Task<IReadOnlyCollection<Chapter>> chaptersTask = RequestCache.GetChapters();
+    Task<IReadOnlyCollection<Country>> countriesTask = CountryService.GetCountries();
 
     await Task.WhenAll(chaptersTask, countriesTask);
 
-    IReadOnlyCollection<Country> countries = countriesTask.Result.Value;
+    IReadOnlyCollection<Country> countries = countriesTask.Result;
     IReadOnlyCollection<string> continents = countries
         .Select(x => x.Continent)
         .Distinct()

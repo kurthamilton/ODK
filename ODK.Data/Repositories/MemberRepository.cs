@@ -57,14 +57,7 @@ namespace ODK.Data.Repositories
                 .Insert(request)
                 .ExecuteAsync();
         }
-
-        public async Task AddRefreshToken(MemberRefreshToken token)
-        {
-            await Context
-                .Insert(token)
-                .ExecuteAsync();
-        }
-
+        
         public async Task<Guid> CreateMember(Member member)
         {
             return await Context
@@ -103,15 +96,7 @@ namespace ODK.Data.Repositories
                 .Where(x => x.Id).EqualTo(passwordResetRequestId)
                 .ExecuteAsync();
         }
-
-        public async Task DeleteRefreshToken(MemberRefreshToken refreshToken)
-        {
-            await Context
-                .Delete<MemberRefreshToken>()
-                .Where(x => x.Id).EqualTo(refreshToken.Id)
-                .ExecuteAsync();
-        }
-
+        
         public async Task DisableMember(Guid id)
         {
             await Context
@@ -137,32 +122,14 @@ namespace ODK.Data.Repositories
                 .Where(x => x.EmailAddress).EqualTo(emailAddress)
                 .FirstOrDefaultAsync();
         }
-
-        public async Task<IReadOnlyCollection<Member>> GetLatestMembers(Guid chapterId, int maxSize)
-        {
-            return await Context
-                .Select<Member>()
-                .Top(maxSize)
-                .Where(x => x.ChapterId).EqualTo(chapterId)
-                .OrderBy(x => x.CreatedDate, SqlSortDirection.Descending)
-                .ToArrayAsync();
-        }
-
+        
         public async Task<Member> GetMember(Guid memberId, bool searchAll = false)
         {
             return await MembersQuery(searchAll)
                 .Where(x => x.Id).EqualTo(memberId)
                 .FirstOrDefaultAsync();
         }
-
-        public async Task<MemberActivationToken> GetMemberActivationToken(Guid memberId)
-        {
-            return await Context
-                .Select<MemberActivationToken>()
-                .Where(x => x.MemberId).EqualTo(memberId)
-                .FirstOrDefaultAsync();
-        }
-
+        
         public async Task<MemberActivationToken> GetMemberActivationToken(string activationToken)
         {
             return await Context
@@ -240,15 +207,7 @@ namespace ODK.Data.Repositories
                 .Where(x => x.Token).EqualTo(token)
                 .FirstOrDefaultAsync();
         }
-
-        public async Task<MemberRefreshToken> GetRefreshToken(string refreshToken)
-        {
-            return await Context
-                .Select<MemberRefreshToken>()
-                .Where(x => x.RefreshToken).EqualTo(refreshToken)
-                .FirstOrDefaultAsync();
-        }
-
+        
         public async Task UpdateMember(Guid memberId, bool emailOptIn, string firstName, string lastName)
         {
             await Context

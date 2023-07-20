@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ODK.Core.Members;
-using ODK.Services.Files;
 
 namespace ODK.Services.Members
 {
@@ -14,24 +13,16 @@ namespace ODK.Services.Members
 
         Task EnableMember(Guid currentMemberId, Guid memberId);
 
-        Task<Member> GetMember(Guid currentMemberId, Guid memberId);
-
-        Task<CsvFile> GetMemberImportFile(Guid currentMemberId, Guid chapterId);
+        Task<Member?> GetMember(Guid currentMemberId, Guid memberId);
 
         Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId, bool requireSuperAdmin = false);
 
-        Task<MemberSubscription> GetMemberSubscription(Guid currentMemberId, Guid memberId);
+        Task<MemberSubscription?> GetMemberSubscription(Guid currentMemberId, Guid memberId);
 
         Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId);
-
-        Task ImportMembers(Guid currentMemberId, Guid chapterId, CsvFile file);
-
-        Task<MemberImage> RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees);
-
-        Task<MemberImage> UpdateMemberImage(Guid currentMemberId, Guid memberId, UpdateMemberImage image);
-
+        
+        Task RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees);
+        
         Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid memberId, UpdateMemberSubscription subscription);
-
-        Task<MemberSubscription> UpdateMemberSubscriptionOld(Guid currentMemberId, Guid memberId, UpdateMemberSubscription subscription);
     }
 }

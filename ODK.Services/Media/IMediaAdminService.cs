@@ -11,6 +11,6 @@ namespace ODK.Services.Media
 
         Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(Guid currentMemberId, Guid chapterId);
 
-        Task<MediaFile> SaveMediaFile(Guid currentMemberId, Guid chapterId, string name, byte[] data);
+        Task<MediaFile?> SaveMediaFile(Guid currentMemberId, Guid chapterId, string name, byte[] data);
     }
 }

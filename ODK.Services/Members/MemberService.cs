@@ -12,7 +12,6 @@ using ODK.Core.Utils;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
-using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using ODK.Services.Payments;
 
@@ -45,7 +44,7 @@ namespace ODK.Services.Members
 
         public async Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
         {
-            MemberEmailAddressUpdateToken token = await _memberRepository.GetMemberEmailAddressUpdateToken(memberId);
+            MemberEmailAddressUpdateToken? token = await _memberRepository.GetMemberEmailAddressUpdateToken(memberId);
             if (token == null)
             {
                 return ServiceResult.Failure("Invalid link");
@@ -56,7 +55,7 @@ namespace ODK.Services.Members
                 return ServiceResult.Failure("Invalid link");
             }
 
-            Member existing = await _memberRepository.FindMemberByEmailAddress(token.NewEmailAddress);
+            Member? existing = await _memberRepository.FindMemberByEmailAddress(token.NewEmailAddress);
             if (existing != null)
             {
                 await _memberRepository.DeleteEmailAddressUpdateToken(memberId);
@@ -85,7 +84,7 @@ namespace ODK.Services.Members
                 return imageResult;
             }
 
-            Member existing = await _memberRepository.FindMemberByEmailAddress(profile.EmailAddress);
+            Member? existing = await _memberRepository.FindMemberByEmailAddress(profile.EmailAddress);
             if (existing != null)
             {
                 return ServiceResult.Failure("Email address already in use");
@@ -96,7 +95,11 @@ namespace ODK.Services.Members
 
             Guid id = await _memberRepository.CreateMember(create);
 
-            ChapterMembershipSettings membershipSettings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
+            ChapterMembershipSettings? membershipSettings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
+            if (membershipSettings == null)
+            {
+                return ServiceResult.Failure("An error has occurred");
+            }
 
             MemberSubscription subscription = new MemberSubscription(id, SubscriptionType.Trial, create.CreatedDate.AddMonths(membershipSettings.TrialPeriodMonths));
             await _memberRepository.UpdateMemberSubscription(subscription);
@@ -113,15 +116,15 @@ namespace ODK.Services.Members
 
             await _memberRepository.AddActivationToken(new MemberActivationToken(id, activationToken));
 
-            Chapter chapter = await _chapterRepository.GetChapter(chapterId);
+            Chapter? chapter = await _chapterRepository.GetChapter(chapterId);
 
             string url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
             {
-                { "chapter.name", chapter.Name },
+                { "chapter.name", chapter!.Name },
                 { "token", HttpUtility.UrlEncode(activationToken) }
             });
 
-            await _emailService.SendEmail(chapter, create.EmailAddress, EmailType.ActivateAccount, new Dictionary<string, string>
+            await _emailService.SendEmail(chapter, create.GetEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "url", url }
@@ -132,7 +135,7 @@ namespace ODK.Services.Members
 
         public async Task DeleteMember(Guid memberId)
         {
-            Member member = await _memberRepository.GetMember(memberId, true);
+            Member? member = await _memberRepository.GetMember(memberId, true);
             if (member == null)
             {
                 return;
@@ -144,27 +147,19 @@ namespace ODK.Services.Members
             _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
         }
 
-        public async Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetLatestMembers(long? currentVersion,
-            Guid currentMemberId, Guid chapterId)
+        public async Task<IReadOnlyCollection<Member>> GetLatestMembers(Member currentMember, Guid chapterId)
         {
-            await _authorizationService.AssertMemberIsChapterMember(currentMemberId, chapterId);
+            await _authorizationService.AssertMemberIsChapterMember(currentMember.Id, chapterId);
 
-            VersionedServiceResult<IReadOnlyCollection<Member>> members = await GetMembers(currentVersion, currentMemberId, chapterId);
-            if (members.Value == null)
-            {
-                return members;
-            }
+            IReadOnlyCollection<Member> members = await GetMembers(currentMember, chapterId);
 
-            IReadOnlyCollection<Member> latestMembers = members
-                .Value
+            return members
                 .OrderByDescending(x => x.CreatedDate)
                 .Take(8)
                 .ToArray();
-
-            return new VersionedServiceResult<IReadOnlyCollection<Member>>(members.Version, latestMembers);
         }
 
-        public async Task<Member> GetMember(Guid memberId)
+        public async Task<Member?> GetMember(Guid memberId)
         {
             return await GetMember(memberId, memberId);
         }
@@ -187,7 +182,7 @@ namespace ODK.Services.Members
                 return result;
             }
 
-            MemberImage image = result.Value;
+            MemberImage? image = result.Value;
             if (image == null)
             {
                 return new VersionedServiceResult<MemberImage>(0, null);
@@ -205,13 +200,7 @@ namespace ODK.Services.Members
             return new VersionedServiceResult<MemberImage>(image.Version, image);
         }
 
-        public async Task<MemberProfile> GetMemberProfile(Guid currentMemberId, Guid memberId)
-        {
-            Member member = await GetMember(currentMemberId, memberId);
-            return await GetMemberProfile(member);
-        }
-
-        public async Task<MemberProfile> GetMemberProfile(Member currentMember, Member member)
+        public async Task<MemberProfile?> GetMemberProfile(Member currentMember, Member? member)
         {
             if (member == null || !member.CanBeViewedBy(currentMember))
             {
@@ -225,20 +214,8 @@ namespace ODK.Services.Members
         {
             return await _memberRepository.GetMemberProperties(memberId);
         }
-
-        public async Task<VersionedServiceResult<IReadOnlyCollection<Member>>> GetMembers(long? currentVersion, Guid currentMemberId,
-            Guid chapterId)
-        {
-            await _authorizationService.AssertMemberIsChapterMember(currentMemberId, chapterId);
-
-            return await _cacheService.GetOrSetVersionedCollection(
-                () => _memberRepository.GetMembers(chapterId),
-                () => _memberRepository.GetMembersVersion(chapterId),
-                currentVersion,
-                chapterId);
-        }
-
-        public async Task<IReadOnlyCollection<Member>> GetMembers(Member currentMember, Guid chapterId)
+        
+        public async Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId)
         {
             if (currentMember == null || currentMember.ChapterId != chapterId)
             {
@@ -248,7 +225,7 @@ namespace ODK.Services.Members
             return await _memberRepository.GetMembers(chapterId);
         }
 
-        public async Task<MemberSubscription> GetMemberSubscription(Guid memberId)
+        public async Task<MemberSubscription?> GetMemberSubscription(Guid memberId)
         {
             return await _memberRepository.GetMemberSubscription(memberId);
         }
@@ -256,14 +233,14 @@ namespace ODK.Services.Members
         public async Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId,
             string cardToken)
         {
-            ChapterSubscription chapterSubscription = await _chapterRepository.GetChapterSubscription(chapterSubscriptionId);
+            ChapterSubscription? chapterSubscription = await _chapterRepository.GetChapterSubscription(chapterSubscriptionId);
             if (chapterSubscription == null)
             {
                 return ServiceResult.Failure("Payment not made: subscription not found");
             }
 
-            Member member = await GetMember(memberId);
-            if (member.ChapterId != chapterSubscription.ChapterId)
+            Member? member = await GetMember(memberId);
+            if (member == null || member.ChapterId != chapterSubscription.ChapterId)
             {
                 return ServiceResult.Failure("Payment not made: you are not a member of this subscription's chapter");
             }
@@ -275,7 +252,7 @@ namespace ODK.Services.Members
                 return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
             }
 
-            MemberSubscription memberSubscription = await _memberRepository.GetMemberSubscription(member.Id);
+            MemberSubscription? memberSubscription = await _memberRepository.GetMemberSubscription(member.Id);
 
             DateTime expiryDate = (memberSubscription?.ExpiryDate ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
             memberSubscription = new MemberSubscription(member.Id, chapterSubscription.Type, expiryDate);
@@ -291,55 +268,29 @@ namespace ODK.Services.Members
 
             return ServiceResult.Successful();
         }
-
-        public async Task<MemberSubscription> PurchaseSubscriptionOld(Guid memberId, Guid chapterSubscriptionId, string cardToken)
+        
+        public async Task RotateMemberImage(Guid memberId, int degrees)
         {
-            ChapterSubscription chapterSubscription = await _chapterRepository.GetChapterSubscription(chapterSubscriptionId);
-            if (chapterSubscription == null)
+            Member? member = await GetMember(memberId, memberId);
+            if (member == null)
             {
-                throw new OdkServiceException("Subscription not found");
+                return;
             }
 
-            Member member = await GetMember(memberId);
-            await _authorizationService.AssertMemberIsChapterMember(member, chapterSubscription.ChapterId);
-
-            await _paymentService.MakePayment(member, chapterSubscription.Amount, cardToken, chapterSubscription.Title);
-
-            MemberSubscription memberSubscription = await _memberRepository.GetMemberSubscription(member.Id);
-
-            DateTime expiryDate = (memberSubscription?.ExpiryDate ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
-            memberSubscription = new MemberSubscription(member.Id, chapterSubscription.Type, expiryDate);            
-
-            await _memberRepository.UpdateMemberSubscription(memberSubscription);
-
-            MemberSubscriptionRecord record = new MemberSubscriptionRecord(memberId, chapterSubscription.Type, DateTime.UtcNow,
-                chapterSubscription.Amount, chapterSubscription.Months);
-            await _memberRepository.AddMemberSubscriptionRecord(record);
-
-            _cacheService.UpdatedVersionedItem(memberSubscription, memberId);
-            _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
-
-            return memberSubscription;
-        }
-
-        public async Task<MemberImage> RotateMemberImage(Guid memberId, int degrees)
-        {
-            Member member = await GetMember(memberId, memberId);
-
-            MemberImage image = await _memberRepository.GetMemberImage(memberId);
+            MemberImage? image = await _memberRepository.GetMemberImage(memberId);
             if (image == null)
             {
-                return null;
+                return;
             }
 
             byte[] data = _imageService.Rotate(image.ImageData, degrees);
-            return await UpdateMemberImage(member, data, image.MimeType);
+            await UpdateMemberImage(member, data, image.MimeType);
         }
 
         public async Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress)
         {
-            Member member = await GetMember(memberId, memberId);
-            if (member.EmailAddress.Equals(newEmailAddress, StringComparison.OrdinalIgnoreCase))
+            Member? member = await GetMember(memberId, memberId);
+            if (member == null || member.EmailAddress.Equals(newEmailAddress, StringComparison.OrdinalIgnoreCase))
             {
                 return ServiceResult.Successful("New email address matches old email address");
             }
@@ -349,7 +300,7 @@ namespace ODK.Services.Members
                 return ServiceResult.Failure("Invalid email address format");
             }
 
-            MemberEmailAddressUpdateToken existingToken = await _memberRepository.GetMemberEmailAddressUpdateToken(member.Id);
+            MemberEmailAddressUpdateToken? existingToken = await _memberRepository.GetMemberEmailAddressUpdateToken(member.Id);
             if (existingToken != null)
             {
                 await _memberRepository.DeleteEmailAddressUpdateToken(member.Id);
@@ -360,27 +311,28 @@ namespace ODK.Services.Members
             MemberEmailAddressUpdateToken token = new MemberEmailAddressUpdateToken(member.Id, newEmailAddress, activationToken);
             await _memberRepository.AddEmailAddressUpdateToken(token);
 
-            Chapter chapter = await _chapterRepository.GetChapter(member.ChapterId);
+            Chapter? chapter = await _chapterRepository.GetChapter(member.ChapterId);
 
             string url = _settings.ConfirmEmailAddressUpdateUrl.Interpolate(new Dictionary<string, string>
             {
-                { "chapter.name", chapter.Name },
+                { "chapter.name", chapter!.Name },
                 { "token", HttpUtility.UrlEncode(activationToken) }
             });
 
-            await _emailService.SendEmail(chapter, newEmailAddress, EmailType.EmailAddressUpdate, new Dictionary<string, string>
-            {
-                { "chapter.name", chapter.Name },
-                { "url", url }
-            });
+            await _emailService.SendEmail(chapter, new EmailAddressee(newEmailAddress, member.FullName), EmailType.EmailAddressUpdate, 
+                new Dictionary<string, string>
+                {
+                    { "chapter.name", chapter.Name },
+                    { "url", url }
+                });
 
             return ServiceResult.Successful();
         }
 
         public async Task UpdateMemberEmailOptIn(Guid memberId, bool optIn)
         {
-            Member member = await GetMember(memberId, memberId);
-            if (member.EmailOptIn == optIn)
+            Member? member = await GetMember(memberId, memberId);
+            if (member == null || member.EmailOptIn == optIn)
             {
                 return;
             }
@@ -390,26 +342,35 @@ namespace ODK.Services.Members
             _cacheService.RemoveVersionedItem<Member>(memberId);
         }
 
-        public async Task<MemberImage> UpdateMemberImage(Guid id, UpdateMemberImage image)
+        public async Task UpdateMemberImage(Guid id, UpdateMemberImage image)
         {
-            Member member = await GetMember(id, id);
+            Member? member = await GetMember(id, id);
+            if (member == null)
+            {
+                return;
+            }
 
-            return await UpdateMemberImage(member, image.ImageData, image.MimeType);
+            await UpdateMemberImage(member, image.ImageData, image.MimeType);
         }
 
         public async Task<ServiceResult> UpdateMemberProfile(Guid id, UpdateMemberProfile profile)
         {
-            Member member = await GetMember(id);
+            Member? member = await GetMember(id);
+            if (member == null)
+            {
+                return ServiceResult.Failure("Member not found");
+            }
+
             ServiceResult validationResult = await ValidateMemberProfile(member.ChapterId, profile);
             if (!validationResult.Success)
             {
                 return validationResult;
             }
 
-            MemberProfile existing = await GetMemberProfile(id);
-            UpdateMemberProfile(existing, profile);
+            MemberProfile? existing = await GetMemberProfile(id);
+            UpdateMemberProfile(existing!, profile);
 
-            await _memberRepository.UpdateMember(id, existing.EmailOptIn, existing.FirstName, existing.LastName);
+            await _memberRepository.UpdateMember(id, existing!.EmailOptIn, existing.FirstName, existing.LastName);
             await _memberRepository.UpdateMemberProperties(id, existing.MemberProperties);
 
             IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(member.ChapterId);
@@ -420,27 +381,7 @@ namespace ODK.Services.Members
 
             return ServiceResult.Successful();
         }
-
-        public async Task<MemberProfile> UpdateMemberProfileOld(Guid id, UpdateMemberProfile profile)
-        {
-            Member member = await GetMember(id);
-            await AssertMemberProfileValid(member.ChapterId, profile);
-
-            MemberProfile existing = await GetMemberProfile(id);
-            UpdateMemberProfile(existing, profile);
-
-            await _memberRepository.UpdateMember(id, existing.EmailOptIn, existing.FirstName, existing.LastName);
-            await _memberRepository.UpdateMemberProperties(id, existing.MemberProperties);
-
-            IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(member.ChapterId);
-            long version = await _memberRepository.GetMembersVersion(member.ChapterId);
-            _cacheService.UpdatedVersionedCollection(members, version, member.ChapterId);
-
-            _cacheService.RemoveVersionedItem<Member>(member.Id);
-
-            return existing;
-        }
-
+        
         private static IEnumerable<string> GetMissingMemberProfileProperties(CreateMemberProfile profile, IEnumerable<ChapterProperty> chapterProperties,
             IEnumerable<UpdateMemberProperty> memberProperties)
         {
@@ -471,9 +412,7 @@ namespace ODK.Services.Members
             IDictionary<Guid, string> memberPropertyDictionary = memberProperties.ToDictionary(x => x.ChapterPropertyId, x => x.Value);
             foreach (ChapterProperty chapterProperty in chapterProperties.Where(x => x.Required))
             {
-                string value = memberPropertyDictionary.ContainsKey(chapterProperty.Id)
-                    ? memberPropertyDictionary[chapterProperty.Id]
-                    : null;
+                memberPropertyDictionary.TryGetValue(chapterProperty.Id, out string? value);
 
                 if (string.IsNullOrWhiteSpace(value))
                 {
@@ -494,7 +433,7 @@ namespace ODK.Services.Members
 
             foreach (MemberProperty memberProperty in existing.MemberProperties)
             {
-                UpdateMemberProperty updateProperty = update.Properties?.FirstOrDefault(x => x.ChapterPropertyId == memberProperty.ChapterPropertyId);
+                UpdateMemberProperty? updateProperty = update.Properties?.FirstOrDefault(x => x.ChapterPropertyId == memberProperty.ChapterPropertyId);
                 if (updateProperty == null)
                 {
                     continue;
@@ -528,9 +467,9 @@ namespace ODK.Services.Members
             return _imageService.Reduce(imageData, _settings.MaxImageSize, _settings.MaxImageSize);
         }
 
-        private async Task<Member> GetMember(Guid currentMemberId, Guid memberId)
+        private async Task<Member?> GetMember(Guid currentMemberId, Guid memberId)
         {
-            Member member = await _memberRepository.GetMember(memberId);
+            Member? member = await _memberRepository.GetMember(memberId);
             if (member == null)
             {
                 return null;
@@ -540,9 +479,20 @@ namespace ODK.Services.Members
             return member;
         }
 
-        private async Task<MemberProfile> GetMemberProfile(Guid memberId)
+        private async Task<MemberProfile?> GetMemberProfile(Guid memberId)
         {
             return await GetMemberProfile(memberId, memberId);
+        }
+
+        private async Task<MemberProfile?> GetMemberProfile(Guid currentMemberId, Guid memberId)
+        {
+            Member? member = await GetMember(currentMemberId, memberId);
+            if (member == null)
+            {
+                return null;
+            }
+
+            return await GetMemberProfile(member);
         }
 
         private async Task<MemberProfile> GetMemberProfile(Member member)
@@ -557,28 +507,13 @@ namespace ODK.Services.Members
             return new MemberProfile(member, allMemberProperties, chapterProperties);
         }
         
-        private async Task<MemberImage> UpdateMemberImage(Member member, byte[] imageData, string mimeType)
+        private async Task UpdateMemberImage(Member member, byte[] imageData, string mimeType)
         {
             MemberImage update = CreateMemberImage(member.Id, mimeType, imageData);
 
             await _memberRepository.UpdateMemberImage(update);
-
-            MemberImage updated = await _memberRepository.GetMemberImage(member.Id);
-
-            _cacheService.UpdatedVersionedItem(updated, member.Id);
-
-            return updated;
         }
-
-        private async Task AssertMemberProfileValid(Guid chapterId, UpdateMemberProfile profile)
-        {
-            ServiceResult result = await ValidateMemberProfile(chapterId, profile);
-            if (!result.Success)
-            {
-                throw new OdkServiceException(result.Message);
-            }
-        }
-
+        
         private async Task<ServiceResult> ValidateMemberProfile(Guid chapterId, UpdateMemberProfile profile)
         {
             IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(chapterId);

@@ -6,7 +6,7 @@ namespace ODK.Web.Common.Extensions
 {
     public static class FormFileExtensions
     {
-        public static async Task<byte[]> ToByteArrayAsync(this IFormFile file)
+        public static async Task<byte[]?> ToByteArrayAsync(this IFormFile file)
         {
             if (file == null)
             {

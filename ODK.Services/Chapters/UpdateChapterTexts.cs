@@ -2,8 +2,8 @@
 {
     public class UpdateChapterTexts
     {
-        public string RegisterText { get; set; }
+        public string RegisterText { get; set; } = "";
 
-        public string WelcomeText { get; set; }
+        public string WelcomeText { get; set; } = "";
     }
 }

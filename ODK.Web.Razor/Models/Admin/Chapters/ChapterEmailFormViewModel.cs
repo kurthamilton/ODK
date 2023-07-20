@@ -5,9 +5,9 @@ namespace ODK.Web.Razor.Models.Admin.Chapters
     public class ChapterEmailFormViewModel
     {
         [Required]
-        public string? Content { get; set; }
+        public string Content { get; set; } = "";
 
         [Required]
-        public string? Subject { get; set; }
+        public string Subject { get; set; } = "";
     }
 }

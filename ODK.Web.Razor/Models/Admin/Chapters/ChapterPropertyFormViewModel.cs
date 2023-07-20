@@ -10,18 +10,18 @@ namespace ODK.Web.Razor.Models.Admin.Chapters
         public DataType DataType { get; set; }
 
         [DisplayName("Help text")]
-        public string? HelpText { get; set; }
+        public string HelpText { get; set; } = "";
 
         public bool Hidden { get; set; }
 
         [Required]
-        public string? Label { get; set; }
+        public string Label { get; set; } = "";
 
         [Required]
-        public string? Name { get; set; }
+        public string Name { get; set; } = "";
 
         public bool Required { get; set; }
 
-        public string? Subtitle { get; set; }
+        public string Subtitle { get; set; } = "";
     }
 }

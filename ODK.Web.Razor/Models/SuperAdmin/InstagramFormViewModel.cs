@@ -9,6 +9,6 @@ namespace ODK.Web.Razor.Models.SuperAdmin
 
         [Required]
         [Display(Name = "Scraper user agent")]
-        public string? ScraperUserAgent { get; set; }
+        public string ScraperUserAgent { get; set; } = "";
     }
 }

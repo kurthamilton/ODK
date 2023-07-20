@@ -19,11 +19,13 @@ namespace ODK.Web.Razor.Pages.Chapters.Members
 
         public async Task<IActionResult> OnGet(Guid id)
         {
-            Member = await _memberService.GetMember(id);
-            if (Member == null)
+            Member? member = await _memberService.GetMember(id);
+            if (member == null)
             {
                 return NotFound();
             }
+
+            Member = member;
 
             return Page();
         }

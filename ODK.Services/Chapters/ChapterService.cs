@@ -27,61 +27,19 @@ namespace ODK.Services.Chapters
             _chapterRepository = chapterRepository;
             _emailService = emailService;
         }
-
-        public async Task<VersionedServiceResult<Chapter>> GetChapter(long? currentVersion, Guid id)
-        {
-            VersionedServiceResult<IReadOnlyCollection<Chapter>> chapters = await GetChapters(currentVersion);
-            if (chapters.Version == currentVersion)
-            {
-                return new VersionedServiceResult<Chapter>(chapters.Version);
-            }
-
-            Chapter chapter = chapters.Value.SingleOrDefault(x => x.Id == id);
-            if (chapter == null)
-            {
-                throw new OdkNotFoundException();
-            }
-            return new VersionedServiceResult<Chapter>(chapters.Version, chapter);
-        }
-
-        public async Task<VersionedServiceResult<Chapter>> GetChapter(long? currentVersion, string name)
-        {
-            VersionedServiceResult<IReadOnlyCollection<Chapter>> chapters = await GetChapters(currentVersion);
-            if (chapters.Version == currentVersion)
-            {
-                return new VersionedServiceResult<Chapter>(chapters.Version);
-            }
-
-            Chapter chapter = chapters.Value.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
-            if (chapter == null)
-            {
-                throw new OdkNotFoundException();
-            }
-            return new VersionedServiceResult<Chapter>(chapters.Version, chapter);
-        }
-
-        public async Task<Chapter> GetChapter(string name)
+        
+        public async Task<Chapter?> GetChapter(string name)
         {
             return await _chapterRepository.GetChapter(name);
         }
 
-        public async Task<VersionedServiceResult<ChapterLinks>> GetChapterLinks(long? currentVersion, Guid chapterId)
+        public async Task<ChapterLinks?> GetChapterLinks(Guid chapterId)
         {
-            return await _cacheService.GetOrSetVersionedItem(() => GetChapterLinks(chapterId), chapterId, currentVersion);
-        }
-
-        public async Task<ChapterLinks> GetChapterLinks(Guid chapterId)
-        {
-            ChapterLinks links = await _chapterRepository.GetChapterLinks(chapterId);
-            if (links == null)
-            {
-                throw new OdkNotFoundException();
-            }
-
+            ChapterLinks? links = await _chapterRepository.GetChapterLinks(chapterId);
             return links;
         }
 
-        public async Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid chapterId)
+        public async Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid chapterId)
         {
             return await _cacheService.GetOrSetItem(
                 () => _chapterRepository.GetChapterMembershipSettings(chapterId),
@@ -93,44 +51,17 @@ namespace ODK.Services.Chapters
             await _authorizationService.AssertMemberIsChapterMember(currentMemberId, chapterId);
             return await _chapterRepository.GetChapterPaymentSettings(chapterId);
         }
-
-        public async Task<VersionedServiceResult<IReadOnlyCollection<ChapterProperty>>> GetChapterProperties(long? currentVersion, Guid chapterId)
-        {
-            return await _cacheService.GetOrSetVersionedCollection(
-                () => _chapterRepository.GetChapterProperties(chapterId),
-                () => _chapterRepository.GetChapterPropertiesVersion(chapterId),
-                currentVersion,
-                chapterId);
-        }
-
+        
         public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId)
         {
             return await _chapterRepository.GetChapterProperties(chapterId);
         }
-
-        public async Task<VersionedServiceResult<IReadOnlyCollection<ChapterPropertyOption>>> GetChapterPropertyOptions(long? currentVersion, Guid chapterId)
-        {
-            return await _cacheService.GetOrSetVersionedCollection(
-                () => _chapterRepository.GetChapterPropertyOptions(chapterId),
-                () => _chapterRepository.GetChapterPropertyOptionsVersion(chapterId),
-                currentVersion,
-                chapterId);
-        }
-
+        
         public async Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId)
         {
             return await _chapterRepository.GetChapterPropertyOptions(chapterId);
         }
-
-        public async Task<VersionedServiceResult<IReadOnlyCollection<ChapterQuestion>>> GetChapterQuestions(long? currentVersion, Guid chapterId)
-        {
-            return await _cacheService.GetOrSetVersionedCollection(
-                () => _chapterRepository.GetChapterQuestions(chapterId),
-                () => _chapterRepository.GetChapterQuestionsVersion(chapterId),
-                currentVersion,
-                chapterId);
-        }
-
+        
         public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId)
         {
             IReadOnlyCollection<ChapterQuestion> questions = await _chapterRepository.GetChapterQuestions(chapterId);
@@ -139,28 +70,16 @@ namespace ODK.Services.Chapters
                 .ToArray();
         }
 
-        public async Task<VersionedServiceResult<IReadOnlyCollection<Chapter>>> GetChapters(long? currentVersion)
+        public async Task<IReadOnlyCollection<Chapter>> GetChapters()
         {
-            return await _cacheService.GetOrSetVersionedCollection(
-                _chapterRepository.GetChapters,
-                _chapterRepository.GetChaptersVersion,
-                currentVersion);
+            return await _chapterRepository.GetChapters();
         }
 
         public async Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid chapterId)
         {
             return await _chapterRepository.GetChapterSubscriptions(chapterId);
         }
-
-        public async Task<VersionedServiceResult<ChapterTexts>> GetChapterTexts(long? currentVersion, Guid chapterId)
-        {
-            return await _cacheService.GetOrSetVersionedItem(
-                () => _chapterRepository.GetChapterTexts(chapterId),
-                _ => _chapterRepository.GetChapterTextsVersion(chapterId),
-                chapterId,
-                currentVersion);
-        }
-
+        
         public async Task<ChapterTexts> GetChapterTexts(Guid chapterId)
         {
             return await _chapterRepository.GetChapterTexts(chapterId);
@@ -178,9 +97,13 @@ namespace ODK.Services.Chapters
                 throw new OdkServiceException("Invalid email address format");
             }
 
-            VersionedServiceResult<Chapter> chapter = await GetChapter(null, chapterId);
+            Chapter? chapter = await _chapterRepository.GetChapter(chapterId);
+            if (chapter == null)
+            {
+                return;
+            }
 
-            ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Value.Id, DateTime.UtcNow, fromAddress, message, false);
+            ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Id, DateTime.UtcNow, fromAddress, message, false);
             await _chapterRepository.AddContactRequest(contactRequest);
 
             IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -189,7 +112,7 @@ namespace ODK.Services.Chapters
                 {"message", HttpUtility.HtmlEncode(message)}
             };
 
-            await _emailService.SendContactEmail(chapter.Value, fromAddress, message, parameters);
+            await _emailService.SendContactEmail(chapter, fromAddress, message, parameters);
         }
     }
 }

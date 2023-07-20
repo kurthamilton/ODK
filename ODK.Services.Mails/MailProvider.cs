@@ -9,6 +9,7 @@ using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Members;
+using ODK.Services.Emails.Extensions;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 
@@ -30,17 +31,18 @@ namespace ODK.Services.Emails
             _memberRepository = memberRepository;
         }
 
-        public async Task SendBulkEmail(Chapter chapter, IEnumerable<string> to, string subject, string body, bool bcc = true)
+        public async Task SendBulkEmail(Chapter chapter, IEnumerable<EmailAddressee> to, string subject, string body, bool bcc = true)
         {
             await SendBulkEmail(chapter, to, subject, body, null, bcc);
         }
 
-        public async Task SendBulkEmail(Chapter chapter, IEnumerable<string> to, string subject, string body, ChapterAdminMember from, bool bcc = true)
+        public async Task SendBulkEmail(Chapter chapter, IEnumerable<EmailAddressee> to, string subject, string body, ChapterAdminMember? from, 
+            bool bcc = true)
         {
             body = await GetLayoutBody(chapter, body);
 
             int i = 0;
-            List<string> toList = to.ToList();
+            List<EmailAddressee> toList = to.ToList();
             while (i < toList.Count)
             {
                 (ChapterEmailProvider provider, int remaining) = await GetProvider(chapter.Id);
@@ -51,7 +53,7 @@ namespace ODK.Services.Emails
                     batchSize = remaining;
                 }
 
-                IEnumerable<string> batch = toList.Skip(i).Take(batchSize);
+                IEnumerable<EmailAddressee> batch = toList.Skip(i).Take(batchSize);
                 MimeMessage message = await CreateMessage(provider, from, subject, body);
                 if (bcc)
                 {
@@ -67,38 +69,39 @@ namespace ODK.Services.Emails
             }
         }
 
-        public async Task<ServiceResult> SendEmail(Chapter chapter, string to, string subject, string body)
+        public async Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, string subject, string body)
         {
             return await SendEmail(chapter, to, subject, body, null);
         }
 
-        public async Task<ServiceResult> SendEmail(Chapter chapter, string to, string subject, string body, ChapterAdminMember from)
+        public async Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, string subject, string body, 
+            ChapterAdminMember? from)
         {
             body = await GetLayoutBody(chapter, body);
 
             (ChapterEmailProvider provider, int _) = await GetProvider(chapter.Id);
 
             MimeMessage message = await CreateMessage(provider, from, subject, body);
-            AddEmailRecipient(message, new MailboxAddress(to));
+            AddEmailRecipient(message, to.ToMailboxAddress());
 
             return await SendEmail(provider, message);
         }
 
-        private static void AddBulkEmailRecipients(MimeMessage message, IEnumerable<string> recipients)
+        private static void AddBulkEmailRecipients(MimeMessage message, IEnumerable<EmailAddressee> recipients)
         {
-            foreach (string recipient in recipients)
+            foreach (EmailAddressee recipient in recipients)
             {
-                message.To.Add(new MailboxAddress(recipient));
+                message.To.Add(recipient.ToMailboxAddress());
             }
         }
 
-        private static void AddBulkEmailBccRecipients(MimeMessage message, InternetAddress to, IEnumerable<string> recipients)
+        private static void AddBulkEmailBccRecipients(MimeMessage message, InternetAddress to, IEnumerable<EmailAddressee> recipients)
         {
             AddEmailRecipient(message, to);
 
-            foreach (string recipient in recipients)
+            foreach (EmailAddressee recipient in recipients)
             {
-                message.Bcc.Add(new MailboxAddress(recipient));
+                message.Bcc.Add(recipient.ToMailboxAddress());
             }
         }
 
@@ -107,12 +110,12 @@ namespace ODK.Services.Emails
             message.To.Add(to);
         }
 
-        private async Task AddEmailFrom(MimeMessage message, ChapterEmailProvider provider, ChapterAdminMember from)
+        private async Task AddEmailFrom(MimeMessage message, ChapterEmailProvider provider, ChapterAdminMember? from)
         {
             if (from != null)
             {
-                Member member = await _memberRepository.GetMember(from.MemberId);
-                message.From.Add(new MailboxAddress($"{member.FirstName} {member.LastName}", from.AdminEmailAddress));
+                Member? member = await _memberRepository.GetMember(from.MemberId);
+                message.From.Add(new MailboxAddress($"{member!.FirstName} {member.LastName}", from.AdminEmailAddress));
             }
             else
             {
@@ -120,7 +123,7 @@ namespace ODK.Services.Emails
             }
         }
 
-        private async Task<MimeMessage> CreateMessage(ChapterEmailProvider provider, ChapterAdminMember from, string subject, string body)
+        private async Task<MimeMessage> CreateMessage(ChapterEmailProvider provider, ChapterAdminMember? from, string subject, string body)
         {
             MimeMessage message = new MimeMessage
             {

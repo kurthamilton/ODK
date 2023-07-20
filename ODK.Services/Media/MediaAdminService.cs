@@ -23,7 +23,11 @@ namespace ODK.Services.Media
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-            MediaFile mediaFile = await _mediaFileProvider.GetMediaFile(chapterId, name);
+            MediaFile? mediaFile = await _mediaFileProvider.GetMediaFile(chapterId, name);
+            if (mediaFile == null)
+            {
+                throw new OdkServiceException("File not found");
+            }
 
             File.Delete(mediaFile.FilePath);
 
@@ -37,7 +41,7 @@ namespace ODK.Services.Media
             return await _mediaFileProvider.GetMediaFiles(chapterId);
         }
 
-        public async Task<MediaFile> SaveMediaFile(Guid currentMemberId, Guid chapterId, string name, byte[] data)
+        public async Task<MediaFile?> SaveMediaFile(Guid currentMemberId, Guid chapterId, string name, byte[] data)
         {
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
@@ -46,14 +50,18 @@ namespace ODK.Services.Media
                 throw new OdkServiceException("File must be an image");
             }
 
-            string filePath = await _mediaFileProvider.GetMediaFilePath(chapterId, name);
+            string? filePath = await _mediaFileProvider.GetMediaFilePath(chapterId, name);
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new OdkServiceException("File not found");
+            }
 
             int version = 1;
             while (File.Exists(filePath))
             {
                 FileInfo file = new FileInfo(filePath);
                 string versionedFileName = $"{file.Name.Substring(0, file.Name.Length - file.Extension.Length)}{++version}{file.Extension}";
-                filePath = Path.Combine(file.Directory.FullName, versionedFileName);
+                filePath = Path.Combine(file.Directory!.FullName, versionedFileName);
             }
 
             await File.WriteAllBytesAsync(filePath, data);

@@ -13,13 +13,13 @@
     Task<IReadOnlyCollection<ChapterSubscription>> subscriptionsTask = ChapterAdminService.GetChapterSubscriptions(
         memberId!.Value, Model.Id);
     Task<Country> countryTask = CountryService.GetCountry(Model.CountryId);
-    Task<ChapterMembershipSettings> membershipSettingsTask = ChapterAdminService.GetChapterMembershipSettings(memberId!.Value, Model.Id);
+    Task<ChapterMembershipSettings?> membershipSettingsTask = ChapterAdminService.GetChapterMembershipSettings(memberId.Value, Model.Id);
 
     await Task.WhenAll(subscriptionsTask, countryTask, membershipSettingsTask);
 
     IReadOnlyCollection<ChapterSubscription> subscriptions = subscriptionsTask.Result;
     Country country = countryTask.Result;
-    ChapterMembershipSettings membershipSettings = membershipSettingsTask.Result;
+    ChapterMembershipSettings? membershipSettings = membershipSettingsTask.Result;
 }
 
 <h2>Subscriptions</h2>
@@ -68,8 +68,8 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_MembershipSettingsForm", new MembershipSettingsFormViewModel
     {
-        MembershipDisabledAfter = membershipSettings.MembershipDisabledAfterDaysExpired,
-        TrialPeriodMonths = membershipSettings.TrialPeriodMonths
+        MembershipDisabledAfter = membershipSettings?.MembershipDisabledAfterDaysExpired ?? 0,
+        TrialPeriodMonths = membershipSettings?.TrialPeriodMonths ?? 0
     })
     <button class="btn btn-primary">Update</button>
 </form>

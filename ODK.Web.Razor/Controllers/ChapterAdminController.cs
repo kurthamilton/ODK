@@ -49,10 +49,20 @@ namespace ODK.Web.Razor.Controllers
         [HttpPost("/{chapterName}/Admin/Chapter/Emails/{type}/SendTest")]
         public async Task<IActionResult> SendTestEmail(string chapterName, EmailType type)
         {
-            Chapter chapter = await _requestCache.GetChapter(chapterName);
-            Member member = await _requestCache.GetMember(MemberId);
+            Task<Chapter?> chapterTask = _requestCache.GetChapter(chapterName);
+            Task<Member?> memberTask = _requestCache.GetMember(MemberId);
 
-            ServiceResult result = await _emailService.SendEmail(chapter, member.EmailAddress, type, new Dictionary<string, string>
+            await Task.WhenAll(chapterTask, memberTask);
+
+            if (chapterTask.Result == null || memberTask.Result == null)
+            {
+                return NotFound();
+            }
+
+            Chapter chapter = chapterTask.Result;
+            Member member = memberTask.Result;
+
+            ServiceResult result = await _emailService.SendEmail(chapter, member.GetEmailAddressee(), type, new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
                 { "member.emailAddress", member.FirstName },

@@ -13,9 +13,7 @@ namespace ODK.Core.Chapters
         Task AddChapterProperty(ChapterProperty property);
 
         Task<Guid> AddContactRequest(ContactRequest contactRequest);
-
-        Task ConfirmContactRequestSent(Guid contactRequestId);
-
+        
         Task<Guid> CreateChapterQuestion(ChapterQuestion question);
 
         Task CreateChapterSubscription(ChapterSubscription subscription);
@@ -30,11 +28,11 @@ namespace ODK.Core.Chapters
 
         Task DeleteChapterSubscription(Guid id);
 
-        Task<Chapter> GetChapter(Guid id);
+        Task<Chapter?> GetChapter(Guid id);
 
-        Task<Chapter> GetChapter(string name);
+        Task<Chapter?> GetChapter(string name);
 
-        Task<ChapterAdminMember> GetChapterAdminMember(Guid chapterId, Guid memberId);
+        Task<ChapterAdminMember?> GetChapterAdminMember(Guid chapterId, Guid memberId);
 
         Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid chapterId);
 
@@ -44,40 +42,30 @@ namespace ODK.Core.Chapters
 
         Task<IReadOnlyCollection<ChapterEmailProvider>> GetChapterEmailProviders(Guid chapterId);
 
-        Task<ChapterLinks> GetChapterLinks(Guid chapterId);
+        Task<ChapterLinks?> GetChapterLinks(Guid chapterId);
 
-        Task<ChapterMembershipSettings> GetChapterMembershipSettings(Guid chapterId);
+        Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid chapterId);
 
         Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid chapterId);
 
         Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId, bool all = false);
-
-        Task<long> GetChapterPropertiesVersion(Guid chapterId, bool all = false);
-
+        
         Task<ChapterProperty> GetChapterProperty(Guid id);
 
         Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId);
-
-        Task<long> GetChapterPropertyOptionsVersion(Guid chapterId);
-
+        
         Task<ChapterQuestion> GetChapterQuestion(Guid id);
 
         Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);
-
-        Task<long> GetChapterQuestionsVersion(Guid chapterId);
-
+        
         Task<IReadOnlyCollection<Chapter>> GetChapters();
 
-        Task<ChapterSubscription> GetChapterSubscription(Guid id);
+        Task<ChapterSubscription?> GetChapterSubscription(Guid id);
 
         Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid chapterId);
-
-        Task<long> GetChaptersVersion();
-
+        
         Task<ChapterTexts> GetChapterTexts(Guid chapterId);
-
-        Task<long> GetChapterTextsVersion(Guid chapterId);
-
+        
         Task UpdateChapterAdminMember(ChapterAdminMember adminMember);
 
         Task UpdateChapterEmailProvider(ChapterEmailProvider provider);

@@ -19,11 +19,13 @@ namespace ODK.Web.Razor.Pages.Chapters.Events
 
         public async Task<IActionResult> OnGet(Guid id, string? rsvp = null)
         {
-            Event = await EventService.GetEvent(Chapter.Id, id);
-            if (Event == null)
+            Event? @event = await EventService.GetEvent(Chapter.Id, id);
+            if (@event == null)
             {
                 return NotFound();
             }
+
+            Event = @event;
 
             if (!string.IsNullOrEmpty(rsvp) &&
                 CurrentMember != null)

@@ -4,7 +4,11 @@
 @model ODK.Web.Razor.Models.Members.MemberProfileViewModel
 @inject IMemberService MemberService
 @{
-    MemberProfile profile = await MemberService.GetMemberProfile(Model.CurrentMember, Model.Member);
+    MemberProfile? profile = await MemberService.GetMemberProfile(Model.CurrentMember, Model.Member);
+    if (profile == null)
+    {
+        return;
+    }
 }
 
 <form>

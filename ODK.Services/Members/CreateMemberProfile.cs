@@ -2,8 +2,13 @@
 {
     public class CreateMemberProfile : UpdateMemberProfile
     {
-        public string EmailAddress { get; set; }
+        public CreateMemberProfile(UpdateMemberImage image)
+        {
+            Image = image;
+        }
 
-        public UpdateMemberImage Image { get; set; }
+        public string EmailAddress { get; set; } = "";
+
+        public UpdateMemberImage Image { get; }
     }
 }

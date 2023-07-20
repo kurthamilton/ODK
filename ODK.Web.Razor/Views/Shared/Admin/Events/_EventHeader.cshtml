@@ -4,12 +4,12 @@
 @model ODK.Web.Razor.Models.Admin.Events.EventViewModel
 @inject IVenueService VenueService
 @{
-    Venue venue = await VenueService.GetVenue(Model.CurrentMember, Model.Event.VenueId);
+    Venue? venue = await VenueService.GetVenue(Model.CurrentMember, Model.Event.VenueId);
 }
 
 <h5>@Model.Event.Date.EventDate()</h5>
 <h5 class="d-flex justify-content-between">
-    <a href="/@Model.Chapter.Name/Admin/Events/Venues/@venue.Id">@venue.Name</a>
+    <a href="/@Model.Chapter.Name/Admin/Events/Venues/@venue!.Id">@venue.Name</a>
 </h5>
 
 <a href="/@Model.Chapter.Name/Events/@Model.Event.Id">

@@ -24,7 +24,7 @@ namespace ODK.Web.Common.Account
         public async Task<AuthenticationResult> Login(HttpContext httpContext, string username, string password, 
             bool rememberMe)
         {
-            Member member = await _authenticationService.GetMember(username, password);
+            Member? member = await _authenticationService.GetMember(username, password);
             if (member == null)
             {
                 return new AuthenticationResult();

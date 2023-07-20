@@ -13,7 +13,7 @@ namespace ODK.Services.Exceptions
 
         public OdkServiceException(IEnumerable<string> messages)
         {
-            Messages = messages?.ToArray();
+            Messages = messages.ToArray();
         }
 
         public IReadOnlyCollection<string> Messages { get; }

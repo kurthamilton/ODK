@@ -17,7 +17,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Account
             _authenticationService = authenticationService;
         }
 
-        public string? Token { get; private set; }
+        public string Token { get; private set; } = "";
 
         public void OnGet(string token)
         {
