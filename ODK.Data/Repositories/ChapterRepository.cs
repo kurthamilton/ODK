@@ -64,6 +64,14 @@ namespace ODK.Data.Repositories
                 .ExecuteAsync();
         }
 
+        public async Task DeleteChapterContactRequest(Guid id)
+        {
+            await Context
+                .Delete<ContactRequest>()
+                .Where(x => x.Id).EqualTo(id)
+                .ExecuteAsync();
+        }
+
         public async Task DeleteChapterEmailProvider(Guid id)
         {
             await Context
@@ -134,6 +142,22 @@ namespace ODK.Data.Repositories
             return await Context
                 .Select<ChapterAdminMember>()
                 .Where(x => x.MemberId).EqualTo(memberId)
+                .ToArrayAsync();
+        }
+
+        public async Task<ContactRequest?> GetChapterContactRequest(Guid id)
+        {
+            return await Context
+                .Select<ContactRequest>()
+                .Where(x => x.Id).EqualTo(id)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(Guid chapterId)
+        {
+            return await Context                
+                .Select<ContactRequest>()
+                .Where(x => x.ChapterId).EqualTo(chapterId)
                 .ToArrayAsync();
         }
 

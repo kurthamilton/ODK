@@ -8,33 +8,39 @@
     IReadOnlyCollection<LogMessage> errors = await LoggingService.GetLogMessages(memberId!.Value, "Error", 1, 1000);
 }
 
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Time</th>
-        <th>Level</th>
-        <th>Message</th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (LogMessage error in errors.OrderByDescending(x => x.TimeStamp))
-    {
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
         <tr>
-            <td>@error.TimeStamp</td>
-            <td>@error.Level</td>
-            <td>
-                <a href="/@Model.Name/Admin/SuperAdmin/Errors/@error.Id">@error.Message</a>
-            </td>
-            <td>
-                <form method="post" action="/@Model.Name/Admin/SuperAdmin/Errors/@error.Id/Delete">
-                    @Html.AntiForgeryToken()
-                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </form>
-            </td>
+            <th>Time</th>
+            <th>Level</th>
+            <th>Message</th>
+            <th>Url</th>
+            <th></th>
         </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        @foreach (LogMessage error in errors.OrderByDescending(x => x.TimeStamp))
+        {
+            <tr>
+                <td>@error.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@error.Level</td>
+                <td>
+                    <a href="/@Model.Name/Admin/SuperAdmin/Errors/@error.Id">@error.Message</a>
+                </td>
+                <td>
+                    @error.GetProperty("RequestPath")
+                </td>
+                <td>
+                    <form method="post" action="/@Model.Name/Admin/SuperAdmin/Errors/@error.Id/Delete">
+                        @Html.AntiForgeryToken()
+                        <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

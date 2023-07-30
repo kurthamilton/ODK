@@ -139,11 +139,8 @@
 
 .anonymous-links {
     display: flex;
-
-    @include media-breakpoint-up(lg) {
-        position: absolute;
-        right: $grid-gutter-width / 2;
-    }
+    position: absolute;
+    right: $grid-gutter-width / 2;
 
     .anonymous-link {
         padding-top: 0.1rem;

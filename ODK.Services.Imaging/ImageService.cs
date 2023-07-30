@@ -15,13 +15,29 @@ namespace ODK.Services.Imaging
                 Size size = GetRescaledSize(image.Size(), new Size(width, height), Math.Max);
                 image.Mutate(x =>
                 {
-                    x.Resize(size);
+                    try
+                    {
+                        x.Resize(size);
+                    }
+                    catch
+                    {
+                        // let the resize fail if the target size is smaller than the original
+                    }
+
                     Rectangle crop = new Rectangle(
                         Math.Max(size.Width - width, 0) / 2,
                         Math.Max(size.Height - height, 0) / 2,
                         Math.Min(width, size.Width),
                         Math.Min(height, size.Width));
-                    x.Crop(crop);
+
+                    try
+                    {
+                        x.Crop(crop);
+                    }
+                    catch
+                    {
+                        // let the crop fail if the target size is smaller than the original
+                    }
                 });
             });
         }

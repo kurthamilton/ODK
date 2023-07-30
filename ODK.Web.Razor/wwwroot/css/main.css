@@ -12121,12 +12121,8 @@ img {
 
 .anonymous-links {
   display: flex;
-}
-@media (min-width: 992px) {
-  .anonymous-links {
-    position: absolute;
-    right: 0.75rem;
-  }
+  position: absolute;
+  right: 0.75rem;
 }
 .anonymous-links .anonymous-link {
   padding-top: 0.1rem;

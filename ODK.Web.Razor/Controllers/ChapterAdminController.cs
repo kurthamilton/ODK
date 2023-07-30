@@ -29,6 +29,22 @@ namespace ODK.Web.Razor.Controllers
             _requestCache = requestCache;
         }
 
+        [HttpPost("/{chapterName}/Admin/Chapter/ContactRequests/{id}/Delete")]
+        public async Task<IActionResult> DeleteContactRequest(string chapterName, Guid id)
+        {
+            Chapter? chapter = await _requestCache.GetChapter(chapterName);
+            if (chapter != null)
+            {
+                ServiceResult result = await _chapterAdminService.DeleteChapterContactRequest(MemberId, id);
+                if (result.Success)
+                {
+                    AddFeedback(new FeedbackViewModel("Contact request deleted", FeedbackType.Success));
+                }
+            }
+
+            return RedirectToReferrer();
+        }
+
         [HttpPost("/{chapterName}/Admin/Chapter/Emails/{type}/RestoreDefault")]
         public async Task<IActionResult> RestoreDefaultEmail(string chapterName, EmailType type)
         {

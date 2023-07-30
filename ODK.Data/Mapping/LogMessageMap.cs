@@ -15,6 +15,7 @@ namespace ODK.Data.Mapping
             Property(x => x.Message);
             Property(x => x.TimeStamp);
             Property(x => x.Exception);
+            Property(x => x.Properties);
         }
 
         public override LogMessage Read(IDataReader reader)
@@ -25,7 +26,8 @@ namespace ODK.Data.Mapping
                 level: reader.GetString(1),
                 message: reader.GetString(2),
                 timeStamp: reader.GetDateTime(3),
-                exception: reader.GetStringOrDefault(4)
+                exception: reader.GetStringOrDefault(4),
+                properties: reader.GetStringOrDefault(5)
             );
         }
     }

@@ -137,7 +137,9 @@ namespace ODK.Web.Razor.Controllers
                 {
                     ChapterPropertyId = x.ChapterPropertyId,
                     Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) && 
-                            !string.IsNullOrEmpty(x.OtherValue) ? x.OtherValue : x.Value
+                            !string.IsNullOrEmpty(x.OtherValue) 
+                        ? x.OtherValue ?? ""
+                        : x.Value ?? ""
                 })
             });
 

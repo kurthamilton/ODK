@@ -9,6 +9,7 @@ using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
+using ODK.Services.Recaptcha;
 
 namespace ODK.Services.Chapters
 {
@@ -18,14 +19,16 @@ namespace ODK.Services.Chapters
         private readonly ICacheService _cacheService;
         private readonly IChapterRepository _chapterRepository;
         private readonly IEmailService _emailService;
+        private readonly IRecaptchaService _recaptchaService;
 
         public ChapterService(IChapterRepository chapterRepository, ICacheService cacheService, IEmailService emailService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService, IRecaptchaService recaptchaService)
         {
             _authorizationService = authorizationService;
             _cacheService = cacheService;
             _chapterRepository = chapterRepository;
             _emailService = emailService;
+            _recaptchaService = recaptchaService;
         }
         
         public async Task<Chapter?> GetChapter(string name)
@@ -85,7 +88,7 @@ namespace ODK.Services.Chapters
             return await _chapterRepository.GetChapterTexts(chapterId);
         }
 
-        public async Task SendContactMessage(Guid chapterId, string fromAddress, string message)
+        public async Task SendContactMessage(Guid chapterId, string fromAddress, string message, string recaptchaToken)
         {
             if (string.IsNullOrWhiteSpace(fromAddress) || string.IsNullOrWhiteSpace(message))
             {
@@ -101,6 +104,12 @@ namespace ODK.Services.Chapters
             if (chapter == null)
             {
                 return;
+            }
+
+            bool verified = await _recaptchaService.Verify(recaptchaToken);
+            if (!verified)
+            {
+                message = $"[FLAGGED AS SPAM] {message}";
             }
 
             ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Id, DateTime.UtcNow, fromAddress, message, false);

@@ -1,0 +1,40 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
+@model ODK.Core.Chapters.Chapter
+@inject IChapterAdminService ChapterAdminService
+@{
+    Guid memberId = User.MemberId()!.Value;
+    IReadOnlyCollection<ContactRequest> messages = await ChapterAdminService.GetChapterContactRequests(memberId, 
+        Model.Id);
+}
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Time</th>
+        <th>From</th>
+        <th>Message</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (ContactRequest message in messages.OrderByDescending(x => x.CreatedDate))
+    {
+        <tr>
+            <td>@message.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@message.FromAddress</td>
+            <td>@message.Message</td>
+            <td>
+                <form method="post" action="/@Model.Name/Admin/Chapter/ContactRequests/@message.Id/Delete">
+                    @Html.AntiForgeryToken()
+                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                            onclick="return confirm('Are you sure you want to delete this message?');">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

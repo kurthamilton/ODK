@@ -12,5 +12,8 @@ namespace ODK.Web.Razor.Models.Contact
 
         [Required]
         public string? Message { get; set; }
+
+        [Required]
+        public string? Recaptcha { get; set; }
     }
 }

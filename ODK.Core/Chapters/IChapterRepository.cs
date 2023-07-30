@@ -20,6 +20,8 @@ namespace ODK.Core.Chapters
 
         Task DeleteChapterAdminMember(Guid chapterId, Guid memberId);
 
+        Task DeleteChapterContactRequest(Guid id);
+
         Task DeleteChapterEmailProvider(Guid id);
 
         Task DeleteChapterProperty(Guid id);
@@ -37,6 +39,10 @@ namespace ODK.Core.Chapters
         Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid chapterId);
 
         Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembersByMember(Guid memberId);
+
+        Task<ContactRequest?> GetChapterContactRequest(Guid id);
+
+        Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(Guid chapterId);
 
         Task<ChapterEmailProvider> GetChapterEmailProvider(Guid id);
 

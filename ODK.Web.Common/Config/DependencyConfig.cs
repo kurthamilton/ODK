@@ -34,6 +34,7 @@ using ODK.Web.Common.Config.Settings;
 using ODK.Services.Media;
 using ODK.Services.Files;
 using ODK.Services.Payments.PayPal;
+using ODK.Services.Recaptcha;
 using ODK.Web.Common.Account;
 
 namespace ODK.Web.Common.Config
@@ -117,6 +118,7 @@ namespace ODK.Web.Common.Config
             services.AddScoped<IMemberAdminService, MemberAdminService>();
             services.AddScoped<IMemberService, MemberService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IRecaptchaService, RecaptchaService>();
             services.AddScoped<IRequestCache, RequestCache>();
             services.AddScoped<ISettingsService, SettingsService>();
             services.AddScoped<IVenueAdminService, VenueAdminService>();
@@ -128,6 +130,7 @@ namespace ODK.Web.Common.Config
             AuthSettings auth = appSettings.Auth;
             MembersSettings members = appSettings.Members;
             PathSettings paths = appSettings.Paths;
+            RecaptchaSettings recaptcha = appSettings.Recaptcha;
             UrlSettings urls = appSettings.Urls;
 
             services.AddSingleton(new AuthenticationServiceSettings(
@@ -154,6 +157,12 @@ namespace ODK.Web.Common.Config
             {
                 RootMediaPath = paths.MediaRoot,
                 RootMediaUrl = $"{urls.AppBase}{urls.Media}"
+            });
+
+            services.AddSingleton(new RecaptchaServiceSettings
+            {
+                ScoreThreshold = recaptcha.ScoreThreshold,
+                VerifyUrl = recaptcha.VerifyUrl
             });
         }
     }

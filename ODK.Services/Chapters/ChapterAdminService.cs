@@ -142,6 +142,21 @@ namespace ODK.Services.Chapters
             return ServiceResult.Successful();
         }
 
+        public async Task<ServiceResult> DeleteChapterContactRequest(Guid currentMemberId, Guid id)
+        {
+            ContactRequest? contactRequest = await _chapterRepository.GetChapterContactRequest(id);
+            if (contactRequest == null)
+            {
+                return ServiceResult.Failure("Contact request not found");
+            }
+
+            await AssertMemberIsChapterAdmin(currentMemberId, contactRequest.ChapterId);
+
+            await _chapterRepository.DeleteChapterContactRequest(id);
+
+            return ServiceResult.Successful();
+        }
+
         public async Task DeleteChapterProperty(Guid currentMemberId, Guid id)
         {
             ChapterProperty property = await GetChapterProperty(currentMemberId, id);
@@ -220,6 +235,14 @@ namespace ODK.Services.Chapters
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
             return await _chapterRepository.GetChapterAdminMembers(chapterId);
+        }
+
+        public async Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(Guid currentMemberId,
+            Guid chapterId)
+        {
+            await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+
+            return await _chapterRepository.GetChapterContactRequests(chapterId);
         }
 
         public async Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid currentMemberId, Guid chapterId)

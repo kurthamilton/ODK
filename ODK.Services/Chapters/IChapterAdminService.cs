@@ -17,6 +17,8 @@ namespace ODK.Services.Chapters
 
         Task<ServiceResult> DeleteChapterAdminMember(Guid currentMemberId, string chapterName, Guid memberId);
 
+        Task<ServiceResult> DeleteChapterContactRequest(Guid currentMemberId, Guid id);
+
         Task DeleteChapterProperty(Guid currentMemberId, Guid id);
 
         Task DeleteChapterQuestion(Guid currentMemberId, Guid id);
@@ -28,6 +30,8 @@ namespace ODK.Services.Chapters
         Task<ChapterAdminMember?> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
 
         Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid currentMemberId, Guid chapterId);
+
+        Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(Guid currentMemberId, Guid chapterId);
 
         Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid currentMemberId, Guid chapterId);
 

@@ -31,7 +31,7 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Date, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.Date, new { @class = "form-control", data_datepicker = "" })
+    @Html.TextBoxFor(x => x.Date, "{0:dd/MM/yyyy}", new { @class = "form-control", data_datepicker = "" })
     @Html.ValidationMessageFor(x => x.Date)
 </div>
 

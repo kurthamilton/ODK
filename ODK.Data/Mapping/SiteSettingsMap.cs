@@ -15,6 +15,8 @@ namespace ODK.Data.Mapping
             Property(x => x.InstagramScraperUserAgent);
             Property(x => x.ScrapeInstagram);
             Property(x => x.Version).IsRowVersion();
+            Property(x => x.RecaptchaSiteKey);
+            Property(x => x.RecaptchaSecretKey);
         }
 
         public override SiteSettings Read(IDataReader reader)
@@ -26,7 +28,9 @@ namespace ODK.Data.Mapping
                 instagramPassword: reader.GetString(2),
                 instagramScraperUserAgent: reader.GetString(3),
                 scrapeInstagram: reader.GetBoolean(4),
-                version: reader.GetInt64(5)
+                version: reader.GetInt64(5),
+                recaptchaSiteKey: reader.GetString(6),
+                recaptchaSecretKey: reader.GetString(7)
             );
         }
     }

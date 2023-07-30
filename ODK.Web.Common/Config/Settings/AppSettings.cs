@@ -10,6 +10,7 @@ namespace ODK.Web.Common.Config.Settings
             Members = configuration.Map<MembersSettings>("Members");
             Paths = configuration.Map<PathSettings>("Paths");
             Payments = configuration.Map<PaymentsSettings>("Payments");
+            Recaptcha = configuration.Map<RecaptchaSettings>("Recaptcha");
             Urls = configuration.Map<UrlSettings>("Urls");
         }
 
@@ -20,6 +21,8 @@ namespace ODK.Web.Common.Config.Settings
         public PathSettings Paths { get; }
 
         public PaymentsSettings Payments { get; }
+
+        public RecaptchaSettings Recaptcha { get; }
 
         public UrlSettings Urls { get; }
     }

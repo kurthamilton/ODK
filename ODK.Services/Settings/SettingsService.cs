@@ -30,7 +30,8 @@ namespace ODK.Services.Settings
             SiteSettings settings = await GetSiteSettings();
 
             SiteSettings update = new SiteSettings(settings.GoogleMapsApiKey, settings.InstagramUsername,
-                settings.InstagramPassword, scraperUserAgent, scrape, 0);
+                settings.InstagramPassword, scraperUserAgent, scrape, 0, settings.RecaptchaSiteKey,
+                settings.RecaptchaSecretKey);
 
             await _settingsRepository.UpdateSiteSettings(update);
 

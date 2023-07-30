@@ -27,6 +27,6 @@ namespace ODK.Services.Chapters
         
         Task<ChapterTexts> GetChapterTexts(Guid chapterId);
 
-        Task SendContactMessage(Guid chapterId, string emailAddress, string message);
+        Task SendContactMessage(Guid chapterId, string emailAddress, string message, string recaptchaToken);
     }
 }
