@@ -4,6 +4,8 @@ namespace ODK.Services.Recaptcha
 {
     public interface IRecaptchaService
     {
-        Task<bool> Verify(string token);
+        bool Success(ReCaptchaResponse response);
+
+        Task<ReCaptchaResponse> Verify(string token);
     }
 }

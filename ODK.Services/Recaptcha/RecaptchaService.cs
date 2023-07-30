@@ -18,12 +18,20 @@ namespace ODK.Services.Recaptcha
             _settingsRepository = settingsRepository;
         }
 
-        public async Task<bool> Verify(string token)
+        public bool Success(ReCaptchaResponse response)
+        {
+            return response.Success && response.Score >= _settings.ScoreThreshold;
+        }
+
+        public async Task<ReCaptchaResponse> Verify(string token)
         {
             SiteSettings? settings = await _settingsRepository.GetSiteSettings();
             if (settings == null)
             {
-                return true;
+                return new ReCaptchaResponse
+                {
+                    Success = true
+                };
             }
 
             HttpContent postContent = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -34,29 +42,50 @@ namespace ODK.Services.Recaptcha
             
             using HttpClient http = new HttpClient();
             HttpResponseMessage response = await http.PostAsync(_settings.VerifyUrl, postContent);
+            string responseContent = await response.Content.ReadAsStringAsync();
+
             if (!response.IsSuccessStatusCode)
             {
-                return false;
+                return new ReCaptchaResponse
+                {
+                    Success = false,
+                    ErrorCodes = new[]
+                    {
+                        $"Error response: {response.StatusCode}",
+                        responseContent
+                    }
+                };
             }
 
-            string responseContent = await response.Content.ReadAsStringAsync();
             if (string.IsNullOrEmpty(responseContent))
             {
-                return false;
+                return new ReCaptchaResponse
+                {
+                    Success = false,
+                    ErrorCodes = new[]
+                    {
+                        $"Response: {response.StatusCode}",
+                        "Empty response content"
+                    }
+                };
             }
 
             ReCaptchaResponse? reCaptchaResponse = JsonConvert.DeserializeObject<ReCaptchaResponse>(responseContent);
             if (reCaptchaResponse == null)
             {
-                return false;
+                return new ReCaptchaResponse
+                {
+                    Success = false,
+                    ErrorCodes = new[]
+                    {
+                        $"Response: {response.StatusCode}",
+                        "Response content could not be parsed",
+                        responseContent
+                    }
+                };
             }
 
-            if (!reCaptchaResponse.Success)
-            {
-                return false;
-            }
-
-            return reCaptchaResponse.Score >= _settings.ScoreThreshold;
+            return reCaptchaResponse;
         }
     }
 }

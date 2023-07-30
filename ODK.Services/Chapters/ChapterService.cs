@@ -20,7 +20,7 @@ namespace ODK.Services.Chapters
         private readonly IChapterRepository _chapterRepository;
         private readonly IEmailService _emailService;
         private readonly IRecaptchaService _recaptchaService;
-
+        
         public ChapterService(IChapterRepository chapterRepository, ICacheService cacheService, IEmailService emailService,
             IAuthorizationService authorizationService, IRecaptchaService recaptchaService)
         {
@@ -106,10 +106,10 @@ namespace ODK.Services.Chapters
                 return;
             }
 
-            bool verified = await _recaptchaService.Verify(recaptchaToken);
-            if (!verified)
+            ReCaptchaResponse recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);
+            if (!_recaptchaService.Success(recaptchaResponse))
             {
-                message = $"[FLAGGED AS SPAM] {message}";
+                message = $"[FLAGGED AS SPAM: {recaptchaResponse.Score} / 1.0] {message}";
             }
 
             ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Id, DateTime.UtcNow, fromAddress, message, false);
