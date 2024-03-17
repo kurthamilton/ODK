@@ -200,7 +200,12 @@ namespace ODK.Services.Emails
             }
             catch (Exception ex)
             {
-                await _loggingService.LogError(ex, "Error sending email");
+                await _loggingService.LogError(ex, new Dictionary<string, string>
+                {
+                    { "MAIL.TO", string.Join(", ", message.To) },
+                    { "MAIL.HTMLBODY", message.HtmlBody },
+                    { "MAIL.SUBJECT", message.Subject }
+                });
                 return ServiceResult.Failure($"Error sending email: {ex.Message}");
             }
         }

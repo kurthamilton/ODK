@@ -25,7 +25,8 @@ namespace ODK.Services.Emails
             _memberRepository = memberRepository;
         }
 
-        public async Task SendBulkEmail(Guid currentMemberId, Chapter chapter, IEnumerable<Member> to, EmailType type, IDictionary<string, string> parameters)
+        public async Task SendBulkEmail(Guid currentMemberId, Chapter chapter, IEnumerable<Member> to, EmailType type, 
+            IDictionary<string, string?> parameters)
         {
             ChapterAdminMember from = await GetSender(chapter.Id, currentMemberId);
 
@@ -39,7 +40,7 @@ namespace ODK.Services.Emails
             await _mailProvider.SendBulkEmail(chapter, to.Select(x => x.GetEmailAddressee()), subject, body, from);
         }
 
-        public async Task SendContactEmail(Chapter chapter, string from, string message, IDictionary<string, string> parameters)
+        public async Task SendContactEmail(Chapter chapter, string from, string message, IDictionary<string, string?> parameters)
         {
             Email email = await GetEmail(EmailType.ContactRequest, chapter.Id, parameters);
 
@@ -52,7 +53,7 @@ namespace ODK.Services.Emails
             await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
         }
 
-        public async Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, EmailType type, IDictionary<string, string> parameters)
+        public async Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, EmailType type, IDictionary<string, string?> parameters)
         {
             Email email = await GetEmail(type, chapter.Id, parameters);
 
@@ -74,7 +75,7 @@ namespace ODK.Services.Emails
             return await _mailProvider.SendEmail(chapter!, to.GetEmailAddressee(), subject, body, from);
         }
 
-        public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, IDictionary<string, string> parameters)
+        public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, IDictionary<string, string?> parameters)
         {
             Email email = await GetEmail(EmailType.NewMemberAdmin, chapter.Id, parameters);
 
@@ -87,7 +88,7 @@ namespace ODK.Services.Emails
             await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
         }
 
-        private async Task<Email> GetEmail(EmailType type, Guid chapterId, IDictionary<string, string> parameters)
+        private async Task<Email> GetEmail(EmailType type, Guid chapterId, IDictionary<string, string?> parameters)
         {
             Email email = await _emailRepository.GetEmail(type, chapterId);
             return email.Interpolate(parameters);

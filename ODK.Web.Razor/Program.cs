@@ -1,4 +1,6 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ODK.Web.Common.Config;
 using ODK.Web.Razor.Authentication;
@@ -46,5 +48,17 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
+
+var supportedCultures = new[]
+{
+    new CultureInfo("en-GB")
+};
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("en-GB"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
 
 app.Run();

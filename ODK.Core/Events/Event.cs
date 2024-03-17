@@ -5,8 +5,8 @@ namespace ODK.Core.Events
 {
     public class Event
     {
-        public Event(Guid id, Guid chapterId, string createdBy, string name, DateTime date, Guid venueId, string time,
-            string imageUrl, string description, bool isPublic)
+        public Event(Guid id, Guid chapterId, string createdBy, string name, DateTime date, Guid venueId, string? time,
+            string? imageUrl, string? description, bool isPublic)
         {
             ChapterId = chapterId;
             CreatedBy = createdBy;
@@ -26,11 +26,11 @@ namespace ODK.Core.Events
 
         public DateTime Date { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         public Guid Id { get; }
 
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
         public bool IsPublic { get; set; }
 
@@ -42,11 +42,11 @@ namespace ODK.Core.Events
 
         public DateTime? TicketDeadline => throw new NotImplementedException();
 
-        public string Time { get; set; }
+        public string? Time { get; set; }
 
         public Guid VenueId { get; set; }
 
-        public bool IsAuthorized(Member member)
+        public bool IsAuthorized(Member? member)
         {
             return IsPublic || member?.ChapterId == ChapterId;
         }

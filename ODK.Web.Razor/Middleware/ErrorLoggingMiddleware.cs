@@ -1,4 +1,6 @@
-﻿using ODK.Services.Logging;
+﻿using Microsoft.AspNetCore.Http.Extensions;
+using ODK.Services.Logging;
+using HttpRequest = ODK.Services.Logging.HttpRequest;
 
 namespace ODK.Web.Razor.Middleware
 {
@@ -19,7 +21,13 @@ namespace ODK.Web.Razor.Middleware
             }
             catch (Exception ex)
             {
-                await logger.LogError(ex, ex.Message);
+                HttpRequest request = new HttpRequest(
+                    httpContext.Request.GetDisplayUrl(),
+                    httpContext.Request.Method,
+                    httpContext.User.Identity?.Name,
+                    httpContext.Request.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
+                    httpContext.Request.Form.ToDictionary(x => x.Key, x => x.Value.ToString()));
+                await logger.LogError(ex, request);
             }
         }
     }

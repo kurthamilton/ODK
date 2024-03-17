@@ -11,7 +11,7 @@ namespace ODK.Services.Logging
 
         Task DeleteAllErrors(Guid currentMemberId, int logMessageId);
 
-        Task<LogMessage> GetErrorMessage(Guid currentMemberId, int logMessageId);
+        Task<LogMessage?> GetErrorMessage(Guid currentMemberId, int logMessageId);
 
         Task<IReadOnlyCollection<LogMessage>> GetErrorMessages(Guid currentMemberId);
 
@@ -21,6 +21,8 @@ namespace ODK.Services.Logging
 
         Task LogDebug(string message);
 
-        Task LogError(Exception exception, string message);
+        Task LogError(Exception exception, HttpRequest request);
+
+        Task LogError(Exception exception, IDictionary<string, string> data);
     }
 }

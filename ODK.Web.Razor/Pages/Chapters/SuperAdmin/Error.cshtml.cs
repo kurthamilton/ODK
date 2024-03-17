@@ -19,11 +19,13 @@ namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin
 
         public async Task<IActionResult> OnGet(int id)
         {
-            Error = await _loggingService.GetErrorMessage(CurrentMemberId, id);
-            if (Error == null)
+            LogMessage? error = await _loggingService.GetErrorMessage(CurrentMemberId, id);
+            if (error == null)
             {
                 return NotFound();
             }
+
+            Error = error;
 
             return Page();
         }

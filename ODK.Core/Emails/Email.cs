@@ -14,13 +14,13 @@ namespace ODK.Core.Emails
 
         public string HtmlContent { get; set; }
 
-        public IDictionary<string, string> Parameters { get; } = new Dictionary<string, string>();
+        public IDictionary<string, string?> Parameters { get; } = new Dictionary<string, string?>();
 
         public string Subject { get; set; }
 
         public EmailType Type { get; }
 
-        public Email Interpolate(IDictionary<string, string> parameters)
+        public Email Interpolate(IDictionary<string, string?> parameters)
         {
             foreach (string key in parameters.Keys)
             {

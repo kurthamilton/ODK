@@ -15,7 +15,7 @@ namespace ODK.Core.Utils
             return AlphaNumericRegex.Replace(text, "");
         }
 
-        public static string Interpolate(this string text, IDictionary<string, string> values)
+        public static string Interpolate(this string text, IDictionary<string, string?> values)
         {
             StringBuilder sb = new StringBuilder(text);
 
@@ -23,7 +23,7 @@ namespace ODK.Core.Utils
 
             foreach (string token in tokens.Where(values.ContainsKey))
             {
-                sb.Replace($"{{{token}}}", values[token]);
+                sb.Replace($"{{{token}}}", values[token] ?? "");
             }
 
             return sb.ToString();

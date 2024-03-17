@@ -235,7 +235,7 @@ namespace ODK.Services.Events
             Venue? venue = await _venueRepository.GetVenue(@event.VenueId);
             Chapter? chapter = await _chapterRepository.GetChapter(@event.ChapterId);
 
-            IDictionary<string, string> parameters = GetEventEmailParameters(chapter!, @event, venue!);
+            IDictionary<string, string?> parameters = GetEventEmailParameters(chapter!, @event, venue!);
 
             if (test)
             {
@@ -391,9 +391,9 @@ namespace ODK.Services.Events
             }
         }
 
-        private IDictionary<string, string> GetEventEmailParameters(Chapter chapter, Event @event, Venue venue)
+        private IDictionary<string, string?> GetEventEmailParameters(Chapter chapter, Event @event, Venue venue)
         {
-            IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            IDictionary<string, string?> parameters = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
             {
                 {"chapter.name", chapter.Name},
                 {"event.date", @event.Date.ToString("dddd dd MMMM, yyyy")},
