@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using ODK.Core.Chapters;
 using ODK.Core.Settings;
 using ODK.Core.SocialMedia;
+using ODK.Services.Logging;
 
 namespace ODK.Services.SocialMedia
 {
@@ -14,13 +15,15 @@ namespace ODK.Services.SocialMedia
     {
         private readonly IChapterRepository _chapterRepository;
         private readonly IInstagramRepository _instagramRepository;
+        private readonly ILoggingService _loggingService;
         private readonly ISettingsRepository _settingsRepository;
 
         public InstagramService(IChapterRepository chapterRepository, ISettingsRepository settingsRepository,
-            IInstagramRepository instagramRepository)
+            IInstagramRepository instagramRepository, ILoggingService loggingService)
         {
             _chapterRepository = chapterRepository;
             _instagramRepository = instagramRepository;
+            _loggingService = loggingService;
             _settingsRepository = settingsRepository;
         }
 
@@ -96,6 +99,7 @@ namespace ODK.Services.SocialMedia
                 json = await response.Content.ReadAsStringAsync();
                 if (!response.IsSuccessStatusCode)
                 {
+                    await _loggingService.LogError(new Exception($"Error fetching from Instagram: {json}"), new Dictionary<string, string>());
                     return;
                 }
             }

@@ -99,16 +99,18 @@ namespace ODK.Data.Repositories
 
         public async Task LogError(Error error, IReadOnlyCollection<ErrorProperty> properties)
         {
+            var logMessage = new LogMessage(0, "Error", error.ExceptionMessage, DateTime.UtcNow, error.ExceptionType.ToString(), "");
+
             await Context
-                .Insert(error)
+                .Insert(logMessage)
                 .ExecuteAsync();
 
-            foreach (ErrorProperty property in properties)
-            {
-                await Context
-                    .Insert(property)
-                    .ExecuteAsync();
-            }
+            // foreach (ErrorProperty property in properties)
+            // {
+            //     await Context
+            //         .Insert(property)
+            //         .ExecuteAsync();
+            // }
         }
 
         public async Task LogError(LogMessage message)

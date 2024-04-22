@@ -1,9 +1,10 @@
 ﻿@using ODK.Core.Events
 @using ODK.Services.Events
+@using ODK.Web.Razor.Models.Admin.Events
 @model ODK.Web.Razor.Models.Admin.Events.EventViewModel
 @inject IEventAdminService EventAdminService
 @{
-    EventInvites invites = await EventAdminService.GetEventInvites(Model.CurrentMember.Id, Model.Event.Id);
+    var invites = await EventAdminService.GetEventInvites(Model.CurrentMember.Id, Model.Event.Id);    
 }
 
 @await Html.PartialAsync("Admin/Events/_EventHeader")
@@ -14,7 +15,12 @@
     <p>
         @invites.Sent invites were sent on @invites.SentDate.Value.ToString("dddd, MMMM d, yyyy")
     </p>
-    <h4>Responses</h4>
+    @await Html.PartialAsync("Admin/Events/_EventResponses")
+    @await Html.PartialAsync("Admin/Events/_EventInviteeUpdate", new EventUpdateViewModel
+    {
+        Chapter = Model.Chapter.Name,
+        EventId = Model.Event.Id
+    })
 }
 else
 {

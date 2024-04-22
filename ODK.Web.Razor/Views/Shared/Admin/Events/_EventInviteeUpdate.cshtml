@@ -1,0 +1,37 @@
+﻿@using ODK.Core.Events
+@using ODK.Services.Events
+@using ODK.Web.Razor.Models.Admin.Events
+@model EventUpdateViewModel
+@inject IEventAdminService EventAdminService
+
+<h4>Send update</h4>
+<form method="post" action="/@Model.Chapter/Admin/Events/@Model.EventId/Invites/SendUpdate">
+    @Html.AntiForgeryToken()
+    
+    <div class="form-group mb-3 required">
+        @Html.LabelFor(x => x.ResponseTypes, new { @class = "form-label" })
+        @Html.ListBoxFor(x => x.ResponseTypes, new[]
+        {
+            new SelectListItem { Value = EventResponseType.Yes.ToString(), Text = "Going" },
+            new SelectListItem { Value = EventResponseType.Maybe.ToString(), Text = "Maybe" },
+            new SelectListItem { Value = EventResponseType.No.ToString(), Text = "Declined" },
+            new SelectListItem { Value = EventResponseType.None.ToString(), Text = "No response" },
+            new SelectListItem { Value = EventResponseType.NotInvited.ToString(), Text = "Not invited" }
+        })        
+        @Html.ValidationMessageFor(x => x.ResponseTypes)
+    </div>
+
+    <div class="form-group mb-3 required">
+        @Html.LabelFor(x => x.Subject, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.Subject, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.Subject)
+    </div>
+
+    <div class="form-group mb-3 required">
+        @Html.LabelFor(x => x.Body, new { @class = "form-label" })
+        @Html.TextAreaFor(x => x.Body, new { @class = "form-control", rows = 6 })
+        @Html.ValidationMessageFor(x => x.Body)
+    </div>
+
+    <button type="submit" class="btn btn-secondary mt-3">Send update</button>
+</form>
