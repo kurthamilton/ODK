@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using FluentAssertions;
 using NUnit.Framework;
 using ODK.Core.Utils;
 
@@ -15,7 +16,7 @@ namespace ODK.Core.Tests.Utils
         {
             text = StringUtils.AlphaNumeric(text);
 
-            Assert.AreEqual("a2c", text);
+            text.Should().Be("a2c");
         }
 
         [Test]
@@ -29,7 +30,7 @@ namespace ODK.Core.Tests.Utils
                 {"b", "fox"}
             });
 
-            Assert.AreEqual("The quick brown fox", result);
+            result.Should().Be("The quick brown fox");
         }
 
         [Test]
@@ -43,7 +44,7 @@ namespace ODK.Core.Tests.Utils
                 {"b", "fox"}
             });
 
-            Assert.AreEqual("The quick brown quick fox", result);
+            result.Should().Be("The quick brown quick fox");
         }
 
         [Test]
@@ -56,7 +57,7 @@ namespace ODK.Core.Tests.Utils
                 {"a", "quick"}
             });
 
-            Assert.AreEqual("The quick brown {b}", result);
+            result.Should().Be("The quick brown {b}");
         }
 
         [Test]
@@ -64,7 +65,7 @@ namespace ODK.Core.Tests.Utils
         {
             IEnumerable<string> tokens = StringUtils.Tokens("This {a} a {b} {c}");
 
-            CollectionAssert.AreEqual(new [] { "a", "b", "c" }, tokens);
+            tokens.Should().BeEquivalentTo("a", "b", "c");
         }
     }
 }

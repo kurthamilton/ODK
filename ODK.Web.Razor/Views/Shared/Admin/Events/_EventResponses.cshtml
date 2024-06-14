@@ -15,15 +15,16 @@
 
     await Task.WhenAll(responsesTask, membersTask);
 
-    var memberDictionary = membersTask.Result.ToDictionary(x => x.Id);
+    var memberDictionary = membersTask.Result
+        .Where(x => !x.Disabled)
+        .ToDictionary(x => x.Id);
     var responseDictionary = responsesTask.Result.GroupBy(x => x.ResponseTypeId).ToDictionary(x => x.Key, x => x.ToArray());
     var membersByResponse = responsesTask.Result
         .GroupBy(x => x.ResponseTypeId)
         .ToDictionary(
             group => group.Key, 
             group => group
-                .Select(x => memberDictionary[x.MemberId])
-                .Select(x => new ListMemberViewModel(Model.Chapter, x))
+                .Select(x => new ListMemberViewModel(Model.Chapter, memberDictionary[x.MemberId]))
                 .ToArray());
 }
 

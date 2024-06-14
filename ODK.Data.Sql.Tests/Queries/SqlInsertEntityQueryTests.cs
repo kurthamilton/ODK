@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using FluentAssertions;
 using NUnit.Framework;
 using ODK.Data.Sql.Mapping;
 using ODK.Data.Sql.Queries;
@@ -26,8 +27,15 @@ namespace ODK.Data.Sql.Tests.Queries
 
             (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
-            CollectionAssert.AreEqual(new[] { "Int", "String" }, parameterValues.Select(x => x.Column.ColumnName));
-            CollectionAssert.AreEqual(new object[] { 5, "value" }, parameterValues.Select(x => x.Value));
+            parameterValues
+                .Select(x => x.Column.ColumnName)
+                .Should()
+                .BeEquivalentTo("Int", "String");
+
+            parameterValues
+                .Select(x => x.Value)
+                .Should()
+                .BeEquivalentTo(new object[] { 5, "value" });
         }
 
         [Test]
@@ -43,7 +51,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("INSERT INTO Table ([Int],[String]) VALUES (@Int,@String)", sql);
+            sql.Should().Be("INSERT INTO Table ([Int],[String]) VALUES (@Int,@String)");
         }
 
         [Test]
@@ -59,7 +67,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("INSERT INTO Table ([Int],[Other]) VALUES (@Int,@Other)", sql);
+            sql.Should().Be("INSERT INTO Table ([Int],[Other]) VALUES (@Int,@Other)");
         }
 
         [Test]
@@ -75,7 +83,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("INSERT INTO Table ([String]) VALUES (@String)", sql);
+            sql.Should().Be("INSERT INTO Table ([String]) VALUES (@String)");
         }
 
         [Test]
@@ -92,7 +100,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("INSERT INTO Table ([String]) OUTPUT inserted.Int VALUES (@String)", sql);
+            sql.Should().Be("INSERT INTO Table ([String]) OUTPUT inserted.Int VALUES (@String)");
         }
 
         private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ODK.Core.Members
+﻿namespace ODK.Core.Members
 {
     [Flags]
     public enum SubscriptionStatus

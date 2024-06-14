@@ -1,5 +1,4 @@
-﻿using System;
-using ODK.Core.Payments;
+﻿using ODK.Core.Payments;
 using ODK.Services.Payments.PayPal;
 using ODK.Services.Payments.Stripe;
 

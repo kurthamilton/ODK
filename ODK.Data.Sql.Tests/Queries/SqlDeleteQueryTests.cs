@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using FluentAssertions;
 using NUnit.Framework;
 using ODK.Data.Sql.Mapping;
 using ODK.Data.Sql.Queries;
@@ -21,8 +22,15 @@ namespace ODK.Data.Sql.Tests.Queries
 
             (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
-            CollectionAssert.AreEqual(new[] { "Int" }, parameterValues.Select(x => x.Column.ColumnName));
-            CollectionAssert.AreEqual(new object[] { 5 }, parameterValues.Select(x => x.Value));
+            parameterValues
+                .Select(x => x.Column.ColumnName)
+                .Should()
+                .BeEquivalentTo("Int");
+
+            parameterValues
+                .Select(x => x.Value)
+                .Should()
+                .BeEquivalentTo(new[] { 5 });
         }
 
         [Test]
@@ -39,7 +47,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("DELETE Table FROM Table WHERE (Table.[Int] = @Int0)", sql);
+            sql.Should().Be("DELETE Table FROM Table WHERE (Table.[Int] = @Int0)");
         }
 
         [Test]
@@ -56,7 +64,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("DELETE Table FROM Table WHERE (Table.[Other] = @Other0)", sql);
+            sql.Should().Be("DELETE Table FROM Table WHERE (Table.[Other] = @Other0)");
         }
 
         private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)

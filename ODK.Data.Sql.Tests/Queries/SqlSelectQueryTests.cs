@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using FluentAssertions;
 using NUnit.Framework;
 using ODK.Data.Sql.Mapping;
 using ODK.Data.Sql.Queries;
@@ -16,7 +17,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             (SqlColumn, string, object)[] parameterValues = query.GetParameterValues(context).ToArray();
 
-            CollectionAssert.IsEmpty(parameterValues);
+            parameterValues.Should().BeEmpty();
         }
 
         [Test]
@@ -29,8 +30,15 @@ namespace ODK.Data.Sql.Tests.Queries
 
             (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
-            CollectionAssert.AreEqual(new [] { "Int", "String" }, parameterValues.Select(x => x.Column.ColumnName));
-            CollectionAssert.AreEqual(new object[] { 1, "value" }, parameterValues.Select(x => x.Value));
+            parameterValues
+                .Select(x => x.Column.ColumnName)
+                .Should()
+                .BeEquivalentTo("Int", "String");
+
+            parameterValues
+                .Select(x => x.Value)
+                .Should()
+                .BeEquivalentTo(new object[] { 1, "value" });
         }
 
         [Test]
@@ -43,8 +51,15 @@ namespace ODK.Data.Sql.Tests.Queries
 
             (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
-            CollectionAssert.AreEqual(new[] { "@Int0", "@Int1" }, parameterValues.Select(x => x.ParameterName));
-            CollectionAssert.AreEqual(new object[] { 1, 5 }, parameterValues.Select(x => x.Value));
+            parameterValues
+                .Select(x => x.ParameterName)
+                .Should()
+                .BeEquivalentTo("@Int0", "@Int1");
+
+            parameterValues
+                .Select(x => x.Value)
+                .Should()
+                .BeEquivalentTo(new[] { 1, 5 });
         }
 
         [Test]
@@ -56,8 +71,15 @@ namespace ODK.Data.Sql.Tests.Queries
 
             (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
-            CollectionAssert.AreEqual(new[] { "@Int0", "@Int1", "@Int2" }, parameterValues.Select(x => x.ParameterName));
-            CollectionAssert.AreEqual(new object[] { 1, 3, 5 }, parameterValues.Select(x => x.Value));
+            parameterValues
+                .Select(x => x.ParameterName)
+                .Should()
+                .BeEquivalentTo("@Int0", "@Int1", "@Int2");
+
+            parameterValues
+                .Select(x => x.Value)
+                .Should()
+                .BeEquivalentTo(new[] { 1, 3, 5 });
         }
 
         [Test]
@@ -69,7 +91,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
-            CollectionAssert.IsEmpty(parameterValues);
+            parameterValues.Should().BeEmpty();
         }
 
         [Test]
@@ -84,7 +106,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table", sql);
+            sql.Should().Be("SELECT Table.[Int],Table.[String] FROM Table");
         }
 
         [Test]
@@ -101,7 +123,8 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int0) AND (Table.[String] = @String0)", sql);
+            var expected = "SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int0) AND (Table.[String] = @String0)";
+            sql.Should().Be(expected);
         }
 
         [Test]
@@ -118,7 +141,8 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int0) AND (Table.[Int] <= @Int1)", sql);
+            var expected = "SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int0) AND (Table.[Int] <= @Int1)";
+            sql.Should().Be(expected);
         }
 
         [Test]
@@ -134,7 +158,8 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int0)", sql);
+            var expected = "SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] >= @Int0)";
+            sql.Should().Be(expected);
         }
 
         [Test]
@@ -150,7 +175,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table", sql);
+            sql.Should().Be("SELECT Table.[Int],Table.[String] FROM Table");
         }
 
         [Test]
@@ -166,7 +191,8 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] = @Int0 OR Table.[Int] = @Int1 OR Table.[Int] = @Int2)", sql);
+            var expected = "SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[Int] = @Int0 OR Table.[Int] = @Int1 OR Table.[Int] = @Int2)";
+            sql.Should().Be(expected);
         }
 
         [Test]
@@ -182,7 +208,8 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[String] IS NOT NULL)", sql);
+            var expected = "SELECT Table.[Int],Table.[String] FROM Table WHERE (Table.[String] IS NOT NULL)";
+            sql.Should().Be(expected);
         }
 
         [Test]
@@ -197,7 +224,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[Other] FROM Table", sql);
+            sql.Should().Be("SELECT Table.[Int],Table.[Other] FROM Table");
         }
 
         [Test]
@@ -214,7 +241,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table ORDER BY Table.[Int] DESC,Table.[String] ASC", sql);
+            sql.Should().Be("SELECT Table.[Int],Table.[String] FROM Table ORDER BY Table.[Int] DESC,Table.[String] ASC");
         }
 
         [Test]
@@ -230,7 +257,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("SELECT Table.[Int],Table.[String] FROM Table JOIN Related ON Table.[Int] = Related.[Int]", sql);
+            sql.Should().Be("SELECT Table.[Int],Table.[String] FROM Table JOIN Related ON Table.[Int] = Related.[Int]");
         }
 
         private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null, SqlMap<TestRelatedEntity> relatedMap = null)

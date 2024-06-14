@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace ODK.Data.Sql.Tests
@@ -11,7 +12,7 @@ namespace ODK.Data.Sql.Tests
         {
             SqlDbType type = SqlDbTypes.GetSqlDbType<DateTime?>();
 
-            Assert.AreEqual(SqlDbType.DateTime, type);
+            type.Should().Be(SqlDbType.DateTime);
         }
     }
 }

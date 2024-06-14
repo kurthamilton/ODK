@@ -11,8 +11,8 @@ namespace ODK.Services.Imaging
         public byte[] Crop(byte[] data, int width, int height)
         {
             return ProcessImage(data, image =>
-            {
-                Size size = GetRescaledSize(image.Size(), new Size(width, height), Math.Max);
+            {                
+                Size size = GetRescaledSize(image.Size, new Size(width, height), Math.Max);
                 image.Mutate(x =>
                 {
                     try
@@ -89,15 +89,16 @@ namespace ODK.Services.Imaging
         }
 
         private static byte[] ProcessImage(byte[] data, Action<Image> action)
-        {
-            using Image image = Image.Load(data, out IImageFormat format);
+        {            
+            var imageInfo = Image.DetectFormat(data);
+            using Image image = Image.Load(data);
             action(image);
-            return ImageToBytes(image, format);
+            return ImageToBytes(image, imageInfo);
         }
 
         private static void RescaleImage(Image image, int maxWidth, int maxHeight)
         {
-            Size rescaled = GetRescaledSize(image.Size(), new Size(maxWidth, maxHeight), Math.Min);
+            Size rescaled = GetRescaledSize(image.Size, new Size(maxWidth, maxHeight), Math.Min);
             image.Mutate(x => x.Resize(rescaled));
         }
     }

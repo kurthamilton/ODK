@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using FluentAssertions;
 using NUnit.Framework;
 using ODK.Data.Sql.Mapping;
 using ODK.Data.Sql.Queries;
@@ -22,8 +23,15 @@ namespace ODK.Data.Sql.Tests.Queries
 
             (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
-            CollectionAssert.AreEqual(new[] { "Int", "String" }, parameterValues.Select(x => x.Column.ColumnName));
-            CollectionAssert.AreEqual(new object[] { 1, "updated" }, parameterValues.Select(x => x.Value));
+            parameterValues
+                .Select(x => x.Column.ColumnName)
+                .Should()
+                .BeEquivalentTo("Int", "String");
+
+            parameterValues
+                .Select(x => x.Value)
+                .Should()
+                .BeEquivalentTo(new object[] { 1, "updated" });
         }
 
         [Test]
@@ -39,7 +47,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("UPDATE Table SET Table.[Int] = @Int FROM Table", sql);
+            sql.Should().Be("UPDATE Table SET Table.[Int] = @Int FROM Table");
         }
 
         [Test]
@@ -56,7 +64,7 @@ namespace ODK.Data.Sql.Tests.Queries
 
             string sql = query.ToSql(context);
 
-            Assert.AreEqual("UPDATE Table SET Table.[Int] = @Int FROM Table WHERE (Table.[String] = @String0)", sql);
+            sql.Should().Be("UPDATE Table SET Table.[Int] = @Int FROM Table WHERE (Table.[String] = @String0)");
         }
 
         private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)
