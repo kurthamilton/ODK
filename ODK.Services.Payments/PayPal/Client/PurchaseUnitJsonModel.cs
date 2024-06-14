@@ -1,10 +1,9 @@
 ﻿using Newtonsoft.Json;
 
-namespace ODK.Services.Payments.PayPal.Client
+namespace ODK.Services.Payments.PayPal.Client;
+
+public class PurchaseUnitJsonModel
 {
-    public class PurchaseUnitJsonModel
-    {
-        [JsonProperty("amount")]
-        public MoneyJsonModel? Amount { get; set; }
-    }
+    [JsonProperty("amount")]
+    public MoneyJsonModel? Amount { get; set; }
 }

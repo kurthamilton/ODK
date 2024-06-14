@@ -1,16 +1,15 @@
 using ODK.Services.Caching;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin
-{
-    public class EmailsModel : SuperAdminPageModel
-    {
-        public EmailsModel(IRequestCache requestCache) 
-            : base(requestCache)
-        {
-        }
+namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
 
-        public void OnGet()
-        {
-        }
+public class EmailsModel : SuperAdminPageModel
+{
+    public EmailsModel(IRequestCache requestCache) 
+        : base(requestCache)
+    {
+    }
+
+    public void OnGet()
+    {
     }
 }

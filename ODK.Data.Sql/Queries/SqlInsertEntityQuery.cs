@@ -1,32 +1,28 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using ODK.Data.Sql.Mapping;
+﻿using ODK.Data.Sql.Mapping;
 
-namespace ODK.Data.Sql.Queries
+namespace ODK.Data.Sql.Queries;
+
+public class SqlInsertEntityQuery<T> : SqlQuery<T>
 {
-    public class SqlInsertEntityQuery<T> : SqlQuery<T>
+    public SqlInsertEntityQuery(SqlContext context, T entity)
+        : base(context)
     {
-        public SqlInsertEntityQuery(SqlContext context, T entity)
-            : base(context)
-        {
-            AddInsertEntity(entity);
-        }
+        AddInsertEntity(entity);
+    }
 
-        public void OutputIdentity()
+    public void OutputIdentity()
+    {
+        SqlMap<T> map = Context.GetMap<T>();            
+        SqlColumn identity = map.SelectColumns.FirstOrDefault(x => x.Identity);
+        if (identity != null)
         {
-            SqlMap<T> map = Context.GetMap<T>();            
-            SqlColumn identity = map.SelectColumns.FirstOrDefault(x => x.Identity);
-            if (identity != null)
-            {
-                AddInsertOutput(identity);
-            }
+            AddInsertOutput(identity);
         }
+    }
 
-        public async Task<Guid> GetIdentityAsync()
-        {
-            OutputIdentity();
-            return await Context.ReadRecordAsync(this, reader => reader.GetGuid(0));
-        }
+    public async Task<Guid> GetIdentityAsync()
+    {
+        OutputIdentity();
+        return await Context.ReadRecordAsync(this, reader => reader.GetGuid(0));
     }
 }

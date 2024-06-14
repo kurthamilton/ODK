@@ -1,11 +1,8 @@
-﻿using System.IO;
+﻿namespace ODK.Services.Files;
 
-namespace ODK.Services.Files
+public interface ICsvService
 {
-    public interface ICsvService
-    {
-        CsvFile ParseCsvFile(string data);
+    CsvFile ParseCsvFile(string data);
 
-        CsvFile ParseCsvFile(Stream stream);
-    }
+    CsvFile ParseCsvFile(Stream stream);
 }

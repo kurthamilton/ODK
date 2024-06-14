@@ -2,32 +2,31 @@
 using ODK.Core.Members;
 using ODK.Web.Common.Components;
 
-namespace ODK.Web.Razor.Models.Header
+namespace ODK.Web.Razor.Models.Header;
+
+public class NavbarViewModel
 {
-    public class NavbarViewModel
-    {
-        public string? Breakpoint { get; set; }
+    public string? Breakpoint { get; set; }
 
-        public Chapter? Chapter { get; set; }
+    public Chapter? Chapter { get; set; }
 
-        public string? Color { get; set; }
+    public string? Color { get; set; }
 
-        public bool Compact { get; set; }
+    public bool Compact { get; set; }
 
-        public string? CssClass { get; set; }
+    public string? CssClass { get; set; }
 
-        public bool Fluid { get; set; }
+    public bool Fluid { get; set; }
 
-        public bool HideAccountMenu { get; set; }
+    public bool HideAccountMenu { get; set; }
 
-        public string? Id { get; set; }
+    public string? Id { get; set; }
 
-        public Member? Member { get; set; }
+    public Member? Member { get; set; }
 
-        public MenuItem[][]? MenuItems { get; set; }
+    public MenuItem[][]? MenuItems { get; set; }
 
-        public bool IsDark => Color is null or "dark";
+    public bool IsDark => Color is null or "dark";
 
-        public bool IsLight => Color == "light";
-    }
+    public bool IsLight => Color == "light";
 }

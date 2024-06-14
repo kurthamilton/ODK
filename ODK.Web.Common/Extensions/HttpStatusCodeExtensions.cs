@@ -1,18 +1,17 @@
 ﻿using System.Net;
 
-namespace ODK.Web.Common.Extensions
+namespace ODK.Web.Common.Extensions;
+
+public static class HttpStatusCodeExtensions
 {
-    public static class HttpStatusCodeExtensions
+    public static string ErrorPageTitle(this HttpStatusCode statusCode)
     {
-        public static string ErrorPageTitle(this HttpStatusCode statusCode)
+        switch (statusCode)
         {
-            switch (statusCode)
-            {
-                case HttpStatusCode.NotFound:
-                    return "Page not found";
-                default:
-                    return "An error has occurred";
-            }
+            case HttpStatusCode.NotFound:
+                return "Page not found";
+            default:
+                return "An error has occurred";
         }
     }
 }

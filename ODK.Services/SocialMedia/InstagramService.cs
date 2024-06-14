@@ -1,238 +1,232 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using ODK.Core.Chapters;
 using ODK.Core.Settings;
 using ODK.Core.SocialMedia;
 using ODK.Services.Logging;
 
-namespace ODK.Services.SocialMedia
+namespace ODK.Services.SocialMedia;
+
+public class InstagramService : IInstagramService
 {
-    public class InstagramService : IInstagramService
+    private readonly IChapterRepository _chapterRepository;
+    private readonly IInstagramRepository _instagramRepository;
+    private readonly ILoggingService _loggingService;
+    private readonly ISettingsRepository _settingsRepository;
+
+    public InstagramService(IChapterRepository chapterRepository, ISettingsRepository settingsRepository,
+        IInstagramRepository instagramRepository, ILoggingService loggingService)
     {
-        private readonly IChapterRepository _chapterRepository;
-        private readonly IInstagramRepository _instagramRepository;
-        private readonly ILoggingService _loggingService;
-        private readonly ISettingsRepository _settingsRepository;
+        _chapterRepository = chapterRepository;
+        _instagramRepository = instagramRepository;
+        _loggingService = loggingService;
+        _settingsRepository = settingsRepository;
+    }
 
-        public InstagramService(IChapterRepository chapterRepository, ISettingsRepository settingsRepository,
-            IInstagramRepository instagramRepository, ILoggingService loggingService)
-        {
-            _chapterRepository = chapterRepository;
-            _instagramRepository = instagramRepository;
-            _loggingService = loggingService;
-            _settingsRepository = settingsRepository;
-        }
+    public async Task<IReadOnlyCollection<SocialMediaImage>> FetchInstagramImages(Guid chapterId)
+    {
+        await ScrapeLatestInstagramPosts(chapterId);
 
-        public async Task<IReadOnlyCollection<SocialMediaImage>> FetchInstagramImages(Guid chapterId)
-        {
-            await ScrapeLatestInstagramPosts(chapterId);
+        IReadOnlyCollection<InstagramPost> posts = await _instagramRepository.GetPosts(chapterId, 8);
 
-            IReadOnlyCollection<InstagramPost> posts = await _instagramRepository.GetPosts(chapterId, 8);
-
-            return posts
-                .Select(x => new SocialMediaImage
-                {
-                    Caption = x.Caption,
-                    Url = x.Url
-                })
-                .ToArray();
-        }
-
-        public async Task<InstagramImage> GetInstagramImage(Guid instagramPostId)
-        {
-            return await _instagramRepository.GetImage(instagramPostId);
-        }
-
-        public async Task<IReadOnlyCollection<InstagramPost>> GetInstagramPosts(Guid chapterId, int pageSize)
-        {
-            ChapterLinks? links = await _chapterRepository.GetChapterLinks(chapterId);
-            if (links == null)
+        return posts
+            .Select(x => new SocialMediaImage
             {
-                return Array.Empty<InstagramPost>();
-            }
+                Caption = x.Caption,
+                Url = x.Url
+            })
+            .ToArray();
+    }
 
-            if (string.IsNullOrEmpty(links.InstagramName))
-            {
-                return Array.Empty<InstagramPost>();
-            }
+    public async Task<InstagramImage> GetInstagramImage(Guid instagramPostId)
+    {
+        return await _instagramRepository.GetImage(instagramPostId);
+    }
 
-            Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettings();
-            Task<DateTime?> latestPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
-
-            await Task.WhenAll(settingsTask, latestPostDateTask);
-
-            DateTime? latest = latestPostDateTask.Result;
-
-            if (settingsTask.Result!.ScrapeInstagram)
-            {
-                await DownloadNewImages(chapterId, settingsTask.Result.InstagramScraperUserAgent,
-                    links.InstagramName, latest);
-            }
-
-            return await _instagramRepository.GetPosts(chapterId, pageSize);
+    public async Task<IReadOnlyCollection<InstagramPost>> GetInstagramPosts(Guid chapterId, int pageSize)
+    {
+        ChapterLinks? links = await _chapterRepository.GetChapterLinks(chapterId);
+        if (links == null)
+        {
+            return Array.Empty<InstagramPost>();
         }
 
-        public async Task ScrapeLatestInstagramPosts(string chapterName)
+        if (string.IsNullOrEmpty(links.InstagramName))
         {
-            Chapter? chapter = await _chapterRepository.GetChapter(chapterName);
-            if (chapter == null)
+            return Array.Empty<InstagramPost>();
+        }
+
+        Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettings();
+        Task<DateTime?> latestPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
+
+        await Task.WhenAll(settingsTask, latestPostDateTask);
+
+        DateTime? latest = latestPostDateTask.Result;
+
+        if (settingsTask.Result!.ScrapeInstagram)
+        {
+            await DownloadNewImages(chapterId, settingsTask.Result.InstagramScraperUserAgent,
+                links.InstagramName, latest);
+        }
+
+        return await _instagramRepository.GetPosts(chapterId, pageSize);
+    }
+
+    public async Task ScrapeLatestInstagramPosts(string chapterName)
+    {
+        Chapter? chapter = await _chapterRepository.GetChapter(chapterName);
+        if (chapter == null)
+        {
+            return;
+        }
+
+        await ScrapeLatestInstagramPosts(chapter.Id);
+    }
+
+    private async Task DownloadNewImages(Guid chapterId, string userAgent, string username, DateTime? after)
+    {
+        string json;
+
+        using (var httpClient = new HttpClient())
+        {
+            httpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
+            string url = $"https://www.instagram.com/api/v1/users/web_profile_info/?username={username}";
+            HttpResponseMessage response = await httpClient.GetAsync(url);
+            json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                await _loggingService.LogError(new Exception($"Error fetching from Instagram: {json}"), new Dictionary<string, string>());
+                return;
+            }
+        }
+
+        JArray? edges;
+        try
+        {
+            JObject data = JObject.Parse(json);
+            edges = data["data"]?["user"]?["edge_owner_to_timeline_media"]?["edges"] as JArray;
+            if (edges == null)
             {
                 return;
             }
-
-            await ScrapeLatestInstagramPosts(chapter.Id);
+        }
+        catch
+        {
+            return;
         }
 
-        private async Task DownloadNewImages(Guid chapterId, string userAgent, string username, DateTime? after)
+        foreach (JToken edge in edges)
         {
-            string json;
+            JToken? node = edge["node"];
 
-            using (var httpClient = new HttpClient())
+            InstagramPost? post = ParsePost(chapterId, node);
+            if (post == null || post.Date <= after)
             {
-                httpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
-                string url = $"https://www.instagram.com/api/v1/users/web_profile_info/?username={username}";
-                HttpResponseMessage response = await httpClient.GetAsync(url);
-                json = await response.Content.ReadAsStringAsync();
-                if (!response.IsSuccessStatusCode)
-                {
-                    await _loggingService.LogError(new Exception($"Error fetching from Instagram: {json}"), new Dictionary<string, string>());
-                    return;
-                }
+                continue;
             }
 
-            JArray? edges;
-            try
+            InstagramImage? image = await ParseImage(post, userAgent, node);
+            if (image == null)
             {
-                JObject data = JObject.Parse(json);
-                edges = data["data"]?["user"]?["edge_owner_to_timeline_media"]?["edges"] as JArray;
-                if (edges == null)
-                {
-                    return;
-                }
-            }
-            catch
-            {
-                return;
-            }
+                continue;
+            } 
 
-            foreach (JToken edge in edges)
-            {
-                JToken? node = edge["node"];
+            await _instagramRepository.AddPost(post);
+            await _instagramRepository.AddImage(image);
+        }
+    }
 
-                InstagramPost? post = ParsePost(chapterId, node);
-                if (post == null || post.Date <= after)
-                {
-                    continue;
-                }
-
-                InstagramImage? image = await ParseImage(post, userAgent, node);
-                if (image == null)
-                {
-                    continue;
-                } 
-
-                await _instagramRepository.AddPost(post);
-                await _instagramRepository.AddImage(image);
-            }
+    private async Task<InstagramImage?> ParseImage(InstagramPost post, string userAgent, JToken? node)
+    {
+        if (node == null)
+        {
+            return null;
         }
 
-        private async Task<InstagramImage?> ParseImage(InstagramPost post, string userAgent, JToken? node)
+        try
         {
-            if (node == null)
+            string? thumbnailUrl = node["thumbnail_src"]?.ToString();
+            if (string.IsNullOrEmpty(thumbnailUrl))
             {
                 return null;
             }
 
-            try
+            using (HttpClient client = new HttpClient())
             {
-                string? thumbnailUrl = node["thumbnail_src"]?.ToString();
-                if (string.IsNullOrEmpty(thumbnailUrl))
+                client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+
+                HttpResponseMessage response = await client.GetAsync(thumbnailUrl);
+                if (!response.IsSuccessStatusCode)
                 {
                     return null;
                 }
 
-                using (HttpClient client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+                byte[] imageData = await response.Content.ReadAsByteArrayAsync();
+                string mimeType = response.Content.Headers.ContentType.MediaType;
 
-                    HttpResponseMessage response = await client.GetAsync(thumbnailUrl);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        return null;
-                    }
-
-                    byte[] imageData = await response.Content.ReadAsByteArrayAsync();
-                    string mimeType = response.Content.Headers.ContentType.MediaType;
-
-                    return new InstagramImage(
-                        instagramPostId: post.Id,
-                        imageData: imageData,
-                        mimeType: mimeType);
-                }
-            }
-            catch
-            {
-                return null;
+                return new InstagramImage(
+                    instagramPostId: post.Id,
+                    imageData: imageData,
+                    mimeType: mimeType);
             }
         }
-
-        private static InstagramPost? ParsePost(Guid chapterId, JToken? node)
+        catch
         {
-            if (node == null)
-            {
-                return null;
-            }
+            return null;
+        }
+    }
 
-            try
-            {
-                int timestamp = node["taken_at_timestamp"]?.ToObject<int>() ?? 0;
-                DateTime date = new DateTime(1970, 1, 1).AddSeconds(timestamp);
-                string shortcode = node["shortcode"]?.ToString() ?? "";
-
-                return new InstagramPost(
-                    id: Guid.NewGuid(),
-                    chapterId: chapterId,
-                    externalId: shortcode,
-                    date: date,
-                    caption: node["edge_media_to_caption"]?["edges"]?.FirstOrDefault()?["node"]?["text"]?.ToString() ?? "",
-                    url: $"https://www.instagram.com/p/{shortcode}/?img_index=1"
-                );
-            }
-            catch
-            {
-                return null;
-            }
+    private static InstagramPost? ParsePost(Guid chapterId, JToken? node)
+    {
+        if (node == null)
+        {
+            return null;
         }
 
-        private async Task ScrapeLatestInstagramPosts(Guid chapterId)
+        try
         {
-            ChapterLinks? links = await _chapterRepository.GetChapterLinks(chapterId);
-            if (links == null)
-            {
-                return;
-            }
+            int timestamp = node["taken_at_timestamp"]?.ToObject<int>() ?? 0;
+            DateTime date = new DateTime(1970, 1, 1).AddSeconds(timestamp);
+            string shortcode = node["shortcode"]?.ToString() ?? "";
 
-            if (string.IsNullOrEmpty(links.InstagramName))
-            {
-                return;
-            }
+            return new InstagramPost(
+                id: Guid.NewGuid(),
+                chapterId: chapterId,
+                externalId: shortcode,
+                date: date,
+                caption: node["edge_media_to_caption"]?["edges"]?.FirstOrDefault()?["node"]?["text"]?.ToString() ?? "",
+                url: $"https://www.instagram.com/p/{shortcode}/?img_index=1"
+            );
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
-            Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettings();
-            Task<DateTime?> mostRecentPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
+    private async Task ScrapeLatestInstagramPosts(Guid chapterId)
+    {
+        ChapterLinks? links = await _chapterRepository.GetChapterLinks(chapterId);
+        if (links == null)
+        {
+            return;
+        }
 
-            await Task.WhenAll(settingsTask, mostRecentPostDateTask);
+        if (string.IsNullOrEmpty(links.InstagramName))
+        {
+            return;
+        }
 
-            DateTime? after = mostRecentPostDateTask.Result;
+        Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettings();
+        Task<DateTime?> mostRecentPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
 
-            if (settingsTask.Result!.ScrapeInstagram)
-            {
-                await DownloadNewImages(chapterId, settingsTask.Result.InstagramScraperUserAgent,
-                    links.InstagramName, after);
-            }
+        await Task.WhenAll(settingsTask, mostRecentPostDateTask);
+
+        DateTime? after = mostRecentPostDateTask.Result;
+
+        if (settingsTask.Result!.ScrapeInstagram)
+        {
+            await DownloadNewImages(chapterId, settingsTask.Result.InstagramScraperUserAgent,
+                links.InstagramName, after);
         }
     }
 }

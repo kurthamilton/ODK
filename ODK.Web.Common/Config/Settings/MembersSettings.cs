@@ -1,7 +1,6 @@
-﻿namespace ODK.Web.Common.Config.Settings
+﻿namespace ODK.Web.Common.Config.Settings;
+
+public class MembersSettings
 {
-    public class MembersSettings
-    {
-        public int MaxImageSize { get; set; }
-    }
+    public int MaxImageSize { get; set; }
 }

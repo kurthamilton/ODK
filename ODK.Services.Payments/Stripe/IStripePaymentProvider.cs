@@ -1,6 +1,5 @@
-﻿namespace ODK.Services.Payments.Stripe
+﻿namespace ODK.Services.Payments.Stripe;
+
+public interface IStripePaymentProvider : IPaymentProvider
 {
-    public interface IStripePaymentProvider : IPaymentProvider
-    {
-    }
 }

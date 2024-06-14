@@ -1,7 +1,6 @@
-﻿namespace ODK.Core
+﻿namespace ODK.Core;
+
+public interface IVersioned
 {
-    public interface IVersioned
-    {
-        long Version { get; }
-    }
+    long Version { get; }
 }

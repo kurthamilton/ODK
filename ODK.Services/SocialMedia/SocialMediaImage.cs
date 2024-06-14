@@ -1,9 +1,8 @@
-﻿namespace ODK.Services.SocialMedia
+﻿namespace ODK.Services.SocialMedia;
+
+public class SocialMediaImage
 {
-    public class SocialMediaImage
-    {
-        public string Caption { get; set; } = "";
-        
-        public string Url { get; set; } = "";
-    }
+    public string Caption { get; set; } = "";
+    
+    public string Url { get; set; } = "";
 }

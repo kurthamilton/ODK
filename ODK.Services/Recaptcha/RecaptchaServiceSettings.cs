@@ -1,9 +1,8 @@
-﻿namespace ODK.Services.Recaptcha
-{
-    public class RecaptchaServiceSettings
-    {
-        public double ScoreThreshold { get; set; }
+﻿namespace ODK.Services.Recaptcha;
 
-        public string VerifyUrl { get; set; } = "";
-    }
+public class RecaptchaServiceSettings
+{
+    public double ScoreThreshold { get; set; }
+
+    public string VerifyUrl { get; set; } = "";
 }

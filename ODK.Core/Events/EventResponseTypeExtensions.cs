@@ -1,20 +1,19 @@
-﻿namespace ODK.Core.Events
+﻿namespace ODK.Core.Events;
+
+public static class EventResponseTypeExtensions
 {
-    public static class EventResponseTypeExtensions
+    public static string ToString(this EventResponseType responseType, bool forAction = true)
     {
-        public static string ToString(this EventResponseType responseType, bool forAction = true)
+        switch (responseType)
         {
-            switch (responseType)
-            {
-                case EventResponseType.Yes:
-                    return forAction ? "Yes" : "Going";
-                case EventResponseType.Maybe:
-                    return "Maybe";
-                case EventResponseType.No:
-                    return forAction ? "No" : "Not going";
-                default:
-                    return "";
-            }
+            case EventResponseType.Yes:
+                return forAction ? "Yes" : "Going";
+            case EventResponseType.Maybe:
+                return "Maybe";
+            case EventResponseType.No:
+                return forAction ? "No" : "Not going";
+            default:
+                return "";
         }
     }
 }

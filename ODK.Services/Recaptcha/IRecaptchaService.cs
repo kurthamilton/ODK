@@ -1,11 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿namespace ODK.Services.Recaptcha;
 
-namespace ODK.Services.Recaptcha
+public interface IRecaptchaService
 {
-    public interface IRecaptchaService
-    {
-        bool Success(ReCaptchaResponse response);
+    bool Success(ReCaptchaResponse response);
 
-        Task<ReCaptchaResponse> Verify(string token);
-    }
+    Task<ReCaptchaResponse> Verify(string token);
 }

@@ -1,8 +1,5 @@
-﻿using System;
+﻿namespace ODK.Services.Exceptions;
 
-namespace ODK.Services.Exceptions
+public class OdkNotAuthorizedException : Exception
 {
-    public class OdkNotAuthorizedException : Exception
-    {
-    }
 }

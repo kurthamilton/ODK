@@ -2,21 +2,20 @@
 using ODK.Core.Events;
 using ODK.Core.Members;
 
-namespace ODK.Web.Razor.Models.Admin.Events
+namespace ODK.Web.Razor.Models.Admin.Events;
+
+public class EventViewModel
 {
-    public class EventViewModel
+    public EventViewModel(Chapter chapter, Member currentMember, Event @event)
     {
-        public EventViewModel(Chapter chapter, Member currentMember, Event @event)
-        {
-            Chapter = chapter;
-            CurrentMember = currentMember;
-            Event = @event;
-        }
-
-        public Chapter Chapter { get; }
-
-        public Member CurrentMember { get; }
-
-        public Event Event { get; }
+        Chapter = chapter;
+        CurrentMember = currentMember;
+        Event = @event;
     }
+
+    public Chapter Chapter { get; }
+
+    public Member CurrentMember { get; }
+
+    public Event Event { get; }
 }

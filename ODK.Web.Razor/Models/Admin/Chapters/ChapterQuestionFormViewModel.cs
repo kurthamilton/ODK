@@ -1,13 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ODK.Web.Razor.Models.Admin.Chapters
-{
-    public class ChapterQuestionFormViewModel
-    {
-        [Required]
-        public string? Answer { get; set; }
+namespace ODK.Web.Razor.Models.Admin.Chapters;
 
-        [Required]
-        public string? Question { get; set; }
-    }
+public class ChapterQuestionFormViewModel
+{
+    [Required]
+    public string? Answer { get; set; }
+
+    [Required]
+    public string? Question { get; set; }
 }

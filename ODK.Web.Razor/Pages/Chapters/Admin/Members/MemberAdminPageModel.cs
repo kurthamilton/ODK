@@ -3,33 +3,32 @@ using ODK.Core.Members;
 using ODK.Services.Caching;
 using ODK.Services.Members;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Members
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
+
+public abstract class MemberAdminPageModel : AdminPageModel
 {
-    public abstract class MemberAdminPageModel : AdminPageModel
+    protected MemberAdminPageModel(IRequestCache requestCache, IMemberAdminService memberAdminService) 
+        : base(requestCache)
     {
-        protected MemberAdminPageModel(IRequestCache requestCache, IMemberAdminService memberAdminService) 
-            : base(requestCache)
+        MemberAdminService = memberAdminService;
+    }
+
+    public Member Member { get; private set; } = null!;
+
+    protected IMemberAdminService MemberAdminService { get; }
+
+    public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
+    {
+        Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id);
+        Member? member = await MemberAdminService.GetMember(CurrentMemberId, id);
+        if (member == null)
         {
-            MemberAdminService = memberAdminService;
+            Response.StatusCode = 404;
+            return;
         }
 
-        public Member Member { get; private set; } = null!;
+        Member = member;
 
-        protected IMemberAdminService MemberAdminService { get; }
-
-        public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
-        {
-            Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id);
-            Member? member = await MemberAdminService.GetMember(CurrentMemberId, id);
-            if (member == null)
-            {
-                Response.StatusCode = 404;
-                return;
-            }
-
-            Member = member;
-
-            await base.OnPageHandlerExecutionAsync(context, next);
-        }
+        await base.OnPageHandlerExecutionAsync(context, next);
     }
 }

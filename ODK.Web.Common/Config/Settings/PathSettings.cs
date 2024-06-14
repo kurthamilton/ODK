@@ -1,7 +1,6 @@
-﻿namespace ODK.Web.Common.Config.Settings
+﻿namespace ODK.Web.Common.Config.Settings;
+
+public class PathSettings
 {
-    public class PathSettings
-    {
-        public string MediaRoot { get; set; } = "";
-    }
+    public string MediaRoot { get; set; } = "";
 }

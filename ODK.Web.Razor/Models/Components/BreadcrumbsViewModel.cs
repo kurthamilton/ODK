@@ -1,14 +1,13 @@
 ﻿using ODK.Web.Common.Components;
 
-namespace ODK.Web.Razor.Models.Components
-{
-    public class BreadcrumbsViewModel
-    {
-        public BreadcrumbsViewModel(IEnumerable<MenuItem> breadcrumbs)
-        {
-            Breadcrumbs = breadcrumbs.ToArray();
-        }
+namespace ODK.Web.Razor.Models.Components;
 
-        public IReadOnlyCollection<MenuItem> Breadcrumbs { get; }
+public class BreadcrumbsViewModel
+{
+    public BreadcrumbsViewModel(IEnumerable<MenuItem> breadcrumbs)
+    {
+        Breadcrumbs = breadcrumbs.ToArray();
     }
+
+    public IReadOnlyCollection<MenuItem> Breadcrumbs { get; }
 }

@@ -37,133 +37,132 @@ using ODK.Services.Payments.PayPal;
 using ODK.Services.Recaptcha;
 using ODK.Web.Common.Account;
 
-namespace ODK.Web.Common.Config
+namespace ODK.Web.Common.Config;
+
+public static class DependencyConfig
 {
-    public static class DependencyConfig
+    public static void ConfigureDependencies(this IServiceCollection services, IConfiguration configuration,
+        AppSettings appSettings)
     {
-        public static void ConfigureDependencies(this IServiceCollection services, IConfiguration configuration,
-            AppSettings appSettings)
+        ConfigureApi(services);
+        ConfigureAuthentication(services, appSettings);
+        ConfigurePayments(services, appSettings);
+        ConfigureServiceSettings(services, appSettings);
+        ConfigureServices(services);
+        ConfigureData(services, configuration);
+    }
+
+    private static void ConfigureAuthentication(this IServiceCollection services, AppSettings appSettings)
+    {
+        services.AddScoped<ILoginHandler, LoginHandler>();
+        services.AddSingleton(new LoginHandlerSettings(appSettings.Auth.CookieLifetimeDays));
+    }
+
+    private static void ConfigureApi(IServiceCollection services)
+    {
+        services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Directory.GetCurrentDirectory()));
+
+        if (LoggingConfig.Logger != null)
         {
-            ConfigureApi(services);
-            ConfigureAuthentication(services, appSettings);
-            ConfigurePayments(services, appSettings);
-            ConfigureServiceSettings(services, appSettings);
-            ConfigureServices(services);
-            ConfigureData(services, configuration);
+            services.AddSingleton(LoggingConfig.Logger);
         }
+    }
 
-        private static void ConfigureAuthentication(this IServiceCollection services, AppSettings appSettings)
+    private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
+    {
+        string connectionString = configuration.GetConnectionString("Default");
+        services.AddSingleton<SqlContext>(new OdkContext(connectionString));
+
+        services.AddScoped<IChapterRepository, ChapterRepository>();
+        services.AddScoped<ICountryRepository, CountryRepository>();
+        services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IEmailRepository, EmailRepository>();
+        services.AddScoped<IInstagramRepository, InstagramRepository>();
+        services.AddScoped<ILoggingRepository, LoggingRepository>();
+        services.AddScoped<IMemberRepository, MemberRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<ISettingsRepository, SettingsRepository>();
+        services.AddScoped<IVenueRepository, VenueRepository>();
+    }
+
+    private static void ConfigurePayments(this IServiceCollection services, AppSettings appSettings)
+    {
+        PaymentsSettings payments = appSettings.Payments;
+
+        services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
+        services.AddScoped<IPayPalPaymentProvider, PayPalPaymentProvider>();
+        services.AddSingleton(new PayPalPaymentProviderSettings(payments.PayPalApiBaseUrl));
+        services.AddScoped<IStripePaymentProvider, StripePaymentProvider>();
+    }
+
+    private static void ConfigureServices(this IServiceCollection services)
+    {
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IAuthorizationService, AuthorizationService>();
+        services.AddScoped<ICacheService, CacheService>();
+        services.AddScoped<IChapterAdminService, ChapterAdminService>();
+        services.AddScoped<IChapterService, ChapterService>();
+        services.AddScoped<ICountryService, CountryService>();
+        services.AddScoped<ICsvService, CsvService>();
+        services.AddScoped<IEmailAdminService, EmailAdminService>();
+        services.AddScoped<IEventAdminService, EventAdminService>();
+        services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IImageService, ImageService>();
+        services.AddScoped<ILoggingService, LoggingService>();
+        services.AddScoped<IMailProvider, MailProvider>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IInstagramService, InstagramService>();
+        services.AddScoped<IMediaAdminService, MediaAdminService>();
+        services.AddScoped<IMediaFileProvider, MediaFileProvider>();
+        services.AddScoped<IMediaService, MediaService>();
+        services.AddScoped<IMemberAdminService, MemberAdminService>();
+        services.AddScoped<IMemberService, MemberService>();
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IRecaptchaService, RecaptchaService>();
+        services.AddScoped<IRequestCache, RequestCache>();
+        services.AddScoped<ISettingsService, SettingsService>();
+        services.AddScoped<IVenueAdminService, VenueAdminService>();
+        services.AddScoped<IVenueService, VenueService>();
+    }
+
+    private static void ConfigureServiceSettings(IServiceCollection services, AppSettings appSettings)
+    {
+        AuthSettings auth = appSettings.Auth;
+        MembersSettings members = appSettings.Members;
+        PathSettings paths = appSettings.Paths;
+        RecaptchaSettings recaptcha = appSettings.Recaptcha;
+        UrlSettings urls = appSettings.Urls;
+
+        services.AddSingleton(new AuthenticationServiceSettings(
+            eventsUrl: $"{urls.AppBase}{urls.Events}",
+            passwordResetTokenLifetimeMinutes: auth.PasswordResetTokenLifetimeMinutes,
+            passwordResetUrl: $"{urls.AppBase}{urls.PasswordReset}"));
+        
+        services.AddSingleton(new EventAdminServiceSettings
         {
-            services.AddScoped<ILoginHandler, LoginHandler>();
-            services.AddSingleton(new LoginHandlerSettings(appSettings.Auth.CookieLifetimeDays));
-        }
+            BaseUrl = urls.AppBase,
+            EventRsvpUrlFormat = urls.EventRsvp,
+            EventUrlFormat = urls.Event,
+            UnsubscribeUrlFormat = urls.Unsubscribe
+        });
 
-        private static void ConfigureApi(IServiceCollection services)
+        services.AddSingleton(new MemberServiceSettings
         {
-            services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Directory.GetCurrentDirectory()));
+            ActivateAccountUrl = $"{urls.AppBase}{urls.ActivateAccount}",
+            ConfirmEmailAddressUpdateUrl = $"{urls.AppBase}{urls.ConfirmEmailAddressUpdate}",
+            MaxImageSize = members.MaxImageSize
+        });
 
-            if (LoggingConfig.Logger != null)
-            {
-                services.AddSingleton(LoggingConfig.Logger);
-            }
-        }
-
-        private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
+        services.AddSingleton(new MediaFileProviderSettings
         {
-            string connectionString = configuration.GetConnectionString("Default");
-            services.AddSingleton<SqlContext>(new OdkContext(connectionString));
+            RootMediaPath = paths.MediaRoot,
+            RootMediaUrl = $"{urls.AppBase}{urls.Media}"
+        });
 
-            services.AddScoped<IChapterRepository, ChapterRepository>();
-            services.AddScoped<ICountryRepository, CountryRepository>();
-            services.AddScoped<IEventRepository, EventRepository>();
-            services.AddScoped<IEmailRepository, EmailRepository>();
-            services.AddScoped<IInstagramRepository, InstagramRepository>();
-            services.AddScoped<ILoggingRepository, LoggingRepository>();
-            services.AddScoped<IMemberRepository, MemberRepository>();
-            services.AddScoped<IPaymentRepository, PaymentRepository>();
-            services.AddScoped<ISettingsRepository, SettingsRepository>();
-            services.AddScoped<IVenueRepository, VenueRepository>();
-        }
-
-        private static void ConfigurePayments(this IServiceCollection services, AppSettings appSettings)
+        services.AddSingleton(new RecaptchaServiceSettings
         {
-            PaymentsSettings payments = appSettings.Payments;
-
-            services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
-            services.AddScoped<IPayPalPaymentProvider, PayPalPaymentProvider>();
-            services.AddSingleton(new PayPalPaymentProviderSettings(payments.PayPalApiBaseUrl));
-            services.AddScoped<IStripePaymentProvider, StripePaymentProvider>();
-        }
-
-        private static void ConfigureServices(this IServiceCollection services)
-        {
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
-            services.AddScoped<IAuthorizationService, AuthorizationService>();
-            services.AddScoped<ICacheService, CacheService>();
-            services.AddScoped<IChapterAdminService, ChapterAdminService>();
-            services.AddScoped<IChapterService, ChapterService>();
-            services.AddScoped<ICountryService, CountryService>();
-            services.AddScoped<ICsvService, CsvService>();
-            services.AddScoped<IEmailAdminService, EmailAdminService>();
-            services.AddScoped<IEventAdminService, EventAdminService>();
-            services.AddScoped<IEventService, EventService>();
-            services.AddScoped<IImageService, ImageService>();
-            services.AddScoped<ILoggingService, LoggingService>();
-            services.AddScoped<IMailProvider, MailProvider>();
-            services.AddScoped<IEmailService, EmailService>();
-            services.AddScoped<IInstagramService, InstagramService>();
-            services.AddScoped<IMediaAdminService, MediaAdminService>();
-            services.AddScoped<IMediaFileProvider, MediaFileProvider>();
-            services.AddScoped<IMediaService, MediaService>();
-            services.AddScoped<IMemberAdminService, MemberAdminService>();
-            services.AddScoped<IMemberService, MemberService>();
-            services.AddScoped<IPaymentService, PaymentService>();
-            services.AddScoped<IRecaptchaService, RecaptchaService>();
-            services.AddScoped<IRequestCache, RequestCache>();
-            services.AddScoped<ISettingsService, SettingsService>();
-            services.AddScoped<IVenueAdminService, VenueAdminService>();
-            services.AddScoped<IVenueService, VenueService>();
-        }
-
-        private static void ConfigureServiceSettings(IServiceCollection services, AppSettings appSettings)
-        {
-            AuthSettings auth = appSettings.Auth;
-            MembersSettings members = appSettings.Members;
-            PathSettings paths = appSettings.Paths;
-            RecaptchaSettings recaptcha = appSettings.Recaptcha;
-            UrlSettings urls = appSettings.Urls;
-
-            services.AddSingleton(new AuthenticationServiceSettings(
-                eventsUrl: $"{urls.AppBase}{urls.Events}",
-                passwordResetTokenLifetimeMinutes: auth.PasswordResetTokenLifetimeMinutes,
-                passwordResetUrl: $"{urls.AppBase}{urls.PasswordReset}"));
-            
-            services.AddSingleton(new EventAdminServiceSettings
-            {
-                BaseUrl = urls.AppBase,
-                EventRsvpUrlFormat = urls.EventRsvp,
-                EventUrlFormat = urls.Event,
-                UnsubscribeUrlFormat = urls.Unsubscribe
-            });
-
-            services.AddSingleton(new MemberServiceSettings
-            {
-                ActivateAccountUrl = $"{urls.AppBase}{urls.ActivateAccount}",
-                ConfirmEmailAddressUpdateUrl = $"{urls.AppBase}{urls.ConfirmEmailAddressUpdate}",
-                MaxImageSize = members.MaxImageSize
-            });
-
-            services.AddSingleton(new MediaFileProviderSettings
-            {
-                RootMediaPath = paths.MediaRoot,
-                RootMediaUrl = $"{urls.AppBase}{urls.Media}"
-            });
-
-            services.AddSingleton(new RecaptchaServiceSettings
-            {
-                ScoreThreshold = recaptcha.ScoreThreshold,
-                VerifyUrl = recaptcha.VerifyUrl
-            });
-        }
+            ScoreThreshold = recaptcha.ScoreThreshold,
+            VerifyUrl = recaptcha.VerifyUrl
+        });
     }
 }

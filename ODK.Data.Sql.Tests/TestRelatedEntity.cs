@@ -1,9 +1,8 @@
-﻿namespace ODK.Data.Sql.Tests
-{
-    public class TestRelatedEntity
-    {
-        public int Int { get; set; }
+﻿namespace ODK.Data.Sql.Tests;
 
-        public string Other { get; set; }
-    }
+public class TestRelatedEntity
+{
+    public int Int { get; set; }
+
+    public string Other { get; set; }
 }

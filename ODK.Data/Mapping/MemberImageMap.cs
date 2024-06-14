@@ -2,28 +2,27 @@
 using ODK.Core.Members;
 using ODK.Data.Sql.Mapping;
 
-namespace ODK.Data.Mapping
-{
-    public class MemberImageMap : SqlMap<MemberImage>
-    {
-        public MemberImageMap()
-            : base("MemberImages")
-        {
-            Property(x => x.MemberId);
-            Property(x => x.ImageData);
-            Property(x => x.MimeType);
-            Property(x => x.Version).IsRowVersion();
-        }
+namespace ODK.Data.Mapping;
 
-        public override MemberImage Read(IDataReader reader)
-        {
-            return new MemberImage
-            (
-                memberId: reader.GetGuid(0),
-                imageData: (byte[])reader.GetValue(1),
-                mimeType: reader.GetString(2),
-                version: reader.GetInt64(3)
-            );
-        }
+public class MemberImageMap : SqlMap<MemberImage>
+{
+    public MemberImageMap()
+        : base("MemberImages")
+    {
+        Property(x => x.MemberId);
+        Property(x => x.ImageData);
+        Property(x => x.MimeType);
+        Property(x => x.Version).IsRowVersion();
+    }
+
+    public override MemberImage Read(IDataReader reader)
+    {
+        return new MemberImage
+        (
+            memberId: reader.GetGuid(0),
+            imageData: (byte[])reader.GetValue(1),
+            mimeType: reader.GetString(2),
+            version: reader.GetInt64(3)
+        );
     }
 }

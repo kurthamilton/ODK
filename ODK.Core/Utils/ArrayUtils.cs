@@ -1,34 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿namespace ODK.Core.Utils;
 
-namespace ODK.Core.Utils
+public static class ArrayUtils
 {
-    public static class ArrayUtils
+    public static T[][] Segment<T>(this T[] items, int segmentSize)
     {
-        public static T[][] Segment<T>(this T[] items, int segmentSize)
+        List<List<T>> segments = new List<List<T>>();
+
+        if (segmentSize <= 0)
         {
-            List<List<T>> segments = new List<List<T>>();
-
-            if (segmentSize <= 0)
-            {
-                segmentSize = 1;
-            }
-
-            for (int i = 0; i < items.Length; i++)
-            {
-                if (i % segmentSize == 0)
-                {
-                    segments.Add(new List<T>());
-                }
-
-                segments.Last().Add(items[i]);
-            }
-
-            return segments
-                .Select(x => x.ToArray())
-                .ToArray();
+            segmentSize = 1;
         }
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (i % segmentSize == 0)
+            {
+                segments.Add(new List<T>());
+            }
+
+            segments.Last().Add(items[i]);
+        }
+
+        return segments
+            .Select(x => x.ToArray())
+            .ToArray();
     }
 }

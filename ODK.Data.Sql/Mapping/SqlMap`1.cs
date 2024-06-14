@@ -1,84 +1,80 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿using System.Data;
 using System.Linq.Expressions;
 using ODK.Data.Sql.Reflection;
 
-namespace ODK.Data.Sql.Mapping
+namespace ODK.Data.Sql.Mapping;
+
+public abstract class SqlMap<T> : SqlMap
 {
-    public abstract class SqlMap<T> : SqlMap
+    private readonly IList<SqlColumn> _columns = new List<SqlColumn>();
+    private readonly IDictionary<string, SqlColumn> _entityColumns = new Dictionary<string, SqlColumn>();
+    private IReadOnlyList<SqlColumn>? _insertColumns;
+    private readonly IList<ISqlComponent> _joins = new List<ISqlComponent>();
+    private IReadOnlyList<SqlColumn>? _selectColumns;
+
+    protected SqlMap(string tableName)
+        : base(tableName, typeof(T))
     {
-        private readonly IList<SqlColumn> _columns = new List<SqlColumn>();
-        private readonly IDictionary<string, SqlColumn> _entityColumns = new Dictionary<string, SqlColumn>();
-        private IReadOnlyList<SqlColumn>? _insertColumns;
-        private readonly IList<ISqlComponent> _joins = new List<ISqlComponent>();
-        private IReadOnlyList<SqlColumn>? _selectColumns;
+    }
 
-        protected SqlMap(string tableName)
-            : base(tableName, typeof(T))
+    public IReadOnlyCollection<SqlColumn> InsertColumns => GetInsertColumns();
+
+    public IReadOnlyCollection<ISqlComponent> Joins => _joins.ToArray();
+
+    public IReadOnlyCollection<SqlColumn> SelectColumns => _selectColumns ??= _columns.ToArray();
+
+    public SqlColumn GetColumn<TValue>(Expression<Func<T, TValue>> expression)
+    {
+        string entityFieldName = expression.GetMemberName();
+        if (!_entityColumns.ContainsKey(entityFieldName))
         {
+            throw new ArgumentException($"Column not found for {entityFieldName}", nameof(entityFieldName));
         }
 
-        public IReadOnlyCollection<SqlColumn> InsertColumns => GetInsertColumns();
+        return _entityColumns[entityFieldName];
+    }
 
-        public IReadOnlyCollection<ISqlComponent> Joins => _joins.ToArray();
+    public object? GetEntityValue(T entity, SqlColumn column, SqlContext context)
+    {
+        var entityFieldName = GetEntityFieldName(column, context);
+        return Type.GetProperty(entityFieldName)?.GetValue(entity);
+    }
 
-        public IReadOnlyCollection<SqlColumn> SelectColumns => _selectColumns ??= _columns.ToArray();
+    public abstract T Read(IDataReader reader);
 
-        public SqlColumn GetColumn<TValue>(Expression<Func<T, TValue>> expression)
-        {
-            string entityFieldName = expression.GetMemberName();
-            if (!_entityColumns.ContainsKey(entityFieldName))
-            {
-                throw new ArgumentException($"Column not found for {entityFieldName}", nameof(entityFieldName));
-            }
+    protected void Join<TJoin, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TJoin, TValue>> targetField)
+    {
+        Join<T, TJoin, TValue>(thisField, targetField);
+    }
 
-            return _entityColumns[entityFieldName];
-        }
+    protected void Join<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> thisField, Expression<Func<TTo, TValue>> targetField)
+    {
+        _joins.Add(new SqlJoin<TFrom, TTo, TValue>(thisField, targetField));
+    }
 
-        public object? GetEntityValue(T entity, SqlColumn column, SqlContext context)
-        {
-            var entityFieldName = GetEntityFieldName(column, context);
-            return Type.GetProperty(entityFieldName)?.GetValue(entity);
-        }
+    protected SqlColumn Property<TValue>(Expression<Func<T, TValue>> expression)
+    {
+        SqlDbType type = SqlDbTypes.GetSqlDbType<TValue>();
 
-        public abstract T Read(IDataReader reader);
+        string entityFieldName = expression.GetMemberName();
+        SqlColumn column = new SqlColumn(entityFieldName, _entityColumns.Count)
+            .HasColumnType(type)
+            .From<T>();
 
-        protected void Join<TJoin, TValue>(Expression<Func<T, TValue>> thisField, Expression<Func<TJoin, TValue>> targetField)
-        {
-            Join<T, TJoin, TValue>(thisField, targetField);
-        }
+        _columns.Add(column);
+        _entityColumns.Add(entityFieldName, column);
 
-        protected void Join<TFrom, TTo, TValue>(Expression<Func<TFrom, TValue>> thisField, Expression<Func<TTo, TValue>> targetField)
-        {
-            _joins.Add(new SqlJoin<TFrom, TTo, TValue>(thisField, targetField));
-        }
+        return column;
+    }
 
-        protected SqlColumn Property<TValue>(Expression<Func<T, TValue>> expression)
-        {
-            SqlDbType type = SqlDbTypes.GetSqlDbType<TValue>();
+    private string? GetEntityFieldName(SqlColumn column, SqlContext context)
+    {
+        string entityFieldName = _entityColumns.FirstOrDefault(x => x.Value.ToSql(context) == column.ToSql(context)).Key;
+        return _entityColumns.ContainsKey(entityFieldName) ? entityFieldName : null;
+    }
 
-            string entityFieldName = expression.GetMemberName();
-            SqlColumn column = new SqlColumn(entityFieldName, _entityColumns.Count)
-                .HasColumnType(type)
-                .From<T>();
-
-            _columns.Add(column);
-            _entityColumns.Add(entityFieldName, column);
-
-            return column;
-        }
-
-        private string? GetEntityFieldName(SqlColumn column, SqlContext context)
-        {
-            string entityFieldName = _entityColumns.FirstOrDefault(x => x.Value.ToSql(context) == column.ToSql(context)).Key;
-            return _entityColumns.ContainsKey(entityFieldName) ? entityFieldName : null;
-        }
-
-        private IReadOnlyCollection<SqlColumn> GetInsertColumns()
-        {
-            return _insertColumns ??= _columns.Where(x => !x.AutoGenerated && x.IsFrom<T>()).ToArray();
-        }
+    private IReadOnlyCollection<SqlColumn> GetInsertColumns()
+    {
+        return _insertColumns ??= _columns.Where(x => !x.AutoGenerated && x.IsFrom<T>()).ToArray();
     }
 }

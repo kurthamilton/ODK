@@ -1,20 +1,17 @@
-﻿using System;
+﻿namespace ODK.Core.Events;
 
-namespace ODK.Core.Events
+public class EventEmail
 {
-    public class EventEmail
+    public EventEmail(Guid id, Guid eventId, DateTime? sentDate)
     {
-        public EventEmail(Guid id, Guid eventId, DateTime? sentDate)
-        {
-            EventId = eventId;
-            Id = id;
-            SentDate = sentDate;
-        }
-
-        public Guid EventId { get; }
-
-        public Guid Id { get; }
-
-        public DateTime? SentDate { get; set; }
+        EventId = eventId;
+        Id = id;
+        SentDate = sentDate;
     }
+
+    public Guid EventId { get; }
+
+    public Guid Id { get; }
+
+    public DateTime? SentDate { get; set; }
 }

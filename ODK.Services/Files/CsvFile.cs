@@ -1,50 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿namespace ODK.Services.Files;
 
-namespace ODK.Services.Files
+public class CsvFile
 {
-    public class CsvFile
+    private readonly List<CsvRow> _rows = new List<CsvRow>();
+
+    public CsvRow Header { get; } = new CsvRow();
+
+    public IReadOnlyCollection<CsvRow> Rows => _rows.ToArray();
+
+    public CsvRow AddRow()
     {
-        private readonly List<CsvRow> _rows = new List<CsvRow>();
+        CsvRow row = new CsvRow();
+        _rows.Add(row);
+        return row;
+    }
 
-        public CsvRow Header { get; } = new CsvRow();
+    public void AddValue(string value)
+    {
+        _rows.Last().AddValue(value);
+    }
 
-        public IReadOnlyCollection<CsvRow> Rows => _rows.ToArray();
+    public void AddValues(IEnumerable<string> values)
+    {
+        _rows.Last().AddValues(values);
+    }
 
-        public CsvRow AddRow()
+    public IDictionary<string, int> GetColumnIndexes()
+    {
+        IDictionary<string, int> columnIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        for (int i = 0; i < Header.Values.Count; i++)
         {
-            CsvRow row = new CsvRow();
-            _rows.Add(row);
-            return row;
+            columnIndexes.Add(Header.Values.ElementAt(i), i);
         }
 
-        public void AddValue(string value)
-        {
-            _rows.Last().AddValue(value);
-        }
+        return columnIndexes;
+    }
 
-        public void AddValues(IEnumerable<string> values)
-        {
-            _rows.Last().AddValues(values);
-        }
-
-        public IDictionary<string, int> GetColumnIndexes()
-        {
-            IDictionary<string, int> columnIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-            for (int i = 0; i < Header.Values.Count; i++)
-            {
-                columnIndexes.Add(Header.Values.ElementAt(i), i);
-            }
-
-            return columnIndexes;
-        }
-
-        public override string ToString()
-        {
-            IEnumerable<CsvRow> rows = new[] { Header }.Union(Rows);
-            return string.Join(Environment.NewLine, rows);
-        }
+    public override string ToString()
+    {
+        IEnumerable<CsvRow> rows = new[] { Header }.Union(Rows);
+        return string.Join(Environment.NewLine, rows);
     }
 }

@@ -1,27 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using ODK.Core.Countries;
+﻿using ODK.Core.Countries;
 
-namespace ODK.Services.Countries
+namespace ODK.Services.Countries;
+
+public class CountryService : ICountryService
 {
-    public class CountryService : ICountryService
+    private readonly ICountryRepository _countryRepository;
+
+    public CountryService(ICountryRepository countryRepository)
     {
-        private readonly ICountryRepository _countryRepository;
+        _countryRepository = countryRepository;
+    }
 
-        public CountryService(ICountryRepository countryRepository)
-        {
-            _countryRepository = countryRepository;
-        }
+    public async Task<IReadOnlyCollection<Country>> GetCountries()
+    {
+        return await _countryRepository.GetCountries();
+    }
 
-        public async Task<IReadOnlyCollection<Country>> GetCountries()
-        {
-            return await _countryRepository.GetCountries();
-        }
-
-        public async Task<Country> GetCountry(Guid countryId)
-        {
-            return await _countryRepository.GetCountry(countryId);
-        }
+    public async Task<Country> GetCountry(Guid countryId)
+    {
+        return await _countryRepository.GetCountry(countryId);
     }
 }

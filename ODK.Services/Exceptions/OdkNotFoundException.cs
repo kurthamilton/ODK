@@ -1,8 +1,5 @@
-﻿using System;
+﻿namespace ODK.Services.Exceptions;
 
-namespace ODK.Services.Exceptions
+public class OdkNotFoundException : Exception
 {
-    public class OdkNotFoundException : Exception
-    {
-    }
 }

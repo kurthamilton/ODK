@@ -1,9 +1,8 @@
-﻿namespace ODK.Services.Chapters
-{
-    public class UpdateChapterTexts
-    {
-        public string RegisterText { get; set; } = "";
+﻿namespace ODK.Services.Chapters;
 
-        public string WelcomeText { get; set; } = "";
-    }
+public class UpdateChapterTexts
+{
+    public string RegisterText { get; set; } = "";
+
+    public string WelcomeText { get; set; } = "";
 }

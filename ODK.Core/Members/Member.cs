@@ -1,56 +1,54 @@
-﻿using System;
-using ODK.Core.Emails;
+﻿using ODK.Core.Emails;
 
-namespace ODK.Core.Members
+namespace ODK.Core.Members;
+
+public class Member : IVersioned
 {
-    public class Member : IVersioned
+    public Member(Guid id, Guid chapterId, string emailAddress, bool emailOptIn,
+        string firstName, string lastName, DateTime createdDate, bool activated, bool disabled,
+        long version)
     {
-        public Member(Guid id, Guid chapterId, string emailAddress, bool emailOptIn,
-            string firstName, string lastName, DateTime createdDate, bool activated, bool disabled,
-            long version)
-        {
-            Activated = activated;
-            ChapterId = chapterId;
-            CreatedDate = createdDate;
-            Disabled = disabled;
-            EmailAddress = emailAddress;
-            EmailOptIn = emailOptIn;
-            FirstName = firstName;
-            Id = id;
-            LastName = lastName;
-            Version = version;
-        }
+        Activated = activated;
+        ChapterId = chapterId;
+        CreatedDate = createdDate;
+        Disabled = disabled;
+        EmailAddress = emailAddress;
+        EmailOptIn = emailOptIn;
+        FirstName = firstName;
+        Id = id;
+        LastName = lastName;
+        Version = version;
+    }
 
-        public bool Activated { get; }
+    public bool Activated { get; }
 
-        public Guid ChapterId { get; }
+    public Guid ChapterId { get; }
 
-        public DateTime CreatedDate { get; }
+    public DateTime CreatedDate { get; }
 
-        public bool Disabled { get; }
+    public bool Disabled { get; }
 
-        public string EmailAddress { get; }
+    public string EmailAddress { get; }
 
-        public bool EmailOptIn { get; }
+    public bool EmailOptIn { get; }
 
-        public string FirstName { get; }
+    public string FirstName { get; }
 
-        public string FullName => $"{FirstName?.Trim()} {LastName?.Trim()}".Trim();
+    public string FullName => $"{FirstName?.Trim()} {LastName?.Trim()}".Trim();
 
-        public Guid Id { get; }
+    public Guid Id { get; }
 
-        public string LastName { get; }
+    public string LastName { get; }
 
-        public long Version { get; }
+    public long Version { get; }
 
-        public bool CanBeViewedBy(Member currentMember)
-        {
-            return currentMember?.ChapterId == ChapterId;
-        }
+    public bool CanBeViewedBy(Member currentMember)
+    {
+        return currentMember?.ChapterId == ChapterId;
+    }
 
-        public EmailAddressee GetEmailAddressee()
-        {
-            return new EmailAddressee(EmailAddress, FullName);
-        }
+    public EmailAddressee GetEmailAddressee()
+    {
+        return new EmailAddressee(EmailAddress, FullName);
     }
 }

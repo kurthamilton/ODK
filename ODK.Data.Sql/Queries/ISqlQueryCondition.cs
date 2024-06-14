@@ -1,7 +1,6 @@
-﻿namespace ODK.Data.Sql.Queries
+﻿namespace ODK.Data.Sql.Queries;
+
+public interface ISqlQueryCondition : ISqlComponent
 {
-    public interface ISqlQueryCondition : ISqlComponent
-    {
-        object? GetValue(string parameter);
-    }
+    object? GetValue(string parameter);
 }

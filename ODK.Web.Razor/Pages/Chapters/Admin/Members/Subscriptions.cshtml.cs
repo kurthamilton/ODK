@@ -5,39 +5,38 @@ using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Members
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
+
+public class SubscriptionsModel : AdminPageModel
 {
-    public class SubscriptionsModel : AdminPageModel
+    private readonly IChapterAdminService _chapterAdminService;
+
+    public SubscriptionsModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+        : base(requestCache)
     {
-        private readonly IChapterAdminService _chapterAdminService;
+        _chapterAdminService = chapterAdminService;
+    }
 
-        public SubscriptionsModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
-            : base(requestCache)
-        {
-            _chapterAdminService = chapterAdminService;
-        }
+    public void OnGet()
+    {
+    }
 
-        public void OnGet()
-        {
-        }
-
-        public async Task<IActionResult> OnPostAsync(MembershipSettingsFormViewModel viewModel)
-        {
-            ServiceResult result = await _chapterAdminService.UpdateChapterMembershipSettings(CurrentMemberId, Chapter.Id, 
-                new UpdateChapterMembershipSettings
-                {
-                    MembershipDisabledAfterDaysExpired = viewModel.MembershipDisabledAfter,
-                    TrialPeriodMonths = viewModel.TrialPeriodMonths
-                });
-
-            if (result.Success)
+    public async Task<IActionResult> OnPostAsync(MembershipSettingsFormViewModel viewModel)
+    {
+        ServiceResult result = await _chapterAdminService.UpdateChapterMembershipSettings(CurrentMemberId, Chapter.Id, 
+            new UpdateChapterMembershipSettings
             {
-                AddFeedback(new FeedbackViewModel("Membership settings updated", FeedbackType.Success));
-                return RedirectToPage();
-            }
+                MembershipDisabledAfterDaysExpired = viewModel.MembershipDisabledAfter,
+                TrialPeriodMonths = viewModel.TrialPeriodMonths
+            });
 
-            AddFeedback(new FeedbackViewModel(result));
-            return Page();
+        if (result.Success)
+        {
+            AddFeedback(new FeedbackViewModel("Membership settings updated", FeedbackType.Success));
+            return RedirectToPage();
         }
+
+        AddFeedback(new FeedbackViewModel(result));
+        return Page();
     }
 }

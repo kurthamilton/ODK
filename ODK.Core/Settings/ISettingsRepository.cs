@@ -1,11 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿namespace ODK.Core.Settings;
 
-namespace ODK.Core.Settings
+public interface ISettingsRepository
 {
-    public interface ISettingsRepository
-    {
-        Task<SiteSettings?> GetSiteSettings();
+    Task<SiteSettings?> GetSiteSettings();
 
-        Task UpdateSiteSettings(SiteSettings settings);
-    }
+    Task UpdateSiteSettings(SiteSettings settings);
 }

@@ -1,18 +1,15 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using ODK.Services.Caching;
 
-namespace ODK.Web.Razor.Pages.Chapters.Account
-{
-    public class DeleteModel : ChapterPageModel
-    {
-        public DeleteModel(IRequestCache requestCache) 
-            : base(requestCache)
-        {
-        }
+namespace ODK.Web.Razor.Pages.Chapters.Account;
 
-        public void OnGet()
-        {
-        }
+public class DeleteModel : ChapterPageModel
+{
+    public DeleteModel(IRequestCache requestCache) 
+        : base(requestCache)
+    {
+    }
+
+    public void OnGet()
+    {
     }
 }

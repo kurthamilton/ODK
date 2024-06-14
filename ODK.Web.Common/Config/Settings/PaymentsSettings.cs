@@ -1,7 +1,6 @@
-﻿namespace ODK.Web.Common.Config.Settings
+﻿namespace ODK.Web.Common.Config.Settings;
+
+public class PaymentsSettings
 {
-    public class PaymentsSettings
-    {
-        public string PayPalApiBaseUrl { get; set; } = "";
-    }
+    public string PayPalApiBaseUrl { get; set; } = "";
 }

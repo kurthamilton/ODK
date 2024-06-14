@@ -1,44 +1,40 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
-namespace ODK.Services.Files
+namespace ODK.Services.Files;
+
+public class CsvService : ICsvService
 {
-    public class CsvService : ICsvService
+    // https://stackoverflow.com/questions/18144431/regex-to-split-a-csv
+    private static readonly Regex SplitValuesRegex = new Regex("(?:^|,)(?=[^\"]|(\")?)\"?((?(1)[^\"]*|[^,\"]*))\"?(?=,|$)", RegexOptions.Compiled);
+
+    public CsvFile ParseCsvFile(string data)
     {
-        // https://stackoverflow.com/questions/18144431/regex-to-split-a-csv
-        private static readonly Regex SplitValuesRegex = new Regex("(?:^|,)(?=[^\"]|(\")?)\"?((?(1)[^\"]*|[^,\"]*))\"?(?=,|$)", RegexOptions.Compiled);
+        string[] lines = data
+            .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+            .ToArray();
 
-        public CsvFile ParseCsvFile(string data)
+        CsvFile file = new CsvFile();
+
+        for (int i = 0; i < lines.Length; i++)
         {
-            string[] lines = data
-                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
-                .ToArray();
+            string line = lines[i];
 
-            CsvFile file = new CsvFile();
+            CsvRow row = i == 0 ? file.Header : file.AddRow();
 
-            for (int i = 0; i < lines.Length; i++)
+            MatchCollection matches = SplitValuesRegex.Matches(line);
+            foreach (Match match in matches)
             {
-                string line = lines[i];
-
-                CsvRow row = i == 0 ? file.Header : file.AddRow();
-
-                MatchCollection matches = SplitValuesRegex.Matches(line);
-                foreach (Match match in matches)
-                {
-                    row.AddValue(match.Groups[2].Value);
-                }
+                row.AddValue(match.Groups[2].Value);
             }
-
-            return file;
         }
 
-        public CsvFile ParseCsvFile(Stream stream)
-        {
-            using StreamReader sr = new StreamReader(stream);
-            string data = sr.ReadToEnd();
-            return ParseCsvFile(data);
-        }
+        return file;
+    }
+
+    public CsvFile ParseCsvFile(Stream stream)
+    {
+        using StreamReader sr = new StreamReader(stream);
+        string data = sr.ReadToEnd();
+        return ParseCsvFile(data);
     }
 }

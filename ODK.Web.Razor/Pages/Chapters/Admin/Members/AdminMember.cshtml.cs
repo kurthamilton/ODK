@@ -6,51 +6,50 @@ using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Members
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
+
+public class AdminMemberModel : AdminPageModel
 {
-    public class AdminMemberModel : AdminPageModel
+    private readonly IChapterAdminService _chapterAdminService;
+
+    public AdminMemberModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+        : base(requestCache)
     {
-        private readonly IChapterAdminService _chapterAdminService;
+        _chapterAdminService = chapterAdminService;
+    }
 
-        public AdminMemberModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
-            : base(requestCache)
+    public ChapterAdminMember AdminMember { get; private set; } = null!;
+
+    public async Task<IActionResult> OnGetAsync(Guid id)
+    {
+        ChapterAdminMember? adminMember = await _chapterAdminService.GetChapterAdminMember(CurrentMemberId, Chapter.Id, id);
+        if (adminMember == null)
         {
-            _chapterAdminService = chapterAdminService;
+            return NotFound();
         }
 
-        public ChapterAdminMember AdminMember { get; private set; } = null!;
+        AdminMember = adminMember;
 
-        public async Task<IActionResult> OnGetAsync(Guid id)
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync(Guid id, AdminMemberFormViewModel viewModel)
+    {
+        ServiceResult result = await _chapterAdminService.UpdateChapterAdminMember(CurrentMemberId, Chapter.Id, id, new UpdateChapterAdminMember
         {
-            ChapterAdminMember? adminMember = await _chapterAdminService.GetChapterAdminMember(CurrentMemberId, Chapter.Id, id);
-            if (adminMember == null)
-            {
-                return NotFound();
-            }
+            AdminEmailAddress = viewModel.AdminEmailAddress,
+            ReceiveContactEmails = viewModel.ReceiveContactEmails,
+            ReceiveNewMemberEmails = viewModel.ReceiveNewMemberEmails,
+            SendNewMemberEmails = viewModel.SendNewMemberEmails
+        });
 
-            AdminMember = adminMember;
-
-            return Page();
+        if (result.Success)
+        {
+            AddFeedback(new FeedbackViewModel("Chapter admin member updated", FeedbackType.Success));
+            return Redirect($"/{Chapter.Name}/Admin/Members/AdminMembers");
         }
 
-        public async Task<IActionResult> OnPostAsync(Guid id, AdminMemberFormViewModel viewModel)
-        {
-            ServiceResult result = await _chapterAdminService.UpdateChapterAdminMember(CurrentMemberId, Chapter.Id, id, new UpdateChapterAdminMember
-            {
-                AdminEmailAddress = viewModel.AdminEmailAddress,
-                ReceiveContactEmails = viewModel.ReceiveContactEmails,
-                ReceiveNewMemberEmails = viewModel.ReceiveNewMemberEmails,
-                SendNewMemberEmails = viewModel.SendNewMemberEmails
-            });
-
-            if (result.Success)
-            {
-                AddFeedback(new FeedbackViewModel("Chapter admin member updated", FeedbackType.Success));
-                return Redirect($"/{Chapter.Name}/Admin/Members/AdminMembers");
-            }
-
-            AddFeedback(new FeedbackViewModel(result));
-            return Page();
-        }
+        AddFeedback(new FeedbackViewModel(result));
+        return Page();
     }
 }

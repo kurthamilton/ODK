@@ -1,12 +1,10 @@
-﻿using System;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 
-namespace ODK.Services.Members
+namespace ODK.Services.Members;
+
+public class UpdateMemberSubscription
 {
-    public class UpdateMemberSubscription
-    {
-        public DateTime? ExpiryDate { get; set; }
+    public DateTime? ExpiryDate { get; set; }
 
-        public SubscriptionType Type { get; set; }
-    }
+    public SubscriptionType Type { get; set; }
 }

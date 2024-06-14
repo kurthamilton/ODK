@@ -3,31 +3,30 @@ using ODK.Core.Logging;
 using ODK.Services.Caching;
 using ODK.Services.Logging;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin
+namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+
+public class ErrorModel : SuperAdminPageModel
 {
-    public class ErrorModel : SuperAdminPageModel
+    private readonly ILoggingService _loggingService;
+
+    public ErrorModel(IRequestCache requestCache, ILoggingService loggingService) 
+        : base(requestCache)
     {
-        private readonly ILoggingService _loggingService;
+        _loggingService = loggingService;
+    }
 
-        public ErrorModel(IRequestCache requestCache, ILoggingService loggingService) 
-            : base(requestCache)
+    public LogMessage Error { get; private set; } = null!;
+
+    public async Task<IActionResult> OnGet(int id)
+    {
+        LogMessage? error = await _loggingService.GetErrorMessage(CurrentMemberId, id);
+        if (error == null)
         {
-            _loggingService = loggingService;
+            return NotFound();
         }
 
-        public LogMessage Error { get; private set; } = null!;
+        Error = error;
 
-        public async Task<IActionResult> OnGet(int id)
-        {
-            LogMessage? error = await _loggingService.GetErrorMessage(CurrentMemberId, id);
-            if (error == null)
-            {
-                return NotFound();
-            }
-
-            Error = error;
-
-            return Page();
-        }
+        return Page();
     }
 }

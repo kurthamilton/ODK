@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿namespace ODK.Core.SocialMedia;
 
-namespace ODK.Core.SocialMedia
+public interface IInstagramRepository
 {
-    public interface IInstagramRepository
-    {
-        Task AddImage(InstagramImage image);
+    Task AddImage(InstagramImage image);
 
-        Task AddPost(InstagramPost post);
+    Task AddPost(InstagramPost post);
 
-        Task<InstagramImage> GetImage(Guid instagramPostId);
+    Task<InstagramImage> GetImage(Guid instagramPostId);
 
-        Task<DateTime?> GetLastPostDate(Guid chapterId);
+    Task<DateTime?> GetLastPostDate(Guid chapterId);
 
-        Task<IReadOnlyCollection<InstagramPost>> GetPosts(Guid chapterId, int pageSize);
-    }
+    Task<IReadOnlyCollection<InstagramPost>> GetPosts(Guid chapterId, int pageSize);
 }

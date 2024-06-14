@@ -7,106 +7,105 @@ using ODK.Services.Members;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
-namespace ODK.Web.Razor.Controllers
+namespace ODK.Web.Razor.Controllers;
+
+[Authorize(Roles = "Admin")]
+public class MemberAdminController : OdkControllerBase
 {
-    [Authorize(Roles = "Admin")]
-    public class MemberAdminController : OdkControllerBase
+    private readonly IChapterAdminService _chapterAdminService;
+    private readonly IEmailService _emailService;
+    private readonly IMemberAdminService _memberAdminService;
+    
+    public MemberAdminController(IMemberAdminService memberAdminService, IEmailService emailService,
+        IChapterAdminService chapterAdminService)
     {
-        private readonly IChapterAdminService _chapterAdminService;
-        private readonly IEmailService _emailService;
-        private readonly IMemberAdminService _memberAdminService;
-        
-        public MemberAdminController(IMemberAdminService memberAdminService, IEmailService emailService,
-            IChapterAdminService chapterAdminService)
+        _chapterAdminService = chapterAdminService;
+        _emailService = emailService;
+        _memberAdminService = memberAdminService;
+    }
+
+    [HttpPost("{chapterName}/Admin/Members/{id:guid}/Delete")]
+    public async Task<IActionResult> DeleteMember(string chapterName, Guid id)
+    {
+        await _memberAdminService.DeleteMember(MemberId, id);
+
+        AddFeedback(new FeedbackViewModel("Member deleted", FeedbackType.Success));
+
+        return Redirect($"/{chapterName}/Admin/Members");
+    }
+
+    [HttpPost("{chapterName}/Admin/Members/{id:guid}/Picture/Rotate")]
+    public async Task<IActionResult> RotatePicture(Guid id)
+    {
+        await _memberAdminService.RotateMemberImage(MemberId, id, 90);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("{chapterName}/Admin/Members/{id:guid}/SendEmail")]
+    public async Task<IActionResult> SendEmail(Guid id, [FromForm] SendMemberEmailFormViewModel viewModel)
+    {
+        ServiceResult result = await _emailService.SendMemberEmail(MemberId, id, 
+            viewModel.Subject, viewModel.Body);
+
+        if (result.Success)
         {
-            _chapterAdminService = chapterAdminService;
-            _emailService = emailService;
-            _memberAdminService = memberAdminService;
+            AddFeedback(new FeedbackViewModel("Email sent", FeedbackType.Success));
+        }
+        else
+        {
+            AddFeedback(new FeedbackViewModel(result));
         }
 
-        [HttpPost("{chapterName}/Admin/Members/{id:guid}/Delete")]
-        public async Task<IActionResult> DeleteMember(string chapterName, Guid id)
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("{chapterName}/Admin/Members/AdminMembers/Add")]
+    public async Task<IActionResult> AddAdminMember(string chapterName, [FromForm] AdminMemberAddFormViewModel viewModel)
+    {
+        ServiceResult result = await _chapterAdminService.AddChapterAdminMember(MemberId, chapterName, 
+            viewModel.MemberId!.Value);
+        if (result.Success)
         {
-            await _memberAdminService.DeleteMember(MemberId, id);
-
-            AddFeedback(new FeedbackViewModel("Member deleted", FeedbackType.Success));
-
-            return Redirect($"/{chapterName}/Admin/Members");
+            AddFeedback(new FeedbackViewModel("Admin member added", FeedbackType.Success));
+        }
+        else
+        {
+            AddFeedback(new FeedbackViewModel(result));
         }
 
-        [HttpPost("{chapterName}/Admin/Members/{id:guid}/Picture/Rotate")]
-        public async Task<IActionResult> RotatePicture(Guid id)
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("{chapterName}/Admin/Members/AdminMembers/{id:guid}/Delete")]
+    public async Task<IActionResult> AddAdminMember(string chapterName, Guid id)
+    {
+        ServiceResult result = await _chapterAdminService.DeleteChapterAdminMember(MemberId, chapterName,
+            id);
+        if (result.Success)
         {
-            await _memberAdminService.RotateMemberImage(MemberId, id, 90);
-            return RedirectToReferrer();
+            AddFeedback(new FeedbackViewModel("Admin member removed", FeedbackType.Success));
+        }
+        else
+        {
+            AddFeedback(new FeedbackViewModel(result));
         }
 
-        [HttpPost("{chapterName}/Admin/Members/{id:guid}/SendEmail")]
-        public async Task<IActionResult> SendEmail(Guid id, [FromForm] SendMemberEmailFormViewModel viewModel)
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("{chapterName}/Admin/Members/Subscriptions/{id:guid}/Delete")]
+    public async Task<IActionResult> DeleteSubscription(Guid id)
+    {
+        ServiceResult result = await _chapterAdminService.DeleteChapterSubscription(MemberId, id);
+        if (result.Success)
         {
-            ServiceResult result = await _emailService.SendMemberEmail(MemberId, id, 
-                viewModel.Subject, viewModel.Body);
-
-            if (result.Success)
-            {
-                AddFeedback(new FeedbackViewModel("Email sent", FeedbackType.Success));
-            }
-            else
-            {
-                AddFeedback(new FeedbackViewModel(result));
-            }
-
-            return RedirectToReferrer();
+            AddFeedback(new FeedbackViewModel("Subscription deleted", FeedbackType.Success));
+        }
+        else
+        {
+            AddFeedback(new FeedbackViewModel(result));
         }
 
-        [HttpPost("{chapterName}/Admin/Members/AdminMembers/Add")]
-        public async Task<IActionResult> AddAdminMember(string chapterName, [FromForm] AdminMemberAddFormViewModel viewModel)
-        {
-            ServiceResult result = await _chapterAdminService.AddChapterAdminMember(MemberId, chapterName, 
-                viewModel.MemberId!.Value);
-            if (result.Success)
-            {
-                AddFeedback(new FeedbackViewModel("Admin member added", FeedbackType.Success));
-            }
-            else
-            {
-                AddFeedback(new FeedbackViewModel(result));
-            }
-
-            return RedirectToReferrer();
-        }
-
-        [HttpPost("{chapterName}/Admin/Members/AdminMembers/{id:guid}/Delete")]
-        public async Task<IActionResult> AddAdminMember(string chapterName, Guid id)
-        {
-            ServiceResult result = await _chapterAdminService.DeleteChapterAdminMember(MemberId, chapterName,
-                id);
-            if (result.Success)
-            {
-                AddFeedback(new FeedbackViewModel("Admin member removed", FeedbackType.Success));
-            }
-            else
-            {
-                AddFeedback(new FeedbackViewModel(result));
-            }
-
-            return RedirectToReferrer();
-        }
-
-        [HttpPost("{chapterName}/Admin/Members/Subscriptions/{id:guid}/Delete")]
-        public async Task<IActionResult> DeleteSubscription(Guid id)
-        {
-            ServiceResult result = await _chapterAdminService.DeleteChapterSubscription(MemberId, id);
-            if (result.Success)
-            {
-                AddFeedback(new FeedbackViewModel("Subscription deleted", FeedbackType.Success));
-            }
-            else
-            {
-                AddFeedback(new FeedbackViewModel(result));
-            }
-
-            return RedirectToReferrer();
-        }
+        return RedirectToReferrer();
     }
 }

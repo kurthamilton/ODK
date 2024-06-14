@@ -5,44 +5,43 @@ using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Members
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
+
+public class SubscriptionCreateModel : AdminPageModel
 {
-    public class SubscriptionCreateModel : AdminPageModel
+    private readonly IChapterAdminService _chapterAdminService;
+
+    public SubscriptionCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+        : base(requestCache)
     {
-        private readonly IChapterAdminService _chapterAdminService;
+        _chapterAdminService = chapterAdminService;
+    }
 
-        public SubscriptionCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
-            : base(requestCache)
+    public void OnGet()
+    {
+    }
+
+    public async Task<IActionResult> OnPostAsync(SubscriptionFormViewModel viewModel)
+    {
+        ServiceResult result = await _chapterAdminService.CreateChapterSubscription(CurrentMemberId, Chapter.Id, new CreateChapterSubscription
         {
-            _chapterAdminService = chapterAdminService;
+            Amount = viewModel.Amount ?? 0,
+            ChapterId = Chapter.Id,
+            Description = viewModel.Description,
+            Months = viewModel.DurationMonths ?? 0,
+            Name = viewModel.Name,
+            Title = viewModel.Title,
+            Type = viewModel.Type
+            
+        });
+
+        if (result.Success)
+        {
+            AddFeedback(new FeedbackViewModel("Subscription created", FeedbackType.Success));
+            return Redirect($"/{Chapter.Name}/Admin/Members/Subscriptions");
         }
 
-        public void OnGet()
-        {
-        }
-
-        public async Task<IActionResult> OnPostAsync(SubscriptionFormViewModel viewModel)
-        {
-            ServiceResult result = await _chapterAdminService.CreateChapterSubscription(CurrentMemberId, Chapter.Id, new CreateChapterSubscription
-            {
-                Amount = viewModel.Amount ?? 0,
-                ChapterId = Chapter.Id,
-                Description = viewModel.Description,
-                Months = viewModel.DurationMonths ?? 0,
-                Name = viewModel.Name,
-                Title = viewModel.Title,
-                Type = viewModel.Type
-                
-            });
-
-            if (result.Success)
-            {
-                AddFeedback(new FeedbackViewModel("Subscription created", FeedbackType.Success));
-                return Redirect($"/{Chapter.Name}/Admin/Members/Subscriptions");
-            }
-
-            AddFeedback(new FeedbackViewModel(result));
-            return Page();
-        }
+        AddFeedback(new FeedbackViewModel(result));
+        return Page();
     }
 }

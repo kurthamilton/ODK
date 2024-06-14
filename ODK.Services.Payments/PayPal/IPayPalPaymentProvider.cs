@@ -1,6 +1,5 @@
-﻿namespace ODK.Services.Payments.PayPal
+﻿namespace ODK.Services.Payments.PayPal;
+
+public interface IPayPalPaymentProvider : IPaymentProvider
 {
-    public interface IPayPalPaymentProvider : IPaymentProvider
-    {
-    }
 }

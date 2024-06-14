@@ -1,31 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿namespace ODK.Core.Logging;
 
-namespace ODK.Core.Logging
+public interface ILoggingRepository
 {
-    public interface ILoggingRepository
-    {
-        Task DeleteError(Guid id);
+    Task DeleteError(Guid id);
 
-        Task DeleteLogMessage(int id);
+    Task DeleteLogMessage(int id);
 
-        Task DeleteLogMessages(string message);
+    Task DeleteLogMessages(string message);
 
-        Task<Error?> GetError(Guid id);
+    Task<Error?> GetError(Guid id);
 
-        Task<IReadOnlyCollection<ErrorProperty>> GetErrorProperties(Guid id);
+    Task<IReadOnlyCollection<ErrorProperty>> GetErrorProperties(Guid id);
 
-        Task<IReadOnlyCollection<Error>> GetErrors(int page, int pageSize);
+    Task<IReadOnlyCollection<Error>> GetErrors(int page, int pageSize);
 
-        Task<IReadOnlyCollection<Error>> GetErrors(int page, int pageSize, string exceptionMessage);
+    Task<IReadOnlyCollection<Error>> GetErrors(int page, int pageSize, string exceptionMessage);
 
-        Task<LogMessage?> GetLogMessage(int id);
+    Task<LogMessage?> GetLogMessage(int id);
 
-        Task<IReadOnlyCollection<LogMessage>> GetLogMessages(string level, int page, int pageSize);
+    Task<IReadOnlyCollection<LogMessage>> GetLogMessages(string level, int page, int pageSize);
 
-        Task<IReadOnlyCollection<LogMessage>> GetLogMessages(string level, int page, int pageSize, string message);
+    Task<IReadOnlyCollection<LogMessage>> GetLogMessages(string level, int page, int pageSize, string message);
 
-        Task LogError(Error error, IReadOnlyCollection<ErrorProperty> properties);
-    }
+    Task LogError(Error error, IReadOnlyCollection<ErrorProperty> properties);
 }

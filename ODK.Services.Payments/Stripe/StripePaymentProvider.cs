@@ -1,52 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using Stripe;
 
-namespace ODK.Services.Payments.Stripe
+namespace ODK.Services.Payments.Stripe;
+
+public class StripePaymentProvider : IStripePaymentProvider
 {
-    public class StripePaymentProvider : IStripePaymentProvider
+    public bool HasExternalGateway => true;
+
+    public async Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
+        string cardToken, string description, string memberName)
     {
-        public bool HasExternalGateway => true;
+        StripeClient client = new StripeClient(paymentSettings.ApiSecretKey);
 
-        public async Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
-            string cardToken, string description, string memberName)
+        PaymentIntentService intentService = new PaymentIntentService(client);
+        PaymentIntent intent = await intentService.CreateAsync(new PaymentIntentCreateOptions
         {
-            StripeClient client = new StripeClient(paymentSettings.ApiSecretKey);
-
-            PaymentIntentService intentService = new PaymentIntentService(client);
-            PaymentIntent intent = await intentService.CreateAsync(new PaymentIntentCreateOptions
+            Amount = (int)(amount * 100),
+            Currency = currencyCode.ToLowerInvariant(),
+            Description = $"{memberName}: {description}",
+            ExtraParams = new Dictionary<string, object>
             {
-                Amount = (int)(amount * 100),
-                Currency = currencyCode.ToLowerInvariant(),
-                Description = $"{memberName}: {description}",
-                ExtraParams = new Dictionary<string, object>
                 {
+                    "payment_method_data", new Dictionary<string, object>
                     {
-                        "payment_method_data", new Dictionary<string, object>
+                        { "type", "card" },
                         {
-                            { "type", "card" },
+                            "card", new Dictionary<string, object>
                             {
-                                "card", new Dictionary<string, object>
-                                {
-                                    { "token", cardToken }
-                                }
+                                { "token", cardToken }
                             }
                         }
-
                     }
+
                 }
-            });
+            }
+        });
 
-            intent = await intentService.ConfirmAsync(intent.Id);
-            return ServiceResult.Successful();
-        }
+        intent = await intentService.ConfirmAsync(intent.Id);
+        return ServiceResult.Successful();
+    }
 
-        public Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
-            string cardToken)
-        {
-            throw new NotImplementedException();
-        }
+    public Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
+        string cardToken)
+    {
+        throw new NotImplementedException();
     }
 }

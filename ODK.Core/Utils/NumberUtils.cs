@@ -1,12 +1,9 @@
-﻿using System.Linq;
+﻿namespace ODK.Core.Utils;
 
-namespace ODK.Core.Utils
+public static class NumberUtils
 {
-    public static class NumberUtils
+    public static int? FirstPositive(params int?[] numbers)
     {
-        public static int? FirstPositive(params int?[] numbers)
-        {
-            return numbers.FirstOrDefault(x => x > 0);
-        }
+        return numbers.FirstOrDefault(x => x > 0);
     }
 }

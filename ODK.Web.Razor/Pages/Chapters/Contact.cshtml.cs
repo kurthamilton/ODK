@@ -1,41 +1,39 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
-using ODK.Services.Recaptcha;
 using ODK.Web.Razor.Models.Contact;
 
-namespace ODK.Web.Razor.Pages.Chapters
+namespace ODK.Web.Razor.Pages.Chapters;
+
+public class ContactModel : ChapterPageModel
 {
-    public class ContactModel : ChapterPageModel
+    private readonly IChapterService _chapterService;
+
+    public ContactModel(IRequestCache requestCache, IChapterService chapterService) 
+        : base(requestCache)
     {
-        private readonly IChapterService _chapterService;
+        _chapterService = chapterService;
+    }
 
-        public ContactModel(IRequestCache requestCache, IChapterService chapterService) 
-            : base(requestCache)
+    public bool Sent { get; private set; }
+
+    public void OnGet(bool sent)
+    {
+        Sent = sent;
+    }
+
+    public async Task<IActionResult> OnPostAsync(ContactFormViewModel viewModel)
+    {
+        if (!ModelState.IsValid)
         {
-            _chapterService = chapterService;
+            return Page();
         }
 
-        public bool Sent { get; private set; }
+        await _chapterService.SendContactMessage(Chapter.Id,
+            viewModel.EmailAddress ?? "",
+            viewModel.Message ?? "",
+            viewModel.Recaptcha ?? "");
 
-        public void OnGet(bool sent)
-        {
-            Sent = sent;
-        }
-
-        public async Task<IActionResult> OnPostAsync(ContactFormViewModel viewModel)
-        {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
-            await _chapterService.SendContactMessage(Chapter.Id,
-                viewModel.EmailAddress ?? "",
-                viewModel.Message ?? "",
-                viewModel.Recaptcha ?? "");
-
-            return Redirect($"/{Chapter.Name}/Contact?Sent=True");
-        }
+        return Redirect($"/{Chapter.Name}/Contact?Sent=True");
     }
 }

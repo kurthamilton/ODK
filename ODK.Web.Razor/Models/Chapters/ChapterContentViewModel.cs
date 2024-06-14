@@ -1,18 +1,17 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 
-namespace ODK.Web.Razor.Models.Chapters
+namespace ODK.Web.Razor.Models.Chapters;
+
+public class ChapterContentViewModel
 {
-    public class ChapterContentViewModel
+    public ChapterContentViewModel(Chapter chapter, Member? member)
     {
-        public ChapterContentViewModel(Chapter chapter, Member? member)
-        {
-            Chapter = chapter;
-            Member = member;
-        }
-
-        public Chapter Chapter { get; set; }
-
-        public Member? Member { get; set; }
+        Chapter = chapter;
+        Member = member;
     }
+
+    public Chapter Chapter { get; set; }
+
+    public Member? Member { get; set; }
 }

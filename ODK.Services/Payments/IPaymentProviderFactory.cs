@@ -1,9 +1,8 @@
 ﻿using ODK.Core.Payments;
 
-namespace ODK.Services.Payments
+namespace ODK.Services.Payments;
+
+public interface IPaymentProviderFactory
 {
-    public interface IPaymentProviderFactory
-    {
-        IPaymentProvider GetPaymentProvider(PaymentProviderType type);
-    }
+    IPaymentProvider GetPaymentProvider(PaymentProviderType type);
 }

@@ -2,28 +2,27 @@
 using ODK.Core.SocialMedia;
 using ODK.Services.SocialMedia;
 
-namespace ODK.Web.Razor.Controllers
+namespace ODK.Web.Razor.Controllers;
+
+[ApiController]
+public class ChapterController : Controller
 {
-    [ApiController]
-    public class ChapterController : Controller
+    private readonly IInstagramService _instagramService;
+
+    public ChapterController(IInstagramService instagramService)
     {
-        private readonly IInstagramService _instagramService;
+        _instagramService = instagramService;
+    }
 
-        public ChapterController(IInstagramService instagramService)
+    [HttpGet("{chapterName}/Instagram/Images/{id:guid}")]
+    public async Task<IActionResult> GetInstagramImage(string chapterName, Guid id)
+    {
+        InstagramImage? image = await _instagramService.GetInstagramImage(id);
+        if (image == null)
         {
-            _instagramService = instagramService;
+            return NotFound();
         }
 
-        [HttpGet("{chapterName}/Instagram/Images/{id:guid}")]
-        public async Task<IActionResult> GetInstagramImage(string chapterName, Guid id)
-        {
-            InstagramImage? image = await _instagramService.GetInstagramImage(id);
-            if (image == null)
-            {
-                return NotFound();
-            }
-
-            return File(image.ImageData, image.MimeType);
-        }
+        return File(image.ImageData, image.MimeType);
     }
 }

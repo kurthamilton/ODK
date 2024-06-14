@@ -1,15 +1,14 @@
-﻿namespace ODK.Core.Emails
+﻿namespace ODK.Core.Emails;
+
+public class EmailAddressee
 {
-    public class EmailAddressee
+    public EmailAddressee(string address, string name)
     {
-        public EmailAddressee(string address, string name)
-        {
-            Address = address;
-            Name = name;
-        }
-
-        public string Address { get; }
-
-        public string Name { get; }
+        Address = address;
+        Name = name;
     }
+
+    public string Address { get; }
+
+    public string Name { get; }
 }

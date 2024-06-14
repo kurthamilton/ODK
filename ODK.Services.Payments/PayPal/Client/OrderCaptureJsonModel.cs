@@ -1,10 +1,9 @@
 ﻿using Newtonsoft.Json;
 
-namespace ODK.Services.Payments.PayPal.Client
+namespace ODK.Services.Payments.PayPal.Client;
+
+public class OrderCaptureJsonModel
 {
-    public class OrderCaptureJsonModel
-    {
-        [JsonProperty("status")]
-        public string Status { get; set; } = "";
-    }
+    [JsonProperty("status")]
+    public string Status { get; set; } = "";
 }

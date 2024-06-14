@@ -1,20 +1,19 @@
 using System.Net;
 using ODK.Services.Caching;
 
-namespace ODK.Web.Razor.Pages.Errors
+namespace ODK.Web.Razor.Pages.Errors;
+
+public class ErrorModel : OdkPageModel
 {
-    public class ErrorModel : OdkPageModel
+    public ErrorModel(IRequestCache requestCache) 
+        : base(requestCache)
     {
-        public ErrorModel(IRequestCache requestCache) 
-            : base(requestCache)
-        {
-        }
+    }
 
-        public HttpStatusCode ErrorStatusCode { get; private set; }
+    public HttpStatusCode ErrorStatusCode { get; private set; }
 
-        public void OnGet(HttpStatusCode statusCode)
-        {
-            ErrorStatusCode = statusCode;
-        }
+    public void OnGet(HttpStatusCode statusCode)
+    {
+        ErrorStatusCode = statusCode;
     }
 }

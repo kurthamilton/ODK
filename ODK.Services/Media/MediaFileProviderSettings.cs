@@ -1,9 +1,8 @@
-﻿namespace ODK.Services.Media
-{
-    public class MediaFileProviderSettings
-    {
-        public string RootMediaPath { get; set; } = ""; 
+﻿namespace ODK.Services.Media;
 
-        public string RootMediaUrl { get; set; } = "";
-    }
+public class MediaFileProviderSettings
+{
+    public string RootMediaPath { get; set; } = ""; 
+
+    public string RootMediaUrl { get; set; } = "";
 }

@@ -1,9 +1,8 @@
-﻿namespace ODK.Data.Sql
+﻿namespace ODK.Data.Sql;
+
+public enum SqlJoinType
 {
-    public enum SqlJoinType
-    {
-        Inner = 0,
-        Left = 1,
-        Right = 2
-    }
+    Inner = 0,
+    Left = 1,
+    Right = 2
 }

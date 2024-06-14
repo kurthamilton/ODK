@@ -1,11 +1,10 @@
-﻿namespace ODK.Core.Members
+﻿namespace ODK.Core.Members;
+
+[Flags]
+public enum SubscriptionStatus
 {
-    [Flags]
-    public enum SubscriptionStatus
-    {
-        None = 0,
-        Current = 1,
-        Expiring = 2,
-        Expired = 4
-    }
+    None = 0,
+    Current = 1,
+    Expiring = 2,
+    Expired = 4
 }

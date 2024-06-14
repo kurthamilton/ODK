@@ -1,18 +1,17 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Services.Events;
 
-namespace ODK.Web.Razor.Models.Events
+namespace ODK.Web.Razor.Models.Events;
+
+public class ListEventViewModel
 {
-    public class ListEventViewModel
+    public ListEventViewModel(Chapter chapter, EventResponseViewModel eventResponse)
     {
-        public ListEventViewModel(Chapter chapter, EventResponseViewModel eventResponse)
-        {
-            Chapter = chapter;
-            EventResponse = eventResponse;
-        }
-
-        public Chapter Chapter { get; }
-
-        public EventResponseViewModel EventResponse { get; }
+        Chapter = chapter;
+        EventResponse = eventResponse;
     }
+
+    public Chapter Chapter { get; }
+
+    public EventResponseViewModel EventResponse { get; }
 }

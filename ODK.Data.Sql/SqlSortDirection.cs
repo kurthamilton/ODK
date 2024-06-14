@@ -1,8 +1,7 @@
-﻿namespace ODK.Data.Sql
+﻿namespace ODK.Data.Sql;
+
+public enum SqlSortDirection
 {
-    public enum SqlSortDirection
-    {
-        Ascending = 0,
-        Descending = 1
-    }
+    Ascending = 0,
+    Descending = 1
 }

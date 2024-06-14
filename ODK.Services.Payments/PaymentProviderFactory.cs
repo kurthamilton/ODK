@@ -2,31 +2,30 @@
 using ODK.Services.Payments.PayPal;
 using ODK.Services.Payments.Stripe;
 
-namespace ODK.Services.Payments
+namespace ODK.Services.Payments;
+
+public class PaymentProviderFactory : IPaymentProviderFactory
 {
-    public class PaymentProviderFactory : IPaymentProviderFactory
+    private readonly IPayPalPaymentProvider _payPalPaymentProvider;
+    private readonly IStripePaymentProvider _stripePaymentProvider;
+
+    public PaymentProviderFactory(IStripePaymentProvider stripePaymentProvider,
+        IPayPalPaymentProvider payPalPaymentProvider)
     {
-        private readonly IPayPalPaymentProvider _payPalPaymentProvider;
-        private readonly IStripePaymentProvider _stripePaymentProvider;
+        _payPalPaymentProvider = payPalPaymentProvider;
+        _stripePaymentProvider = stripePaymentProvider;
+    }
 
-        public PaymentProviderFactory(IStripePaymentProvider stripePaymentProvider,
-            IPayPalPaymentProvider payPalPaymentProvider)
+    public IPaymentProvider GetPaymentProvider(PaymentProviderType type)
+    {
+        switch (type)
         {
-            _payPalPaymentProvider = payPalPaymentProvider;
-            _stripePaymentProvider = stripePaymentProvider;
-        }
-
-        public IPaymentProvider GetPaymentProvider(PaymentProviderType type)
-        {
-            switch (type)
-            {
-                case PaymentProviderType.PayPal:
-                    return _payPalPaymentProvider;
-                case PaymentProviderType.Stripe:
-                    return _stripePaymentProvider;
-                default:
-                    throw new ArgumentException($"Payment provider type {type} not supported", nameof(type));
-            }
+            case PaymentProviderType.PayPal:
+                return _payPalPaymentProvider;
+            case PaymentProviderType.Stripe:
+                return _stripePaymentProvider;
+            default:
+                throw new ArgumentException($"Payment provider type {type} not supported", nameof(type));
         }
     }
 }

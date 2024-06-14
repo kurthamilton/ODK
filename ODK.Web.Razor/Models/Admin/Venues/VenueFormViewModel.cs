@@ -1,19 +1,18 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace ODK.Web.Razor.Models.Admin.Venues
+namespace ODK.Web.Razor.Models.Admin.Venues;
+
+public class VenueFormViewModel
 {
-    public class VenueFormViewModel
-    {
-        public Guid ChapterId { get; set; }
-        public Guid CurrentMemberId { get; set; }
+    public Guid ChapterId { get; set; }
+    public Guid CurrentMemberId { get; set; }
 
-        public string Address { get; set; } = "";
+    public string Address { get; set; } = "";
 
-        [Required]
-        public string Name { get; set; } = "";
+    [Required]
+    public string Name { get; set; } = "";
 
-        [DisplayName("Map search")]
-        public string MapQuery { get; set; } = "";
-    }
+    [DisplayName("Map search")]
+    public string MapQuery { get; set; } = "";
 }

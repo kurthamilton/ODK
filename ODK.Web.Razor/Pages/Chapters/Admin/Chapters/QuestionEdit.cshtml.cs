@@ -6,44 +6,43 @@ using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters
-{
-    public class QuestionEditModel : AdminPageModel
-    {
-        private readonly IChapterAdminService _chapterAdminService;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters;
 
-        public QuestionEditModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
-            : base(requestCache)
+public class QuestionEditModel : AdminPageModel
+{
+    private readonly IChapterAdminService _chapterAdminService;
+
+    public QuestionEditModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+        : base(requestCache)
+    {
+        _chapterAdminService = chapterAdminService;
+    }
+
+    public ChapterQuestion Question { get; private set; } = null!;
+
+    public async Task<IActionResult> OnGet(Guid id)
+    {
+        Question = await _chapterAdminService.GetChapterQuestion(CurrentMemberId, id);
+        if (Question == null)
         {
-            _chapterAdminService = chapterAdminService;
+            return NotFound();
         }
 
-        public ChapterQuestion Question { get; private set; } = null!;
+        return Page();
+    }
 
-        public async Task<IActionResult> OnGet(Guid id)
+    public async Task<IActionResult> OnPostAsync(Guid id, ChapterQuestionFormViewModel viewModel)
+    {
+        ServiceResult result = await _chapterAdminService.UpdateChapterQuestion(CurrentMemberId, id,
+            new CreateChapterQuestion(viewModel.Answer, viewModel.Question));
+
+        if (!result.Success)
         {
-            Question = await _chapterAdminService.GetChapterQuestion(CurrentMemberId, id);
-            if (Question == null)
-            {
-                return NotFound();
-            }
-
+            AddFeedback(new FeedbackViewModel(result));
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(Guid id, ChapterQuestionFormViewModel viewModel)
-        {
-            ServiceResult result = await _chapterAdminService.UpdateChapterQuestion(CurrentMemberId, id,
-                new CreateChapterQuestion(viewModel.Answer, viewModel.Question));
-
-            if (!result.Success)
-            {
-                AddFeedback(new FeedbackViewModel(result));
-                return Page();
-            }
-
-            AddFeedback(new FeedbackViewModel("Question updated", FeedbackType.Success));
-            return Redirect($"/{Chapter.Name}/Admin/Chapter/Questions");
-        }
+        AddFeedback(new FeedbackViewModel("Question updated", FeedbackType.Success));
+        return Redirect($"/{Chapter.Name}/Admin/Chapter/Questions");
     }
 }

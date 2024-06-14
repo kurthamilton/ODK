@@ -3,69 +3,68 @@ using FluentAssertions;
 using NUnit.Framework;
 using ODK.Core.Utils;
 
-namespace ODK.Core.Tests.Utils
+namespace ODK.Core.Tests.Utils;
+
+public static class StringUtilsTests
 {
-    public static class StringUtilsTests
+    [TestCase("a2c")]
+    [TestCase(".a.2.c.")]
+    [TestCase("\\a.2.c/")]
+    [TestCase("\\a.2.c/")]
+    [TestCase("#a.2.c###################")]
+    public static void AlphaNumericReturnsAlphaNumericString(string text)
     {
-        [TestCase("a2c")]
-        [TestCase(".a.2.c.")]
-        [TestCase("\\a.2.c/")]
-        [TestCase("\\a.2.c/")]
-        [TestCase("#a.2.c###################")]
-        public static void AlphaNumericReturnsAlphaNumericString(string text)
+        text = StringUtils.AlphaNumeric(text);
+
+        text.Should().Be("a2c");
+    }
+
+    [Test]
+    public static void Interpolate_ReplacesTokens()
+    {
+        string text = "The {a} brown {b}";
+
+        string result = StringUtils.Interpolate(text, new Dictionary<string, string>
         {
-            text = StringUtils.AlphaNumeric(text);
+            {"a", "quick"},
+            {"b", "fox"}
+        });
 
-            text.Should().Be("a2c");
-        }
+        result.Should().Be("The quick brown fox");
+    }
 
-        [Test]
-        public static void Interpolate_ReplacesTokens()
+    [Test]
+    public static void Interpolate_ReplacesAllInstances()
+    {
+        string text = "The {a} brown {a} {b}";
+
+        string result = StringUtils.Interpolate(text, new Dictionary<string, string>
         {
-            string text = "The {a} brown {b}";
+            {"a", "quick"},
+            {"b", "fox"}
+        });
 
-            string result = StringUtils.Interpolate(text, new Dictionary<string, string>
-            {
-                {"a", "quick"},
-                {"b", "fox"}
-            });
+        result.Should().Be("The quick brown quick fox");
+    }
 
-            result.Should().Be("The quick brown fox");
-        }
+    [Test]
+    public static void Interpolate_IgnoresMissingTokenValues()
+    {
+        string text = "The {a} brown {b}";
 
-        [Test]
-        public static void Interpolate_ReplacesAllInstances()
+        string result = StringUtils.Interpolate(text, new Dictionary<string, string>
         {
-            string text = "The {a} brown {a} {b}";
+            {"a", "quick"}
+        });
 
-            string result = StringUtils.Interpolate(text, new Dictionary<string, string>
-            {
-                {"a", "quick"},
-                {"b", "fox"}
-            });
+        result.Should().Be("The quick brown {b}");
+    }
 
-            result.Should().Be("The quick brown quick fox");
-        }
+    [Test]
+    public static void Tokens_ReturnsMultipleTokens()
+    {
+        IEnumerable<string> tokens = StringUtils.Tokens("This {a} a {b} {c}");
 
-        [Test]
-        public static void Interpolate_IgnoresMissingTokenValues()
-        {
-            string text = "The {a} brown {b}";
-
-            string result = StringUtils.Interpolate(text, new Dictionary<string, string>
-            {
-                {"a", "quick"}
-            });
-
-            result.Should().Be("The quick brown {b}");
-        }
-
-        [Test]
-        public static void Tokens_ReturnsMultipleTokens()
-        {
-            IEnumerable<string> tokens = StringUtils.Tokens("This {a} a {b} {c}");
-
-            tokens.Should().BeEquivalentTo("a", "b", "c");
-        }
+        tokens.Should().BeEquivalentTo("a", "b", "c");
     }
 }

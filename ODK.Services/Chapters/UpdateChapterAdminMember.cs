@@ -1,13 +1,12 @@
-﻿namespace ODK.Services.Chapters
+﻿namespace ODK.Services.Chapters;
+
+public class UpdateChapterAdminMember
 {
-    public class UpdateChapterAdminMember
-    {
-        public string AdminEmailAddress { get; set; } = "";
+    public string AdminEmailAddress { get; set; } = "";
 
-        public bool ReceiveContactEmails { get; set; }
+    public bool ReceiveContactEmails { get; set; }
 
-        public bool ReceiveNewMemberEmails { get; set; }
+    public bool ReceiveNewMemberEmails { get; set; }
 
-        public bool SendNewMemberEmails { get; set; }
-    }
+    public bool SendNewMemberEmails { get; set; }
 }

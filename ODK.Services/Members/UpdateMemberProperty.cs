@@ -1,11 +1,8 @@
-﻿using System;
+﻿namespace ODK.Services.Members;
 
-namespace ODK.Services.Members
+public class UpdateMemberProperty
 {
-    public class UpdateMemberProperty
-    {
-        public Guid ChapterPropertyId { get; set; }
+    public Guid ChapterPropertyId { get; set; }
 
-        public string Value { get; set; } = "";
-    }
+    public string Value { get; set; } = "";
 }

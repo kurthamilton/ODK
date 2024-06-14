@@ -1,51 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 
-namespace ODK.Data.Sql
+namespace ODK.Data.Sql;
+
+public static class SqlDbTypes
 {
-    public static class SqlDbTypes
+    private static readonly IDictionary<Type, SqlDbType> Types = new Dictionary<Type, SqlDbType>
     {
-        private static readonly IDictionary<Type, SqlDbType> Types = new Dictionary<Type, SqlDbType>
-        {
-            { typeof(bool), SqlDbType.Bit },
-            { typeof(byte), SqlDbType.SmallInt },
-            { typeof(byte[]), SqlDbType.VarBinary },
-            { typeof(char[]), SqlDbType.NVarChar },
-            { typeof(DateTime), SqlDbType.DateTime },
-            { typeof(DateTimeOffset), SqlDbType.DateTimeOffset },
-            { typeof(decimal), SqlDbType.Decimal },
-            { typeof(double), SqlDbType.Float },
-            { typeof(Guid), SqlDbType.UniqueIdentifier },
-            { typeof(int), SqlDbType.Int },
-            { typeof(long), SqlDbType.BigInt },
-            { typeof(string), SqlDbType.NVarChar }
-        };
+        { typeof(bool), SqlDbType.Bit },
+        { typeof(byte), SqlDbType.SmallInt },
+        { typeof(byte[]), SqlDbType.VarBinary },
+        { typeof(char[]), SqlDbType.NVarChar },
+        { typeof(DateTime), SqlDbType.DateTime },
+        { typeof(DateTimeOffset), SqlDbType.DateTimeOffset },
+        { typeof(decimal), SqlDbType.Decimal },
+        { typeof(double), SqlDbType.Float },
+        { typeof(Guid), SqlDbType.UniqueIdentifier },
+        { typeof(int), SqlDbType.Int },
+        { typeof(long), SqlDbType.BigInt },
+        { typeof(string), SqlDbType.NVarChar }
+    };
 
-        public static SqlDbType GetSqlDbType<T>()
+    public static SqlDbType GetSqlDbType<T>()
+    {
+        return GetSqlDbType(typeof(T));
+    }
+
+    public static SqlDbType GetSqlDbType(Type type)
+    {
+        if (type.IsEnum)
         {
-            return GetSqlDbType(typeof(T));
+            type = type.GetEnumUnderlyingType();
         }
 
-        public static SqlDbType GetSqlDbType(Type type)
+        if (Types.ContainsKey(type))
         {
-            if (type.IsEnum)
-            {
-                type = type.GetEnumUnderlyingType();
-            }
-
-            if (Types.ContainsKey(type))
-            {
-                return Types[type];
-            }
-
-            Type nullableType = Nullable.GetUnderlyingType(type);
-            if (nullableType != null)
-            {
-                return GetSqlDbType(nullableType);
-            }
-
-            throw new ArgumentException($"SqlDbType not found for C# type {type.Name}", nameof(type));
+            return Types[type];
         }
+
+        Type nullableType = Nullable.GetUnderlyingType(type);
+        if (nullableType != null)
+        {
+            return GetSqlDbType(nullableType);
+        }
+
+        throw new ArgumentException($"SqlDbType not found for C# type {type.Name}", nameof(type));
     }
 }

@@ -1,20 +1,18 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace ODK.Services.Payments.PayPal.Client
+namespace ODK.Services.Payments.PayPal.Client;
+
+public class OrderJsonModel
 {
-    public class OrderJsonModel
-    {
-        [JsonProperty("create_time")]
-        public DateTime Created { get; set; }
+    [JsonProperty("create_time")]
+    public DateTime Created { get; set; }
 
-        [JsonProperty("id")]
-        public string Id { get; set; } = "";
+    [JsonProperty("id")]
+    public string Id { get; set; } = "";
 
-        [JsonProperty("purchase_units")]
-        public PurchaseUnitJsonModel[] PurchaseUnits { get; set; } = Array.Empty<PurchaseUnitJsonModel>();
+    [JsonProperty("purchase_units")]
+    public PurchaseUnitJsonModel[] PurchaseUnits { get; set; } = Array.Empty<PurchaseUnitJsonModel>();
 
-        [JsonProperty("status")]
-        public string Status { get; set; } = "";
-    }
+    [JsonProperty("status")]
+    public string Status { get; set; } = "";
 }

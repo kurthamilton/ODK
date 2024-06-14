@@ -1,9 +1,8 @@
-﻿namespace ODK.Services.Emails
-{
-    public class UpdateEmail
-    {
-        public string HtmlContent { get; set; } = "";
+﻿namespace ODK.Services.Emails;
 
-        public string Subject { get; set; } = "";
-    }
+public class UpdateEmail
+{
+    public string HtmlContent { get; set; } = "";
+
+    public string Subject { get; set; } = "";
 }

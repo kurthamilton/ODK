@@ -1,8 +1,7 @@
-﻿namespace ODK.Core.Payments
+﻿namespace ODK.Core.Payments;
+
+public enum PaymentProviderType
 {
-    public enum PaymentProviderType
-    {
-        Stripe = 1,
-        PayPal = 2
-    }
+    Stripe = 1,
+    PayPal = 2
 }

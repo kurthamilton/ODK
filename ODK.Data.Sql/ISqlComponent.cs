@@ -1,7 +1,6 @@
-﻿namespace ODK.Data.Sql
+﻿namespace ODK.Data.Sql;
+
+public interface ISqlComponent
 {
-    public interface ISqlComponent
-    {
-        string ToSql(SqlContext context);
-    }
+    string ToSql(SqlContext context);
 }

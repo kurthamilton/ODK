@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using ODK.Core.Venues;
+﻿using ODK.Core.Venues;
 
-namespace ODK.Services.Venues
+namespace ODK.Services.Venues;
+
+public interface IVenueAdminService
 {
-    public interface IVenueAdminService
-    {
-        Task<ServiceResult> CreateVenue(Guid currentMemberId, CreateVenue venue);
+    Task<ServiceResult> CreateVenue(Guid currentMemberId, CreateVenue venue);
 
-        Task<Venue> GetVenue(Guid currentMemberId, Guid venueId);
+    Task<Venue> GetVenue(Guid currentMemberId, Guid venueId);
 
-        Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId);
+    Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId);
 
-        Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId, IReadOnlyCollection<Guid> venueIds);
+    Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId, IReadOnlyCollection<Guid> venueIds);
 
-        Task<ServiceResult> UpdateVenue(Guid memberId, Guid id, CreateVenue venue);
-    }
+    Task<ServiceResult> UpdateVenue(Guid memberId, Guid id, CreateVenue venue);
 }

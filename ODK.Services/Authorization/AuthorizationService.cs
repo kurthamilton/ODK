@@ -1,111 +1,108 @@
-﻿using System;
-using System.Threading.Tasks;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Services.Exceptions;
 
-namespace ODK.Services.Authorization
+namespace ODK.Services.Authorization;
+
+public class AuthorizationService : IAuthorizationService
 {
-    public class AuthorizationService : IAuthorizationService
+    private readonly IChapterRepository _chapterRepository;
+    private readonly IMemberRepository _memberRepository;
+
+    public AuthorizationService(IMemberRepository memberRepository, 
+        IChapterRepository chapterRepository)
     {
-        private readonly IChapterRepository _chapterRepository;
-        private readonly IMemberRepository _memberRepository;
+        _chapterRepository = chapterRepository;
+        _memberRepository = memberRepository;
+    }
 
-        public AuthorizationService(IMemberRepository memberRepository, 
-            IChapterRepository chapterRepository)
+    public async Task AssertMemberIsChapterMember(Guid memberId, Guid chapterId)
+    {
+        Member member = await GetMember(memberId);
+        await AssertMemberIsChapterMember(member, chapterId);
+    }
+
+    public async Task AssertMemberIsChapterMember(Member member, Guid chapterId)
+    {
+        AssertMemberIsCurrent(member);
+        if (member.ChapterId == chapterId)
         {
-            _chapterRepository = chapterRepository;
-            _memberRepository = memberRepository;
+            return;
         }
 
-        public async Task AssertMemberIsChapterMember(Guid memberId, Guid chapterId)
+        ChapterAdminMember? chapterAdminMember = await _chapterRepository.GetChapterAdminMember(chapterId, member.Id);
+        if (chapterAdminMember != null)
         {
-            Member member = await GetMember(memberId);
-            await AssertMemberIsChapterMember(member, chapterId);
+            return;
         }
 
-        public async Task AssertMemberIsChapterMember(Member member, Guid chapterId)
+        throw new OdkNotAuthorizedException();
+    }
+
+    public async Task AssertMemberIsCurrent(Guid memberId)
+    {
+        Member member = await GetMember(memberId);
+        AssertMemberIsCurrent(member);
+    }
+
+    public void AssertMemberIsCurrent(Member? member)
+    {
+        if (member == null || !member.Activated || member.Disabled)
         {
-            AssertMemberIsCurrent(member);
-            if (member.ChapterId == chapterId)
-            {
-                return;
-            }
+            throw new OdkNotFoundException();
+        }
+    }
 
-            ChapterAdminMember? chapterAdminMember = await _chapterRepository.GetChapterAdminMember(chapterId, member.Id);
-            if (chapterAdminMember != null)
-            {
-                return;
-            }
-
+    public async Task AssertMembershipIsActive(Guid memberId, Guid chapterId)
+    {
+        MemberSubscription? subscription = await GetMemberSubscription(memberId);
+        if (subscription == null || !await MembershipIsActive(subscription, chapterId))
+        {
             throw new OdkNotAuthorizedException();
         }
+    }
 
-        public async Task AssertMemberIsCurrent(Guid memberId)
+    public async Task<bool> MembershipIsActive(MemberSubscription subscription, Guid chapterId)
+    {
+        ChapterMembershipSettings? membershipSettings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
+
+        return MembershipIsActive(subscription, membershipSettings);
+    }
+
+    public bool MembershipIsActive(MemberSubscription subscription, ChapterMembershipSettings? membershipSettings)
+    {
+        if (subscription.Type == SubscriptionType.Alum)
         {
-            Member member = await GetMember(memberId);
-            AssertMemberIsCurrent(member);
+            return false;
         }
 
-        public void AssertMemberIsCurrent(Member? member)
+        if (subscription.ExpiryDate == null || subscription.ExpiryDate >= DateTime.UtcNow)
         {
-            if (member == null || !member.Activated || member.Disabled)
-            {
-                throw new OdkNotFoundException();
-            }
+            return true;
         }
 
-        public async Task AssertMembershipIsActive(Guid memberId, Guid chapterId)
+        if (membershipSettings == null)
         {
-            MemberSubscription? subscription = await GetMemberSubscription(memberId);
-            if (subscription == null || !await MembershipIsActive(subscription, chapterId))
-            {
-                throw new OdkNotAuthorizedException();
-            }
+            return false;
         }
 
-        public async Task<bool> MembershipIsActive(MemberSubscription subscription, Guid chapterId)
+        if (membershipSettings.MembershipDisabledAfterDaysExpired <= 0)
         {
-            ChapterMembershipSettings? membershipSettings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
-
-            return MembershipIsActive(subscription, membershipSettings);
+            return true;
         }
 
-        public bool MembershipIsActive(MemberSubscription subscription, ChapterMembershipSettings? membershipSettings)
-        {
-            if (subscription.Type == SubscriptionType.Alum)
-            {
-                return false;
-            }
+        return subscription.ExpiryDate >= DateTime.UtcNow.AddDays(-1 * membershipSettings.MembershipDisabledAfterDaysExpired);
+    }
 
-            if (subscription.ExpiryDate == null || subscription.ExpiryDate >= DateTime.UtcNow)
-            {
-                return true;
-            }
+    private async Task<Member> GetMember(Guid id)
+    {
+        Member? member = await _memberRepository.GetMember(id, true);
+        AssertMemberIsCurrent(member);
+        return member!;
+    }
 
-            if (membershipSettings == null)
-            {
-                return false;
-            }
-
-            if (membershipSettings.MembershipDisabledAfterDaysExpired <= 0)
-            {
-                return true;
-            }
-
-            return subscription.ExpiryDate >= DateTime.UtcNow.AddDays(-1 * membershipSettings.MembershipDisabledAfterDaysExpired);
-        }
-
-        private async Task<Member> GetMember(Guid id)
-        {
-            Member? member = await _memberRepository.GetMember(id, true);
-            AssertMemberIsCurrent(member);
-            return member!;
-        }
-
-        private async Task<MemberSubscription?> GetMemberSubscription(Guid memberId)
-        {
-            return await _memberRepository.GetMemberSubscription(memberId);
-        }
+    private async Task<MemberSubscription?> GetMemberSubscription(Guid memberId)
+    {
+        return await _memberRepository.GetMemberSubscription(memberId);
     }
 }

@@ -5,79 +5,78 @@ using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Members;
 
-namespace ODK.Web.Razor.Controllers
+namespace ODK.Web.Razor.Controllers;
+
+[ApiController]
+public class MembersController : ControllerBase
 {
-    [ApiController]
-    public class MembersController : ControllerBase
+    private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");
+
+    private readonly IMemberService _memberService;
+
+    public MembersController(IMemberService memberService)
     {
-        private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");
+        _memberService = memberService;
+    }
 
-        private readonly IMemberService _memberService;
-
-        public MembersController(IMemberService memberService)
+    [HttpGet("{Chapter}/Members/{Id}/Image")]
+    public async Task<IActionResult> Image(Guid id, string chapter, int? size = null, int? w = null, int? h = null)
+    {
+        if (!User.IsInRole(OdkRoles.Member))
         {
-            _memberService = memberService;
+            return new UnauthorizedResult();
         }
 
-        [HttpGet("{Chapter}/Members/{Id}/Image")]
-        public async Task<IActionResult> Image(Guid id, string chapter, int? size = null, int? w = null, int? h = null)
+        if (w > 0 || h > 0)
         {
-            if (!User.IsInRole(OdkRoles.Member))
-            {
-                return new UnauthorizedResult();
-            }
-
-            if (w > 0 || h > 0)
-            {
-                return await HandleVersionedRequest(version => _memberService.GetMemberImage(version, id, w, h),
-                    MemberImageResult);
-            }
-
-            return await HandleVersionedRequest(version => _memberService.GetMemberImage(version, id, size),
-                               MemberImageResult);
+            return await HandleVersionedRequest(version => _memberService.GetMemberImage(version, id, w, h),
+                MemberImageResult);
         }
 
-        private void AddVersionHeader(long version)
+        return await HandleVersionedRequest(version => _memberService.GetMemberImage(version, id, size),
+                           MemberImageResult);
+    }
+
+    private void AddVersionHeader(long version)
+    {
+        Response.Headers.Add("ETag", $"\"{version}\"");
+    }
+
+    private long? GetRequestVersion()
+    {
+        string? requestETag = Request.Headers["If-None-Match"].FirstOrDefault();
+        if (requestETag == null)
         {
-            Response.Headers.Add("ETag", $"\"{version}\"");
+            return null;
         }
 
-        private long? GetRequestVersion()
-        {
-            string? requestETag = Request.Headers["If-None-Match"].FirstOrDefault();
-            if (requestETag == null)
-            {
-                return null;
-            }
+        Match match = VersionRegex.Match(requestETag);
+        return match.Success ? long.Parse(match.Groups["version"].Value) : new long?();
+    }
 
-            Match match = VersionRegex.Match(requestETag);
-            return match.Success ? long.Parse(match.Groups["version"].Value) : new long?();
+    protected async Task<IActionResult> HandleVersionedRequest<T>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T?, IActionResult> map) where T : class
+    {
+        long? version = GetRequestVersion();
+
+        VersionedServiceResult<T> result = await getter(version);
+
+        AddVersionHeader(result.Version);
+
+        if (version == result.Version)
+        {
+            return new StatusCodeResult(304);
         }
 
-        protected async Task<IActionResult> HandleVersionedRequest<T>(Func<long?, Task<VersionedServiceResult<T>>> getter, Func<T?, IActionResult> map) where T : class
+        return map(result.Value);
+    }
+
+    protected IActionResult MemberImageResult(MemberImage? image)
+    {
+        if (image == null)
         {
-            long? version = GetRequestVersion();
-
-            VersionedServiceResult<T> result = await getter(version);
-
-            AddVersionHeader(result.Version);
-
-            if (version == result.Version)
-            {
-                return new StatusCodeResult(304);
-            }
-
-            return map(result.Value);
+            return NoContent();
         }
 
-        protected IActionResult MemberImageResult(MemberImage? image)
-        {
-            if (image == null)
-            {
-                return NoContent();
-            }
-
-            return File(image.ImageData, image.MimeType);
-        }
+        return File(image.ImageData, image.MimeType);
     }
 }

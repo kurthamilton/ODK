@@ -1,10 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿namespace ODK.Core.Payments;
 
-namespace ODK.Core.Payments
+public interface IPaymentRepository
 {
-    public interface IPaymentRepository
-    {
-        Task<Guid> CreatePayment(Payment payment);
-    }
+    Task<Guid> CreatePayment(Payment payment);
 }
