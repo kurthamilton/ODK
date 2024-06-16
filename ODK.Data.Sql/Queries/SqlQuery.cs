@@ -11,14 +11,14 @@ public abstract class SqlQuery<T>
         new Dictionary<SqlColumn, IList<(string, object?)>>();
     private bool _delete;
     private int _fetch;
-    private T _insertEntity;
+    private T? _insertEntity;
     private SqlColumn? _insertOutputColumn;
     private readonly IList<ISqlComponent> _joins = new List<ISqlComponent>();
     private int _offset;
     private readonly IList<ISqlComponent> _orderByFields = new List<ISqlComponent>();
     private readonly IList<string> _selectColumns = new List<string>();
     private int _top;
-    private readonly IList<(SqlColumn Column, object Value)> _updateColumns = new List<(SqlColumn, object)>();
+    private readonly IList<(SqlColumn Column, object? Value)> _updateColumns = new List<(SqlColumn, object?)>();
 
     protected SqlQuery(SqlContext context)
     {
@@ -58,9 +58,9 @@ public abstract class SqlQuery<T>
         await Context.ExecuteNonQueryAsync(this);
     }
 
-    public async Task<T> FirstOrDefaultAsync()
+    public Task<T?> FirstOrDefaultAsync()
     {
-        return await Context.ReadRecordAsync(this);
+        return Context.ReadRecordAsync(this);
     }
 
     public IEnumerable<(SqlColumn, string?, object?)> GetParameterValues(SqlContext context)
@@ -87,7 +87,7 @@ public abstract class SqlQuery<T>
 
         if (_updateColumns.Count > 0)
         {
-            foreach ((SqlColumn column, object value) in _updateColumns)
+            foreach ((SqlColumn column, object? value) in _updateColumns)
             {
                 yield return (column, null, value);
             }

@@ -12,9 +12,9 @@ public interface IEmailRepository
 
     Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmailsAsync(Guid chapterId);
 
-    Task<Email> GetEmailAsync(EmailType type);
+    Task<Email?> GetEmailAsync(EmailType type);
 
-    Task<Email> GetEmailAsync(EmailType type, Guid chapterId);
+    Task<Email?> GetEmailAsync(EmailType type, Guid chapterId);
 
     Task<IReadOnlyCollection<Email>> GetEmailsAsync();
 

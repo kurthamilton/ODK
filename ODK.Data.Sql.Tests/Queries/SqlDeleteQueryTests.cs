@@ -20,7 +20,8 @@ public static class SqlDeleteQueryTests
         SqlQuery<TestEntity> query = new SqlDeleteQuery<TestEntity>(context)
             .Where(x => x.Int).EqualTo(5);
 
-        (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+        (SqlColumn Column, string? ParameterName, object? Value)[] parameterValues = 
+            query.GetParameterValues(context).ToArray();
 
         parameterValues
             .Select(x => x.Column.ColumnName)
@@ -67,7 +68,7 @@ public static class SqlDeleteQueryTests
         sql.Should().Be("DELETE Table FROM Table WHERE (Table.[Other] = @Other0)");
     }
 
-    private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)
+    private static SqlContext CreateMockContext(SqlMap<TestEntity>? map = null)
     {
         MockContext context = new MockContext();
         context.AddMockMap(map ?? CreateMap());

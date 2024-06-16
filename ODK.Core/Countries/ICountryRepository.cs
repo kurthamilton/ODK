@@ -2,9 +2,9 @@
 
 public interface ICountryRepository
 {
-    Task<IReadOnlyCollection<Country>> GetCountries();
+    Task<IReadOnlyCollection<Country>> GetCountriesAsync();
 
-    Task<long> GetCountriesVersion();
+    Task<long> GetCountriesVersionAsync();
 
-    Task<Country> GetCountry(Guid id);
+    Task<Country?> GetCountryAsync(Guid id);
 }

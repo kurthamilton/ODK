@@ -15,7 +15,7 @@ public static class SqlSelectQueryTests
         SqlContext context = CreateMockContext();
         SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context);
 
-        (SqlColumn, string, object)[] parameterValues = query.GetParameterValues(context).ToArray();
+        (SqlColumn, string?, object?)[] parameterValues = query.GetParameterValues(context).ToArray();
 
         parameterValues.Should().BeEmpty();
     }
@@ -28,7 +28,7 @@ public static class SqlSelectQueryTests
             .Where(x => x.Int).EqualTo(1)
             .Where(x => x.String).EqualTo("value");
 
-        (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+        (SqlColumn Column, string? ParameterName, object? Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
         parameterValues
             .Select(x => x.Column.ColumnName)
@@ -49,7 +49,7 @@ public static class SqlSelectQueryTests
             .Where(x => x.Int).GreaterThan(1)
             .Where(x => x.Int).LessThan(5);
 
-        (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+        (SqlColumn Column, string? ParameterName, object? Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
         parameterValues
             .Select(x => x.ParameterName)
@@ -69,7 +69,7 @@ public static class SqlSelectQueryTests
         SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
             .WhereAny<TestEntity, int>(x => x.Int, new [] {1, 3, 5});
 
-        (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+        (SqlColumn Column, string? ParameterName, object? Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
         parameterValues
             .Select(x => x.ParameterName)
@@ -89,7 +89,7 @@ public static class SqlSelectQueryTests
         SqlQuery<TestEntity> query = new SqlSelectQuery<TestEntity>(context)
             .Where(x => x.String).IsNotNull();
 
-        (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+        (SqlColumn Column, string? ParameterName, object? Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
         parameterValues.Should().BeEmpty();
     }
@@ -260,7 +260,7 @@ public static class SqlSelectQueryTests
         sql.Should().Be("SELECT Table.[Int],Table.[String] FROM Table JOIN Related ON Table.[Int] = Related.[Int]");
     }
 
-    private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null, SqlMap<TestRelatedEntity> relatedMap = null)
+    private static SqlContext CreateMockContext(SqlMap<TestEntity>? map = null, SqlMap<TestRelatedEntity>? relatedMap = null)
     {
         MockContext context = new MockContext();
         context.AddMockMap(map ?? CreateMap());

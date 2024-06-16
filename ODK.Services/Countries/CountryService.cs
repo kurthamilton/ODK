@@ -13,11 +13,11 @@ public class CountryService : ICountryService
 
     public async Task<IReadOnlyCollection<Country>> GetCountries()
     {
-        return await _countryRepository.GetCountries();
+        return await _countryRepository.GetCountriesAsync();
     }
 
     public async Task<Country> GetCountry(Guid countryId)
     {
-        return await _countryRepository.GetCountry(countryId);
+        return await _countryRepository.GetCountryAsync(countryId);
     }
 }

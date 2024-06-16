@@ -37,7 +37,7 @@ public static class SqlDbTypes
             return Types[type];
         }
 
-        Type nullableType = Nullable.GetUnderlyingType(type);
+        var nullableType = Nullable.GetUnderlyingType(type);
         if (nullableType != null)
         {
             return GetSqlDbType(nullableType);

@@ -60,7 +60,7 @@ public abstract class SqlContext
         return new SqlInsertEntityQuery<T>(this, entity);
     }
 
-    public async Task<TRecord> ReadRecordAsync<T, TRecord>(SqlQuery<T> query, Func<DbDataReader, TRecord> read)
+    public async Task<TRecord?> ReadRecordAsync<T, TRecord>(SqlQuery<T> query, Func<DbDataReader, TRecord> read)
     {
         return await ReadQueryAsync(query, reader =>
         {
@@ -73,7 +73,7 @@ public abstract class SqlContext
         });
     }
 
-    public async Task<T> ReadRecordAsync<T>(SqlQuery<T> query)
+    public async Task<T?> ReadRecordAsync<T>(SqlQuery<T> query)
     {
         SqlMap<T> map = GetMap<T>();
         return await ReadRecordAsync(query, map.Read);
@@ -110,7 +110,7 @@ public abstract class SqlContext
 
     protected void AddMap<T>(SqlMap<T> map)
     {
-        string key = typeof(T).FullName;
+        var key = typeof(T).FullName;
         if (key == null)
         {
             return;
@@ -119,10 +119,7 @@ public abstract class SqlContext
         _maps[key] = map;
     }
 
-    private static string GetKey(Type type)
-    {
-        return type.FullName;
-    }
+    private static string? GetKey(Type type) => type.FullName;
 
     private async Task ExecuteQueryAsync<T>(SqlQuery<T> query, Func<DbCommand, Task> action, string appendSql = "")
     {
@@ -143,18 +140,18 @@ public abstract class SqlContext
 
     private object GetMap(Type type)
     {
-        string key = GetKey(type);
-        if (!_maps.ContainsKey(key))
+        var key = GetKey(type);
+        if (key == null || !_maps.ContainsKey(key))
         {
             throw new InvalidOperationException($"Type {key} not mapped in sql context");
         }
         return _maps[key];
     }
 
-    private async Task<TResult> ReadQueryAsync<T, TResult>(SqlQuery<T> query, 
+    private async Task<TResult?> ReadQueryAsync<T, TResult>(SqlQuery<T> query, 
         Func<DbDataReader, TResult> read, string appendSql = "") 
     {
-        TResult result = default;
+        TResult? result = default;
 
         await ExecuteQueryAsync(query, async command =>
         {

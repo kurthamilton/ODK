@@ -10,21 +10,21 @@ public class CountryRepository : RepositoryBase, ICountryRepository
     {
     }
 
-    public async Task<IReadOnlyCollection<Country>> GetCountries()
+    public async Task<IReadOnlyCollection<Country>> GetCountriesAsync()
     {
         return await Context
             .Select<Country>()
             .ToArrayAsync();
     }
 
-    public async Task<long> GetCountriesVersion()
+    public async Task<long> GetCountriesVersionAsync()
     {
         return await Context
             .Select<Country>()
             .VersionAsync();
     }
 
-    public async Task<Country> GetCountry(Guid id)
+    public async Task<Country?> GetCountryAsync(Guid id)
     {
         return await Context
             .Select<Country>()

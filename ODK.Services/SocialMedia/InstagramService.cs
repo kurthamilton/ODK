@@ -26,7 +26,7 @@ public class InstagramService : IInstagramService
     {
         await ScrapeLatestInstagramPosts(chapterId);
 
-        IReadOnlyCollection<InstagramPost> posts = await _instagramRepository.GetPosts(chapterId, 8);
+        IReadOnlyCollection<InstagramPost> posts = await _instagramRepository.GetPostsAsync(chapterId, 8);
 
         return posts
             .Select(x => new SocialMediaImage
@@ -39,7 +39,7 @@ public class InstagramService : IInstagramService
 
     public async Task<InstagramImage> GetInstagramImage(Guid instagramPostId)
     {
-        return await _instagramRepository.GetImage(instagramPostId);
+        return await _instagramRepository.GetImageAsync(instagramPostId);
     }
 
     public async Task<IReadOnlyCollection<InstagramPost>> GetInstagramPosts(Guid chapterId, int pageSize)
@@ -56,7 +56,7 @@ public class InstagramService : IInstagramService
         }
 
         Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettingsAsync();
-        Task<DateTime?> latestPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
+        Task<DateTime?> latestPostDateTask = _instagramRepository.GetLastPostDateAsync(chapterId);
 
         await Task.WhenAll(settingsTask, latestPostDateTask);
 
@@ -68,7 +68,7 @@ public class InstagramService : IInstagramService
                 links.InstagramName, latest);
         }
 
-        return await _instagramRepository.GetPosts(chapterId, pageSize);
+        return await _instagramRepository.GetPostsAsync(chapterId, pageSize);
     }
 
     public async Task ScrapeLatestInstagramPosts(string chapterName)
@@ -130,8 +130,8 @@ public class InstagramService : IInstagramService
                 continue;
             } 
 
-            await _instagramRepository.AddPost(post);
-            await _instagramRepository.AddImage(image);
+            await _instagramRepository.AddPostAsync(post);
+            await _instagramRepository.AddImageAsync(image);
         }
     }
 
@@ -217,7 +217,7 @@ public class InstagramService : IInstagramService
         }
 
         Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettingsAsync();
-        Task<DateTime?> mostRecentPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
+        Task<DateTime?> mostRecentPostDateTask = _instagramRepository.GetLastPostDateAsync(chapterId);
 
         await Task.WhenAll(settingsTask, mostRecentPostDateTask);
 

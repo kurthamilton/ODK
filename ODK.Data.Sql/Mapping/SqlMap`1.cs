@@ -37,7 +37,9 @@ public abstract class SqlMap<T> : SqlMap
     public object? GetEntityValue(T entity, SqlColumn column, SqlContext context)
     {
         var entityFieldName = GetEntityFieldName(column, context);
-        return Type.GetProperty(entityFieldName)?.GetValue(entity);
+        return entityFieldName != null 
+            ? Type.GetProperty(entityFieldName)?.GetValue(entity)
+            : null;
     }
 
     public abstract T Read(IDataReader reader);

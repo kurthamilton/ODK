@@ -21,7 +21,7 @@ public static class SqlUpdateQueryTests
             .Set(x => x.String, "updated")
             .Where(x => x.Int).EqualTo(1);
 
-        (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+        (SqlColumn Column, string? ParameterName, object? Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
         parameterValues
             .Select(x => x.Column.ColumnName)
@@ -67,7 +67,7 @@ public static class SqlUpdateQueryTests
         sql.Should().Be("UPDATE Table SET Table.[Int] = @Int FROM Table WHERE (Table.[String] = @String0)");
     }
 
-    private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)
+    private static SqlContext CreateMockContext(SqlMap<TestEntity>? map = null)
     {
         MockContext context = new MockContext();
         context.AddMockMap(map ?? CreateMap());

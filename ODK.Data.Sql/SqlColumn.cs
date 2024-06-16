@@ -9,6 +9,7 @@ public class SqlColumn : ISqlComponent
 
     public SqlColumn(string name, int index)
     {
+        ColumnName = name;
         SetColumnName(name);
         Index = index;
     }
@@ -25,9 +26,9 @@ public class SqlColumn : ISqlComponent
 
     public SqlDbType Type { get; private set; }
 
-    private string CastType { get; set; }
+    private string? CastType { get; set; }
 
-    private Type EntityType { get; set; }
+    private Type? EntityType { get; set; }
 
     public SqlColumn From<T>()
     {
@@ -85,6 +86,11 @@ public class SqlColumn : ISqlComponent
 
     private string GetSqlName(SqlContext context)
     {
+        if (EntityType == null)
+        {
+            throw new Exception($"EntityType not set for column {ColumnName}");
+        }
+
         string tableName = context.GetTableName(EntityType);
 
         string sqlName = $"{tableName}.[{ColumnName}]";

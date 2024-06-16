@@ -89,7 +89,12 @@ public class EmailService : IEmailService
 
     private async Task<Email> GetEmail(EmailType type, Guid chapterId, IDictionary<string, string> parameters)
     {
-        Email email = await _emailRepository.GetEmailAsync(type, chapterId);
+        var email = await _emailRepository.GetEmailAsync(type, chapterId);
+        if (email == null)
+        {
+            throw new OdkNotFoundException();
+        }
+
         return email.Interpolate(parameters);
     }
 

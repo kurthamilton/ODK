@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Services.Exceptions;
 
 namespace ODK.Services.Emails;
 
@@ -75,13 +76,17 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-        ChapterEmail? chapterEmail = await _emailRepository.GetChapterEmailAsync(chapterId, type);
+        var chapterEmail = await _emailRepository.GetChapterEmailAsync(chapterId, type);
         if (chapterEmail != null)
         {
             return chapterEmail;
         }
 
-        Email email = await _emailRepository.GetEmailAsync(type, chapterId);
+        var email = await _emailRepository.GetEmailAsync(type, chapterId);
+        if (email == null)
+        {
+            throw new OdkNotFoundException();
+        }
         return new ChapterEmail(Guid.Empty, chapterId, type, email.Subject, email.HtmlContent);
     }
 
@@ -122,7 +127,12 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
             if (!chapterEmailDictionary.ContainsKey(type))
             {
-                Email email = await _emailRepository.GetEmailAsync(type, chapterId);
+                var email = await _emailRepository.GetEmailAsync(type, chapterId);
+                if (email == null)
+                {
+                    continue;
+                }
+
                 defaultEmails.Add(new ChapterEmail(Guid.Empty, chapterId, type, email.Subject, email.HtmlContent));
             }
         }
@@ -213,7 +223,11 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         await AssertMemberIsChapterSuperAdmin(currentMemberId, currentChapterId);
 
-        Email existing = await _emailRepository.GetEmailAsync(type);
+        var existing = await _emailRepository.GetEmailAsync(type);
+        if (existing == null)
+        {
+            throw new OdkNotFoundException();
+        }
 
         existing.HtmlContent = email.HtmlContent;
         existing.Subject = email.Subject;

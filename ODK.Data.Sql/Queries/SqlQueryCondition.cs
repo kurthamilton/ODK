@@ -26,7 +26,7 @@ public class SqlQueryCondition<T, TEntity, TValue, TQuery> : ISqlQueryCondition
 
     public object? GetValue(string parameter)
     {
-        return Values.TryGetValue(parameter, out TValue value)
+        return Values.TryGetValue(parameter, out var value)
             ? value 
             : default;
     }

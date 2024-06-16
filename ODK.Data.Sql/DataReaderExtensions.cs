@@ -19,7 +19,7 @@ public static class DataReaderExtensions
         return reader.GetValueOrDefault(ordinal, (r, i) => r.GetString(i));
     }
 
-    public static T GetValueOrDefault<T>(this IDataReader reader, int ordinal, Func<IDataReader, int, T> getValue)
+    public static T? GetValueOrDefault<T>(this IDataReader reader, int ordinal, Func<IDataReader, int, T> getValue)
     {
         return reader.GetValueOrDefault(ordinal, getValue, default);
     }

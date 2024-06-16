@@ -13,7 +13,7 @@ public class SqlInsertEntityQuery<T> : SqlQuery<T>
     public void OutputIdentity()
     {
         SqlMap<T> map = Context.GetMap<T>();            
-        SqlColumn identity = map.SelectColumns.FirstOrDefault(x => x.Identity);
+        var identity = map.SelectColumns.FirstOrDefault(x => x.Identity);
         if (identity != null)
         {
             AddInsertOutput(identity);

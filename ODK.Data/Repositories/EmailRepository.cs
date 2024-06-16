@@ -50,7 +50,7 @@ public class EmailRepository : RepositoryBase, IEmailRepository
             .ToArrayAsync();
     }
 
-    public async Task<Email> GetEmailAsync(EmailType type)
+    public async Task<Email?> GetEmailAsync(EmailType type)
     {
         return await Context
             .Select<Email>()
@@ -58,7 +58,7 @@ public class EmailRepository : RepositoryBase, IEmailRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<Email> GetEmailAsync(EmailType type, Guid chapterId)
+    public async Task<Email?> GetEmailAsync(EmailType type, Guid chapterId)
     {
         var chapterEmail = await GetChapterEmailAsync(chapterId, type);
         if (chapterEmail != null)

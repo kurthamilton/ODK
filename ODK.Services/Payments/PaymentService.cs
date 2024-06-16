@@ -30,7 +30,7 @@ public class PaymentService : IPaymentService
         }
 
         var chapter = await _chapterRepository.GetChapter(member.ChapterId);
-        var country = await _countryRepository.GetCountry(chapter!.CountryId);
+        var country = await _countryRepository.GetCountryAsync(chapter!.CountryId);
 
         PaymentProviderType providerType = (PaymentProviderType)Enum.Parse(typeof(PaymentProviderType), paymentSettings.Provider, true);
 

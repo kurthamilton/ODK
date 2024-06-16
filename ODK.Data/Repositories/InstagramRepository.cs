@@ -10,17 +10,17 @@ public class InstagramRepository : RepositoryBase, IInstagramRepository
     {
     }
 
-    public async Task AddImage(InstagramImage image)
+    public async Task AddImageAsync(InstagramImage image)
     {
         await Context.Insert(image).ExecuteAsync();
     }
 
-    public async Task AddPost(InstagramPost post)
+    public async Task AddPostAsync(InstagramPost post)
     {
         await Context.Insert(post).ExecuteAsync();
     }
 
-    public async Task<InstagramImage> GetImage(Guid instagramPostId)
+    public async Task<InstagramImage?> GetImageAsync(Guid instagramPostId)
     {
         return await Context
             .Select<InstagramImage>()
@@ -28,9 +28,9 @@ public class InstagramRepository : RepositoryBase, IInstagramRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<DateTime?> GetLastPostDate(Guid chapterId)
+    public async Task<DateTime?> GetLastPostDateAsync(Guid chapterId)
     {
-        InstagramPost mostRecent = await Context
+        var mostRecent = await Context
             .Select<InstagramPost>()
             .OrderBy(x => x.Date, SqlSortDirection.Descending)
             .Page(1, 1)
@@ -38,7 +38,7 @@ public class InstagramRepository : RepositoryBase, IInstagramRepository
         return mostRecent?.Date;
     }
 
-    public async Task<IReadOnlyCollection<InstagramPost>> GetPosts(Guid chapterId, int pageSize)
+    public async Task<IReadOnlyCollection<InstagramPost>> GetPostsAsync(Guid chapterId, int pageSize)
     {
         return await Context
             .Select<InstagramPost>()

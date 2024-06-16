@@ -25,7 +25,7 @@ public static class SqlInsertEntityQueryTests
         SqlContext context = CreateMockContext();
         SqlQuery<TestEntity> query = new SqlInsertEntityQuery<TestEntity>(context, entity);
 
-        (SqlColumn Column, string ParameterName, object Value)[] parameterValues = query.GetParameterValues(context).ToArray();
+        (SqlColumn Column, string? ParameterName, object? Value)[] parameterValues = query.GetParameterValues(context).ToArray();
 
         parameterValues
             .Select(x => x.Column.ColumnName)
@@ -103,7 +103,7 @@ public static class SqlInsertEntityQueryTests
         sql.Should().Be("INSERT INTO Table ([String]) OUTPUT inserted.Int VALUES (@String)");
     }
 
-    private static SqlContext CreateMockContext(SqlMap<TestEntity> map = null)
+    private static SqlContext CreateMockContext(SqlMap<TestEntity>? map = null)
     {
         MockContext context = new MockContext();
         context.AddMockMap(map ?? CreateMap());

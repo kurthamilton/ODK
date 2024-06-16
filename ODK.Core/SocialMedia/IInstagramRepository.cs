@@ -2,13 +2,13 @@
 
 public interface IInstagramRepository
 {
-    Task AddImage(InstagramImage image);
+    Task AddImageAsync(InstagramImage image);
 
-    Task AddPost(InstagramPost post);
+    Task AddPostAsync(InstagramPost post);
 
-    Task<InstagramImage> GetImage(Guid instagramPostId);
+    Task<InstagramImage?> GetImageAsync(Guid instagramPostId);
 
-    Task<DateTime?> GetLastPostDate(Guid chapterId);
+    Task<DateTime?> GetLastPostDateAsync(Guid chapterId);
 
-    Task<IReadOnlyCollection<InstagramPost>> GetPosts(Guid chapterId, int pageSize);
+    Task<IReadOnlyCollection<InstagramPost>> GetPostsAsync(Guid chapterId, int pageSize);
 }

@@ -137,7 +137,11 @@ public class MailProvider : IMailProvider
 
     private async Task<string> GetLayoutBody(Chapter chapter, string body)
     {
-        Email layout = await _emailRepository.GetEmailAsync(EmailType.Layout, chapter.Id);
+        var layout = await _emailRepository.GetEmailAsync(EmailType.Layout, chapter.Id);
+        if (layout == null)
+        {
+            throw new OdkNotFoundException();
+        }
 
         layout = layout.Interpolate(new Dictionary<string, string>
         {
