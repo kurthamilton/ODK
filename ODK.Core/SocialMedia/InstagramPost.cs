@@ -3,7 +3,7 @@
 public class InstagramPost
 {
     public InstagramPost(Guid id, Guid chapterId, string externalId, DateTime date, 
-        string caption, string url)
+        string? caption, string url)
     {
         Caption = caption;
         ChapterId = chapterId;
@@ -13,7 +13,7 @@ public class InstagramPost
         Url = url;
     }
 
-    public string Caption { get; }
+    public string? Caption { get; }
 
     public Guid ChapterId { get; }
 

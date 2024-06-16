@@ -11,14 +11,14 @@ public class EventRepository : RepositoryBase, IEventRepository
     {
     }
 
-    public async Task<Guid> AddEventEmail(EventEmail eventEmail)
+    public async Task<Guid> AddEventEmailAsync(EventEmail eventEmail)
     {
         return await Context
             .Insert(eventEmail)
             .GetIdentityAsync();
     }
 
-    public async Task AddEventInvites(Guid eventId, IEnumerable<Guid> memberIds, DateTime sentDate)
+    public async Task AddEventInvitesAsync(Guid eventId, IEnumerable<Guid> memberIds, DateTime sentDate)
     {
         foreach (Guid memberId in memberIds)
         {
@@ -28,16 +28,22 @@ public class EventRepository : RepositoryBase, IEventRepository
         }
     }
 
-    public async Task<Event> CreateEvent(Event @event)
+    public async Task<Event> CreateEventAsync(Event @event)
     {
         Guid id = await Context
             .Insert(@event)
             .GetIdentityAsync();
 
-        return await GetEvent(id);
+        var created = await GetEventAsync(id);
+        if (created == null)
+        {
+            throw new Exception("Event creation failed");
+        }
+
+        return created;
     }
 
-    public async Task DeleteEvent(Guid id)
+    public async Task DeleteEventAsync(Guid id)
     {
         await Context
             .Delete<Event>()
@@ -45,7 +51,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ExecuteAsync();
     }
 
-    public async Task<IReadOnlyCollection<EventInvite>> GetChapterInvites(Guid chapterId,
+    public async Task<IReadOnlyCollection<EventInvite>> GetChapterInvitesAsync(Guid chapterId,
         IEnumerable<Guid> eventIds)
     {
         return await Context
@@ -57,7 +63,7 @@ public class EventRepository : RepositoryBase, IEventRepository
 
     }
 
-    public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid chapterId)
+    public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponsesAsync(Guid chapterId)
     {
         return await Context
             .Select<EventResponse>()
@@ -66,7 +72,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
 
-    public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid chapterId,
+    public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponsesAsync(Guid chapterId,
         IEnumerable<Guid> eventIds)
     {
         return await Context
@@ -77,7 +83,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
 
-    public async Task<Event> GetEvent(Guid id)
+    public async Task<Event?> GetEventAsync(Guid id)
     {
         return await Context
             .Select<Event>()
@@ -85,7 +91,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .FirstOrDefaultAsync();
     }
     
-    public async Task<EventEmail> GetEventEmail(Guid eventId)
+    public async Task<EventEmail?> GetEventEmailAsync(Guid eventId)
     {
         return await Context
             .Select<EventEmail>()
@@ -93,7 +99,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .FirstOrDefaultAsync();
     }
     
-    public async Task<IReadOnlyCollection<EventEmail>> GetEventEmails(Guid chapterId, IEnumerable<Guid> eventIds)
+    public async Task<IReadOnlyCollection<EventEmail>> GetEventEmailsAsync(Guid chapterId, IEnumerable<Guid> eventIds)
     {
         return await Context
             .Select<EventEmail>()
@@ -103,7 +109,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
 
-    public async Task<IReadOnlyCollection<EventInvite>> GetEventInvites(Guid eventId)
+    public async Task<IReadOnlyCollection<EventInvite>> GetEventInvitesAsync(Guid eventId)
     {
         return await Context
             .Select<EventInvite>()
@@ -111,7 +117,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
     
-    public async Task<IReadOnlyCollection<EventInvite>> GetEventInvitesForMemberId(Guid memberId)
+    public async Task<IReadOnlyCollection<EventInvite>> GetEventInvitesForMemberIdAsync(Guid memberId)
     {
         return await Context
             .Select<EventInvite>()
@@ -119,7 +125,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
 
-    public async Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid eventId)
+    public async Task<IReadOnlyCollection<EventResponse>> GetEventResponsesAsync(Guid eventId)
     {
         return await Context
             .Select<EventResponse>()
@@ -127,7 +133,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
 
-    public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, DateTime? after)
+    public async Task<IReadOnlyCollection<Event>> GetEventsAsync(Guid chapterId, DateTime? after)
     {
         return await Context
             .Select<Event>()
@@ -137,7 +143,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
 
-    public async Task<IReadOnlyCollection<Event>> GetEvents(Guid chapterId, int page, int pageSize)
+    public async Task<IReadOnlyCollection<Event>> GetEventsAsync(Guid chapterId, int page, int pageSize)
     {
         return await Context
             .Select<Event>()
@@ -147,7 +153,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
 
-    public async Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid venueId)
+    public async Task<IReadOnlyCollection<Event>> GetEventsByVenueAsync(Guid venueId)
     {
         return await Context
             .Select<Event>()
@@ -155,7 +161,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
 
-    public async Task<IReadOnlyCollection<EventResponse>> GetMemberResponses(Guid memberId, bool allEvents = false)
+    public async Task<IReadOnlyCollection<EventResponse>> GetMemberResponsesAsync(Guid memberId, bool allEvents = false)
     {
         return await Context
             .Select<EventResponse>()
@@ -166,7 +172,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
 
-    public async Task<IReadOnlyCollection<Event>> GetPublicEvents(Guid chapterId, DateTime? after)
+    public async Task<IReadOnlyCollection<Event>> GetPublicEventsAsync(Guid chapterId, DateTime? after)
     {
         return await Context
             .Select<Event>()
@@ -177,7 +183,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ToArrayAsync();
     }
 
-    public async Task UpdateEvent(Event @event)
+    public async Task UpdateEventAsync(Event @event)
     {
         await Context
             .Update<Event>()
@@ -192,7 +198,7 @@ public class EventRepository : RepositoryBase, IEventRepository
             .ExecuteAsync();
     }
     
-    public async Task UpdateEventResponse(EventResponse response)
+    public async Task UpdateEventResponseAsync(EventResponse response)
     {
         if (await MemberEventResponseExists(response.EventId, response.MemberId))
         {

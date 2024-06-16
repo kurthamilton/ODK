@@ -2,25 +2,25 @@
 
 public interface ILoggingRepository
 {
-    Task DeleteError(Guid id);
+    Task DeleteErrorAsync(Guid id);
 
-    Task DeleteLogMessage(int id);
+    Task DeleteLogMessageAsync(int id);
 
-    Task DeleteLogMessages(string message);
+    Task DeleteLogMessagesAsync(string message);
 
-    Task<Error?> GetError(Guid id);
+    Task<Error?> GetErrorAsync(Guid id);
 
-    Task<IReadOnlyCollection<ErrorProperty>> GetErrorProperties(Guid id);
+    Task<IReadOnlyCollection<ErrorProperty>> GetErrorPropertiesAsync(Guid id);
 
-    Task<IReadOnlyCollection<Error>> GetErrors(int page, int pageSize);
+    Task<IReadOnlyCollection<Error>> GetErrorsAsync(int page, int pageSize);
 
-    Task<IReadOnlyCollection<Error>> GetErrors(int page, int pageSize, string exceptionMessage);
+    Task<IReadOnlyCollection<Error>> GetErrorsAsync(int page, int pageSize, string exceptionMessage);
 
-    Task<LogMessage?> GetLogMessage(int id);
+    Task<LogMessage?> GetLogMessageAsync(int id);
 
-    Task<IReadOnlyCollection<LogMessage>> GetLogMessages(string level, int page, int pageSize);
+    Task<IReadOnlyCollection<LogMessage>> GetLogMessagesAsync(string level, int page, int pageSize);
 
-    Task<IReadOnlyCollection<LogMessage>> GetLogMessages(string level, int page, int pageSize, string message);
+    Task<IReadOnlyCollection<LogMessage>> GetLogMessagesAsync(string level, int page, int pageSize, string message);
 
-    Task LogError(Error error, IReadOnlyCollection<ErrorProperty> properties);
+    Task LogErrorAsync(Error error, IReadOnlyCollection<ErrorProperty> properties);
 }

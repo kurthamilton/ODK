@@ -4,7 +4,7 @@
 @model ODK.Web.Razor.Models.Account.JoinContentViewModel
 @inject IChapterService ChapterService
 @{
-    ChapterTexts texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
+    var texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
 }
 
 @if (!string.IsNullOrEmpty(texts?.RegisterText))

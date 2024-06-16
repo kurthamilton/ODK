@@ -10,17 +10,17 @@
 @inject ICountryService CountryService
 @inject IMemberService MemberService
 @{
-    Task<MemberSubscription?> memberSubscriptionTask = MemberService.GetMemberSubscription(Model.CurrentMember.Id);
-    Task<IReadOnlyCollection<ChapterSubscription>> chapterSubscriptionsTask = ChapterService.GetChapterSubscriptions(Model.Chapter.Id);
-    Task<Country> countryTask = CountryService.GetCountry(Model.Chapter.CountryId);
-    Task<ChapterPaymentSettings> paymentSettingsTask = ChapterService.GetChapterPaymentSettings(Model.CurrentMember.Id, Model.Chapter.Id);
+    var memberSubscriptionTask = MemberService.GetMemberSubscription(Model.CurrentMember.Id);
+    var chapterSubscriptionsTask = ChapterService.GetChapterSubscriptions(Model.Chapter.Id);
+    var countryTask = CountryService.GetCountry(Model.Chapter.CountryId);
+    var paymentSettingsTask = ChapterService.GetChapterPaymentSettings(Model.CurrentMember.Id, Model.Chapter.Id);
 
     await Task.WhenAll(memberSubscriptionTask, chapterSubscriptionsTask, countryTask, paymentSettingsTask);
 
-    MemberSubscription? memberSubscription = memberSubscriptionTask.Result;
-    IReadOnlyCollection<ChapterSubscription> chapterSubscriptions = chapterSubscriptionsTask.Result;
-    Country country = countryTask.Result;
-    ChapterPaymentSettings paymentSettings = paymentSettingsTask.Result;
+    var memberSubscription = memberSubscriptionTask.Result;
+    var chapterSubscriptions = chapterSubscriptionsTask.Result;
+    var country = countryTask.Result;
+    var paymentSettings = paymentSettingsTask.Result;
 
     if (memberSubscription == null)
     {
@@ -67,7 +67,7 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    @if (paymentSettings.Provider == "PayPal")
+                                    @if (paymentSettings?.Provider == "PayPal")
                                     {
                                         <form method="post" action="/@Model.Chapter.Name/Account/Subscription/Purchase">
                                             @Html.AntiForgeryToken()
@@ -76,7 +76,7 @@
                                                        chapterSubscription.Amount, chapterSubscription.Title))
                                         </form>
                                     }
-                                    else if (paymentSettings.Provider == "Stripe")
+                                    else if (paymentSettings?.Provider == "Stripe")
                                     {
                                         <div class="alert alert-danger">
                                             Payment provider not supported

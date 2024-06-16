@@ -10,14 +10,14 @@ public class SettingsRepository : RepositoryBase, ISettingsRepository
     {
     }
 
-    public async Task<SiteSettings> GetSiteSettings()
+    public async Task<SiteSettings?> GetSiteSettingsAsync()
     {
         return await Context
             .Select<SiteSettings>()
             .FirstOrDefaultAsync();
     }
 
-    public async Task UpdateSiteSettings(SiteSettings settings)
+    public async Task UpdateSiteSettingsAsync(SiteSettings settings)
     {
         await Context
             .Update<SiteSettings>()

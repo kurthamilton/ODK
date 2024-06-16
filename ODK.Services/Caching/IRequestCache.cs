@@ -5,11 +5,15 @@ namespace ODK.Services.Caching;
 
 public interface IRequestCache
 {
-    Task<Chapter?> GetChapter(Guid chapterId);
+    Task<Chapter?> GetChapterAsync(Guid chapterId);
 
-    Task<Chapter?> GetChapter(string name);
+    Task<Chapter?> GetChapterAsync(string name);
 
-    Task<IReadOnlyCollection<Chapter>> GetChapters();
+    Task<IReadOnlyCollection<Chapter>> GetChaptersAsync();
 
-    Task<Member?> GetMember(Guid memberId);
+    Task<ChapterMembershipSettings?> GetChapterMembershipSettingsAsync(Guid chapterId);
+
+    Task<Member?> GetMemberAsync(Guid memberId);
+
+    Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId);
 }

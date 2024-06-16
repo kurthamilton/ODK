@@ -1,0 +1,55 @@
+﻿@using ODK.Core.Members
+@using ODK.Services.Authorization
+@using ODK.Services.Caching
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Members
+@using ODK.Web.Razor.Pages.Chapters
+@inject IAuthorizationService AuthorizationService
+@inject IRequestCache RequestCache
+@{
+    var memberId = User.MemberId();
+    if (memberId == null)
+    {
+        return;
+    }
+
+    var chapterContext = new ChapterPageContext(RequestCache, Context);
+    var chapter = await chapterContext.GetChapterAsync();
+    if (chapter == null)
+    {
+        return;
+    }
+
+    var membershipSettings = await RequestCache.GetChapterMembershipSettingsAsync(chapter.Id);
+    if (membershipSettings == null)
+    {
+        return;
+    }
+
+    var memberSubscription = await RequestCache.GetMemberSubscriptionAsync(memberId.Value);
+    if (memberSubscription == null)
+    {
+        return;
+    }
+
+    var status = AuthorizationService.GetSubscriptionStatus(memberSubscription, membershipSettings);
+    
+    var type = memberSubscription.Type == SubscriptionType.Trial ? "trial" : "subscription";
+    var action = memberSubscription.Type == SubscriptionType.Trial ? "Purchase membership" : "Renew";
+}
+
+<div class="container subscription-alerts">
+    @if (status == SubscriptionStatus.Expired || status == SubscriptionStatus.Disabled)
+    {
+        <div class="mt-3 alert alert-danger">
+            Your @type has expired <a href="/@chapter.Name/Account/Subscription">@action</a>
+        </div>
+    }
+    else if (status == SubscriptionStatus.Expiring && memberSubscription.ExpiryDate != null)
+    {
+        var expiresOn = @memberSubscription.ExpiryDate.Value.ToString("d MMMM");
+        <div class="mt-3 alert alert-warning">
+            Your @type expires @expiresOn <a href="/@chapter.Name/Account/Subscription">@action</a>
+        </div>
+    }
+</div>

@@ -63,7 +63,7 @@ public class ErrorPageMiddleware
         string? chapterName = originalPathParts.Length > 1 ? originalPathParts[1] : null;
 
         return !string.IsNullOrEmpty(chapterName)
-            ? await requestCache.GetChapter(chapterName)
+            ? await requestCache.GetChapterAsync(chapterName)
             : null;
     }
 

@@ -3,38 +3,39 @@ using ODK.Core.Members;
 using ODK.Services.Caching;
 using ODK.Web.Common.Extensions;
 
-namespace ODK.Web.Razor.Pages.Chapters;
-
-public class ChapterPageContext
+namespace ODK.Web.Razor.Pages.Chapters
 {
-    private readonly HttpContext? _httpContext;
-    private readonly IRequestCache _requestCache;
+    public class ChapterPageContext
+    {
+        private readonly HttpContext? _httpContext;
+        private readonly IRequestCache _requestCache;
 
-    public ChapterPageContext(IRequestCache requestCache, HttpContext httpContext)
-    {
-        _httpContext = httpContext;
-        _requestCache = requestCache;
-    }
-    
-    public async Task<Chapter?> GetChapterAsync()
-    {
-        string? chapterName = _httpContext?.Request.RouteValues["chapterName"] as string;
-        if (string.IsNullOrWhiteSpace(chapterName))
+        public ChapterPageContext(IRequestCache requestCache, HttpContext httpContext)
         {
-            return null;
+            _httpContext = httpContext;
+            _requestCache = requestCache;
+        }
+        
+        public async Task<Chapter?> GetChapterAsync()
+        {
+            string? chapterName = _httpContext?.Request.RouteValues["chapterName"] as string;
+            if (string.IsNullOrWhiteSpace(chapterName))
+            {
+                return null;
+            }
+
+            return await _requestCache.GetChapterAsync(chapterName);
         }
 
-        return await _requestCache.GetChapter(chapterName);
-    }
+        public async Task<Member?> GetMemberAsync()
+        {
+           Guid? memberId = _httpContext?.User.MemberId();
+           if (!memberId.HasValue)
+           {
+                return null;
+           }
 
-    public async Task<Member?> GetMemberAsync()
-    {
-       Guid? memberId = _httpContext?.User.MemberId();
-       if (!memberId.HasValue)
-       {
-            return null;
-       }
-
-       return await _requestCache.GetMember(memberId.Value);
+           return await _requestCache.GetMemberAsync(memberId.Value);
+        }
     }
 }

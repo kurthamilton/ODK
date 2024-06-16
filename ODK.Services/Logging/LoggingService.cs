@@ -23,27 +23,27 @@ public class LoggingService : ILoggingService
     {
         await AssertMemberIsChapterAdmin(currentMemberId);
 
-        await _loggingRepository.DeleteLogMessage(logMessageId);
+        await _loggingRepository.DeleteLogMessageAsync(logMessageId);
     }
 
     public async Task DeleteAllErrors(Guid currentMemberId, int logMessageId)
     {
         await AssertMemberIsChapterAdmin(currentMemberId);
 
-        LogMessage? logMessage = await _loggingRepository.GetLogMessage(logMessageId);
+        LogMessage? logMessage = await _loggingRepository.GetLogMessageAsync(logMessageId);
         if (logMessage == null)
         {
             return;
         }
 
-        await _loggingRepository.DeleteLogMessages(logMessage.Message);
+        await _loggingRepository.DeleteLogMessagesAsync(logMessage.Message);
     }
 
     public async Task<LogMessage?> GetErrorMessage(Guid currentMemberId, int logMessageId)
     {
         await AssertMemberIsChapterAdmin(currentMemberId);
 
-        return await _loggingRepository.GetLogMessage(logMessageId);
+        return await _loggingRepository.GetLogMessageAsync(logMessageId);
     }
 
     public async Task<IReadOnlyCollection<LogMessage>> GetErrorMessages(Guid currentMemberId)
@@ -55,7 +55,7 @@ public class LoggingService : ILoggingService
     {
         await AssertMemberIsChapterAdmin(currentMemberId);
 
-        return await _loggingRepository.GetLogMessages(level, page, pageSize);
+        return await _loggingRepository.GetLogMessagesAsync(level, page, pageSize);
     }
 
     public async Task<IReadOnlyCollection<LogMessage>> GetSimilarErrorMessages(Guid currentMemberId,
@@ -63,7 +63,7 @@ public class LoggingService : ILoggingService
     {
         await AssertMemberIsChapterAdmin(currentMemberId);
 
-        IReadOnlyCollection<LogMessage> messages = await _loggingRepository.GetLogMessages("Error", 1, 0, logMessage.Message);
+        IReadOnlyCollection<LogMessage> messages = await _loggingRepository.GetLogMessagesAsync("Error", 1, 0, logMessage.Message);
 
         return messages
             .Where(x => x.Id != logMessage.Id)
@@ -99,7 +99,7 @@ public class LoggingService : ILoggingService
         }
 
         properties.Add(new ErrorProperty(error.Id, "EXCEPTION.STACKTRACE", 
-            exception.StackTrace.Replace(Environment.NewLine, "<br>")));
+            exception.StackTrace?.Replace(Environment.NewLine, "<br>") ?? ""));
 
         Exception? innerException = exception.InnerException;
         int innerExceptionCount = 0;
@@ -112,7 +112,7 @@ public class LoggingService : ILoggingService
             innerExceptionCount++;
         }
 
-        await _loggingRepository.LogError(error, properties);
+        await _loggingRepository.LogErrorAsync(error, properties);
     }
 
     public async Task LogError(Exception exception, IDictionary<string, string> data)
@@ -123,7 +123,7 @@ public class LoggingService : ILoggingService
             .Select(x => new ErrorProperty(error.Id, x.Key, x.Value))
             .ToArray();
 
-        await _loggingRepository.LogError(error, properties);
+        await _loggingRepository.LogErrorAsync(error, properties);
     }
 
     private async Task AssertMemberIsChapterAdmin(Guid currentMemberId)

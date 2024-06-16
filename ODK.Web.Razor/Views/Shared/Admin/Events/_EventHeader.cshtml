@@ -4,7 +4,7 @@
 @model ODK.Web.Razor.Models.Admin.Events.EventViewModel
 @inject IVenueService VenueService
 @{
-    Venue? venue = await VenueService.GetVenue(Model.CurrentMember, Model.Event.VenueId);
+    Venue? venue = await VenueService.GetVenueAsync(Model.CurrentMember, Model.Event);
 }
 
 <h5>@Model.Event.Date.EventDate()</h5>

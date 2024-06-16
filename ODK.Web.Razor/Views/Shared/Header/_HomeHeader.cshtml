@@ -8,9 +8,9 @@
 @inject IRequestCache RequestCache
 @{
     Guid? memberId = User.MemberId();
-    Member? member = memberId.HasValue ? await RequestCache.GetMember(memberId.Value) : null;
+    Member? member = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
 
-    IReadOnlyCollection<Chapter> chapters = await RequestCache.GetChapters();
+    IReadOnlyCollection<Chapter> chapters = await RequestCache.GetChaptersAsync();
     MenuItem[] menuItems = chapters.Select(c => new MenuItem
     {
         ExternalLink = !string.IsNullOrEmpty(c.RedirectUrl) ? c.RedirectUrl : null,

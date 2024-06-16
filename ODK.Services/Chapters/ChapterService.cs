@@ -45,9 +45,9 @@ public class ChapterService : IChapterService
             chapterId);
     }
 
-    public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
+    public async Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
     {
-        await _authorizationService.AssertMemberIsChapterMember(currentMemberId, chapterId);
+        await _authorizationService.AssertMemberIsChapterMemberAsync(currentMemberId, chapterId);
         return await _chapterRepository.GetChapterPaymentSettings(chapterId);
     }
     
@@ -79,9 +79,9 @@ public class ChapterService : IChapterService
         return await _chapterRepository.GetChapterSubscriptions(chapterId);
     }
     
-    public async Task<ChapterTexts> GetChapterTexts(Guid chapterId)
+    public Task<ChapterTexts?> GetChapterTexts(Guid chapterId)
     {
-        return await _chapterRepository.GetChapterTexts(chapterId);
+        return _chapterRepository.GetChapterTexts(chapterId);
     }
 
     public async Task SendContactMessage(Guid chapterId, string fromAddress, string message, string recaptchaToken)
@@ -111,7 +111,7 @@ public class ChapterService : IChapterService
         ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Id, DateTime.UtcNow, fromAddress, message, false);
         await _chapterRepository.AddContactRequest(contactRequest);
 
-        IDictionary<string, string> parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {"from", fromAddress},
             {"message", HttpUtility.HtmlEncode(message)}

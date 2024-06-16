@@ -1,13 +1,23 @@
 ﻿@using ODK.Core.Events
 @using ODK.Core.Members
+@using ODK.Services.Authorization
+@using ODK.Services.Caching
 @using ODK.Services.Events
 @using ODK.Services.Members
 @using ODK.Web.Razor.Models.Events
 @model ODK.Web.Razor.Models.Events.EventSidebarViewModel
+@inject IAuthorizationService AuthorizationService
 @inject IEventService EventService
 @inject IMemberService MemberService
+@inject IRequestCache RequestCache
 @{
     if (Model.Member == null || Model.Member.ChapterId != Model.Chapter.Id)
+    {
+        return;
+    }
+
+    var active = await AuthorizationService.MembershipIsActiveAsync(Model.Member.Id, Model.Chapter.Id);    
+    if (!active)
     {
         return;
     }

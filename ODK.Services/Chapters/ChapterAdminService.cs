@@ -33,7 +33,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         await AssertMemberIsChapterAdmin(currentMemberId, chapter.Id);
 
-        Member? member = await _memberRepository.GetMember(memberId);
+        Member? member = await _memberRepository.GetMemberAsync(memberId);
         if (member == null)
         {
             return ServiceResult.Failure("Member not found");
@@ -248,7 +248,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return await _chapterRepository.GetChapterMembershipSettings(chapterId);
     }
 
-    public async Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
+    public async Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
     {
         await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
 
@@ -264,7 +264,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterProperty> GetChapterProperty(Guid currentMemberId, Guid id)
     {
-        ChapterProperty property = await _chapterRepository.GetChapterProperty(id);
+        var property = await _chapterRepository.GetChapterProperty(id);
         if (property == null)
         {
             throw new OdkNotFoundException();
@@ -277,7 +277,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterQuestion> GetChapterQuestion(Guid currentMemberId, Guid questionId)
     {
-        ChapterQuestion question = await _chapterRepository.GetChapterQuestion(questionId);
+        var question = await _chapterRepository.GetChapterQuestion(questionId);
         if (question == null)
         {
             throw new OdkNotFoundException();
@@ -352,11 +352,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _cacheService.RemoveVersionedItem<ChapterLinks>(chapterId);
     }
 
-    public async Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, UpdateChapterMembershipSettings settings)
+    public async Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, 
+        UpdateChapterMembershipSettings settings)
     {
         ChapterMembershipSettings update = await GetChapterMembershipSettings(currentMemberId, chapterId) ?? 
-                                           new ChapterMembershipSettings(chapterId, 0, 0);
+                                           new ChapterMembershipSettings(chapterId, 0, 0, false);
 
+        update.Enabled = settings.Enabled;
         update.MembershipDisabledAfterDaysExpired = settings.MembershipDisabledAfterDaysExpired;
         update.TrialPeriodMonths = settings.TrialPeriodMonths;
 
@@ -378,8 +380,16 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-        ChapterPaymentSettings existing = await _chapterRepository.GetChapterPaymentSettings(chapterId);
-        ChapterPaymentSettings update = new ChapterPaymentSettings(chapterId, paymentSettings.ApiPublicKey, paymentSettings.ApiSecretKey, existing.Provider);
+        var existing = await _chapterRepository.GetChapterPaymentSettings(chapterId);
+        if (existing == null)
+        {
+            return ServiceResult.Failure("Payment settings not found");
+        }
+
+        var update = new ChapterPaymentSettings(chapterId, 
+            paymentSettings.ApiPublicKey, 
+            paymentSettings.ApiSecretKey, 
+            existing.Provider);
 
         await _chapterRepository.UpdateChapterPaymentSettings(update);
 

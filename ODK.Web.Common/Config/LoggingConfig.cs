@@ -7,6 +7,7 @@ using Serilog;
 using Serilog.Context;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
+using Serilog.Sinks.MSSqlServer;
 
 namespace ODK.Web.Common.Config;
 
@@ -37,10 +38,10 @@ public static class LoggingConfig
             .AddJsonFile($"appsettings.{environment}.json")
             .Build();
 
-        string logFileDirectory = builtConfig["Logging:Path"];
-        string connectionString = builtConfig["ConnectionStrings:Default"];
+        var logFileDirectory = builtConfig["Logging:Path"] ?? "";
+        var connectionString = builtConfig["ConnectionStrings:Default"] ?? "";
 
-        string outputTemplate = $"t:{{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}}|ip:{{{IP}}}|u:{{{Name}}}|m:{{Message:lj}}|ex:{{Exception}}{{NewLine}}";
+        var outputTemplate = $"t:{{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}}|ip:{{{IP}}}|u:{{{Name}}}|m:{{Message:lj}}|ex:{{Exception}}{{NewLine}}";
         Logger = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .Enrich.FromLogContext()
@@ -48,7 +49,10 @@ public static class LoggingConfig
                 .Filter
                 .ByIncludingOnly(e => e.Level == LogEventLevel.Error)
                 .WriteTo.File(path: Path.Combine(logFileDirectory, $"Errors.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate)
-                .WriteTo.MSSqlServer(connectionString, "Logs")
+                .WriteTo.MSSqlServer(connectionString, new MSSqlServerSinkOptions
+                {
+                    TableName = "Logs"
+                })
             )
             .WriteTo.File(Path.Combine(logFileDirectory, $"Trace.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate)
             .WriteTo.Providers(Providers)

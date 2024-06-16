@@ -24,14 +24,14 @@ public class LoginHandler : ILoginHandler
     public async Task<AuthenticationResult> Login(HttpContext httpContext, string username, string password, 
         bool rememberMe)
     {
-        Member? member = await _authenticationService.GetMember(username, password);
+        Member? member = await _authenticationService.GetMemberAsync(username, password);
         if (member == null)
         {
             return new AuthenticationResult();
 
         }
 
-        IReadOnlyCollection<Claim> claims = await _authenticationService.GetClaims(member);
+        IReadOnlyCollection<Claim> claims = await _authenticationService.GetClaimsAsync(member);
         await SetAuthCookieAsync(httpContext, claims);
         return new AuthenticationResult
         {

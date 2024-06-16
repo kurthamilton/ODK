@@ -2,8 +2,8 @@
 
 public class Chapter
 {
-    public Chapter(Guid id, Guid countryId, string name, string bannerImageUrl, string welcomeText,
-        string redirectUrl, int displayOrder)
+    public Chapter(Guid id, Guid countryId, string name, string? bannerImageUrl, string? welcomeText,
+        string? redirectUrl, int displayOrder)
     {
         BannerImageUrl = bannerImageUrl;
         CountryId = countryId;
@@ -14,7 +14,7 @@ public class Chapter
         WelcomeText = welcomeText;
     }
 
-    public string BannerImageUrl { get; }
+    public string? BannerImageUrl { get; }
 
     public Guid CountryId { get; }
 
@@ -24,9 +24,9 @@ public class Chapter
 
     public string Name { get; }
 
-    public string RedirectUrl { get; }
+    public string? RedirectUrl { get; }
 
-    public string WelcomeText { get; private set; }
+    public string? WelcomeText { get; private set; }
 
     public void Update(string welcomeText)
     {

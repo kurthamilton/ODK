@@ -9,7 +9,7 @@
         CurrentChapter = Model.Chapter,
         Member = Model.Member,
         MemberChapter = Model.Member != null
-            ? Model.Chapter?.Id == Model.Member.ChapterId ? Model.Chapter : await RequestCache.GetChapter(Model.Member.ChapterId)
+            ? Model.Chapter?.Id == Model.Member.ChapterId ? Model.Chapter : await RequestCache.GetChapterAsync(Model.Member.ChapterId)
             : null
     };
 

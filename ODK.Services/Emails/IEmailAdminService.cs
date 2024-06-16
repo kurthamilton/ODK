@@ -15,7 +15,7 @@ public interface IEmailAdminService
 
     Task<ChapterEmail> GetChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type);
 
-    Task<ChapterEmailProvider> GetChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId);
+    Task<ChapterEmailProvider?> GetChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId);
 
     Task<IReadOnlyCollection<ChapterEmailProvider>> GetChapterEmailProviders(Guid currentMemberId, Guid chapterId);
 

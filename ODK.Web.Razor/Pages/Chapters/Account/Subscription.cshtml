@@ -13,6 +13,7 @@
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
    Title = "My subscription",
+   HideSubscriptionAlert = true,
    Breadcrumbs = new []
    {
        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },

@@ -42,7 +42,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-        await _emailRepository.DeleteChapterEmail(chapterId, type);
+        await _emailRepository.DeleteChapterEmailAsync(chapterId, type);
     }
 
     public async Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, string chapterName, EmailType type)
@@ -55,14 +55,18 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         await AssertMemberIsChapterAdmin(currentMemberId, chapter.Id);
 
-        await _emailRepository.DeleteChapterEmail(chapter.Id, type);
+        await _emailRepository.DeleteChapterEmailAsync(chapter.Id, type);
 
         return ServiceResult.Successful();
     }
 
     public async Task DeleteChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId)
     {
-        ChapterEmailProvider provider = await GetChapterEmailProvider(currentMemberId, chapterEmailProviderId);
+        var provider = await GetChapterEmailProvider(currentMemberId, chapterEmailProviderId);
+        if (provider == null)
+        {
+            return;
+        }
 
         await _chapterRepository.DeleteChapterEmailProvider(provider.Id);
     }
@@ -71,19 +75,23 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-        ChapterEmail? chapterEmail = await _emailRepository.GetChapterEmail(chapterId, type);
+        ChapterEmail? chapterEmail = await _emailRepository.GetChapterEmailAsync(chapterId, type);
         if (chapterEmail != null)
         {
             return chapterEmail;
         }
 
-        Email email = await _emailRepository.GetEmail(type, chapterId);
+        Email email = await _emailRepository.GetEmailAsync(type, chapterId);
         return new ChapterEmail(Guid.Empty, chapterId, type, email.Subject, email.HtmlContent);
     }
 
-    public async Task<ChapterEmailProvider> GetChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId)
+    public async Task<ChapterEmailProvider?> GetChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId)
     {
-        ChapterEmailProvider provider = await _chapterRepository.GetChapterEmailProvider(chapterEmailProviderId);
+        var provider = await _chapterRepository.GetChapterEmailProvider(chapterEmailProviderId);
+        if (provider == null)
+        {
+            return null;
+        }
 
         await AssertMemberIsChapterAdmin(currentMemberId, provider.ChapterId);
 
@@ -101,7 +109,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-        IReadOnlyCollection<ChapterEmail> chapterEmails = await _emailRepository.GetChapterEmails(chapterId);
+        IReadOnlyCollection<ChapterEmail> chapterEmails = await _emailRepository.GetChapterEmailsAsync(chapterId);
         IDictionary<EmailType, ChapterEmail> chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type);
 
         List<ChapterEmail> defaultEmails = new List<ChapterEmail>();
@@ -114,7 +122,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
             if (!chapterEmailDictionary.ContainsKey(type))
             {
-                Email email = await _emailRepository.GetEmail(type, chapterId);
+                Email email = await _emailRepository.GetEmailAsync(type, chapterId);
                 defaultEmails.Add(new ChapterEmail(Guid.Empty, chapterId, type, email.Subject, email.HtmlContent));
             }
         }
@@ -129,21 +137,21 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         await AssertMemberIsChapterSuperAdmin(currentMemberId, currentChapterId);
 
-        return await _emailRepository.GetEmail(type);
+        return await _emailRepository.GetEmailAsync(type);
     }
 
     public async Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId, Guid currentChapterId)
     {
         await AssertMemberIsChapterSuperAdmin(currentMemberId, currentChapterId);
 
-        return await _emailRepository.GetEmails();
+        return await _emailRepository.GetEmailsAsync();
     }
 
     public async Task<ServiceResult> UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, UpdateEmail chapterEmail)
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-        ChapterEmail? existing = await _emailRepository.GetChapterEmail(chapterId, type);
+        ChapterEmail? existing = await _emailRepository.GetChapterEmailAsync(chapterId, type);
         if (existing == null)
         {
             existing = new ChapterEmail(Guid.Empty, chapterId, type, chapterEmail.Subject, chapterEmail.HtmlContent);
@@ -162,11 +170,11 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         if (existing.Id != Guid.Empty)
         {
-            await _emailRepository.UpdateChapterEmail(existing);
+            await _emailRepository.UpdateChapterEmailAsync(existing);
         }
         else
         {
-            await _emailRepository.AddChapterEmail(existing);
+            await _emailRepository.AddChapterEmailAsync(existing);
         }
 
         return ServiceResult.Successful();
@@ -175,7 +183,11 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     public async Task<ServiceResult> UpdateChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId,
         UpdateChapterEmailProvider provider)
     {
-        ChapterEmailProvider update = await GetChapterEmailProvider(currentMemberId, chapterEmailProviderId);
+        var update = await GetChapterEmailProvider(currentMemberId, chapterEmailProviderId);
+        if (update == null)
+        {
+            return ServiceResult.Failure("Chapter email provider not found");
+        }
 
         update.BatchSize = provider.BatchSize;
         update.DailyLimit = provider.DailyLimit;
@@ -201,7 +213,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         await AssertMemberIsChapterSuperAdmin(currentMemberId, currentChapterId);
 
-        Email existing = await _emailRepository.GetEmail(type);
+        Email existing = await _emailRepository.GetEmailAsync(type);
 
         existing.HtmlContent = email.HtmlContent;
         existing.Subject = email.Subject;
@@ -212,7 +224,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             return validationResult;
         }
 
-        await _emailRepository.UpdateEmail(existing);
+        await _emailRepository.UpdateEmailAsync(existing);
 
         return ServiceResult.Successful();
     }

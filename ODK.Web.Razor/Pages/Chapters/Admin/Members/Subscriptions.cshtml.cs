@@ -26,6 +26,7 @@ public class SubscriptionsModel : AdminPageModel
         ServiceResult result = await _chapterAdminService.UpdateChapterMembershipSettings(CurrentMemberId, Chapter.Id, 
             new UpdateChapterMembershipSettings
             {
+                Enabled = viewModel.Enabled,
                 MembershipDisabledAfterDaysExpired = viewModel.MembershipDisabledAfter,
                 TrialPeriodMonths = viewModel.TrialPeriodMonths
             });

@@ -16,14 +16,14 @@ public static class EventServiceTests
         return mock.Object;
     }
 
-    private static IEventRepository CreateMockEventRepository(IEnumerable<EventResponse> responses = null)
+    private static IEventRepository CreateMockEventRepository(IEnumerable<EventResponse>? responses = null)
     {
         Mock<IEventRepository> mock = new Mock<IEventRepository>();
 
-        mock.Setup(x => x.GetEventResponses(It.IsAny<Guid>()))
+        mock.Setup(x => x.GetEventResponsesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(responses?.ToArray() ?? new EventResponse[0]);
 
-        mock.Setup(x => x.GetMemberResponses(It.IsAny<Guid>(), It.IsAny<bool>()))
+        mock.Setup(x => x.GetMemberResponsesAsync(It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(responses?.ToArray() ?? new EventResponse[0]);
 
         return mock.Object;

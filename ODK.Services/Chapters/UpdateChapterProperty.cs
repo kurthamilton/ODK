@@ -2,7 +2,7 @@
 
 public class UpdateChapterProperty
 {
-    public string HelpText { get; set; } = "";
+    public string? HelpText { get; set; }
 
     public bool Hidden { get; set; }
 
@@ -12,5 +12,5 @@ public class UpdateChapterProperty
 
     public bool Required { get; set; }
 
-    public string Subtitle { get; set; } = "";
+    public string? Subtitle { get; set; }
 }

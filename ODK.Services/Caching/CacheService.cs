@@ -135,9 +135,9 @@ public class CacheService : ICacheService
 
     private bool TryGetValue<T>(string key, long? version, out T? value) where T : class
     {
-        if (_cache.TryGetValue(key, out CacheItem<T> cacheItem) && (version == null || version == cacheItem.Version))
+        if (_cache.TryGetValue(key, out CacheItem<T>? cacheItem) && (version == null || version == cacheItem?.Version))
         {
-            value = cacheItem.Value;
+            value = cacheItem?.Value;
             return true;
         }
 

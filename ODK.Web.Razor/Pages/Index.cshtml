@@ -10,7 +10,7 @@
 @{
     Layout = "Shared/_HomeLayout.cshtml";
 
-    Task<IReadOnlyCollection<Chapter>> chaptersTask = RequestCache.GetChapters();
+    Task<IReadOnlyCollection<Chapter>> chaptersTask = RequestCache.GetChaptersAsync();
     Task<IReadOnlyCollection<Country>> countriesTask = CountryService.GetCountries();
 
     await Task.WhenAll(chaptersTask, countriesTask);

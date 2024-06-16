@@ -11,14 +11,14 @@ public class VenueRepository : RepositoryBase, IVenueRepository
     {
     }
 
-    public async Task<Guid> CreateVenue(Venue venue)
+    public async Task<Guid> CreateVenueAsync(Venue venue)
     {
         return await Context
             .Insert(venue)
             .GetIdentityAsync();
     }
 
-    public async Task<Venue> GetPublicVenue(Guid id)
+    public async Task<Venue?> GetPublicVenueAsync(Guid id)
     {
         return await Context
             .Select<Venue>()
@@ -28,7 +28,7 @@ public class VenueRepository : RepositoryBase, IVenueRepository
             .FirstOrDefaultAsync();
     }
     
-    public async Task<Venue> GetVenue(Guid id)
+    public async Task<Venue?> GetVenueAsync(Guid id)
     {
         return await Context
             .Select<Venue>()
@@ -36,7 +36,7 @@ public class VenueRepository : RepositoryBase, IVenueRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<Venue> GetVenueByName(string name)
+    public async Task<Venue?> GetVenueByNameAsync(string name)
     {
         return await Context
             .Select<Venue>()
@@ -44,7 +44,7 @@ public class VenueRepository : RepositoryBase, IVenueRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<IReadOnlyCollection<Venue>> GetVenues(Guid chapterId)
+    public async Task<IReadOnlyCollection<Venue>> GetVenuesAsync(Guid chapterId)
     {
         return await Context
             .Select<Venue>()
@@ -52,7 +52,7 @@ public class VenueRepository : RepositoryBase, IVenueRepository
             .ToArrayAsync();
     }
 
-    public async Task<IReadOnlyCollection<Venue>> GetVenues(Guid chapterId, IEnumerable<Guid> venueIds)
+    public async Task<IReadOnlyCollection<Venue>> GetVenuesAsync(Guid chapterId, IEnumerable<Guid> venueIds)
     {
         return await Context
             .Select<Venue>()
@@ -61,7 +61,7 @@ public class VenueRepository : RepositoryBase, IVenueRepository
             .ToArrayAsync();
     }
     
-    public async Task UpdateVenue(Venue venue)
+    public async Task UpdateVenueAsync(Venue venue)
     {
         await Context
             .Update<Venue>()

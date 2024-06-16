@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Events;
+using ODK.Core.Members;
 using ODK.Core.Venues;
 
 namespace ODK.Services.Venues;
@@ -12,19 +13,19 @@ public class VenueService : IVenueService
         _venueRepository = venueRepository;
     }
     
-    public async Task<Venue?> GetVenue(Member? currentMember, Guid venueId)
+    public async Task<Venue> GetVenueAsync(Member? currentMember, Event @event)
     {
-        Venue? venue = await _venueRepository.GetVenue(venueId);
-        if (venue == null)
+        var venue = await _venueRepository.GetVenueAsync(@event.VenueId);
+        if (currentMember == null || venue?.ChapterId != currentMember.ChapterId)
         {
-            return null;
+            venue = await _venueRepository.GetPublicVenueAsync(@event.VenueId);
         }
 
-        if (currentMember == null || venue.ChapterId != currentMember.ChapterId)
+        if (venue == null)
         {
-            venue = await _venueRepository.GetPublicVenue(venueId);
+            throw new Exception($"Venue not found for event {@event.Id}");
         }
-        
+
         return venue;
     }
 }

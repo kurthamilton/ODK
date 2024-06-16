@@ -8,11 +8,11 @@ public class VenueFormViewModel
     public Guid ChapterId { get; set; }
     public Guid CurrentMemberId { get; set; }
 
-    public string Address { get; set; } = "";
+    public string? Address { get; set; }
 
     [Required]
-    public string Name { get; set; } = "";
+    public string? Name { get; set; }
 
     [DisplayName("Map search")]
-    public string MapQuery { get; set; } = "";
+    public string? MapQuery { get; set; }
 }

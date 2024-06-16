@@ -2,25 +2,25 @@
 
 public interface IEmailRepository
 {
-    Task<Guid> AddChapterEmail(ChapterEmail chapterEmail);
+    Task<Guid> AddChapterEmailAsync(ChapterEmail chapterEmail);
 
-    Task AddSentEmail(SentEmail sentEmail);
+    Task AddSentEmailAsync(SentEmail sentEmail);
 
-    Task DeleteChapterEmail(Guid chapterId, EmailType type);
+    Task DeleteChapterEmailAsync(Guid chapterId, EmailType type);
 
-    Task<ChapterEmail?> GetChapterEmail(Guid chapterId, EmailType type);
+    Task<ChapterEmail?> GetChapterEmailAsync(Guid chapterId, EmailType type);
 
-    Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid chapterId);
+    Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmailsAsync(Guid chapterId);
 
-    Task<Email> GetEmail(EmailType type);
+    Task<Email> GetEmailAsync(EmailType type);
 
-    Task<Email> GetEmail(EmailType type, Guid chapterId);
+    Task<Email> GetEmailAsync(EmailType type, Guid chapterId);
 
-    Task<IReadOnlyCollection<Email>> GetEmails();
+    Task<IReadOnlyCollection<Email>> GetEmailsAsync();
 
-    Task<int> GetEmailsSentTodayCount(Guid chapterEmailProviderId);
+    Task<int> GetEmailsSentTodayCountAsync(Guid chapterEmailProviderId);
 
-    Task UpdateChapterEmail(ChapterEmail chapterEmail);
+    Task UpdateChapterEmailAsync(ChapterEmail chapterEmail);
 
-    Task UpdateEmail(Email email);
+    Task UpdateEmailAsync(Email email);
 }

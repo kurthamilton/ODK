@@ -2,7 +2,7 @@
 
 public class ChapterLinks : IVersioned
 {
-    public ChapterLinks(Guid chapterId, string facebookName, string instagramName, string twitterName, long version)
+    public ChapterLinks(Guid chapterId, string? facebookName, string? instagramName, string? twitterName, long version)
     {
         ChapterId = chapterId;
         FacebookName = facebookName;
@@ -13,11 +13,11 @@ public class ChapterLinks : IVersioned
 
     public Guid ChapterId { get; }
 
-    public string FacebookName { get; }
+    public string? FacebookName { get; }
 
-    public string InstagramName { get; }
+    public string? InstagramName { get; }
 
-    public string TwitterName { get; }
+    public string? TwitterName { get; }
 
     public long Version { get; }
 }

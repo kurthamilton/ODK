@@ -22,11 +22,11 @@ public class ErrorLoggingMiddleware
         catch (Exception ex)
         {
             HttpRequest request = new HttpRequest(
-                httpContext.Request.GetDisplayUrl(),
-                httpContext.Request.Method,
-                httpContext.User.Identity?.Name,
-                httpContext.Request.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
-                httpContext.Request.Form.ToDictionary(x => x.Key, x => x.Value.ToString()));
+                url: httpContext.Request.GetDisplayUrl(),
+                method: httpContext.Request.Method,
+                username: httpContext.User.Identity?.Name,
+                headers: httpContext.Request.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
+                form: httpContext.Request.Form.ToDictionary(x => x.Key, x => x.Value.ToString()));
             await logger.LogError(ex, request);
         }
     }

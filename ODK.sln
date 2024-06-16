@@ -31,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Data.Sql", "ODK.Data.Sq
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Data", "ODK.Data\ODK.Data.csproj", "{B019409F-3753-44A6-A125-EA5CD133F49E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Core", "ODK.Core\ODK.Core.csproj", "{BCD50596-CDBE-458E-AE68-A44607081036}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Core", "ODK.Core\ODK.Core.csproj", "{BCD50596-CDBE-458E-AE68-A44607081036}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

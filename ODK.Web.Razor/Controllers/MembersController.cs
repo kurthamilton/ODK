@@ -39,7 +39,7 @@ public class MembersController : ControllerBase
 
     private void AddVersionHeader(long version)
     {
-        Response.Headers.Add("ETag", $"\"{version}\"");
+        Response.Headers.Append("ETag", $"\"{version}\"");
     }
 
     private long? GetRequestVersion()

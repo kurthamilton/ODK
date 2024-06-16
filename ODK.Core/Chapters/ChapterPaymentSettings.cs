@@ -2,7 +2,7 @@
 
 public class ChapterPaymentSettings
 {
-    public ChapterPaymentSettings(Guid chapterId, string apiPublicKey, string apiSecretKey, string provider)
+    public ChapterPaymentSettings(Guid chapterId, string? apiPublicKey, string? apiSecretKey, string? provider)
     {
         ApiPublicKey = apiPublicKey;
         ApiSecretKey = apiSecretKey;
@@ -10,11 +10,11 @@ public class ChapterPaymentSettings
         Provider = provider;
     }
 
-    public string ApiPublicKey { get; }
+    public string? ApiPublicKey { get; }
 
-    public string ApiSecretKey { get; }
+    public string? ApiSecretKey { get; }
 
     public Guid ChapterId { get; }
 
-    public string Provider { get; }
+    public string? Provider { get; }
 }

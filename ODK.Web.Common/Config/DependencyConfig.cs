@@ -70,7 +70,7 @@ public static class DependencyConfig
 
     private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
     {
-        string connectionString = configuration.GetConnectionString("Default");
+        var connectionString = configuration.GetConnectionString("Default") ?? "";
         services.AddSingleton<SqlContext>(new OdkContext(connectionString));
 
         services.AddScoped<IChapterRepository, ChapterRepository>();

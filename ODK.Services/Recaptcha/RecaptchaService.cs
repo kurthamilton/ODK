@@ -22,7 +22,7 @@ public class RecaptchaService : IRecaptchaService
 
     public async Task<ReCaptchaResponse> Verify(string token)
     {
-        SiteSettings? settings = await _settingsRepository.GetSiteSettings();
+        SiteSettings? settings = await _settingsRepository.GetSiteSettingsAsync();
         if (settings == null)
         {
             return new ReCaptchaResponse

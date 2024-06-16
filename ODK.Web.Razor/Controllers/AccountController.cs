@@ -42,7 +42,7 @@ public class AccountController : OdkControllerBase
         {
             if (string.IsNullOrEmpty(returnUrl))
             {
-                Chapter? chapter = await _requestCache.GetChapter(result.Member.ChapterId);
+                Chapter? chapter = await _requestCache.GetChapterAsync(result.Member.ChapterId);
                 return Redirect($"/{chapter?.Name}");
             }
 
@@ -116,7 +116,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("{chapterName}/Account/Join")]
     public async Task<IActionResult> Join(string chapterName, [FromForm] ProfileFormViewModel viewModel, [FromForm] IFormFile image)
     {
-        Chapter? chapter = await _requestCache.GetChapter(chapterName);
+        Chapter? chapter = await _requestCache.GetChapterAsync(chapterName);
         if (chapter == null)
         {
             AddFeedback(new FeedbackViewModel("An error has occurred", FeedbackType.Error));
@@ -160,7 +160,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("{ChapterName}/Account/Password/Change")]
     public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordFormViewModel viewModel)
     {
-        ServiceResult result = await _authenticationService.ChangePassword(MemberId, 
+        ServiceResult result = await _authenticationService.ChangePasswordAsync(MemberId, 
             viewModel.CurrentPassword ?? "", viewModel.NewPassword ?? "");
         AddFeedback(result.Success
             ? new FeedbackViewModel("Password changed", FeedbackType.Success)
@@ -173,7 +173,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("/Account/Password/Forgotten")]
     public async Task<IActionResult> ForgottenPassword([FromForm] ForgottenPasswordFormViewModel viewModel)
     {
-        ServiceResult result = await _authenticationService.RequestPasswordReset(viewModel.EmailAddress ?? "");
+        ServiceResult result = await _authenticationService.RequestPasswordResetAsync(viewModel.EmailAddress ?? "");
         if (result.Success)
         {
             string message = "An email containing password reset instructions has been sent to that email address " +

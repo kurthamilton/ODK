@@ -1,10 +1,21 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Core.Members
+@using ODK.Services.Authorization
+@using ODK.Services.Caching
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Members
+@using ODK.Web.Razor.Pages.Chapters
 @model ODK.Web.Razor.Models.Components.BodyViewModel
 
 <main>
     @if (!string.IsNullOrEmpty(Model.Title))
     {
         @await Html.PartialAsync("Components/_PageTitle", Model.Title)
+    }
+
+    @if (!Model.HideSubscriptionAlert)
+    {
+        @await Html.PartialAsync("Members/_SubscriptionAlert")
     }
 
     <section class="section--main">

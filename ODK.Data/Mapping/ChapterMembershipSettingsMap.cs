@@ -12,6 +12,7 @@ public class ChapterMembershipSettingsMap : SqlMap<ChapterMembershipSettings>
         Property(x => x.ChapterId);
         Property(x => x.TrialPeriodMonths);
         Property(x => x.MembershipDisabledAfterDaysExpired);
+        Property(x => x.Enabled).HasColumnName("MembershipEnabled");
     }
 
     public override ChapterMembershipSettings Read(IDataReader reader)
@@ -20,7 +21,8 @@ public class ChapterMembershipSettingsMap : SqlMap<ChapterMembershipSettings>
         (
             chapterId: reader.GetGuid(0),
             trialPeriodMonths: reader.GetInt32(1),
-            membershipDisabledAfterDaysExpired: reader.GetInt32(2)
+            membershipDisabledAfterDaysExpired: reader.GetInt32(2),
+            enabled: reader.GetBoolean(3)
         );
     }
 }

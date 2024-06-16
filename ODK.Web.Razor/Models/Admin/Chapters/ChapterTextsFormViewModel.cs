@@ -9,9 +9,9 @@ public class ChapterTextsFormViewModel
 
     [Required]
     [DisplayName("Register message")]
-    public string RegisterMessage { get; set; } = "";
+    public string? RegisterMessage { get; set; }
 
     [Required]
     [DisplayName("Welcome message")]
-    public string WelcomeMessage { get; set; } = "";
+    public string? WelcomeMessage { get; set; }
 }

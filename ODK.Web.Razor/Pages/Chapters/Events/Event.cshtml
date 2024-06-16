@@ -10,9 +10,9 @@
 @inject IVenueService VenueService
 @{
     Layout = "_ChapterLayout";
-    Model.Title = Model.Event.Name;
-    
-    Venue? venue = await VenueService.GetVenue(Model.CurrentMember, Model.Event.VenueId);
+    Model.Title = Model.Event.Name;    
+
+    var venue = await VenueService.GetVenueAsync(Model.CurrentMember, Model.Event);    
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel

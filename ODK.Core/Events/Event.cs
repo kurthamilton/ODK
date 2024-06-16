@@ -47,6 +47,12 @@ public class Event
 
     public bool IsAuthorized(Member? member)
     {
-        return IsPublic || member?.ChapterId == ChapterId;
+        if (IsPublic)
+        {
+            return true;
+        }
+
+        return member?.ChapterId == ChapterId && 
+            member?.IsCurrent() == true;
     }
 }

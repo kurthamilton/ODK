@@ -17,7 +17,11 @@ public class PayPalPaymentProvider : IPayPalPaymentProvider
     public async Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, 
         string cardToken, string description, string memberName)
     {
-        PayPalClient client = GetClient(paymentSettings);
+        var client = GetClient(paymentSettings);
+        if (client == null)
+        {
+            return ServiceResult.Failure("Unable to load payment");
+        }
 
         OrderJsonModel? order = await client.GetOrderAsync(cardToken);
         if (order == null || order.PurchaseUnits.Length != 1)
@@ -49,8 +53,13 @@ public class PayPalPaymentProvider : IPayPalPaymentProvider
         throw new NotImplementedException();
     }
 
-    private PayPalClient GetClient(ChapterPaymentSettings paymentSettings)
+    private PayPalClient? GetClient(ChapterPaymentSettings paymentSettings)
     {
+        if (paymentSettings.ApiPublicKey == null || paymentSettings.ApiSecretKey == null)
+        {
+            return null;
+        }
+
         return new PayPalClient(_settings.ApiBaseUrl, paymentSettings.ApiPublicKey, paymentSettings.ApiSecretKey);
     }
 }

@@ -25,7 +25,7 @@ public class VenueModel : VenueAdminPageModel
             Address = viewModel.Address,
             ChapterId = Chapter.Id,
             MapQuery = viewModel.MapQuery,
-            Name = viewModel.Name
+            Name = viewModel.Name ?? ""
         });
 
         if (!result.Success)

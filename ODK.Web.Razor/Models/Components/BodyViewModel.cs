@@ -9,5 +9,7 @@ public class BodyViewModel
 
     public IHtmlContent? Content { get; set; }
 
+    public bool HideSubscriptionAlert { get; set; }
+
     public string? Title { get; set; }
 }

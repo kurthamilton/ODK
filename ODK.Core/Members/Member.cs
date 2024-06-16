@@ -51,4 +51,6 @@ public class Member : IVersioned
     {
         return new EmailAddressee(EmailAddress, FullName);
     }
+
+    public bool IsCurrent() => Activated && !Disabled;
 }

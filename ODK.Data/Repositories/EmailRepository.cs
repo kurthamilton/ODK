@@ -10,21 +10,21 @@ public class EmailRepository : RepositoryBase, IEmailRepository
     {
     }
 
-    public async Task<Guid> AddChapterEmail(ChapterEmail chapterEmail)
+    public async Task<Guid> AddChapterEmailAsync(ChapterEmail chapterEmail)
     {
         return await Context
             .Insert(chapterEmail)
             .GetIdentityAsync();
     }
 
-    public async Task AddSentEmail(SentEmail sentEmail)
+    public async Task AddSentEmailAsync(SentEmail sentEmail)
     {
         await Context
             .Insert(sentEmail)
             .ExecuteAsync();
     }
 
-    public async Task DeleteChapterEmail(Guid chapterId, EmailType type)
+    public async Task DeleteChapterEmailAsync(Guid chapterId, EmailType type)
     {
         await Context
             .Delete<ChapterEmail>()
@@ -33,7 +33,7 @@ public class EmailRepository : RepositoryBase, IEmailRepository
             .ExecuteAsync();
     }
 
-    public async Task<ChapterEmail> GetChapterEmail(Guid chapterId, EmailType type)
+    public async Task<ChapterEmail?> GetChapterEmailAsync(Guid chapterId, EmailType type)
     {
         return await Context
             .Select<ChapterEmail>()
@@ -42,7 +42,7 @@ public class EmailRepository : RepositoryBase, IEmailRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid chapterId)
+    public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmailsAsync(Guid chapterId)
     {
         return await Context
             .Select<ChapterEmail>()
@@ -50,7 +50,7 @@ public class EmailRepository : RepositoryBase, IEmailRepository
             .ToArrayAsync();
     }
 
-    public async Task<Email> GetEmail(EmailType type)
+    public async Task<Email> GetEmailAsync(EmailType type)
     {
         return await Context
             .Select<Email>()
@@ -58,25 +58,25 @@ public class EmailRepository : RepositoryBase, IEmailRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<Email> GetEmail(EmailType type, Guid chapterId)
+    public async Task<Email> GetEmailAsync(EmailType type, Guid chapterId)
     {
-        ChapterEmail chapterEmail = await GetChapterEmail(chapterId, type);
+        var chapterEmail = await GetChapterEmailAsync(chapterId, type);
         if (chapterEmail != null)
         {
             return new Email(chapterEmail.Type, chapterEmail.Subject, chapterEmail.HtmlContent);
         }
 
-        return await GetEmail(type);
+        return await GetEmailAsync(type);
     }
 
-    public async Task<IReadOnlyCollection<Email>> GetEmails()
+    public async Task<IReadOnlyCollection<Email>> GetEmailsAsync()
     {
         return await Context
             .Select<Email>()
             .ToArrayAsync();
     }
 
-    public async Task<int> GetEmailsSentTodayCount(Guid chapterEmailProviderId)
+    public async Task<int> GetEmailsSentTodayCountAsync(Guid chapterEmailProviderId)
     {
         return await Context
             .Select<SentEmail>()
@@ -86,7 +86,7 @@ public class EmailRepository : RepositoryBase, IEmailRepository
             .CountAsync();
     }
 
-    public async Task UpdateChapterEmail(ChapterEmail chapterEmail)
+    public async Task UpdateChapterEmailAsync(ChapterEmail chapterEmail)
     {
         await Context
             .Update<ChapterEmail>()
@@ -96,7 +96,7 @@ public class EmailRepository : RepositoryBase, IEmailRepository
             .ExecuteAsync();
     }
 
-    public async Task UpdateEmail(Email email)
+    public async Task UpdateEmailAsync(Email email)
     {
         await Context
             .Update<Email>()

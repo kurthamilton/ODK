@@ -30,7 +30,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             return validationResult;
         }
 
-        await _venueRepository.CreateVenue(create);
+        await _venueRepository.CreateVenueAsync(create);
 
         _cacheService.RemoveVersionedCollection<Venue>(venue.ChapterId);
 
@@ -39,7 +39,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     
     public async Task<Venue> GetVenue(Guid currentMemberId, Guid venueId)
     {
-        Venue? venue = await _venueRepository.GetVenue(venueId);
+        Venue? venue = await _venueRepository.GetVenueAsync(venueId);
         if (venue == null)
         {
             throw new OdkNotFoundException();
@@ -54,7 +54,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-        return await _venueRepository.GetVenues(chapterId);
+        return await _venueRepository.GetVenuesAsync(chapterId);
     }
 
     public async Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId,
@@ -62,7 +62,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-        return await _venueRepository.GetVenues(chapterId, venueIds);
+        return await _venueRepository.GetVenuesAsync(chapterId, venueIds);
     }
 
     public async Task<ServiceResult> UpdateVenue(Guid memberId, Guid id, CreateVenue venue)
@@ -77,7 +77,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             return validationResult;
         }
 
-        await _venueRepository.UpdateVenue(update);
+        await _venueRepository.UpdateVenueAsync(update);
 
         _cacheService.RemoveVersionedItem<Venue>(id);
         _cacheService.RemoveVersionedCollection<Venue>(update.ChapterId);
@@ -92,7 +92,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             return ServiceResult.Failure("Name required");
         }
 
-        Venue? existing = await _venueRepository.GetVenueByName(venue.Name);
+        Venue? existing = await _venueRepository.GetVenueByNameAsync(venue.Name);
         if (existing != null && existing.Id != venue.Id)
         {
             return ServiceResult.Failure("Venue with that name already exists");

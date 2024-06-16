@@ -6,8 +6,8 @@ public class LogMessage
 {
     private IDictionary<string, string>? _properties;
 
-    public LogMessage(int id, string level, string message, DateTime timeStamp, string exception,
-        string properties)
+    public LogMessage(int id, string level, string message, DateTime timeStamp, string? exception,
+        string? properties)
     {
         Exception = exception;
         Id = id;
@@ -17,7 +17,7 @@ public class LogMessage
         TimeStamp = timeStamp;
     }
 
-    public string Exception { get; }
+    public string? Exception { get; }
 
     public int Id { get; }
 
@@ -25,7 +25,7 @@ public class LogMessage
 
     public string Message { get; }
 
-    public string Properties { get; }
+    public string? Properties { get; }
 
     public DateTime TimeStamp { get; }
 
@@ -62,6 +62,6 @@ public class LogMessage
     public string? GetProperty(string key)
     {
         IDictionary<string, string> properties = GetProperties();
-        return properties.TryGetValue(key, out string value) ? value : null;
+        return properties.TryGetValue(key, out var value) ? value : null;
     }
 }

@@ -28,7 +28,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return;
         }
 
-        await _memberRepository.DeleteMember(member.Id);
+        await _memberRepository.DeleteMemberAsync(member.Id);
 
         _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
         _cacheService.RemoveVersionedItem<Member>(memberId);
@@ -42,7 +42,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return;
         }
 
-        await _memberRepository.DisableMember(member.Id);
+        await _memberRepository.DisableMemberAsync(member.Id);
     }
 
     public async Task EnableMember(Guid currentMemberId, Guid id)
@@ -53,7 +53,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return;
         }
 
-        await _memberRepository.EnableMember(member.Id);
+        await _memberRepository.EnableMemberAsync(member.Id);
     }
 
     public async Task<Member?> GetMember(Guid currentMemberId, Guid memberId)
@@ -72,7 +72,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
         }
 
-        return await _memberRepository.GetMembers(chapterId, true);
+        return await _memberRepository.GetMembersAsync(chapterId, true);
     }
 
     public async Task<MemberSubscription?> GetMemberSubscription(Guid currentMemberId, Guid memberId)
@@ -83,14 +83,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return null;
         }
 
-        return await _memberRepository.GetMemberSubscription(member.Id);
+        return await _memberRepository.GetMemberSubscriptionAsync(member.Id);
     }
 
     public async Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId)
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-        return await _memberRepository.GetMemberSubscriptions(chapterId);
+        return await _memberRepository.GetMemberSubscriptionsAsync(chapterId);
     }
     
     public async Task RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees)
@@ -125,7 +125,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return validationResult;
         }
 
-        await _memberRepository.UpdateMemberSubscription(update);
+        await _memberRepository.UpdateMemberSubscriptionAsync(update);
 
         _cacheService.RemoveVersionedItem<MemberSubscription>(memberId);
         _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
@@ -135,7 +135,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     
     private async Task<Member?> GetMember(Guid currentMemberId, Guid id, bool superAdmin)
     {
-        Member? member = await _memberRepository.GetMember(id, true);
+        Member? member = await _memberRepository.GetMemberAsync(id, true);
         if (member == null)
         {
             throw new OdkNotFoundException();

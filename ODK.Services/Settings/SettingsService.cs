@@ -16,7 +16,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
     public async Task<SiteSettings> GetSiteSettings()
     {
-        SiteSettings? settings = await _settingsRepository.GetSiteSettings();
+        SiteSettings? settings = await _settingsRepository.GetSiteSettingsAsync();
         return settings!;
     }
 
@@ -31,7 +31,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
             settings.InstagramPassword, scraperUserAgent, scrape, 0, settings.RecaptchaSiteKey,
             settings.RecaptchaSecretKey);
 
-        await _settingsRepository.UpdateSiteSettings(update);
+        await _settingsRepository.UpdateSiteSettingsAsync(update);
 
         return ServiceResult.Successful();
     }

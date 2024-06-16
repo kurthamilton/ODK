@@ -1,4 +1,5 @@
-﻿@model ODK.Web.Razor.Models.Admin.Members.MembershipSettingsFormViewModel
+﻿@using ODK.Web.Razor.Razor
+@model ODK.Web.Razor.Models.Admin.Members.MembershipSettingsFormViewModel
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.TrialPeriodMonths, new { @class = "form-label" })
@@ -9,8 +10,17 @@
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.MembershipDisabledAfter, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", 
-        "Members will be able to login, but not see or respond to events. They will still receive event emails.")
+        "Members will be able to login, but not respond to events. They will still receive event emails.")
     <span class="text-muted">How many days after subscription expiry a member has access to events</span>
     @Html.TextBoxFor(x => x.MembershipDisabledAfter, new { @class = "form-control", type = "number" })
     @Html.ValidationMessageFor(x => x.MembershipDisabledAfter)
+</div>
+
+<div class="mb-3 form-check">
+    @Html.OdkCheckBoxFor(x => x.Enabled, new { @class = "form-check-input" })
+    @Html.LabelFor(x => x.Enabled, new { @class = "form-check-label" })
+
+    <span>
+        @await Html.PartialAsync("Components/_Tooltip", "Whether or not membership is enforced")
+    </span>
 </div>

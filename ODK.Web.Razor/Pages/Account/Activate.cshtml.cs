@@ -6,32 +6,33 @@ using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Account;
 using ODK.Web.Razor.Pages.Chapters;
 
-namespace ODK.Web.Razor.Pages.Account;
-
-public class ActivateModel : ChapterPageModel
+namespace ODK.Web.Razor.Pages.Account
 {
-    private readonly IAuthenticationService _authenticationService;
-
-    public ActivateModel(IRequestCache requestCache, IAuthenticationService authenticationService) 
-        : base(requestCache)
+    public class ActivateModel : ChapterPageModel
     {
-        _authenticationService = authenticationService;
-    }
+        private readonly IAuthenticationService _authenticationService;
 
-    public void OnGet()
-    {
-    }
-
-    public async Task<IActionResult> OnPostAsync(string token, ActivateFormViewModel viewModel)
-    {
-        ServiceResult result = await _authenticationService.ActivateAccount(token, viewModel.Password);
-        if (!result.Success)
+        public ActivateModel(IRequestCache requestCache, IAuthenticationService authenticationService) 
+            : base(requestCache)
         {
-            AddFeedback(new FeedbackViewModel(result));
-            return Page();
+            _authenticationService = authenticationService;
         }
 
-        AddFeedback(new FeedbackViewModel("Your account has been activated. You can now login.", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Account/Login");
+        public void OnGet()
+        {
+        }
+
+        public async Task<IActionResult> OnPostAsync(string token, ActivateFormViewModel viewModel)
+        {
+            ServiceResult result = await _authenticationService.ActivateAccountAsync(token, viewModel.Password);
+            if (!result.Success)
+            {
+                AddFeedback(new FeedbackViewModel(result));
+                return Page();
+            }
+
+            AddFeedback(new FeedbackViewModel("Your account has been activated. You can now login.", FeedbackType.Success));
+            return Redirect($"/{Chapter.Name}/Account/Login");
+        }
     }
 }

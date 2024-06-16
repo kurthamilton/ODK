@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Models.SocialMedia;
 
 public class InstagramPostViewModel
 {
-    public InstagramPostViewModel(Chapter chapter, Guid instagramPostId, string caption, 
+    public InstagramPostViewModel(Chapter chapter, Guid instagramPostId, string? caption, 
         string externalId)
     {
         Caption = caption;
@@ -13,7 +13,7 @@ public class InstagramPostViewModel
         InstagramPostId = instagramPostId;
     }
 
-    public string Caption { get; }
+    public string? Caption { get; }
 
     public Chapter Chapter { get; }
 

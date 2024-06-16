@@ -10,7 +10,7 @@ public class ChapterPropertyFormViewModel
     public DataType DataType { get; set; }
 
     [DisplayName("Help text")]
-    public string HelpText { get; set; } = "";
+    public string? HelpText { get; set; }
 
     public bool Hidden { get; set; }
 
@@ -22,5 +22,5 @@ public class ChapterPropertyFormViewModel
 
     public bool Required { get; set; }
 
-    public string Subtitle { get; set; } = "";
+    public string? Subtitle { get; set; }
 }

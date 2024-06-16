@@ -110,7 +110,7 @@ public class MailProvider : IMailProvider
     {
         if (from != null)
         {
-            Member? member = await _memberRepository.GetMember(from.MemberId);
+            Member? member = await _memberRepository.GetMemberAsync(from.MemberId);
             message.From.Add(new MailboxAddress($"{member!.FirstName} {member.LastName}", from.AdminEmailAddress));
         }
         else
@@ -137,7 +137,7 @@ public class MailProvider : IMailProvider
 
     private async Task<string> GetLayoutBody(Chapter chapter, string body)
     {
-        Email layout = await _emailRepository.GetEmail(EmailType.Layout, chapter.Id);
+        Email layout = await _emailRepository.GetEmailAsync(EmailType.Layout, chapter.Id);
 
         layout = layout.Interpolate(new Dictionary<string, string>
         {
@@ -153,7 +153,7 @@ public class MailProvider : IMailProvider
         IReadOnlyCollection<ChapterEmailProvider> providers = await _chapterRepository.GetChapterEmailProviders(chapterId);
         foreach (ChapterEmailProvider provider in providers)
         {
-            int sentToday = await _emailRepository.GetEmailsSentTodayCount(provider.Id);
+            int sentToday = await _emailRepository.GetEmailsSentTodayCountAsync(provider.Id);
             if (sentToday < provider.DailyLimit)
             {
                 return (provider, provider.DailyLimit - sentToday);
@@ -188,7 +188,7 @@ public class MailProvider : IMailProvider
             foreach (InternetAddress to in message.To.Union(message.Cc).Union(message.Bcc))
             {
                 SentEmail sentEmail = new SentEmail(provider.Id, DateTime.UtcNow, to.ToString(), message.Subject);
-                await _emailRepository.AddSentEmail(sentEmail);
+                await _emailRepository.AddSentEmailAsync(sentEmail);
             }
 
             await _loggingService.LogDebug($"Email sent to {string.Join(", ", message.To)}");

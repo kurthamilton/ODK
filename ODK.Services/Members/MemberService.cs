@@ -40,7 +40,7 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
     {
-        MemberEmailAddressUpdateToken? token = await _memberRepository.GetMemberEmailAddressUpdateToken(memberId);
+        MemberEmailAddressUpdateToken? token = await _memberRepository.GetMemberEmailAddressUpdateTokenAsync(memberId);
         if (token == null)
         {
             return ServiceResult.Failure("Invalid link");
@@ -51,17 +51,17 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Invalid link");
         }
 
-        Member? existing = await _memberRepository.FindMemberByEmailAddress(token.NewEmailAddress);
+        Member? existing = await _memberRepository.FindMemberByEmailAddressAsync(token.NewEmailAddress);
         if (existing != null)
         {
-            await _memberRepository.DeleteEmailAddressUpdateToken(memberId);
+            await _memberRepository.DeleteEmailAddressUpdateTokenAsync(memberId);
             return ServiceResult.Failure("Email not updated: new email address is already in use");
         }
 
-        await _memberRepository.UpdateMemberEmailAddress(memberId, token.NewEmailAddress);
+        await _memberRepository.UpdateMemberEmailAddressAsync(memberId, token.NewEmailAddress);
         _cacheService.RemoveVersionedItem<Member>(memberId);
 
-        await _memberRepository.DeleteEmailAddressUpdateToken(memberId);
+        await _memberRepository.DeleteEmailAddressUpdateTokenAsync(memberId);
 
         return ServiceResult.Successful();
     }
@@ -80,7 +80,7 @@ public class MemberService : IMemberService
             return imageResult;
         }
 
-        Member? existing = await _memberRepository.FindMemberByEmailAddress(profile.EmailAddress);
+        Member? existing = await _memberRepository.FindMemberByEmailAddressAsync(profile.EmailAddress);
         if (existing != null)
         {
             return ServiceResult.Failure("Email address already in use");
@@ -89,7 +89,7 @@ public class MemberService : IMemberService
         Member create = new Member(Guid.Empty, chapterId, profile.EmailAddress, profile.EmailOptIn ?? false, profile.FirstName, profile.LastName,
             DateTime.UtcNow, false, false, 0);
 
-        Guid id = await _memberRepository.CreateMember(create);
+        Guid id = await _memberRepository.CreateMemberAsync(create);
 
         ChapterMembershipSettings? membershipSettings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
         if (membershipSettings == null)
@@ -98,19 +98,19 @@ public class MemberService : IMemberService
         }
 
         MemberSubscription subscription = new MemberSubscription(id, SubscriptionType.Trial, create.CreatedDate.AddMonths(membershipSettings.TrialPeriodMonths));
-        await _memberRepository.UpdateMemberSubscription(subscription);
+        await _memberRepository.UpdateMemberSubscriptionAsync(subscription);
 
         MemberImage image = CreateMemberImage(id, profile.Image.MimeType, profile.Image.ImageData);
-        await _memberRepository.AddMemberImage(image);
+        await _memberRepository.AddMemberImageAsync(image);
 
         IEnumerable<MemberProperty> memberProperties = profile.Properties
             .Select(x => new MemberProperty(Guid.Empty, id, x.ChapterPropertyId, x.Value));
 
-        await _memberRepository.UpdateMemberProperties(id, memberProperties);
+        await _memberRepository.UpdateMemberPropertiesAsync(id, memberProperties);
 
         string activationToken = RandomStringGenerator.Generate(64);
 
-        await _memberRepository.AddActivationToken(new MemberActivationToken(id, activationToken));
+        await _memberRepository.AddActivationTokenAsync(new MemberActivationToken(id, activationToken));
 
         Chapter? chapter = await _chapterRepository.GetChapter(chapterId);
 
@@ -131,13 +131,13 @@ public class MemberService : IMemberService
 
     public async Task DeleteMember(Guid memberId)
     {
-        Member? member = await _memberRepository.GetMember(memberId, true);
+        Member? member = await _memberRepository.GetMemberAsync(memberId, true);
         if (member == null)
         {
             return;
         }
 
-        await _memberRepository.DeleteMember(memberId);
+        await _memberRepository.DeleteMemberAsync(memberId);
 
         _cacheService.RemoveVersionedItem<Member>(memberId);
         _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
@@ -145,7 +145,7 @@ public class MemberService : IMemberService
 
     public async Task<IReadOnlyCollection<Member>> GetLatestMembers(Member currentMember, Guid chapterId)
     {
-        await _authorizationService.AssertMemberIsChapterMember(currentMember.Id, chapterId);
+        await _authorizationService.AssertMemberIsChapterMemberAsync(currentMember.Id, chapterId);
 
         IReadOnlyCollection<Member> members = await GetMembers(currentMember, chapterId);
 
@@ -169,7 +169,7 @@ public class MemberService : IMemberService
         int? width, int? height)
     {
         VersionedServiceResult<MemberImage> result = await _cacheService.GetOrSetVersionedItem(
-            () => _memberRepository.GetMemberImage(memberId),
+            () => _memberRepository.GetMemberImageAsync(memberId),
             memberId,
             currentVersion);
 
@@ -208,7 +208,7 @@ public class MemberService : IMemberService
 
     public async Task<IReadOnlyCollection<MemberProperty>> GetMemberProperties(Guid memberId)
     {
-        return await _memberRepository.GetMemberProperties(memberId);
+        return await _memberRepository.GetMemberPropertiesAsync(memberId);
     }
     
     public async Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId)
@@ -218,12 +218,12 @@ public class MemberService : IMemberService
             return Array.Empty<Member>();
         }
 
-        return await _memberRepository.GetMembers(chapterId);
+        return await _memberRepository.GetMembersAsync(chapterId);
     }
 
     public async Task<MemberSubscription?> GetMemberSubscription(Guid memberId)
     {
-        return await _memberRepository.GetMemberSubscription(memberId);
+        return await _memberRepository.GetMemberSubscriptionAsync(memberId);
     }
 
     public async Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId,
@@ -248,16 +248,16 @@ public class MemberService : IMemberService
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
         }
 
-        MemberSubscription? memberSubscription = await _memberRepository.GetMemberSubscription(member.Id);
+        MemberSubscription? memberSubscription = await _memberRepository.GetMemberSubscriptionAsync(member.Id);
 
         DateTime expiryDate = (memberSubscription?.ExpiryDate ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
         memberSubscription = new MemberSubscription(member.Id, chapterSubscription.Type, expiryDate);
 
-        await _memberRepository.UpdateMemberSubscription(memberSubscription);
+        await _memberRepository.UpdateMemberSubscriptionAsync(memberSubscription);
 
         MemberSubscriptionRecord record = new MemberSubscriptionRecord(memberId, chapterSubscription.Type, DateTime.UtcNow,
             chapterSubscription.Amount, chapterSubscription.Months);
-        await _memberRepository.AddMemberSubscriptionRecord(record);
+        await _memberRepository.AddMemberSubscriptionRecordAsync(record);
 
         _cacheService.UpdatedVersionedItem(memberSubscription, memberId);
         _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
@@ -273,7 +273,7 @@ public class MemberService : IMemberService
             return;
         }
 
-        MemberImage? image = await _memberRepository.GetMemberImage(memberId);
+        MemberImage? image = await _memberRepository.GetMemberImageAsync(memberId);
         if (image == null)
         {
             return;
@@ -296,16 +296,16 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Invalid email address format");
         }
 
-        MemberEmailAddressUpdateToken? existingToken = await _memberRepository.GetMemberEmailAddressUpdateToken(member.Id);
+        MemberEmailAddressUpdateToken? existingToken = await _memberRepository.GetMemberEmailAddressUpdateTokenAsync(member.Id);
         if (existingToken != null)
         {
-            await _memberRepository.DeleteEmailAddressUpdateToken(member.Id);
+            await _memberRepository.DeleteEmailAddressUpdateTokenAsync(member.Id);
         }
 
         string activationToken = RandomStringGenerator.Generate(64);
 
         MemberEmailAddressUpdateToken token = new MemberEmailAddressUpdateToken(member.Id, newEmailAddress, activationToken);
-        await _memberRepository.AddEmailAddressUpdateToken(token);
+        await _memberRepository.AddEmailAddressUpdateTokenAsync(token);
 
         Chapter? chapter = await _chapterRepository.GetChapter(member.ChapterId);
 
@@ -333,7 +333,7 @@ public class MemberService : IMemberService
             return;
         }
 
-        await _memberRepository.UpdateMember(member.Id, optIn, member.FirstName, member.LastName);
+        await _memberRepository.UpdateMemberAsync(member.Id, optIn, member.FirstName, member.LastName);
 
         _cacheService.RemoveVersionedItem<Member>(memberId);
     }
@@ -366,11 +366,11 @@ public class MemberService : IMemberService
         MemberProfile? existing = await GetMemberProfile(id);
         UpdateMemberProfile(existing!, profile);
 
-        await _memberRepository.UpdateMember(id, existing!.EmailOptIn, existing.FirstName, existing.LastName);
-        await _memberRepository.UpdateMemberProperties(id, existing.MemberProperties);
+        await _memberRepository.UpdateMemberAsync(id, existing!.EmailOptIn, existing.FirstName, existing.LastName);
+        await _memberRepository.UpdateMemberPropertiesAsync(id, existing.MemberProperties);
 
-        IReadOnlyCollection<Member> members = await _memberRepository.GetMembers(member.ChapterId);
-        long version = await _memberRepository.GetMembersVersion(member.ChapterId);
+        IReadOnlyCollection<Member> members = await _memberRepository.GetMembersAsync(member.ChapterId);
+        long version = await _memberRepository.GetMembersVersionAsync(member.ChapterId);
         _cacheService.UpdatedVersionedCollection(members, version, member.ChapterId);
 
         _cacheService.RemoveVersionedItem<Member>(member.Id);
@@ -465,13 +465,13 @@ public class MemberService : IMemberService
 
     private async Task<Member?> GetMember(Guid currentMemberId, Guid memberId)
     {
-        Member? member = await _memberRepository.GetMember(memberId);
+        Member? member = await _memberRepository.GetMemberAsync(memberId);
         if (member == null)
         {
             return null;
         }
 
-        await _authorizationService.AssertMemberIsChapterMember(currentMemberId, member.ChapterId);
+        await _authorizationService.AssertMemberIsChapterMemberAsync(currentMemberId, member.ChapterId);
         return member;
     }
 
@@ -494,7 +494,7 @@ public class MemberService : IMemberService
     private async Task<MemberProfile> GetMemberProfile(Member member)
     {
         IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(member.ChapterId);
-        IReadOnlyCollection<MemberProperty> memberProperties = await _memberRepository.GetMemberProperties(member.Id);
+        IReadOnlyCollection<MemberProperty> memberProperties = await _memberRepository.GetMemberPropertiesAsync(member.Id);
         IDictionary<Guid, MemberProperty> memberPropertyDictionary = memberProperties.ToDictionary(x => x.ChapterPropertyId, x => x);
 
         IEnumerable<MemberProperty> allMemberProperties = chapterProperties.Select(x =>
@@ -507,7 +507,7 @@ public class MemberService : IMemberService
     {
         MemberImage update = CreateMemberImage(member.Id, mimeType, imageData);
 
-        await _memberRepository.UpdateMemberImage(update);
+        await _memberRepository.UpdateMemberImageAsync(update);
     }
     
     private async Task<ServiceResult> ValidateMemberProfile(Guid chapterId, UpdateMemberProfile profile)

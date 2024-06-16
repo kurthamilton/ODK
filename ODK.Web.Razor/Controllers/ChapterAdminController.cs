@@ -32,7 +32,7 @@ public class ChapterAdminController : OdkControllerBase
     [HttpPost("/{chapterName}/Admin/Chapter/ContactRequests/{id}/Delete")]
     public async Task<IActionResult> DeleteContactRequest(string chapterName, Guid id)
     {
-        Chapter? chapter = await _requestCache.GetChapter(chapterName);
+        Chapter? chapter = await _requestCache.GetChapterAsync(chapterName);
         if (chapter != null)
         {
             ServiceResult result = await _chapterAdminService.DeleteChapterContactRequest(MemberId, id);
@@ -65,8 +65,8 @@ public class ChapterAdminController : OdkControllerBase
     [HttpPost("/{chapterName}/Admin/Chapter/Emails/{type}/SendTest")]
     public async Task<IActionResult> SendTestEmail(string chapterName, EmailType type)
     {
-        Task<Chapter?> chapterTask = _requestCache.GetChapter(chapterName);
-        Task<Member?> memberTask = _requestCache.GetMember(MemberId);
+        Task<Chapter?> chapterTask = _requestCache.GetChapterAsync(chapterName);
+        Task<Member?> memberTask = _requestCache.GetMemberAsync(MemberId);
 
         await Task.WhenAll(chapterTask, memberTask);
 

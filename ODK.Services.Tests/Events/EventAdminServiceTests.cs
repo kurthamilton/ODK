@@ -16,9 +16,9 @@ public static class EventAdminServiceTests
     private const string EventRsvpUrlFormat = "/{event.id}?rsvp=yes";
     private const string EventUrlFormat = "/{event.id}";
 
-    private static EventAdminService CreateService(IEmailRepository memberEmailRepository = null,
-        IChapterRepository chapterRepository = null, IEventRepository eventRepository = null,
-        IVenueRepository venueRepository = null)
+    private static EventAdminService CreateService(IEmailRepository? memberEmailRepository = null,
+        IChapterRepository? chapterRepository = null, IEventRepository? eventRepository = null,
+        IVenueRepository? venueRepository = null)
     {
         return new EventAdminService(
             eventRepository ?? CreateMockEventRepository(CreateMockEvent()),
@@ -29,12 +29,12 @@ public static class EventAdminServiceTests
             Mock.Of<IEmailService>());
     }
 
-    private static Chapter CreateMockChapter(string name = null)
+    private static Chapter CreateMockChapter(string? name = null)
     {
         return new Chapter(Guid.NewGuid(), Guid.NewGuid(), name ?? "Chapter", "", "Welcome text", null, 1);
     }
 
-    private static IChapterRepository CreateMockChapterRepository(bool authorised = true, Chapter chapter = null)
+    private static IChapterRepository CreateMockChapterRepository(bool authorised = true, Chapter? chapter = null)
     {
         Mock<IChapterRepository> mock = new Mock<IChapterRepository>();
 
@@ -47,17 +47,17 @@ public static class EventAdminServiceTests
         return mock.Object;
     }
 
-    private static Event CreateMockEvent(string name = null, DateTime? date = null, string time = null)
+    private static Event CreateMockEvent(string? name = null, DateTime? date = null, string? time = null)
     {
         return new Event(Guid.NewGuid(), Guid.NewGuid(), "Admin Member", name ?? "Name", date ?? DateTime.Today, Guid.NewGuid(),
             time ?? "Time", null, "Description", false);
     }
 
-    private static IEventRepository CreateMockEventRepository(Event @event = null)
+    private static IEventRepository CreateMockEventRepository(Event? @event = null)
     {
         Mock<IEventRepository> mock = new Mock<IEventRepository>();
 
-        mock.Setup(x => x.GetEvent(It.IsAny<Guid>()))
+        mock.Setup(x => x.GetEventAsync(It.IsAny<Guid>()))
             .ReturnsAsync(@event);
 
         return mock.Object;
@@ -68,11 +68,11 @@ public static class EventAdminServiceTests
         return Mock.Of<IMemberRepository>();
     }
 
-    private static IVenueRepository CreateMockVenueRepository(Venue venue = null)
+    private static IVenueRepository CreateMockVenueRepository(Venue? venue = null)
     {
         Mock<IVenueRepository> mock = new Mock<IVenueRepository>();
 
-        mock.Setup(x => x.GetVenue(It.IsAny<Guid>()))
+        mock.Setup(x => x.GetVenueAsync(It.IsAny<Guid>()))
             .ReturnsAsync(venue);
 
         return mock.Object;

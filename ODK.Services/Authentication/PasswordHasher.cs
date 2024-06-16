@@ -29,20 +29,10 @@ public class PasswordHasher
 
     private static byte[] ComputeHash(string plainText, byte[] salt, int iterations = HasingIterationsCount, int hashByteSize = HashByteSize)
     {
-        using (Rfc2898DeriveBytes hashGenerator = new Rfc2898DeriveBytes(plainText, salt))
-        {
-            hashGenerator.IterationCount = iterations;
-            return hashGenerator.GetBytes(hashByteSize);
-        }
+        using var hashGenerator = new Rfc2898DeriveBytes(plainText, salt, iterations, HashAlgorithmName.SHA1);
+        hashGenerator.IterationCount = iterations;
+        return hashGenerator.GetBytes(hashByteSize);
     }
 
-    private static byte[] GenerateSalt(int saltByteSize = SaltByteSize)
-    {
-        using (RNGCryptoServiceProvider saltGenerator = new RNGCryptoServiceProvider())
-        {
-            byte[] salt = new byte[saltByteSize];
-            saltGenerator.GetBytes(salt);
-            return salt;
-        }
-    }        
+    private static byte[] GenerateSalt(int saltByteSize = SaltByteSize) => RandomNumberGenerator.GetBytes(saltByteSize);
 }

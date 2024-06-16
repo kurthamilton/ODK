@@ -335,6 +335,7 @@ public class ChapterRepository : RepositoryBase, IChapterRepository
             .Update<ChapterMembershipSettings>()
             .Set(x => x.MembershipDisabledAfterDaysExpired, settings.MembershipDisabledAfterDaysExpired)
             .Set(x => x.TrialPeriodMonths, settings.TrialPeriodMonths)
+            .Set(x => x.Enabled, settings.Enabled)
             .Where(x => x.ChapterId).EqualTo(settings.ChapterId)
             .ExecuteAsync();
     }

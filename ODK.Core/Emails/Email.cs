@@ -19,7 +19,7 @@ public class Email
 
     public EmailType Type { get; }
 
-    public Email Interpolate(IDictionary<string, string?> parameters)
+    public Email Interpolate(IDictionary<string, string> parameters)
     {
         foreach (string key in parameters.Keys)
         {

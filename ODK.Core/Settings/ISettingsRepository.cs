@@ -2,7 +2,7 @@
 
 public interface ISettingsRepository
 {
-    Task<SiteSettings?> GetSiteSettings();
+    Task<SiteSettings?> GetSiteSettingsAsync();
 
-    Task UpdateSiteSettings(SiteSettings settings);
+    Task UpdateSiteSettingsAsync(SiteSettings settings);
 }

@@ -1,46 +1,51 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Services.Chapters;
-using ODK.Services.Members;
 
 namespace ODK.Services.Caching;
 
 public class RequestCache : IRequestCache
 {
-    private readonly IChapterService _chapterService;
-    private readonly IMemberService _memberService;
+    private readonly IChapterRepository _chapterRepository;
+    private readonly IMemberRepository _memberRepository;
 
-    private readonly IDictionary<string, Chapter> _chapters = new Dictionary<string, Chapter>();
-    private readonly IDictionary<Guid, Member> _members = new Dictionary<Guid, Member>();
+    private readonly IDictionary<string, Chapter> _chapters;
+    private readonly IDictionary<Guid, ChapterMembershipSettings?> _chapterMembershipSettings;
+    private readonly IDictionary<Guid, Member> _members;
+    private readonly IDictionary<Guid, MemberSubscription?> _memberSubscriptions;
 
-    public RequestCache(IChapterService chapterService, IMemberService memberService)
+    public RequestCache(IChapterRepository chapterRepository, IMemberRepository memberRepository)
     {
-        _chapterService = chapterService;
-        _memberService = memberService;
+        _chapterRepository = chapterRepository;
+        _memberRepository = memberRepository;
+
+        _chapters = new Dictionary<string, Chapter>();
+        _chapterMembershipSettings = new Dictionary<Guid, ChapterMembershipSettings?>();
+        _members = new Dictionary<Guid, Member>();
+        _memberSubscriptions = new Dictionary<Guid, MemberSubscription?>();
     }
 
-    public async Task<Chapter?> GetChapter(Guid chapterId)
+    public async Task<Chapter?> GetChapterAsync(Guid chapterId)
     {
-        IReadOnlyCollection<Chapter> chapters = await GetChapters();
+        IReadOnlyCollection<Chapter> chapters = await GetChaptersAsync();
         return chapters
             .FirstOrDefault(x => x.Id == chapterId);
     }
 
-    public async Task<Chapter?> GetChapter(string name)
+    public async Task<Chapter?> GetChapterAsync(string name)
     {
-        IReadOnlyCollection<Chapter> chapters = await GetChapters();
+        IReadOnlyCollection<Chapter> chapters = await GetChaptersAsync();
         return chapters
             .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    public async Task<IReadOnlyCollection<Chapter>> GetChapters()
+    public async Task<IReadOnlyCollection<Chapter>> GetChaptersAsync()
     {
         if (_chapters.Count > 0)
         {
             return _chapters.Values.ToArray();
         }
 
-        IReadOnlyCollection<Chapter> chapters = await _chapterService.GetChapters();
+        IReadOnlyCollection<Chapter> chapters = await _chapterRepository.GetChapters();
         foreach (Chapter chapter in chapters)
         {
             _chapters[chapter.Name] = chapter;
@@ -49,14 +54,25 @@ public class RequestCache : IRequestCache
         return _chapters.Values.ToArray();
     }
 
-    public async Task<Member?> GetMember(Guid memberId)
+    public async Task<ChapterMembershipSettings?> GetChapterMembershipSettingsAsync(Guid chapterId)
+    {
+        if (!_chapterMembershipSettings.ContainsKey(chapterId))
+        {
+            var settings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
+            _chapterMembershipSettings[chapterId] = settings;
+        }
+
+        return _chapterMembershipSettings[chapterId];
+    }
+
+    public async Task<Member?> GetMemberAsync(Guid memberId)
     {
         if (_members.TryGetValue(memberId, out Member? member))
         {
             return member;
         }
 
-        member = await _memberService.GetMember(memberId);
+        member = await _memberRepository.GetMemberAsync(memberId);
         
         if (member != null)
         {
@@ -64,5 +80,16 @@ public class RequestCache : IRequestCache
         }
         
         return member;
+    }
+
+    public async Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId)
+    {
+        if (!_memberSubscriptions.ContainsKey(memberId))
+        {
+            var subscription = await _memberRepository.GetMemberSubscriptionAsync(memberId);
+            _memberSubscriptions[memberId] = subscription;
+        }
+
+        return _memberSubscriptions[memberId];
     }
 }

@@ -23,9 +23,14 @@ public class PaymentService : IPaymentService
 
     public async Task<ServiceResult> MakePayment(Member member, double amount, string cardToken, string reference)
     {
-        ChapterPaymentSettings paymentSettings = await _chapterRepository.GetChapterPaymentSettings(member.ChapterId);
-        Chapter? chapter = await _chapterRepository.GetChapter(member.ChapterId);
-        Country country = await _countryRepository.GetCountry(chapter!.CountryId);
+        var paymentSettings = await _chapterRepository.GetChapterPaymentSettings(member.ChapterId);
+        if (paymentSettings == null || paymentSettings.Provider == null)
+        {
+            return ServiceResult.Failure("Payment settings not found");
+        }
+
+        var chapter = await _chapterRepository.GetChapter(member.ChapterId);
+        var country = await _countryRepository.GetCountry(chapter!.CountryId);
 
         PaymentProviderType providerType = (PaymentProviderType)Enum.Parse(typeof(PaymentProviderType), paymentSettings.Provider, true);
 

@@ -11,7 +11,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
     {
     }
 
-    public async Task ActivateMember(Guid memberId)
+    public async Task ActivateMemberAsync(Guid memberId)
     {
         await Context
             .Update<Member>()
@@ -19,35 +19,35 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
 
-    public async Task AddActivationToken(MemberActivationToken token)
+    public async Task AddActivationTokenAsync(MemberActivationToken token)
     {
         await Context
             .Insert(token)
             .ExecuteAsync();
     }
 
-    public async Task AddEmailAddressUpdateToken(MemberEmailAddressUpdateToken token)
+    public async Task AddEmailAddressUpdateTokenAsync(MemberEmailAddressUpdateToken token)
     {
         await Context
             .Insert(token)
             .ExecuteAsync();
     }
 
-    public async Task AddMemberImage(MemberImage image)
+    public async Task AddMemberImageAsync(MemberImage image)
     {
         await Context
             .Insert(image)
             .ExecuteAsync();
     }
 
-    public async Task AddMemberSubscriptionRecord(MemberSubscriptionRecord record)
+    public async Task AddMemberSubscriptionRecordAsync(MemberSubscriptionRecord record)
     {
         await Context
             .Insert(record)
             .ExecuteAsync();
     }
 
-    public async Task AddPasswordResetRequest(Guid memberId, DateTime created, DateTime expires, string token)
+    public async Task AddPasswordResetRequestAsync(Guid memberId, DateTime created, DateTime expires, string token)
     {
         MemberPasswordResetRequest request = new MemberPasswordResetRequest(Guid.Empty, memberId, created, expires, token);
         await Context
@@ -55,14 +55,14 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
     
-    public async Task<Guid> CreateMember(Member member)
+    public async Task<Guid> CreateMemberAsync(Member member)
     {
         return await Context
             .Insert(member)
             .GetIdentityAsync();
     }
 
-    public async Task DeleteActivationToken(Guid memberId)
+    public async Task DeleteActivationTokenAsync(Guid memberId)
     {
         await Context
             .Delete<MemberActivationToken>()
@@ -70,7 +70,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
 
-    public async Task DeleteEmailAddressUpdateToken(Guid memberId)
+    public async Task DeleteEmailAddressUpdateTokenAsync(Guid memberId)
     {
         await Context
             .Delete<MemberEmailAddressUpdateToken>()
@@ -78,7 +78,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
 
-    public async Task DeleteMember(Guid memberId)
+    public async Task DeleteMemberAsync(Guid memberId)
     {
         await Context
             .Delete<Member>()
@@ -86,7 +86,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
 
-    public async Task DeletePasswordResetRequest(Guid passwordResetRequestId)
+    public async Task DeletePasswordResetRequestAsync(Guid passwordResetRequestId)
     {
         await Context
             .Delete<MemberPasswordResetRequest>()
@@ -94,7 +94,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
     
-    public async Task DisableMember(Guid id)
+    public async Task DisableMemberAsync(Guid id)
     {
         await Context
             .Update<Member>()
@@ -103,7 +103,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
 
-    public async Task EnableMember(Guid id)
+    public async Task EnableMemberAsync(Guid id)
     {
         await Context
             .Update<Member>()
@@ -112,7 +112,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
 
-    public async Task<Member> FindMemberByEmailAddress(string emailAddress)
+    public async Task<Member?> FindMemberByEmailAddressAsync(string emailAddress)
     {
         return await Context
             .Select<Member>()
@@ -120,14 +120,14 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .FirstOrDefaultAsync();
     }
     
-    public async Task<Member> GetMember(Guid memberId, bool searchAll = false)
+    public async Task<Member?> GetMemberAsync(Guid memberId, bool searchAll = false)
     {
         return await MembersQuery(searchAll)
             .Where(x => x.Id).EqualTo(memberId)
             .FirstOrDefaultAsync();
     }
     
-    public async Task<MemberActivationToken> GetMemberActivationToken(string activationToken)
+    public async Task<MemberActivationToken?> GetMemberActivationTokenAsync(string activationToken)
     {
         return await Context
             .Select<MemberActivationToken>()
@@ -135,7 +135,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<MemberEmailAddressUpdateToken> GetMemberEmailAddressUpdateToken(Guid memberId)
+    public async Task<MemberEmailAddressUpdateToken?> GetMemberEmailAddressUpdateTokenAsync(Guid memberId)
     {
         return await Context
             .Select<MemberEmailAddressUpdateToken>()
@@ -143,7 +143,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<MemberImage> GetMemberImage(Guid memberId)
+    public async Task<MemberImage?> GetMemberImageAsync(Guid memberId)
     {
         return await Context
             .Select<MemberImage>()
@@ -151,7 +151,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<MemberPassword> GetMemberPassword(Guid memberId)
+    public async Task<MemberPassword?> GetMemberPasswordAsync(Guid memberId)
     {
         return await Context
             .Select<MemberPassword>()
@@ -159,7 +159,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<IReadOnlyCollection<MemberProperty>> GetMemberProperties(Guid memberId)
+    public async Task<IReadOnlyCollection<MemberProperty>> GetMemberPropertiesAsync(Guid memberId)
     {
         return await Context
             .Select<MemberProperty>()
@@ -167,14 +167,14 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ToArrayAsync();
     }
 
-    public async Task<IReadOnlyCollection<Member>> GetMembers(Guid chapterId, bool searchAll = false)
+    public async Task<IReadOnlyCollection<Member>> GetMembersAsync(Guid chapterId, bool searchAll = false)
     {
         return await MembersQuery(searchAll)
             .Where(x => x.ChapterId).EqualTo(chapterId)
             .ToArrayAsync();
     }
 
-    public async Task<MemberSubscription> GetMemberSubscription(Guid memberId)
+    public async Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId)
     {
         return await Context
             .Select<MemberSubscription>()
@@ -182,7 +182,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid chapterId)
+    public async Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptionsAsync(Guid chapterId)
     {
         return await Context
             .Select<MemberSubscription>()
@@ -190,14 +190,14 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ToArrayAsync();
     }
 
-    public async Task<long> GetMembersVersion(Guid chapterId, bool searchAll = false)
+    public async Task<long> GetMembersVersionAsync(Guid chapterId, bool searchAll = false)
     {
         return await MembersQuery(searchAll)
             .Where(x => x.ChapterId).EqualTo(chapterId)
             .VersionAsync();
     }
 
-    public async Task<MemberPasswordResetRequest> GetPasswordResetRequest(string token)
+    public async Task<MemberPasswordResetRequest?> GetPasswordResetRequestAsync(string token)
     {
         return await Context
             .Select<MemberPasswordResetRequest>()
@@ -205,7 +205,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .FirstOrDefaultAsync();
     }
     
-    public async Task UpdateMember(Guid memberId, bool emailOptIn, string firstName, string lastName)
+    public async Task UpdateMemberAsync(Guid memberId, bool emailOptIn, string firstName, string lastName)
     {
         await Context
             .Update<Member>()
@@ -216,7 +216,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
 
-    public async Task UpdateMemberEmailAddress(Guid memberId, string emailAddress)
+    public async Task UpdateMemberEmailAddressAsync(Guid memberId, string emailAddress)
     {
         await Context
             .Update<Member>()
@@ -225,7 +225,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
 
-    public async Task UpdateMemberImage(MemberImage image)
+    public async Task UpdateMemberImageAsync(MemberImage image)
     {
         bool memberHasImage = await MemberHasImage(image.MemberId);
         if (memberHasImage)
@@ -239,11 +239,11 @@ public class MemberRepository : RepositoryBase, IMemberRepository
         }
         else
         {
-            await AddMemberImage(image);
+            await AddMemberImageAsync(image);
         }
     }
 
-    public async Task UpdateMemberPassword(MemberPassword password)
+    public async Task UpdateMemberPasswordAsync(MemberPassword password)
     {
         await Context
             .Update<MemberPassword>()
@@ -253,7 +253,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
             .ExecuteAsync();
     }
 
-    public async Task UpdateMemberProperties(Guid memberId, IEnumerable<MemberProperty> memberProperties)
+    public async Task UpdateMemberPropertiesAsync(Guid memberId, IEnumerable<MemberProperty> memberProperties)
     {
         foreach (MemberProperty memberProperty in memberProperties)
         {
@@ -274,7 +274,7 @@ public class MemberRepository : RepositoryBase, IMemberRepository
         }
     }
 
-    public async Task UpdateMemberSubscription(MemberSubscription memberSubscription)
+    public async Task UpdateMemberSubscriptionAsync(MemberSubscription memberSubscription)
     {
         await Context
             .Update<MemberSubscription>()

@@ -4,16 +4,16 @@
 @model ODK.Core.Chapters.Chapter
 @inject IChapterService ChapterService
 @{
-    ChapterTexts texts = await ChapterService.GetChapterTexts(Model.Id);
+    var texts = await ChapterService.GetChapterTexts(Model.Id);
 }
 
 <form method="post" action="/@Model.Name/Admin/Chapter/Text">
     @Html.AntiForgeryToken()
 
     @await Html.PartialAsync("Admin/Chapter/_TextForm", new ChapterTextsFormViewModel
-           {
-               RegisterMessage = texts.RegisterText,
-               WelcomeMessage = texts.WelcomeText
-           })
+    {
+        RegisterMessage = texts?.RegisterText,
+        WelcomeMessage = texts?.WelcomeText
+    })
     <button class="btn btn-primary">Update</button>
 </form>

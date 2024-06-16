@@ -55,7 +55,7 @@ public class InstagramService : IInstagramService
             return Array.Empty<InstagramPost>();
         }
 
-        Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettings();
+        Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettingsAsync();
         Task<DateTime?> latestPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
 
         await Task.WhenAll(settingsTask, latestPostDateTask);
@@ -161,12 +161,12 @@ public class InstagramService : IInstagramService
                 }
 
                 byte[] imageData = await response.Content.ReadAsByteArrayAsync();
-                string mimeType = response.Content.Headers.ContentType.MediaType;
+                var mimeType = response.Content.Headers.ContentType?.MediaType;
 
                 return new InstagramImage(
                     instagramPostId: post.Id,
                     imageData: imageData,
-                    mimeType: mimeType);
+                    mimeType: mimeType ?? "");
             }
         }
         catch
@@ -216,7 +216,7 @@ public class InstagramService : IInstagramService
             return;
         }
 
-        Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettings();
+        Task<SiteSettings?> settingsTask = _settingsRepository.GetSiteSettingsAsync();
         Task<DateTime?> mostRecentPostDateTask = _instagramRepository.GetLastPostDate(chapterId);
 
         await Task.WhenAll(settingsTask, mostRecentPostDateTask);

@@ -18,7 +18,7 @@ public class EmailProviderModel : SuperAdminPageModel
         _emailAdminService = emailAdminService;
     }
 
-    public ChapterEmailProvider Provider { get; private set; } = null!;
+    public ChapterEmailProvider? Provider { get; private set; }
 
     public async Task<IActionResult> OnGetAsync(Guid id)
     {

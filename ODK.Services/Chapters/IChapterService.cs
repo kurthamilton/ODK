@@ -10,7 +10,7 @@ public interface IChapterService
 
     Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid chapterId);
 
-    Task<ChapterPaymentSettings> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
+    Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
     
     Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId);
     
@@ -22,7 +22,7 @@ public interface IChapterService
 
     Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid chapterId);
     
-    Task<ChapterTexts> GetChapterTexts(Guid chapterId);
+    Task<ChapterTexts?> GetChapterTexts(Guid chapterId);
 
     Task SendContactMessage(Guid chapterId, string emailAddress, string message, string recaptchaToken);
 }

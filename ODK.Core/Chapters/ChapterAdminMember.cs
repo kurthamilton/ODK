@@ -8,11 +8,11 @@ public class ChapterAdminMember
         MemberId = memberId;
     }
 
-    public ChapterAdminMember(Guid chapterId, Guid memberId, string firstName, string lastName, string adminEmailAddress, 
+    public ChapterAdminMember(Guid chapterId, Guid memberId, string firstName, string lastName, string? adminEmailAddress, 
         bool superAdmin, bool receiveContactEmails, bool receiveNewMemberEmails, bool sendNewMemberEmails)
         : this(chapterId, memberId)
     {
-        AdminEmailAddress = adminEmailAddress;
+        AdminEmailAddress = adminEmailAddress ?? "";
         FirstName = firstName;
         LastName = lastName;
         ReceiveContactEmails = receiveContactEmails;
