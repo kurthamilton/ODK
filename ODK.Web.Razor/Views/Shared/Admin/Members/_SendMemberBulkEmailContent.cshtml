@@ -1,0 +1,56 @@
+﻿@using ODK.Core.Members
+@using ODK.Web.Razor.Models.Admin.Members
+
+<form method="post" action="/@Model.Chapter.Name/Admin/Members/SendEmail">
+    @Html.AntiForgeryToken()
+
+    <p>
+        <div class="row row-cols-lg-auto g-3 align-items-center">
+            <div class="col-12">
+                <label class="form-label" for="type-filter">Type</label>
+                <select class="form-control" id="type-filter" name="Type" multiple>
+                    @foreach (SubscriptionType type in Enum.GetValues<SubscriptionType>())
+                    {
+                        if (type == SubscriptionType.None)
+                        {
+                            continue;
+                        }
+
+                        if (type != SubscriptionType.Alum)
+                        {
+                            <option selected>@type</option>
+                        }
+                        else
+                        {
+                            <option>@type</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="status-filter">Subscription status</label>
+                <select class="form-control" id="status-filter" name="Status" multiple>
+                    @foreach (SubscriptionStatus status in Enum.GetValues<SubscriptionStatus>())
+                    {
+                        if (status == SubscriptionStatus.None)
+                        {
+                            continue;
+                        }
+
+                        if (status != SubscriptionStatus.Disabled)
+                        {
+                            <option selected>@status</option>
+                        }
+                        else
+                        {
+                            <option>@status</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </p>
+
+    @await Html.PartialAsync("Admin/Members/_SendMemberEmailForm", new SendMemberEmailFormViewModel())
+    <button type="submit" class="btn btn-primary">Send</button>
+</form>

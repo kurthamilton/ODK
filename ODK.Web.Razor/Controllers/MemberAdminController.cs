@@ -93,6 +93,29 @@ public class MemberAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("{chapterName}/Admin/Members/SendEmail")]
+    public async Task<IActionResult> SendBulkEmail(string chapterName, [FromForm] SendMemberBulkEmailFormViewModel viewModel)
+    {
+        var chapter = await _chapterAdminService.GetChapter(chapterName);
+        if (chapter == null)
+        {
+            return NotFound();
+        }
+
+        var members = await _memberAdminService.GetMembers(MemberId, new MemberFilter
+        {
+            ChapterId = chapter.Id,
+            Statuses = viewModel.Status,
+            Types = viewModel.Type
+        });
+
+        await _emailService.SendBulkEmail(MemberId, chapter, members, viewModel.Subject, viewModel.Body);
+
+        AddFeedback(new FeedbackViewModel($"Bulk email sent to {members.Count} members", FeedbackType.Success));
+
+        return RedirectToReferrer();
+    }
+
     [HttpPost("{chapterName}/Admin/Members/Subscriptions/{id:guid}/Delete")]
     public async Task<IActionResult> DeleteSubscription(Guid id)
     {

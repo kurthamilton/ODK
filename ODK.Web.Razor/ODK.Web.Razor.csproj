@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
     <ProjectReference Include="..\ODK.Web.Common\ODK.Web.Common.csproj" />
   </ItemGroup>
 

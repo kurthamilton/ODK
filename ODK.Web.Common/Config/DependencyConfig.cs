@@ -4,9 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Logging;
-using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Settings;
@@ -22,20 +22,21 @@ using ODK.Services.Chapters;
 using ODK.Services.Countries;
 using ODK.Services.Emails;
 using ODK.Services.Events;
+using ODK.Services.Files;
 using ODK.Services.Imaging;
 using ODK.Services.Logging;
+using ODK.Services.Mails;
+using ODK.Services.Media;
 using ODK.Services.Members;
 using ODK.Services.Payments;
+using ODK.Services.Payments.PayPal;
 using ODK.Services.Payments.Stripe;
+using ODK.Services.Recaptcha;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Venues;
-using ODK.Web.Common.Config.Settings;
-using ODK.Services.Media;
-using ODK.Services.Files;
-using ODK.Services.Payments.PayPal;
-using ODK.Services.Recaptcha;
 using ODK.Web.Common.Account;
+using ODK.Web.Common.Config.Settings;
 
 namespace ODK.Web.Common.Config;
 
@@ -48,7 +49,7 @@ public static class DependencyConfig
         ConfigureAuthentication(services, appSettings);
         ConfigurePayments(services, appSettings);
         ConfigureServiceSettings(services, appSettings);
-        ConfigureServices(services);
+        ConfigureServices(services, appSettings);
         ConfigureData(services, configuration);
     }
 
@@ -95,7 +96,7 @@ public static class DependencyConfig
         services.AddScoped<IStripePaymentProvider, StripePaymentProvider>();
     }
 
-    private static void ConfigureServices(this IServiceCollection services)
+    private static void ConfigureServices(this IServiceCollection services, AppSettings appSettings)
     {
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IAuthorizationService, AuthorizationService>();
@@ -110,6 +111,10 @@ public static class DependencyConfig
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<ILoggingService, LoggingService>();
         services.AddScoped<IMailProvider, MailProvider>();
+        services.AddSingleton(new MailProviderSettings
+        {
+            DebugEmailAddress = appSettings.Emails.DebugEmailAddress
+        });
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IInstagramService, InstagramService>();
         services.AddScoped<IMediaAdminService, MediaAdminService>();

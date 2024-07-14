@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 
@@ -7,15 +8,19 @@ namespace ODK.Services.Members;
 
 public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
+    private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
+    private readonly IChapterRepository _chapterRepository;
     private readonly IMemberRepository _memberRepository;
     private readonly IMemberService _memberService;
 
     public MemberAdminService(IChapterRepository chapterRepository, IMemberRepository memberRepository,
-        IMemberService memberService, ICacheService cacheService)
+        IMemberService memberService, ICacheService cacheService, IAuthorizationService authorizationService)
         : base(chapterRepository)
     {
+        _authorizationService = authorizationService;
         _cacheService = cacheService;
+        _chapterRepository = chapterRepository;
         _memberRepository = memberRepository;
         _memberService = memberService;
     }
@@ -73,6 +78,49 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
 
         return await _memberRepository.GetMembersAsync(chapterId, true);
+    }
+
+    public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, MemberFilter filter)
+    {
+        var membersTask = GetMembers(currentMemberId, filter.ChapterId);
+        var memberSubscriptionsTask = GetMemberSubscriptions(currentMemberId, filter.ChapterId);
+        var membershipSettingsTask = _chapterRepository.GetChapterMembershipSettings(filter.ChapterId);
+
+        await Task.WhenAll(membersTask, memberSubscriptionsTask, membershipSettingsTask);
+
+        var members = membersTask.Result;
+        var memberSubscriptions = memberSubscriptionsTask.Result;
+        var memberSubscriptionsDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);
+        var membershipSettings = membershipSettingsTask.Result;
+
+        var filteredMembers = new List<Member>();
+        foreach (var member in members)
+        {
+            if (!memberSubscriptionsDictionary.TryGetValue(member.Id, out var memberSubscription))
+            {
+                continue;
+            }
+
+            if (filter.Types.Contains(memberSubscription.Type))
+            {
+                filteredMembers.Add(member);
+                continue;
+            }
+
+            if (membershipSettings == null)
+            {
+                continue;
+            }
+
+            var status = _authorizationService.GetSubscriptionStatus(memberSubscription, membershipSettings);
+            if (filter.Statuses.Contains(status))
+            {
+                filteredMembers.Add(member);
+                continue;
+            }
+        }
+
+        return filteredMembers;
     }
 
     public async Task<MemberSubscription?> GetMemberSubscription(Guid currentMemberId, Guid memberId)

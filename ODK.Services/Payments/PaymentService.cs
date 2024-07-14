@@ -36,7 +36,7 @@ public class PaymentService : IPaymentService
 
         IPaymentProvider paymentProvider = _paymentProviderFactory.GetPaymentProvider(providerType);
 
-        ServiceResult paymentResult = await paymentProvider.MakePayment(paymentSettings, country.CurrencyCode, amount, cardToken, reference,
+        ServiceResult paymentResult = await paymentProvider.MakePayment(paymentSettings, country!.CurrencyCode, amount, cardToken, reference,
             $"{member.FirstName} {member.LastName}");
         if (!paymentResult.Success)
         {

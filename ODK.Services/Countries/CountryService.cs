@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Countries;
+using ODK.Services.Exceptions;
 
 namespace ODK.Services.Countries;
 
@@ -18,6 +19,12 @@ public class CountryService : ICountryService
 
     public async Task<Country> GetCountry(Guid countryId)
     {
-        return await _countryRepository.GetCountryAsync(countryId);
+        var country = await _countryRepository.GetCountryAsync(countryId);
+        if (country == null)
+        {
+            throw new OdkNotFoundException();
+        }
+
+        return country;
     }
 }

@@ -213,6 +213,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return await _chapterRepository.GetChapter(chapterId);
     }
 
+    public Task<Chapter?> GetChapter(string name)
+    {
+        return _chapterRepository.GetChapter(name);
+    }
+
     public async Task<ChapterAdminMember?> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);

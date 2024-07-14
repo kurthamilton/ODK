@@ -8,6 +8,7 @@ using ODK.Core.Members;
 using ODK.Services.Emails.Extensions;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
+using ODK.Services.Mails;
 
 namespace ODK.Services.Emails;
 
@@ -17,14 +18,16 @@ public class MailProvider : IMailProvider
     private readonly IEmailRepository _emailRepository;
     private readonly ILoggingService _loggingService;
     private readonly IMemberRepository _memberRepository;
+    private readonly MailProviderSettings _settings;
 
     public MailProvider(IChapterRepository chapterRepository, IMemberRepository memberRepository, ILoggingService loggingService,
-        IEmailRepository emailRepository)
+        IEmailRepository emailRepository, MailProviderSettings settings)
     {
         _chapterRepository = chapterRepository;
         _emailRepository = emailRepository;
         _loggingService = loggingService;
         _memberRepository = memberRepository;
+        _settings = settings;
     }
 
     public async Task SendBulkEmail(Chapter chapter, IEnumerable<EmailAddressee> to, string subject, string body, bool bcc = true)
@@ -176,6 +179,15 @@ public class MailProvider : IMailProvider
         }
 
         await _loggingService.LogDebug($"Sending email to {string.Join(", ", message.To)}");
+
+        if (!string.IsNullOrEmpty(_settings.DebugEmailAddress))
+        {
+            await _loggingService.LogDebug($"Sending to debug email address {_settings.DebugEmailAddress}");
+            message.To.Clear();
+            message.Cc.Clear();
+            message.Bcc.Clear();
+            message.To.Add(new MailboxAddress("", _settings.DebugEmailAddress));
+        }
 
         try
         {

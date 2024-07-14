@@ -21,12 +21,26 @@ public class ErrorLoggingMiddleware
         }
         catch (Exception ex)
         {
+            var headers = httpContext.Request.Headers
+                .ToDictionary(x => x.Key, x => x.Value.ToString());
+
+            var form = new Dictionary<string, string>();
+            try
+            {
+                form = httpContext.Request.Form.ToDictionary(x => x.Key, x => x.Value.ToString());
+            }
+            catch
+            {
+                // do nothing
+            }
+
             HttpRequest request = new HttpRequest(
                 url: httpContext.Request.GetDisplayUrl(),
                 method: httpContext.Request.Method,
                 username: httpContext.User.Identity?.Name,
-                headers: httpContext.Request.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
-                form: httpContext.Request.Form.ToDictionary(x => x.Key, x => x.Value.ToString()));
+                headers: headers,
+                form: form
+            );
             await logger.LogError(ex, request);
         }
     }

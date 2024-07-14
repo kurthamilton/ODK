@@ -135,10 +135,19 @@ public class EventRepository : RepositoryBase, IEventRepository
 
     public async Task<IReadOnlyCollection<Event>> GetEventsAsync(Guid chapterId, DateTime? after)
     {
-        return await Context
+        var query = Context
             .Select<Event>()
-            .Where(x => x.ChapterId).EqualTo(chapterId)
-            .ConditionalWhere(x => x.Date, after != null).GreaterThanOrEqualTo(after!.Value)
+            .Where(x => x.ChapterId)
+            .EqualTo(chapterId);
+
+        if (after != null)
+        {
+            var afterValue = after.Value;
+            query = query
+                .ConditionalWhere(x => x.Date, after != null).GreaterThanOrEqualTo(afterValue);
+        }
+
+        return await query
             .OrderBy(x => x.Date, SqlSortDirection.Descending)
             .ToArrayAsync();
     }
@@ -174,11 +183,19 @@ public class EventRepository : RepositoryBase, IEventRepository
 
     public async Task<IReadOnlyCollection<Event>> GetPublicEventsAsync(Guid chapterId, DateTime? after)
     {
-        return await Context
+        var query = Context
             .Select<Event>()
             .Where(x => x.ChapterId).EqualTo(chapterId)
-            .Where(x => x.IsPublic).EqualTo(true)
-            .ConditionalWhere(x => x.Date, after != null).GreaterThanOrEqualTo(after!.Value)
+            .Where(x => x.IsPublic).EqualTo(true);
+
+        if (after != null)
+        {
+            var afterValue = after.Value;
+            query = query
+                .ConditionalWhere(x => x.Date, after != null).GreaterThanOrEqualTo(afterValue);
+        }
+
+        return await query
             .OrderBy(x => x.Date, SqlSortDirection.Descending)
             .ToArrayAsync();
     }

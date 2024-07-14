@@ -14,6 +14,8 @@ public interface IMemberAdminService
 
     Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId, bool requireSuperAdmin = false);
 
+    Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, MemberFilter filter);
+
     Task<MemberSubscription?> GetMemberSubscription(Guid currentMemberId, Guid memberId);
 
     Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId);

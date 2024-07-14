@@ -24,6 +24,8 @@ public interface IChapterAdminService
 
     Task<Chapter?> GetChapter(Guid currentMemberId, Guid chapterId);
 
+    Task<Chapter?> GetChapter(string name);
+
     Task<ChapterAdminMember?> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
 
     Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid currentMemberId, Guid chapterId);

@@ -37,9 +37,9 @@ public class InstagramService : IInstagramService
             .ToArray();
     }
 
-    public async Task<InstagramImage> GetInstagramImage(Guid instagramPostId)
+    public Task<InstagramImage?> GetInstagramImage(Guid instagramPostId)
     {
-        return await _instagramRepository.GetImageAsync(instagramPostId);
+        return _instagramRepository.GetImageAsync(instagramPostId);
     }
 
     public async Task<IReadOnlyCollection<InstagramPost>> GetInstagramPosts(Guid chapterId, int pageSize)
