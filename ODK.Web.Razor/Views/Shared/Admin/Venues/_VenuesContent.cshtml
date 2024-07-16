@@ -8,23 +8,16 @@
 @inject IEventAdminService EventAdminService
 @inject IVenueAdminService VenueAdminService
 @{
-    Guid? memberId = User.MemberId();
-    if (memberId == null)
-    {
-        return;
-    }
+    var memberId = User.MemberId();
 
-    Task<IReadOnlyCollection<Venue>> venuesTask = VenueAdminService.GetVenues(memberId.Value, Model.Id);
-    Task<IReadOnlyCollection<Event>> eventsTask = EventAdminService.GetEvents(memberId.Value, Model.Id, 1, int.MaxValue);
+    var dto = await VenueAdminService.GetVenuesDto(memberId, Model.Id);
 
-    await Task.WhenAll(venuesTask, eventsTask);
+    var (venues, events) = (dto.Venues, dto.Events);
 
-    IReadOnlyCollection<Venue> venues = venuesTask.Result;
-    IReadOnlyCollection<Event> events = eventsTask.Result;
-    IDictionary<Guid, int> eventCounts = events
+    var eventCounts = events
         .GroupBy(x => x.VenueId)
         .ToDictionary(x => x.Key, x => x.Count());
-    IDictionary<Guid, DateTime> lastEvents = events
+    var lastEvents = events
         .GroupBy(x => x.VenueId)
         .ToDictionary(x => x.Key, x => x.Max(_ => _.Date));
 }

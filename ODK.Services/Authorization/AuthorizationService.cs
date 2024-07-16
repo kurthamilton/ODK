@@ -1,5 +1,8 @@
-﻿using ODK.Core.Chapters;
+﻿using System.Diagnostics.CodeAnalysis;
+using ODK.Core.Chapters;
+using ODK.Core.Exceptions;
 using ODK.Core.Members;
+using ODK.Data.Core;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 
@@ -7,17 +10,14 @@ namespace ODK.Services.Authorization;
 
 public class AuthorizationService : IAuthorizationService
 {
-    private readonly IChapterRepository _chapterRepository;
-    private readonly IMemberRepository _memberRepository;
     private readonly IRequestCache _requestCache;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public AuthorizationService(IMemberRepository memberRepository,
-        IChapterRepository chapterRepository,
+    public AuthorizationService(IUnitOfWork unitOfWork,
         IRequestCache requestCache)
-    {
-        _chapterRepository = chapterRepository;
-        _memberRepository = memberRepository;
+    {        
         _requestCache = requestCache;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task AssertMemberIsChapterMemberAsync(Guid memberId, Guid chapterId)
@@ -34,8 +34,10 @@ public class AuthorizationService : IAuthorizationService
             return;
         }
 
-        ChapterAdminMember? chapterAdminMember = await _chapterRepository.GetChapterAdminMember(chapterId, member.Id);
-        if (chapterAdminMember != null)
+        var chapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
+            .GetByMemberId(member.Id)
+            .RunAsync();
+        if (chapterAdminMember.Any(x => x.ChapterId == chapterId))
         {
             return;
         }
@@ -49,7 +51,7 @@ public class AuthorizationService : IAuthorizationService
         AssertMemberIsCurrent(member);
     }
 
-    public void AssertMemberIsCurrent(Member? member)
+    public void AssertMemberIsCurrent([NotNull] Member? member)
     {
         if (member == null || !member.IsCurrent())
         {
@@ -148,7 +150,9 @@ public class AuthorizationService : IAuthorizationService
 
     public async Task<bool> MembershipIsActiveAsync(MemberSubscription subscription, Guid chapterId)
     {
-        ChapterMembershipSettings? membershipSettings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
+        var membershipSettings = await _unitOfWork.ChapterMembershipSettingsRepository
+            .GetByChapterId(chapterId)
+            .RunAsync();
 
         return MembershipIsActive(subscription, membershipSettings);
     }
@@ -180,13 +184,15 @@ public class AuthorizationService : IAuthorizationService
 
     private async Task<Member> GetMemberAsync(Guid id)
     {
-        Member? member = await _memberRepository.GetMemberAsync(id, true);
+        var member = await _unitOfWork.MemberRepository.GetByIdOrDefault(id, true).RunAsync();
         AssertMemberIsCurrent(member);
-        return member!;
+        return member;
     }
 
     private async Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId)
     {
-        return await _memberRepository.GetMemberSubscriptionAsync(memberId);
+        return await _unitOfWork.MemberSubscriptionRepository
+            .GetByMemberId(memberId)
+            .RunAsync();
     }
 }

@@ -196,16 +196,16 @@ public class AccountController : OdkControllerBase
             return RedirectToReferrer();
         }
 
-        IFormFile file = files[0];
+        var file = files[0];
         
-        UpdateMemberImage update = new UpdateMemberImage
+        var model = new UpdateMemberImage
         {
             ImageData = await file.ToByteArrayAsync() ?? Array.Empty<byte>(),
             MimeType = file.ContentType
         };
 
-        await _memberService.UpdateMemberImage(MemberId, update);
-
+        var result = await _memberService.UpdateMemberImage(MemberId, model);
+        AddFeedback(new FeedbackViewModel(result));
         return RedirectToReferrer();
     }
 

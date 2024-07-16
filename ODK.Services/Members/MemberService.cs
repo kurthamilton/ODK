@@ -5,9 +5,11 @@ using ODK.Core.Emails;
 using ODK.Core.Images;
 using ODK.Core.Members;
 using ODK.Core.Utils;
+using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
+using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using ODK.Services.Payments;
 
@@ -17,30 +19,30 @@ public class MemberService : IMemberService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
-    private readonly IChapterRepository _chapterRepository;
     private readonly IEmailService _emailService;
     private readonly IImageService _imageService;
-    private readonly IMemberRepository _memberRepository;
     private readonly IPaymentService _paymentService;
     private readonly MemberServiceSettings _settings;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public MemberService(IMemberRepository memberRepository, IChapterRepository chapterRepository, IAuthorizationService authorizationService,
+    public MemberService(IUnitOfWork unitOfWork, IAuthorizationService authorizationService,
         IEmailService emailService, MemberServiceSettings settings, IImageService imageService, IPaymentService paymentService,
         ICacheService cacheService)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
-        _chapterRepository = chapterRepository;
         _emailService = emailService;
         _imageService = imageService;
-        _memberRepository = memberRepository;
         _paymentService = paymentService;
         _settings = settings;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
     {
-        MemberEmailAddressUpdateToken? token = await _memberRepository.GetMemberEmailAddressUpdateTokenAsync(memberId);
+        var (member, token) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
         if (token == null)
         {
             return ServiceResult.Failure("Invalid link");
@@ -51,76 +53,105 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Invalid link");
         }
 
-        Member? existing = await _memberRepository.FindMemberByEmailAddressAsync(token.NewEmailAddress);
+        _unitOfWork.MemberEmailAddressUpdateTokenRepository.Delete(token);
+
+        var existing = await _unitOfWork.MemberRepository.GetByEmailAddress(token.NewEmailAddress).RunAsync();
         if (existing != null)
         {
-            await _memberRepository.DeleteEmailAddressUpdateTokenAsync(memberId);
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Failure("Email not updated: new email address is already in use");
         }
 
-        await _memberRepository.UpdateMemberEmailAddressAsync(memberId, token.NewEmailAddress);
-        _cacheService.RemoveVersionedItem<Member>(memberId);
+        member.EmailAddress = token.NewEmailAddress;
+        _unitOfWork.MemberRepository.Update(member);
 
-        await _memberRepository.DeleteEmailAddressUpdateTokenAsync(memberId);
+        await _unitOfWork.SaveChangesAsync();
+
+        _cacheService.RemoveVersionedItem<Member>(memberId);        
 
         return ServiceResult.Successful();
     }
     
-    public async Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile profile)
+    public async Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile model)
     {
-        ServiceResult validationResult = await ValidateMemberProfile(chapterId, profile);
+        var (chapter, chapterProperties, membershipSettings, existing) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetByEmailAddress(model.EmailAddress));
+
+        var validationResult = ValidateMemberProfile(chapterProperties, model);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
-        ServiceResult imageResult = ValidateMemberImage(profile.Image.MimeType, profile.Image.ImageData);
+        var imageResult = ValidateMemberImage(model.Image.MimeType, model.Image.ImageData);
         if (!imageResult.Success)
         {
             return imageResult;
         }
 
-        Member? existing = await _memberRepository.FindMemberByEmailAddressAsync(profile.EmailAddress);
         if (existing != null)
         {
             return ServiceResult.Failure("Email address already in use");
         }
 
-        Member create = new Member(Guid.Empty, chapterId, profile.EmailAddress, profile.EmailOptIn ?? false, profile.FirstName, profile.LastName,
-            DateTime.UtcNow, false, false, 0);
-
-        Guid id = await _memberRepository.CreateMemberAsync(create);
-
-        ChapterMembershipSettings? membershipSettings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
-        if (membershipSettings == null)
+        var member = new Member
         {
-            return ServiceResult.Failure("An error has occurred");
+            Activated = false,
+            ChapterId = chapterId,
+            CreatedDate = DateTime.UtcNow,
+            Disabled = false,
+            EmailAddress = model.EmailAddress,
+            EmailOptIn = model.EmailOptIn ?? false,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            SuperAdmin = false            
+        };
+        _unitOfWork.MemberRepository.Add(member);
+        
+        var subscription = new MemberSubscription
+        {
+            ExpiryDate = member.CreatedDate.AddMonths(membershipSettings.TrialPeriodMonths),
+            MemberId = member.Id,
+            Type = SubscriptionType.Trial
+        };
+        _unitOfWork.MemberSubscriptionRepository.Add(subscription);
+
+        var image = new MemberImage
+        {
+            ImageData = model.Image.ImageData,
+            MemberId = member.Id,
+            MimeType = model.Image.MimeType
+        };
+        PrepareMemberImage(image);
+        _unitOfWork.MemberImageRepository.Add(image);
+
+        foreach (var property in model.Properties)
+        {
+            _unitOfWork.MemberPropertyRepository.Add(new MemberProperty
+            {
+                ChapterPropertyId = property.ChapterPropertyId,
+                MemberId = member.Id,
+                Value = property.Value
+            });
         }
 
-        MemberSubscription subscription = new MemberSubscription(id, SubscriptionType.Trial, create.CreatedDate.AddMonths(membershipSettings.TrialPeriodMonths));
-        await _memberRepository.UpdateMemberSubscriptionAsync(subscription);
+        var activationToken = RandomStringGenerator.Generate(64);
+        _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
+        {
+            ActivationToken = activationToken,
+            MemberId = member.Id
+        });
 
-        MemberImage image = CreateMemberImage(id, profile.Image.MimeType, profile.Image.ImageData);
-        await _memberRepository.AddMemberImageAsync(image);
-
-        IEnumerable<MemberProperty> memberProperties = profile.Properties
-            .Select(x => new MemberProperty(Guid.Empty, id, x.ChapterPropertyId, x.Value));
-
-        await _memberRepository.UpdateMemberPropertiesAsync(id, memberProperties);
-
-        string activationToken = RandomStringGenerator.Generate(64);
-
-        await _memberRepository.AddActivationTokenAsync(new MemberActivationToken(id, activationToken));
-
-        Chapter? chapter = await _chapterRepository.GetChapter(chapterId);
-
-        string url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
+        var url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
         {
             { "chapter.name", chapter!.Name },
             { "token", HttpUtility.UrlEncode(activationToken) }
         });
 
-        await _emailService.SendEmail(chapter, create.GetEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
+        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
         {
             { "chapter.name", chapter.Name },
             { "url", url }
@@ -131,13 +162,14 @@ public class MemberService : IMemberService
 
     public async Task DeleteMember(Guid memberId)
     {
-        Member? member = await _memberRepository.GetMemberAsync(memberId, true);
+        var member = await _unitOfWork.MemberRepository.GetByIdOrDefault(memberId, true).RunAsync();
         if (member == null)
         {
             return;
         }
 
-        await _memberRepository.DeleteMemberAsync(memberId);
+        _unitOfWork.MemberRepository.Delete(member);
+        await _unitOfWork.SaveChangesAsync();
 
         _cacheService.RemoveVersionedItem<Member>(memberId);
         _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
@@ -155,9 +187,12 @@ public class MemberService : IMemberService
             .ToArray();
     }
 
-    public async Task<Member?> GetMember(Guid memberId)
+    public async Task<Member?> GetMember(Guid memberId, Guid chapterId)
     {
-        return await GetMember(memberId, memberId);
+        var member = await _unitOfWork.MemberRepository.GetByIdOrDefault(memberId).RunAsync();
+        return member?.ChapterId == chapterId 
+            ? member 
+            : null;
     }
 
     public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size)
@@ -168,8 +203,8 @@ public class MemberService : IMemberService
     public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId,
         int? width, int? height)
     {
-        VersionedServiceResult<MemberImage> result = await _cacheService.GetOrSetVersionedItem(
-            () => _memberRepository.GetMemberImageAsync(memberId),
+        var result = await _cacheService.GetOrSetVersionedItem(
+            () => _unitOfWork.MemberImageRepository.GetByMemberId(memberId).RunAsync(),
             memberId,
             currentVersion);
 
@@ -190,10 +225,16 @@ public class MemberService : IMemberService
             int h = NumberUtils.FirstPositive(height, width) ?? 0;
 
             byte[] imageData = _imageService.Crop(image.ImageData, w, h);
-            image = new MemberImage(image.MemberId, imageData, image.MimeType, image.Version);
+            image = new MemberImage
+            {
+                ImageData = imageData,
+                MemberId = memberId,
+                MimeType = image.MimeType,
+                Version = image.Version
+            };
         }
 
-        return new VersionedServiceResult<MemberImage>(image.Version, image);
+        return new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image);
     }
 
     public async Task<MemberProfile?> GetMemberProfile(Member currentMember, Member? member)
@@ -206,11 +247,6 @@ public class MemberService : IMemberService
         return await GetMemberProfile(member);
     }
 
-    public async Task<IReadOnlyCollection<MemberProperty>> GetMemberProperties(Guid memberId)
-    {
-        return await _memberRepository.GetMemberPropertiesAsync(memberId);
-    }
-    
     public async Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId)
     {
         if (currentMember == null || currentMember.ChapterId != chapterId)
@@ -218,46 +254,49 @@ public class MemberService : IMemberService
             return Array.Empty<Member>();
         }
 
-        return await _memberRepository.GetMembersAsync(chapterId);
-    }
-
-    public async Task<MemberSubscription?> GetMemberSubscription(Guid memberId)
-    {
-        return await _memberRepository.GetMemberSubscriptionAsync(memberId);
+        return await _unitOfWork.MemberRepository.GetByChapterId(currentMember.ChapterId).RunAsync();
     }
 
     public async Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId,
         string cardToken)
     {
-        ChapterSubscription? chapterSubscription = await _chapterRepository.GetChapterSubscription(chapterSubscriptionId);
+        var (member, chapterSubscription, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterSubscriptionRepository.GetByIdOrDefault(chapterSubscriptionId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId));
         if (chapterSubscription == null)
         {
             return ServiceResult.Failure("Payment not made: subscription not found");
         }
 
-        Member? member = await GetMember(memberId);
-        if (member == null || member.ChapterId != chapterSubscription.ChapterId)
+        if (member.ChapterId != chapterSubscription.ChapterId)
         {
             return ServiceResult.Failure("Payment not made: you are not a member of this subscription's chapter");
         }
         
-        ServiceResult paymentResult = await _paymentService.MakePayment(member, chapterSubscription.Amount, cardToken, 
+        var paymentResult = await _paymentService.MakePayment(member, chapterSubscription.Amount, cardToken, 
             chapterSubscription.Title);
         if (!paymentResult.Success)
         {
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
         }
 
-        MemberSubscription? memberSubscription = await _memberRepository.GetMemberSubscriptionAsync(member.Id);
+        var expiryDate = (memberSubscription.ExpiryDate ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
+        memberSubscription.ExpiryDate = expiryDate;
+        memberSubscription.Type = chapterSubscription.Type;
 
-        DateTime expiryDate = (memberSubscription?.ExpiryDate ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
-        memberSubscription = new MemberSubscription(member.Id, chapterSubscription.Type, expiryDate);
+        _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
 
-        await _memberRepository.UpdateMemberSubscriptionAsync(memberSubscription);
+        _unitOfWork.MemberSubscriptionRepository.AddMemberSubscriptionRecord(new MemberSubscriptionRecord
+        {
+            Amount = chapterSubscription.Amount,
+            MemberId = memberId,
+            Months = chapterSubscription.Months,
+            PurchaseDate = DateTime.UtcNow,
+            Type = chapterSubscription.Type
+        });
 
-        MemberSubscriptionRecord record = new MemberSubscriptionRecord(memberId, chapterSubscription.Type, DateTime.UtcNow,
-            chapterSubscription.Amount, chapterSubscription.Months);
-        await _memberRepository.AddMemberSubscriptionRecordAsync(record);
+        await _unitOfWork.SaveChangesAsync();
 
         _cacheService.UpdatedVersionedItem(memberSubscription, memberId);
         _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
@@ -267,26 +306,31 @@ public class MemberService : IMemberService
     
     public async Task RotateMemberImage(Guid memberId, int degrees)
     {
-        Member? member = await GetMember(memberId, memberId);
-        if (member == null)
-        {
-            return;
-        }
-
-        MemberImage? image = await _memberRepository.GetMemberImageAsync(memberId);
+        var (member, image) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberImageRepository.GetByMemberId(memberId));
+        
         if (image == null)
         {
             return;
         }
 
-        byte[] data = _imageService.Rotate(image.ImageData, degrees);
-        await UpdateMemberImage(member, data, image.MimeType);
+        var data = _imageService.Rotate(image.ImageData, degrees);
+        image.ImageData = data;
+
+        _unitOfWork.MemberImageRepository.Update(image);
+        await _unitOfWork.SaveChangesAsync();
+
+        _cacheService.RemoveVersionedItem<MemberImage>(memberId);
     }
 
     public async Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress)
     {
-        Member? member = await GetMember(memberId, memberId);
-        if (member == null || member.EmailAddress.Equals(newEmailAddress, StringComparison.OrdinalIgnoreCase))
+        var (member, existingToken) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
+
+        if (member.EmailAddress.Equals(newEmailAddress, StringComparison.OrdinalIgnoreCase))
         {
             return ServiceResult.Successful("New email address matches old email address");
         }
@@ -296,20 +340,25 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Invalid email address format");
         }
 
-        MemberEmailAddressUpdateToken? existingToken = await _memberRepository.GetMemberEmailAddressUpdateTokenAsync(member.Id);
         if (existingToken != null)
         {
-            await _memberRepository.DeleteEmailAddressUpdateTokenAsync(member.Id);
+            _unitOfWork.MemberEmailAddressUpdateTokenRepository.Delete(existingToken);
         }
 
         string activationToken = RandomStringGenerator.Generate(64);
 
-        MemberEmailAddressUpdateToken token = new MemberEmailAddressUpdateToken(member.Id, newEmailAddress, activationToken);
-        await _memberRepository.AddEmailAddressUpdateTokenAsync(token);
+        var token = new MemberEmailAddressUpdateToken
+        {
+            ConfirmationToken = activationToken,
+            MemberId = memberId,
+            NewEmailAddress = newEmailAddress
+        };
 
-        Chapter? chapter = await _chapterRepository.GetChapter(member.ChapterId);
+        _unitOfWork.MemberEmailAddressUpdateTokenRepository.Add(token);
 
-        string url = _settings.ConfirmEmailAddressUpdateUrl.Interpolate(new Dictionary<string, string>
+        var chapter = await _unitOfWork.ChapterRepository.GetById(member.ChapterId).RunAsync();
+
+        var url = _settings.ConfirmEmailAddressUpdateUrl.Interpolate(new Dictionary<string, string>
         {
             { "chapter.name", chapter!.Name },
             { "token", HttpUtility.UrlEncode(activationToken) }
@@ -327,51 +376,103 @@ public class MemberService : IMemberService
 
     public async Task UpdateMemberEmailOptIn(Guid memberId, bool optIn)
     {
-        Member? member = await GetMember(memberId, memberId);
-        if (member == null || member.EmailOptIn == optIn)
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
+        if (member.EmailOptIn == optIn)
         {
             return;
         }
 
-        await _memberRepository.UpdateMemberAsync(member.Id, optIn, member.FirstName, member.LastName);
+        member.EmailOptIn = optIn;
+
+        _unitOfWork.MemberRepository.Update(member);
+        await _unitOfWork.SaveChangesAsync();
 
         _cacheService.RemoveVersionedItem<Member>(memberId);
     }
 
-    public async Task UpdateMemberImage(Guid id, UpdateMemberImage image)
+    public async Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage model)
     {
-        Member? member = await GetMember(id, id);
-        if (member == null)
-        {
-            return;
-        }
+        var (member, image) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(id),
+            x => x.MemberImageRepository.GetByMemberId(id));
 
-        await UpdateMemberImage(member, image.ImageData, image.MimeType);
-    }
+        image.MimeType = model.MimeType;
+        image.ImageData = model.ImageData;
 
-    public async Task<ServiceResult> UpdateMemberProfile(Guid id, UpdateMemberProfile profile)
-    {
-        Member? member = await GetMember(id);
-        if (member == null)
-        {
-            return ServiceResult.Failure("Member not found");
-        }
-
-        ServiceResult validationResult = await ValidateMemberProfile(member.ChapterId, profile);
+        var validationResult = ValidateMemberImage(image.MimeType, image.ImageData);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
-        MemberProfile? existing = await GetMemberProfile(id);
-        UpdateMemberProfile(existing!, profile);
+        PrepareMemberImage(image);        
 
-        await _memberRepository.UpdateMemberAsync(id, existing!.EmailOptIn, existing.FirstName, existing.LastName);
-        await _memberRepository.UpdateMemberPropertiesAsync(id, existing.MemberProperties);
+        _unitOfWork.MemberImageRepository.Update(image);
+        await _unitOfWork.SaveChangesAsync();
 
-        IReadOnlyCollection<Member> members = await _memberRepository.GetMembersAsync(member.ChapterId);
-        long version = await _memberRepository.GetMembersVersionAsync(member.ChapterId);
-        _cacheService.UpdatedVersionedCollection(members, version, member.ChapterId);
+        _cacheService.RemoveVersionedItem<MemberImage>(id);
+
+        return ServiceResult.Successful("Picture updated");
+    }
+
+    public async Task<ServiceResult> UpdateMemberProfile(Guid id, UpdateMemberProfile model)
+    {
+        var (member, memberProperties) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(id),
+            x => x.MemberPropertyRepository.GetByMemberId(id));
+
+        var chapterProperties = await _unitOfWork.ChapterPropertyRepository.GetByChapterId(member.ChapterId).RunAsync();        
+
+        var validationResult = ValidateMemberProfile(chapterProperties, model);
+        if (!validationResult.Success)
+        {
+            return validationResult;
+        }
+
+        var memberPropertyDictionary = memberProperties.ToDictionary(x => x.ChapterPropertyId);
+
+        var allMemberProperties = chapterProperties
+            .Select(x => memberPropertyDictionary.ContainsKey(x.Id)
+                ? memberPropertyDictionary[x.Id]
+                : new MemberProperty
+                {
+                    ChapterPropertyId = x.Id,
+                    MemberId = member.Id
+                });
+
+        
+        if (model.EmailOptIn != null)
+        {
+            member.EmailOptIn = model.EmailOptIn.Value;
+        }
+
+        member.FirstName = model.FirstName.Trim();
+        member.LastName = model.LastName.Trim();
+
+        foreach (var chapterProperty in chapterProperties)
+        {
+            var updateProperty = model.Properties
+                ?.FirstOrDefault(x => x.ChapterPropertyId == chapterProperty.Id);
+            if (updateProperty == null)
+            {
+                continue;
+            }
+
+            if (!memberPropertyDictionary.TryGetValue(chapterProperty.Id, out var memberProperty))
+            {
+                memberProperty = new MemberProperty
+                {
+                    ChapterPropertyId = chapterProperty.Id,
+                    MemberId = member.Id,                    
+                };
+            }            
+
+            memberProperty.Value = updateProperty.Value;
+            _unitOfWork.MemberPropertyRepository.Upsert(memberProperty);
+        }
+
+        _unitOfWork.MemberRepository.Update(member);
+        await _unitOfWork.SaveChangesAsync();
 
         _cacheService.RemoveVersionedItem<Member>(member.Id);
 
@@ -415,34 +516,44 @@ public class MemberService : IMemberService
                 yield return chapterProperty.Label;
             }
         }
+    }        
+
+    private byte[] EnforceMaxImageSize(byte[] imageData)
+    {
+        return _imageService.Reduce(imageData, _settings.MaxImageSize, _settings.MaxImageSize);
     }
 
-    private static void UpdateMemberProfile(MemberProfile existing, UpdateMemberProfile update)
+    private async Task<MemberProfile> GetMemberProfile(Member member)
     {
-        if (update.EmailOptIn != null)
-        {
-            existing.EmailOptIn = update.EmailOptIn.Value;
-        }
+        var (chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
+            x => x.ChapterPropertyRepository.GetByChapterId(member.ChapterId),
+            x => x.MemberPropertyRepository.GetByMemberId(member.Id));
 
-        existing.FirstName = update.FirstName.Trim();
-        existing.LastName = update.LastName.Trim();
+        var memberPropertyDictionary = memberProperties
+            .ToDictionary(x => x.ChapterPropertyId);
 
-        foreach (MemberProperty memberProperty in existing.MemberProperties)
-        {
-            UpdateMemberProperty? updateProperty = update.Properties?.FirstOrDefault(x => x.ChapterPropertyId == memberProperty.ChapterPropertyId);
-            if (updateProperty == null)
-            {
-                continue;
-            }
+        var allMemberProperties = chapterProperties
+            .Select(x => memberPropertyDictionary.ContainsKey(x.Id) 
+                ? memberPropertyDictionary[x.Id] 
+                : new MemberProperty
+                {
+                    ChapterPropertyId = x.Id,
+                    MemberId = member.Id
+                });
 
-            string value = updateProperty.Value;
-            memberProperty.Update(value);
-        }
+        return new MemberProfile(member, allMemberProperties, chapterProperties);
+    }
+    
+    private void PrepareMemberImage(MemberImage image)
+    {
+        var data = EnforceMaxImageSize(image.ImageData);
+        image.ImageData = data;
     }
 
-    private static ServiceResult ValidateMemberImage(string mimeType, byte[] data)
+    private ServiceResult ValidateMemberImage(string mimeType, byte[] data)
     {
-        if (!ImageValidator.IsValidMimeType(mimeType) || !ImageValidator.IsValidData(data))
+        if (!ImageValidator.IsValidMimeType(mimeType) || 
+            !_imageService.IsImage(data))
         {
             return ServiceResult.Failure("File is not a valid image");
         }
@@ -450,69 +561,8 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    private MemberImage CreateMemberImage(Guid memberId, string mimeType, byte[] imageData)
+    private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, UpdateMemberProfile profile)
     {
-        ValidateMemberImage(mimeType, imageData);
-
-        byte[] data = EnforceMaxImageSize(imageData);
-        return new MemberImage(memberId, data, mimeType, 0);
-    }
-
-    private byte[] EnforceMaxImageSize(byte[] imageData)
-    {
-        return _imageService.Reduce(imageData, _settings.MaxImageSize, _settings.MaxImageSize);
-    }
-
-    private async Task<Member?> GetMember(Guid currentMemberId, Guid memberId)
-    {
-        Member? member = await _memberRepository.GetMemberAsync(memberId);
-        if (member == null)
-        {
-            return null;
-        }
-
-        await _authorizationService.AssertMemberIsChapterMemberAsync(currentMemberId, member.ChapterId);
-        return member;
-    }
-
-    private async Task<MemberProfile?> GetMemberProfile(Guid memberId)
-    {
-        return await GetMemberProfile(memberId, memberId);
-    }
-
-    private async Task<MemberProfile?> GetMemberProfile(Guid currentMemberId, Guid memberId)
-    {
-        Member? member = await GetMember(currentMemberId, memberId);
-        if (member == null)
-        {
-            return null;
-        }
-
-        return await GetMemberProfile(member);
-    }
-
-    private async Task<MemberProfile> GetMemberProfile(Member member)
-    {
-        IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(member.ChapterId);
-        IReadOnlyCollection<MemberProperty> memberProperties = await _memberRepository.GetMemberPropertiesAsync(member.Id);
-        IDictionary<Guid, MemberProperty> memberPropertyDictionary = memberProperties.ToDictionary(x => x.ChapterPropertyId, x => x);
-
-        IEnumerable<MemberProperty> allMemberProperties = chapterProperties.Select(x =>
-            memberPropertyDictionary.ContainsKey(x.Id) ? memberPropertyDictionary[x.Id] : new MemberProperty(Guid.Empty, member.Id, x.Id, null));
-
-        return new MemberProfile(member, allMemberProperties, chapterProperties);
-    }
-    
-    private async Task UpdateMemberImage(Member member, byte[] imageData, string mimeType)
-    {
-        MemberImage update = CreateMemberImage(member.Id, mimeType, imageData);
-
-        await _memberRepository.UpdateMemberImageAsync(update);
-    }
-    
-    private async Task<ServiceResult> ValidateMemberProfile(Guid chapterId, UpdateMemberProfile profile)
-    {
-        IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(chapterId);
         IReadOnlyCollection<string> missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
 
         if (missingProperties.Count > 0)
@@ -523,9 +573,8 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    private async Task<ServiceResult> ValidateMemberProfile(Guid chapterId, CreateMemberProfile profile)
+    private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, CreateMemberProfile profile)
     {
-        IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(chapterId);
         IReadOnlyCollection<string> missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
 
         if (missingProperties.Count > 0)

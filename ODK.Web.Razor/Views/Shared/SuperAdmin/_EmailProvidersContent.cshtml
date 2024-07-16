@@ -4,10 +4,8 @@
 @model ODK.Core.Chapters.Chapter
 @inject IEmailAdminService EmailAdminService
 @{
-    Guid? memberId = User.MemberId();
-
-    IReadOnlyCollection<ChapterEmailProvider> providers = await EmailAdminService.GetChapterEmailProviders(memberId!.Value, 
-        Model.Id);
+    var memberId = User.MemberId();
+    var providers = await EmailAdminService.GetChapterEmailProviders(memberId, Model.Id);
 }
 
 <p>

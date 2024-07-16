@@ -1,9 +1,9 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
-using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
+using ODK.Data.Core;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 
@@ -11,92 +11,81 @@ namespace ODK.Services.Events;
 
 public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 {
-    private readonly IChapterRepository _chapterRepository;
     private readonly IEmailService _emailService;
-    private readonly IEventRepository _eventRepository;
-    private readonly IMemberRepository _memberRepository;
     private readonly EventAdminServiceSettings _settings;
-    private readonly IVenueRepository _venueRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public EventAdminService(IEventRepository eventRepository, IChapterRepository chapterRepository,
-        EventAdminServiceSettings settings, IMemberRepository memberRepository, IVenueRepository venueRepository,
-        IEmailService emailService)
-        : base(chapterRepository)
+    public EventAdminService(IUnitOfWork unitOfWork, EventAdminServiceSettings settings, IEmailService emailService)
+        : base(unitOfWork)
     {
-        _chapterRepository = chapterRepository;
         _emailService = emailService;
-        _eventRepository = eventRepository;
-        _memberRepository = memberRepository;
         _settings = settings;
-        _venueRepository = venueRepository;
+        _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> CreateEvent(Guid memberId, CreateEvent createEvent)
+    public async Task<ServiceResult> CreateEvent(Guid memberId, CreateEvent model)
     {
-        await AssertMemberIsChapterAdmin(memberId, createEvent.ChapterId);
+        var (chapterAdminMembers, member, venue) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(model.ChapterId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.VenueRepository.GetById(model.VenueId));
 
-        Member? member = await _memberRepository.GetMemberAsync(memberId);
-        if (member == null)
+        AssertMemberIsChapterAdmin(memberId, model.ChapterId, chapterAdminMembers);
+        
+        var @event = new Event
         {
-            throw new OdkServiceException("Invalid member id");
-        }
+            ChapterId = model.ChapterId,
+            CreatedBy = member.FullName,
+            Date = model.Date,
+            Description = model.Description,
+            ImageUrl = model.ImageUrl,
+            IsPublic = model.IsPublic,
+            Name = model.Name,
+            Time = model.Time,
+            VenueId = model.VenueId
+        };
 
-        Event @event = new Event(Guid.Empty, createEvent.ChapterId, $"{member.FirstName} {member.LastName}", createEvent.Name,
-            createEvent.Date, createEvent.VenueId, createEvent.Time, createEvent.ImageUrl,
-            createEvent.Description, createEvent.IsPublic);
-
-        ServiceResult validationResult = await ValidateEvent(@event);
+        var validationResult = ValidateEvent(@event, venue);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
-        await _eventRepository.CreateEventAsync(@event);
+        _unitOfWork.EventRepository.Add(@event);
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }
     
     public async Task DeleteEvent(Guid currentMemberId, Guid id)
     {
-        await AssertEventCanBeDeleted(currentMemberId, id);
+        var (@event, eventEmail, responses) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(id),
+            x => x.EventEmailRepository.GetByEventId(id),
+            x => x.EventResponseRepository.GetByEventId(id));
+        
+        AssertEventCanBeDeleted(eventEmail, responses);
 
-        await _eventRepository.DeleteEventAsync(id);
+        _unitOfWork.EventRepository.Delete(@event);
+        await _unitOfWork.SaveChangesAsync();
     }
     
-    public async Task<IReadOnlyCollection<EventInvites>> GetChapterInvites(Guid currentMemberId, Guid chapterId,
+    public async Task<IReadOnlyCollection<EventInvitesDto>> GetChapterInvites(Guid currentMemberId, Guid chapterId,
         IReadOnlyCollection<Guid> eventIds)
     {
         if (eventIds.Count == 0)
         {
-            return Array.Empty<EventInvites>();
+            return Array.Empty<EventInvitesDto>();
         }
 
+        var (chapterAdminMembers, invites, emails) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.EventInviteRepository.GetEventInvitesDtos(eventIds),
+            x => x.EventEmailRepository.GetByEventIds(eventIds));
 
-        Task<bool> authorisedTask = MemberIsChapterAdmin(currentMemberId, chapterId);
-        Task<IReadOnlyCollection<EventInvite>> eventInvitesTask = _eventRepository.GetChapterInvitesAsync(chapterId, eventIds);
-        Task<IReadOnlyCollection<EventEmail>> eventEmailsTask = _eventRepository.GetEventEmailsAsync(chapterId, eventIds);
+        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
 
-        await Task.WhenAll(authorisedTask, eventInvitesTask, eventEmailsTask);
-
-        if (!authorisedTask.Result)
-        {
-            throw new OdkNotAuthorizedException();
-        }
-
-        IDictionary<Guid, DateTime?> eventEmailDictionary = eventEmailsTask
-            .Result
-            .ToDictionary(x => x.EventId, x => x.SentDate);
-        IDictionary<Guid, int> eventInvitesDictionary = eventInvitesTask
-            .Result
-            .GroupBy(x => x.EventId)
-            .ToDictionary(x => x.Key, x => x.Count());
-
-        return eventIds.Select(x => new EventInvites
-        {
-            EventId = x,
-            Sent = eventInvitesDictionary.ContainsKey(x) ? eventInvitesDictionary[x] : 0,
-            SentDate = eventEmailDictionary.ContainsKey(x) ? eventEmailDictionary[x] : default
-        }).ToArray();
+        return GetEventInvitesDtos(eventIds, invites, emails);
     }
     
     public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid currentMemberId,
@@ -107,30 +96,32 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return Array.Empty<EventResponse>();
         }
 
-        await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+        var (chapterAdminMembers, responses) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.EventResponseRepository.GetByEventIds(eventIds));
 
-        return await _eventRepository.GetChapterResponsesAsync(chapterId, eventIds);
+        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
+
+        return responses;
     }
 
     public async Task<Event> GetEvent(Guid currentMemberId, Guid id)
     {
-        Event? @event = await _eventRepository.GetEventAsync(id);
-        if (@event == null)
-        {
-            throw new OdkNotFoundException();
-        }
-
+        var @event = await _unitOfWork.EventRepository.GetById(id).RunAsync();        
         await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
-
         return @event;
     }
     
-    public async Task<EventInvites> GetEventInvites(Guid currentMemberId, Guid eventId)
+    public async Task<EventInvitesDto> GetEventInvites(Guid currentMemberId, Guid eventId)
     {
-        Event @event = await GetEvent(currentMemberId, eventId);
-        EventEmail? eventEmail = await _eventRepository.GetEventEmailAsync(@event.Id);
-        IReadOnlyCollection<EventInvite> invites = await _eventRepository.GetEventInvitesAsync(@event.Id);
-        return new EventInvites
+        var (@event, invites, eventEmail) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventInviteRepository.GetByEventId(eventId),
+            x => x.EventEmailRepository.GetByEventId(eventId));
+
+        await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
+        
+        return new EventInvitesDto
         {
             EventId = eventId,
             Sent = invites.Count,
@@ -138,181 +129,243 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid currentMemberId, Guid eventId)
+    public async Task<EventResponsesDto> GetEventResponsesDto(Guid currentMemberId, Guid eventId)
     {
-        Event @event = await GetEvent(currentMemberId, eventId);
-        IReadOnlyCollection<EventResponse> responses = await _eventRepository.GetEventResponsesAsync(@event.Id);
-        IReadOnlyCollection<EventInvite> invited = await _eventRepository.GetEventInvitesAsync(@event.Id);
-        IReadOnlyCollection<Member> members = await _memberRepository.GetMembersAsync(@event.ChapterId);
+        var (@event, responses) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventResponseRepository.GetByEventId(eventId));
 
-        IDictionary<Guid, EventResponse> responseDictionary = responses.ToDictionary(x => x.MemberId, x => x);
-        IDictionary<Guid, EventInvite> inviteDictionary = invited.ToDictionary(x => x.MemberId, x => x);
+        var (chapterAdminMembers, members) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(@event.ChapterId),
+            x => x.MemberRepository.GetByChapterId(@event.ChapterId));
 
-        return members.Select(member =>
+        AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId, chapterAdminMembers);
+
+        return new EventResponsesDto
         {
-            EventResponseType responseType =
-                responseDictionary.ContainsKey(member.Id)
-                ? responseDictionary[member.Id].ResponseTypeId
-                : inviteDictionary.ContainsKey(member.Id)
-                ? EventResponseType.None
-                : EventResponseType.NotInvited;
-            return new EventResponse(eventId, member.Id, responseType);
-        }).ToArray();
+            Members = members,
+            Responses = responses
+        };
     }
 
     public async Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId, int page, int pageSize)
     {
-        await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+        var (chapterAdminMembers, events) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.EventRepository.GetByChapterId(chapterId, page, pageSize));
 
-        return await _eventRepository.GetEventsAsync(chapterId, page, pageSize);
+        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
+
+        return events;
+    }
+
+    public async Task<EventsDto> GetEventsDto(Guid currentMemberId, Guid chapterId, int page, int pageSize)
+    {
+        var (chapterAdminMembers, events) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.EventRepository.GetByChapterId(chapterId, page, pageSize));
+
+        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
+
+        var eventIds = events
+            .Select(x => x.Id)
+            .ToArray();
+
+        var venueIds = events
+            .Select(x => x.VenueId)
+            .Distinct()
+            .ToArray();
+
+        var (venues, invites, responses, emails) = await _unitOfWork.RunAsync(
+            x => x.VenueRepository.GetByChapterId(chapterId, venueIds),
+            x => x.EventInviteRepository.GetEventInvitesDtos(eventIds),
+            x => x.EventResponseRepository.GetResponseSummaries(eventIds),
+            x => x.EventEmailRepository.GetByEventIds(eventIds));
+
+        return new EventsDto
+        {
+            Events = events,    
+            Invites = GetEventInvitesDtos(eventIds, invites, emails),
+            Responses = responses,
+            Venues = venues
+        };
     }
 
     public async Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId)
     {
-        Venue? venue = await _venueRepository.GetVenueAsync(venueId);
-        if (venue == null)
-        {
-            throw new OdkNotFoundException();
-        }
+        var (venue, events) = await _unitOfWork.RunAsync(
+            x => x.VenueRepository.GetById(venueId),
+            x => x.EventRepository.GetByVenueId(venueId));
 
         await AssertMemberIsChapterAdmin(currentMemberId, venue.ChapterId);
 
-        return await _eventRepository.GetEventsByVenueAsync(venueId);
+        return events;
     }
     
     public async Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes,
         string subject, string body)
     {
-        Event @event = await GetEvent(currentMemberId, eventId);
+        var (@event, responses, invites) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventResponseRepository.GetByEventId(eventId),
+            x => x.EventInviteRepository.GetByEventId(eventId));
 
         AssertEventEmailsCanBeSent(@event);
+        
+        var (chapterAdminMembers, members, chapter) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(@event.ChapterId),
+            x => x.MemberRepository.GetByChapterId(@event.ChapterId),
+            x => x.ChapterRepository.GetById(@event.ChapterId));
 
-        IReadOnlyCollection<Member> members = await _memberRepository.GetMembersAsync(@event.ChapterId);
+        responses = responses
+            .Where(x => responseTypes.Contains(x.ResponseTypeId))
+            .ToArray();
 
-        IReadOnlyCollection<EventResponse> responses = await _eventRepository.GetEventResponsesAsync(@event.Id);
-        responses = responses.Where(x => responseTypes.Contains(x.ResponseTypeId)).ToArray();
-
-        IDictionary<Guid, EventResponse> responseDictionary = responses.ToDictionary(x => x.MemberId, x => x);
+        var responseDictionary = responses.ToDictionary(x => x.MemberId, x => x);
 
         if (responseTypes.Contains(EventResponseType.None))
         {
-            IReadOnlyCollection<EventInvite> invites = await _eventRepository.GetEventInvitesAsync(eventId);
-            foreach (EventInvite invite in invites.Where(x => !responseDictionary.ContainsKey(x.MemberId)))
+            foreach (var invite in invites.Where(x => !responseDictionary.ContainsKey(x.MemberId)))
             {
-                responseDictionary.Add(invite.MemberId, new EventResponse(eventId, invite.MemberId, EventResponseType.None));
+                var response = new EventResponse
+                {
+                    EventId = eventId,
+                    MemberId = invite.MemberId,
+                    ResponseTypeId = EventResponseType.None
+                };
+
+                responseDictionary.Add(invite.MemberId, response);
             }
         }
 
-        IReadOnlyCollection<Member> to = members
+        var to = members
             .Where(x => x.EmailOptIn && responseDictionary.ContainsKey(x.Id))
             .ToArray();
 
-        Chapter? chapter = await _chapterRepository.GetChapter(@event.ChapterId);
-
-        await _emailService.SendBulkEmail(currentMemberId, chapter!, to, subject, body);
+        await _emailService.SendBulkEmail(currentMemberId, chapter, to, subject, body);
     }
 
     public async Task<ServiceResult> SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false)
     {
-        Event @event = await GetEvent(currentMemberId, eventId);
+        var (@event, eventEmail, responses, invites) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventEmailRepository.GetByEventId(eventId),
+            x => x.EventResponseRepository.GetByEventId(eventId),
+            x => x.EventInviteRepository.GetByEventId(eventId));
 
-        ServiceResult validationResult = ValidateEventEmailCanBeSent(@event);
+        var validationResult = ValidateEventEmailCanBeSent(@event);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
-        EventEmail? eventEmail = await _eventRepository.GetEventEmailAsync(@event.Id);
         if (!test && eventEmail?.SentDate != null)
         {
             return ServiceResult.Failure("Invites have already been sent for this event");
         }
 
-        Venue? venue = await _venueRepository.GetVenueAsync(@event.VenueId);
-        Chapter? chapter = await _chapterRepository.GetChapter(@event.ChapterId);
+        var (chapterAdminMembers, chapter, venue, members) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(@event.ChapterId),
+            x => x.ChapterRepository.GetById(@event.ChapterId),
+            x => x.VenueRepository.GetById(@event.VenueId),
+            x => x.MemberRepository.GetByChapterId(@event.ChapterId));
+
+        AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId, chapterAdminMembers);
 
         var parameters = GetEventEmailParameters(chapter!, @event, venue!);
 
         if (test)
         {
-            Member? member = await _memberRepository.GetMemberAsync(currentMemberId);
+            var member = await _unitOfWork.MemberRepository.GetById(currentMemberId).RunAsync();
             await _emailService.SendEmail(chapter!, member!.GetEmailAddressee(), EmailType.EventInvite, parameters);
+            return ServiceResult.Successful();
         }
-        else
+
+        var memberResponses = responses.ToDictionary(x => x.MemberId, x => x);
+        var inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
+        var invited = members
+            .Where(x => x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id) && !memberResponses.ContainsKey(x.Id))
+            .ToArray();
+
+        await _emailService.SendBulkEmail(currentMemberId, chapter, invited, EmailType.EventInvite, parameters);
+
+        var sentDate = DateTime.UtcNow;
+
+        _unitOfWork.EventEmailRepository.Add(new EventEmail
         {
-            IReadOnlyCollection<EventResponse> responses = await _eventRepository.GetEventResponsesAsync(@event.Id);
-            IDictionary<Guid, EventResponse> memberResponses = responses.ToDictionary(x => x.MemberId, x => x);
+            EventId = eventId,
+            SentDate = sentDate
+        });
 
-            IReadOnlyCollection<EventInvite> invites = await _eventRepository.GetEventInvitesAsync(@event.Id);
-            IDictionary<Guid, EventInvite> inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
+        // Add null event responses to indicate that members have been invited
+        var newInvites = invited
+            .Select(x => new EventInvite
+            {
+                EventId = eventId,
+                MemberId = x.Id,
+                SentDate = sentDate
+            });
 
-            IReadOnlyCollection<Member> members = await _memberRepository.GetMembersAsync(chapter!.Id);
-            IReadOnlyCollection<Member> invited = members
-                .Where(x => x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id) && !memberResponses.ContainsKey(x.Id))
-                .ToArray();
-
-            await _emailService.SendBulkEmail(currentMemberId, chapter, invited, EmailType.EventInvite, parameters);
-
-            DateTime sentDate = DateTime.UtcNow;
-            eventEmail = new EventEmail(Guid.Empty, @event.Id, sentDate);
-            await _eventRepository.AddEventEmailAsync(eventEmail);
-
-            // Add null event responses to indicate that members have been invited
-            await _eventRepository.AddEventInvitesAsync(@event.Id, invited.Select(x => x.Id), sentDate);
-        }
+        _unitOfWork.EventInviteRepository.AddMany(newInvites);
+        
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateEvent(Guid memberId, Guid id, CreateEvent @event)
+    public async Task<ServiceResult> UpdateEvent(Guid memberId, Guid id, CreateEvent update)
     {
-        Event update = await GetEvent(memberId, id);
+        var (@event, venue) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(id),
+            x => x.VenueRepository.GetById(update.VenueId));
 
-        update.Date = @event.Date;
-        update.Description = @event.Description;
-        update.ImageUrl = @event.ImageUrl;
-        update.IsPublic = @event.IsPublic;
-        update.Name = @event.Name;
-        update.Time = @event.Time;
-        update.VenueId = @event.VenueId;
+        await AssertMemberIsChapterAdmin(memberId, @event.ChapterId);
 
-        ServiceResult validationResult = await ValidateEvent(update);
+        @event.Date = update.Date;
+        @event.Description = update.Description;
+        @event.ImageUrl = update.ImageUrl;
+        @event.IsPublic = update.IsPublic;
+        @event.Name = update.Name;
+        @event.Time = update.Time;
+        @event.VenueId = update.VenueId;
+
+        var validationResult = ValidateEvent(@event, venue);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
-        await _eventRepository.UpdateEventAsync(update);
+        _unitOfWork.EventRepository.Update(@event);
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }
 
-    public async Task<Event> UpdateEventOld(Guid memberId, Guid id, CreateEvent @event)
-    {
-        Event update = await GetEvent(memberId, id);
-
-        update.Date = @event.Date;
-        update.Description = @event.Description;
-        update.ImageUrl = @event.ImageUrl;
-        update.IsPublic = @event.IsPublic;
-        update.Name = @event.Name;
-        update.Time = @event.Time;
-        update.VenueId = @event.VenueId;
-
-        await AssertValidEvent(update);
-
-        await _eventRepository.UpdateEventAsync(update);
-
-        return update;
-    }
-
     public async Task<EventResponse> UpdateMemberResponse(Guid currentMemberId, Guid eventId, Guid memberId, EventResponseType responseType)
     {
-        Event @event = await GetEvent(currentMemberId, eventId);
+        var (@event, response) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventResponseRepository.GetByMemberId(memberId, eventId));
 
-        EventResponse response = new EventResponse(@event.Id, memberId, responseType);
+        await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
 
-        await _eventRepository.UpdateEventResponseAsync(response);
+        if (response == null)
+        {
+            response = new EventResponse
+            {
+                EventId = eventId,
+                MemberId = memberId,
+                ResponseTypeId = responseType
+            };
+            _unitOfWork.EventResponseRepository.Add(response);
+        }
+        else
+        {
+            response.ResponseTypeId = responseType;
+            _unitOfWork.EventResponseRepository.Update(response);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
 
         return response;
     }
@@ -327,7 +380,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return ServiceResult.Successful();
     }
 
-    private async Task<ServiceResult> ValidateEvent(Event @event)
+    private ServiceResult ValidateEvent(Event @event, Venue venue)
     {
         if (string.IsNullOrWhiteSpace(@event.Name))
         {
@@ -339,22 +392,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Failure("Date is required");
         }
 
-        Venue? venue = await _venueRepository.GetVenueAsync(@event.VenueId);
-        if (venue == null || venue.ChapterId != @event.ChapterId)
+        if (venue.ChapterId != @event.ChapterId)
         {
             return ServiceResult.Failure("Venue not found");
         }
         
         return ServiceResult.Successful();
-    }
-
-    private async Task AssertValidEvent(Event @event)
-    {
-        ServiceResult result = await ValidateEvent(@event);
-        if (!result.Success)
-        {
-            throw new OdkServiceException(result.Message);
-        }
     }
 
     private static void AssertEventEmailsCanBeSent(Event @event)
@@ -366,24 +409,16 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
     }
 
-    private async Task AssertEventCanBeDeleted(Guid currentMemberId, Guid eventId)
+    private void AssertEventCanBeDeleted(EventEmail? eventEmail, IReadOnlyCollection<EventResponse> responses)
     {
-        EventEmail? eventEmail = await _eventRepository.GetEventEmailAsync(eventId);
         if (eventEmail?.SentDate != null)
         {
             throw new OdkServiceException("Events that have had invite emails sent cannot be deleted");
         }
 
-        IReadOnlyCollection<EventResponse> responses = await _eventRepository.GetEventResponsesAsync(eventId);
         if (responses.Count > 0)
         {
             throw new OdkServiceException("Events with responses cannot be deleted");
-        }
-
-        Event? @event = await _eventRepository.GetEventAsync(eventId);
-        if (@event != null)
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
         }
     }
 
@@ -404,5 +439,21 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         parameters.Add("unsubscribeUrl", (_settings.BaseUrl + _settings.UnsubscribeUrlFormat).Interpolate(parameters));
 
         return parameters;
+    }
+
+    private IReadOnlyCollection<EventInvitesDto> GetEventInvitesDtos(IEnumerable<Guid> eventIds,
+        IEnumerable<EventInviteSummaryDto> invites, IEnumerable<EventEmail> emails)
+    {
+        var emailDictionary = emails
+            .ToDictionary(x => x.EventId, x => x.SentDate);
+        var invitesDictionary = invites
+            .ToDictionary(x => x.EventId, x => x.Sent);
+
+        return eventIds.Select(x => new EventInvitesDto
+        {
+            EventId = x,
+            Sent = invitesDictionary.ContainsKey(x) ? invitesDictionary[x] : 0,
+            SentDate = emailDictionary.ContainsKey(x) ? emailDictionary[x] : default
+        }).ToArray();
     }
 }

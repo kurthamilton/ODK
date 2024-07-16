@@ -2,19 +2,11 @@
 
 public class MemberRefreshToken
 {
-    public MemberRefreshToken(Guid id, Guid memberId, DateTime expires, string refreshToken)
-    {
-        Expires = expires;
-        Id = id;
-        MemberId = memberId;
-        RefreshToken = refreshToken;
-    }
+    public DateTime Expires { get; set; }
 
-    public DateTime Expires { get; }
+    public Guid Id { get; set; }
 
-    public Guid Id { get; }
+    public Guid MemberId { get; set; }
 
-    public Guid MemberId { get; }
-
-    public string RefreshToken { get; }
+    public string RefreshToken { get; set; } = "";
 }

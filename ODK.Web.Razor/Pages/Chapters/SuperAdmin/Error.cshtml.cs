@@ -9,24 +9,24 @@ public class ErrorModel : SuperAdminPageModel
 {
     private readonly ILoggingService _loggingService;
 
-    public ErrorModel(IRequestCache requestCache, ILoggingService loggingService) 
+    public ErrorModel(IRequestCache requestCache, ILoggingService loggingService)
         : base(requestCache)
     {
         _loggingService = loggingService;
     }
 
-    public LogMessage Error { get; private set; } = null!;
+    //public LogMessage Error { get; private set; } = null!;
 
-    public async Task<IActionResult> OnGet(int id)
-    {
-        LogMessage? error = await _loggingService.GetErrorMessage(CurrentMemberId, id);
-        if (error == null)
-        {
-            return NotFound();
-        }
+    //public async Task<IActionResult> OnGet(int id)
+    //{
+    //    LogMessage? error = await _loggingService.GetErrorMessage(CurrentMemberId, id);
+    //    if (error == null)
+    //    {
+    //        return NotFound();
+    //    }
 
-        Error = error;
+    //    Error = error;
 
-        return Page();
-    }
+    //    return Page();
+    //}
 }

@@ -10,7 +10,7 @@ public interface IVenueAdminService
 
     Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId);
 
-    Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId, IReadOnlyCollection<Guid> venueIds);
+    Task<VenuesDto> GetVenuesDto(Guid currentMemberId, Guid chapterId);
 
     Task<ServiceResult> UpdateVenue(Guid memberId, Guid id, CreateVenue venue);
 }

@@ -19,7 +19,7 @@ public class MemberModel : ChapterPageModel
 
     public async Task<IActionResult> OnGet(Guid id)
     {
-        Member? member = await _memberService.GetMember(id);
+        var member = await _memberService.GetMember(id, Chapter.Id);
         if (member == null)
         {
             return NotFound();

@@ -4,21 +4,15 @@
 @model ODK.Core.Chapters.Chapter
 @inject IMemberAdminService MemberAdminService
 @{
-    Guid? memberId = User.MemberId();
-    if (memberId == null)
-    {
-        return;
-    }
+    var memberId = User.MemberId();
 
-    Task<IReadOnlyCollection<Member>> membersTask = MemberAdminService.GetMembers(memberId.Value, Model.Id);
-    Task<IReadOnlyCollection<MemberSubscription>> subscriptionsTask = MemberAdminService.GetMemberSubscriptions(memberId.Value, Model.Id);
-    
-    await Task.WhenAll(membersTask, subscriptionsTask);
+    var dto = await MemberAdminService.GetMembersDto(memberId, Model.Id);
 
-    IReadOnlyCollection<Member> members = membersTask.Result;
-    IDictionary<Guid, MemberSubscription> subscriptions = subscriptionsTask.Result.ToDictionary(x => x.MemberId);
+    var (members, subscriptions) = (dto.Members, dto.Subscriptions);
 
-    DateTime subscriptionWarningDate = DateTime.Today.AddDays(7);
+    var subscriptionDictionary = subscriptions.ToDictionary(x => x.MemberId);
+
+    var subscriptionWarningDate = DateTime.Today.AddDays(7);
 }
 
 <h2>Members</h2>
@@ -62,9 +56,9 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (Member member in members)
+    @foreach (var member in members)
     {
-        subscriptions.TryGetValue(member.Id, out MemberSubscription? subscription);
+        subscriptionDictionary.TryGetValue(member.Id, out var subscription);
 
         <tr data-filter-name="@member.FullName" data-filter-type="@subscription?.Type">
             <td>

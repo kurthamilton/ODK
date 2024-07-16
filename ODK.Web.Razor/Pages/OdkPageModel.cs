@@ -26,7 +26,7 @@ public abstract class OdkPageModel : PageModel
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        Guid? memberId = HttpContext.User.MemberId();
+        var memberId = HttpContext.User.MemberIdOrDefault();
         CurrentMember = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
 
         await base.OnPageHandlerExecutionAsync(context, next);

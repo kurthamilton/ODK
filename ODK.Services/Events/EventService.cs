@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Events;
 using ODK.Core.Members;
-using ODK.Core.Venues;
+using ODK.Data.Core;
 using ODK.Services.Authorization;
 
 namespace ODK.Services.Events;
@@ -8,21 +8,18 @@ namespace ODK.Services.Events;
 public class EventService : IEventService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IEventRepository _eventRepository;
-    private readonly IVenueRepository _venueRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public EventService(IEventRepository eventRepository,
-        IVenueRepository venueRepository,
+    public EventService(IUnitOfWork unitOfWork,       
         IAuthorizationService authorizationService)
     {
         _authorizationService = authorizationService;
-        _eventRepository = eventRepository;
-        _venueRepository = venueRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Event?> GetEvent(Guid chapterId, Guid eventId)
     {
-        Event? @event = await _eventRepository.GetEventAsync(eventId);
+        var @event = await _unitOfWork.EventRepository.GetById(eventId).RunAsync();
         if (@event == null || @event.ChapterId != chapterId)
         {
             return null;
@@ -31,9 +28,17 @@ public class EventService : IEventService
         return @event;
     }
     
-    public async Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid eventId)
+    public async Task<EventResponsesDto> GetEventResponsesDto(Event @event)
     {
-        return await _eventRepository.GetEventResponsesAsync(eventId);
+        var (responses, members) = await _unitOfWork.RunAsync(
+            x => x.EventResponseRepository.GetByEventId(@event.Id),
+            x => x.MemberRepository.GetByChapterId(@event.ChapterId));
+
+        return new EventResponsesDto
+        {
+            Members = members,
+            Responses = responses
+        };
     }
 
     public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Guid chapterId)
@@ -44,43 +49,37 @@ public class EventService : IEventService
     public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member,
         Guid chapterId, DateTime? after)
     {
-        IReadOnlyCollection<Event> events;
-        if (member == null || member.ChapterId != chapterId)
-        {
-            events = await _eventRepository.GetPublicEventsAsync(chapterId, after);
-        }
-        else
-        {
-            events = await _eventRepository.GetEventsAsync(chapterId, after);
-        }
+        var isChapterMember = member?.ChapterId == chapterId;
+
+        var (events, venues) = await _unitOfWork.RunAsync(
+            x => isChapterMember ? x.EventRepository.GetByChapterId(chapterId, after) : x.EventRepository.GetPublicEventsByChapterId(chapterId, after),
+            x => x.VenueRepository.GetByChapterId(chapterId));
 
         IReadOnlyCollection<EventResponse> responses = [];
+        IReadOnlyCollection<EventInvite> invites = [];
+        var invitedEventIds = new HashSet<Guid>();
         if (member != null)
         {
             bool allEvents = after == null;
-            responses = await _eventRepository.GetMemberResponsesAsync(member.Id, allEvents);
+
+            (responses, invites) = await _unitOfWork.RunAsync(
+                x => x.EventResponseRepository.GetByMemberId(member.Id, allEvents),
+                x => x.EventInviteRepository.GetByMemberId(member.Id));
+
+            invitedEventIds = new HashSet<Guid>(invites.Select(x => x.EventId));
         }
 
         var responseLookup = responses
             .ToDictionary(x => x.EventId, x => x.ResponseTypeId);
 
-        IReadOnlyCollection<Venue> venues = await _venueRepository.GetVenuesAsync(chapterId);
-        IDictionary<Guid, Venue> venueLookup = venues.ToDictionary(x => x.Id);
-
-        var invitedEventIds = new HashSet<Guid>();
-        if (member != null)
-        {
-            IReadOnlyCollection<EventInvite> eventInvites = await _eventRepository
-                .GetEventInvitesForMemberIdAsync(member.Id);
-            invitedEventIds = new HashSet<Guid>(eventInvites.Select(x => x.EventId));
-        }
+        var venueLookup = venues.ToDictionary(x => x.Id);        
 
         var viewModels = new List<EventResponseViewModel>();
         foreach (Event @event in events)
         {
-            bool invited = invitedEventIds.Contains(@event.Id);
+            var invited = invitedEventIds.Contains(@event.Id);
             responseLookup.TryGetValue(@event.Id, out EventResponseType responseType);
-            EventResponseViewModel viewModel = new(@event, venueLookup[@event.VenueId], 
+            var viewModel = new EventResponseViewModel(@event, venueLookup[@event.VenueId], 
                 responseType, invited, @event.IsPublic);
             viewModels.Add(viewModel);
         }
@@ -93,8 +92,10 @@ public class EventService : IEventService
     {
         responseType = NormalizeResponseType(responseType);
 
-        Event? @event = await _eventRepository.GetEventAsync(eventId);
-        if (@event == null || @event.Date < DateTime.Today)
+        var (@event, response) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventResponseRepository.GetByMemberId(member.Id, eventId));
+        if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
         }
@@ -110,7 +111,22 @@ public class EventService : IEventService
             return ServiceResult.Failure("You are not permitted to respond to this event");
         }
 
-        await _eventRepository.UpdateEventResponseAsync(new EventResponse(eventId, member.Id, responseType));
+        if (response == null)
+        {
+            _unitOfWork.EventResponseRepository.Add(new EventResponse
+            {
+                EventId = eventId,
+                MemberId = member.Id,
+                ResponseTypeId = responseType
+            });
+        }
+        else
+        {
+            response.ResponseTypeId = responseType;
+            _unitOfWork.EventResponseRepository.Update(response);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }

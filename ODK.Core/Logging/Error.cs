@@ -1,20 +1,22 @@
 ﻿namespace ODK.Core.Logging;
 
-public class Error
+public class Error : IDatabaseEntity
 {
-    public Error(Guid id, DateTime createdDate, string exceptionType, string exceptionMessage)
+    public DateTime CreatedDate { get; set; }
+
+    public string ExceptionMessage { get; set; } = "";
+
+    public string ExceptionType { get; set; } = "";
+
+    public Guid Id { get; set; } 
+
+    public static Error FromException(Exception exception)
     {
-        CreatedDate = createdDate;
-        ExceptionMessage = exceptionMessage;
-        ExceptionType = exceptionType;
-        Id = id;
+        return new Error
+        {
+            CreatedDate = DateTime.UtcNow,
+            ExceptionMessage = exception.Message,
+            ExceptionType = exception.GetType().Name
+        };
     }
-
-    public DateTime CreatedDate { get; }
-
-    public string ExceptionMessage { get; }
-
-    public string ExceptionType { get; }
-
-    public Guid Id { get; } 
 }

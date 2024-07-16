@@ -65,20 +65,15 @@ public class ChapterAdminController : OdkControllerBase
     [HttpPost("/{chapterName}/Admin/Chapter/Emails/{type}/SendTest")]
     public async Task<IActionResult> SendTestEmail(string chapterName, EmailType type)
     {
-        Task<Chapter?> chapterTask = _requestCache.GetChapterAsync(chapterName);
-        Task<Member?> memberTask = _requestCache.GetMemberAsync(MemberId);
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var member = await _requestCache.GetMemberAsync(MemberId);
 
-        await Task.WhenAll(chapterTask, memberTask);
-
-        if (chapterTask.Result == null || memberTask.Result == null)
+        if (chapter == null || member == null)
         {
             return NotFound();
         }
 
-        Chapter chapter = chapterTask.Result;
-        Member member = memberTask.Result;
-
-        ServiceResult result = await _emailService.SendEmail(chapter, member.GetEmailAddressee(), type, new Dictionary<string, string>
+        var result = await _emailService.SendEmail(chapter, member.GetEmailAddressee(), type, new Dictionary<string, string>
         {
             { "chapter.name", chapter.Name },
             { "member.emailAddress", member.FirstName },

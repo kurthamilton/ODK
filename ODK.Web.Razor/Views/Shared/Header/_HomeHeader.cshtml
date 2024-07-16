@@ -7,11 +7,11 @@
 @using ODK.Web.Razor.Models.Header
 @inject IRequestCache RequestCache
 @{
-    Guid? memberId = User.MemberId();
-    Member? member = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
+    var memberId = User.MemberIdOrDefault();
+    var member = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
 
-    IReadOnlyCollection<Chapter> chapters = await RequestCache.GetChaptersAsync();
-    MenuItem[] menuItems = chapters.Select(c => new MenuItem
+    var chapters = await RequestCache.GetChaptersAsync();
+    var menuItems = chapters.Select(c => new MenuItem
     {
         ExternalLink = !string.IsNullOrEmpty(c.RedirectUrl) ? c.RedirectUrl : null,
         Link = string.IsNullOrEmpty(c.RedirectUrl) ? $"/{c.Name}" : null,

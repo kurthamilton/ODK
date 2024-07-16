@@ -4,9 +4,8 @@
 @model ODK.Core.Chapters.Chapter
 @inject IEmailAdminService EmailAdminService
 @{
-    Guid? memberId = User.MemberId();
-
-    IReadOnlyCollection<Email> emails = await EmailAdminService.GetEmails(memberId!.Value, Model.Id);
+    var memberId = User.MemberId();
+    var emails = await EmailAdminService.GetEmails(memberId, Model.Id);
 }
 
 <table class="table table-striped">

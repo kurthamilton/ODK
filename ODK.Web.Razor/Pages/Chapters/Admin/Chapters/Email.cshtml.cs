@@ -22,12 +22,7 @@ public class EmailModel : AdminPageModel
 
     public async Task<IActionResult> OnGetAsync(EmailType type)
     {
-        Email = await _emailAdminService.GetChapterEmail(CurrentMemberId, Chapter.Id, type);
-        if (Email == null)
-        {
-            return NotFound();
-        }
-
+        Email = await _emailAdminService.GetChapterEmail(CurrentMemberId, Chapter.Id, type);        
         return Page();
     }
 

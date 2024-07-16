@@ -4,7 +4,7 @@ using ODK.Data.Sql.Reflection;
 
 namespace ODK.Data.Sql.Mapping;
 
-public abstract class SqlMap<T> : SqlMap
+public abstract class SqlMap<T> : IEntityTypeConfiguration
 {
     private readonly IList<SqlColumn> _columns = new List<SqlColumn>();
     private readonly IDictionary<string, SqlColumn> _entityColumns = new Dictionary<string, SqlColumn>();

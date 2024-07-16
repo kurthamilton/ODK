@@ -1,18 +1,18 @@
 ﻿using Newtonsoft.Json;
-using ODK.Core.Settings;
+using ODK.Data.Core;
 
 namespace ODK.Services.Recaptcha;
 
 public class RecaptchaService : IRecaptchaService
 {
     private readonly RecaptchaServiceSettings _settings;
-    private readonly ISettingsRepository _settingsRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public RecaptchaService(RecaptchaServiceSettings settings, 
-        ISettingsRepository settingsRepository)
+        IUnitOfWork unitOfWork)
     {
         _settings = settings;
-        _settingsRepository = settingsRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public bool Success(ReCaptchaResponse response)
@@ -22,24 +22,17 @@ public class RecaptchaService : IRecaptchaService
 
     public async Task<ReCaptchaResponse> Verify(string token)
     {
-        SiteSettings? settings = await _settingsRepository.GetSiteSettingsAsync();
-        if (settings == null)
-        {
-            return new ReCaptchaResponse
-            {
-                Success = true
-            };
-        }
-
-        HttpContent postContent = new FormUrlEncodedContent(new Dictionary<string, string>
+        var settings = await _unitOfWork.SiteSettingsRepository.Get().RunAsync();
+        
+        var postContent = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             { "secret", settings.RecaptchaSecretKey },
             { "response", token }
         });
         
         using HttpClient http = new HttpClient();
-        HttpResponseMessage response = await http.PostAsync(_settings.VerifyUrl, postContent);
-        string responseContent = await response.Content.ReadAsStringAsync();
+        var response = await http.PostAsync(_settings.VerifyUrl, postContent);
+        var responseContent = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)
         {
@@ -67,7 +60,7 @@ public class RecaptchaService : IRecaptchaService
             };
         }
 
-        ReCaptchaResponse? reCaptchaResponse = JsonConvert.DeserializeObject<ReCaptchaResponse>(responseContent);
+        var reCaptchaResponse = JsonConvert.DeserializeObject<ReCaptchaResponse>(responseContent);
         if (reCaptchaResponse == null)
         {
             return new ReCaptchaResponse

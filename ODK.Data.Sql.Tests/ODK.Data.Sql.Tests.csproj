@@ -18,8 +18,4 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ODK.Data.Sql\ODK.Data.Sql.csproj" />
-  </ItemGroup>
-
 </Project>

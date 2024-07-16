@@ -8,39 +8,19 @@
 @inject IEventAdminService EventAdminService
 @inject IVenueAdminService VenueAdminService
 @{
-    Guid? memberId = User.MemberId();
-    if (memberId == null)
-    {
-        return;
-    }
+    var memberId = User.MemberId();
 
-    IReadOnlyCollection<Event> events = await EventAdminService.GetEvents(memberId.Value, Model.Id, 1, 30);
-    IReadOnlyCollection<Guid> eventIds = events
-        .Select(x => x.Id)
-        .ToArray();
+    var dto = await EventAdminService.GetEventsDto(memberId, Model.Id, 1, 30);
 
-    IReadOnlyCollection<Guid> venueIds = events
-        .Select(x => x.VenueId)
-        .Distinct()
-        .ToArray();
+    var (events, venues, allInvites, allResponses) = (dto.Events, dto.Venues, dto.Invites, dto.Responses);
 
-    Task<IReadOnlyCollection<EventInvites>> allInvitesTask = EventAdminService.GetChapterInvites(memberId.Value, Model.Id, eventIds);
-    Task<IReadOnlyCollection<EventResponse>> allResponsesTask = EventAdminService.GetChapterResponses(memberId.Value, Model.Id, eventIds);
-    Task<IReadOnlyCollection<Venue>> venuesTask = VenueAdminService.GetVenues(memberId.Value, Model.Id, venueIds);
+    var venueDictionary = venues.ToDictionary(x => x.Id);
 
-    await Task.WhenAll(allInvitesTask, allResponsesTask, venuesTask);
-
-    IDictionary<Guid, EventInvites> allInvites = allInvitesTask
-        .Result
+    var invitesDictionary = allInvites
         .ToDictionary(x => x.EventId);
 
-    IDictionary<Guid, EventResponse[]> allResponses = allResponsesTask
-        .Result
-        .GroupBy(x => x.EventId)
-        .ToDictionary(x => x.Key, x => x.ToArray());
-
-    IDictionary<Guid, Venue> venues = venuesTask.Result
-        .ToDictionary(x => x.Id);
+    var responseDictionary = allResponses
+        .ToDictionary(x => x.EventId);
 }
 
 <h2>Events</h2>
@@ -63,30 +43,28 @@
     <tbody>
     @foreach (Event @event in events)
     {
-        allInvites.TryGetValue(@event.Id, out EventInvites? invites);
-        allResponses.TryGetValue(@event.Id, out EventResponse[]? responses);
-        IDictionary<EventResponseType, int> responseCounts = responses
-            ?.GroupBy(x => x.ResponseTypeId)
-            .ToDictionary(x => x.Key, x => x.Count()) ?? new Dictionary<EventResponseType, int>();
-        Venue venue = venues[@event.VenueId];
+        invitesDictionary.TryGetValue(@event.Id, out var eventInvites);
+        responseDictionary.TryGetValue(@event.Id, out var eventResponses);
+        
+        var venue = venueDictionary[@event.VenueId];
 
         <tr>
             <td><a href="/@Model.Name/Admin/Events/@(@event.Id)">@(@event.Name)</a></td>
             <td>@(@event.Date.EventDate())</td>
             <td><a href="/@Model.Name/Admin/Venues/@venue.Id">@venue.Name</a></td>
             <td>
-                @if (invites == null || invites.SentDate == null)
+                @if (eventInvites?.SentDate == null)
                 {
                     <a href="/@Model.Name/Admin/Events/@(@event.Id)/Invites">Send</a>
                 }
                 else
                 {
-                    @invites.Sent
+                    @eventInvites.Sent
                 }
             </td>
-            <td>@(responseCounts.ContainsKey(EventResponseType.Yes) ? responseCounts[EventResponseType.Yes] : 0)</td>
-            <td>@(responseCounts.ContainsKey(EventResponseType.Maybe) ? responseCounts[EventResponseType.Maybe] : 0)</td>
-            <td>@(responseCounts.ContainsKey(EventResponseType.No) ? responseCounts[EventResponseType.No] : 0)</td>
+            <td>@(eventResponses?.Yes ?? 0)</td>
+            <td>@(eventResponses?.Maybe ?? 0)</td>
+            <td>@(eventResponses?.No ?? 0)</td>
         </tr>
     }
     </tbody>

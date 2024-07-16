@@ -2,16 +2,9 @@
 
 public class EventResponse
 {
-    public EventResponse(Guid eventId, Guid memberId, EventResponseType responseTypeId)
-    {
-        EventId = eventId;
-        MemberId = memberId;
-        ResponseTypeId = responseTypeId;
-    }
+    public Guid EventId { get; set; }
 
-    public Guid EventId { get; }
+    public Guid MemberId { get; set; }
 
-    public Guid MemberId { get; }
-
-    public EventResponseType ResponseTypeId { get; }
+    public EventResponseType ResponseTypeId { get; set; }
 }

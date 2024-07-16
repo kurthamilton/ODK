@@ -1,35 +1,18 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class Chapter
+public class Chapter : IDatabaseEntity
 {
-    public Chapter(Guid id, Guid countryId, string name, string? bannerImageUrl, string? welcomeText,
-        string? redirectUrl, int displayOrder)
-    {
-        BannerImageUrl = bannerImageUrl;
-        CountryId = countryId;
-        DisplayOrder = displayOrder;
-        Id = id;
-        Name = name;
-        RedirectUrl = redirectUrl;
-        WelcomeText = welcomeText;
-    }
+    public string BannerImageUrl { get; } = "";
 
-    public string? BannerImageUrl { get; }
+    public Guid CountryId { get; set; }
 
-    public Guid CountryId { get; }
+    public int DisplayOrder { get; set; }
 
-    public int DisplayOrder { get; }
+    public Guid Id { get; set; }
 
-    public Guid Id { get; }
+    public string Name { get; set; } = "";
 
-    public string Name { get; }
+    public string? RedirectUrl { get; set; }
 
-    public string? RedirectUrl { get; }
-
-    public string? WelcomeText { get; private set; }
-
-    public void Update(string welcomeText)
-    {
-        WelcomeText = welcomeText;
-    }
+    public string? WelcomeText { get; set; }
 }

@@ -6,8 +6,7 @@
 @inject IChapterAdminService ChapterAdminService
 @{
     var memberId = User.MemberId();
-
-    var paymentSettings = await ChapterAdminService.GetChapterPaymentSettings(memberId!.Value, Model.Id);
+    var paymentSettings = await ChapterAdminService.GetChapterPaymentSettings(memberId, Model.Id);
 }
 
 <form method="post">

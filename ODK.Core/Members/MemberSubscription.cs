@@ -4,18 +4,11 @@ namespace ODK.Core.Members;
 
 public class MemberSubscription : IVersioned
 {
-    public MemberSubscription(Guid memberId, SubscriptionType type, DateTime? expiryDate)
-    {
-        ExpiryDate = expiryDate;
-        MemberId = memberId;
-        Type = type;
-    }
+    public DateTime? ExpiryDate { get; set; }
 
-    public DateTime? ExpiryDate { get; }
+    public Guid MemberId { get; set; }
 
-    public Guid MemberId { get; }
+    public SubscriptionType Type { get; set; }
 
-    public SubscriptionType Type { get; }
-
-    long IVersioned.Version => ExpiryDate == null ? 0 : DateUtils.DateVersion(ExpiryDate.Value);
+    public byte[] Version => ExpiryDate == null ? [] : BitConverter.GetBytes(DateUtils.DateVersion(ExpiryDate.Value));
 }

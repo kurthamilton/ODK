@@ -1,17 +1,22 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Images;
+﻿using ODK.Core.Images;
 using ODK.Core.Media;
+using ODK.Data.Core;
 using ODK.Services.Exceptions;
+using ODK.Services.Imaging;
 
 namespace ODK.Services.Media;
 
 public class MediaAdminService : OdkAdminServiceBase, IMediaAdminService
 {
+    private readonly IImageService _imageService;
     private readonly IMediaFileProvider _mediaFileProvider;
 
-    public MediaAdminService(IChapterRepository chapterRepository, IMediaFileProvider mediaFileProvider)
-        : base(chapterRepository)
+    public MediaAdminService(IUnitOfWork unitOfWork, 
+        IMediaFileProvider mediaFileProvider,
+        IImageService imageService)
+        : base(unitOfWork)
     {
+        _imageService = imageService;
         _mediaFileProvider = mediaFileProvider;
     }
 
@@ -41,12 +46,12 @@ public class MediaAdminService : OdkAdminServiceBase, IMediaAdminService
     {
         await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
 
-        if (!ImageValidator.IsValidData(data))
+        if (!_imageService.IsImage(data))
         {
             throw new OdkServiceException("File must be an image");
         }
 
-        string? filePath = await _mediaFileProvider.GetMediaFilePath(chapterId, name);
+        var filePath = await _mediaFileProvider.GetMediaFilePath(chapterId, name);
         if (string.IsNullOrEmpty(filePath))
         {
             throw new OdkServiceException("File not found");
@@ -55,8 +60,8 @@ public class MediaAdminService : OdkAdminServiceBase, IMediaAdminService
         int version = 1;
         while (File.Exists(filePath))
         {
-            FileInfo file = new FileInfo(filePath);
-            string versionedFileName = $"{file.Name.Substring(0, file.Name.Length - file.Extension.Length)}{++version}{file.Extension}";
+            var file = new FileInfo(filePath);
+            var versionedFileName = $"{file.Name.Substring(0, file.Name.Length - file.Extension.Length)}{++version}{file.Extension}";
             filePath = Path.Combine(file.Directory!.FullName, versionedFileName);
         }
 

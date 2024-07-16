@@ -7,7 +7,7 @@ public interface IEventService
 {
     Task<Event?> GetEvent(Guid chapterId, Guid eventId);
     
-    Task<IReadOnlyCollection<EventResponse>> GetEventResponses(Guid eventId);
+    Task<EventResponsesDto> GetEventResponsesDto(Event @event);
 
     Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Guid chapterId);
 

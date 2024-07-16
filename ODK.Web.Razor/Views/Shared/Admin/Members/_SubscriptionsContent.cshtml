@@ -5,21 +5,14 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Members
 @model ODK.Core.Chapters.Chapter
+@inject IChapterService ChapterService
 @inject IChapterAdminService ChapterAdminService
-@inject ICountryService CountryService
 @{
-    Guid? memberId = User.MemberId();
+    var memberId = User.MemberId();
     
-    Task<IReadOnlyCollection<ChapterSubscription>> subscriptionsTask = ChapterAdminService.GetChapterSubscriptions(
-        memberId!.Value, Model.Id);
-    Task<Country> countryTask = CountryService.GetCountry(Model.CountryId);
-    Task<ChapterMembershipSettings?> membershipSettingsTask = ChapterAdminService.GetChapterMembershipSettings(memberId.Value, Model.Id);
+    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(memberId, Model.Id);
 
-    await Task.WhenAll(subscriptionsTask, countryTask, membershipSettingsTask);
-
-    IReadOnlyCollection<ChapterSubscription> subscriptions = subscriptionsTask.Result;
-    Country country = countryTask.Result;
-    ChapterMembershipSettings? membershipSettings = membershipSettingsTask.Result;
+    var (subscriptions, country, membershipSettings) = (dto.ChapterSubscriptions, dto.Country, dto.MembershipSettings);
 }
 
 <h2>Subscriptions</h2>
@@ -39,7 +32,7 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (ChapterSubscription subscription in subscriptions)
+    @foreach (var subscription in subscriptions)
     {
         <tr>
             <td>

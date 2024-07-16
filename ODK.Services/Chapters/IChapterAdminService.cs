@@ -22,13 +22,11 @@ public interface IChapterAdminService
 
     Task<ServiceResult> DeleteChapterSubscription(Guid currentMemberId, Guid id);
 
-    Task<Chapter?> GetChapter(Guid currentMemberId, Guid chapterId);
-
     Task<Chapter?> GetChapter(string name);
 
-    Task<ChapterAdminMember?> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
+    Task<ChapterAdminMemberDto> GetChapterAdminMemberDto(Guid currentMemberId, Guid chapterId, Guid memberId);
 
-    Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid currentMemberId, Guid chapterId);
+    Task<IReadOnlyCollection<ChapterAdminMemberDto>> GetChapterAdminMemberDtos(Guid currentMemberId, Guid chapterId);
 
     Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(Guid currentMemberId, Guid chapterId);
 
@@ -41,8 +39,6 @@ public interface IChapterAdminService
     Task<ChapterProperty> GetChapterProperty(Guid currentMemberId, Guid chapterPropertyId);
 
     Task<ChapterQuestion> GetChapterQuestion(Guid currentMemberId, Guid questionId);
-
-    Task<IReadOnlyCollection<Chapter>> GetChapters(Guid currentMemberId);
 
     Task<ChapterSubscription> GetChapterSubscription(Guid currentMemberId, Guid id);
 

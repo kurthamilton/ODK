@@ -6,13 +6,13 @@ public interface IMemberService
 {
     Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
     
-    Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile profile);
+    Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile model);
 
     Task DeleteMember(Guid memberId);
 
     Task<IReadOnlyCollection<Member>> GetLatestMembers(Member currentMember, Guid chapterId);
 
-    Task<Member?> GetMember(Guid memberId);
+    Task<Member?> GetMember(Guid memberId, Guid chapterId);
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size);
 
@@ -20,11 +20,7 @@ public interface IMemberService
     
     Task<MemberProfile?> GetMemberProfile(Member currentMember, Member? member);
 
-    Task<IReadOnlyCollection<MemberProperty>> GetMemberProperties(Guid memberId);
-
     Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId);
-
-    Task<MemberSubscription?> GetMemberSubscription(Guid memberId);
 
     Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId, string cardToken);
 
@@ -34,7 +30,7 @@ public interface IMemberService
 
     Task UpdateMemberEmailOptIn(Guid memberId, bool optIn);
 
-    Task UpdateMemberImage(Guid id, UpdateMemberImage image);
+    Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage model);
 
-    Task<ServiceResult> UpdateMemberProfile(Guid id, UpdateMemberProfile profile);
+    Task<ServiceResult> UpdateMemberProfile(Guid id, UpdateMemberProfile model);
 }

@@ -8,27 +8,17 @@
 @inject IChapterService ChapterService
 @inject IMemberService MemberService
 @{
-    Task<IReadOnlyCollection<ChapterProperty>> chapterPropertiesTask = ChapterService.GetChapterProperties(Model.ChapterId);
-    Task<IReadOnlyCollection<ChapterPropertyOption>> chapterPropertyOptionsTask = ChapterService.GetChapterPropertyOptions(Model.ChapterId);
-    Task<IReadOnlyCollection<MemberProperty>> memberPropertiesTask = Model.MemberId != null 
-        ? MemberService.GetMemberProperties(Model.MemberId.Value)
-        : Task.FromResult((IReadOnlyCollection<MemberProperty>)Array.Empty<MemberProperty>());
-    Task<ChapterMembershipSettings?> membershipSettingsTask = ChapterService.GetChapterMembershipSettings(Model.ChapterId);
+    var dto = await ChapterService.GetChapterMemberPropertiesDto(Model.MemberId!.Value, Model.ChapterId);
 
-    await Task.WhenAll(chapterPropertiesTask, chapterPropertyOptionsTask, memberPropertiesTask, membershipSettingsTask);
-
-    IReadOnlyCollection<ChapterProperty> chapterProperties = chapterPropertiesTask
-        .Result
+    var chapterProperties = dto.ChapterProperties
         .Where(x => !x.Hidden)
         .OrderBy(x => x.DisplayOrder)
         .ToArray();
 
-    Dictionary<Guid, string?> memberProperties = memberPropertiesTask
-        .Result
+    var memberProperties = dto.MemberProperties
         .ToDictionary(x => x.ChapterPropertyId, x => x.Value);
 
-    IDictionary<Guid, ChapterPropertyOption[]> chapterPropertyOptions = chapterPropertyOptionsTask
-        .Result
+    var chapterPropertyOptions = dto.ChapterPropertyOptions        
         .GroupBy(x => x.ChapterPropertyId)
         .ToDictionary(x => x.Key, x => x.OrderBy(y => y.DisplayOrder).ToArray());
 
@@ -39,7 +29,7 @@
             Value = memberProperties.TryGetValue(x.Id, out string? value) ? value ?? "" : "",
         }));
 
-    ChapterMembershipSettings? membershipSettings = membershipSettingsTask.Result;
+    var membershipSettings = dto.MembershipSettings;
 }
 
 <div class="form-group mb-3 @(Model.MemberId == null ? "required" : null)">
@@ -85,7 +75,7 @@
     @Html.ValidationMessageFor(x => x.LastName)
 </div>
 
-@for (int i = 0; i < chapterProperties.Count; i++)
+@for (int i = 0; i < chapterProperties.Length; i++)
 {
     ChapterProperty chapterProperty = chapterProperties.ElementAt(i);
 

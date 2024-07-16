@@ -1,6 +1,7 @@
 ﻿using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
@@ -13,75 +14,91 @@ public class ChapterService : IChapterService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
-    private readonly IChapterRepository _chapterRepository;
     private readonly IEmailService _emailService;
     private readonly IRecaptchaService _recaptchaService;
+    private readonly IUnitOfWork _unitOfWork;
     
-    public ChapterService(IChapterRepository chapterRepository, ICacheService cacheService, IEmailService emailService,
+    public ChapterService(IUnitOfWork unitOfWork, ICacheService cacheService, IEmailService emailService,
         IAuthorizationService authorizationService, IRecaptchaService recaptchaService)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
-        _chapterRepository = chapterRepository;
         _emailService = emailService;
         _recaptchaService = recaptchaService;
+        _unitOfWork = unitOfWork;
     }
     
-    public async Task<Chapter?> GetChapter(string name)
-    {
-        return await _chapterRepository.GetChapter(name);
-    }
-
     public async Task<ChapterLinks?> GetChapterLinks(Guid chapterId)
     {
-        ChapterLinks? links = await _chapterRepository.GetChapterLinks(chapterId);
-        return links;
-    }
-
-    public async Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid chapterId)
-    {
-        return await _cacheService.GetOrSetItem(
-            () => _chapterRepository.GetChapterMembershipSettings(chapterId),
-            chapterId);
+        return await _unitOfWork.ChapterLinksRepository.GetByChapterId(chapterId).RunAsync();
     }
 
     public async Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
     {
         await _authorizationService.AssertMemberIsChapterMemberAsync(currentMemberId, chapterId);
-        return await _chapterRepository.GetChapterPaymentSettings(chapterId);
+        return await _unitOfWork.ChapterPaymentSettingsRepository.GetByChapterId(chapterId).RunAsync();
     }
     
-    public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(Guid chapterId)
+    public async Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid currentMemberId, Guid chapterId)
     {
-        return await _chapterRepository.GetChapterProperties(chapterId);
+        var (chapterProperties, chapterPropertyOptions, memberProperties, membershipSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
+            x => x.ChapterPropertyOptionRepository.GetByChapterId(chapterId),
+            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+
+        return new ChapterMemberPropertiesDto
+        {
+            ChapterProperties = chapterProperties,
+            ChapterPropertyOptions = chapterPropertyOptions,
+            MemberProperties = memberProperties,
+            MembershipSettings = membershipSettings
+        };
     }
-    
-    public async Task<IReadOnlyCollection<ChapterPropertyOption>> GetChapterPropertyOptions(Guid chapterId)
+
+    public async Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Guid chapterId)
     {
-        return await _chapterRepository.GetChapterPropertyOptions(chapterId);
+        var (memberSubscription, chapterSubscriptions, country, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId),
+            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
+            x => x.CountryRepository.GetByChapterId(chapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+
+        return new ChapterMemberSubscriptionsDto
+        {
+            ChapterSubscriptions = chapterSubscriptions,
+            Country = country,
+            MembershipSettings = membershipSettings,
+            MemberSubscription = memberSubscription,
+            PaymentSettings = paymentSettings
+        };
     }
-    
+
     public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId)
     {
-        IReadOnlyCollection<ChapterQuestion> questions = await _chapterRepository.GetChapterQuestions(chapterId);
+        var questions = await _unitOfWork.ChapterQuestionRepository.GetByChapterId(chapterId).RunAsync();
         return questions
             .OrderBy(x => x.DisplayOrder)
             .ToArray();
     }
 
-    public async Task<IReadOnlyCollection<Chapter>> GetChapters()
+    public async Task<ChaptersDto> GetChaptersDto()
     {
-        return await _chapterRepository.GetChapters();
+        var (chapters, countries) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetAll(),
+            x => x.CountryRepository.GetAll());
+
+        return new ChaptersDto
+        {
+            Chapters = chapters,
+            Countries = countries
+        };
     }
 
-    public async Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid chapterId)
+    public Task<ChapterTexts> GetChapterTexts(Guid chapterId)
     {
-        return await _chapterRepository.GetChapterSubscriptions(chapterId);
-    }
-    
-    public Task<ChapterTexts?> GetChapterTexts(Guid chapterId)
-    {
-        return _chapterRepository.GetChapterTexts(chapterId);
+        return _unitOfWork.ChapterTextsRepository.GetByChapterId(chapterId).RunAsync();
     }
 
     public async Task SendContactMessage(Guid chapterId, string fromAddress, string message, string recaptchaToken)
@@ -96,20 +113,23 @@ public class ChapterService : IChapterService
             throw new OdkServiceException("Invalid email address format");
         }
 
-        Chapter? chapter = await _chapterRepository.GetChapter(chapterId);
-        if (chapter == null)
-        {
-            return;
-        }
-
-        ReCaptchaResponse recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);
+        var chapter = await _unitOfWork.ChapterRepository.GetById(chapterId).RunAsync();
+        
+        var recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);
         if (!_recaptchaService.Success(recaptchaResponse))
         {
             message = $"[FLAGGED AS SPAM: {recaptchaResponse.Score} / 1.0] {message}";
         }
 
-        ContactRequest contactRequest = new ContactRequest(Guid.Empty, chapter.Id, DateTime.UtcNow, fromAddress, message, false);
-        await _chapterRepository.AddContactRequest(contactRequest);
+        _unitOfWork.ContactRequestRepository.Add(new ContactRequest
+        {
+            ChapterId = chapterId,
+            CreatedDate = DateTime.UtcNow,
+            FromAddress = fromAddress,
+            Message = message,
+            Sent = false
+        });
+        await _unitOfWork.SaveChangesAsync();
 
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {

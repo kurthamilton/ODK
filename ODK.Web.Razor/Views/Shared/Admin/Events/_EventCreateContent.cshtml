@@ -2,11 +2,7 @@
 @using ODK.Web.Razor.Models.Admin.Events
 @model ODK.Core.Chapters.Chapter
 @{
-    Guid? memberId = User.MemberId();
-    if (memberId == null)
-    {
-        return;
-    }
+    var memberId = User.MemberId();    
 }
 
 <h2>Create new event</h2>
@@ -17,7 +13,7 @@
     @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
     {
         ChapterId = Model.Id,
-        CurrentMemberId = memberId.Value,
+        CurrentMemberId = memberId,
         Date = DateTime.Today
     })
     

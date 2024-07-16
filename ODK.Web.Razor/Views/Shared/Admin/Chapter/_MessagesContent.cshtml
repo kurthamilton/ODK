@@ -4,9 +4,8 @@
 @model ODK.Core.Chapters.Chapter
 @inject IChapterAdminService ChapterAdminService
 @{
-    Guid memberId = User.MemberId()!.Value;
-    IReadOnlyCollection<ContactRequest> messages = await ChapterAdminService.GetChapterContactRequests(memberId, 
-        Model.Id);
+    var memberId = User.MemberId();
+    var messages = await ChapterAdminService.GetChapterContactRequests(memberId, Model.Id);
 }
 
 <table class="table table-striped">

@@ -6,7 +6,7 @@ namespace ODK.Web.Razor.Controllers;
 
 public abstract class OdkControllerBase : Controller
 {
-    protected Guid MemberId => User.MemberId() ?? throw new InvalidOperationException();
+    protected Guid MemberId => User.MemberIdOrDefault() ?? throw new InvalidOperationException();
 
     protected void AddFeedback(FeedbackViewModel viewModel)
     {

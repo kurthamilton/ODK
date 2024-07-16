@@ -2,13 +2,7 @@
 
 public class MemberActivationToken
 {
-    public MemberActivationToken(Guid memberId, string activationToken)
-    {
-        ActivationToken = activationToken;
-        MemberId = memberId;
-    }
+    public string ActivationToken { get; set; } = "";
 
-    public string ActivationToken { get; }
-
-    public Guid MemberId { get; }
+    public Guid MemberId { get; set; }
 }

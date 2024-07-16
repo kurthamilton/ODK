@@ -7,7 +7,7 @@ public interface IEmailAdminService
 {
     Task<ServiceResult> AddChapterEmailProvider(Guid currentMemberId, Guid chapterId, UpdateChapterEmailProvider provider);
 
-    Task DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type);
+    Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type);
 
     Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, string chapterName, EmailType type);
 
@@ -21,7 +21,7 @@ public interface IEmailAdminService
 
     Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid currentMemberId, Guid chapterId);
 
-    Task<Email?> GetEmail(Guid currentMemberId, Guid currentChapterId, EmailType type);
+    Task<Email> GetEmail(Guid currentMemberId, Guid currentChapterId, EmailType type);
     
     Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId, Guid currentChapterId);
 

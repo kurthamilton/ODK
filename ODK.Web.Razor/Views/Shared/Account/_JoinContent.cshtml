@@ -7,7 +7,7 @@
     var texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
 }
 
-@if (!string.IsNullOrEmpty(texts?.RegisterText))
+@if (!string.IsNullOrEmpty(texts.RegisterText))
 {
     <p>
         @Html.Raw(texts.RegisterText)

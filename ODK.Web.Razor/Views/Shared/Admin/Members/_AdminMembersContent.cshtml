@@ -8,19 +8,13 @@
 @inject IChapterAdminService ChapterAdminService
 @inject IMemberAdminService MemberAdminService
 @{
-    Guid? memberId = User.MemberId();
-    Task<IReadOnlyCollection<Member>> membersTask = MemberAdminService.GetMembers(memberId!.Value, Model.Id);
-    Task<IReadOnlyCollection<ChapterAdminMember>> adminMembersTask = ChapterAdminService.GetChapterAdminMembers(memberId.Value, Model.Id);
+    var memberId = User.MemberId();
 
-    await Task.WhenAll(membersTask, adminMembersTask);
-
-    IReadOnlyCollection<ChapterAdminMember> adminMembers = adminMembersTask.Result;
-    HashSet<Guid> adminMemberIds = new HashSet<Guid>(adminMembers.Select(x => x.MemberId));
-    IEnumerable<SelectListItem> adminMemberOptions = membersTask
-        .Result
-        .Where(x => !adminMemberIds.Contains(x.Id))
-        .OrderBy(x => x.FullName)
-        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName });
+    var members = await ChapterAdminService.GetChapterAdminMemberDtos(memberId, Model.Id);
+    
+    var adminMemberOptions = members        
+        .OrderBy(x => x.Member.FullName)
+        .Select(x => new SelectListItem { Value = x.Member.Id.ToString(), Text = x.Member.FullName });
 }
 
 <h2>Admin members</h2>
@@ -54,33 +48,33 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (ChapterAdminMember adminMember in adminMembers.OrderBy(x => x.FullName))
+    @foreach (var adminMember in members.OrderBy(x => x.Member.FullName))
     {
         <tr>
             <td>
-                <a href="/@Model.Name/Admin/Members/AdminMembers/@adminMember.MemberId">@adminMember.FullName</a>
+                <a href="/@Model.Name/Admin/Members/AdminMembers/@adminMember.Member.Id">@adminMember.Member.FullName</a>
             </td>
-            <td>@adminMember.AdminEmailAddress</td>
+            <td>@adminMember.AdminMember.AdminEmailAddress</td>
             <td>
-                @if (adminMember.ReceiveContactEmails)
+                @if (adminMember.AdminMember.ReceiveContactEmails)
                 {
                     <i class="fa fa-check"></i>
                 }
             </td>
             <td>
-                @if (adminMember.ReceiveNewMemberEmails)
+                @if (adminMember.AdminMember.ReceiveNewMemberEmails)
                 {
                     <i class="fa fa-check"></i>
                 }
             </td>
             <td>
-                @if (adminMember.SendNewMemberEmails)
+                @if (adminMember.AdminMember.SendNewMemberEmails)
                 {
                     <i class="fa fa-check"></i>
                 }
             </td>
             <td>
-                <form method="post" action="/@Model.Name/Admin/Members/AdminMembers/@adminMember.MemberId/Delete">
+                <form method="post" action="/@Model.Name/Admin/Members/AdminMembers/@adminMember.Member.Id/Delete">
                     <button data-bs-toggle="tooltip" data-bs-title="Remove" 
                             class="btn-icon text-danger"
                             onclick="return confirm('Are you sure you want to remove admin access for this member?');">

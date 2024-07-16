@@ -2,16 +2,9 @@
 
 public class MemberPassword
 {
-    public MemberPassword(Guid memberId, string password, string salt)
-    {
-        MemberId = memberId;
-        Password = password;
-        Salt = salt;
-    }
+    public Guid MemberId { get; set; }
 
-    public Guid MemberId { get; }
+    public string Password { get; set; } = "";
 
-    public string Password { get; }
-
-    public string Salt { get; }
+    public string Salt { get; set; } = "";
 }

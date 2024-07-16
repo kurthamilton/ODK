@@ -1,33 +1,16 @@
 ﻿namespace ODK.Core.Venues;
 
-public class Venue : IVersioned
+public class Venue : IVersioned, IDatabaseEntity
 {
-    public Venue(Guid id, Guid chapterId, string name, string? address, string? mapQuery, long version)
-    {
-        Address = address;
-        ChapterId = chapterId;
-        Id = id;
-        MapQuery = mapQuery;
-        Name = name;
-        Version = version;
-    }
+    public string? Address { get; set; }
 
-    public string? Address { get; private set; }
+    public Guid ChapterId { get; set; }
 
-    public Guid ChapterId { get; }
+    public Guid Id { get; set; }
 
-    public Guid Id { get; }
+    public string? MapQuery { get; set; }
 
-    public string? MapQuery { get; private set; }
+    public string Name { get; set; } = "";
 
-    public string Name { get; private set; }
-
-    public long Version { get; }
-
-    public void Update(string name, string? address, string? mapQuery)
-    {
-        Address = address;
-        MapQuery = mapQuery;
-        Name = name;
-    }
+    public byte[] Version { get; set; } = [];
 }

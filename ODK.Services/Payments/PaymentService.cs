@@ -1,50 +1,52 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Countries;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 using ODK.Core.Payments;
+using ODK.Data.Core;
 
 namespace ODK.Services.Payments;
 
 public class PaymentService : IPaymentService
 {
-    private readonly IChapterRepository _chapterRepository;
-    private readonly ICountryRepository _countryRepository;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
-    private readonly IPaymentRepository _paymentRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public PaymentService(IChapterRepository chapterRepository, IPaymentProviderFactory paymentProviderFactory,
-        ICountryRepository countryRepository, IPaymentRepository paymentRepository)
+    public PaymentService(IUnitOfWork unitOfWork, IPaymentProviderFactory paymentProviderFactory)
     {
-        _chapterRepository = chapterRepository;
-        _countryRepository = countryRepository;
         _paymentProviderFactory = paymentProviderFactory;
-        _paymentRepository = paymentRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ServiceResult> MakePayment(Member member, double amount, string cardToken, string reference)
     {
-        var paymentSettings = await _chapterRepository.GetChapterPaymentSettings(member.ChapterId);
+        var (paymentSettings, chapter, country) = await _unitOfWork.RunAsync(
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(member.ChapterId),
+            x => x.ChapterRepository.GetById(member.ChapterId),
+            x => x.CountryRepository.GetByChapterId(member.ChapterId));
+
         if (paymentSettings == null || paymentSettings.Provider == null)
         {
             return ServiceResult.Failure("Payment settings not found");
         }
 
-        var chapter = await _chapterRepository.GetChapter(member.ChapterId);
-        var country = await _countryRepository.GetCountryAsync(chapter!.CountryId);
+        var providerType = Enum.Parse<PaymentProviderType>(paymentSettings.Provider, true);
+        
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(providerType);
 
-        PaymentProviderType providerType = (PaymentProviderType)Enum.Parse(typeof(PaymentProviderType), paymentSettings.Provider, true);
-
-        IPaymentProvider paymentProvider = _paymentProviderFactory.GetPaymentProvider(providerType);
-
-        ServiceResult paymentResult = await paymentProvider.MakePayment(paymentSettings, country!.CurrencyCode, amount, cardToken, reference,
-            $"{member.FirstName} {member.LastName}");
+        var paymentResult = await paymentProvider.MakePayment(paymentSettings, country.CurrencyCode, amount, cardToken, reference,
+            member.FullName);
         if (!paymentResult.Success)
         {
             return paymentResult;
         }
 
-        Payment payment = new Payment(Guid.Empty, member.Id, DateTime.UtcNow, country.CurrencyCode, amount, reference);
-        await _paymentRepository.CreatePayment(payment);
+        _unitOfWork.PaymentRepository.Add(new Payment
+        {
+            Amount = amount,
+            CurrencyCode = country.CurrencyCode,
+            MemberId = member.Id,
+            PaidDate = DateTime.UtcNow,
+            Reference = reference
+        });
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }

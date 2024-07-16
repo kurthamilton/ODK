@@ -2,24 +2,9 @@
 
 namespace ODK.Core.Chapters;
 
-public class ChapterProperty
+public class ChapterProperty : IDatabaseEntity
 {
-    public ChapterProperty(Guid id, Guid chapterId, DataType dataType, string name, string label, int displayOrder,
-        bool required, string? subtitle, string? helpText, bool hidden)
-    {
-        ChapterId = chapterId;
-        DataType = dataType;
-        DisplayOrder = displayOrder;
-        HelpText = helpText;
-        Hidden = hidden;
-        Id = id;
-        Label = label;
-        Name = name;
-        Required = required;
-        Subtitle = subtitle;
-    }
-
-    public Guid ChapterId { get; }
+    public Guid ChapterId { get; set; }
 
     public DataType DataType { get; set; }
 
@@ -29,11 +14,11 @@ public class ChapterProperty
 
     public bool Hidden { get; set; }
 
-    public Guid Id { get; }
+    public Guid Id { get; set; }
 
-    public string Label { get; set; }
+    public string Label { get; set; } = "";
 
-    public string Name { get; set; }
+    public string Name { get; set; } = "";
 
     public bool Required { get; set; }
 

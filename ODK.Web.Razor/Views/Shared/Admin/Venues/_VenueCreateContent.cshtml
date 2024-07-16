@@ -2,11 +2,7 @@
 @using ODK.Web.Razor.Models.Admin.Venues
 @model ODK.Core.Chapters.Chapter
 @{
-    Guid? memberId = User.MemberId();
-    if (memberId == null)
-    {
-        return;
-    }
+    var memberId = User.MemberId();    
 }
 
 <h2>Create new venue</h2>
@@ -17,7 +13,7 @@
     @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel
     {
         ChapterId = Model.Id,
-        CurrentMemberId = memberId.Value
+        CurrentMemberId = memberId
     })
     
     <button type="submit" class="btn btn-primary">Create</button>

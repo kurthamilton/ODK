@@ -1,25 +1,12 @@
 ﻿namespace ODK.Core.Members;
 
-public class MemberProperty
+public class MemberProperty : IDatabaseEntity
 {
-    public MemberProperty(Guid id, Guid memberId, Guid chapterPropertyId, string? value)
-    {
-        ChapterPropertyId = chapterPropertyId;
-        Id = id;
-        MemberId = memberId;
-        Value = value;
-    }
+    public Guid ChapterPropertyId { get; set; }
 
-    public Guid ChapterPropertyId { get; }
+    public Guid Id { get; set; }
 
-    public Guid Id { get; }
+    public Guid MemberId { get; set; }
 
-    public Guid MemberId { get; }
-
-    public string? Value { get; private set; }
-
-    public void Update(string value)
-    {
-        Value = value;
-    }
+    public string? Value { get; set; }
 }

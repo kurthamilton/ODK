@@ -15,5 +15,5 @@ public abstract class AdminPageModel : ChapterPageModel
 
     public new Member CurrentMember => base.CurrentMember!;
 
-    protected Guid CurrentMemberId => User.MemberId()!.Value;
+    protected Guid CurrentMemberId => User.MemberId();
 }

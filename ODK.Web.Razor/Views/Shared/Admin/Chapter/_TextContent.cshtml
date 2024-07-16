@@ -12,8 +12,8 @@
 
     @await Html.PartialAsync("Admin/Chapter/_TextForm", new ChapterTextsFormViewModel
     {
-        RegisterMessage = texts?.RegisterText,
-        WelcomeMessage = texts?.WelcomeText
+        RegisterMessage = texts.RegisterText,
+        WelcomeMessage = texts.WelcomeText
     })
     <button class="btn btn-primary">Update</button>
 </form>

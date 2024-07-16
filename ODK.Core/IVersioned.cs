@@ -2,5 +2,5 @@
 
 public interface IVersioned
 {
-    long Version { get; }
+    byte[] Version { get; }
 }
