@@ -1,30 +1,17 @@
 ﻿using ODK.Core.Countries;
-using ODK.Services.Exceptions;
+using ODK.Data.Core;
 
 namespace ODK.Services.Countries;
 
 public class CountryService : ICountryService
 {
-    private readonly ICountryRepository _countryRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CountryService(ICountryRepository countryRepository)
+    public CountryService(IUnitOfWork unitOfWork)
     {
-        _countryRepository = countryRepository;
+        _unitOfWork = unitOfWork;
     }
 
-    public async Task<IReadOnlyCollection<Country>> GetCountries()
-    {
-        return await _countryRepository.GetCountriesAsync();
-    }
-
-    public async Task<Country> GetCountry(Guid countryId)
-    {
-        var country = await _countryRepository.GetCountryAsync(countryId);
-        if (country == null)
-        {
-            throw new OdkNotFoundException();
-        }
-
-        return country;
-    }
+    public Task<Country> GetCountry(Guid countryId) =>
+        _unitOfWork.CountryRepository.GetById(countryId).RunAsync();
 }

@@ -7,21 +7,12 @@
 @using ODK.Web.Razor.Models
 @model ODK.Web.Razor.Models.Account.SubscriptionContentViewModel
 @inject IChapterService ChapterService
-@inject ICountryService CountryService
-@inject IMemberService MemberService
 @{
-    var memberSubscriptionTask = MemberService.GetMemberSubscription(Model.CurrentMember.Id);
-    var chapterSubscriptionsTask = ChapterService.GetChapterSubscriptions(Model.Chapter.Id);
-    var countryTask = CountryService.GetCountry(Model.Chapter.CountryId);
-    var paymentSettingsTask = ChapterService.GetChapterPaymentSettings(Model.CurrentMember.Id, Model.Chapter.Id);
-
-    await Task.WhenAll(memberSubscriptionTask, chapterSubscriptionsTask, countryTask, paymentSettingsTask);
-
-    var memberSubscription = memberSubscriptionTask.Result;
-    var chapterSubscriptions = chapterSubscriptionsTask.Result;
-    var country = countryTask.Result;
-    var paymentSettings = paymentSettingsTask.Result;
-
+    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(Model.CurrentMember.Id, Model.Chapter.Id);
+    
+    var (memberSubscription, chapterSubscriptions, country, paymentSettings) = 
+        (dto.MemberSubscription, dto.ChapterSubscriptions, dto.Country, dto.PaymentSettings);
+    
     if (memberSubscription == null)
     {
         return;

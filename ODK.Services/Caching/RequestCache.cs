@@ -1,41 +1,49 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Exceptions;
 using ODK.Core.Members;
+using ODK.Data.Core;
 
 namespace ODK.Services.Caching;
 
 public class RequestCache : IRequestCache
 {
-    private readonly IChapterRepository _chapterRepository;
-    private readonly IMemberRepository _memberRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     private readonly IDictionary<string, Chapter> _chapters;
     private readonly IDictionary<Guid, ChapterMembershipSettings?> _chapterMembershipSettings;
     private readonly IDictionary<Guid, Member> _members;
     private readonly IDictionary<Guid, MemberSubscription?> _memberSubscriptions;
 
-    public RequestCache(IChapterRepository chapterRepository, IMemberRepository memberRepository)
+    public RequestCache(IUnitOfWork unitOfWork)
     {
-        _chapterRepository = chapterRepository;
-        _memberRepository = memberRepository;
+        _unitOfWork = unitOfWork;
 
-        _chapters = new Dictionary<string, Chapter>();
+        _chapters = new Dictionary<string, Chapter>(StringComparer.InvariantCultureIgnoreCase);
         _chapterMembershipSettings = new Dictionary<Guid, ChapterMembershipSettings?>();
         _members = new Dictionary<Guid, Member>();
         _memberSubscriptions = new Dictionary<Guid, MemberSubscription?>();
     }
 
-    public async Task<Chapter?> GetChapterAsync(Guid chapterId)
+    public async Task<Chapter> GetChapterAsync(Guid chapterId)
     {
-        IReadOnlyCollection<Chapter> chapters = await GetChaptersAsync();
-        return chapters
-            .FirstOrDefault(x => x.Id == chapterId);
+        var chapters = await GetChaptersAsync();
+        var chapter = chapters.FirstOrDefault(x => x.Id == chapterId);
+        if (chapter == null)
+        {
+            throw new OdkNotFoundException();
+        }
+        return chapter;
     }
 
-    public async Task<Chapter?> GetChapterAsync(string name)
+    public async Task<Chapter> GetChapterAsync(string name)
     {
-        IReadOnlyCollection<Chapter> chapters = await GetChaptersAsync();
-        return chapters
-            .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+        var chapters = await GetChaptersAsync();
+        var chapter = chapters.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+        if (chapter == null)
+        {
+            throw new OdkNotFoundException();
+        }
+        return chapter;
     }
 
     public async Task<IReadOnlyCollection<Chapter>> GetChaptersAsync()
@@ -45,8 +53,10 @@ public class RequestCache : IRequestCache
             return _chapters.Values.ToArray();
         }
 
-        IReadOnlyCollection<Chapter> chapters = await _chapterRepository.GetChapters();
-        foreach (Chapter chapter in chapters)
+        var chapters = await _unitOfWork.ChapterRepository
+            .GetAll()
+            .RunAsync();
+        foreach (var chapter in chapters)
         {
             _chapters[chapter.Name] = chapter;
         }
@@ -58,7 +68,7 @@ public class RequestCache : IRequestCache
     {
         if (!_chapterMembershipSettings.ContainsKey(chapterId))
         {
-            var settings = await _chapterRepository.GetChapterMembershipSettings(chapterId);
+            var settings = await _unitOfWork.ChapterMembershipSettingsRepository.GetByChapterId(chapterId).RunAsync();
             _chapterMembershipSettings[chapterId] = settings;
         }
 
@@ -72,8 +82,7 @@ public class RequestCache : IRequestCache
             return member;
         }
 
-        member = await _memberRepository.GetMemberAsync(memberId);
-        
+        member = await _unitOfWork.MemberRepository.GetByIdOrDefault(memberId).RunAsync();        
         if (member != null)
         {
             _members[memberId] = member;
@@ -86,7 +95,7 @@ public class RequestCache : IRequestCache
     {
         if (!_memberSubscriptions.ContainsKey(memberId))
         {
-            var subscription = await _memberRepository.GetMemberSubscriptionAsync(memberId);
+            var subscription = await _unitOfWork.MemberSubscriptionRepository.GetByMemberId(memberId).RunAsync();
             _memberSubscriptions[memberId] = subscription;
         }
 

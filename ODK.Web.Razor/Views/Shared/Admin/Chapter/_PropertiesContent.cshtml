@@ -4,10 +4,9 @@
 @model ODK.Core.Chapters.Chapter
 @inject IChapterAdminService ChapterAdminService
 @{
-    Guid? memberId = User.MemberId();
+    var memberId = User.MemberId();
 
-    IReadOnlyCollection<ChapterProperty> properties = await ChapterAdminService.GetChapterProperties(memberId!.Value, 
-        Model.Id);
+    var properties = await ChapterAdminService.GetChapterProperties(memberId, Model.Id);
 }
 
 <p>

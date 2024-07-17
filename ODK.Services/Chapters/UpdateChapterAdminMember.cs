@@ -2,7 +2,7 @@
 
 public class UpdateChapterAdminMember
 {
-    public string AdminEmailAddress { get; set; } = "";
+    public string? AdminEmailAddress { get; set; }
 
     public bool ReceiveContactEmails { get; set; }
 

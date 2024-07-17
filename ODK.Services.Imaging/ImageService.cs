@@ -40,6 +40,20 @@ public class ImageService : IImageService
         });
     }
 
+    public bool IsImage(byte[] data)
+    {
+        try
+        {
+            var imageInfo = Image.DetectFormat(data);
+            using var image = Image.Load(data);
+            return true;
+        }        
+        catch
+        {
+            return false;
+        }
+    }
+
     public byte[] Reduce(byte[] data, int maxWidth, int maxHeight)
     {
         return ProcessImage(data, image =>
@@ -89,7 +103,7 @@ public class ImageService : IImageService
     private static byte[] ProcessImage(byte[] data, Action<Image> action)
     {            
         var imageInfo = Image.DetectFormat(data);
-        using Image image = Image.Load(data);
+        using var image = Image.Load(data);
         action(image);
         return ImageToBytes(image, imageInfo);
     }

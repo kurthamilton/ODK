@@ -17,7 +17,7 @@ public class ChapterController : Controller
     [HttpGet("{chapterName}/Instagram/Images/{id:guid}")]
     public async Task<IActionResult> GetInstagramImage(string chapterName, Guid id)
     {
-        InstagramImage? image = await _instagramService.GetInstagramImage(id);
+        var image = await _instagramService.GetInstagramImage(id);
         if (image == null)
         {
             return NotFound();

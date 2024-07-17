@@ -10,7 +10,7 @@
     Layout = "_ChapterLayout";
     Model.Title = "Contact";
 
-    SiteSettings settings = await SettingsService.GetSiteSettings();
+    var settings = await SettingsService.GetSiteSettings();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

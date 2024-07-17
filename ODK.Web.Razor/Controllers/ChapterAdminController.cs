@@ -32,14 +32,11 @@ public class ChapterAdminController : OdkControllerBase
     [HttpPost("/{chapterName}/Admin/Chapter/ContactRequests/{id}/Delete")]
     public async Task<IActionResult> DeleteContactRequest(string chapterName, Guid id)
     {
-        Chapter? chapter = await _requestCache.GetChapterAsync(chapterName);
-        if (chapter != null)
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var result = await _chapterAdminService.DeleteChapterContactRequest(MemberId, id);
+        if (result.Success)
         {
-            ServiceResult result = await _chapterAdminService.DeleteChapterContactRequest(MemberId, id);
-            if (result.Success)
-            {
-                AddFeedback(new FeedbackViewModel("Contact request deleted", FeedbackType.Success));
-            }
+            AddFeedback(new FeedbackViewModel("Contact request deleted", FeedbackType.Success));
         }
 
         return RedirectToReferrer();
@@ -48,7 +45,7 @@ public class ChapterAdminController : OdkControllerBase
     [HttpPost("/{chapterName}/Admin/Chapter/Emails/{type}/RestoreDefault")]
     public async Task<IActionResult> RestoreDefaultEmail(string chapterName, EmailType type)
     {
-        ServiceResult result = await _emailAdminService.DeleteChapterEmail(MemberId, chapterName, type);
+        var result = await _emailAdminService.DeleteChapterEmail(MemberId, chapterName, type);
 
         if (result.Success)
         {
@@ -65,20 +62,15 @@ public class ChapterAdminController : OdkControllerBase
     [HttpPost("/{chapterName}/Admin/Chapter/Emails/{type}/SendTest")]
     public async Task<IActionResult> SendTestEmail(string chapterName, EmailType type)
     {
-        Task<Chapter?> chapterTask = _requestCache.GetChapterAsync(chapterName);
-        Task<Member?> memberTask = _requestCache.GetMemberAsync(MemberId);
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var member = await _requestCache.GetMemberAsync(MemberId);
 
-        await Task.WhenAll(chapterTask, memberTask);
-
-        if (chapterTask.Result == null || memberTask.Result == null)
+        if (member == null)
         {
             return NotFound();
         }
 
-        Chapter chapter = chapterTask.Result;
-        Member member = memberTask.Result;
-
-        ServiceResult result = await _emailService.SendEmail(chapter, member.GetEmailAddressee(), type, new Dictionary<string, string>
+        var result = await _emailService.SendEmail(chapter, member.GetEmailAddressee(), type, new Dictionary<string, string>
         {
             { "chapter.name", chapter.Name },
             { "member.emailAddress", member.FirstName },
@@ -145,7 +137,8 @@ public class ChapterAdminController : OdkControllerBase
     [HttpPost("/{chapterName}/Admin/Chapter/Text")]
     public async Task<IActionResult> UpdateChapterTexts(string chapterName, [FromForm] ChapterTextsFormViewModel viewModel)
     {
-        ServiceResult result = await _chapterAdminService.UpdateChapterTexts(MemberId, chapterName, new UpdateChapterTexts
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var result = await _chapterAdminService.UpdateChapterTexts(MemberId, chapter.Id, new UpdateChapterTexts
         {
             RegisterText = viewModel.RegisterMessage,
             WelcomeText = viewModel.WelcomeMessage

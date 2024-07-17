@@ -1,23 +1,14 @@
 ﻿namespace ODK.Core.Members;
 
-public class MemberPasswordResetRequest
+public class MemberPasswordResetRequest : IDatabaseEntity
 {
-    public MemberPasswordResetRequest(Guid id, Guid memberId, DateTime created, DateTime expires, string token)
-    {
-        Created = created;
-        Expires = expires;
-        Id = id;
-        MemberId = memberId;
-        Token = token;
-    }
+    public DateTime Created { get; set; }
 
-    public DateTime Created { get; }
-
-    public DateTime Expires { get; }
+    public DateTime Expires { get; set; }
 
     public Guid Id { get; set; }
 
-    public Guid MemberId { get; }        
+    public Guid MemberId { get; set; }
 
-    public string Token { get; }
+    public string Token { get; set; } = "";
 }

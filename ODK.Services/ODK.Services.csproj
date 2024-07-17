@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
+    <ProjectReference Include="..\ODK.Data.Core\ODK.Data.Core.csproj" />
   </ItemGroup>
 
 </Project>

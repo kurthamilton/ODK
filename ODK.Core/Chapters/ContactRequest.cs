@@ -1,26 +1,16 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ContactRequest
+public class ContactRequest : IDatabaseEntity
 {
-    public ContactRequest(Guid id, Guid chapterId, DateTime createdDate, string fromAddress, string message, bool sent)
-    {
-        ChapterId = chapterId;
-        CreatedDate = createdDate;
-        FromAddress = fromAddress;
-        Id = id;
-        Message = message;
-        Sent = sent;
-    }
+    public Guid ChapterId { get; set; }
 
-    public Guid ChapterId { get; }
+    public DateTime CreatedDate { get; set; }
 
-    public DateTime CreatedDate { get; }
+    public string FromAddress { get; set; } = "";
 
-    public string FromAddress { get; }
+    public Guid Id { get; set; }
 
-    public Guid Id { get; }
+    public string Message { get; set; } = "";
 
-    public string Message { get; }
-
-    public bool Sent { get; }
+    public bool Sent { get; set; }
 }

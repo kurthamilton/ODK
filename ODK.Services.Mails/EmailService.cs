@@ -1,51 +1,60 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Members;
+using ODK.Data.Core;
 using ODK.Services.Exceptions;
 
 namespace ODK.Services.Emails;
 
 public class EmailService : IEmailService
 {
-    private readonly IChapterRepository _chapterRepository;
-    private readonly IEmailRepository _emailRepository;
     private readonly IMailProvider _mailProvider;
-    private readonly IMemberRepository _memberRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public EmailService(IChapterRepository chapterRepository, IEmailRepository emailRepository,
-        IMailProvider mailProvider, IMemberRepository memberRepository)
+    public EmailService(IUnitOfWork unitOfWork, IMailProvider mailProvider)
     {
-        _chapterRepository = chapterRepository;
-        _emailRepository = emailRepository;
         _mailProvider = mailProvider;
-        _memberRepository = memberRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task SendBulkEmail(Guid currentMemberId, Chapter chapter, IEnumerable<Member> to, EmailType type, 
         IDictionary<string, string> parameters)
     {
-        ChapterAdminMember from = await GetSender(chapter.Id, currentMemberId);
+        var (from, chapterEmail, email) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, chapter.Id),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type),
+            x => x.EmailRepository.GetByType(type));
 
-        Email email = await GetEmail(type, chapter.Id, parameters);
+        email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
+
         await _mailProvider.SendBulkEmail(chapter, to.Select(x => x.GetEmailAddressee()), email.Subject, email.HtmlContent, from);
     }
 
     public async Task SendBulkEmail(Guid currentMemberId, Chapter chapter, IEnumerable<Member> to, string subject, string body)
     {
-        ChapterAdminMember from = await GetSender(chapter.Id, currentMemberId);
+        var from = await _unitOfWork.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, chapter.Id).RunAsync();
+        if (from == null)
+        {
+            throw new OdkNotAuthorizedException();
+        }
+
         await _mailProvider.SendBulkEmail(chapter, to.Select(x => x.GetEmailAddressee()), subject, body, from);
     }
 
     public async Task SendContactEmail(Chapter chapter, string from, string message, 
         IDictionary<string, string> parameters)
     {
-        Email email = await GetEmail(EmailType.ContactRequest, chapter.Id, parameters);
+        var type = EmailType.ContactRequest;
 
-        IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(chapter.Id);
-        IReadOnlyCollection<EmailAddressee> to = chapterAdminMembers
-            .Where(x => x.ReceiveContactEmails && !string.IsNullOrWhiteSpace(x.AdminEmailAddress))
-            .Select(x => new EmailAddressee(x.AdminEmailAddress, x.FullName))
-            .ToArray();
+        var (chapterAdminMembers, adminMembers, email, chapterEmail) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberRepository.GetAdminMembersByChapterId(chapter.Id),
+            x => x.EmailRepository.GetByType(type),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
+
+        email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
+
+        var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveContactEmails), adminMembers);
 
         await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
     }
@@ -53,22 +62,22 @@ public class EmailService : IEmailService
     public async Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, EmailType type, 
         IDictionary<string, string> parameters)
     {
-        Email email = await GetEmail(type, chapter.Id, parameters);
+        var (email, chapterEmail) = await _unitOfWork.RunAsync(
+            x => x.EmailRepository.GetByType(type),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
+
+        email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
 
         return await _mailProvider.SendEmail(chapter, to, email.Subject, email.HtmlContent);
     }
 
     public async Task<ServiceResult> SendMemberEmail(Guid currentMemberId, Guid memberId, string subject, string body)
     {
-        Member? to = await _memberRepository.GetMemberAsync(memberId);
-        if (to == null)
-        {
-            return ServiceResult.Failure("Member not found");
-        }
+        var to = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
 
-        ChapterAdminMember from = await GetSender(to.ChapterId, currentMemberId);
-
-        Chapter? chapter = await _chapterRepository.GetChapter(from.ChapterId);
+        var (from, chapter) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, to.ChapterId),
+            x => x.ChapterRepository.GetById(to.ChapterId));
 
         return await _mailProvider.SendEmail(chapter!, to.GetEmailAddressee(), subject, body, from);
     }
@@ -76,36 +85,37 @@ public class EmailService : IEmailService
     public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, 
         IDictionary<string, string> parameters)
     {
-        Email email = await GetEmail(EmailType.NewMemberAdmin, chapter.Id, parameters);
+        var type = EmailType.NewMemberAdmin;
 
-        IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers = await _chapterRepository.GetChapterAdminMembers(chapter.Id);
-        List<EmailAddressee> to = chapterAdminMembers
-            .Where(x => x.ReceiveNewMemberEmails && !string.IsNullOrWhiteSpace(x.AdminEmailAddress))
-            .Select(x => new EmailAddressee(x.AdminEmailAddress, x.FullName))
-            .ToList();
+        var (chapterAdminMembers, adminMembers, email, chapterEmail) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberRepository.GetAdminMembersByChapterId(chapter.Id),
+            x => x.EmailRepository.GetByType(type),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
 
+        email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
+
+        var to = GetAddressees(chapterAdminMembers.Where(x => x.SendNewMemberEmails), adminMembers);
+        
         await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
     }
 
-    private async Task<Email> GetEmail(EmailType type, Guid chapterId, IDictionary<string, string> parameters)
+    private static IEnumerable<EmailAddressee> GetAddressees(IEnumerable<ChapterAdminMember> adminMembers, IEnumerable<Member> members)
     {
-        var email = await _emailRepository.GetEmailAsync(type, chapterId);
-        if (email == null)
-        {
-            throw new OdkNotFoundException();
-        }
+        var memberDictionary = members.ToDictionary(x => x.Id);
 
-        return email.Interpolate(parameters);
+        foreach (var adminMember in adminMembers)
+        {
+            var member = memberDictionary[adminMember.MemberId];
+            var address = !string.IsNullOrEmpty(adminMember.AdminEmailAddress)
+                ? adminMember.AdminEmailAddress
+                : member.EmailAddress;
+            yield return new EmailAddressee(address, member.FullName);
+        }
     }
 
-    private async Task<ChapterAdminMember> GetSender(Guid chapterId, Guid memberId)
+    private static Email GetEmail(Email email, IDictionary<string, string> parameters)
     {
-        ChapterAdminMember? from = await _chapterRepository.GetChapterAdminMember(chapterId, memberId);
-        if (from == null)
-        {
-            throw new OdkNotAuthorizedException();
-        }
-
-        return from;
+        return email.Interpolate(parameters);
     }
 }

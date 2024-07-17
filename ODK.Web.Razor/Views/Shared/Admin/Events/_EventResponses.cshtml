@@ -10,16 +10,17 @@
 @{
     const int cols = 6;
 
-    Task<IReadOnlyCollection<EventResponse>> responsesTask = EventAdminService.GetEventResponses(Model.CurrentMember.Id, Model.Event.Id);
-    Task<IReadOnlyCollection<Member>> membersTask = MemberService.GetMembers(Model.CurrentMember, Model.Chapter.Id);
+    var dto = await EventAdminService.GetEventResponsesDto(Model.CurrentMember.Id, Model.Event.Id);
 
-    await Task.WhenAll(responsesTask, membersTask);
+    var (members, responses) = (dto.Members, dto.Responses);
 
-    var memberDictionary = membersTask.Result
+    var memberDictionary = members
         .Where(x => !x.Disabled)
         .ToDictionary(x => x.Id);
-    var responseDictionary = responsesTask.Result.GroupBy(x => x.ResponseTypeId).ToDictionary(x => x.Key, x => x.ToArray());
-    var membersByResponse = responsesTask.Result
+    var responseDictionary = responses
+        .GroupBy(x => x.ResponseTypeId)
+        .ToDictionary(x => x.Key, x => x.ToArray());
+    var membersByResponse = responses
         .GroupBy(x => x.ResponseTypeId)
         .ToDictionary(
             group => group.Key, 

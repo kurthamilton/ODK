@@ -7,7 +7,7 @@ namespace ODK.Web.Razor.Models.Admin.Members;
 public class AdminMemberAddFormViewModel
 {
 
-    public IReadOnlyCollection<SelectListItem> AdminMemberOptions { get; set; } = Array.Empty<SelectListItem>();
+    public required IReadOnlyCollection<SelectListItem> AdminMemberOptions { get; set; }
 
     [DisplayName("Member")]
     [Required]

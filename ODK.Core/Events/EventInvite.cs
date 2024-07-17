@@ -2,16 +2,9 @@
 
 public class EventInvite
 {
-    public EventInvite(Guid eventId, Guid memberId, DateTime sentDate)
-    {
-        EventId = eventId;
-        MemberId = memberId;
-        SentDate = sentDate;
-    }
+    public Guid EventId { get; set; }
 
-    public Guid EventId { get; }
+    public Guid MemberId { get; set; }
 
-    public Guid MemberId { get; }
-
-    public DateTime SentDate { get; }
+    public DateTime SentDate { get; set; }
 }

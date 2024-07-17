@@ -1,73 +1,46 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Logging;
-using ODK.Services.Exceptions;
+﻿using ODK.Core.Logging;
+using ODK.Data.Core;
 using Serilog;
 
 namespace ODK.Services.Logging;
 
-public class LoggingService : ILoggingService
+public class LoggingService : OdkAdminServiceBase, ILoggingService
 {
-    private readonly IChapterRepository _chapterRepository;
     private readonly ILogger _logger;
-    private readonly ILoggingRepository _loggingRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-    public LoggingService(ILogger logger, ILoggingRepository loggingRepository,
-        IChapterRepository chapterRepository)
+    public LoggingService(ILogger logger, IUnitOfWorkFactory unitOfWorkFactory, IUnitOfWork unitOfWork)
+        : base(unitOfWork)
     {
-        _chapterRepository = chapterRepository;
         _logger = logger;
-        _loggingRepository = loggingRepository;
+        _unitOfWork = unitOfWork;
+        _unitOfWorkFactory = unitOfWorkFactory;
     }
 
     public async Task DeleteError(Guid currentMemberId, int logMessageId)
-    {
-        await AssertMemberIsChapterAdmin(currentMemberId);
+    {        
 
-        await _loggingRepository.DeleteLogMessageAsync(logMessageId);
+        var currentMember = await _unitOfWork.MemberRepository.GetById(currentMemberId).RunAsync();
+        
+        // AssertMemberIsSuperAdmin(currentMemberId, currentMember.ChapterId, chapterAdminMembers);
+
+        // await _loggingRepository.DeleteLogMessageAsync(logMessageId);
     }
 
     public async Task DeleteAllErrors(Guid currentMemberId, int logMessageId)
     {
-        await AssertMemberIsChapterAdmin(currentMemberId);
+        var currentMember = await _unitOfWork.MemberRepository.GetById(currentMemberId).RunAsync();
+        
+        // AssertMemberIsSuperAdmin(currentMemberId, currentMember.ChapterId, chapterAdminMembers);
 
-        LogMessage? logMessage = await _loggingRepository.GetLogMessageAsync(logMessageId);
-        if (logMessage == null)
-        {
-            return;
-        }
-
-        await _loggingRepository.DeleteLogMessagesAsync(logMessage.Message);
-    }
-
-    public async Task<LogMessage?> GetErrorMessage(Guid currentMemberId, int logMessageId)
-    {
-        await AssertMemberIsChapterAdmin(currentMemberId);
-
-        return await _loggingRepository.GetLogMessageAsync(logMessageId);
-    }
-
-    public async Task<IReadOnlyCollection<LogMessage>> GetErrorMessages(Guid currentMemberId)
-    {
-        return await GetLogMessages(currentMemberId, "Error", 1, 0);
-    }
-
-    public async Task<IReadOnlyCollection<LogMessage>> GetLogMessages(Guid currentMemberId, string level, int page, int pageSize)
-    {
-        await AssertMemberIsChapterAdmin(currentMemberId);
-
-        return await _loggingRepository.GetLogMessagesAsync(level, page, pageSize);
-    }
-
-    public async Task<IReadOnlyCollection<LogMessage>> GetSimilarErrorMessages(Guid currentMemberId,
-        LogMessage logMessage)
-    {
-        await AssertMemberIsChapterAdmin(currentMemberId);
-
-        IReadOnlyCollection<LogMessage> messages = await _loggingRepository.GetLogMessagesAsync("Error", 1, 0, logMessage.Message);
-
-        return messages
-            .Where(x => x.Id != logMessage.Id)
-            .ToArray();
+        // LogMessage? logMessage = await _loggingRepository.GetLogMessageAsync(logMessageId);
+        // if (logMessage == null)
+        // {
+        //     return;
+        // }
+        // 
+        // await _loggingRepository.DeleteLogMessagesAsync(logMessage.Message);
     }
 
     public Task LogDebug(string message)
@@ -79,59 +52,106 @@ public class LoggingService : ILoggingService
 
     public async Task LogError(Exception exception, HttpRequest request)
     {
-        Error error = new Error(Guid.NewGuid(), DateTime.UtcNow, exception.GetType().Name, exception.Message);
+        // Create new unit of work to avoid re-instigating any previous context errors
+        var unitOfWork = _unitOfWorkFactory.Create();
 
-        List<ErrorProperty> properties = new List<ErrorProperty>
+        var error = Error.FromException(exception);
+        unitOfWork.ErrorRepository.Add(error);
+
+        var properties = new List<ErrorProperty>
         {
-            new ErrorProperty(error.Id, "REQUEST.URL", request.Url),
-            new ErrorProperty(error.Id, "REQUEST.METHOD", request.Method),
-            new ErrorProperty(error.Id, "REQUEST.USERNAME", request.Username ?? "")
+            new ErrorProperty
+            {
+                ErrorId = error.Id,
+                Name = "REQUEST.URL",
+                Value = request.Url
+            },
+            new ErrorProperty
+            {
+                ErrorId = error.Id,
+                Name = "REQUEST.METHOD",
+                Value = request.Method
+            },
+            new ErrorProperty
+            {
+                ErrorId = error.Id,
+                Name = "REQUEST.USERNAME",
+                Value = request.Username ?? ""
+            }
         };
 
         foreach (string key in request.Headers.Keys)
         {
-            properties.Add(new ErrorProperty(error.Id, $"REQUEST.HEADER.{key.ToUpperInvariant()}", request.Headers[key]));
+            properties.Add(new ErrorProperty
+            {
+                ErrorId = error.Id,
+                Name = $"REQUEST.HEADER.{key.ToUpperInvariant()}",
+                Value = request.Headers[key]
+            });
         }
 
         foreach (string key in request.Form.Keys)
         {
-            properties.Add(new ErrorProperty(error.Id, $"REQUEST.FORM.{key.ToUpperInvariant()}", request.Form[key]));
+            properties.Add(new ErrorProperty
+            {
+                ErrorId = error.Id,
+                Name = $"REQUEST.FORM.{key.ToUpperInvariant()}",
+                Value = request.Form[key]
+            });
         }
 
-        properties.Add(new ErrorProperty(error.Id, "EXCEPTION.STACKTRACE", 
-            exception.StackTrace?.Replace(Environment.NewLine, "<br>") ?? ""));
+        properties.Add(new ErrorProperty
+        {
+            ErrorId = error.Id,
+            Name = "EXCEPTION.STACKTRACE",
+            Value = exception.StackTrace?.Replace(Environment.NewLine, "<br>") ?? ""
+        });
 
-        Exception? innerException = exception.InnerException;
-        int innerExceptionCount = 0;
+        var innerException = exception.InnerException;
+        var innerExceptionCount = 0;
         while (innerException != null)
         {
-            properties.Add(new ErrorProperty(error.Id, $"EXCEPTION.INNEREXCEPTION[{innerExceptionCount}].TYPE", innerException.GetType().Name));
-            properties.Add(new ErrorProperty(error.Id, $"EXCEPTION.INNEREXCEPTION[{innerExceptionCount}].MESSAGE", innerException.Message));
+            properties.Add(new ErrorProperty
+            {
+                ErrorId = error.Id,
+                Name = $"EXCEPTION.INNEREXCEPTION[{innerExceptionCount}].TYPE",
+                Value = innerException.GetType().Name
+            });
+            properties.Add(new ErrorProperty
+            {
+                ErrorId = error.Id,
+                Name = $"EXCEPTION.INNEREXCEPTION[{innerExceptionCount}].MESSAGE",
+                Value = innerException.Message
+            });
             
             innerException = innerException.InnerException;
             innerExceptionCount++;
         }
+        
+        unitOfWork.ErrorPropertyRepository.AddMany(properties);
 
-        await _loggingRepository.LogErrorAsync(error, properties);
+        await unitOfWork.SaveChangesAsync();
     }
 
     public async Task LogError(Exception exception, IDictionary<string, string> data)
     {
-        Error error = new Error(Guid.NewGuid(), DateTime.UtcNow, exception.GetType().Name, exception.Message);
+        // Create new unit of work to avoid re-instigating any previous context errors
+        var unitOfWork = _unitOfWorkFactory.Create();
 
-        IReadOnlyCollection<ErrorProperty> properties = data
-            .Select(x => new ErrorProperty(error.Id, x.Key, x.Value))
+        var error = Error.FromException(exception);
+        unitOfWork.ErrorRepository.Add(error);
+
+        var properties = data
+            .Select(x => new ErrorProperty
+            {
+                ErrorId = error.Id,
+                Name = x.Key,
+                Value = x.Value
+            })
             .ToArray();
 
-        await _loggingRepository.LogErrorAsync(error, properties);
-    }
+        unitOfWork.ErrorPropertyRepository.AddMany(properties);
 
-    private async Task AssertMemberIsChapterAdmin(Guid currentMemberId)
-    {
-        IReadOnlyCollection<ChapterAdminMember> adminMembers = await _chapterRepository.GetChapterAdminMembersByMember(currentMemberId);
-        if (!adminMembers.Any(x => x.SuperAdmin))
-        {
-            throw new OdkNotAuthorizedException();
-        }
+        await unitOfWork.SaveChangesAsync();
     }
 }

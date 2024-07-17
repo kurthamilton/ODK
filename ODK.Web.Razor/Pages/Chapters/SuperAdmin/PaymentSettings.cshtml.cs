@@ -23,7 +23,7 @@ public class PaymentSettingsModel : SuperAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(PaymentSettingsFormViewModel viewModel)
     {
-        ServiceResult result = await _chapterAdminService.UpdateChapterPaymentSettings(CurrentMemberId, Chapter.Id, new UpdateChapterPaymentSettings
+        var result = await _chapterAdminService.UpdateChapterPaymentSettings(CurrentMemberId, Chapter.Id, new UpdateChapterPaymentSettings
         {
             ApiPublicKey = viewModel.PublicKey,
             ApiSecretKey = viewModel.SecretKey

@@ -59,8 +59,8 @@ public class ErrorPageMiddleware
 
     private async Task<Chapter?> GetChapterFromPath(HttpContext context, IRequestCache requestCache)
     {
-        string[] originalPathParts = context.Request.Path.Value?.Split('/') ?? Array.Empty<string>();
-        string? chapterName = originalPathParts.Length > 1 ? originalPathParts[1] : null;
+        var originalPathParts = context.Request.Path.Value?.Split('/') ?? Array.Empty<string>();
+        var chapterName = originalPathParts.Length > 1 ? originalPathParts[1] : null;
 
         return !string.IsNullOrEmpty(chapterName)
             ? await requestCache.GetChapterAsync(chapterName)

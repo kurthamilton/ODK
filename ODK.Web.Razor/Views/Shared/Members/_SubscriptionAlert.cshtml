@@ -7,7 +7,7 @@
 @inject IAuthorizationService AuthorizationService
 @inject IRequestCache RequestCache
 @{
-    var memberId = User.MemberId();
+    var memberId = User.MemberIdOrDefault();
     if (memberId == null)
     {
         return;

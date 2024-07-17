@@ -1,26 +1,16 @@
 ﻿namespace ODK.Core.Payments;
 
-public class Payment
+public class Payment : IDatabaseEntity
 {
-    public Payment(Guid id, Guid memberId, DateTime paidDate, string currencyCode, double amount, string reference)
-    {
-        Amount = amount;
-        CurrencyCode = currencyCode;
-        Id = id;
-        MemberId = memberId;
-        PaidDate = paidDate;
-        Reference = reference;
-    }
+    public double Amount { get; set; }
 
-    public double Amount { get; }
+    public string CurrencyCode { get; set; } = "";
 
-    public string CurrencyCode { get; }
+    public Guid Id { get; set; }
 
-    public Guid Id { get; }
+    public Guid MemberId { get; set; }
 
-    public Guid MemberId { get; }
+    public DateTime PaidDate { get; set; }
 
-    public DateTime PaidDate { get; }
-
-    public string Reference { get; }
+    public string Reference { get; set; } = "";
 }

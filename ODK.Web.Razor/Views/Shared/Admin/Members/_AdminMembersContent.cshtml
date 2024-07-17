@@ -8,17 +8,17 @@
 @inject IChapterAdminService ChapterAdminService
 @inject IMemberAdminService MemberAdminService
 @{
-    Guid? memberId = User.MemberId();
-    Task<IReadOnlyCollection<Member>> membersTask = MemberAdminService.GetMembers(memberId!.Value, Model.Id);
-    Task<IReadOnlyCollection<ChapterAdminMember>> adminMembersTask = ChapterAdminService.GetChapterAdminMembers(memberId.Value, Model.Id);
+    var memberId = User.MemberId();
 
-    await Task.WhenAll(membersTask, adminMembersTask);
+    var dto = await ChapterAdminService.GetChapterAdminMemberDtos(memberId, Model.Id);
 
-    IReadOnlyCollection<ChapterAdminMember> adminMembers = adminMembersTask.Result;
-    HashSet<Guid> adminMemberIds = new HashSet<Guid>(adminMembers.Select(x => x.MemberId));
-    IEnumerable<SelectListItem> adminMemberOptions = membersTask
-        .Result
-        .Where(x => !adminMemberIds.Contains(x.Id))
+    var (members, adminMembers) = (dto.Members, dto.AdminMembers);
+
+    var adminMemberDictionary = adminMembers.ToDictionary(x => x.MemberId);
+    var memberDictionary = members.ToDictionary(x => x.Id);
+
+    var adminMemberOptions = members        
+        .Where(x => !adminMemberDictionary.ContainsKey(x.Id))
         .OrderBy(x => x.FullName)
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName });
 }
@@ -54,11 +54,13 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (ChapterAdminMember adminMember in adminMembers.OrderBy(x => x.FullName))
+    @foreach (var adminMember in adminMembers.OrderBy(x => memberDictionary[x.MemberId].FullName))
     {
+        var member = memberDictionary[adminMember.MemberId];
+
         <tr>
             <td>
-                <a href="/@Model.Name/Admin/Members/AdminMembers/@adminMember.MemberId">@adminMember.FullName</a>
+                <a href="/@Model.Name/Admin/Members/AdminMembers/@member.Id">@member.FullName</a>
             </td>
             <td>@adminMember.AdminEmailAddress</td>
             <td>
@@ -80,7 +82,7 @@
                 }
             </td>
             <td>
-                <form method="post" action="/@Model.Name/Admin/Members/AdminMembers/@adminMember.MemberId/Delete">
+                <form method="post" action="/@Model.Name/Admin/Members/AdminMembers/@member.Id/Delete">
                     <button data-bs-toggle="tooltip" data-bs-title="Remove" 
                             class="btn-icon text-danger"
                             onclick="return confirm('Are you sure you want to remove admin access for this member?');">

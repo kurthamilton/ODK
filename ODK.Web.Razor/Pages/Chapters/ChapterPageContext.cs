@@ -29,7 +29,7 @@ namespace ODK.Web.Razor.Pages.Chapters
 
         public async Task<Member?> GetMemberAsync()
         {
-           Guid? memberId = _httpContext?.User.MemberId();
+           var memberId = _httpContext?.User.MemberIdOrDefault();
            if (!memberId.HasValue)
            {
                 return null;

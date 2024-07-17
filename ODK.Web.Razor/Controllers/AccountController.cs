@@ -116,14 +116,9 @@ public class AccountController : OdkControllerBase
     [HttpPost("{chapterName}/Account/Join")]
     public async Task<IActionResult> Join(string chapterName, [FromForm] ProfileFormViewModel viewModel, [FromForm] IFormFile image)
     {
-        Chapter? chapter = await _requestCache.GetChapterAsync(chapterName);
-        if (chapter == null)
-        {
-            AddFeedback(new FeedbackViewModel("An error has occurred", FeedbackType.Error));
-            return RedirectToReferrer();
-        }
-
-        ServiceResult result = await _memberService.CreateMember(chapter.Id, new CreateMemberProfile(new UpdateMemberImage
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        
+        var result = await _memberService.CreateMember(chapter.Id, new CreateMemberProfile(new UpdateMemberImage
         {
             ImageData = await image.ToByteArrayAsync() ?? Array.Empty<byte>(),
             MimeType = image.ContentType
@@ -196,16 +191,16 @@ public class AccountController : OdkControllerBase
             return RedirectToReferrer();
         }
 
-        IFormFile file = files[0];
+        var file = files[0];
         
-        UpdateMemberImage update = new UpdateMemberImage
+        var model = new UpdateMemberImage
         {
             ImageData = await file.ToByteArrayAsync() ?? Array.Empty<byte>(),
             MimeType = file.ContentType
         };
 
-        await _memberService.UpdateMemberImage(MemberId, update);
-
+        var result = await _memberService.UpdateMemberImage(MemberId, model);
+        AddFeedback(new FeedbackViewModel(result));
         return RedirectToReferrer();
     }
 

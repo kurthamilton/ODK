@@ -1,34 +1,24 @@
 ﻿namespace ODK.Core.Settings;
 
-public class SiteSettings : IVersioned
+public class SiteSettings : IVersioned, IDatabaseEntity
 {
-    public SiteSettings(string googleMapsApiKey, string instagramUsername, string instagramPassword, 
-        string instagramScraperUserAgent, bool scrapeInstagram, long version, string recaptchaSiteKey, 
-        string recaptchaSecretKey)
-    {
-        GoogleMapsApiKey = googleMapsApiKey;
-        InstagramPassword = instagramPassword;
-        InstagramScraperUserAgent = instagramScraperUserAgent;
-        InstagramUsername = instagramUsername;
-        ScrapeInstagram = scrapeInstagram;
-        Version = version;
-        RecaptchaSecretKey = recaptchaSecretKey;
-        RecaptchaSiteKey = recaptchaSiteKey;
-    }
+    public int DefaultTrialPeriodMonths { get; set; }
 
-    public string GoogleMapsApiKey { get; }
+    public string GoogleMapsApiKey { get; set; } = "";
 
-    public string InstagramPassword { get; }
+    public Guid Id { get; set; }
 
-    public string InstagramScraperUserAgent { get; }
+    public string InstagramPassword { get; set; } = "";
 
-    public string InstagramUsername { get; }
+    public string InstagramScraperUserAgent { get; set; } = "";
 
-    public string RecaptchaSecretKey { get; }
+    public string InstagramUsername { get; set; } = "";
 
-    public string RecaptchaSiteKey { get; }
+    public string RecaptchaSecretKey { get; set; } = "";
 
-    public bool ScrapeInstagram { get; }
+    public string RecaptchaSiteKey { get; set; } = "";
 
-    public long Version { get; }
+    public bool ScrapeInstagram { get; set; }
+
+    public byte[] Version { get; set; } = [];
 }

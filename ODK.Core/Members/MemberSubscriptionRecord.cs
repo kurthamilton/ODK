@@ -1,23 +1,16 @@
 ﻿namespace ODK.Core.Members;
 
-public class MemberSubscriptionRecord
+public class MemberSubscriptionRecord : IDatabaseEntity
 {
-    public MemberSubscriptionRecord(Guid memberId, SubscriptionType type, DateTime purchaseDate, double amount, int months)
-    {
-        Amount = amount;
-        MemberId = memberId;
-        Months = months;
-        PurchaseDate = purchaseDate;
-        Type = type;
-    }
+    public double Amount { get; set; }
 
-    public double Amount { get; }
+    public Guid Id { get; set; }
 
-    public Guid MemberId { get; }
+    public Guid MemberId { get; set; }
 
-    public int Months { get; }
+    public int Months { get; set; }
 
-    public DateTime PurchaseDate { get; }
+    public DateTime PurchaseDate { get; set; }
 
-    public SubscriptionType Type { get; }
+    public SubscriptionType Type { get; set; }
 }

@@ -29,7 +29,7 @@ public class ContactModel : ChapterPageModel
             return Page();
         }
 
-        await _chapterService.SendContactMessage(Chapter.Id,
+        await _chapterService.SendContactMessage(Chapter,
             viewModel.EmailAddress ?? "",
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");

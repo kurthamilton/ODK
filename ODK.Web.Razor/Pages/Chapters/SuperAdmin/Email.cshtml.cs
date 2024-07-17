@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
-using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
 using ODK.Web.Common.Feedback;
@@ -22,20 +21,13 @@ public class EmailModel : SuperAdminPageModel
 
     public async Task<IActionResult> OnGetAsync(EmailType type)
     {
-        Email? email = await _emailAdminService.GetEmail(CurrentMemberId, Chapter.Id, type);
-        if (email == null)
-        {
-            return NotFound();
-        }
-
-        Email = email;
-
+        Email = await _emailAdminService.GetEmail(CurrentMemberId, type);       
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(EmailType type, ChapterEmailFormViewModel viewModel)
     {
-        ServiceResult result = await _emailAdminService.UpdateEmail(CurrentMemberId, Chapter.Id, type, new UpdateEmail
+        var result = await _emailAdminService.UpdateEmail(CurrentMemberId, type, new UpdateEmail
         {
             HtmlContent = viewModel.Content,
             Subject = viewModel.Subject

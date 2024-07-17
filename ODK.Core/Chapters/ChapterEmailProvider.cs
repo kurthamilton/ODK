@@ -1,32 +1,10 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ChapterEmailProvider
-{
-    public ChapterEmailProvider(Guid id, Guid chapterId)
-    {
-        ChapterId = chapterId;
-        Id = id;
-    }
-
-    public ChapterEmailProvider(Guid id, Guid chapterId,
-        string smtpServer, int smtpPort, string smtpLogin, string smtpPassword,
-        string fromEmailAddress, string fromName, int? batchSize, int dailyLimit, int order)
-        : this(id, chapterId)
-    {
-        BatchSize = batchSize;
-        DailyLimit = dailyLimit;
-        FromEmailAddress = fromEmailAddress;
-        FromName = fromName;
-        Order = order;
-        SmtpLogin = smtpLogin;
-        SmtpPassword = smtpPassword;
-        SmtpPort = smtpPort;
-        SmtpServer = smtpServer;
-    }
-
+public class ChapterEmailProvider : IDatabaseEntity
+{    
     public int? BatchSize { get; set; }
 
-    public Guid ChapterId { get; }
+    public Guid ChapterId { get; set; }
 
     public int DailyLimit { get; set; }
 
@@ -34,7 +12,7 @@ public class ChapterEmailProvider
 
     public string FromName { get; set; } = "";
 
-    public Guid Id { get; }
+    public Guid Id { get; set; }
 
     public int Order { get; set; }
 

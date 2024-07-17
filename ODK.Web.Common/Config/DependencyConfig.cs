@@ -2,19 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using ODK.Core.Chapters;
-using ODK.Core.Countries;
-using ODK.Core.Emails;
-using ODK.Core.Events;
-using ODK.Core.Logging;
-using ODK.Core.Members;
-using ODK.Core.Payments;
-using ODK.Core.Settings;
-using ODK.Core.SocialMedia;
-using ODK.Core.Venues;
-using ODK.Data;
-using ODK.Data.Repositories;
-using ODK.Data.Sql;
+using ODK.Data.Core;
+using ODK.Data.EntityFramework;
 using ODK.Services.Authentication;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -72,18 +61,10 @@ public static class DependencyConfig
     private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Default") ?? "";
-        services.AddSingleton<SqlContext>(new OdkContext(connectionString));
-
-        services.AddScoped<IChapterRepository, ChapterRepository>();
-        services.AddScoped<ICountryRepository, CountryRepository>();
-        services.AddScoped<IEventRepository, EventRepository>();
-        services.AddScoped<IEmailRepository, EmailRepository>();
-        services.AddScoped<IInstagramRepository, InstagramRepository>();
-        services.AddScoped<ILoggingRepository, LoggingRepository>();
-        services.AddScoped<IMemberRepository, MemberRepository>();
-        services.AddScoped<IPaymentRepository, PaymentRepository>();
-        services.AddScoped<ISettingsRepository, SettingsRepository>();
-        services.AddScoped<IVenueRepository, VenueRepository>();
+        services.AddScoped<OdkContext>();
+        services.AddSingleton(new OdkContextSettings(connectionString));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUnitOfWorkFactory, UnitOfWorkFactory>();
     }
 
     private static void ConfigurePayments(this IServiceCollection services, AppSettings appSettings)

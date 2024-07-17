@@ -5,7 +5,7 @@ using ODK.Data.Sql.Mapping;
 
 namespace ODK.Data.Sql.Tests.Mapping;
 
-public class TestRelatedEntityMap : SqlMap<TestRelatedEntity>
+public class TestRelatedEntityMap : IEntityTypeConfiguration<TestRelatedEntity>
 {
     public TestRelatedEntityMap(string? tableName = null)
         : base(tableName ?? "Table")

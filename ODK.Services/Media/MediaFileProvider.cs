@@ -1,19 +1,20 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Media;
 using ODK.Core.Utils;
+using ODK.Data.Core;
 
 namespace ODK.Services.Media;
 
 public class MediaFileProvider : IMediaFileProvider
 {
-    private readonly IChapterRepository _chapterRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly MediaFileProviderSettings _settings;
 
-    public MediaFileProvider(IChapterRepository chapterRepository,
+    public MediaFileProvider(IUnitOfWork unitOfWork,
         MediaFileProviderSettings settings)
-    {
-        _chapterRepository = chapterRepository;
+    {        
         _settings = settings;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<MediaFile?> GetMediaFile(Guid chapterId, string name)
@@ -71,9 +72,9 @@ public class MediaFileProvider : IMediaFileProvider
         return mediaFiles.ToArray();
     }
 
-    private async Task<Chapter?> GetChapter(Guid chapterId)
+    private async Task<Chapter> GetChapter(Guid chapterId)
     {
-        return await _chapterRepository.GetChapter(chapterId);
+        return await _unitOfWork.ChapterRepository.GetById(chapterId).RunAsync();
     }
 
     private Task<MediaFile> GetMediaFile(string chapter, FileInfo file)

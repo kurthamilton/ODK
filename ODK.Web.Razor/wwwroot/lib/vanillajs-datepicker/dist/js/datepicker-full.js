@@ -945,21 +945,29 @@
     }, {});
   }
 
+  const getButtons = buttonList => buttonList
+    .map(classes => `<button type="button" class="%buttonClass% ${classes}" tabindex="-1"></button>`)
+    .join('');
+
   const pickerTemplate = optimizeTemplateHTML(`<div class="datepicker">
   <div class="datepicker-picker">
     <div class="datepicker-header">
       <div class="datepicker-title"></div>
       <div class="datepicker-controls">
-        <button type="button" class="%buttonClass% prev-button prev-btn"></button>
-        <button type="button" class="%buttonClass% view-switch"></button>
-        <button type="button" class="%buttonClass% next-button next-btn"></button>
+        ${getButtons([
+          'prev-button prev-btn',
+          'view-switch',
+          'next-button next-btn',
+        ])}
       </div>
     </div>
     <div class="datepicker-main"></div>
     <div class="datepicker-footer">
       <div class="datepicker-controls">
-        <button type="button" class="%buttonClass% today-button today-btn"></button>
-        <button type="button" class="%buttonClass% clear-button clear-btn"></button>
+        ${getButtons([
+          'today-button today-btn',
+          'clear-button clear-btn',
+        ])}
       </div>
     </div>
   </div>
@@ -1558,13 +1566,17 @@
   }
 
   function triggerDatepickerEvent(datepicker, type) {
-    const detail = {
-      date: datepicker.getDate(),
-      viewDate: new Date(datepicker.picker.viewDate),
-      viewId: datepicker.picker.currentView.id,
-      datepicker,
+    const options = {
+      bubbles: true,
+      cancelable: true,
+      detail: {
+        date: datepicker.getDate(),
+        viewDate: new Date(datepicker.picker.viewDate),
+        viewId: datepicker.picker.currentView.id,
+        datepicker,
+      },
     };
-    datepicker.element.dispatchEvent(new CustomEvent(type, {detail}));
+    datepicker.element.dispatchEvent(new CustomEvent(type, options));
   }
 
   // direction: -1 (to previous), 1 (to next)
@@ -1863,10 +1875,12 @@
           element.removeAttribute('dir');
         }
 
-        element.style.visibility = 'hidden';
-        element.classList.add('active');
+        // Determine the picker's position first to prevent `orientation: 'auto'`
+        // from being miscalculated to 'bottom' after the picker temporarily
+        // shown below the input field expands the document height if the field
+        // is at the bottom edge of the document
         this.place();
-        element.style.visibility = '';
+        element.classList.add('active');
 
         if (datepicker.config.disableTouchKeyboard) {
           inputField.blur();
@@ -1889,12 +1903,20 @@
     }
 
     place() {
-      const {classList, offsetParent, style} = this.element;
-      const {config, inputField} = this.datepicker;
+      const {classList, style} = this.element;
+      // temporarily display the picker to get its size and offset parent
+      style.display = 'block';
+
       const {
         width: calendarWidth,
         height: calendarHeight,
       } = this.element.getBoundingClientRect();
+      const offsetParent = this.element.offsetParent;
+      // turn the picker back to hidden so that the position is determined with
+      // the state before it is shown.
+      style.display = '';
+
+      const {config, inputField} = this.datepicker;
       const {
         left: inputLeft,
         top: inputTop,

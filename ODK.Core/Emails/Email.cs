@@ -4,20 +4,13 @@ namespace ODK.Core.Emails;
 
 public class Email
 {
-    public Email(EmailType type, string subject, string htmlContent)
-    {
-        HtmlContent = htmlContent;
-        Subject = subject;
-        Type = type;
-    }
-
-    public string HtmlContent { get; set; }
+    public string HtmlContent { get; set; } = "";
 
     public IDictionary<string, string?> Parameters { get; } = new Dictionary<string, string?>();
 
-    public string Subject { get; set; }
+    public string Subject { get; set; } = "";
 
-    public EmailType Type { get; }
+    public EmailType Type { get; set; }
 
     public Email Interpolate(IDictionary<string, string> parameters)
     {
@@ -28,7 +21,12 @@ public class Email
 
         string htmlContent = HtmlContent.Interpolate(parameters);
         string subject = Subject.Interpolate(parameters);
-
-        return new Email(Type, subject, htmlContent);
+        
+        return new Email
+        {
+            HtmlContent = htmlContent,
+            Subject = subject,
+            Type = Type,
+        };
     }
 }

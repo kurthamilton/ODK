@@ -1,11 +1,11 @@
-﻿@using ODK.Core.Logging
+﻿@* @using ODK.Core.Logging
 @using ODK.Services.Logging
 @using ODK.Web.Common.Extensions
 @model ODK.Web.Razor.Models.SuperAdmin.ErrorContentViewModel
 @inject ILoggingService LoggingService
 @{
-    Guid? memberId = User.MemberId();
-    IReadOnlyCollection<LogMessage> similar = await LoggingService.GetSimilarErrorMessages(memberId!.Value, 
+    var memberId = User.MemberId();
+    IReadOnlyCollection<LogMessage> similar = await LoggingService.GetSimilarErrorMessages(memberId, 
         Model.Error);
 
     IDictionary<string, string> properties = Model.Error.GetProperties();
@@ -57,4 +57,4 @@
         }
         </tbody>
     </table>
-}
+} *@

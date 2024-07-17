@@ -4,6 +4,8 @@ using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Data.Core;
+using ODK.Data.Core.Repositories;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 
@@ -59,7 +61,7 @@ public static class AuthorizationServiceTests
         // Arrange
         var service = CreateService();
 
-        var settings = CreateChapterMembershipSettings();
+        var settings = CreateChapterMembershipSettings(membershipExpiringWarningDays: 5);
         var expiryDate = expiring
             ? DateTime.UtcNow.AddDays(1)
             : DateTime.UtcNow.AddDays(settings.MembershipExpiringWarningDays + 1);
@@ -97,13 +99,13 @@ public static class AuthorizationServiceTests
         bool enabled = true,
         int membershipExpiringWarningDays = 1)
     {
-        return new ChapterMembershipSettings(
-            chapterId: DefaultChapterId,
-            trialPeriodMonths: 1,
-            membershipDisabledAfterDaysExpired: membershipDisabledAfterDaysExpired,
-            enabled: enabled)
+        return new ChapterMembershipSettings
         {
-            
+            ChapterId = DefaultChapterId,
+            Enabled = enabled,
+            MembershipDisabledAfterDaysExpired = membershipDisabledAfterDaysExpired,
+            MembershipExpiringWarningDays = membershipExpiringWarningDays,
+            TrialPeriodMonths = 1
         };
     }
 
@@ -111,10 +113,12 @@ public static class AuthorizationServiceTests
         Guid? memberId = null,
         DateTime? expiryDate = null)
     {
-        return new MemberSubscription(
-            memberId: memberId ?? Guid.NewGuid(),
-            type: SubscriptionType.Full,
-            expiryDate: expiryDate);
+        return new MemberSubscription
+        {
+            ExpiryDate = expiryDate,
+            MemberId = memberId ?? Guid.NewGuid(),
+            Type = SubscriptionType.Full
+        };
     }
 
     private static IChapterRepository CreateMockChapterRepository()
@@ -131,13 +135,27 @@ public static class AuthorizationServiceTests
         return mock.Object;
     }
 
+    private static IUnitOfWork CreateMockUnitOfWork(
+        IChapterRepository? chapterRepository = null,
+        IMemberRepository? memberRepository = null)
+    {
+        var mock = new Mock<IUnitOfWork>();
+
+        mock.Setup(x => x.ChapterRepository)
+            .Returns(chapterRepository ?? CreateMockChapterRepository());
+
+        mock.Setup(x => x.MemberRepository)
+            .Returns(memberRepository ?? CreateMockMemberRepository());
+
+        return mock.Object;
+    }
+
     private static AuthorizationService CreateService(
         IMemberRepository? memberRepository = null,
         IChapterRepository? chapterRepository = null)
     {
         return new AuthorizationService(
-            memberRepository ?? CreateMockMemberRepository(),
-            chapterRepository ?? CreateMockChapterRepository(),
+            CreateMockUnitOfWork(chapterRepository, memberRepository),
             Mock.Of<IRequestCache>());
     }
 }

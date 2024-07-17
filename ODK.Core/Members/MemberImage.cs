@@ -1,20 +1,12 @@
 ﻿namespace ODK.Core.Members;
 
 public class MemberImage : IVersioned
-{
-    public MemberImage(Guid memberId, byte[] imageData, string mimeType, long version)
-    {
-        ImageData = imageData;
-        MemberId = memberId;
-        MimeType = mimeType;
-        Version = version;
-    }
+{    
+    public byte[] ImageData { get; set; } = [];
 
-    public byte[] ImageData { get; }
+    public Guid MemberId { get; set; }
 
-    public Guid MemberId { get; }
+    public string MimeType { get; set; } = "";
 
-    public string MimeType { get; }
-
-    public long Version { get; }
+    public byte[] Version { get; set; } = [];
 }

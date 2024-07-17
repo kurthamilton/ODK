@@ -1,23 +1,12 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ChapterPropertyOption
+public class ChapterPropertyOption : IDatabaseEntity
 {
-    public ChapterPropertyOption(Guid id, Guid chapterPropertyId, Guid chapterId, int displayOrder, string value)
-    {
-        ChapterId = chapterId;
-        ChapterPropertyId = chapterPropertyId;
-        DisplayOrder = displayOrder;
-        Id = id;
-        Value = value;
-    }
+    public Guid ChapterPropertyId { get; set; }
 
-    public Guid ChapterId { get; }
+    public int DisplayOrder { get; set; }
 
-    public Guid ChapterPropertyId { get; }
+    public Guid Id { get; set; }
 
-    public int DisplayOrder { get; }
-
-    public Guid Id { get; }
-
-    public string Value { get; }
+    public string Value { get; set; } = "";
 }

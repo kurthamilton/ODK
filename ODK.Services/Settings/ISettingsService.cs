@@ -6,5 +6,5 @@ public interface ISettingsService
 {
     Task<SiteSettings> GetSiteSettings();
 
-    Task<ServiceResult> UpdateInstagramSettings(Guid chapterId, Guid currentMemberId, bool scrape, string scraperUserAgent);
+    Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, bool scrape, string scraperUserAgent);
 }

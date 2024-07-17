@@ -2,16 +2,11 @@
 
 public class ErrorProperty
 {
-    public ErrorProperty(Guid errorId, string name, string value)
-    {
-        ErrorId = errorId;
-        Name = name;
-        Value = value;
-    }
+    public Guid ErrorId { get; set; }
 
-    public Guid ErrorId { get; }
+    public Guid Id { get; set; }
 
-    public string Name { get; }
+    public string Name { get; set; } = "";
 
-    public string Value { get; }
+    public string Value { get; set; } = "";
 }

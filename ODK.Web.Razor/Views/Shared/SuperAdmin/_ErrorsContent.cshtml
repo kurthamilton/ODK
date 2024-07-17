@@ -1,10 +1,10 @@
-﻿@using ODK.Core.Logging
+﻿@* @using ODK.Core.Logging
 @using ODK.Services.Logging
 @using ODK.Web.Common.Extensions
 @model ODK.Core.Chapters.Chapter
 @inject ILoggingService LoggingService
 @{
-    Guid? memberId = User.MemberId();
+    Guid? memberId = User.MemberIdOrDefault();
     IReadOnlyCollection<LogMessage> errors = await LoggingService.GetLogMessages(memberId!.Value, "Error", 1, 1000);
 }
 
@@ -43,4 +43,4 @@
         }
         </tbody>
     </table>
-</div>
+</div> *@

@@ -1,37 +1,35 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Settings;
+﻿using ODK.Core.Settings;
+using ODK.Data.Core;
 
 namespace ODK.Services.Settings;
 
 public class SettingsService : OdkAdminServiceBase, ISettingsService
 {
-    private readonly ISettingsRepository _settingsRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public SettingsService(ISettingsRepository settingsRepository,
-        IChapterRepository chapterRepository)
-        : base(chapterRepository)
+    public SettingsService(IUnitOfWork unitOfWork)
+        : base(unitOfWork)
     {
-        _settingsRepository = settingsRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<SiteSettings> GetSiteSettings()
     {
-        SiteSettings? settings = await _settingsRepository.GetSiteSettingsAsync();
+        var settings = await _unitOfWork.SiteSettingsRepository.Get().RunAsync();
         return settings!;
     }
 
-    public async Task<ServiceResult> UpdateInstagramSettings(Guid chapterId, Guid currentMemberId, bool scrape,
+    public async Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, bool scrape,
         string scraperUserAgent)
     {
-        await AssertMemberIsChapterSuperAdmin(currentMemberId, chapterId);
+        var settings = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.SiteSettingsRepository.Get());
 
-        SiteSettings settings = await GetSiteSettings();
+        settings.ScrapeInstagram = scrape;
+        settings.InstagramScraperUserAgent = scraperUserAgent;
 
-        SiteSettings update = new SiteSettings(settings.GoogleMapsApiKey, settings.InstagramUsername,
-            settings.InstagramPassword, scraperUserAgent, scrape, 0, settings.RecaptchaSiteKey,
-            settings.RecaptchaSecretKey);
-
-        await _settingsRepository.UpdateSiteSettingsAsync(update);
+        _unitOfWork.SiteSettingsRepository.Update(settings);
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }

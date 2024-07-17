@@ -24,14 +24,23 @@ public class CacheService : ICacheService
         return await GetOrSet(getter, instanceKey, null, lifetime);
     }
     
-    public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T?>> getter, object key,
+    public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(
+        Func<Task<T?>> getter, 
+        object key,
         long? currentVersion) where T : class, IVersioned
     {
-        return await GetOrSetVersionedItem(getter, t => Task.FromResult(t?.Version ?? 0), key, currentVersion);
+
+        return await GetOrSetVersionedItem(getter, 
+            t => Task.FromResult(BitConverter.ToInt64(t?.Version ?? [])), 
+            key, 
+            currentVersion);
     }
 
-    public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T?>> getter, Func<T, Task<long>> getVersion,
-        object key, long? currentVersion) where T : class
+    public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(
+        Func<Task<T?>> getter, 
+        Func<T, Task<long>> getVersion,
+        object key, 
+        long? currentVersion) where T : class
     {
         long? version = TryGetCachedVersion<T>(key);
 
@@ -85,8 +94,9 @@ public class CacheService : ICacheService
 
     public void UpdatedVersionedItem<T>(T item, object instanceKey) where T : IVersioned
     {
-        SetVersion<T>(item.Version, instanceKey);
-        Set(item, instanceKey, item.Version, null);
+        var longVersion = BitConverter.ToInt64(item.Version);
+        SetVersion<T>(longVersion, instanceKey);
+        Set(item, instanceKey, longVersion, null);
     }
 
     private static string GetKey<T>(object instanceKey)

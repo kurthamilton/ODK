@@ -18,24 +18,17 @@ public class AdminMemberModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
-    public ChapterAdminMember AdminMember { get; private set; } = null!;
+    public ChapterAdminMemberDto AdminMember { get; private set; } = null!;
 
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
-        ChapterAdminMember? adminMember = await _chapterAdminService.GetChapterAdminMember(CurrentMemberId, Chapter.Id, id);
-        if (adminMember == null)
-        {
-            return NotFound();
-        }
-
-        AdminMember = adminMember;
-
+        AdminMember = await _chapterAdminService.GetChapterAdminMemberDto(CurrentMemberId, Chapter.Id, id);
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(Guid id, AdminMemberFormViewModel viewModel)
     {
-        ServiceResult result = await _chapterAdminService.UpdateChapterAdminMember(CurrentMemberId, Chapter.Id, id, new UpdateChapterAdminMember
+        var result = await _chapterAdminService.UpdateChapterAdminMember(CurrentMemberId, Chapter.Id, id, new UpdateChapterAdminMember
         {
             AdminEmailAddress = viewModel.AdminEmailAddress,
             ReceiveContactEmails = viewModel.ReceiveContactEmails,

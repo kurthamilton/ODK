@@ -1,10 +1,13 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
+using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Utils;
+using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
@@ -14,93 +17,116 @@ namespace ODK.Services.Authentication;
 public class AuthenticationService : IAuthenticationService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IChapterRepository _chapterRepository;
     private readonly IEmailService _emailService;
-    private readonly IMemberRepository _memberRepository;
     private readonly AuthenticationServiceSettings _settings;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public AuthenticationService(IMemberRepository memberRepository, IEmailService emailService, AuthenticationServiceSettings settings,
-        IAuthorizationService authorizationService, IChapterRepository chapterRepository)
+    public AuthenticationService(IEmailService emailService, AuthenticationServiceSettings settings,
+        IAuthorizationService authorizationService, IUnitOfWork unitOfWork)
     {
         _authorizationService = authorizationService;
-        _chapterRepository = chapterRepository;
         _emailService = emailService;
-        _memberRepository = memberRepository;
         _settings = settings;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ServiceResult> ActivateAccountAsync(string activationToken, string password)
     {
-        MemberActivationToken? token = await _memberRepository.GetMemberActivationTokenAsync(activationToken);
+        var token = await _unitOfWork.MemberActivationTokenRepository
+            .GetByToken(activationToken)
+            .RunAsync();
         if (token == null)
         {
             return ServiceResult.Failure("The link you followed is no longer valid");
         }
 
-        await UpdatePasswordAsync(token.MemberId, password);
+        var (member, memberPassword) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(token.MemberId),
+            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
 
-        await _memberRepository.DeleteActivationTokenAsync(token.MemberId);
-        await _memberRepository.ActivateMemberAsync(token.MemberId);
+        memberPassword = UpdatePassword(memberPassword, password);
+        member.Activated = true;
 
-        await SendNewMemberEmailsAsync(token.MemberId);
+        _unitOfWork.MemberRepository.Update(member);
+        
+        if (memberPassword.MemberId == Guid.Empty)
+        {
+            memberPassword.MemberId = member.Id;
+            _unitOfWork.MemberPasswordRepository.Add(memberPassword);
+        }
+        else
+        {
+            _unitOfWork.MemberPasswordRepository.Update(memberPassword);
+        }
+        
+        _unitOfWork.MemberActivationTokenRepository.Delete(token);
+        
+        await _unitOfWork.SaveChangesAsync();
+
+        await SendNewMemberEmailsAsync(member);
 
         return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> ChangePasswordAsync(Guid memberId, string currentPassword, string newPassword)
     {
-        bool matches = await CheckPasswordAsync(memberId, currentPassword);
+        var memberPassword = await _unitOfWork.MemberPasswordRepository
+            .GetByMemberId(memberId)
+            .RunAsync();
+        var matches = CheckPassword(memberPassword, currentPassword);
         if (!matches)
         {
             return ServiceResult.Failure("Current password is incorrect");
         }
 
-        await UpdatePasswordAsync(memberId, newPassword);
+        memberPassword = UpdatePassword(memberPassword, newPassword);
+        _unitOfWork.MemberPasswordRepository.Update(memberPassword);
+
+        await _unitOfWork.SaveChangesAsync();
+
         return ServiceResult.Successful();
     }
 
     public async Task<Member?> GetMemberAsync(string username, string password)
     {
-        Member? member = await _memberRepository.FindMemberByEmailAddressAsync(username);
+        var member = await _unitOfWork.MemberRepository
+            .GetByEmailAddress(username)
+            .RunAsync();
         if (member == null)
         {
             return null;
         }
 
-        bool passwordMatches = await CheckPasswordAsync(member.Id, password);
+        var memberPassword = await _unitOfWork.MemberPasswordRepository
+            .GetByMemberId(member.Id)
+            .RunAsync();
+
+        bool passwordMatches = CheckPassword(memberPassword, password);
         return passwordMatches ? member : null;
     }
 
-    public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(Member? member)
+    public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(Member member)
     {
-        if (member == null)
-        {
-            return Array.Empty<Claim>();
-        }
+        var (chapter, adminMembers) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(member.ChapterId),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(member.Id));
 
-        List<Claim> claims = new List<Claim>
+        var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, member.Id.ToString()),
-            new Claim("ChapterId", member.ChapterId.ToString())
+            new Claim("Chapter", chapter.Name),
+            new Claim("ChapterId", chapter.Id.ToString()),
+            new Claim(ClaimTypes.Role, OdkRoles.Member)
         };
 
-        MemberSubscription? subscription = await _memberRepository.GetMemberSubscriptionAsync(member.Id);
-
-        bool isActive = subscription != null && await _authorizationService.MembershipIsActiveAsync(subscription, member.ChapterId);
-        if (isActive)
+        if (adminMembers.Any())
         {
-            claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Member));
+            claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Admin));
+        }
 
-            IReadOnlyCollection<ChapterAdminMember> adminChapterMembers = await _chapterRepository.GetChapterAdminMembersByMember(member.Id);
-            if (adminChapterMembers.Any())
-            {
-                claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Admin));
-            }
-
-            if (adminChapterMembers.Any(x => x.SuperAdmin))
-            {
-                claims.Add(new Claim(ClaimTypes.Role, OdkRoles.SuperAdmin));
-            }
+        if (member.SuperAdmin)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, OdkRoles.SuperAdmin));
         }
 
         return claims;
@@ -113,7 +139,9 @@ public class AuthenticationService : IAuthenticationService
             return ServiceResult.Failure("Invalid email address format");
         }
 
-        Member? member = await _memberRepository.FindMemberByEmailAddressAsync(emailAddress);
+        var member = await _unitOfWork.MemberRepository
+            .GetByEmailAddress(emailAddress)
+            .RunAsync();
         if (member == null)
         {
             // return fake success to avoid leaking valid email addresses
@@ -124,13 +152,19 @@ public class AuthenticationService : IAuthenticationService
         DateTime expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
         string token = RandomStringGenerator.Generate(64);
         
-        Chapter? chapter = await _chapterRepository.GetChapter(member.ChapterId);
-        if (chapter == null)
-        {
-            throw new OdkNotFoundException();
-        }
+        var chapter = await _unitOfWork.ChapterRepository
+            .GetById(member.ChapterId)
+            .RunAsync();
 
-        await _memberRepository.AddPasswordResetRequestAsync(member.Id, created, expires, token);
+        _unitOfWork.MemberPasswordResetRequestRepository.Add(new MemberPasswordResetRequest
+        {
+            Created = created,
+            Expires = expires,
+            MemberId = member.Id,
+            Token = token
+        });
+
+        await _unitOfWork.SaveChangesAsync();
 
         string url = _settings.PasswordResetUrl.Interpolate(new Dictionary<string, string>
         {
@@ -156,21 +190,39 @@ public class AuthenticationService : IAuthenticationService
 
         const string message = "Link is invalid or has expired. Please request a new link using the password reset form.";
 
-        MemberPasswordResetRequest? request = await _memberRepository.GetPasswordResetRequestAsync(token);
+        var request = await _unitOfWork.MemberPasswordResetRequestRepository
+            .GetByToken(token)
+            .RunAsync();
         if (request == null)
         {
             return ServiceResult.Failure(message);
         }
 
+        _unitOfWork.MemberPasswordResetRequestRepository.Delete(request);
+
         if (request.Expires < DateTime.UtcNow)
         {
-            await _memberRepository.DeletePasswordResetRequestAsync(request.Id);
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Failure(message);
         }
 
-        await UpdatePasswordAsync(request.MemberId, password);
+        var memberPassword = await _unitOfWork.MemberPasswordRepository
+            .GetByMemberId(request.MemberId)
+            .RunAsync();
 
-        await _memberRepository.DeletePasswordResetRequestAsync(request.Id);
+        memberPassword = UpdatePassword(memberPassword, password);
+        
+        if (memberPassword.MemberId == Guid.Empty)
+        {
+            memberPassword.MemberId = request.MemberId;
+            _unitOfWork.MemberPasswordRepository.Add(memberPassword);
+        }
+        else
+        {
+            _unitOfWork.MemberPasswordRepository.Update(memberPassword);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
     }
@@ -181,40 +233,26 @@ public class AuthenticationService : IAuthenticationService
         {
             throw new OdkServiceException("Password cannot be blank");
         }
-    }
-    
+    }    
 
-    private async Task<bool> CheckPasswordAsync(Guid? memberId, string password)
+    private bool CheckPassword([NotNullWhen(true)] MemberPassword? memberPassword, string password)
     {
-        if (memberId == null)
-        {
-            return false;
-        }
-
-        MemberPassword? memberPassword = await _memberRepository.GetMemberPasswordAsync(memberId.Value);
         if (memberPassword == null)
         {
             return false;
         }
 
         string passwordHash = PasswordHasher.ComputeHash(password, memberPassword.Salt);
-        return memberPassword.Password == passwordHash;
+        return memberPassword.Hash == passwordHash;
     }
 
-    private async Task SendNewMemberEmailsAsync(Guid memberId)
+    private async Task SendNewMemberEmailsAsync(Member member)
     {
-        Member? member = await _memberRepository.GetMemberAsync(memberId);
-        if (member == null)
-        {
-            return;
-        }
-
-        Chapter? chapter = await _chapterRepository.GetChapter(member.ChapterId);
-        if (chapter == null)
-        {
-            return;
-        }
-
+        var (chapter, chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(member.ChapterId),
+            x => x.ChapterPropertyRepository.GetByChapterId(member.ChapterId),
+            x => x.MemberPropertyRepository.GetByMemberId(member.Id));
+        
         string eventsUrl = _settings.EventsUrl.Interpolate(new Dictionary<string, string>
         {
             { "chapter.name", chapter.Name }
@@ -227,9 +265,6 @@ public class AuthenticationService : IAuthenticationService
             { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) }
         });
 
-        IReadOnlyCollection<MemberProperty> memberProperties = await _memberRepository.GetMemberPropertiesAsync(memberId);
-        IReadOnlyCollection<ChapterProperty> chapterProperties = await _chapterRepository.GetChapterProperties(member.ChapterId);
-
         var newMemberAdminEmailParameters = new Dictionary<string, string>
         {
             { "chapter.name", chapter.Name },
@@ -238,7 +273,7 @@ public class AuthenticationService : IAuthenticationService
             { "member.lastName", HttpUtility.HtmlEncode(member.LastName) }
         };
 
-        foreach (ChapterProperty chapterProperty in chapterProperties)
+        foreach (var chapterProperty in chapterProperties)
         {
             string? value = memberProperties.FirstOrDefault(x => x.ChapterPropertyId == chapterProperty.Id)?.Value;
             newMemberAdminEmailParameters.Add($"member.properties.{chapterProperty.Name}", HttpUtility.HtmlEncode(value ?? ""));
@@ -247,12 +282,20 @@ public class AuthenticationService : IAuthenticationService
         await _emailService.SendNewMemberAdminEmail(chapter, member, newMemberAdminEmailParameters);
     }
 
-    private async Task UpdatePasswordAsync(Guid memberId, string password)
+    private MemberPassword UpdatePassword(MemberPassword? memberPassword, string password)
     {
         ValidatePassword(password);
 
         (string hash, string salt) = PasswordHasher.ComputeHash(password);
 
-        await _memberRepository.UpdateMemberPasswordAsync(new MemberPassword(memberId, hash, salt));
+        if (memberPassword == null)
+        {
+            memberPassword = new MemberPassword();
+        }
+
+        memberPassword.Hash = hash;
+        memberPassword.Salt = salt;
+
+        return memberPassword;
     }
 }

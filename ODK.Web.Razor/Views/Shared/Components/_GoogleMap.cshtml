@@ -8,9 +8,9 @@
         // return;
     }
 
-    SiteSettings settings = await SettingsService.GetSiteSettings();
-    string baseUrl = $"https://www.google.com/maps/embed/v1/place?key={settings.GoogleMapsApiKey}&q={{query}}";
-    string url = !string.IsNullOrEmpty(Model.Query) 
+    var settings = await SettingsService.GetSiteSettings();
+    var baseUrl = $"https://www.google.com/maps/embed/v1/place?key={settings.GoogleMapsApiKey}&q={{query}}";
+    var url = !string.IsNullOrEmpty(Model.Query) 
         ? baseUrl.Replace("{query}", Model.Query)
         : "";
 }

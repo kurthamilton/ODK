@@ -38,9 +38,9 @@ public class AccountModel : ChapterPageModel
             })
         };
 
-        Guid? memberId = User.MemberId();
+        var memberId = User.MemberId();
 
-        ServiceResult result = await _memberService.UpdateMemberProfile(memberId!.Value, update);
+        var result = await _memberService.UpdateMemberProfile(memberId, update);
         if (!result.Success)
         {
             AddFeedback(new FeedbackViewModel(result));

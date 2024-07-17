@@ -2,16 +2,9 @@
 
 public class ChapterTexts
 {
-    public ChapterTexts(Guid chapterId, string registerText, string welcomeText)
-    {
-        ChapterId = chapterId;
-        RegisterText = registerText;
-        WelcomeText = welcomeText;
-    }
+    public Guid ChapterId { get; set; }
 
-    public Guid ChapterId { get; }
+    public string RegisterText { get; set; } = "";
 
-    public string RegisterText { get; }
-
-    public string WelcomeText { get; }
+    public string WelcomeText { get; set; } = "";
 }
