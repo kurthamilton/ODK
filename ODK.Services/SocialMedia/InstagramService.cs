@@ -60,15 +60,27 @@ public class InstagramService : IInstagramService
         };
     }
 
-    public async Task ScrapeLatestInstagramPosts(string chapterName)
+    public async Task ScrapeLatestInstagramPosts(Guid chapterId)
     {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
-        if (chapter == null)
+        var (settings, links, lastPost) = await _unitOfWork.RunAsync(
+            x => x.SiteSettingsRepository.Get(),
+            x => x.ChapterLinksRepository.GetByChapterId(chapterId),
+            x => x.InstagramPostRepository.GetLastPost(chapterId));
+
+        if (links == null)
         {
             return;
         }
 
-        await ScrapeLatestInstagramPosts(chapter.Id);
+        if (string.IsNullOrEmpty(links.InstagramName))
+        {
+            return;
+        }
+
+        var after = lastPost?.Date;
+
+        await DownloadNewImages(chapterId, settings.InstagramScraperUserAgent,
+            links.InstagramName, after);
     }
 
     private async Task DownloadNewImages(Guid chapterId, string userAgent, string username, DateTime? after)
@@ -112,16 +124,18 @@ public class InstagramService : IInstagramService
             {
                 continue;
             }
-
+            
             var image = await ParseImage(post, userAgent, node);
             if (image == null)
             {
                 continue;
-            } 
+            }
 
             _unitOfWork.InstagramPostRepository.Add(post);
             _unitOfWork.InstagramImageRepository.Add(image);
         }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     private async Task<InstagramImage?> ParseImage(InstagramPost post, string userAgent, JToken? node)
@@ -187,38 +201,13 @@ public class InstagramService : IInstagramService
                 ChapterId = chapterId,
                 Date = date,
                 ExternalId = shortcode,
+                Id = Guid.NewGuid(),
                 Url = url
             };
         }
         catch
         {
             return null;
-        }
-    }
-
-    private async Task ScrapeLatestInstagramPosts(Guid chapterId)
-    {
-        var (settings, links, lastPost) = await _unitOfWork.RunAsync(
-            x => x.SiteSettingsRepository.Get(),
-            x => x.ChapterLinksRepository.GetByChapterId(chapterId),
-            x => x.InstagramPostRepository.GetLastPost(chapterId));
-
-        if (links == null)
-        {
-            return;
-        }
-
-        if (string.IsNullOrEmpty(links.InstagramName))
-        {
-            return;
-        }
-
-        var after = lastPost?.Date;
-
-        if (settings.ScrapeInstagram)
-        {
-            await DownloadNewImages(chapterId, settings.InstagramScraperUserAgent,
-                links.InstagramName, after);
         }
     }
 }

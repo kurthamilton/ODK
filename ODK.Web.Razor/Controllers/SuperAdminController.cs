@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Services.Caching;
 using ODK.Services.Emails;
 using ODK.Services.Logging;
 using ODK.Services.SocialMedia;
@@ -13,13 +14,16 @@ public class SuperAdminController : OdkControllerBase
     private readonly IEmailAdminService _emailAdminService;
     private readonly IInstagramService _instagramService;
     private readonly ILoggingService _loggingService;
+    private readonly IRequestCache _requestCache;
 
     public SuperAdminController(IEmailAdminService emailAdminService, 
-        ILoggingService loggingService, IInstagramService instagramService)
+        ILoggingService loggingService, IInstagramService instagramService,
+        IRequestCache requestCache)
     {
         _emailAdminService = emailAdminService;
         _instagramService = instagramService;
         _loggingService = loggingService;
+        _requestCache = requestCache;
     }
 
     [HttpPost("{chapterName}/Admin/SuperAdmin/EmailProviders/{id:guid}/Delete")]
@@ -51,7 +55,13 @@ public class SuperAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/SuperAdmin/Instagram/Scrape")]
     public async Task<IActionResult> ScrapeInstagram(string chapterName)
     {
-        await _instagramService.ScrapeLatestInstagramPosts(chapterName);
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        if (chapter == null)
+        {
+            return RedirectToReferrer();
+        }
+
+        await _instagramService.ScrapeLatestInstagramPosts(chapter.Id);
 
         return RedirectToReferrer();
     }

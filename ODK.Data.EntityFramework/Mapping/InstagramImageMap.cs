@@ -11,5 +11,10 @@ public class InstagramImageMap : IEntityTypeConfiguration<InstagramImage>
         builder.ToTable("InstagramImages");
 
         builder.HasKey(x => x.InstagramPostId);
+
+        builder.HasOne<InstagramPost>()
+            .WithMany()
+            .HasForeignKey(x => x.InstagramPostId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
