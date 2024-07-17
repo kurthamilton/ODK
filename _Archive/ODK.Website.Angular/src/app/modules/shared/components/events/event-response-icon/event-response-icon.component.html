@@ -1,7 +1,0 @@
-<button *ngIf="buttonClass" type="button" 
-    [attr.class]="'btn-icon event-response-option event-response-option--' + buttonClass"
-    [class.active]="active || readOnly" (click)="onClick()">
-    <i [ngClass]="'fas icon--event-response ' + iconClass" [class.icon--event-response--sm]="readOnly"
-      [ngbTooltip]="tooltip" container="body">      
-    </i>
-</button>

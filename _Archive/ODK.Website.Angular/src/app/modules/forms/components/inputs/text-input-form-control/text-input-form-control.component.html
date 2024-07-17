@@ -1,9 +1,0 @@
-<div [formGroup]="formGroup" [class.input-group]="prefix">
-  <app-input-group-prepend [viewModel]="prefix"></app-input-group-prepend>
-  <input
-      [attr.type]="type" [attr.match]="match" [attr.pattern]="pattern" [attr.required]="required ? 'required' : null"
-      class="form-control"
-      [id]="controlId" [name]="controlId"
-      [formControlName]="controlId"
-      (blur)="onValidate();onBlur();" />
-</div>

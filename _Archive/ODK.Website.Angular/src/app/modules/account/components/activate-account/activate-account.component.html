@@ -1,7 +1,0 @@
-<app-body>
-  <app-form *ngIf="form" [form]="form" (formSubmit)="onFormSubmit()">    
-  </app-form>
-  <ngb-alert *ngIf="submitted" type="success" [dismissible]="false">
-    Your account has been activated. You can log in <a [routerLink]="links.login">here</a>
-  </ngb-alert>
-</app-body>
