@@ -61,7 +61,7 @@ public static class AuthorizationServiceTests
         // Arrange
         var service = CreateService();
 
-        var settings = CreateChapterMembershipSettings();
+        var settings = CreateChapterMembershipSettings(membershipExpiringWarningDays: 5);
         var expiryDate = expiring
             ? DateTime.UtcNow.AddDays(1)
             : DateTime.UtcNow.AddDays(settings.MembershipExpiringWarningDays + 1);
@@ -103,7 +103,8 @@ public static class AuthorizationServiceTests
         {
             ChapterId = DefaultChapterId,
             Enabled = enabled,
-            MembershipDisabledAfterDaysExpired= membershipDisabledAfterDaysExpired,
+            MembershipDisabledAfterDaysExpired = membershipDisabledAfterDaysExpired,
+            MembershipExpiringWarningDays = membershipExpiringWarningDays,
             TrialPeriodMonths = 1
         };
     }
