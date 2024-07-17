@@ -59,20 +59,20 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> CreateChapterProperty(Guid currentMemberId, Guid chapterId, 
+    public async Task<ServiceResult> CreateChapterProperty(Guid currentMemberId, Chapter chapter, 
         CreateChapterProperty model)
     {
         var (chapterAdminMembers, existing) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.ChapterPropertyRepository.GetByChapterId(chapterId, all: true));
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id, all: true));
 
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(currentMemberId, chapter.Id, chapterAdminMembers);
 
         var displayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
 
         var property = new ChapterProperty
         {
-            ChapterId = chapterId,
+            ChapterId = chapter.Id,
             DataType = model.DataType,
             DisplayOrder = displayOrder,
             HelpText = model.HelpText,
@@ -92,26 +92,24 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _unitOfWork.ChapterPropertyRepository.Add(property);
         await _unitOfWork.SaveChangesAsync();
 
-        _cacheService.RemoveVersionedCollection<ChapterProperty>(chapterId);
-
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> CreateChapterQuestion(Guid currentMemberId, Guid chapterId, 
+    public async Task<ServiceResult> CreateChapterQuestion(Guid currentMemberId, Chapter chapter,
         CreateChapterQuestion model)
     {
         var (chapterAdminMembers, existing) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.ChapterQuestionRepository.GetByChapterId(chapterId));
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterQuestionRepository.GetByChapterId(chapter.Id));
 
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(currentMemberId, chapter.Id, chapterAdminMembers);
 
-        int displayOrder = existing.Count  > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
+        var displayOrder = existing.Count  > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
         
         var question = new ChapterQuestion
         {
             Answer = model.Answer,
-            ChapterId = chapterId,
+            ChapterId = chapter.Id,
             DisplayOrder = displayOrder,
             Name = model.Name
         };
@@ -124,8 +122,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterQuestionRepository.Add(question);
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedItem<ChapterQuestion>(chapterId);
 
         return ServiceResult.Successful();
     }
@@ -388,13 +384,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks update)
+    public async Task UpdateChapterLinks(Guid currentMemberId, Chapter chapter, UpdateChapterLinks update)
     {
         var (chapterAdminMembers, links) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.ChapterLinksRepository.GetByChapterId(chapterId));
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterLinksRepository.GetByChapterId(chapter.Id));
 
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(currentMemberId, chapter.Id, chapterAdminMembers);
 
         if (links == null)
         {
@@ -407,7 +403,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         
         if (links.ChapterId == Guid.Empty)
         {
-            links.ChapterId = chapterId;
+            links.ChapterId = chapter.Id;
             _unitOfWork.ChapterLinksRepository.Add(links);
         }
         else
@@ -416,23 +412,22 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedItem<ChapterLinks>(chapterId);
     }
 
-    public async Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, 
-        UpdateChapterMembershipSettings update)
+    public async Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Chapter chapter, 
+        UpdateChapterMembershipSettings model)
     {
-        var settings = await _unitOfWork.ChapterMembershipSettingsRepository.GetByChapterId(chapterId).RunAsync();
-
+        var settings = await _unitOfWork.ChapterMembershipSettingsRepository
+            .GetByChapterId(chapter.Id)
+            .RunAsync();
         if (settings == null)
         {
             settings = new ChapterMembershipSettings();
         }
 
-        settings.Enabled = update.Enabled;
-        settings.MembershipDisabledAfterDaysExpired = update.MembershipDisabledAfterDaysExpired;
-        settings.TrialPeriodMonths = update.TrialPeriodMonths;
+        settings.Enabled = model.Enabled;
+        settings.MembershipDisabledAfterDaysExpired = model.MembershipDisabledAfterDaysExpired;
+        settings.TrialPeriodMonths = model.TrialPeriodMonths;
 
         var validationResult = ValidateChapterMembershipSettings(settings);
         if (!validationResult.Success)
@@ -442,7 +437,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         if (settings.ChapterId == Guid.Empty)
         {
-            settings.ChapterId = chapterId;
+            settings.ChapterId = chapter.Id;
             _unitOfWork.ChapterMembershipSettingsRepository.Add(settings);
         }
         else
@@ -452,19 +447,19 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         await _unitOfWork.SaveChangesAsync();
 
-        _cacheService.UpdateItem(update, chapterId);
+        _cacheService.UpdateItem(settings, chapter.Id);
 
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId,
+    public async Task<ServiceResult> UpdateChapterPaymentSettings(Guid currentMemberId, Chapter chapter,
         UpdateChapterPaymentSettings update)
     {
         var (chapterAdminMembers, existing) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id));
 
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(currentMemberId, chapter.Id, chapterAdminMembers);
         
         if (existing == null)
         {
@@ -480,16 +475,16 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
     
-    public async Task<ServiceResult> UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty update)
+    public async Task<ServiceResult> UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty model)
     {
         var property = await GetChapterProperty(currentMemberId, propertyId);
 
-        property.HelpText = update.HelpText;
-        property.Hidden = update.Hidden;
-        property.Label = update.Label;
-        property.Name = update.Name.ToLowerInvariant();
-        property.Required = update.Required;
-        property.Subtitle = update.Subtitle;
+        property.HelpText = model.HelpText;
+        property.Hidden = model.Hidden;
+        property.Label = model.Label;
+        property.Name = model.Name.ToLowerInvariant();
+        property.Required = model.Required;
+        property.Subtitle = model.Subtitle;
 
         var properties = await _unitOfWork.ChapterPropertyRepository.GetByChapterId(property.ChapterId, true).RunAsync();
 
@@ -501,8 +496,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterPropertyRepository.Update(property);
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedCollection<ChapterProperty>(property.ChapterId);
 
         return ServiceResult.Successful();
     }
@@ -567,8 +560,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterQuestionRepository.Update(question);
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedCollection<ChapterQuestion>(question.ChapterId);
 
         return ServiceResult.Successful();
     }

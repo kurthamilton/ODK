@@ -11,7 +11,7 @@ public class MemberPasswordRepository : WriteRepositoryBase<MemberPassword>, IMe
     {
     }
 
-    public IDeferredQuerySingle<MemberPassword> GetByMemberId(Guid memberId) => Set()
+    public IDeferredQuerySingleOrDefault<MemberPassword> GetByMemberId(Guid memberId) => Set()
         .Where(x => x.MemberId == memberId)
-        .DeferredSingle();
+        .DeferredSingleOrDefault();
 }

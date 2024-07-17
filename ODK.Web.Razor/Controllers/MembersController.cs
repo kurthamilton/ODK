@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
 using ODK.Services;
-using ODK.Services.Authentication;
 using ODK.Services.Members;
 
 namespace ODK.Web.Razor.Controllers;
@@ -19,14 +19,10 @@ public class MembersController : ControllerBase
         _memberService = memberService;
     }
 
+    [Authorize]
     [HttpGet("{Chapter}/Members/{Id}/Image")]
     public async Task<IActionResult> Image(Guid id, string chapter, int? size = null, int? w = null, int? h = null)
     {
-        if (!User.IsInRole(OdkRoles.Member))
-        {
-            return new UnauthorizedResult();
-        }
-
         if (w > 0 || h > 0)
         {
             return await HandleVersionedRequest(version => _memberService.GetMemberImage(version, id, w, h),

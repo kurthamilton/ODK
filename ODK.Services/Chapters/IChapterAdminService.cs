@@ -6,11 +6,11 @@ public interface IChapterAdminService
 {
     Task<ServiceResult> AddChapterAdminMember(Guid currentMemberId, string chapterName, Guid memberId);
 
-    Task<ServiceResult> CreateChapterProperty(Guid currentMemberId, Guid chapterId, CreateChapterProperty property);
+    Task<ServiceResult> CreateChapterProperty(Guid currentMemberId, Chapter chapter, CreateChapterProperty model);
 
-    Task<ServiceResult> CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion question);
+    Task<ServiceResult> CreateChapterQuestion(Guid currentMemberId, Chapter chapter, CreateChapterQuestion model);
 
-    Task<ServiceResult> CreateChapterSubscription(Guid currentMemberId, Guid chapterId, CreateChapterSubscription subscription);
+    Task<ServiceResult> CreateChapterSubscription(Guid currentMemberId, Guid chapterId, CreateChapterSubscription model);
 
     Task<ServiceResult> DeleteChapterAdminMember(Guid currentMemberId, string chapterName, Guid memberId);
 
@@ -46,11 +46,11 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember adminMember);
 
-    Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links);
+    Task UpdateChapterLinks(Guid currentMemberId, Chapter chapter, UpdateChapterLinks links);
 
-    Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, UpdateChapterMembershipSettings settings);
+    Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Chapter chapterId, UpdateChapterMembershipSettings model);
 
-    Task<ServiceResult> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings paymentSettings);
+    Task<ServiceResult> UpdateChapterPaymentSettings(Guid currentMemberId, Chapter chapter, UpdateChapterPaymentSettings model);
 
     Task<ServiceResult> UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property);
 

@@ -39,12 +39,12 @@ public class ChapterService : IChapterService
         return await _unitOfWork.ChapterPaymentSettingsRepository.GetByChapterId(chapterId).RunAsync();
     }
     
-    public async Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid currentMemberId, Guid chapterId)
-    {
+    public async Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid? currentMemberId, Guid chapterId)
+    {        
         var (chapterProperties, chapterPropertyOptions, memberProperties, membershipSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapterId),
-            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId),
+            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId ?? Guid.Empty),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
         return new ChapterMemberPropertiesDto
@@ -101,7 +101,7 @@ public class ChapterService : IChapterService
         return _unitOfWork.ChapterTextsRepository.GetByChapterId(chapterId).RunAsync();
     }
 
-    public async Task SendContactMessage(Guid chapterId, string fromAddress, string message, string recaptchaToken)
+    public async Task SendContactMessage(Chapter chapter, string fromAddress, string message, string recaptchaToken)
     {
         if (string.IsNullOrWhiteSpace(fromAddress) || string.IsNullOrWhiteSpace(message))
         {
@@ -113,8 +113,6 @@ public class ChapterService : IChapterService
             throw new OdkServiceException("Invalid email address format");
         }
 
-        var chapter = await _unitOfWork.ChapterRepository.GetById(chapterId).RunAsync();
-        
         var recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);
         if (!_recaptchaService.Success(recaptchaResponse))
         {
@@ -123,7 +121,7 @@ public class ChapterService : IChapterService
 
         _unitOfWork.ContactRequestRepository.Add(new ContactRequest
         {
-            ChapterId = chapterId,
+            ChapterId = chapter.Id,
             CreatedDate = DateTime.UtcNow,
             FromAddress = fromAddress,
             Message = message,

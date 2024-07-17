@@ -8,7 +8,7 @@
 @inject IChapterService ChapterService
 @inject IMemberService MemberService
 @{
-    var dto = await ChapterService.GetChapterMemberPropertiesDto(Model.MemberId!.Value, Model.ChapterId);
+    var dto = await ChapterService.GetChapterMemberPropertiesDto(Model.MemberId, Model.ChapterId);
 
     var chapterProperties = dto.ChapterProperties
         .Where(x => !x.Hidden)

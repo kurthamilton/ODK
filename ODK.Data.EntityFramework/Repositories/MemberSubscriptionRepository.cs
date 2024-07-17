@@ -11,7 +11,15 @@ public class MemberSubscriptionRepository : WriteRepositoryBase<MemberSubscripti
     {
     }
 
-    public void AddMemberSubscriptionRecord(MemberSubscriptionRecord record) => AddSingle(record);
+    public void AddMemberSubscriptionRecord(MemberSubscriptionRecord record)
+    {
+        if (record.Id == Guid.Empty)
+        {
+            record.Id = Guid.NewGuid();
+        }
+
+        AddSingle(record);
+    }
 
     public IDeferredQueryMultiple<MemberSubscription> GetByChapterId(Guid chapterId)
     {

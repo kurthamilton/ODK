@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
-using ODK.Core.Members;
 using IAuthenticationService = ODK.Services.Authentication.IAuthenticationService;
 
 namespace ODK.Web.Common.Account;
@@ -24,14 +23,13 @@ public class LoginHandler : ILoginHandler
     public async Task<AuthenticationResult> Login(HttpContext httpContext, string username, string password, 
         bool rememberMe)
     {
-        Member? member = await _authenticationService.GetMemberAsync(username, password);
+        var member = await _authenticationService.GetMemberAsync(username, password);
         if (member == null)
         {
             return new AuthenticationResult();
+        }        
 
-        }
-
-        IReadOnlyCollection<Claim> claims = await _authenticationService.GetClaimsAsync(member);
+        var claims = await _authenticationService.GetClaimsAsync(member);
         await SetAuthCookieAsync(httpContext, claims);
         return new AuthenticationResult
         {

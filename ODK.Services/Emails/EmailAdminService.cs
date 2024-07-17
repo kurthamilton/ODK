@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Exceptions;
 using ODK.Data.Core;
 
 namespace ODK.Services.Emails;
@@ -51,13 +52,18 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     public async Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type)
     {
-        var (chapterAdminMembers, email) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, chapterEmail) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.ChapterEmailRepository.GetByChapterId(chapterId, type));
 
+        if (chapterEmail == null)
+        {
+            throw new OdkNotFoundException();
+        }
+
         AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
 
-        _unitOfWork.ChapterEmailRepository.Delete(email);
+        _unitOfWork.ChapterEmailRepository.Delete(chapterEmail);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -104,7 +110,6 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         {
             ChapterId = chapterId,
             HtmlContent = email.HtmlContent,
-            Id = Guid.Empty,
             Subject = email.Subject,
             Type = email.Type
         };

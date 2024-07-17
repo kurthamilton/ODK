@@ -145,6 +145,8 @@ public class MemberService : IMemberService
             MemberId = member.Id
         });
 
+        await _unitOfWork.SaveChangesAsync();
+
         var url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
         {
             { "chapter.name", chapter!.Name },
@@ -297,9 +299,6 @@ public class MemberService : IMemberService
         });
 
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.UpdatedVersionedItem(memberSubscription, memberId);
-        _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
 
         return ServiceResult.Successful();
     }

@@ -10,6 +10,8 @@ public class SentEmailMap : IEntityTypeConfiguration<SentEmail>
     {
         builder.ToTable("SentEmails");
 
-        builder.HasNoKey();
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Id).HasColumnName("SentEmailId");
     }
 }

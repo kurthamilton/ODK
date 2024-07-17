@@ -64,6 +64,7 @@ public static class DependencyConfig
         services.AddScoped<OdkContext>();
         services.AddSingleton(new OdkContextSettings(connectionString));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUnitOfWorkFactory, UnitOfWorkFactory>();
     }
 
     private static void ConfigurePayments(this IServiceCollection services, AppSettings appSettings)

@@ -2,9 +2,9 @@
 
 public class MemberPassword
 {
-    public Guid MemberId { get; set; }
+    public string Hash { get; set; } = "";
 
-    public string Password { get; set; } = "";
+    public Guid MemberId { get; set; }    
 
     public string Salt { get; set; } = "";
 }

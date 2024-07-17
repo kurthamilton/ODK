@@ -15,7 +15,7 @@ public class ChapterEmailRepository : ReadWriteRepositoryBase<ChapterEmail>, ICh
         .Where(x => x.ChapterId == chapterId)
         .DeferredMultiple();
 
-    public IDeferredQuerySingle<ChapterEmail> GetByChapterId(Guid chapterId, EmailType type) => Set()
+    public IDeferredQuerySingleOrDefault<ChapterEmail> GetByChapterId(Guid chapterId, EmailType type) => Set()
         .Where(x => x.ChapterId == chapterId && x.Type == type)
-        .DeferredSingle();
+        .DeferredSingleOrDefault();
 }

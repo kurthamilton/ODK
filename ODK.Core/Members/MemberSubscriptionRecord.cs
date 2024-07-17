@@ -1,8 +1,10 @@
 ﻿namespace ODK.Core.Members;
 
-public class MemberSubscriptionRecord
+public class MemberSubscriptionRecord : IDatabaseEntity
 {
     public double Amount { get; set; }
+
+    public Guid Id { get; set; }
 
     public Guid MemberId { get; set; }
 

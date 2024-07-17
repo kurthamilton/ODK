@@ -34,14 +34,22 @@ public class ErrorLoggingMiddleware
                 // do nothing
             }
 
-            HttpRequest request = new HttpRequest(
+            var request = new HttpRequest(
                 url: httpContext.Request.GetDisplayUrl(),
                 method: httpContext.Request.Method,
                 username: httpContext.User.Identity?.Name,
                 headers: headers,
                 form: form
             );
-            await logger.LogError(ex, request);
+
+            try
+            {
+                await logger.LogError(ex, request);
+            }            
+            catch (Exception inner)
+            {
+                int stop = 1;
+            }
         }
     }
 }

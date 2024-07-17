@@ -11,5 +11,9 @@ public class MemberEmailAddressUpdateTokenMap : IEntityTypeConfiguration<MemberE
         builder.ToTable("MemberEmailAddressUpdateTokens");
 
         builder.HasKey(x => x.MemberId);
+
+        builder.HasOne<Member>()
+            .WithOne()
+            .HasForeignKey<MemberEmailAddressUpdateToken>(x => x.MemberId);
     }
 }

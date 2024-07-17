@@ -8,16 +8,13 @@ public class MemberSubscriptionMap : IEntityTypeConfiguration<MemberSubscription
 {
     public void Configure(EntityTypeBuilder<MemberSubscription> builder)
     {
-        builder.ToTable("Members");
+        builder.ToTable("MemberSubscriptions");
 
         builder.HasKey(x => x.MemberId);
 
         builder.Property(x => x.Type)
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
-
-        builder.Property(x => x.ExpiryDate)
-            .HasColumnName("SubscriptionExpiryDate");
 
         builder.HasOne<Member>()
             .WithOne()

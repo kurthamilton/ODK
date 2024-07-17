@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
@@ -43,8 +44,21 @@ public class AuthenticationService : IAuthenticationService
             x => x.MemberRepository.GetById(token.MemberId),
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
 
-        UpdatePassword(memberPassword, password);
+        memberPassword = UpdatePassword(memberPassword, password);
         member.Activated = true;
+
+        _unitOfWork.MemberRepository.Update(member);
+        
+        if (memberPassword.MemberId == Guid.Empty)
+        {
+            memberPassword.MemberId = member.Id;
+            _unitOfWork.MemberPasswordRepository.Add(memberPassword);
+        }
+        else
+        {
+            _unitOfWork.MemberPasswordRepository.Update(memberPassword);
+        }
+        
         _unitOfWork.MemberActivationTokenRepository.Delete(token);
         
         await _unitOfWork.SaveChangesAsync();
@@ -59,13 +73,14 @@ public class AuthenticationService : IAuthenticationService
         var memberPassword = await _unitOfWork.MemberPasswordRepository
             .GetByMemberId(memberId)
             .RunAsync();
-        bool matches = CheckPassword(memberPassword, currentPassword);
+        var matches = CheckPassword(memberPassword, currentPassword);
         if (!matches)
         {
             return ServiceResult.Failure("Current password is incorrect");
         }
 
-        UpdatePassword(memberPassword, newPassword);
+        memberPassword = UpdatePassword(memberPassword, newPassword);
+        _unitOfWork.MemberPasswordRepository.Update(memberPassword);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -90,37 +105,28 @@ public class AuthenticationService : IAuthenticationService
         return passwordMatches ? member : null;
     }
 
-    public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(Member? member)
+    public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(Member member)
     {
-        if (member == null)
-        {
-            return Array.Empty<Claim>();
-        }
+        var (chapter, adminMembers) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(member.ChapterId),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(member.Id));
 
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, member.Id.ToString()),
-            new Claim("ChapterId", member.ChapterId.ToString())
+            new Claim("Chapter", chapter.Name),
+            new Claim("ChapterId", chapter.Id.ToString()),
+            new Claim(ClaimTypes.Role, OdkRoles.Member)
         };
 
-        var (subscription, adminMembers) = await _unitOfWork.RunAsync(
-            x => x.MemberSubscriptionRepository.GetByMemberId(member.Id),
-            x => x.ChapterAdminMemberRepository.GetByMemberId(member.ChapterId));
-
-        bool isActive = await _authorizationService.MembershipIsActiveAsync(subscription, member.ChapterId);
-        if (isActive)
+        if (adminMembers.Any())
         {
-            claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Member));
+            claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Admin));
+        }
 
-            if (adminMembers.Any())
-            {
-                claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Admin));
-            }
-
-            if (member.SuperAdmin)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, OdkRoles.SuperAdmin));
-            }
+        if (member.SuperAdmin)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, OdkRoles.SuperAdmin));
         }
 
         return claims;
@@ -204,7 +210,17 @@ public class AuthenticationService : IAuthenticationService
             .GetByMemberId(request.MemberId)
             .RunAsync();
 
-        UpdatePassword(memberPassword, password);
+        memberPassword = UpdatePassword(memberPassword, password);
+        
+        if (memberPassword.MemberId == Guid.Empty)
+        {
+            memberPassword.MemberId = request.MemberId;
+            _unitOfWork.MemberPasswordRepository.Add(memberPassword);
+        }
+        else
+        {
+            _unitOfWork.MemberPasswordRepository.Update(memberPassword);
+        }
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -219,10 +235,15 @@ public class AuthenticationService : IAuthenticationService
         }
     }    
 
-    private bool CheckPassword(MemberPassword memberPassword, string password)
+    private bool CheckPassword([NotNullWhen(true)] MemberPassword? memberPassword, string password)
     {
+        if (memberPassword == null)
+        {
+            return false;
+        }
+
         string passwordHash = PasswordHasher.ComputeHash(password, memberPassword.Salt);
-        return memberPassword.Password == passwordHash;
+        return memberPassword.Hash == passwordHash;
     }
 
     private async Task SendNewMemberEmailsAsync(Member member)
@@ -261,13 +282,20 @@ public class AuthenticationService : IAuthenticationService
         await _emailService.SendNewMemberAdminEmail(chapter, member, newMemberAdminEmailParameters);
     }
 
-    private void UpdatePassword(MemberPassword memberPassword, string password)
+    private MemberPassword UpdatePassword(MemberPassword? memberPassword, string password)
     {
         ValidatePassword(password);
 
         (string hash, string salt) = PasswordHasher.ComputeHash(password);
 
-        memberPassword.Password = password;
+        if (memberPassword == null)
+        {
+            memberPassword = new MemberPassword();
+        }
+
+        memberPassword.Hash = hash;
         memberPassword.Salt = salt;
+
+        return memberPassword;
     }
 }

@@ -10,13 +10,15 @@
             return;
         }
 
-        paypal.Buttons({
+        const containerId = container.getAttribute('id');
+
+        const buttons = paypal.Buttons({
             style: {
                 layout: 'vertical',
                 color: 'gold',
                 shape: 'rect',
                 label: 'paypal'
-            },
+            },            
             createOrder: (data, actions) => {
                 // Set up the transaction
                 return actions.order.create({
@@ -32,6 +34,7 @@
                 $token.value = data.orderID;
                 $form.submit();
             }
-        }).render(`#${container.getAttribute('id')}`);
+        });
+        buttons.render(`#${containerId}`);
     });    
 })();

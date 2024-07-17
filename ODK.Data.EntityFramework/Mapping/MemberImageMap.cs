@@ -14,5 +14,9 @@ public class MemberImageMap : IEntityTypeConfiguration<MemberImage>
 
         builder.Property(x => x.Version)
             .IsRowVersion();
+
+        builder.HasOne<Member>()
+            .WithOne()
+            .HasForeignKey<MemberImage>(x => x.MemberId);
     }
 }

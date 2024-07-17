@@ -6,5 +6,5 @@ public interface IChapterEmailRepository : IReadWriteRepository<ChapterEmail>
 {
     IDeferredQueryMultiple<ChapterEmail> GetByChapterId(Guid chapterId);
 
-    IDeferredQuerySingle<ChapterEmail> GetByChapterId(Guid chapterId, EmailType type);
+    IDeferredQuerySingleOrDefault<ChapterEmail> GetByChapterId(Guid chapterId, EmailType type);
 }

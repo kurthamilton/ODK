@@ -1,8 +1,10 @@
 ﻿namespace ODK.Core.Emails;
 
-public class SentEmail
+public class SentEmail : IDatabaseEntity
 {
     public Guid ChapterEmailProviderId { get; set; }
+
+    public Guid Id { get; set; }
 
     public DateTime SentDate { get; set; }
 

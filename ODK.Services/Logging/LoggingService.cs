@@ -8,16 +8,19 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 {
     private readonly ILogger _logger;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-    public LoggingService(ILogger logger, IUnitOfWork unitOfWork)
+    public LoggingService(ILogger logger, IUnitOfWorkFactory unitOfWorkFactory, IUnitOfWork unitOfWork)
         : base(unitOfWork)
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
+        _unitOfWorkFactory = unitOfWorkFactory;
     }
 
     public async Task DeleteError(Guid currentMemberId, int logMessageId)
     {        
+
         var currentMember = await _unitOfWork.MemberRepository.GetById(currentMemberId).RunAsync();
         var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByChapterId(currentMember.ChapterId).RunAsync();
         AssertMemberIsChapterAdmin(currentMemberId, currentMember.ChapterId, chapterAdminMembers);
@@ -49,8 +52,11 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
     public async Task LogError(Exception exception, HttpRequest request)
     {
+        // Create new unit of work to avoid re-instigating any previous context errors
+        var unitOfWork = _unitOfWorkFactory.Create();
+
         var error = Error.FromException(exception);
-        _unitOfWork.ErrorRepository.Add(error);
+        unitOfWork.ErrorRepository.Add(error);
 
         var properties = new List<ErrorProperty>
         {
@@ -101,8 +107,8 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
             Value = exception.StackTrace?.Replace(Environment.NewLine, "<br>") ?? ""
         });
 
-        Exception? innerException = exception.InnerException;
-        int innerExceptionCount = 0;
+        var innerException = exception.InnerException;
+        var innerExceptionCount = 0;
         while (innerException != null)
         {
             properties.Add(new ErrorProperty
@@ -122,15 +128,18 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
             innerExceptionCount++;
         }
         
-        _unitOfWork.ErrorPropertyRepository.AddMany(properties);
+        unitOfWork.ErrorPropertyRepository.AddMany(properties);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 
     public async Task LogError(Exception exception, IDictionary<string, string> data)
     {
+        // Create new unit of work to avoid re-instigating any previous context errors
+        var unitOfWork = _unitOfWorkFactory.Create();
+
         var error = Error.FromException(exception);
-        _unitOfWork.ErrorRepository.Add(error);
+        unitOfWork.ErrorRepository.Add(error);
 
         var properties = data
             .Select(x => new ErrorProperty
@@ -141,8 +150,8 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
             })
             .ToArray();
 
-        _unitOfWork.ErrorPropertyRepository.AddMany(properties);
+        unitOfWork.ErrorPropertyRepository.AddMany(properties);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 }

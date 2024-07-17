@@ -11,5 +11,9 @@ public class MemberActivationTokenMap : IEntityTypeConfiguration<MemberActivatio
         builder.ToTable("MemberActivationTokens");
 
         builder.HasKey(x => x.MemberId);
+
+        builder.HasOne<Member>()
+            .WithOne()
+            .HasForeignKey<MemberActivationToken>(x => x.MemberId);
     }
 }

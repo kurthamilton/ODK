@@ -44,11 +44,13 @@ public class EmailService : IEmailService
     public async Task SendContactEmail(Chapter chapter, string from, string message, 
         IDictionary<string, string> parameters)
     {
+        var type = EmailType.ContactRequest;
+
         var (chapterAdminMembers, adminMembers, email, chapterEmail) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetAdminMembersByChapterId(chapter.Id),
-            x => x.EmailRepository.GetByType(EmailType.ContactRequest),
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.ContactRequest));
+            x => x.EmailRepository.GetByType(type),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
 
         email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
 
@@ -61,8 +63,8 @@ public class EmailService : IEmailService
         IDictionary<string, string> parameters)
     {
         var (email, chapterEmail) = await _unitOfWork.RunAsync(
-            x => x.EmailRepository.GetByType(EmailType.ContactRequest),
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.ContactRequest));
+            x => x.EmailRepository.GetByType(type),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
 
         email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
 
@@ -83,11 +85,13 @@ public class EmailService : IEmailService
     public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, 
         IDictionary<string, string> parameters)
     {
+        var type = EmailType.NewMemberAdmin;
+
         var (chapterAdminMembers, adminMembers, email, chapterEmail) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetAdminMembersByChapterId(chapter.Id),
-            x => x.EmailRepository.GetByType(EmailType.NewMemberAdmin),
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.NewMemberAdmin));
+            x => x.EmailRepository.GetByType(type),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
 
         email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
 

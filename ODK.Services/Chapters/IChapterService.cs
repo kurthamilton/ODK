@@ -6,9 +6,9 @@ public interface IChapterService
 {    
     Task<ChapterLinks?> GetChapterLinks(Guid chapterId);
 
-    Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
-    
-    Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid currentMemberId, Guid chapterId);
+    Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);        
+
+    Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid? currentMemberId, Guid chapterId);
 
     Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Guid chapterId);
 
@@ -18,5 +18,5 @@ public interface IChapterService
 
     Task<ChapterTexts> GetChapterTexts(Guid chapterId);
 
-    Task SendContactMessage(Guid chapterId, string emailAddress, string message, string recaptchaToken);
+    Task SendContactMessage(Chapter chapter, string emailAddress, string message, string recaptchaToken);
 }

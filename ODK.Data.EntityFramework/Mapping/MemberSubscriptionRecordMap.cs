@@ -10,10 +10,14 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
     {
         builder.ToTable("MemberSubscriptionLog");
 
-        builder.HasNoKey();
+        builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Type)
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
+
+        builder.HasOne<Member>()
+            .WithMany()
+            .HasForeignKey(x => x.MemberId);
     }
 }

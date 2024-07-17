@@ -8,11 +8,9 @@ public class MemberPasswordMap : IEntityTypeConfiguration<MemberPassword>
 {
     public void Configure(EntityTypeBuilder<MemberPassword> builder)
     {
-        builder.ToTable("Members");
+        builder.ToTable("MemberPasswords");
 
         builder.HasKey(x => x.MemberId);
-
-        builder.Property(x => x.Salt).HasColumnName("PasswordSalt");
 
         builder.HasOne<Member>()
             .WithOne()
