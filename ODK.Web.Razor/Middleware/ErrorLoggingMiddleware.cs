@@ -46,9 +46,9 @@ public class ErrorLoggingMiddleware
             {
                 await logger.LogError(ex, request);
             }            
-            catch (Exception inner)
+            catch
             {
-                int stop = 1;
+                // do nothing
             }
         }
     }

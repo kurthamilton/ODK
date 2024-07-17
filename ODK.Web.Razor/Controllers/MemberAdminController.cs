@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services;
+using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Members;
@@ -15,13 +16,16 @@ public class MemberAdminController : OdkControllerBase
     private readonly IChapterAdminService _chapterAdminService;
     private readonly IEmailService _emailService;
     private readonly IMemberAdminService _memberAdminService;
-    
+    private readonly IRequestCache _requestCache;
+
     public MemberAdminController(IMemberAdminService memberAdminService, IEmailService emailService,
-        IChapterAdminService chapterAdminService)
+        IChapterAdminService chapterAdminService,
+        IRequestCache requestCache)
     {
         _chapterAdminService = chapterAdminService;
         _emailService = emailService;
         _memberAdminService = memberAdminService;
+        _requestCache = requestCache;
     }
 
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/Delete")]
@@ -62,7 +66,8 @@ public class MemberAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/Members/AdminMembers/Add")]
     public async Task<IActionResult> AddAdminMember(string chapterName, [FromForm] AdminMemberAddFormViewModel viewModel)
     {
-        ServiceResult result = await _chapterAdminService.AddChapterAdminMember(MemberId, chapterName, 
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var result = await _chapterAdminService.AddChapterAdminMember(MemberId, chapter.Id, 
             viewModel.MemberId!.Value);
         if (result.Success)
         {
@@ -79,8 +84,8 @@ public class MemberAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/Members/AdminMembers/{id:guid}/Delete")]
     public async Task<IActionResult> AddAdminMember(string chapterName, Guid id)
     {
-        ServiceResult result = await _chapterAdminService.DeleteChapterAdminMember(MemberId, chapterName,
-            id);
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var result = await _chapterAdminService.DeleteChapterAdminMember(MemberId, chapter.Id, id);
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Admin member removed", FeedbackType.Success));

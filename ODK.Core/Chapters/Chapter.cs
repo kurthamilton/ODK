@@ -13,6 +13,4 @@ public class Chapter : IDatabaseEntity
     public string Name { get; set; } = "";
 
     public string? RedirectUrl { get; set; }
-
-    public string? WelcomeText { get; set; }
 }

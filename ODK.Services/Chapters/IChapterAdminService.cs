@@ -4,15 +4,15 @@ namespace ODK.Services.Chapters;
 
 public interface IChapterAdminService
 {
-    Task<ServiceResult> AddChapterAdminMember(Guid currentMemberId, string chapterName, Guid memberId);
+    Task<ServiceResult> AddChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
 
-    Task<ServiceResult> CreateChapterProperty(Guid currentMemberId, Chapter chapter, CreateChapterProperty model);
+    Task<ServiceResult> CreateChapterProperty(Guid currentMemberId, Guid chapterId, CreateChapterProperty model);
 
-    Task<ServiceResult> CreateChapterQuestion(Guid currentMemberId, Chapter chapter, CreateChapterQuestion model);
+    Task<ServiceResult> CreateChapterQuestion(Guid currentMemberId, Guid chapterId, CreateChapterQuestion model);
 
     Task<ServiceResult> CreateChapterSubscription(Guid currentMemberId, Guid chapterId, CreateChapterSubscription model);
 
-    Task<ServiceResult> DeleteChapterAdminMember(Guid currentMemberId, string chapterName, Guid memberId);
+    Task<ServiceResult> DeleteChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId);
 
     Task<ServiceResult> DeleteChapterContactRequest(Guid currentMemberId, Guid id);
 
@@ -26,7 +26,7 @@ public interface IChapterAdminService
 
     Task<ChapterAdminMemberDto> GetChapterAdminMemberDto(Guid currentMemberId, Guid chapterId, Guid memberId);
 
-    Task<IReadOnlyCollection<ChapterAdminMemberDto>> GetChapterAdminMemberDtos(Guid currentMemberId, Guid chapterId);
+    Task<ChapterAdminMembersDto> GetChapterAdminMemberDtos(Guid currentMemberId, Guid chapterId);
 
     Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(Guid currentMemberId, Guid chapterId);
 
@@ -44,23 +44,23 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid currentMemberId, Guid chapterId);
 
-    Task<ServiceResult> UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember adminMember);
+    Task<ServiceResult> UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember model);
 
-    Task UpdateChapterLinks(Guid currentMemberId, Chapter chapter, UpdateChapterLinks links);
+    Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links);
 
-    Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Chapter chapterId, UpdateChapterMembershipSettings model);
+    Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, UpdateChapterMembershipSettings model);
 
-    Task<ServiceResult> UpdateChapterPaymentSettings(Guid currentMemberId, Chapter chapter, UpdateChapterPaymentSettings model);
+    Task<ServiceResult> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId, UpdateChapterPaymentSettings model);
 
-    Task<ServiceResult> UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty property);
+    Task<ServiceResult> UpdateChapterProperty(Guid currentMemberId, Guid propertyId, UpdateChapterProperty model);
 
     Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(Guid currentMemberId, Guid propertyId, int moveBy);
 
-    Task<ServiceResult> UpdateChapterQuestion(Guid currentMemberId, Guid questionId, CreateChapterQuestion question);
+    Task<ServiceResult> UpdateChapterQuestion(Guid currentMemberId, Guid questionId, CreateChapterQuestion model);
 
     Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(Guid currentMemberId, Guid questionId, int moveBy);
 
-    Task<ServiceResult> UpdateChapterSubscription(Guid currentMemberId, Guid subscriptionId, CreateChapterSubscription subscription);
+    Task<ServiceResult> UpdateChapterSubscription(Guid currentMemberId, Guid subscriptionId, CreateChapterSubscription model);
 
-    Task<ServiceResult> UpdateChapterTexts(Guid currentMemberId, string chapterName, UpdateChapterTexts texts);
+    Task<ServiceResult> UpdateChapterTexts(Guid currentMemberId, Guid chapterId, UpdateChapterTexts model);
 }

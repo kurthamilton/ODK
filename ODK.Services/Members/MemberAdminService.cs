@@ -43,34 +43,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return await GetMember(currentMemberId, memberId, superAdmin: false);
     }
     
-    public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId, bool requireSuperAdmin = false)
-    {
-        var (chapterAdminMembers, members, currentMember) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetByChapterId(chapterId, true),
-            x => x.MemberRepository.GetById(currentMemberId));
-
-        if (requireSuperAdmin)
-        {            
-            AssertMemberIsChapterSuperAdmin(currentMember, chapterId, chapterAdminMembers);
-        }
-        else
-        {
-            AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
-        }
-
-        return members;
-    }
-
     public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, MemberFilter filter)
     {
-        var (chapterAdminMembers, members, memberSubscriptions, membershipSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(filter.ChapterId),
+        var (members, memberSubscriptions, membershipSettings) = await GetChapterAdminRestrictedContent(currentMemberId, filter.ChapterId,
             x => x.MemberRepository.GetByChapterId(filter.ChapterId, true),
             x => x.MemberSubscriptionRepository.GetByChapterId(filter.ChapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(filter.ChapterId));
-
-        AssertMemberIsChapterAdmin(currentMemberId, filter.ChapterId, chapterAdminMembers);
 
         var memberSubscriptionsDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);
 
@@ -106,12 +84,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task<MembersDto> GetMembersDto(Guid currentMemberId, Guid chapterId)
     {
-        var (chapterAdminMembers, members, subscriptions) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+        var (members, subscriptions) = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.MemberRepository.GetByChapterId(chapterId),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapterId));
-
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
 
         return new MembersDto
         {
@@ -133,9 +108,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId)
     {
-        await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+        var (chapterAdminMembers, currentMember, subscriptions) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberSubscriptionRepository.GetByChapterId(chapterId));
 
-        return await _unitOfWork.MemberSubscriptionRepository.GetByChapterId(chapterId).RunAsync();
+        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+
+        return subscriptions;
     }
     
     public async Task RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees)

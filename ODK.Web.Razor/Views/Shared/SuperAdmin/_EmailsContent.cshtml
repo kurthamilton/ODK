@@ -5,7 +5,7 @@
 @inject IEmailAdminService EmailAdminService
 @{
     var memberId = User.MemberId();
-    var emails = await EmailAdminService.GetEmails(memberId, Model.Id);
+    var emails = await EmailAdminService.GetEmails(memberId);
 }
 
 <table class="table table-striped">

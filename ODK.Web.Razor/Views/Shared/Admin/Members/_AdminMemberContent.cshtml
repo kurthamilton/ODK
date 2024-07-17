@@ -6,7 +6,7 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
     {
-        AdminEmailAddress = Model.AdminMember.AdminEmailAddress ?? "",
+        AdminEmailAddress = Model.AdminMember.AdminEmailAddress,
         Name = Model.Member.FullName,
         ReceiveContactEmails = Model.AdminMember.ReceiveContactEmails,
         ReceiveNewMemberEmails = Model.AdminMember.ReceiveNewMemberEmails,

@@ -10,7 +10,7 @@ public class SiteSettingsMap : IEntityTypeConfiguration<SiteSettings>
     {
         builder.ToTable("Settings");
 
-        builder.HasNoKey();
+        builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Version)
             .IsRowVersion();

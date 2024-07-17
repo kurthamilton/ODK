@@ -6,9 +6,8 @@ namespace ODK.Web.Razor.Models.Admin.Members;
 public class AdminMemberFormViewModel
 {
     [DisplayName("Admin email address")]
-    [Required]
     [EmailAddress]
-    public string AdminEmailAddress { get; set; } = "";
+    public string? AdminEmailAddress { get; set; }
 
     public string? Name { get; set; }
 

@@ -74,11 +74,12 @@ public class MemberService : IMemberService
     
     public async Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile model)
     {
-        var (chapter, chapterProperties, membershipSettings, existing) = await _unitOfWork.RunAsync(
+        var (chapter, chapterProperties, membershipSettings, existing, siteSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetByEmailAddress(model.EmailAddress));
+            x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
+            x => x.SiteSettingsRepository.Get());
 
         var validationResult = ValidateMemberProfile(chapterProperties, model);
         if (!validationResult.Success)
@@ -113,7 +114,8 @@ public class MemberService : IMemberService
         
         var subscription = new MemberSubscription
         {
-            ExpiryDate = member.CreatedDate.AddMonths(membershipSettings.TrialPeriodMonths),
+            ExpiryDate = member.CreatedDate
+                .AddMonths(membershipSettings?.TrialPeriodMonths ?? siteSettings.DefaultTrialPeriodMonths),
             MemberId = member.Id,
             Type = SubscriptionType.Trial
         };
@@ -147,19 +149,26 @@ public class MemberService : IMemberService
 
         await _unitOfWork.SaveChangesAsync();
 
-        var url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
+        try
         {
-            { "chapter.name", chapter!.Name },
-            { "token", HttpUtility.UrlEncode(activationToken) }
-        });
+            var url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
+            {
+                { "chapter.name", chapter!.Name },
+                { "token", HttpUtility.UrlEncode(activationToken) }
+            });
 
-        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
+            await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
+            {
+                { "chapter.name", chapter.Name },
+                { "url", url }
+            });
+
+            return ServiceResult.Successful();
+        }        
+        catch
         {
-            { "chapter.name", chapter.Name },
-            { "url", url }
-        });
-
-        return ServiceResult.Successful();
+            return ServiceResult.Failure("Your account has been created but an error occurred sending an email.");
+        }
     }
 
     public async Task DeleteMember(Guid memberId)

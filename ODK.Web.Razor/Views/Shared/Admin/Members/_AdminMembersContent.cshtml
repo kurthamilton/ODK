@@ -10,11 +10,17 @@
 @{
     var memberId = User.MemberId();
 
-    var members = await ChapterAdminService.GetChapterAdminMemberDtos(memberId, Model.Id);
-    
+    var dto = await ChapterAdminService.GetChapterAdminMemberDtos(memberId, Model.Id);
+
+    var (members, adminMembers) = (dto.Members, dto.AdminMembers);
+
+    var adminMemberDictionary = adminMembers.ToDictionary(x => x.MemberId);
+    var memberDictionary = members.ToDictionary(x => x.Id);
+
     var adminMemberOptions = members        
-        .OrderBy(x => x.Member.FullName)
-        .Select(x => new SelectListItem { Value = x.Member.Id.ToString(), Text = x.Member.FullName });
+        .Where(x => !adminMemberDictionary.ContainsKey(x.Id))
+        .OrderBy(x => x.FullName)
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName });
 }
 
 <h2>Admin members</h2>
@@ -48,33 +54,35 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (var adminMember in members.OrderBy(x => x.Member.FullName))
+    @foreach (var adminMember in adminMembers.OrderBy(x => memberDictionary[x.MemberId].FullName))
     {
+        var member = memberDictionary[adminMember.MemberId];
+
         <tr>
             <td>
-                <a href="/@Model.Name/Admin/Members/AdminMembers/@adminMember.Member.Id">@adminMember.Member.FullName</a>
+                <a href="/@Model.Name/Admin/Members/AdminMembers/@member.Id">@member.FullName</a>
             </td>
-            <td>@adminMember.AdminMember.AdminEmailAddress</td>
+            <td>@adminMember.AdminEmailAddress</td>
             <td>
-                @if (adminMember.AdminMember.ReceiveContactEmails)
+                @if (adminMember.ReceiveContactEmails)
                 {
                     <i class="fa fa-check"></i>
                 }
             </td>
             <td>
-                @if (adminMember.AdminMember.ReceiveNewMemberEmails)
+                @if (adminMember.ReceiveNewMemberEmails)
                 {
                     <i class="fa fa-check"></i>
                 }
             </td>
             <td>
-                @if (adminMember.AdminMember.SendNewMemberEmails)
+                @if (adminMember.SendNewMemberEmails)
                 {
                     <i class="fa fa-check"></i>
                 }
             </td>
             <td>
-                <form method="post" action="/@Model.Name/Admin/Members/AdminMembers/@adminMember.Member.Id/Delete">
+                <form method="post" action="/@Model.Name/Admin/Members/AdminMembers/@member.Id/Delete">
                     <button data-bs-toggle="tooltip" data-bs-title="Remove" 
                             class="btn-icon text-danger"
                             onclick="return confirm('Are you sure you want to remove admin access for this member?');">

@@ -22,7 +22,7 @@ public class InstagramModel : SuperAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(InstagramFormViewModel viewModel)
     {
-        await _settingsService.UpdateInstagramSettings(Chapter.Id, CurrentMemberId, viewModel.Scrape, viewModel.ScraperUserAgent);
+        await _settingsService.UpdateInstagramSettings(CurrentMemberId, viewModel.Scrape, viewModel.ScraperUserAgent);
 
         AddFeedback(new FeedbackViewModel("Instagram settings updated", FeedbackType.Success));
 

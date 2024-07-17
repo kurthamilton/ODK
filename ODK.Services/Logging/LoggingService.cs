@@ -22,8 +22,8 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
     {        
 
         var currentMember = await _unitOfWork.MemberRepository.GetById(currentMemberId).RunAsync();
-        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByChapterId(currentMember.ChapterId).RunAsync();
-        AssertMemberIsChapterAdmin(currentMemberId, currentMember.ChapterId, chapterAdminMembers);
+        
+        // AssertMemberIsSuperAdmin(currentMemberId, currentMember.ChapterId, chapterAdminMembers);
 
         // await _loggingRepository.DeleteLogMessageAsync(logMessageId);
     }
@@ -31,8 +31,8 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
     public async Task DeleteAllErrors(Guid currentMemberId, int logMessageId)
     {
         var currentMember = await _unitOfWork.MemberRepository.GetById(currentMemberId).RunAsync();
-        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByChapterId(currentMember.ChapterId).RunAsync();
-        AssertMemberIsChapterAdmin(currentMemberId, currentMember.ChapterId, chapterAdminMembers);
+        
+        // AssertMemberIsSuperAdmin(currentMemberId, currentMember.ChapterId, chapterAdminMembers);
 
         // LogMessage? logMessage = await _loggingRepository.GetLogMessageAsync(logMessageId);
         // if (logMessage == null)

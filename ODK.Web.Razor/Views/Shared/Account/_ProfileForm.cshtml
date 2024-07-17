@@ -29,7 +29,8 @@
             Value = memberProperties.TryGetValue(x.Id, out string? value) ? value ?? "" : "",
         }));
 
-    var membershipSettings = dto.MembershipSettings;
+    var (membershipSettings, siteSettings) = (dto.MembershipSettings, dto.SiteSettings);
+    var trialPeriodMonths = membershipSettings?.TrialPeriodMonths ?? siteSettings.DefaultTrialPeriodMonths;
 }
 
 <div class="form-group mb-3 @(Model.MemberId == null ? "required" : null)">
@@ -193,13 +194,10 @@
 
     <div class="mb-3 form-check required">
         @Html.CheckBoxFor(x => x.SubscriptionPolicy, new { @class = "form-check-input" })
-        
-        @if (membershipSettings != null)
-        {
-            <label for="@Html.IdFor(x => x.SubscriptionPolicy)" class="form-check-label">
-                If I choose to continue attending after my free @membershipSettings.TrialPeriodMonths month trial period has expired, I agree to purchase a subscription.
-            </label>
-        }
+
+        <label for="@Html.IdFor(x => x.SubscriptionPolicy)" class="form-check-label">
+            If I choose to continue attending after my free @trialPeriodMonths month trial period has expired, I agree to purchase a subscription.
+        </label>
         @Html.ValidationMessageFor(x => x.SubscriptionPolicy)
     </div>
 }

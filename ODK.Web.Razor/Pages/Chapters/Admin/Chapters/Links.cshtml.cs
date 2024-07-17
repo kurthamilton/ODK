@@ -22,7 +22,7 @@ public class LinksModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(ChapterLinksFormViewModel viewModel)
     {
-        await _chapterAdminService.UpdateChapterLinks(CurrentMemberId, Chapter, new UpdateChapterLinks
+        await _chapterAdminService.UpdateChapterLinks(CurrentMemberId, Chapter.Id, new UpdateChapterLinks
         {
             Facebook = viewModel.Facebook,
             Instagram = viewModel.Instagram,

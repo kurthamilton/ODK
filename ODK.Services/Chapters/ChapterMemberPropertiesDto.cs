@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Settings;
 
 namespace ODK.Services.Chapters;
 public class ChapterMemberPropertiesDto
@@ -10,5 +11,7 @@ public class ChapterMemberPropertiesDto
 
     public required IReadOnlyCollection<MemberProperty> MemberProperties { get; set; }
 
-    public required ChapterMembershipSettings MembershipSettings { get; set; }
+    public required ChapterMembershipSettings? MembershipSettings { get; set; }
+
+    public required SiteSettings SiteSettings { get; set; }
 }

@@ -1,5 +1,4 @@
-﻿using ODK.Core.Images;
-using ODK.Core.Media;
+﻿using ODK.Core.Media;
 using ODK.Data.Core;
 using ODK.Services.Exceptions;
 using ODK.Services.Imaging;

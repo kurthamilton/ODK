@@ -1,5 +1,4 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Settings;
+﻿using ODK.Core.Settings;
 using ODK.Data.Core;
 
 namespace ODK.Services.Settings;
@@ -20,15 +19,11 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         return settings!;
     }
 
-    public async Task<ServiceResult> UpdateInstagramSettings(Guid chapterId, Guid currentMemberId, bool scrape,
+    public async Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, bool scrape,
         string scraperUserAgent)
     {
-        var (chapterAdminMembers, currentMember, settings) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
+        var settings = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SiteSettingsRepository.Get());
-
-        AssertMemberIsChapterSuperAdmin(currentMember, chapterId, chapterAdminMembers);
 
         settings.ScrapeInstagram = scrape;
         settings.InstagramScraperUserAgent = scraperUserAgent;

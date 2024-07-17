@@ -8,8 +8,6 @@ public interface IMemberAdminService
 
     Task<Member?> GetMember(Guid currentMemberId, Guid memberId);
 
-    Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId, bool requireSuperAdmin = false);
-
     Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, MemberFilter filter);
 
     Task<MembersDto> GetMembersDto(Guid currentMemberId, Guid chapterId);

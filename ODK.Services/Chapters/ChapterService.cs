@@ -41,18 +41,20 @@ public class ChapterService : IChapterService
     
     public async Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid? currentMemberId, Guid chapterId)
     {        
-        var (chapterProperties, chapterPropertyOptions, memberProperties, membershipSettings) = await _unitOfWork.RunAsync(
+        var (chapterProperties, chapterPropertyOptions, memberProperties, membershipSettings, siteSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapterId),
             x => x.MemberPropertyRepository.GetByMemberId(currentMemberId ?? Guid.Empty),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
+            x => x.SiteSettingsRepository.Get());
 
         return new ChapterMemberPropertiesDto
         {
             ChapterProperties = chapterProperties,
             ChapterPropertyOptions = chapterPropertyOptions,
             MemberProperties = memberProperties,
-            MembershipSettings = membershipSettings
+            MembershipSettings = membershipSettings,
+            SiteSettings = siteSettings
         };
     }
 
@@ -69,7 +71,7 @@ public class ChapterService : IChapterService
         {
             ChapterSubscriptions = chapterSubscriptions,
             Country = country,
-            MembershipSettings = membershipSettings,
+            MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = memberSubscription,
             PaymentSettings = paymentSettings
         };

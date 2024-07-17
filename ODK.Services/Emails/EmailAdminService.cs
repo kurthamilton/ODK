@@ -18,11 +18,8 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     public async Task<ServiceResult> AddChapterEmailProvider(Guid currentMemberId, Guid chapterId, 
         UpdateChapterEmailProvider model)
     {
-        var (chapterAdminMembers, existing) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+        var existing = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.ChapterEmailProviderRepository.GetByChapterId(chapterId));
-
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
 
         var provider = new ChapterEmailProvider
         {
@@ -52,16 +49,13 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     public async Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type)
     {
-        var (chapterAdminMembers, chapterEmail) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+        var chapterEmail = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.ChapterEmailRepository.GetByChapterId(chapterId, type));
 
         if (chapterEmail == null)
         {
             throw new OdkNotFoundException();
         }
-
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
 
         _unitOfWork.ChapterEmailRepository.Delete(chapterEmail);
         await _unitOfWork.SaveChangesAsync();
@@ -94,12 +88,9 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     public async Task<ChapterEmail> GetChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type)
     {
-        var (chapterAdminMembers, chapterEmail, email) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+        var (chapterEmail, email) = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.ChapterEmailRepository.GetByChapterId(chapterId, type),
             x => x.EmailRepository.GetByType(type));
-
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
 
         if (chapterEmail != null)
         {
@@ -130,24 +121,16 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     public async Task<IReadOnlyCollection<ChapterEmailProvider>> GetChapterEmailProviders(Guid currentMemberId, Guid chapterId)
     {
-        var (chapterAdminMembers, providers) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+        return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.ChapterEmailProviderRepository.GetByChapterId(chapterId));
-
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
-
-        return providers;
     }
 
     public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid currentMemberId, Guid chapterId)
     {
-        var (chapterAdminMembers, chapterEmails, emails) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+        var (chapterEmails, emails) = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.ChapterEmailRepository.GetByChapterId(chapterId),
             x => x.EmailRepository.GetAll());
 
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
-        
         var chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type);
         var emailDictionary = emails.ToDictionary(x => x.Type);
 
@@ -183,38 +166,23 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             .ToArray();
     }
 
-    public async Task<Email> GetEmail(Guid currentMemberId, Guid currentChapterId, EmailType type)
+    public async Task<Email> GetEmail(Guid currentMemberId, EmailType type)
     {
-        var (chapterAdminMembers, email, currentMember) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(currentChapterId),
-            x => x.EmailRepository.GetByType(type),
-            x => x.MemberRepository.GetById(currentMemberId));
-
-        AssertMemberIsChapterSuperAdmin(currentMember, currentChapterId, chapterAdminMembers);
-
-        return email;
+        return await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.EmailRepository.GetByType(type));
     }
 
-    public async Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId, Guid currentChapterId)
+    public async Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId)
     {
-        var (chapterAdminMembers, emails, currentMember) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(currentChapterId),
-            x => x.EmailRepository.GetAll(),
-            x => x.MemberRepository.GetById(currentMemberId));
-
-        AssertMemberIsChapterSuperAdmin(currentMember, currentChapterId, chapterAdminMembers);
-
-        return emails;
+        return await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.EmailRepository.GetAll());
     }
 
     public async Task<ServiceResult> UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, 
         UpdateEmail update)
     {
-        var (chapterAdminMembers, chapterEmail) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+        var chapterEmail = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.ChapterEmailRepository.GetByChapterId(chapterId, type));
-
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
 
         if (chapterEmail == null)
         {
@@ -228,7 +196,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         chapterEmail.HtmlContent = update.HtmlContent;
         chapterEmail.Subject = update.Subject;
 
-        ServiceResult validationResult = ValidateChapterEmail(chapterEmail);
+        var validationResult = ValidateChapterEmail(chapterEmail);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -270,15 +238,11 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateEmail(Guid currentMemberId, Guid currentChapterId, EmailType type, UpdateEmail email)
+    public async Task<ServiceResult> UpdateEmail(Guid currentMemberId, EmailType type, UpdateEmail email)
     {
-        var (chapterAdminMembers, existing, currentMember) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(currentChapterId),
-            x => x.EmailRepository.GetByType(type),
-            x => x.MemberRepository.GetById(currentMemberId));
+        var existing = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.EmailRepository.GetByType(type));
 
-        AssertMemberIsChapterSuperAdmin(currentMember, currentChapterId, chapterAdminMembers);
-        
         existing.HtmlContent = email.HtmlContent;
         existing.Subject = email.Subject;
 

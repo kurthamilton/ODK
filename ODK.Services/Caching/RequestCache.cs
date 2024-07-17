@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Data.Core;
 
@@ -17,24 +18,32 @@ public class RequestCache : IRequestCache
     {
         _unitOfWork = unitOfWork;
 
-        _chapters = new Dictionary<string, Chapter>();
+        _chapters = new Dictionary<string, Chapter>(StringComparer.InvariantCultureIgnoreCase);
         _chapterMembershipSettings = new Dictionary<Guid, ChapterMembershipSettings?>();
         _members = new Dictionary<Guid, Member>();
         _memberSubscriptions = new Dictionary<Guid, MemberSubscription?>();
     }
 
-    public async Task<Chapter?> GetChapterAsync(Guid chapterId)
+    public async Task<Chapter> GetChapterAsync(Guid chapterId)
     {
         var chapters = await GetChaptersAsync();
-        return chapters
-            .FirstOrDefault(x => x.Id == chapterId);
+        var chapter = chapters.FirstOrDefault(x => x.Id == chapterId);
+        if (chapter == null)
+        {
+            throw new OdkNotFoundException();
+        }
+        return chapter;
     }
 
-    public async Task<Chapter?> GetChapterAsync(string name)
+    public async Task<Chapter> GetChapterAsync(string name)
     {
         var chapters = await GetChaptersAsync();
-        return chapters
-            .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+        var chapter = chapters.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+        if (chapter == null)
+        {
+            throw new OdkNotFoundException();
+        }
+        return chapter;
     }
 
     public async Task<IReadOnlyCollection<Chapter>> GetChaptersAsync()

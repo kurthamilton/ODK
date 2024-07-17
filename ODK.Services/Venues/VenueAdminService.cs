@@ -19,11 +19,12 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
     public async Task<ServiceResult> CreateVenue(Guid currentMemberId, CreateVenue model)
     {
-        var (chapterAdminMembers, existing) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, existing) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(model.ChapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetByName(model.ChapterId, model.Name));
 
-        AssertMemberIsChapterAdmin(currentMemberId, model.ChapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(currentMember, model.ChapterId, chapterAdminMembers);
 
         var venue = new Venue
         {
@@ -56,20 +57,22 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
     public async Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId)
     {
-        var (chapterAdminMembers, venues) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, venues) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetByChapterId(chapterId));
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
         return venues;
     }
 
     public async Task<VenuesDto> GetVenuesDto(Guid currentMemberId, Guid chapterId)
     {
-        var (chapterAdminMembers, venues, events) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, venues, events) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetByChapterId(chapterId),
             x => x.EventRepository.GetByChapterId(chapterId));
-        AssertMemberIsChapterAdmin(currentMemberId, chapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
         return new VenuesDto
         {
             Events = events,
@@ -77,14 +80,15 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         };
     }
 
-    public async Task<ServiceResult> UpdateVenue(Guid memberId, Guid id, CreateVenue model)
+    public async Task<ServiceResult> UpdateVenue(Guid currentMemberId, Guid id, CreateVenue model)
     {       
-        var (chapterAdminMembers, venue, existing) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, venue, existing) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(model.ChapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetById(id),
             x => x.VenueRepository.GetByName(model.ChapterId, model.Name));
 
-        AssertMemberIsChapterAdmin(memberId, model.ChapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(currentMember, model.ChapterId, chapterAdminMembers);
 
         venue.Address = model.Address;
         venue.MapQuery = model.MapQuery;

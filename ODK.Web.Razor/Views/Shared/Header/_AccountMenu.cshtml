@@ -22,6 +22,11 @@
             
                 @if (User.IsInRole(OdkRoles.SuperAdmin))
                 {
+                    if (Model.CurrentChapter != null && Model.CurrentChapter.Id != Model.MemberChapter.Id)
+                    {
+                        <a class="dropdown-item" href="/@Model.CurrentChapter.Name/Admin/Chapter/Text">@Model.CurrentChapter.Name admin</a>
+                    }
+
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="/@Model.MemberChapter.Name/Admin/SuperAdmin/PaymentSettings">Super admin</a>
                 }

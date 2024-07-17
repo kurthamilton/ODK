@@ -11,7 +11,7 @@ public class ChapterMembershipSettingsRepository : WriteRepositoryBase<ChapterMe
     {
     }
 
-    public IDeferredQuerySingle<ChapterMembershipSettings> GetByChapterId(Guid chapterId) => Set()
+    public IDeferredQuerySingleOrDefault<ChapterMembershipSettings> GetByChapterId(Guid chapterId) => Set()
         .Where(x => x.ChapterId == chapterId)
-        .DeferredSingle();
+        .DeferredSingleOrDefault();
 }
