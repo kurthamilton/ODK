@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 
 namespace ODK.Services.Members;
 
@@ -27,6 +28,8 @@ public interface IMemberService
     Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress);
 
     Task RotateMemberImage(Guid memberId, int degrees);
+
+    Task SendActivationEmailAsync(Chapter chapter, Member member, string activationToken);
 
     Task UpdateMemberEmailOptIn(Guid memberId, bool optIn);
 

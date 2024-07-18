@@ -11,6 +11,10 @@ public class MemberActivationTokenRepository : WriteRepositoryBase<MemberActivat
     {
     }
 
+    public IDeferredQuerySingleOrDefault<MemberActivationToken> GetByMemberId(Guid memberId) => Set()
+        .Where(x => x.MemberId == memberId)
+        .DeferredSingleOrDefault();
+
     public IDeferredQuerySingleOrDefault<MemberActivationToken> GetByToken(string activationToken) => Set()
         .Where(x => x.ActivationToken == activationToken)
         .DeferredSingleOrDefault();

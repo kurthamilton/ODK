@@ -19,6 +19,8 @@ public interface IMemberAdminService
     Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId);
     
     Task RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees);
-    
+
+    Task SendActivationEmail(Guid currentMemberId, Guid memberId);
+
     Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid memberId, UpdateMemberSubscription subscription);
 }
