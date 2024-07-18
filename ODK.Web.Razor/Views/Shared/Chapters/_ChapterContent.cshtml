@@ -4,30 +4,22 @@
 @using ODK.Services.Chapters
 @using ODK.Services.Members
 @using ODK.Services.SocialMedia
+@using ODK.Web.Common.Chapters
 @using ODK.Web.Razor.Models.Members
 @using ODK.Web.Razor.Models.SocialMedia
-@model ODK.Web.Razor.Models.Chapters.ChapterContentViewModel
-@inject IChapterService ChapterService
-@inject IMemberService MemberService
-@inject IInstagramService InstagramService
-@{
-    var dto = await InstagramService.GetInstagramPosts(Model.Chapter.Id, 8);    
-    var (links, posts) = (dto.Links, dto.Posts);
-}
+@model ChapterPageViewModel
 
 @if (Model.Member == null || Model.Member.ChapterId != Model.Chapter.Id)
-{
-    var texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
-
+{    
     <h3>Welcome!</h3>
-    @if (!string.IsNullOrEmpty(texts.WelcomeText))
+    @if (!string.IsNullOrEmpty(Model.Texts?.WelcomeText))
     {
-        @Html.Raw(texts.WelcomeText)
+        @Html.Raw(Model.Texts.WelcomeText)
     }
 }
 else
 {
-    var latestMembers = await MemberService.GetLatestMembers(Model.Member, Model.Chapter.Id);
+    var latestMembers = Model.LatestMembers;
 
     var memberListViewModel = new MemberListViewModel(Model.Chapter, latestMembers.Select(x => new ListMemberViewModel(Model.Chapter, x)))
     {
@@ -39,12 +31,12 @@ else
     @await Html.PartialAsync("Members/_MemberList", memberListViewModel)
 }
                 
-@if (posts.Count > 0)
+@if (Model.InstagramPosts.Count > 0)
 {
     <div class="mt-3">
         <h3>Latest from Instagram</h3>
         <div class="row row-cols-2 row-cols-lg-4 g-0">
-            @foreach (InstagramPost post in posts)
+            @foreach (var post in Model.InstagramPosts)
             {
                 <div class="col">
                     @await Html.PartialAsync("Components/_InstagramPost", 
@@ -56,8 +48,8 @@ else
         <div class="d-flex justify-content-end align-content-center">
             <div>
                 <i class="fab fa-instagram mr-1"></i>
-                <a href="https://www.instagram.com/@links.InstagramName" target="_blank">
-                    @links.InstagramName
+                <a href="https://www.instagram.com/@Model.Links.InstagramName" target="_blank">
+                    @Model.Links.InstagramName
                 </a>
             </div>
         </div>

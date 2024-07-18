@@ -1,9 +1,7 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services.Chapters
-@model ODK.Web.Razor.Models.About.AboutContentViewModel
-@inject IChapterService ChapterService
+﻿@using ODK.Web.Common.Chapters
+@model AboutPageViewModel
 @{
-    IReadOnlyCollection<ChapterQuestion> questions = await ChapterService.GetChapterQuestions(Model.Chapter.Id);
+    var questions = Model.Questions;
 }
 
 <h3>Frequently asked questions</h3>
@@ -11,7 +9,7 @@
 <div class="accordion" id="questions-accordion">
     @for (int i = 0; i < questions.Count; i++)
     {
-        ChapterQuestion question = questions.ElementAt(i);
+        var question = questions.ElementAt(i);
 
         <div class="accordion-item">
             <h2 class="accordion-header">

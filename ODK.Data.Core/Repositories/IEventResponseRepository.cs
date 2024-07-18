@@ -9,6 +9,7 @@ public interface IEventResponseRepository : IWriteRepository<EventResponse>
     IDeferredQueryMultiple<EventResponse> GetByEventId(Guid eventId);
     IDeferredQueryMultiple<EventResponse> GetByEventIds(IEnumerable<Guid> eventIds);
     IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, bool allEvents = false);
+    IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, IEnumerable<Guid> eventIds);
     IDeferredQuerySingleOrDefault<EventResponse> GetByMemberId(Guid memberId, Guid eventId);
     IDeferredQueryMultiple<EventResponseSummaryDto> GetResponseSummaries(IEnumerable<Guid> eventIds);
 }

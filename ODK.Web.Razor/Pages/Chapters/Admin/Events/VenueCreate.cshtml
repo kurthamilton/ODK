@@ -1,10 +1,15 @@
 ﻿@page "/{chapterName}/Admin/Events/Venues/Create"
+@using ODK.Services.Settings
+@using ODK.Web.Razor.Models.Admin.Venues
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.VenueCreateModel
+@inject ISettingsService SettingsService
 @{
     Layout = "Admin/Events/_EventAdminLayout";
     Model.Title = "Create venue | Admin";
+
+    var settings = await SettingsService.GetSiteSettings();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -14,5 +19,9 @@
         new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Events/Venues", Text = "Venues" },
         new MenuItem { Text = "Create" }
     },
-    Content = await Html.PartialAsync("Admin/Venues/_VenueCreateContent", Model.Chapter)
+    Content = await Html.PartialAsync("Admin/Venues/_VenueCreateContent", new VenueCreateViewModel
+    {
+        Chapter = Model.Chapter,
+        Settings = settings
+    })
 })

@@ -1,14 +1,11 @@
 ﻿@using ODK.Services.Events
+@using ODK.Web.Common.Chapters
 @using ODK.Web.Razor.Models.Events
-@model ODK.Web.Razor.Models.Events.EventsContentViewModel
-@inject IEventService EventService
-@{
-    IReadOnlyCollection<EventResponseViewModel> events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter.Id);
-}
+@model EventsPageViewModel
 
-@if (events.Count > 0)
+@if (Model.Events.Count > 0)
 {
-    @await Html.PartialAsync("Events/_EventList", new EventListViewModel(Model.Chapter, events))
+    @await Html.PartialAsync("Events/_EventList", new EventListViewModel(Model.Chapter, Model.Events))
 }
 else
 {

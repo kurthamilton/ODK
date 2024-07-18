@@ -13,6 +13,6 @@ public interface IEventService
 
     Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Guid chapterId, 
         DateTime? after);
-    
-    Task<ServiceResult> UpdateMemberResponse(Member member, Guid eventId, EventResponseType responseType);
+
+    Task<ServiceResult> UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType);
 }

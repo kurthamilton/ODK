@@ -1,15 +1,16 @@
-using ODK.Services.Caching;
+using ODK.Web.Common.Chapters;
 
 namespace ODK.Web.Razor.Pages.Chapters;
 
-public class ChapterModel : ChapterPageModel
+public class ChapterModel : ChapterPageModel2<ChapterPageViewModel>
 {
-    public ChapterModel(IRequestCache requestCache)
-        : base(requestCache)
+    private readonly IChapterWebService _chapterWebService;
+
+    public ChapterModel(IChapterWebService chapterWebService)
     {
+        _chapterWebService = chapterWebService;
     }
 
-    public void OnGet()
-    {
-    }
+    protected override Task<ChapterPageViewModel> GetViewModelAsync() 
+        => _chapterWebService.GetChapterPageViewModelAsync(MemberId, Name);
 }

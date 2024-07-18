@@ -1,16 +1,17 @@
 ﻿@page "/{chapterName}/Contact"
+@using ODK.Web.Common.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Contact
 @using ODK.Services.Settings
 @using ODK.Core.Settings
 @model ODK.Web.Razor.Pages.Chapters.ContactModel
-@inject ISettingsService SettingsService
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_ChapterLayout2";
     Model.Title = "Contact";
 
-    var settings = await SettingsService.GetSiteSettings();
+    var viewModel = Model.ViewModel;
+    var (chapter, settings) = (viewModel.Chapter, viewModel.Settings);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -18,13 +19,10 @@
     Title = "Send us a message",
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Link = $"/{chapter.Name}", Text = chapter.Name },
         new MenuItem { Text = "Contact" }
     },
-    Content = await Html.PartialAsync("Contact/_ContactContent", new ContactContentViewModel(Model.Chapter)
-    {
-        Sent = Model.Sent
-    })
+    Content = await Html.PartialAsync("Contact/_ContactContent", viewModel)
 })
 
 @section scripts

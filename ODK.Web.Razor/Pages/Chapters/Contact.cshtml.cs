@@ -1,26 +1,25 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Services.Chapters;
+using ODK.Web.Common.Chapters;
+using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Contact;
 
 namespace ODK.Web.Razor.Pages.Chapters;
 
-public class ContactModel : ChapterPageModel
+public class ContactModel : ChapterPageModel2<ContactPageViewModel>
 {
     private readonly IChapterService _chapterService;
+    private readonly IChapterWebService _chapterWebService;
 
-    public ContactModel(IRequestCache requestCache, IChapterService chapterService) 
-        : base(requestCache)
+    public ContactModel(IChapterWebService chapterWebService, 
+        IChapterService chapterService)
     {
         _chapterService = chapterService;
+        _chapterWebService = chapterWebService;
     }
 
+    [FromQuery]
     public bool Sent { get; private set; }
-
-    public void OnGet(bool sent)
-    {
-        Sent = sent;
-    }
 
     public async Task<IActionResult> OnPostAsync(ContactFormViewModel viewModel)
     {
@@ -29,11 +28,19 @@ public class ContactModel : ChapterPageModel
             return Page();
         }
 
-        await _chapterService.SendContactMessage(Chapter,
+        var chapter = await _chapterService.GetChapter(Name);
+
+        await _chapterService.SendContactMessage(chapter,
             viewModel.EmailAddress ?? "",
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");
 
-        return Redirect($"/{Chapter.Name}/Contact?Sent=True");
+        AddFeedback(new FeedbackViewModel("Your message has been sent. Thank you for getting in touch.", 
+            FeedbackType.Success));
+
+        return Redirect($"/{chapter.Name}/Contact");
     }
+
+    protected override Task<ContactPageViewModel> GetViewModelAsync() 
+        => _chapterWebService.GetContactPageViewModelAsync(MemberId, Name);
 }

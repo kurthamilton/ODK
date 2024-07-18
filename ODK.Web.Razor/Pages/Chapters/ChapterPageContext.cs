@@ -10,7 +10,7 @@ namespace ODK.Web.Razor.Pages.Chapters
     {
         private static readonly Regex ChapterNameRegex = new(@"^[A-Za-z\s]+$", RegexOptions.Compiled);
 
-        private readonly HttpContext? _httpContext;
+        private readonly HttpContext _httpContext;
         private readonly IRequestCache _requestCache;
 
         public ChapterPageContext(IRequestCache requestCache, HttpContext httpContext)
@@ -21,7 +21,7 @@ namespace ODK.Web.Razor.Pages.Chapters
         
         public async Task<Chapter?> GetChapterAsync()
         {
-            var chapterName = _httpContext?.Request.RouteValues["chapterName"] as string;
+            var chapterName = _httpContext.Request.RouteValues["chapterName"] as string;
             if (string.IsNullOrWhiteSpace(chapterName) || !ChapterNameRegex.IsMatch(chapterName))
             {
                 return null;

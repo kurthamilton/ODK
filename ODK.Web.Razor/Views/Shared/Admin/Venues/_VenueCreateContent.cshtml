@@ -1,19 +1,19 @@
 ﻿@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Venues
-@model ODK.Core.Chapters.Chapter
+@model VenueCreateViewModel
 @{
     var memberId = User.MemberId();    
 }
 
 <h2>Create new venue</h2>
 
-<form method="post" action`="/@Model.Name/Admin/Events/Venues/Create">
+<form method="post" action`="/@Model.Chapter.Name/Admin/Events/Venues/Create">
     @Html.AntiForgeryToken()
     
     @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel
     {
-        ChapterId = Model.Id,
-        CurrentMemberId = memberId
+        ChapterId = Model.Chapter.Id,
+        Settings = Model.Settings
     })
     
     <button type="submit" class="btn btn-primary">Create</button>

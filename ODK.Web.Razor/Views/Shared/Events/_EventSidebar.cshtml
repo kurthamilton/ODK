@@ -4,32 +4,24 @@
 @using ODK.Services.Caching
 @using ODK.Services.Events
 @using ODK.Services.Members
+@using ODK.Web.Common.Chapters
 @using ODK.Web.Razor.Models.Events
-@model ODK.Web.Razor.Models.Events.EventSidebarViewModel
-@inject IAuthorizationService AuthorizationService
-@inject IEventService EventService
-@inject IRequestCache RequestCache
+@model EventPageViewModel
 @{
     if (Model.Member == null || Model.Member.ChapterId != Model.Chapter.Id)
     {
         return;
     }
 
-    var active = await AuthorizationService.MembershipIsActiveAsync(Model.Member.Id, Model.Chapter.Id);    
-    if (!active)
-    {
-        return;
-    }
+    
 
     var responseTypes = new[] { EventResponseType.Yes, EventResponseType.Maybe, EventResponseType.No };
 
-    var dto = await EventService.GetEventResponsesDto(Model.Event);
-    
-    var membersById = dto.Members.ToDictionary(x => x.Id);
-    var membersByResponse = dto.Responses
+    var membersById = Model.Members.ToDictionary(x => x.Id);
+    var membersByResponse = Model.Responses
         .GroupBy(x => x.ResponseTypeId)
         .ToDictionary(x => x.Key, x => (IReadOnlyCollection<Member>)x.Select(y => membersById[y.MemberId]).ToArray());
-    var currentResponse = dto.Responses
+    var currentResponse = Model.Responses
         .FirstOrDefault(x => x.MemberId == Model.Member?.Id)?.ResponseTypeId;
 }
 
@@ -38,7 +30,7 @@
         <div class="card-header">RSVP</div>
         <div class="card-body card-body-sm">
             <div class="d-flex justify-content-around">
-                @foreach (EventResponseType responseType in responseTypes)
+                @foreach (var responseType in responseTypes)
                 {
                     <form method="post">
                         @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
@@ -52,7 +44,7 @@
         </div>
     </div>
     
-    @foreach (EventResponseType responseType in responseTypes)
+    @foreach (var responseType in responseTypes)
     {
         @if (membersByResponse.TryGetValue(responseType, out var members))
         {

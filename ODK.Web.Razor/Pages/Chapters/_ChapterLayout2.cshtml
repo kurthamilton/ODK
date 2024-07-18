@@ -4,27 +4,21 @@
 @using ODK.Web.Common.Chapters
 @using ODK.Web.Razor.Models.Footer
 @using ODK.Web.Razor.Models.Header
-@inject IRequestCache RequestCache
 @{
     Layout = "_Layout";
 
-    var chapterContext = new ChapterPageContext(RequestCache, Context);
-    var chapter = await chapterContext.GetChapterAsync();
-    if (chapter == null)
+    var model = ViewData["ViewModel"] as ChapterViewModel;
+    if (model == null)
     {
         return;
     }
 
-    var member = await chapterContext.GetMemberAsync();
+    var chapter = model.Chapter;
 }
 
 @section header
 {
-    @await Html.PartialAsync("Header/_ChapterHeader", new ChapterViewModel
-    {
-        Chapter = chapter,
-        Member = member
-    })
+    @await Html.PartialAsync("Header/_ChapterHeader", model)
 }
 
 <div class="chapter chapter-theme--@chapter.Name.ToLowerInvariant()">

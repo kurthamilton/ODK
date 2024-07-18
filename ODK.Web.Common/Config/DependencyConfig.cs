@@ -25,6 +25,7 @@ using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Venues;
 using ODK.Web.Common.Account;
+using ODK.Web.Common.Chapters;
 using ODK.Web.Common.Config.Settings;
 
 namespace ODK.Web.Common.Config;
@@ -40,6 +41,7 @@ public static class DependencyConfig
         ConfigureServiceSettings(services, appSettings);
         ConfigureServices(services, appSettings);
         ConfigureData(services, configuration);
+        ConfigureWebServices(services);
     }
 
     private static void ConfigureAuthentication(this IServiceCollection services, AppSettings appSettings)
@@ -150,5 +152,10 @@ public static class DependencyConfig
             ScoreThreshold = recaptcha.ScoreThreshold,
             VerifyUrl = recaptcha.VerifyUrl
         });
+    }
+
+    private static void ConfigureWebServices(IServiceCollection services)
+    {
+        services.AddScoped<IChapterWebService, ChapterWebService>();
     }
 }

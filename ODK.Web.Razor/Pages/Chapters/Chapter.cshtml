@@ -1,14 +1,16 @@
 ﻿@page "/{chapterName}"
+@using ODK.Web.Common.Chapters
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Footer
 @model ODK.Web.Razor.Pages.Chapters.ChapterModel
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_ChapterLayout2";    
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
 {
-    Title = Model.Chapter.Name,
-    Content = await Html.PartialAsync("Chapters/_ChapterContent", new ChapterContentViewModel(Model.Chapter, Model.CurrentMember)),
-    SidebarContent = await Html.PartialAsync("Chapters/_ChapterSidebar", new ChapterSidebarViewModel(Model.Chapter, Model.CurrentMember))
+    Title = Model.ViewModel.Chapter.Name,
+    Content = await Html.PartialAsync("Chapters/_ChapterContent", Model.ViewModel),
+    SidebarContent = await Html.PartialAsync("Chapters/_ChapterSidebar", Model.ViewModel)
 })

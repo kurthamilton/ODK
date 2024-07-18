@@ -1,17 +1,15 @@
-using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
+using ODK.Web.Common.Chapters;
 
 namespace ODK.Web.Razor.Pages.Chapters.Events;
 
-public class EventsModel : ChapterPageModel
+public class EventsModel : ChapterPageModel2<EventsPageViewModel>
 {
-    public EventsModel(IRequestCache requestCache)
-        : base(requestCache)
+    private readonly IChapterWebService _chapterWebService;
+
+    public EventsModel(IChapterWebService chapterWebService)
     {
+        _chapterWebService = chapterWebService;
     }
 
-    public IActionResult OnGet()
-    {
-        return Page();
-    }
+    protected override Task<EventsPageViewModel> GetViewModelAsync() => _chapterWebService.GetEventsPageViewModelAsync(MemberId, Name);
 }

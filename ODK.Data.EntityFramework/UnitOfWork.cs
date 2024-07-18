@@ -185,5 +185,29 @@ public class UnitOfWork : IUnitOfWork
             await q5.RunAsync());
     }
 
+    public async Task<(T1, T2, T3, T4, T5, T6)> RunAsync<T1, T2, T3, T4, T5, T6>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6)
+    {
+        var q1 = query1(this);
+        var q2 = query2(this);
+        var q3 = query3(this);
+        var q4 = query4(this);
+        var q5 = query5(this);
+        var q6 = query6(this);
+
+        return (
+            await q1.RunAsync(),
+            await q2.RunAsync(),
+            await q3.RunAsync(),
+            await q4.RunAsync(),
+            await q5.RunAsync(),
+            await q6.RunAsync());
+    }
+
     public Task SaveChangesAsync() => _context.SaveChangesAsync();
 }

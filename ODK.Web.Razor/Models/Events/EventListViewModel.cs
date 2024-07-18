@@ -5,13 +5,13 @@ namespace ODK.Web.Razor.Models.Events;
 
 public class EventListViewModel
 {
-    public EventListViewModel(Chapter chapter, IEnumerable<EventResponseViewModel> eventResponses)
+    public EventListViewModel(Chapter chapter, IEnumerable<EventResponseViewModel> events)
     {
         Chapter = chapter;
-        EventResponses = eventResponses.ToArray();
+        Events = events.ToArray();
     }
 
     public Chapter Chapter { get; }
 
-    public IReadOnlyCollection<EventResponseViewModel> EventResponses { get; }
+    public IReadOnlyCollection<EventResponseViewModel> Events { get; }
 }

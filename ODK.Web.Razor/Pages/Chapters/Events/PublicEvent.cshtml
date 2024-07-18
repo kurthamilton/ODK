@@ -1,27 +1,23 @@
 ﻿@page "/{chapterName}/Events/Public/{id:guid}"
-@using ODK.Core.Venues
-@using ODK.Services.Venues
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Events
 @model ODK.Web.Razor.Pages.Chapters.Events.PublicEventModel
-@inject IVenueService VenueService
 @{
-    Layout = "_ChapterLayout";
-    Model.Title = Model.Event.Name;
+    Layout = "_ChapterLayout2";
+    Model.Title = Model.ViewModel.Event.Name;
 
-    Venue? venue = await VenueService.GetVenueAsync(Model.CurrentMember, Model.Event);
+    var chapter = Model.ViewModel.Chapter;
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
 {
-   Title = Model.Event.Name,
+   Title = Model.ViewModel.Event.Name,
    Breadcrumbs = new []
    {
-       new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
-       new MenuItem { Link = $"/{Model.Chapter.Name}/Events", Text = "Events" },
-       new MenuItem { Text = Model.Event.Name }
+       new MenuItem { Link = $"/{chapter.Name}", Text = chapter.Name },
+       new MenuItem { Link = $"/{chapter.Name}/Events", Text = "Events" },
+       new MenuItem { Text = Model.ViewModel.Event.Name }
    },
-   Content = await Html.PartialAsync("Events/_EventContent", new EventContentViewModel(Model.Chapter, Model.Event, venue!)),
-   SidebarContent = await Html.PartialAsync("Events/_EventSidebar", new EventSidebarViewModel(Model.Chapter, Model.Event, Model.CurrentMember))
+   Content = await Html.PartialAsync("Events/_EventContent", Model),
+   SidebarContent = await Html.PartialAsync("Events/_EventSidebar", Model)
 })

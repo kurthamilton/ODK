@@ -2,9 +2,9 @@
 @using ODK.Web.Razor.Models.Events
 @model ODK.Web.Razor.Models.Events.EventListViewModel
 
-@foreach (EventResponseViewModel eventResponse in Model.EventResponses.OrderBy(x => x.Date))
+@foreach (var response in Model.Events.OrderBy(x => x.Date))
 {
     <div class="list-item">
-        @await Html.PartialAsync("Events/_ListEvent", new ListEventViewModel(Model.Chapter, eventResponse))
+        @await Html.PartialAsync("Events/_ListEvent", new ListEventViewModel(Model.Chapter, response))
     </div>
 }

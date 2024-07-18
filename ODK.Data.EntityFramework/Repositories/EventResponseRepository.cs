@@ -38,6 +38,10 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
         return query.DeferredMultiple();
     }
 
+    public IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, IEnumerable<Guid> eventIds) => Set()
+        .Where(x => x.MemberId == memberId && eventIds.Contains(x.EventId))
+        .DeferredMultiple();
+
     public IDeferredQuerySingleOrDefault<EventResponse> GetByMemberId(Guid memberId, Guid eventId) => Set()
         .Where(x => x.MemberId == memberId && x.EventId == eventId)
         .DeferredSingleOrDefault();

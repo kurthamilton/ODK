@@ -2,6 +2,8 @@
 
 public class GoogleMapViewModel
 {
+    public required string GoogleMapsApiKey { get; set; }
+
     public string? Query { get; set; }
 
     public string? QuerySource { get; set; }

@@ -1,18 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Services.Events;
+using ODK.Web.Common.Chapters;
 
 namespace ODK.Web.Razor.Pages.Chapters.Events;
 
 public class PublicEventModel : EventPageModel
 {
-    public PublicEventModel(IRequestCache requestCache, IEventService eventService) 
-        : base(requestCache, eventService)
+    public PublicEventModel(IChapterWebService chapterWebService, IEventService eventService) 
+        : base(chapterWebService, eventService)
     {
     }
 
     protected override IActionResult RedirectToSelf(Guid id)
     {
-        return Redirect($"/{Chapter.Name}/Events/Public/{id}");
+        return Redirect($"/{Name}/Events/Public/{id}");
     }
 }

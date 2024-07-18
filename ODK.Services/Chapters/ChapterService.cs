@@ -1,6 +1,7 @@
 ﻿using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Exceptions;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -16,18 +17,31 @@ public class ChapterService : IChapterService
     private readonly ICacheService _cacheService;
     private readonly IEmailService _emailService;
     private readonly IRecaptchaService _recaptchaService;
+    private readonly IRequestCache _requestCache;
     private readonly IUnitOfWork _unitOfWork;
     
     public ChapterService(IUnitOfWork unitOfWork, ICacheService cacheService, IEmailService emailService,
-        IAuthorizationService authorizationService, IRecaptchaService recaptchaService)
+        IAuthorizationService authorizationService, IRecaptchaService recaptchaService,
+        IRequestCache requestCache)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
         _emailService = emailService;
         _recaptchaService = recaptchaService;
+        _requestCache = requestCache;
         _unitOfWork = unitOfWork;
     }
-    
+
+    public async Task<Chapter> GetChapter(string name)
+    {
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(name).RunAsync();
+        if (chapter == null)
+        {
+            throw new OdkNotFoundException();
+        }
+        return chapter;
+    }
+
     public async Task<ChapterLinks?> GetChapterLinks(Guid chapterId)
     {
         return await _unitOfWork.ChapterLinksRepository.GetByChapterId(chapterId).RunAsync();
@@ -85,18 +99,7 @@ public class ChapterService : IChapterService
             .ToArray();
     }
 
-    public async Task<ChaptersDto> GetChaptersDto()
-    {
-        var (chapters, countries) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetAll(),
-            x => x.CountryRepository.GetAll());
-
-        return new ChaptersDto
-        {
-            Chapters = chapters,
-            Countries = countries
-        };
-    }
+    public Task<ChaptersDto> GetChaptersDto() => _requestCache.GetChaptersDtoAsync();
 
     public Task<ChapterTexts> GetChapterTexts(Guid chapterId)
     {

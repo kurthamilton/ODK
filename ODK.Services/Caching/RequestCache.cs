@@ -2,6 +2,7 @@
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Data.Core;
+using ODK.Services.Chapters;
 
 namespace ODK.Services.Caching;
 
@@ -10,6 +11,7 @@ public class RequestCache : IRequestCache
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly IDictionary<string, Chapter> _chapters;
+    private ChaptersDto? _chaptersDto = null;
     private readonly IDictionary<Guid, ChapterMembershipSettings?> _chapterMembershipSettings;
     private readonly IDictionary<Guid, Member> _members;
     private readonly IDictionary<Guid, MemberSubscription?> _memberSubscriptions;
@@ -44,25 +46,7 @@ public class RequestCache : IRequestCache
             throw new OdkNotFoundException();
         }
         return chapter;
-    }
-
-    public async Task<IReadOnlyCollection<Chapter>> GetChaptersAsync()
-    {
-        if (_chapters.Count > 0)
-        {
-            return _chapters.Values.ToArray();
-        }
-
-        var chapters = await _unitOfWork.ChapterRepository
-            .GetAll()
-            .RunAsync();
-        foreach (var chapter in chapters)
-        {
-            _chapters[chapter.Name] = chapter;
-        }
-
-        return _chapters.Values.ToArray();
-    }
+    }    
 
     public async Task<ChapterMembershipSettings?> GetChapterMembershipSettingsAsync(Guid chapterId)
     {
@@ -73,6 +57,42 @@ public class RequestCache : IRequestCache
         }
 
         return _chapterMembershipSettings[chapterId];
+    }
+
+    public async Task<IReadOnlyCollection<Chapter>> GetChaptersAsync()
+    {
+        if (_chapters.Count > 0)
+        {
+            return _chapters.Values.ToArray();
+        }
+
+        var chaptersDto = await GetChaptersDtoAsync();
+        foreach (var chapter in chaptersDto.Chapters)
+        {
+            _chapters[chapter.Name] = chapter;
+        }
+
+        return _chapters.Values.ToArray();
+    }
+
+    public async Task<ChaptersDto> GetChaptersDtoAsync()
+    {
+        if (_chaptersDto != null)
+        {
+            return _chaptersDto;
+        }
+
+        var (chapters, countries) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetAll(),
+            x => x.CountryRepository.GetAll());
+
+        _chaptersDto = new ChaptersDto
+        {
+            Chapters = chapters,
+            Countries = countries
+        };
+
+        return _chaptersDto;
     }
 
     public async Task<Member?> GetMemberAsync(Guid memberId)

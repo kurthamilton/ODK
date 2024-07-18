@@ -3,7 +3,9 @@
 namespace ODK.Services.Chapters;
 
 public interface IChapterService
-{    
+{
+    Task<Chapter> GetChapter(string name);
+
     Task<ChapterLinks?> GetChapterLinks(Guid chapterId);
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);        

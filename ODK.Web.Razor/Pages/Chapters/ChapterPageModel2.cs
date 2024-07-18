@@ -1,20 +1,15 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Mvc.Filters;
-using ODK.Core.Chapters;
-using ODK.Services.Caching;
+using ODK.Web.Common.Chapters;
+using ODK.Web.Common.Extensions;
 
 namespace ODK.Web.Razor.Pages.Chapters;
 
-public abstract class ChapterPageModel : OdkPageModel
+public abstract class ChapterPageModel2<T> : OdkPageModel2<T> where T : ChapterViewModel
 {
-    protected ChapterPageModel(IRequestCache requestCache)
-        : base(requestCache)
-    {
-    }
+    protected Guid? MemberId => User.MemberIdOrDefault();
 
-    public Chapter Chapter { get; private set; } = null!;
-
-    public string Name { get; private set; } = null!;
+    protected string Name { get; private set; } = null!;
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
@@ -26,15 +21,6 @@ public abstract class ChapterPageModel : OdkPageModel
         }
 
         Name = chapterName;
-
-        var chapter = await new ChapterPageContext(RequestCache, HttpContext).GetChapterAsync();
-        if (chapter == null)
-        {
-            HandleMissingChapter();
-            return;
-        }
-
-        Chapter = chapter;
 
         await base.OnPageHandlerExecutionAsync(context, next);
     }

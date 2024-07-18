@@ -1,15 +1,13 @@
 ﻿@using ODK.Core.Settings
 @using ODK.Services.Settings
 @model ODK.Web.Razor.Models.Components.GoogleMapViewModel
-@inject ISettingsService SettingsService
 @{
     if (string.IsNullOrEmpty(Model.Query) && string.IsNullOrEmpty(Model.QuerySource))
     {
         // return;
     }
 
-    var settings = await SettingsService.GetSiteSettings();
-    var baseUrl = $"https://www.google.com/maps/embed/v1/place?key={settings.GoogleMapsApiKey}&q={{query}}";
+    var baseUrl = $"https://www.google.com/maps/embed/v1/place?key={Model.GoogleMapsApiKey}&q={{query}}";
     var url = !string.IsNullOrEmpty(Model.Query) 
         ? baseUrl.Replace("{query}", Model.Query)
         : "";

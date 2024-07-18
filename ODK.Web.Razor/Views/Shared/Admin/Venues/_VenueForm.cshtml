@@ -23,6 +23,7 @@
 <div class="mb-3">
     @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
     {
-        QuerySource = "#" + Html.IdFor(x => x.MapQuery)
+        QuerySource = "#" + Html.IdFor(x => x.MapQuery),
+        GoogleMapsApiKey = Model.Settings.GoogleMapsApiKey
     })
 </div>

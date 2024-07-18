@@ -1,11 +1,15 @@
 ﻿@page "/{chapterName}/Admin/Events/Venues/{id:guid}/Events"
+@using ODK.Services.Settings
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Admin.Venues
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.VenueEventsModel
+@inject ISettingsService SettingsService
 @{
     Layout = "Admin/Events/_EventAdminLayout";
     Model.Title = "Venue events | Admin";
+
+    var settings = await SettingsService.GetSiteSettings();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -16,5 +20,8 @@
        new MenuItem { Text = Model.Venue.Name }
     },
     Content = await Html.PartialAsync("Admin/Venues/_VenueEventsContent", 
-        new VenueViewModel(Model.Chapter, Model.CurrentMember, Model.Venue))
+        new VenueViewModel(Model.Chapter, Model.CurrentMember, Model.Venue)
+        {
+            Settings = settings
+        })
 })

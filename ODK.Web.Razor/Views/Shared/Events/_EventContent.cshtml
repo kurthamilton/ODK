@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Utils
+@using ODK.Web.Common.Chapters
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Models.Events.EventContentViewModel
+@model EventPageViewModel
 
 <h2>@Model.Venue.Name</h2>
 <h4>@Model.Event.Date.EventDate(true)</h4>
@@ -30,7 +31,8 @@
     <p class="d-none d-md-block">
         @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
         {
-            Query = Model.Venue.MapQuery
+            Query = Model.Venue.MapQuery,
+            GoogleMapsApiKey = Model.Settings.GoogleMapsApiKey
         })
     </p>
 }

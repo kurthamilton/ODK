@@ -1,39 +1,35 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core.Events;
-using ODK.Services.Caching;
 using ODK.Services.Events;
+using ODK.Web.Common.Chapters;
 
 namespace ODK.Web.Razor.Pages.Chapters.Events;
 
-public abstract class EventPageModel : ChapterPageModel
+public abstract class EventPageModel : ChapterPageModel2<EventPageViewModel>
 {
-    protected EventPageModel(IRequestCache requestCache, IEventService eventService) 
-        : base(requestCache)
+    private readonly IChapterWebService _chapterWebService;
+
+    protected EventPageModel(IChapterWebService chapterWebService, IEventService eventService) 
     {
+        _chapterWebService = chapterWebService;
+
         EventService = eventService;
     }
 
-    public Event Event { get; private set; } = null!;
-
     protected IEventService EventService { get; }
+
+    private Guid EventId { get; set; }
 
     public async Task<IActionResult> OnGet(Guid id, string? rsvp = null)
     {
-        Event? @event = await EventService.GetEvent(Chapter.Id, id);
-        if (@event == null)
-        {
-            return NotFound();
-        }
-
-        Event = @event;
-
-        if (!string.IsNullOrEmpty(rsvp) &&
-            CurrentMember != null)
+        if (MemberId != null && 
+            !string.IsNullOrEmpty(rsvp) && 
+            Enum.TryParse<EventResponseType>(rsvp, true, out var response))
         {
             try
-            {
-                EventResponseType response = Enum.Parse<EventResponseType>(rsvp, true);
-                await EventService.UpdateMemberResponse(CurrentMember, Event.Id, response);
+            {                
+                await EventService.UpdateMemberResponse(MemberId.Value, EventId, response);
             }
             catch
             {
@@ -48,12 +44,28 @@ public abstract class EventPageModel : ChapterPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, EventResponseType responseType)
     {
-        if (CurrentMember != null)
+        if (MemberId != null)
         {
-            await EventService.UpdateMemberResponse(CurrentMember, id, responseType);
+            await EventService.UpdateMemberResponse(MemberId.Value, id, responseType);
         }
 
         return RedirectToSelf(id);
+    }
+
+    protected override Task<EventPageViewModel> GetViewModelAsync() 
+        => _chapterWebService.GetEventPageViewModelAsync(MemberId, Name, EventId);
+
+    protected override void OnBeforeGetViewModel(PageHandlerExecutingContext context)
+    {
+        if (!Guid.TryParse(context.RouteData.Values["id"] as string, out var eventId))
+        {
+            context.Result = NotFound();
+            return;
+        }
+
+        EventId = eventId;
+
+        base.OnBeforeGetViewModel(context);
     }
 
     protected abstract IActionResult RedirectToSelf(Guid id);

@@ -23,7 +23,7 @@ public class VenueCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(VenueFormViewModel viewModel)
     {
-        ServiceResult result = await _venueAdminService.CreateVenue(CurrentMemberId, new CreateVenue
+        var result = await _venueAdminService.CreateVenue(CurrentMemberId, new CreateVenue
         {
             Address = viewModel.Address,
             ChapterId = Chapter.Id,

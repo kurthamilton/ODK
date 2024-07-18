@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using ODK.Core.Settings;
 
 namespace ODK.Web.Razor.Models.Admin.Venues;
 
 public class VenueFormViewModel
 {
     public Guid ChapterId { get; set; }
-    public Guid CurrentMemberId { get; set; }
-
+    
     public string? Address { get; set; }
 
     [Required]
@@ -15,4 +15,6 @@ public class VenueFormViewModel
 
     [DisplayName("Map search")]
     public string? MapQuery { get; set; }
+
+    public required SiteSettings Settings { get; set; }
 }

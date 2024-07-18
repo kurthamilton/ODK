@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 
 namespace ODK.Services.Events;
@@ -51,23 +52,27 @@ public class EventService : IEventService
     {
         var isChapterMember = member?.ChapterId == chapterId;
 
-        var (events, venues) = await _unitOfWork.RunAsync(
-            x => isChapterMember ? x.EventRepository.GetByChapterId(chapterId, after) : x.EventRepository.GetPublicEventsByChapterId(chapterId, after),
-            x => x.VenueRepository.GetByChapterId(chapterId));
+        var events = isChapterMember
+            ? await _unitOfWork.EventRepository.GetByChapterId(chapterId, after).RunAsync()
+            : await _unitOfWork.EventRepository.GetPublicEventsByChapterId(chapterId, after).RunAsync();
 
-        IReadOnlyCollection<EventResponse> responses = [];
-        IReadOnlyCollection<EventInvite> invites = [];
-        var invitedEventIds = new HashSet<Guid>();
-        if (member != null)
-        {
-            bool allEvents = after == null;
+        var eventIds = events.Select(x => x.Id).ToArray();
 
-            (responses, invites) = await _unitOfWork.RunAsync(
-                x => x.EventResponseRepository.GetByMemberId(member.Id, allEvents),
-                x => x.EventInviteRepository.GetByMemberId(member.Id));
+        var venueIds = events
+            .Select(x => x.VenueId)
+            .Distinct()
+            .ToArray();
 
-            invitedEventIds = new HashSet<Guid>(invites.Select(x => x.EventId));
-        }
+        var (venues, responses, invites) = await _unitOfWork.RunAsync(
+            x => x.VenueRepository.GetByChapterId(chapterId, venueIds),
+            x => member != null 
+                ? x.EventResponseRepository.GetByMemberId(member.Id, eventIds) 
+                : DeferreredDefaults.Multiple<EventResponse>(),
+            x => member != null 
+                ? x.EventInviteRepository.GetByMemberId(member.Id, eventIds)
+                : DeferreredDefaults.Multiple<EventInvite>());
+
+        var invitedEventIds = new HashSet<Guid>(invites.Select(x => x.EventId));
 
         var responseLookup = responses
             .ToDictionary(x => x.EventId, x => x.ResponseTypeId);
@@ -87,14 +92,14 @@ public class EventService : IEventService
         return viewModels;
     }
     
-    public async Task<ServiceResult> UpdateMemberResponse(Member member, Guid eventId,
-        EventResponseType responseType)
+    public async Task<ServiceResult> UpdateMemberResponse(Guid memberId, Guid eventId, EventResponseType responseType)
     {
         responseType = NormalizeResponseType(responseType);
 
-        var (@event, response) = await _unitOfWork.RunAsync(
+        var (member, @event, response) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetById(eventId),
-            x => x.EventResponseRepository.GetByMemberId(member.Id, eventId));
+            x => x.EventResponseRepository.GetByMemberId(memberId, eventId));
         if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
