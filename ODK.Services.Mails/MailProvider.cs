@@ -4,7 +4,6 @@ using MimeKit;
 using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
-using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services.Emails.Extensions;
 using ODK.Services.Exceptions;

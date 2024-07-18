@@ -6,9 +6,9 @@
 @{
     Layout = "Shared/_Layout";
 
-    ChapterPageContext chapterContext = new ChapterPageContext(RequestCache, Context);
-    Chapter? chapter = await chapterContext.GetChapterAsync();
-    Member? member = await chapterContext.GetMemberAsync();
+    var chapterContext = new ChapterPageContext(RequestCache, Context);
+    var chapter = await chapterContext.GetChapterAsync();
+    var member = await chapterContext.GetMemberAsync();
     if (chapter == null || member == null)
     {
         return;

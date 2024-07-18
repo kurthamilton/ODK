@@ -16,7 +16,7 @@ public abstract class ChapterPageModel : OdkPageModel
     
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        Chapter? chapter = await new ChapterPageContext(RequestCache, HttpContext).GetChapterAsync();
+        var chapter = await new ChapterPageContext(RequestCache, HttpContext).GetChapterAsync();
         if (chapter == null)
         {
             HandleMissingChapter();

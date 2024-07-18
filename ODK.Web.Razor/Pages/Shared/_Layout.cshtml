@@ -4,15 +4,15 @@
 @using ODK.Services.Caching
 @inject IRequestCache RequestCache
 @{
-    ChapterPageContext context = new ChapterPageContext(RequestCache, Context);
-    Chapter? chapter = await context.GetChapterAsync();
-    string title = "Drunken Knitwits";
+    var context = new ChapterPageContext(RequestCache, Context);
+    var chapter = await context.GetChapterAsync();
+    var title = "Drunken Knitwits";
     if (chapter != null)
     {
         title = $"{chapter.Name} {title}";
     }
 
-    string? pageTitle = ViewData["Title"] as string;
+    var pageTitle = ViewData["Title"] as string;
     if (!string.IsNullOrEmpty(pageTitle))
     {
        title = $"{pageTitle} | {title}";

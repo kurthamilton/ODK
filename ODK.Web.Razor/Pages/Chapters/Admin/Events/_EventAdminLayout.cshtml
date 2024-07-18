@@ -5,8 +5,8 @@
 @{
     Layout = "Admin/_AdminLayout";
 
-    ChapterPageContext chapterContext = new ChapterPageContext(RequestCache, Context);
-    Chapter? chapter = await chapterContext.GetChapterAsync();
+    var chapterContext = new ChapterPageContext(RequestCache, Context);
+    var chapter = await chapterContext.GetChapterAsync();
     if (chapter == null)
     {
         return;

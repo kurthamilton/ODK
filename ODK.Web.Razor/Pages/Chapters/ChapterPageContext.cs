@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using System.Text.RegularExpressions;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Services.Caching;
 using ODK.Web.Common.Extensions;
@@ -7,6 +8,8 @@ namespace ODK.Web.Razor.Pages.Chapters
 {
     public class ChapterPageContext
     {
+        private static readonly Regex ChapterNameRegex = new(@"^[A-Za-z\s]+$", RegexOptions.Compiled);
+
         private readonly HttpContext? _httpContext;
         private readonly IRequestCache _requestCache;
 
@@ -18,13 +21,20 @@ namespace ODK.Web.Razor.Pages.Chapters
         
         public async Task<Chapter?> GetChapterAsync()
         {
-            string? chapterName = _httpContext?.Request.RouteValues["chapterName"] as string;
-            if (string.IsNullOrWhiteSpace(chapterName))
+            var chapterName = _httpContext?.Request.RouteValues["chapterName"] as string;
+            if (string.IsNullOrWhiteSpace(chapterName) || !ChapterNameRegex.IsMatch(chapterName))
             {
                 return null;
             }
 
-            return await _requestCache.GetChapterAsync(chapterName);
+            try
+            {
+                return await _requestCache.GetChapterAsync(chapterName);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public async Task<Member?> GetMemberAsync()

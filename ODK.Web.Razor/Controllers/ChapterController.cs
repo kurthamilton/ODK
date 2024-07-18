@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ODK.Core.SocialMedia;
 using ODK.Services.SocialMedia;
 
 namespace ODK.Web.Razor.Controllers;

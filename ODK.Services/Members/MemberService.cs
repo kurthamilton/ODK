@@ -9,7 +9,6 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
-using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using ODK.Services.Payments;
 

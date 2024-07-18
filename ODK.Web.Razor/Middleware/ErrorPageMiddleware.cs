@@ -38,7 +38,7 @@ public class ErrorPageMiddleware
 
         PathString originalPath = httpContext.Request.Path;
 
-        Chapter? chapter = await GetChapterFromPath(httpContext, requestCache);
+        var chapter = await GetChapterFromPath(httpContext, requestCache);
 
         ResetHttpContext(httpContext);
 
@@ -62,9 +62,16 @@ public class ErrorPageMiddleware
         var originalPathParts = context.Request.Path.Value?.Split('/') ?? Array.Empty<string>();
         var chapterName = originalPathParts.Length > 1 ? originalPathParts[1] : null;
 
-        return !string.IsNullOrEmpty(chapterName)
-            ? await requestCache.GetChapterAsync(chapterName)
-            : null;
+        try
+        {
+            return !string.IsNullOrEmpty(chapterName)
+                ? await requestCache.GetChapterAsync(chapterName)
+                : null;
+        }        
+        catch
+        {
+            return null;
+        }
     }
 
     private void ResetHttpContext(HttpContext context)

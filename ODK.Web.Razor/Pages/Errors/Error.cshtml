@@ -10,11 +10,11 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-   Breadcrumbs = new []
-   {
-       new MenuItem { Link = "/", Text = "Home" },
-       new MenuItem { Text = Model.ErrorStatusCode.ErrorPageTitle() }
-   },
-   Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = "/", Text = "Home" },
+        new MenuItem { Text = Model.ErrorStatusCode.ErrorPageTitle() }
+    },
+    Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),
     Title = Model.ErrorStatusCode.ErrorPageTitle()
 })
