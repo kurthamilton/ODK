@@ -132,7 +132,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<MembersDto> GetMembersDto(Guid currentMemberId, Guid chapterId)
     {
         var (members, subscriptions) = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
-            x => x.MemberRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetByChapterId(chapterId, searchAll: true),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapterId));
 
         return new MembersDto
@@ -178,6 +178,26 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _cacheService.RemoveVersionedItem<MemberImage>(memberId);
     }
     
+    public async Task SendActivationEmail(Guid currentMemberId, Guid memberId)
+    {
+        var (currentMember, chapterAdminMembers, member, memberActivationToken) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberActivationTokenRepository.GetByMemberId(memberId));        
+
+        AssertMemberIsChapterAdmin(currentMember, member.ChapterId, chapterAdminMembers);
+
+        if (memberActivationToken == null)
+        {
+            throw new OdkNotFoundException();
+        }
+
+        var chapter = await _unitOfWork.ChapterRepository.GetById(member.ChapterId).RunAsync();
+
+        await _memberService.SendActivationEmailAsync(chapter, member, memberActivationToken.ActivationToken);
+    }
+
     public async Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid memberId,
         UpdateMemberSubscription update)
     {

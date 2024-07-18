@@ -45,6 +45,14 @@ public class MemberAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("{chapterName}/Admin/Members/{id:guid}/ResendActivationEmail")]
+    public async Task<IActionResult> ResendActivationEmail(Guid id)
+    {
+        await _memberAdminService.SendActivationEmail(MemberId, id);
+        AddFeedback(new FeedbackViewModel("Email sent", FeedbackType.Success));
+        return RedirectToReferrer();
+    }
+
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/SendEmail")]
     public async Task<IActionResult> SendEmail(Guid id, [FromForm] SendMemberEmailFormViewModel viewModel)
     {

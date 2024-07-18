@@ -150,17 +150,7 @@ public class MemberService : IMemberService
 
         try
         {
-            var url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
-            {
-                { "chapter.name", chapter!.Name },
-                { "token", HttpUtility.UrlEncode(activationToken) }
-            });
-
-            await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
-            {
-                { "chapter.name", chapter.Name },
-                { "url", url }
-            });
+            await SendActivationEmailAsync(chapter, member, activationToken);
 
             return ServiceResult.Successful();
         }        
@@ -379,6 +369,21 @@ public class MemberService : IMemberService
             });
 
         return ServiceResult.Successful();
+    }
+
+    public async Task SendActivationEmailAsync(Chapter chapter, Member member, string activationToken)
+    {
+        var url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
+        {
+            { "chapter.name", chapter.Name },
+            { "token", HttpUtility.UrlEncode(activationToken) }
+        });
+
+        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
+        {
+            { "chapter.name", chapter.Name },
+            { "url", url }
+        });
     }
 
     public async Task UpdateMemberEmailOptIn(Guid memberId, bool optIn)
