@@ -18,11 +18,11 @@
 <h2>Members</h2>
 <p>
     <div class="row row-cols-lg-auto g-3 align-items-center">
-        <div class="col-12">
+        <div class="col">
             <label class="form-label" for="name-filter">Name</label>
             <input class="form-control" id="name-filter" data-table-filter="#members-table" data-table-filter-field="name" />
         </div>
-        <div class="col-12">
+        <div class="col me-auto">
             <label class="form-label" for="type-filter">Type</label>
             <select class="form-control" id="type-filter" multiple data-table-filter="#members-table" data-table-filter-field="type">
                 @foreach (SubscriptionType type in Enum.GetValues<SubscriptionType>())
@@ -42,6 +42,9 @@
                     }
                 }
             </select>
+        </div>
+        <div class="col align-self-end">
+            <a href="/@Model.Name/Admin/Members/Download">Download CSV</a>
         </div>
     </div>
 </p>

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Utils;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 
@@ -13,6 +15,12 @@ public abstract class OdkControllerBase : Controller
         TempData!.AddFeedback(viewModel);
     }
     
+    protected IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
+    {
+        var csv = StringUtils.ToCsv(data);        
+        return File(Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
+    }
+
     protected IActionResult RedirectToReferrer()
     {
         string referrer = Request.Headers["Referer"].ToString();

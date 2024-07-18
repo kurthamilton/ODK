@@ -98,6 +98,15 @@ public class MemberAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpGet("{chapterName}/Admin/Members/Download")]
+    public async Task<IActionResult> DownloadAdminMembers(string chapterName)
+    {
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var data = await _memberAdminService.GetMemberCsv(MemberId, chapter.Id);
+        
+        return DownloadCsv(data, $"Members.{DateTime.UtcNow:yyyyMMdd}.csv");
+    }
+
     [HttpPost("{chapterName}/Admin/Members/SendEmail")]
     public async Task<IActionResult> SendBulkEmail(string chapterName, [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {

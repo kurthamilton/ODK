@@ -43,6 +43,53 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return await GetMember(currentMemberId, memberId, superAdmin: false);
     }
     
+    public async Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(Guid currentMemberId, Guid chapterId)
+    {
+        var (members, subscriptions) = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.MemberRepository.GetByChapterId(chapterId),
+            x => x.MemberSubscriptionRepository.GetByChapterId(chapterId));
+
+        var csv = new List<IReadOnlyCollection<string>>
+        {
+            new []
+            {
+                "ID",
+                "Email",
+                "FirstName",
+                "LastName",
+                "Joined",
+                "Activated",
+                "Disabled",
+                "EmailOptIn",
+                "SubscriptionExpiryDate",
+                "SubscriptionType"
+            }
+        };
+
+        var subscriptionDictionary = subscriptions.ToDictionary(x => x.MemberId);
+
+        foreach (var member in members.OrderBy(x => x.FullName))
+        {
+            subscriptionDictionary.TryGetValue(member.Id, out var subscription);
+
+            csv.Add(
+            [
+                member.Id.ToString(),
+                member.EmailAddress,
+                member.FirstName,
+                member.LastName,
+                member.CreatedDate.ToString("yyyy-MM-dd"),
+                member.Activated ? "Y" : "",
+                member.Disabled ? "Y" : "",
+                member.EmailOptIn ? "Y" : "",
+                subscription?.ExpiryDate?.ToString("yyyy-MM-dd") ?? "",
+                subscription?.Type.ToString() ?? ""
+            ]);
+        }
+
+        return csv;
+    }
+
     public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, MemberFilter filter)
     {
         var (members, memberSubscriptions, membershipSettings) = await GetChapterAdminRestrictedContent(currentMemberId, filter.ChapterId,

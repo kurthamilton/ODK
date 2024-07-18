@@ -8,6 +8,8 @@ public interface IMemberAdminService
 
     Task<Member?> GetMember(Guid currentMemberId, Guid memberId);
 
+    Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(Guid currentMemberId, Guid chapterId);
+
     Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, MemberFilter filter);
 
     Task<MembersDto> GetMembersDto(Guid currentMemberId, Guid chapterId);
