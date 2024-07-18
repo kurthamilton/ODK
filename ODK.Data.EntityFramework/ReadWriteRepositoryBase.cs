@@ -27,18 +27,7 @@ public abstract class ReadWriteRepositoryBase<T> : WriteRepositoryBase<T>, IRead
         }
 
         base.AddMany(entities);
-    }
-
-    public IDeferredQuerySingle<T> GetByEventId(Guid eventId)
-    {
-        var query =
-            from @event in Set<Event>()
-            from venue in Set()
-            where @event.VenueId == venue.Id
-                && @event.Id == eventId
-            select venue;
-        return query.DeferredSingle();
-    }
+    }    
 
     public IDeferredQuerySingle<T> GetById(Guid id) => Set()
         .Where(x => x.Id == id)

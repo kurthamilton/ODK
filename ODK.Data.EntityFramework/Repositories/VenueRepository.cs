@@ -21,6 +21,17 @@ public class VenueRepository : ReadWriteRepositoryBase<Venue>, IVenueRepository
         .Where(x => x.ChapterId == chapterId && venueIds.Contains(x.Id))
         .DeferredMultiple();
 
+    public IDeferredQuerySingle<Venue> GetByEventId(Guid eventId)
+    {
+        var query =
+            from @event in Set<Event>()
+            from venue in Set()
+            where @event.VenueId == venue.Id
+                && @event.Id == eventId
+            select venue;
+        return query.DeferredSingle();
+    }
+
     public IDeferredQuerySingleOrDefault<Venue> GetByName(Guid chapterId, string name) => Set()
         .Where(x => x.ChapterId == chapterId && x.Name == name)
         .DeferredSingleOrDefault();
