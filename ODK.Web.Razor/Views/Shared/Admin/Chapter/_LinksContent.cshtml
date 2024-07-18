@@ -4,20 +4,20 @@
 @model ODK.Core.Chapters.Chapter
 @inject IChapterService ChapterService
 @{
-    ChapterLinks? links = await ChapterService.GetChapterLinks(Model.Id);
-    if (links == null)
-    {
-        return;
-    }
+    var links = await ChapterService.GetChapterLinks(Model.Id);    
 }
 
+<h2>Social media links</h2>
+<p>
+
+</p>
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel
     {
-        Facebook = links.FacebookName,
-        Instagram = links.InstagramName,
-        Twitter = links.TwitterName
+        Facebook = links?.FacebookName,
+        Instagram = links?.InstagramName,
+        Twitter = links?.TwitterName
     })
     <button class="btn btn-primary">Update</button>
 </form>

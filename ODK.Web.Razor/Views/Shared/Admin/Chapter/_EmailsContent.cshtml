@@ -9,6 +9,14 @@
     IReadOnlyCollection<ChapterEmail> emails = await EmailAdminService.GetChapterEmails(memberId, Model.Id);
 }
 
+<h2>Email templates</h2>
+<p>
+    The emails sent by the site use the templates below. 
+    Default templates already exist and can be overridden if you want to include chapter-specific content.
+</p>
+<div class="alert alert-warning">
+    CAUTION: it is best not to update these templates unless you know what you are doing!
+</div>
 <table class="table table-striped">
     <thead>
     <tr>
