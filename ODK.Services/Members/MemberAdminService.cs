@@ -199,24 +199,23 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     }
 
     public async Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid memberId,
-        UpdateMemberSubscription update)
+        UpdateMemberSubscription model)
     {
         var (member, memberSubscription) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId));
 
-        var expiryDate = update.Type == SubscriptionType.Alum 
+        var expiryDate = model.Type == SubscriptionType.Alum 
             ? new DateTime?() 
-            : update.ExpiryDate;
+            : model.ExpiryDate;
 
         if (memberSubscription == null)
         {
-            memberSubscription = new MemberSubscription
-            {
-                ExpiryDate = expiryDate,                
-                Type = update.Type
-            };            
+            memberSubscription = new MemberSubscription();
         }
+
+        memberSubscription.ExpiryDate = expiryDate;
+        memberSubscription.Type = model.Type;
 
         var validationResult = ValidateMemberSubscription(memberSubscription);
         if (!validationResult.Success)
