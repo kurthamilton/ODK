@@ -12,13 +12,13 @@ public class ErrorRepository : ReadWriteRepositoryBase<Error>, IErrorRepository
     }
 
     public IDeferredQueryMultiple<Error> GetErrors(int page, int pageSize) => Set()
-        .OrderBy(x => x.CreatedDate)
+        .OrderByDescending(x => x.CreatedDate)
         .Page(page, pageSize)
         .DeferredMultiple();
 
     public IDeferredQueryMultiple<Error> GetErrors(int page, int pageSize, string exceptionMessage) => Set()
         .Where(x => x.ExceptionMessage == exceptionMessage)
-        .OrderBy(x => x.CreatedDate)
+        .OrderByDescending(x => x.CreatedDate)
         .Page(page, pageSize)
         .DeferredMultiple();
 }

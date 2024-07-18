@@ -36,16 +36,16 @@ public class SuperAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/SuperAdmin/Errors/{id:int}/Delete")]
-    public async Task<IActionResult> DeleteError(string chapterName, int id)
+    [HttpPost("{chapterName}/Admin/SuperAdmin/Errors/{id:guid}/Delete")]
+    public async Task<IActionResult> DeleteError(string chapterName, Guid id)
     {
         await _loggingService.DeleteError(MemberId, id);
 
         return Redirect($"/{chapterName}/Admin/SuperAdmin/Errors");
     }
 
-    [HttpPost("{chapterName}/Admin/SuperAdmin/Errors/{id:int}/DeleteAll")]
-    public async Task<IActionResult> DeleteAllErrors(string chapterName, int id)
+    [HttpPost("{chapterName}/Admin/SuperAdmin/Errors/{id:Guid}/DeleteAll")]
+    public async Task<IActionResult> DeleteAllErrors(string chapterName, Guid id)
     {
         await _loggingService.DeleteAllErrors(MemberId, id);
 

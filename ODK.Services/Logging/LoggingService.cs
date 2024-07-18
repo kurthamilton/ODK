@@ -18,29 +18,40 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         _unitOfWorkFactory = unitOfWorkFactory;
     }
 
-    public async Task DeleteError(Guid currentMemberId, int logMessageId)
+    public async Task DeleteError(Guid currentMemberId, Guid id)
     {        
+        var error = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.ErrorRepository.GetById(id));
 
-        var currentMember = await _unitOfWork.MemberRepository.GetById(currentMemberId).RunAsync();
-        
-        // AssertMemberIsSuperAdmin(currentMemberId, currentMember.ChapterId, chapterAdminMembers);
-
-        // await _loggingRepository.DeleteLogMessageAsync(logMessageId);
+        _unitOfWork.ErrorRepository.Delete(error);
+        await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAllErrors(Guid currentMemberId, int logMessageId)
+    public async Task DeleteAllErrors(Guid currentMemberId, Guid id)
     {
-        var currentMember = await _unitOfWork.MemberRepository.GetById(currentMemberId).RunAsync();
-        
-        // AssertMemberIsSuperAdmin(currentMemberId, currentMember.ChapterId, chapterAdminMembers);
+        var error = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.ErrorRepository.GetById(id));
 
-        // LogMessage? logMessage = await _loggingRepository.GetLogMessageAsync(logMessageId);
-        // if (logMessage == null)
-        // {
-        //     return;
-        // }
-        // 
-        // await _loggingRepository.DeleteLogMessagesAsync(logMessage.Message);
+        throw new NotImplementedException();
+    }
+
+    public async Task<ErrorDto> GetErrorDto(Guid currentMemberId, Guid errorId)
+    {
+        var (error, properties) = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.ErrorRepository.GetById(errorId),
+            x => x.ErrorPropertyRepository.GetByErrorId(errorId));
+
+        return new ErrorDto
+        {
+            Error = error,
+            Properties = properties
+        };
+    }
+
+    public async Task<IReadOnlyCollection<Error>> GetErrors(Guid currentMemberId, int page, int pageSize)
+    {
+        return await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.ErrorRepository.GetErrors(page, pageSize));
     }
 
     public Task LogDebug(string message)

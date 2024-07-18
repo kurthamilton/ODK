@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/Admin/SuperAdmin/Errors/{id:int}"
+﻿@page "/{chapterName}/Admin/SuperAdmin/Errors/{id:guid}"
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.SuperAdmin
@@ -8,7 +8,7 @@
     Model.Title = "Error | SuperAdmin";
 }
 
-@* @await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Breadcrumbs = new []
     {
@@ -17,4 +17,4 @@
     },
     Content = await Html.PartialAsync("SuperAdmin/_ErrorContent", 
         new ErrorContentViewModel(Model.Chapter, Model.Error)),
-}) *@
+})

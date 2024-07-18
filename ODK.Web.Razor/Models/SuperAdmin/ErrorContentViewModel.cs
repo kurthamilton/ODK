@@ -1,17 +1,17 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Logging;
+using ODK.Services.Logging;
 
 namespace ODK.Web.Razor.Models.SuperAdmin;
 
 public class ErrorContentViewModel
 {
-    public ErrorContentViewModel(Chapter chapter) //, LogMessage error)
+    public ErrorContentViewModel(Chapter chapter, ErrorDto error)
     {
         Chapter = chapter;
-        // Error = error;
+        Error = error;
     }
 
     public Chapter Chapter { get; }
 
-    // public LogMessage Error { get; }
+    public ErrorDto Error { get; }
 }

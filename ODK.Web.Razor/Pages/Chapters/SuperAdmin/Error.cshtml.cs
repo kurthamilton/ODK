@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Logging;
 using ODK.Services.Caching;
 using ODK.Services.Logging;
 
@@ -15,18 +14,18 @@ public class ErrorModel : SuperAdminPageModel
         _loggingService = loggingService;
     }
 
-    //public LogMessage Error { get; private set; } = null!;
+    public ErrorDto Error { get; private set; } = null!;
 
-    //public async Task<IActionResult> OnGet(int id)
-    //{
-    //    LogMessage? error = await _loggingService.GetErrorMessage(CurrentMemberId, id);
-    //    if (error == null)
-    //    {
-    //        return NotFound();
-    //    }
+    public async Task<IActionResult> OnGet(Guid id)
+    {
+        var error = await _loggingService.GetErrorDto(CurrentMemberId, id);
+        if (error == null)
+        {
+            return NotFound();
+        }
 
-    //    Error = error;
+        Error = error;
 
-    //    return Page();
-    //}
+        return Page();
+    }
 }

@@ -1,11 +1,11 @@
-﻿@* @using ODK.Core.Logging
+﻿@using ODK.Core.Logging
 @using ODK.Services.Logging
 @using ODK.Web.Common.Extensions
 @model ODK.Core.Chapters.Chapter
 @inject ILoggingService LoggingService
 @{
-    Guid? memberId = User.MemberIdOrDefault();
-    IReadOnlyCollection<LogMessage> errors = await LoggingService.GetLogMessages(memberId!.Value, "Error", 1, 1000);
+    var memberId = User.MemberId();
+    var errors = await LoggingService.GetErrors(memberId, 1, 1000);
 }
 
 <div class="table-responsive">
@@ -13,23 +13,19 @@
         <thead>
         <tr>
             <th>Time</th>
-            <th>Level</th>
+            <th>Type</th>
             <th>Message</th>
-            <th>Url</th>
             <th></th>
         </tr>
         </thead>
         <tbody>
-        @foreach (LogMessage error in errors.OrderByDescending(x => x.TimeStamp))
+        @foreach (var error in errors)
         {
             <tr>
-                <td>@error.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                <td>@error.Level</td>
+                <td>@error.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@error.ExceptionType</td>
                 <td>
-                    <a href="/@Model.Name/Admin/SuperAdmin/Errors/@error.Id">@error.Message</a>
-                </td>
-                <td>
-                    @error.GetProperty("RequestPath")
+                    <a href="/@Model.Name/Admin/SuperAdmin/Errors/@error.Id">@error.ExceptionMessage</a>
                 </td>
                 <td>
                     <form method="post" action="/@Model.Name/Admin/SuperAdmin/Errors/@error.Id/Delete">
@@ -43,4 +39,4 @@
         }
         </tbody>
     </table>
-</div> *@
+</div>

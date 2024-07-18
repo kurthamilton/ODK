@@ -1,10 +1,16 @@
-﻿namespace ODK.Services.Logging;
+﻿using ODK.Core.Logging;
+
+namespace ODK.Services.Logging;
 
 public interface ILoggingService
 {
-    Task DeleteError(Guid currentMemberId, int logMessageId);
+    Task DeleteError(Guid currentMemberId, Guid id);
 
-    Task DeleteAllErrors(Guid currentMemberId, int logMessageId);
+    Task DeleteAllErrors(Guid currentMemberId, Guid id);
+
+    Task<ErrorDto> GetErrorDto(Guid currentMemberId, Guid errorId);
+
+    Task<IReadOnlyCollection<Error>> GetErrors(Guid currentMemberId, int page, int pageSize);
 
     Task LogDebug(string message);
 

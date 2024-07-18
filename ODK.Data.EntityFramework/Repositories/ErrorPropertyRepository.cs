@@ -13,5 +13,6 @@ public class ErrorPropertyRepository : WriteRepositoryBase<ErrorProperty>, IErro
 
     public IDeferredQueryMultiple<ErrorProperty> GetByErrorId(Guid errorId) => Set()
         .Where(x => x.ErrorId == errorId)
+        .OrderBy(x => x.Name)
         .DeferredMultiple();
 }

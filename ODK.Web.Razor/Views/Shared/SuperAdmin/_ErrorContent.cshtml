@@ -1,40 +1,47 @@
-﻿@* @using ODK.Core.Logging
+﻿@using ODK.Core.Logging
 @using ODK.Services.Logging
 @using ODK.Web.Common.Extensions
 @model ODK.Web.Razor.Models.SuperAdmin.ErrorContentViewModel
 @inject ILoggingService LoggingService
 @{
     var memberId = User.MemberId();
-    IReadOnlyCollection<LogMessage> similar = await LoggingService.GetSimilarErrorMessages(memberId, 
-        Model.Error);
 
-    IDictionary<string, string> properties = Model.Error.GetProperties();
+    var (error, properties) = (Model.Error.Error, Model.Error.Properties);
 }
 
-<div class="mb-3">
-    <label class="form-label">Time</label>
-    <div class="form-control-plaintext">
-        @Model.Error.TimeStamp.ToString("dd/MM/yyyy HH:mm:ss")
-    </div>
-</div>
+<table class="table table-striped">
+    <tbody>
+        <tr>
+            <td>Time</td>
+            <td>@error.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
+        </tr>
+        <tr>
+            <td>Message</td>
+            <td>@error.ExceptionMessage</td>
+        </tr>
 
-<div class="mb-3">
-    <label class="form-label">Message</label>
-    <div class="form-control-plaintext">
-        @Model.Error.Message
-    </div>
-</div>
+        @foreach (var property in properties)
+        {
+            <tr>
+                <td>@property.Name</td>
+                <td>
+                    @if (property.Name.Equals("EXCEPTION.STACKTRACE"))
+                    {
+                        <span>
+                            @Html.Raw(property.Value.Replace(Environment.NewLine, "<br/>"))
+                        </span>
+                    }                    
+                    else
+                    {
+                        @property.Value
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
 
-@foreach (string key in properties.Keys)
-{
-    <div class="mb-3">
-        <label class="form-label">@key</label>
-        <div class="form-control-plaintext">
-            @properties[key]
-        </div>
-    </div>
-}
-
+@* 
 @if (similar.Count > 0)
 {
     <h4>Similar errors (@similar.Count)</h4>
