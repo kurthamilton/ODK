@@ -421,20 +421,30 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterPaymentSettings(Guid currentMemberId, Guid chapterId,
-        UpdateChapterPaymentSettings update)
+        UpdateChapterPaymentSettings model)
     {
-        var existing = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+        var settings = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
 
-        if (existing == null)
+        if (settings == null)
         {
-            return ServiceResult.Failure("Payment settings not found");
+            settings = new();
         }
 
-        existing.ApiPublicKey = update.ApiPublicKey;
-        existing.ApiSecretKey = update.ApiSecretKey;
+        settings.ApiPublicKey = model.ApiPublicKey;
+        settings.ApiSecretKey = model.ApiSecretKey;
+        settings.Provider = model.Provider;
 
-        _unitOfWork.ChapterPaymentSettingsRepository.Update(existing);
+        if (settings.ChapterId == Guid.Empty)
+        {
+            settings.ChapterId = chapterId;
+            _unitOfWork.ChapterPaymentSettingsRepository.Add(settings);
+        }
+        else
+        {
+            _unitOfWork.ChapterPaymentSettingsRepository.Update(settings);
+        }
+        
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();

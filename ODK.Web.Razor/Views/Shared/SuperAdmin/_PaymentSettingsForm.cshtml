@@ -1,10 +1,14 @@
 ﻿@model ODK.Web.Razor.Models.SuperAdmin.PaymentSettingsFormViewModel
+@{
+    var providerOptions = new[]
+    {
+        new SelectListItem { Text = "PayPal" }
+    };
+}
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Provider, new { @class = "form-label" })
-    <div class="form-control-plaintext">
-        @Model.Provider
-    </div>
+    @Html.DropDownListFor(x => x.Provider, providerOptions, new { @class = "form-control" })
 </div>
 
 <div class="form-group mb-3 required">

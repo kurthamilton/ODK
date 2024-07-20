@@ -9,6 +9,8 @@
     var paymentSettings = await ChapterAdminService.GetChapterPaymentSettings(memberId, Model.Id);
 }
 
+<h2>Payment settings</h2>
+
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel

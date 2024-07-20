@@ -7,6 +7,8 @@
     var settings = await SettingsService.GetSiteSettings();
 }
 
+<h2>Instagram</h2>
+
 <form method="post" class="mb-3">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("SuperAdmin/_InstagramForm", new InstagramFormViewModel

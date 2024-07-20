@@ -25,7 +25,8 @@ public class PaymentSettingsModel : SuperAdminPageModel
         var result = await _chapterAdminService.UpdateChapterPaymentSettings(CurrentMemberId, Chapter.Id, new UpdateChapterPaymentSettings
         {
             ApiPublicKey = viewModel.PublicKey,
-            ApiSecretKey = viewModel.SecretKey
+            ApiSecretKey = viewModel.SecretKey,
+            Provider = viewModel.Provider
         });
 
         if (!result.Success)
