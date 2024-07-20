@@ -2,7 +2,7 @@
 @using ODK.Web.Razor.Models.Header
 @model ChapterHeaderViewModel
 @{
-    bool isMember = Model.Member?.ChapterId == Model.Chapter.Id;
+    var isMember = Model.Member?.IsMemberOf(Model.Chapter.Id) == true;
 
     List<MenuItem> menuItems = new();
 

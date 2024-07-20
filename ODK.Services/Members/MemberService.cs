@@ -249,12 +249,12 @@ public class MemberService : IMemberService
 
     public async Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId)
     {
-        if (currentMember == null || currentMember.ChapterId != chapterId)
+        if (currentMember?.IsMemberOf(chapterId) != true)
         {
-            return Array.Empty<Member>();
+            return [];
         }
 
-        return await _unitOfWork.MemberRepository.GetByChapterId(currentMember.ChapterId).RunAsync();
+        return await _unitOfWork.MemberRepository.GetByChapterId(chapterId).RunAsync();
     }
 
     public async Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId,

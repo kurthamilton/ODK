@@ -70,7 +70,7 @@ public class AuthorizationService : IAuthorizationService
 
         var defaultMessage = $"This page is only visible to {chapter.Name} members";
         if (member == null ||
-            member.ChapterId != chapter.Id ||
+            !member.IsMemberOf(chapter.Id) ||
             subscription == null ||
             membershipSettings == null)
         {
