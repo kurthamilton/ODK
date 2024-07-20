@@ -1,17 +1,13 @@
 ﻿@model ODK.Web.Razor.Models.PayPalFormViewModel
 
-<p>
-    @Html.Raw(Model.Description)
-</p>
-<p>
-    <span>@Model.Country.CurrencySymbol@Model.Amount.ToString("0.00")</span>
-</p>
-<div id="paypal-button-container" 
-     data-paypal-amount="@Model.Amount" 
+<div data-paypal-container="@Model.Id"
      data-paypal-currencycode="@Model.Country.CurrencyCode"
-     data-paypal-token="#paypal-token">
+     data-paypal-amount="@Model.Amount">
+    <p>
+        @Html.Raw(Model.Description)
+    </p>
+    <p>
+        <span>@Model.Country.CurrencySymbol@Model.Amount.ToString("0.00")</span>
+    </p>    
+    <input data-paypal-token type="hidden" name="token" />
 </div>
-<input id="paypal-token" type="hidden" name="token" />
-
-<script src="https://www.paypal.com/sdk/js?client-id=@Model.PaymentSettings.ApiPublicKey&currency=@Model.Country.CurrencyCode"></script>
-<script src="/js/odk.paypal.js"></script>

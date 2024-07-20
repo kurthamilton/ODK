@@ -8,7 +8,7 @@
 @model ODK.Web.Razor.Models.Account.SubscriptionContentViewModel
 @inject IChapterService ChapterService
 @{
-    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(Model.CurrentMember.Id, Model.Chapter.Id);
+    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(Model.CurrentMember.Id, Model.CurrentMember.ChapterId);
     
     var (memberSubscription, chapterSubscriptions, country, paymentSettings) = 
         (dto.MemberSubscription, dto.ChapterSubscriptions, dto.Country, dto.PaymentSettings);
@@ -18,7 +18,9 @@
         return;
     }
 
-    string title = memberSubscription.Type == SubscriptionType.Trial ? "Purchase membership" : "Renew membership";
+    var title = memberSubscription.Type == SubscriptionType.Trial 
+        ? "Purchase membership" 
+        : "Renew membership";
 }
 
 <div class="form-group mb-3">
@@ -37,8 +39,10 @@
 
 <h3>@title</h3>
 
-@foreach (ChapterSubscription chapterSubscription in chapterSubscriptions)
+@foreach (var chapterSubscription in chapterSubscriptions)
 {
+    var modalId = $"payment-modal-{chapterSubscription.Id}";
+
     <div class="mb-3">
         <div class="card">
             <div class="card-body">
@@ -47,10 +51,10 @@
                     @Html.Raw(chapterSubscription.Description)
                 </div>
                 <div>
-                    <button class="btn btn-primary mr-1" data-bs-toggle="modal" data-bs-target="#payment-modal">Purchase</button>
+                    <button class="btn btn-primary mr-1" data-bs-toggle="modal" data-bs-target="#@modalId">Purchase</button>
                     <span>@country.CurrencySymbol@chapterSubscription.Amount.ToString("0.00")</span>
                     
-                    <div class="modal" tabindex="-1" id="payment-modal">
+                    <div class="modal" tabindex="-1" id="@modalId">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -63,8 +67,13 @@
                                         <form method="post" action="/@Model.Chapter.Name/Account/Subscription/Purchase">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="subscriptionId" value="@chapterSubscription.Id" />
-                                            @await Html.PartialAsync("Payments/_PayPalForm", new PayPalFormViewModel(paymentSettings, country,
-                                                       chapterSubscription.Amount, chapterSubscription.Title))
+                                            @await Html.PartialAsync("Payments/_PayPalForm", new PayPalFormViewModel
+                                            {
+                                                Amount = chapterSubscription.Amount,
+                                                Country = country,
+                                                Description = chapterSubscription.Title,
+                                                Id = chapterSubscription.Id
+                                            })
                                         </form>
                                     }
                                     else if (paymentSettings?.Provider == "Stripe")
@@ -81,4 +90,10 @@
             </div>
         </div>
     </div>
+}
+
+@if (paymentSettings?.Provider == "PayPal")
+{
+    <script src="https://www.paypal.com/sdk/js?client-id=@paymentSettings.ApiPublicKey&currency=@country.CurrencyCode"></script>
+    <script src="/js/odk.paypal.js"></script>
 }

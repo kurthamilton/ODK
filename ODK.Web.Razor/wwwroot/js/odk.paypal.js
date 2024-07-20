@@ -1,16 +1,15 @@
 ﻿(function () {
-    document.querySelectorAll('[data-paypal-amount]').forEach(container => {
+    document.querySelectorAll('[data-paypal-container]').forEach(container => {
         const currencyCode = container.getAttribute('data-paypal-currencycode');
-        const amount = container.getAttribute('data-paypal-amount');
-        const tokenSelector = container.getAttribute('data-paypal-token');
-        const $token = document.querySelector(tokenSelector);
+        const amount = container.getAttribute('data-paypal-amount');        
+        const $token = container.querySelector('[data-paypal-token]');
         const $form = container.closest('form');
         if (!$form) {
             alert('Error setting up PayPal form');
             return;
         }
 
-        const containerId = container.getAttribute('id');
+        const containerId = container.getAttribute('data-paypal-container');
 
         const buttons = paypal.Buttons({
             style: {
@@ -35,6 +34,6 @@
                 $form.submit();
             }
         });
-        buttons.render(`#${containerId}`);
+        buttons.render(`[data-paypal-container="${containerId}"]`);
     });    
 })();

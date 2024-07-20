@@ -1,24 +1,14 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Countries;
+﻿using ODK.Core.Countries;
 
 namespace ODK.Web.Razor.Models;
 
 public class PayPalFormViewModel
 {
-    public PayPalFormViewModel(ChapterPaymentSettings paymentSettings, Country country, 
-        double amount, string description)
-    {
-        Amount = amount;
-        Country = country;
-        Description = description;
-        PaymentSettings = paymentSettings;
-    }
+    public required double Amount { get; set; }
 
-    public double Amount { get; }
+    public required Country Country { get; set; }
 
-    public Country Country { get; }
+    public required string Description { get; set; }
 
-    public string Description { get; }
-
-    public ChapterPaymentSettings PaymentSettings { get; }
+    public required Guid Id { get; set; }
 }
