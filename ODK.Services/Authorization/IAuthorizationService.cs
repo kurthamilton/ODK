@@ -7,7 +7,7 @@ public interface IAuthorizationService
 {
     Task AssertMemberIsChapterMemberAsync(Guid memberId, Guid chapterId);
 
-    Task AssertMemberIsChapterMemberAsync(Member member, Guid chapterId);
+    void AssertMemberIsChapterMember(Member member, Guid chapterId);
 
     Task AssertMemberIsCurrent(Guid memberId);
 

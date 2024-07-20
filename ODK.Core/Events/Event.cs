@@ -37,7 +37,7 @@ public class Event : IDatabaseEntity
             return true;
         }
 
-        return member?.ChapterId == ChapterId && 
+        return member?.IsMemberOf(ChapterId) == true && 
             member?.IsCurrent() == true;
     }
 }

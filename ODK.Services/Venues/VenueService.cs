@@ -18,16 +18,11 @@ public class VenueService : IVenueService
     public async Task<Venue> GetVenueAsync(Member? currentMember, Event @event)
     {
         var venue = await _unitOfWork.VenueRepository.GetByIdOrDefault(@event.VenueId).RunAsync();
-        if (currentMember == null || venue?.ChapterId != currentMember.ChapterId)
+        if (venue != null && @event.IsAuthorized(currentMember))
         {
-            venue = await _unitOfWork.VenueRepository.GetPublicVenue(@event.Id).RunAsync();
+            return venue;
         }
 
-        if (venue == null)
-        {
-            throw new OdkNotFoundException();
-        }
-
-        return venue;
+        throw new OdkNotFoundException();
     }
 }

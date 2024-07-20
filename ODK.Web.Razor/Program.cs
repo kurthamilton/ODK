@@ -27,8 +27,7 @@ AppStartup.ConfigureServices(builder.Configuration, builder.Services);
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
-app.UseMiddleware<ErrorLoggingMiddleware>();
-app.UseMiddleware<ErrorPageMiddleware>();
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

@@ -40,6 +40,8 @@ public static class DependencyConfig
         ConfigureServiceSettings(services, appSettings);
         ConfigureServices(services, appSettings);
         ConfigureData(services, configuration);
+
+        services.AddSingleton(appSettings);
     }
 
     private static void ConfigureAuthentication(this IServiceCollection services, AppSettings appSettings)

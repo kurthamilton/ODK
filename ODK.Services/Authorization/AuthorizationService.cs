@@ -22,22 +22,14 @@ public class AuthorizationService : IAuthorizationService
 
     public async Task AssertMemberIsChapterMemberAsync(Guid memberId, Guid chapterId)
     {
-        Member member = await GetMemberAsync(memberId);
-        await AssertMemberIsChapterMemberAsync(member, chapterId);
+        var member = await GetMemberAsync(memberId);
+        AssertMemberIsChapterMember(member, chapterId);
     }
 
-    public async Task AssertMemberIsChapterMemberAsync(Member member, Guid chapterId)
+    public void AssertMemberIsChapterMember(Member member, Guid chapterId)
     {
         AssertMemberIsCurrent(member);
-        if (member.ChapterId == chapterId)
-        {
-            return;
-        }
-
-        var chapterAdminMember = await _unitOfWork.ChapterAdminMemberRepository
-            .GetByMemberId(member.Id)
-            .RunAsync();
-        if (chapterAdminMember.Any(x => x.ChapterId == chapterId))
+        if (member.IsMemberOf(chapterId))
         {
             return;
         }

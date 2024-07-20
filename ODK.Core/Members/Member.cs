@@ -29,15 +29,14 @@ public class Member : IVersioned, IDatabaseEntity
 
     public byte[] Version { get; set; } = [];
 
-    public bool CanBeViewedBy(Member currentMember)
-    {
-        return currentMember?.ChapterId == ChapterId;
-    }
+    public bool CanBeViewedBy(Member currentMember) => IsMemberOf(currentMember.ChapterId);
 
     public EmailAddressee GetEmailAddressee()
     {
         return new EmailAddressee(EmailAddress, FullName);
     }
+
+    public bool IsMemberOf(Guid chapterId) => chapterId == ChapterId || SuperAdmin;
 
     public bool IsCurrent() => Activated && !Disabled;
 }

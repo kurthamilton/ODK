@@ -19,7 +19,7 @@ public abstract class EventPageModel : ChapterPageModel
 
     public async Task<IActionResult> OnGet(Guid id, string? rsvp = null)
     {
-        Event? @event = await EventService.GetEvent(Chapter.Id, id);
+        var @event = await EventService.GetEvent(Chapter.Id, id);
         if (@event == null)
         {
             return NotFound();
@@ -32,7 +32,7 @@ public abstract class EventPageModel : ChapterPageModel
         {
             try
             {
-                EventResponseType response = Enum.Parse<EventResponseType>(rsvp, true);
+                var response = Enum.Parse<EventResponseType>(rsvp, true);
                 await EventService.UpdateMemberResponse(CurrentMember, Event.Id, response);
             }
             catch

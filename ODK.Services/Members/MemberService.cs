@@ -179,7 +179,7 @@ public class MemberService : IMemberService
     {
         await _authorizationService.AssertMemberIsChapterMemberAsync(currentMember.Id, chapterId);
 
-        IReadOnlyCollection<Member> members = await GetMembers(currentMember, chapterId);
+        var members = await GetMembers(currentMember, chapterId);
 
         return members
             .OrderByDescending(x => x.CreatedDate)
@@ -239,7 +239,7 @@ public class MemberService : IMemberService
 
     public async Task<MemberProfile?> GetMemberProfile(Member currentMember, Member? member)
     {
-        if (member == null || !member.CanBeViewedBy(currentMember))
+        if (member?.CanBeViewedBy(currentMember) != true)
         {
             return null;
         }

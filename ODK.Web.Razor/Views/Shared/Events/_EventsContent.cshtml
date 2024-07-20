@@ -3,7 +3,7 @@
 @model ODK.Web.Razor.Models.Events.EventsContentViewModel
 @inject IEventService EventService
 @{
-    IReadOnlyCollection<EventResponseViewModel> events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter.Id);
+    var events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter.Id);
 }
 
 @if (events.Count > 0)
@@ -12,7 +12,7 @@
 }
 else
 {
-    if (Model.Member?.ChapterId == Model.Chapter.Id)
+    if (Model.Member?.IsMemberOf(Model.Chapter.Id) == true)
     {
         <p>There are no upcoming events</p>
     }

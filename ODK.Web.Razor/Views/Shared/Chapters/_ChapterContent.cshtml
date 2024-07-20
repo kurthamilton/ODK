@@ -15,7 +15,7 @@
     var (links, posts) = (dto.Links, dto.Posts);
 }
 
-@if (Model.Member == null || Model.Member.ChapterId != Model.Chapter.Id)
+@if (Model.Member?.IsMemberOf(Model.Chapter.Id) != true)
 {
     var texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
 

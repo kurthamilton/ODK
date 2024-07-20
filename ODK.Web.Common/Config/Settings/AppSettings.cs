@@ -8,6 +8,7 @@ public class AppSettings
     {
         Auth = configuration.Map<AuthSettings>("Auth");
         Emails = configuration.Map<EmailsSettings>("Emails");
+        Errors = configuration.Map<ErrorsSettings>("Errors");
         Members = configuration.Map<MembersSettings>("Members");
         Paths = configuration.Map<PathSettings>("Paths");
         Payments = configuration.Map<PaymentsSettings>("Payments");
@@ -18,6 +19,8 @@ public class AppSettings
     public AuthSettings Auth { get; }
     
     public EmailsSettings Emails { get; }
+
+    public ErrorsSettings Errors { get; }
 
     public MembersSettings Members { get; }
 

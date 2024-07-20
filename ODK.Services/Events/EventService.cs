@@ -20,12 +20,9 @@ public class EventService : IEventService
     public async Task<Event?> GetEvent(Guid chapterId, Guid eventId)
     {
         var @event = await _unitOfWork.EventRepository.GetById(eventId).RunAsync();
-        if (@event == null || @event.ChapterId != chapterId)
-        {
-            return null;
-        }
-
-        return @event;
+        return @event?.ChapterId == chapterId
+            ? @event 
+            : null;
     }
     
     public async Task<EventResponsesDto> GetEventResponsesDto(Event @event)
@@ -49,7 +46,7 @@ public class EventService : IEventService
     public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member,
         Guid chapterId, DateTime? after)
     {
-        var isChapterMember = member?.ChapterId == chapterId;
+        var isChapterMember = member?.IsMemberOf(chapterId) == true;
 
         var (events, venues) = await _unitOfWork.RunAsync(
             x => isChapterMember ? x.EventRepository.GetByChapterId(chapterId, after) : x.EventRepository.GetPublicEventsByChapterId(chapterId, after),
