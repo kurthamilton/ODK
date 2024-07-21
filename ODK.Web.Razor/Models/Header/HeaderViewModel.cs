@@ -6,5 +6,5 @@ public class HeaderViewModel
 
     public string? ImageUrl { get; set; }
 
-    public NavbarViewModel? Navbar { get; set; }
+    public required NavbarViewModel Navbar { get; set; }
 }

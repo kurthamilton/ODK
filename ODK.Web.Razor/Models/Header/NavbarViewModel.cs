@@ -24,7 +24,7 @@ public class NavbarViewModel
 
     public Member? Member { get; set; }
 
-    public MenuItem[][]? MenuItems { get; set; }
+    public required MenuItem[][] MenuItems { get; set; }
 
     public bool IsDark => Color is null or "dark";
 

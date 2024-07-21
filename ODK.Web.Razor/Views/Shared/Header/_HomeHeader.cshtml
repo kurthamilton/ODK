@@ -10,13 +10,16 @@
     var memberId = User.MemberIdOrDefault();
     var member = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
 
-    var chapters = await RequestCache.GetChaptersAsync();
-    var menuItems = chapters.Select(c => new MenuItem
-    {
-        ExternalLink = !string.IsNullOrEmpty(c.RedirectUrl) ? c.RedirectUrl : null,
-        Link = string.IsNullOrEmpty(c.RedirectUrl) ? $"/{c.Name}" : null,
-        Text = c.Name,
-    }).ToArray();
+    var chapters = await RequestCache.GetChaptersAsync();    
+    var menuItems = chapters
+        .OrderBy(x => x.Name)
+        .Select(c => new MenuItem
+        {
+            ExternalLink = !string.IsNullOrEmpty(c.RedirectUrl) ? c.RedirectUrl : null,
+            Link = string.IsNullOrEmpty(c.RedirectUrl) ? $"/{c.Name}" : null,
+            Text = c.Name,
+        })
+        .ToArray();
 }
 
 @await Html.PartialAsync("Header/_Header", new HeaderViewModel
@@ -29,7 +32,7 @@
        Chapter = null,
        Color = "dark",
        Compact = false,
-       CssClass = "navbar--home",
+       CssClass = "navbar--home d-md-none",
        Member = member,
        MenuItems = menuItems.Segment(5).ToArray()
    }

@@ -1,3 +1,5 @@
+$navbar-dark-separator: rgba(255, 255, 255, .5);
+
 @mixin nav-item-separator($color) {
     .nav-item:not(:first-child) {
         border-left: 1px solid $color;
@@ -14,8 +16,8 @@
 .navbar {
     .navbar-toggler:focus {
         box-shadow: none;
-    } 
-    
+    }
+
     .navbar-nav {
         flex-wrap: wrap;
         justify-content: center;
@@ -33,7 +35,7 @@
 
     @include media-breakpoint-up(md) {
         &.navbar-dark {
-            @include nav-item-separator(rgba(255, 255, 255, .5));
+            @include nav-item-separator($navbar-dark-separator);
         }
 
         &.navbar-light {
@@ -75,31 +77,36 @@
 }
 
 .navbar--home {
-  .nav-item {
-    text-transform: uppercase;
-  }
+    .nav-item {
+        text-transform: uppercase;
+    }
 
-  .navbar {
-    .navbar-nav {
-      margin-left: 4rem;           
-      margin-right: 4rem;
-      margin-bottom: 0;
-      
-      .nav-item {
-        margin-bottom: 0.4rem;
-      }
+    .navbar {
+        align-items: start;
 
-      .nav-link {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-      }            
-    }        
-  }
+        .navbar-nav {
+            width: 100%;
+
+            .nav-item {
+                border-left: none;
+
+                &:not(:first-child) {
+                    border-top: 1px solid $navbar-dark-separator;
+                }
+            }
+
+            .nav-link {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+        }
+    }
 }
 
 .account-links {
     cursor: pointer;
     right: 0;
+    bottom: 0;
   
     position: absolute;
     padding: 1rem; 

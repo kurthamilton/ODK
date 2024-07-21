@@ -2,7 +2,8 @@
 
 <section class="@(Model.Hero ? "section--hero" : null)
                 @(Model.Theme == "dark" ? "section--dark" : null)
-                @(Model.Theme == "light" ? "section--light" : null)"
+                @(Model.Theme == "light" ? "section--light" : null)
+                @Model.Class"
          id="@Model.Id">
     @if (Model.Hero)
     {

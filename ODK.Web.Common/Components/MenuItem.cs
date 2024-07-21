@@ -8,6 +8,8 @@ public class MenuItem
 
     public string? ExternalLink { get; set; }
 
+    public bool Hidden { get; set; }
+
     public string? Icon { get; set; }
 
     public string? Link { get; set; }

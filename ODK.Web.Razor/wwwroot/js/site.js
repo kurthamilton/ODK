@@ -77,7 +77,7 @@
 
     function bindMenuLinks() {
         const currentPath = window.location.pathname.toLocaleLowerCase();
-        const $links = document.querySelectorAll('[data-menu-link]');
+        const $links = document.querySelectorAll('[data-menu-link][href]');
         $links.forEach($link => {
             const type = $link.getAttribute('data-menu-link');
             const href = $link.getAttribute('href').toLocaleLowerCase();

@@ -1,10 +1,29 @@
-﻿@model ODK.Web.Razor.Models.Header.HeaderViewModel
+﻿@using ODK.Services.Caching
+@using ODK.Web.Razor.Models.Header
+@model ODK.Web.Razor.Models.Header.HeaderViewModel
+@inject IRequestCache RequestCache
+@{
+    var accountMenu = new AccountMenuViewModel
+    {
+        CurrentChapter = Model.Navbar.Chapter,
+        Member = Model.Navbar.Member,
+        MemberChapter = Model.Navbar.Member != null
+            ? Model.Navbar.Chapter?.Id == Model.Navbar.Member.ChapterId ? Model.Navbar.Chapter : await RequestCache.GetChapterAsync(Model.Navbar.Member.ChapterId)
+            : null
+    };
+}
 
 <header>
     <div class="bg-dark text-center">
-        <a href="@Model.ImageLink">
-            <img src="@Model.ImageUrl">
-        </a>
+        <div class="container position-relative">
+            <a href="@Model.ImageLink">
+                <img src="@Model.ImageUrl">            
+            </a>
+
+            <div class="d-none d-md-block">
+                @await Html.PartialAsync("Header/_AccountMenu", accountMenu)
+            </div>
+        </div>
     </div>
     <div>
         @await Html.PartialAsync("Header/_Navbar", Model.Navbar)

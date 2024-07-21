@@ -12060,13 +12060,17 @@ img {
 .navbar--home .nav-item {
   text-transform: uppercase;
 }
+.navbar--home .navbar {
+  align-items: start;
+}
 .navbar--home .navbar .navbar-nav {
-  margin-left: 4rem;
-  margin-right: 4rem;
-  margin-bottom: 0;
+  width: 100%;
 }
 .navbar--home .navbar .navbar-nav .nav-item {
-  margin-bottom: 0.4rem;
+  border-left: none;
+}
+.navbar--home .navbar .navbar-nav .nav-item:not(:first-child) {
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
 }
 .navbar--home .navbar .navbar-nav .nav-link {
   padding-left: 0.5rem;
@@ -12076,6 +12080,7 @@ img {
 .account-links {
   cursor: pointer;
   right: 0;
+  bottom: 0;
   position: absolute;
   padding: 1rem;
 }
@@ -12175,6 +12180,11 @@ img {
 }
 .section--hero__content h1:not(:first-child), .section--hero__content .h1:not(:first-child) {
   margin-top: 4rem;
+}
+
+.section--chapters {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .section--dark {
