@@ -32,7 +32,7 @@ public class InstagramService : IInstagramService
             .ToArray();
     }
 
-    public Task<InstagramImage?> GetInstagramImage(Guid instagramPostId)
+    public Task<InstagramImage> GetInstagramImage(Guid instagramPostId)
     {
         return _unitOfWork.InstagramImageRepository.GetByPostId(instagramPostId).RunAsync();
     }

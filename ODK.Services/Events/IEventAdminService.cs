@@ -1,5 +1,4 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Events;
+﻿using ODK.Core.Events;
 
 namespace ODK.Services.Events;
 

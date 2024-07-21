@@ -18,14 +18,7 @@ public class ErrorModel : SuperAdminPageModel
 
     public async Task<IActionResult> OnGet(Guid id)
     {
-        var error = await _loggingService.GetErrorDto(CurrentMemberId, id);
-        if (error == null)
-        {
-            return NotFound();
-        }
-
-        Error = error;
-
+        Error = await _loggingService.GetErrorDto(CurrentMemberId, id);
         return Page();
     }
 }

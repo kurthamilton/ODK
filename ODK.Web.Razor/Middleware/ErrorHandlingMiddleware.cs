@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.Features;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Services.Caching;
+using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Web.Common.Config.Settings;
 using HttpRequest = ODK.Services.Logging.HttpRequest;
@@ -30,39 +31,47 @@ public class ErrorHandlingMiddleware
         try
         {
             await _next(context);
+
+            if (context.Response.StatusCode == 404)
+            {
+                throw new OdkNotFoundException();
+            }
         }
         catch (Exception ex)
         {
-            if (!settings.Errors.Handle)
+            statusCodeContext.HttpContext.Response.StatusCode = ex switch
             {
-                throw;
-            }
-
-            if (ex is OdkNotFoundException notFoundException)
-            {                
-                statusCodeContext.HttpContext.Response.StatusCode = 404;                
-            }
-            else
-            {
-                statusCodeContext.HttpContext.Response.StatusCode = 500;
-            }
+                OdkNotAuthenticatedException => 401,
+                OdkNotAuthorizedException => 403,
+                OdkNotFoundException => 404,
+                _ => 500
+            };
 
             await LogError(context, ex, loggingService);
             await HandleAsync(statusCodeContext.HttpContext, requestCache);
+
+            if (!settings.Errors.Handle && statusCodeContext.HttpContext.Response.StatusCode == 500)
+            {
+                throw;
+            }
         }                
     }
 
     private async Task HandleAsync(HttpContext httpContext, IRequestCache requestCache)
     {
-        var originalPath = httpContext.Request.Path;
+        var request = httpContext.Request;
+        var response = httpContext.Response;
+
+        var originalPath = request.Path;
+        var statusCode = response.StatusCode;
 
         var chapter = await GetChapterFromPath(httpContext, requestCache);
 
         ResetHttpContext(httpContext);
 
-        httpContext.Request.Path = chapter != null
-            ? $"/{chapter.Name}/Error/{httpContext.Response.StatusCode}"
-            : $"/Error/{httpContext.Response.StatusCode}";
+        request.Path = chapter != null
+            ? $"/{chapter.Name}/Error/{statusCode}"
+            : $"/Error/{statusCode}";
 
         try
         {
@@ -70,7 +79,8 @@ public class ErrorHandlingMiddleware
         }
         finally
         {
-            httpContext.Request.Path = originalPath;
+            request.Path = originalPath;
+            response.StatusCode = statusCode;
             httpContext.Features.Set<IStatusCodeReExecuteFeature?>(null);
         }
     }

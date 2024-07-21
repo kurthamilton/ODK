@@ -5,5 +5,5 @@ namespace ODK.Core.SocialMedia;
 
 public interface IInstagramImageRepository : IWriteRepository<InstagramImage>
 {
-    IDeferredQuerySingleOrDefault<InstagramImage> GetByPostId(Guid instagramPostId);
+    IDeferredQuerySingle<InstagramImage> GetByPostId(Guid instagramPostId);
 }

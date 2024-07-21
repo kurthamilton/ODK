@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Services.Caching;
 using ODK.Services.Members;
@@ -22,7 +23,7 @@ public class MemberModel : ChapterPageModel
         var member = await _memberService.GetMember(id, Chapter.Id);
         if (member == null)
         {
-            return NotFound();
+            throw new OdkNotFoundException();
         }
 
         Member = member;

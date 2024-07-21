@@ -10,7 +10,7 @@ public class InstagramImageRepository : WriteRepositoryBase<InstagramImage>, IIn
     {
     }
 
-    public IDeferredQuerySingleOrDefault<InstagramImage> GetByPostId(Guid instagramPostId) => Set()
+    public IDeferredQuerySingle<InstagramImage> GetByPostId(Guid instagramPostId) => Set()
         .Where(x => x.InstagramPostId == instagramPostId)
-        .DeferredSingleOrDefault();
+        .DeferredSingle();
 }

@@ -16,12 +16,7 @@ public class ChapterController : Controller
     [HttpGet("{chapterName}/Instagram/Images/{id:guid}")]
     public async Task<IActionResult> GetInstagramImage(string chapterName, Guid id)
     {
-        var image = await _instagramService.GetInstagramImage(id);
-        if (image == null)
-        {
-            return NotFound();
-        }
-
+        var image = await _instagramService.GetInstagramImage(id);        
         return File(image.ImageData, image.MimeType);
     }
 }

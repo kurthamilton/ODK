@@ -6,7 +6,7 @@ public interface IInstagramService
 {
     Task<IReadOnlyCollection<SocialMediaImage>> FetchInstagramImages(Guid chapterId);
 
-    Task<InstagramImage?> GetInstagramImage(Guid instagramPostId);
+    Task<InstagramImage> GetInstagramImage(Guid instagramPostId);
 
     Task<InstagramPostsDto> GetInstagramPosts(Guid chapterId, int pageSize);
 

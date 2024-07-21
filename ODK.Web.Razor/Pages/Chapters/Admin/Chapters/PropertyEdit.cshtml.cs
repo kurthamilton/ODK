@@ -22,12 +22,7 @@ public class PropertyEditModel : AdminPageModel
 
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
-        Property = await _chapterAdminService.GetChapterProperty(CurrentMemberId, id);
-        if (Property == null)
-        {
-            return NotFound();
-        }
-
+        Property = await _chapterAdminService.GetChapterProperty(CurrentMemberId, id);        
         return Page();
     }
 

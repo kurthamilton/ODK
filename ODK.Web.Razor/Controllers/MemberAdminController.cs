@@ -118,11 +118,7 @@ public class MemberAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/Members/SendEmail")]
     public async Task<IActionResult> SendBulkEmail(string chapterName, [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
-        var chapter = await _chapterAdminService.GetChapter(chapterName);
-        if (chapter == null)
-        {
-            return NotFound();
-        }
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
 
         var members = await _memberAdminService.GetMembers(MemberId, new MemberFilter
         {

@@ -22,12 +22,7 @@ public class QuestionEditModel : AdminPageModel
 
     public async Task<IActionResult> OnGet(Guid id)
     {
-        Question = await _chapterAdminService.GetChapterQuestion(CurrentMemberId, id);
-        if (Question == null)
-        {
-            return NotFound();
-        }
-
+        Question = await _chapterAdminService.GetChapterQuestion(CurrentMemberId, id);        
         return Page();
     }
 

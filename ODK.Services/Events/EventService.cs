@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Events;
+using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
@@ -17,12 +18,15 @@ public class EventService : IEventService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Event?> GetEvent(Guid chapterId, Guid eventId)
+    public async Task<Event> GetEvent(Guid chapterId, Guid eventId)
     {
         var @event = await _unitOfWork.EventRepository.GetById(eventId).RunAsync();
-        return @event?.ChapterId == chapterId
-            ? @event 
-            : null;
+        if (@event.ChapterId != chapterId)
+        {
+            throw new OdkNotFoundException();
+        }
+
+        return @event;
     }
     
     public async Task<EventResponsesDto> GetEventResponsesDto(Event @event)

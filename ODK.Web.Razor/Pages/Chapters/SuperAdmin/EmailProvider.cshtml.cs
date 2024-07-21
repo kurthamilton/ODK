@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
+using ODK.Core.Exceptions;
 using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
@@ -25,7 +26,7 @@ public class EmailProviderModel : SuperAdminPageModel
         Provider = await _emailAdminService.GetChapterEmailProvider(CurrentMemberId, id);
         if (Provider == null)
         {
-            return NotFound();
+            throw new OdkNotFoundException();
         }
 
         return Page();

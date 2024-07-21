@@ -22,13 +22,7 @@ public class SubscriptionEditModel : AdminPageModel
 
     public async Task<IActionResult> OnGet(Guid id)
     {
-        ChapterSubscription? subscription = await _chapterAdminService.GetChapterSubscription(CurrentMemberId, id);
-        if (subscription == null)
-        {
-            return NotFound();
-        }
-
-        Subscription = subscription;
+        Subscription = await _chapterAdminService.GetChapterSubscription(CurrentMemberId, id);        
         return Page();
     }
 

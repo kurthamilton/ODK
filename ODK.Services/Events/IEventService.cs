@@ -5,7 +5,7 @@ namespace ODK.Services.Events;
 
 public interface IEventService
 {
-    Task<Event?> GetEvent(Guid chapterId, Guid eventId);
+    Task<Event> GetEvent(Guid chapterId, Guid eventId);
     
     Task<EventResponsesDto> GetEventResponsesDto(Event @event);
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
+using ODK.Core.Exceptions;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
@@ -64,7 +65,7 @@ public class ChapterAdminController : OdkControllerBase
 
         if (member == null)
         {
-            return NotFound();
+            throw new OdkNotFoundException();
         }
 
         var result = await _emailService.SendEmail(chapter, member.GetEmailAddressee(), type, new Dictionary<string, string>

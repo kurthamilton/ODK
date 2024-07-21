@@ -13,6 +13,7 @@ public class AppSettings
         Paths = configuration.Map<PathSettings>("Paths");
         Payments = configuration.Map<PaymentsSettings>("Payments");
         Recaptcha = configuration.Map<RecaptchaSettings>("Recaptcha");
+        ScheduledTasks = configuration.Map<ScheduledTasksSettings>("ScheduledTasks");
         Urls = configuration.Map<UrlSettings>("Urls");
     }
 
@@ -29,6 +30,8 @@ public class AppSettings
     public PaymentsSettings Payments { get; }
 
     public RecaptchaSettings Recaptcha { get; }
+
+    public ScheduledTasksSettings ScheduledTasks { get; }
 
     public UrlSettings Urls { get; }
 }

@@ -19,14 +19,8 @@ public abstract class EventPageModel : ChapterPageModel
 
     public async Task<IActionResult> OnGet(Guid id, string? rsvp = null)
     {
-        var @event = await EventService.GetEvent(Chapter.Id, id);
-        if (@event == null)
-        {
-            return NotFound();
-        }
-
-        Event = @event;
-
+        Event = await EventService.GetEvent(Chapter.Id, id);
+                
         if (!string.IsNullOrEmpty(rsvp) &&
             CurrentMember != null)
         {
