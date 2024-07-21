@@ -10,5 +10,7 @@ public interface IInstagramService
 
     Task<InstagramPostsDto> GetInstagramPosts(Guid chapterId, int pageSize);
 
+    Task ScrapeLatestInstagramPosts();
+
     Task ScrapeLatestInstagramPosts(Guid chapterId);
 }

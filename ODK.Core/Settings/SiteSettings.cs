@@ -18,7 +18,5 @@ public class SiteSettings : IVersioned, IDatabaseEntity
 
     public string RecaptchaSiteKey { get; set; } = "";
 
-    public bool ScrapeInstagram { get; set; }
-
     public byte[] Version { get; set; } = [];
 }

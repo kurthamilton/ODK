@@ -13,7 +13,6 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("SuperAdmin/_InstagramForm", new InstagramFormViewModel
            {
-               Scrape = settings.ScrapeInstagram,
                ScraperUserAgent = settings.InstagramScraperUserAgent
            })
     <button class="btn btn-primary">Update</button>

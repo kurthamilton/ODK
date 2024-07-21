@@ -60,6 +60,22 @@ public class InstagramService : IInstagramService
         };
     }
 
+    public async Task ScrapeLatestInstagramPosts()
+    {
+        var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
+        foreach (var chapter in chapters)
+        {
+            try
+            {
+                await ScrapeLatestInstagramPosts(chapter.Id);
+            }            
+            catch
+            {
+                // do nothing
+            }
+        }
+    }
+
     public async Task ScrapeLatestInstagramPosts(Guid chapterId)
     {
         var (settings, links, lastPost) = await _unitOfWork.RunAsync(
@@ -67,12 +83,7 @@ public class InstagramService : IInstagramService
             x => x.ChapterLinksRepository.GetByChapterId(chapterId),
             x => x.InstagramPostRepository.GetLastPost(chapterId));
 
-        if (links == null)
-        {
-            return;
-        }
-
-        if (string.IsNullOrEmpty(links.InstagramName))
+        if (string.IsNullOrEmpty(links?.InstagramName))
         {
             return;
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Events;
+using ODK.Services.SocialMedia;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -7,16 +8,40 @@ namespace ODK.Web.Razor.Controllers;
 [ApiController]
 public class ScheduledTasksController : Controller
 {
+    private readonly IInstagramService _instagramService;
     private readonly IEventAdminService _eventAdminService;
 
-    public ScheduledTasksController(IEventAdminService eventAdminService)
+    public ScheduledTasksController(
+        IEventAdminService eventAdminService,
+        IInstagramService instagramService)
     {
         _eventAdminService = eventAdminService;
+        _instagramService = instagramService;
     }
 
-    [HttpPost("run")]
-    public async Task Run()
+    [HttpPost("emails/scheduled")]
+    public async Task SendScheduledEmails()
     {
-        await _eventAdminService.SendScheduledEmails();
+        try
+        {
+            await _eventAdminService.SendScheduledEmails();            
+        }
+        catch
+        {
+            // do nothing
+        }        
+    }
+
+    [HttpPost("instagram/scrape")]
+    public async Task ScrapeInstagramImages()
+    {
+        try
+        {
+            await _instagramService.ScrapeLatestInstagramPosts();
+        }
+        catch
+        {
+            // do nothing
+        }
     }
 }

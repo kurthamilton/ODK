@@ -19,13 +19,11 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         return settings!;
     }
 
-    public async Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, bool scrape,
-        string scraperUserAgent)
+    public async Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent)
     {
         var settings = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SiteSettingsRepository.Get());
 
-        settings.ScrapeInstagram = scrape;
         settings.InstagramScraperUserAgent = scraperUserAgent;
 
         _unitOfWork.SiteSettingsRepository.Update(settings);
