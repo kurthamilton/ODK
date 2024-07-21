@@ -19,7 +19,7 @@ public class ScheduledTasksController : Controller
         _instagramService = instagramService;
     }
 
-    [HttpPost("emails/scheduled")]
+    [HttpPost("emails")]
     public async Task SendScheduledEmails()
     {
         try
@@ -32,7 +32,7 @@ public class ScheduledTasksController : Controller
         }        
     }
 
-    [HttpPost("instagram/scrape")]
+    [HttpPost("instagram")]
     public async Task ScrapeInstagramImages()
     {
         try
