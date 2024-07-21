@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
@@ -297,6 +298,17 @@ public class MemberService : IMemberService
         });
 
         await _unitOfWork.SaveChangesAsync();
+
+        var (chapter, country) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(member.ChapterId),
+            x => x.CountryRepository.GetByChapterId(member.ChapterId));
+
+        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.SubscriptionConfirmation, new Dictionary<string, string>
+        {
+            { "chapter.name", chapter.Name },
+            { "subscription.amount", $"{country.CurrencySymbol}{chapterSubscription.Amount:0.00}" },
+            { "subscription.end", expiryDate.ToString("d MMMM yyyy") }
+        });
 
         return ServiceResult.Successful();
     }

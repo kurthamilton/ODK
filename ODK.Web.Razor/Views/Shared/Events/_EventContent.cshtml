@@ -27,10 +27,14 @@
 {
     <h3 class="mt-5">Location</h3>
     <hr/>
-    <p class="d-none d-md-block">
-        @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
-        {
-            Query = Model.Venue.MapQuery
-        })
-    </p>
+    @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
+    {
+        Query = Model.Venue.MapQuery
+    })
+    @if (!string.IsNullOrEmpty(Model.Venue.MapQuery))
+    {
+        <p>
+            <a href="https://maps.google.com?q=@Model.Venue.MapQuery" target="_blank">View in Google maps</a>
+        </p>
+    }    
 }
