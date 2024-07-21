@@ -62,6 +62,7 @@ public class ErrorHandlingMiddleware
         var request = httpContext.Request;
         var response = httpContext.Response;
 
+        var originalMethod = request.Method;
         var originalPath = request.Path;
         var statusCode = response.StatusCode;
 
@@ -69,6 +70,7 @@ public class ErrorHandlingMiddleware
 
         ResetHttpContext(httpContext);
 
+        request.Method = HttpMethod.Get.Method;
         request.Path = chapter != null
             ? $"/{chapter.Name}/Error/{statusCode}"
             : $"/Error/{statusCode}";
@@ -79,8 +81,8 @@ public class ErrorHandlingMiddleware
         }
         finally
         {
+            request.Method = originalMethod;
             request.Path = originalPath;
-            response.StatusCode = statusCode;
             httpContext.Features.Set<IStatusCodeReExecuteFeature?>(null);
         }
     }
