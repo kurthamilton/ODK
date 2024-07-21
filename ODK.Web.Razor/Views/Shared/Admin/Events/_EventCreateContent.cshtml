@@ -1,8 +1,19 @@
-﻿@using ODK.Web.Common.Extensions
+﻿@using ODK.Services.Chapters
+@using ODK.Services.Events
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Events
 @model ODK.Core.Chapters.Chapter
+@inject IChapterAdminService ChapterAdminService
+@inject IEventAdminService EventAdminService
 @{
-    var memberId = User.MemberId();    
+    var memberId = User.MemberId();
+
+    var settings = await ChapterAdminService.GetChapterEventSettings(memberId, Model.Id);
+    var nextEventDate = await EventAdminService.GetNextAvailableEventDate(memberId, Model.Id);
+    if (nextEventDate == null)
+    {
+        nextEventDate = DateTime.Today;
+    }
 }
 
 <h2>Create new event</h2>
@@ -14,7 +25,7 @@
     {
         ChapterId = Model.Id,
         CurrentMemberId = memberId,
-        Date = DateTime.Today
+        Date = nextEventDate.Value
     })
     
     <button type="submit" class="btn btn-primary">Create</button>

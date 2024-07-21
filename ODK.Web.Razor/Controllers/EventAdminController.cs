@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
-using ODK.Services;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Events;
@@ -34,8 +33,14 @@ public class EventAdminController : OdkControllerBase
     }
 
     [HttpPost("{chapterName}/Admin/Events/{id:guid}/Invites/Send")]
-    public IActionResult SendInvites(Guid id)
+    public async Task<IActionResult> SendInvites(Guid id)
     {
+        var result = await _eventAdminService.SendEventInvites(MemberId, id);
+        if (!result.Success)
+        {
+            AddFeedback(new FeedbackViewModel(result));
+        }
+
         return RedirectToReferrer();
     }
 
@@ -51,10 +56,30 @@ public class EventAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/Events/{id:guid}/Invites/SendTest")]
     public async Task<IActionResult> SendTestInvites(Guid id)
     {
-        ServiceResult result = await _eventAdminService.SendEventInvites(MemberId, id, true);
+        var result = await _eventAdminService.SendEventInvites(MemberId, id, true);
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Invites sent", FeedbackType.Success));
+        }
+        else
+        {
+            AddFeedback(new FeedbackViewModel(result));
+        }
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("{chapterName}/Admin/Events/{id:guid}/ScheduledEmail")]
+    public async Task<IActionResult> UpdateScheduledEmail(Guid id, EventScheduledEmailFormViewModel viewModel)
+    {
+        var result = await _eventAdminService.UpdateScheduledEmail(
+            MemberId, 
+            id, 
+            viewModel.ScheduledEmailDate,
+            viewModel.ScheduledEmailTime);
+        if (result.Success)
+        {
+            AddFeedback(new FeedbackViewModel("Scheduled email date updated", FeedbackType.Success));
         }
         else
         {

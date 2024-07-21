@@ -286,6 +286,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ContactRequestRepository.GetByChapterId(chapterId));
     }
 
+    public async Task<ChapterEventSettings?> GetChapterEventSettings(Guid currentMemberId, Guid chapterId)
+    {
+        return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.ChapterEventSettingsRepository.GetByChapterId(chapterId));
+    }
+
     public async Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid currentMemberId, Guid chapterId)
     {
         return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
@@ -370,7 +376,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         links.TwitterName = update.Twitter;
         links.InstagramName = update.Instagram;        
         
-        if (links.ChapterId == Guid.Empty)
+        if (links.ChapterId == default)
         {
             links.ChapterId = chapterId;
             _unitOfWork.ChapterLinksRepository.Add(links);
@@ -378,6 +384,33 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         else
         {
             _unitOfWork.ChapterLinksRepository.Update(links);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UpdateChapterEventSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEventSettings model)
+    {
+        var settings = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.ChapterEventSettingsRepository.GetByChapterId(chapterId));
+
+        if (settings == null)
+        {
+            settings = new();
+        }
+
+        settings.DefaultDayOfWeek = model.DefaultDayOfWeek;
+        settings.DefaultScheduledEmailDayOfWeek = model.DefaultScheduledEmailDayOfWeek;
+        settings.DefaultScheduledEmailTimeOfDay = model.DefaultScheduledEmailTimeOfDay;
+
+        if (settings.ChapterId == default)
+        {
+            settings.ChapterId = chapterId;
+            _unitOfWork.ChapterEventSettingsRepository.Add(settings);
+        }
+        else
+        {
+            _unitOfWork.ChapterEventSettingsRepository.Update(settings);
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -403,7 +436,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return validationResult;
         }
 
-        if (settings.ChapterId == Guid.Empty)
+        if (settings.ChapterId == default)
         {
             settings.ChapterId = chapterId;
             _unitOfWork.ChapterMembershipSettingsRepository.Add(settings);
@@ -435,7 +468,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         settings.ApiSecretKey = model.ApiSecretKey;
         settings.Provider = model.Provider;
 
-        if (settings.ChapterId == Guid.Empty)
+        if (settings.ChapterId == default)
         {
             settings.ChapterId = chapterId;
             _unitOfWork.ChapterPaymentSettingsRepository.Add(settings);

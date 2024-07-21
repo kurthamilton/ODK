@@ -14,7 +14,7 @@ public class EmailRepository : WriteRepositoryBase<Email>, IEmailRepository
 
     public void AddSentEmail(SentEmail sentEmail)
     {
-        if (sentEmail.Id == Guid.Empty)
+        if (sentEmail.Id == default)
         {
             sentEmail.Id = Guid.NewGuid();
         }

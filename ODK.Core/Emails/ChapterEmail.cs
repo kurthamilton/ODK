@@ -12,7 +12,7 @@ public class ChapterEmail : IDatabaseEntity
 
     public EmailType Type { get; set; }
 
-    public bool IsDefault() => Id == Guid.Empty;
+    public bool IsDefault() => Id == default;
 
     public Email ToEmail()
     {

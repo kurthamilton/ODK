@@ -47,7 +47,7 @@ public class AuthenticationService : IAuthenticationService
 
         _unitOfWork.MemberRepository.Update(member);
         
-        if (memberPassword.MemberId == Guid.Empty)
+        if (memberPassword.MemberId == default)
         {
             memberPassword.MemberId = member.Id;
             _unitOfWork.MemberPasswordRepository.Add(memberPassword);
@@ -210,7 +210,7 @@ public class AuthenticationService : IAuthenticationService
 
         memberPassword = UpdatePassword(memberPassword, password);
         
-        if (memberPassword.MemberId == Guid.Empty)
+        if (memberPassword.MemberId == default)
         {
             memberPassword.MemberId = request.MemberId;
             _unitOfWork.MemberPasswordRepository.Add(memberPassword);

@@ -30,6 +30,8 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(Guid currentMemberId, Guid chapterId);
 
+    Task<ChapterEventSettings?> GetChapterEventSettings(Guid currentMemberId, Guid chapterId);
+
     Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid currentMemberId, Guid chapterId);
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
@@ -46,7 +48,9 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember model);
 
-    Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks links);
+    Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks model);
+
+    Task UpdateChapterEventSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEventSettings model);
 
     Task<ServiceResult> UpdateChapterMembershipSettings(Guid currentMemberId, Guid chapterId, UpdateChapterMembershipSettings model);
 

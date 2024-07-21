@@ -223,7 +223,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return validationResult;
         }
 
-        if (memberSubscription.MemberId == Guid.Empty)
+        if (memberSubscription.MemberId == default)
         {
             memberSubscription.MemberId = memberId;
             _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);

@@ -1,0 +1,27 @@
+﻿@using ODK.Core.Events
+@using ODK.Services.Events
+@using ODK.Web.Razor.Models.Admin.Events
+@model ODK.Web.Razor.Models.Admin.Events.EventScheduledEmailFormViewModel
+
+<form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.EventId/ScheduledEmail">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group mb-3">        
+        <div class="row">
+            <div class="col-6">
+                @Html.LabelFor(x => x.ScheduledEmailDate, new { @class = "form-label" })
+                @Html.TextBoxFor(x => x.ScheduledEmailDate, "{0:dd/MM/yyyy}", new { @class = "form-control", data_datepicker = "" })
+                @Html.ValidationMessageFor(x => x.ScheduledEmailDate)
+            </div>
+            <div class="col-6">
+                @Html.LabelFor(x => x.ScheduledEmailTime, new { @class = "form-label" })
+                @Html.TextBoxFor(x => x.ScheduledEmailTime, new { @class = "form-control" })
+                @Html.ValidationMessageFor(x => x.ScheduledEmailTime)
+            </div>
+        </div>        
+    </div>
+    
+    <button type="submit" class="btn btn-success">
+        Update
+    </button>
+</form>

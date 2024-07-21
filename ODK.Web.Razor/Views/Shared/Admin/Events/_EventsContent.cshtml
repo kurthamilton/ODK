@@ -55,7 +55,9 @@
             <td>
                 @if (eventInvites?.SentDate == null)
                 {
-                    <a href="/@Model.Name/Admin/Events/@(@event.Id)/Invites">Send</a>
+                    <a href="/@Model.Name/Admin/Events/@(@event.Id)/Invites">
+                        @(eventInvites?.ScheduledDate != null ? "Scheduled" : "Send")
+                    </a>
                 }
                 else
                 {

@@ -38,7 +38,7 @@ public abstract class ReadWriteRepositoryBase<T> : WriteRepositoryBase<T>, IRead
 
     public void Upsert(T entity)
     {
-        if (entity.Id == Guid.Empty)
+        if (entity.Id == default)
         {
             Add(entity);
         }
@@ -50,7 +50,7 @@ public abstract class ReadWriteRepositoryBase<T> : WriteRepositoryBase<T>, IRead
 
     private static void SetId(T entity)
     {
-        if (entity.Id == Guid.Empty)
+        if (entity.Id == default)
         {
             entity.Id = Guid.NewGuid();
         }

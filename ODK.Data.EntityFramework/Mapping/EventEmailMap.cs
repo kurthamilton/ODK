@@ -13,5 +13,9 @@ public class EventEmailMap : IEntityTypeConfiguration<EventEmail>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id).HasColumnName("EventEmailId");
+
+        builder.HasOne<Event>()
+            .WithOne()
+            .HasForeignKey<EventEmail>(x => x.EventId);
     }
 }

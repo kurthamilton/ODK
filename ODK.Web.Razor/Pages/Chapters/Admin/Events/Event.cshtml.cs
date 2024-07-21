@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
@@ -20,7 +19,7 @@ public class EventModel : EventAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, [FromForm] EventFormViewModel viewModel)
     {
-        ServiceResult result = await EventAdminService.UpdateEvent(CurrentMemberId, id, new CreateEvent
+        var result = await EventAdminService.UpdateEvent(CurrentMemberId, id, new CreateEvent
         {
             ChapterId = viewModel.ChapterId,
             Date = viewModel.Date,

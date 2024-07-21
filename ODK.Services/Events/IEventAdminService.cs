@@ -23,13 +23,19 @@ public interface IEventAdminService
     Task<EventsDto> GetEventsDto(Guid currentMemberId, Guid chapterId, int page, int pageSize);
 
     Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId);
-    
+
+    Task<DateTime?> GetNextAvailableEventDate(Guid currentMemberId, Guid chapterId);
+
     Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes, 
         string subject, string body);
 
     Task<ServiceResult> SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false);
 
+    Task SendScheduledEmails();
+
     Task<ServiceResult> UpdateEvent(Guid memberId, Guid id, CreateEvent @event);
 
     Task<EventResponse> UpdateMemberResponse(Guid currentMemberId, Guid eventId, Guid memberId, EventResponseType responseType);
+
+    Task<ServiceResult> UpdateScheduledEmail(Guid currentMemberId, Guid eventId, DateTime? date, string? time);
 }

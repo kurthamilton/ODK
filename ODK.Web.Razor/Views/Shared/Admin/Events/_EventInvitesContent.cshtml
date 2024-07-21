@@ -21,25 +21,35 @@
         Chapter = Model.Chapter.Name,
         EventId = Model.Event.Id
     })
-}
-else
-{
-    <div class="mb-3">
-        <form method="post">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-success"
-                    onclick="return confirm('Are you sure you want to send invite emails for this event?');">
-                Send invites
-            </button>
-        </form>
-        <p class="text-muted ml-1">
-            Emails are batched and sent to your admin email address with members included on BCC. 
-            You will receive 1 email per batch as the admin recipient + your member invite.
-        </p>
-    </div>
 
+    return;
+}
+
+<form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Invites/Send">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-success"
+            onclick="return confirm('Are you sure you want to send invite emails for this event?');">
+        Send invites
+    </button>
+</form>
+<p class="text-muted ml-1">
+    Emails are batched and sent to your admin email address with members included on BCC.
+    You will receive 1 email per batch as the admin recipient + your member invite.
+</p>
+
+<div class="mt-3">
     <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Invites/SendTest">
         @Html.AntiForgeryToken()
         <button type="submit" class="btn btn-secondary">Send test</button>
     </form>
-}
+</div>
+
+<div class="mt-3">
+    @await Html.PartialAsync("Admin/Events/_ScheduledEmailForm", new EventScheduledEmailFormViewModel
+    {
+        Chapter = Model.Chapter,
+        EventId = Model.Event.Id,
+        ScheduledEmailDate = invites.ScheduledDate?.Date,
+        ScheduledEmailTime = invites.ScheduledDate?.TimeOfDay.ToString(@"hh\:mm")
+    })
+</div>

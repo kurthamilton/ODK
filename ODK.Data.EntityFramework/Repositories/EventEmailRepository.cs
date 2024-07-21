@@ -18,4 +18,8 @@ public class EventEmailRepository : ReadWriteRepositoryBase<EventEmail>, IEventE
     public IDeferredQueryMultiple<EventEmail> GetByEventIds(IEnumerable<Guid> eventIds) => Set()
         .Where(x => eventIds.Contains(x.EventId))
         .DeferredMultiple();
+
+    public IDeferredQueryMultiple<EventEmail> GetScheduled() => Set()
+        .Where(x => x.ScheduledDate != null && x.SentDate == null)
+        .DeferredMultiple();
 }

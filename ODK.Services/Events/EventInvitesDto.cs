@@ -2,9 +2,11 @@
 
 public class EventInvitesDto
 {
-    public Guid EventId { get; set; }
+    public required Guid EventId { get; set; }
 
-    public int Sent { get; set; }
+    public required int Sent { get; set; }
 
-    public DateTime? SentDate { get; set; }
+    public required DateTime? ScheduledDate { get; set; }
+
+    public required DateTime? SentDate { get; set; }
 }

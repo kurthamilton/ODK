@@ -1,0 +1,24 @@
+﻿@using ODK.Core.Utils
+@model ODK.Web.Razor.Models.Admin.Events.EventSettingsFormViewModel
+@{
+    var dayOfWeekOptions = DateUtils
+        .DaysOfWeek(DayOfWeek.Monday)
+        .Select(x => new SelectListItem { Value = ((int)x).ToString(), Text = x.ToString() })
+        .ToArray();
+}
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.DefaultDayOfWeek, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.DefaultDayOfWeek, dayOfWeekOptions, " ", new { @class = "form-control" })
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.DefaultScheduledEmailDayOfWeek, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.DefaultScheduledEmailDayOfWeek, dayOfWeekOptions, " ", new { @class = "form-control" })
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.DefaultScheduledEmailTimeOfDay, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.DefaultScheduledEmailTimeOfDay, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.DefaultScheduledEmailTimeOfDay)
+</div>

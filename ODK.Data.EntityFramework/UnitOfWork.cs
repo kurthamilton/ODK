@@ -13,6 +13,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterAdminMemberRepository> _chapterAdminMemberRepository;
     private readonly Lazy<IChapterEmailProviderRepository> _chapterEmailProviderRepository;
     private readonly Lazy<IChapterEmailRepository> _chapterEmailRepository;
+    private readonly Lazy<IChapterEventSettingsRepository> _chapterEventSettingsRepository;
     private readonly Lazy<IChapterLinksRepository> _chapterLinksRepository;
     private readonly Lazy<IChapterMembershipSettingsRepository> _chapterMembershipSettingsRepository;
     private readonly Lazy<IChapterPaymentSettingsRepository> _chapterPaymentSettingsRepository;
@@ -52,6 +53,7 @@ public class UnitOfWork : IUnitOfWork
         _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));
         _chapterEmailProviderRepository = new(() => new ChapterEmailProviderRepository(_context));
         _chapterEmailRepository = new(() => new ChapterEmailRepository(_context));
+        _chapterEventSettingsRepository = new(() => new ChapterEventSettingsRepository(_context));
         _chapterLinksRepository = new(() => new ChapterLinksRepository(_context));
         _chapterMembershipSettingsRepository = new(() => new ChapterMembershipSettingsRepository(_context));
         _chapterPaymentSettingsRepository = new(() => new ChapterPaymentSettingsRepository(_context));
@@ -88,6 +90,7 @@ public class UnitOfWork : IUnitOfWork
     public IChapterAdminMemberRepository ChapterAdminMemberRepository => _chapterAdminMemberRepository.Value;
     public IChapterEmailProviderRepository ChapterEmailProviderRepository => _chapterEmailProviderRepository.Value;
     public IChapterEmailRepository ChapterEmailRepository => _chapterEmailRepository.Value;
+    public IChapterEventSettingsRepository ChapterEventSettingsRepository => _chapterEventSettingsRepository.Value;
     public IChapterLinksRepository ChapterLinksRepository => _chapterLinksRepository.Value;
     public IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository => _chapterMembershipSettingsRepository.Value;
     public IChapterPaymentSettingsRepository ChapterPaymentSettingsRepository => _chapterPaymentSettingsRepository.Value;

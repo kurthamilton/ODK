@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
+using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -25,10 +26,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> CreateEvent(Guid currentMemberId, CreateEvent model)
     {
-        var (chapterAdminMembers, currentMember, venue) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, venue, settings) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(model.ChapterId),
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.VenueRepository.GetById(model.VenueId));
+            x => x.VenueRepository.GetById(model.VenueId),
+            x => x.ChapterEventSettingsRepository.GetByChapterId(model.ChapterId));
 
         AssertMemberIsChapterAdmin(currentMember, model.ChapterId, chapterAdminMembers);
         
@@ -52,6 +54,21 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         _unitOfWork.EventRepository.Add(@event);
+
+        if (settings.DefaultScheduledEmailDayOfWeek != null &&
+            !string.IsNullOrEmpty(settings.DefaultScheduledEmailTimeOfDay))
+        {
+            var scheduledDate = @event.Date.Previous(settings.DefaultScheduledEmailDayOfWeek.Value);
+            var scheduledDateTime = settings.GetScheduledDateTime(scheduledDate);
+
+            var eventEmail = new EventEmail
+            {
+                EventId = @event.Id,
+                ScheduledDate = scheduledDateTime
+            };
+            _unitOfWork.EventEmailRepository.Add(eventEmail);
+        }
+        
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -117,7 +134,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             EventId = eventId,
             Sent = invites.Count,
-            SentDate = eventEmail?.SentDate
+            SentDate = eventEmail?.SentDate,
+            ScheduledDate = eventEmail?.ScheduledDate,
         };
     }
 
@@ -183,6 +201,41 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return events;
     }
     
+    public async Task<DateTime?> GetNextAvailableEventDate(Guid currentMemberId, Guid chapterId)
+    {
+        var (events, settings) = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.EventRepository.GetByChapterId(chapterId, DateTime.Today),
+            x => x.ChapterEventSettingsRepository.GetByChapterId(chapterId));
+
+        if (settings.DefaultDayOfWeek == null)
+        {
+            return null;
+        }
+
+        var nextEventDate = DateTime.Today.Next(settings.DefaultDayOfWeek.Value);
+        if (events.Count == 0)
+        {
+            return nextEventDate;
+        }
+
+        var eventDates = events
+            .Select(x => x.Date)
+            .ToArray();
+        var lastEventDate = eventDates.Max();
+
+        while (nextEventDate < lastEventDate)
+        {
+            if (!eventDates.Contains(nextEventDate))
+            {
+                return nextEventDate;
+            }
+
+            nextEventDate = nextEventDate.AddDays(7);
+        }
+
+        return nextEventDate;
+    }
+
     public async Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes,
         string subject, string body)
     {
@@ -257,6 +310,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         AssertMemberIsChapterAdmin(currentMember, @event.ChapterId, chapterAdminMembers);
 
+        var chapterAdminMember = chapterAdminMembers.First(x => x.MemberId == currentMemberId);
+
         var parameters = GetEventEmailParameters(chapter, @event, venue);
 
         if (test)
@@ -266,36 +321,66 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Successful();
         }
 
-        var memberResponses = responses.ToDictionary(x => x.MemberId, x => x);
-        var inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
-        var invited = members
-            .Where(x => x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id) && !memberResponses.ContainsKey(x.Id))
+        return await SendEventInvites(
+            chapterAdminMember, 
+            currentMember, 
+            chapter,
+            @event, 
+            venue,
+            responses,
+            invites,
+            members);
+    }
+
+    public async Task SendScheduledEmails()
+    {
+        var emails = await _unitOfWork.EventEmailRepository.GetScheduled().RunAsync();
+        if (emails.Count == 0)
+        {
+            return;
+        }
+
+        var eventIds = emails
+            .Select(x => x.EventId)
             .ToArray();
 
-        await _emailService.SendBulkEmail(currentMemberId, chapter, invited, EmailType.EventInvite, parameters);
+        var events = await _unitOfWork.EventRepository.GetByIds(eventIds).RunAsync();
 
-        var sentDate = DateTime.UtcNow;
+        var emailDictionary = emails.ToDictionary(x => x.EventId);
 
-        _unitOfWork.EventEmailRepository.Add(new EventEmail
+        foreach (var @event in events)
         {
-            EventId = eventId,
-            SentDate = sentDate
-        });
+            var email = emailDictionary[@event.Id];
 
-        // Add null event responses to indicate that members have been invited
-        var newInvites = invited
-            .Select(x => new EventInvite
+            if (@event.Date < DateTime.Today)
             {
-                EventId = eventId,
-                MemberId = x.Id,
-                SentDate = sentDate
-            });
+                email.ScheduledDate = null;
+                _unitOfWork.EventEmailRepository.Update(email);
+                await _unitOfWork.SaveChangesAsync();
+                continue;
+            }
 
-        _unitOfWork.EventInviteRepository.AddMany(newInvites);
-        
-        await _unitOfWork.SaveChangesAsync();
+            if (email.ScheduledDate > DateTime.Now)
+            {
+                continue;
+            }
 
-        return ServiceResult.Successful();
+            var (chapter, venue, responses, invites, members) = await _unitOfWork.RunAsync(
+                x => x.ChapterRepository.GetById(@event.ChapterId),
+                x => x.VenueRepository.GetById(@event.VenueId),
+                x => x.EventResponseRepository.GetByEventId(@event.Id),
+                x => x.EventInviteRepository.GetByEventId(@event.Id),
+                x => x.MemberRepository.GetByChapterId(@event.ChapterId));
+
+            try
+            {
+                await SendEventInvites(null, null, chapter, @event, venue, responses, invites, members);
+            }            
+            catch
+            {
+                // do nothing
+            }
+        }
     }
 
     public async Task<ServiceResult> UpdateEvent(Guid memberId, Guid id, CreateEvent model)
@@ -356,7 +441,64 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return response;
     }
 
-    private static ServiceResult ValidateEventEmailCanBeSent(Event @event)
+    public async Task<ServiceResult> UpdateScheduledEmail(Guid currentMemberId, Guid eventId, DateTime? date,
+        string? time)
+    {
+        var (@event, eventEmail) = await _unitOfWork.RunAsync(
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventEmailRepository.GetByEventId(eventId));
+
+        await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
+
+        if (eventEmail == null && date == null && string.IsNullOrEmpty(time))
+        {
+            return ServiceResult.Successful();
+        }
+
+        if (!string.IsNullOrEmpty(time) && !TimeOnly.TryParse(time, out var parsedTime))
+        {
+            return ServiceResult.Failure("Invalid time");
+        }
+
+        if (date == null != string.IsNullOrEmpty(time))
+        {
+            return ServiceResult.Failure("Missing date or time");
+        }
+
+        if (eventEmail == null)
+        {
+            eventEmail = new EventEmail();
+        }
+
+        if (date < DateTime.Now)
+        {
+            return ServiceResult.Failure("Scheduled date cannot be in the past");
+        }
+
+        if (date > @event.Date)
+        {
+            return ServiceResult.Failure("Scheduled date cannot be after event");
+        }
+
+        eventEmail.ScheduledDate = date != null
+            ? date + TimeOnly.Parse(time ?? "").ToTimeSpan()
+            : null;
+
+        if (eventEmail.EventId == default)
+        {
+            eventEmail.EventId = eventId;
+            _unitOfWork.EventEmailRepository.Add(eventEmail);
+        }
+        else
+        {
+            _unitOfWork.EventEmailRepository.Update(eventEmail);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        return ServiceResult.Successful();
+    }
+
+        private static ServiceResult ValidateEventEmailCanBeSent(Event @event)
     {
         if (@event.Date < DateTime.UtcNow.Date)
         {
@@ -430,8 +572,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     private IReadOnlyCollection<EventInvitesDto> GetEventInvitesDtos(IEnumerable<Guid> eventIds,
         IEnumerable<EventInviteSummaryDto> invites, IEnumerable<EventEmail> emails)
     {
-        var emailDictionary = emails
-            .ToDictionary(x => x.EventId, x => x.SentDate);
+        var eventDictionary = emails
+            .ToDictionary(x => x.EventId);
         var invitesDictionary = invites
             .ToDictionary(x => x.EventId, x => x.Sent);
 
@@ -439,7 +581,70 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             EventId = x,
             Sent = invitesDictionary.ContainsKey(x) ? invitesDictionary[x] : 0,
-            SentDate = emailDictionary.ContainsKey(x) ? emailDictionary[x] : default
+            SentDate = eventDictionary.ContainsKey(x) ? eventDictionary[x].SentDate : default,
+            ScheduledDate = eventDictionary.ContainsKey(x) ? eventDictionary[x].ScheduledDate : default,
         }).ToArray();
+    }
+
+    private async Task<ServiceResult> SendEventInvites(
+        ChapterAdminMember? chapterAdminMember, 
+        Member? currentMember,
+        Chapter chapter,
+        Event @event,
+        Venue venue,
+        IReadOnlyCollection<EventResponse> responses,
+        IReadOnlyCollection<EventInvite> invites,
+        IReadOnlyCollection<Member> members)
+    {
+        var parameters = GetEventEmailParameters(chapter, @event, venue);
+
+        var memberResponses = responses.ToDictionary(x => x.MemberId, x => x);
+        var inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
+        var invited = members
+            .Where(x => x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id) && !memberResponses.ContainsKey(x.Id))
+            .ToArray();
+
+        await _emailService.SendBulkEmail(
+            chapterAdminMember,
+            currentMember,
+            chapter,
+            invited,
+            EmailType.EventInvite,
+            parameters);
+
+        var sentDate = DateTime.UtcNow;
+
+        var eventEmail = await _unitOfWork.EventEmailRepository.GetByEventId(@event.Id).RunAsync();
+        if (eventEmail == null)
+        {
+            eventEmail = new();
+        }
+
+        eventEmail.SentDate = sentDate;
+
+        if (eventEmail.EventId == default)
+        {
+            eventEmail.EventId = @event.Id;
+            _unitOfWork.EventEmailRepository.Add(eventEmail);
+        }        
+        else
+        {
+            _unitOfWork.EventEmailRepository.Update(eventEmail);
+        }
+
+        // Add null event responses to indicate that members have been invited
+        var newInvites = invited
+            .Select(x => new EventInvite
+            {
+                EventId = @event.Id,
+                MemberId = x.Id,
+                SentDate = sentDate
+            });
+
+        _unitOfWork.EventInviteRepository.AddMany(newInvites);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
     }
 }
