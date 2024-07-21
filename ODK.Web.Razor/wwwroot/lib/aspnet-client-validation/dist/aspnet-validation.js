@@ -213,17 +213,26 @@ var MvcValidationProviders = /** @class */ (function () {
             // Handle single and multiple checkboxes/radio buttons.
             var elementType = element.type.toLowerCase();
             if (elementType === "checkbox" || elementType === "radio") {
-                var allElementsOfThisName = Array.from(element.form.querySelectorAll("input[name='".concat(element.name, "'][type='").concat(elementType, "']")));
+                var allElementsOfThisName = Array.from(element.form.querySelectorAll(validatableSelector("[name='".concat(element.name, "'][type='").concat(elementType, "']"))));
                 for (var _i = 0, allElementsOfThisName_1 = allElementsOfThisName; _i < allElementsOfThisName_1.length; _i++) {
                     var element_1 = allElementsOfThisName_1[_i];
                     if (element_1 instanceof HTMLInputElement && element_1.checked === true) {
                         return true;
                     }
                 }
+                // Checkboxes do not submit a value when unchecked. To work around this, platforms such as ASP.NET render a
+                // hidden input with the same name as the checkbox so that a value ("false") is still submitted even when
+                // the checkbox is not checked. We check this special case here.
+                if (elementType === "checkbox") {
+                    var checkboxHiddenInput = element.form.querySelector("input[name='".concat(element.name, "'][type='hidden']"));
+                    if (checkboxHiddenInput instanceof HTMLInputElement && checkboxHiddenInput.value === "false") {
+                        return true;
+                    }
+                }
                 return false;
             }
-            // Default behavior otherwise.
-            return Boolean(value);
+            // Default behavior otherwise (trim ensures whitespace only is not seen as valid).
+            return Boolean(value === null || value === void 0 ? void 0 : value.trim());
         };
         /**
          * Validates whether the input value satisfies the length contstraint.
@@ -387,7 +396,13 @@ var MvcValidationProviders = /** @class */ (function () {
                 if (!hasValue) {
                     continue;
                 }
-                fields[fieldName] = fieldElement.value;
+                if (fieldElement instanceof HTMLInputElement &&
+                    (fieldElement.type === 'checkbox' || fieldElement.type === 'radio')) {
+                    fields[fieldName] = fieldElement.checked ? fieldElement.value : '';
+                }
+                else {
+                    fields[fieldName] = fieldElement.value;
+                }
             }
             var url = params['url'];
             var encodedParams = [];
@@ -398,7 +413,7 @@ var MvcValidationProviders = /** @class */ (function () {
             var payload = encodedParams.join('&');
             return new Promise(function (ok, reject) {
                 var request = new XMLHttpRequest();
-                if (params.type === 'Post') {
+                if (params.type && params.type.toLowerCase() === 'post') {
                     var postData = new FormData();
                     for (var fieldName in fields) {
                         postData.append(fieldName, fields[fieldName]);
@@ -448,7 +463,7 @@ var ValidationService = /** @class */ (function () {
          */
         this.providers = {};
         /**
-         * A key-value collection of <span> elements for displaying validation messages for an input (by DOM ID).
+         * A key-value collection of form UIDs and their <span> elements for displaying validation messages for an input (by DOM name).
          */
         this.messageFor = {};
         /**
@@ -468,9 +483,13 @@ var ValidationService = /** @class */ (function () {
          */
         this.validators = {};
         /**
-         * A key-value map for element UID to its trigger element (submit event for <form>, input event for <textarea> and <input>).
+         * A key-value map for form UID to its trigger element (submit event for <form>).
          */
-        this.elementEvents = {};
+        this.formEvents = {};
+        /**
+         * A key-value map for element UID to its trigger element (input event for <textarea> and <input>, change event for <select>).
+         */
+        this.inputEvents = {};
         /**
          * A key-value map of input UID to its validation error message.
          */
@@ -485,16 +504,53 @@ var ValidationService = /** @class */ (function () {
         this.allowHiddenFields = false;
         /**
          * Fires off validation for elements within the provided form and then calls the callback
-         * @param form
-         * @param callback
+         * @param form The form to validate.
+         * @param callback Receives true or false indicating validity after all validation is complete.
+         * @returns Promise that resolves to true or false indicating validity after all validation is complete.
          */
-        this.validateForm = function (form, callback) {
-            var formUID = _this.getElementUID(form);
-            var formValidationEvent = _this.elementEvents[formUID];
-            if (formValidationEvent) {
-                formValidationEvent(undefined, callback);
-            }
-        };
+        this.validateForm = function (form, callback) { return __awaiter(_this, void 0, void 0, function () {
+            var formUID, formValidationEvent, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!(form instanceof HTMLFormElement)) {
+                            throw new Error('validateForm() can only be called on <form> elements');
+                        }
+                        formUID = this.getElementUID(form);
+                        formValidationEvent = this.formEvents[formUID];
+                        _a = !formValidationEvent;
+                        if (_a) return [3 /*break*/, 2];
+                        return [4 /*yield*/, formValidationEvent(undefined, callback)];
+                    case 1:
+                        _a = (_b.sent());
+                        _b.label = 2;
+                    case 2: return [2 /*return*/, _a];
+                }
+            });
+        }); };
+        /**
+         * Fires off validation for the provided element and then calls the callback
+         * @param field The element to validate.
+         * @param callback Receives true or false indicating validity after all validation is complete.
+         * @returns Promise that resolves to true or false indicating validity after all validation is complete
+         */
+        this.validateField = function (field, callback) { return __awaiter(_this, void 0, void 0, function () {
+            var fieldUID, fieldValidationEvent, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        fieldUID = this.getElementUID(field);
+                        fieldValidationEvent = this.inputEvents[fieldUID];
+                        _a = !fieldValidationEvent;
+                        if (_a) return [3 /*break*/, 2];
+                        return [4 /*yield*/, fieldValidationEvent(undefined, callback)];
+                    case 1:
+                        _a = (_b.sent());
+                        _b.label = 2;
+                    case 2: return [2 /*return*/, _a];
+                }
+            });
+        }); };
         /**
          * Called before validating form submit events.
          * Default calls `preventDefault()` and `stopImmediatePropagation()`.
@@ -513,8 +569,13 @@ var ValidationService = /** @class */ (function () {
          * @param submitEvent The `SubmitEvent`.
          */
         this.handleValidated = function (form, success, submitEvent) {
+            if (!(form instanceof HTMLFormElement)) {
+                throw new Error('handleValidated() can only be called on <form> elements');
+            }
             if (success) {
-                _this.submitValidForm(form, submitEvent);
+                if (submitEvent) {
+                    _this.submitValidForm(form, submitEvent);
+                }
             }
             else {
                 _this.focusFirstInvalid(form);
@@ -530,9 +591,36 @@ var ValidationService = /** @class */ (function () {
          * @param submitEvent The `SubmitEvent`.
          */
         this.submitValidForm = function (form, submitEvent) {
+            if (!(form instanceof HTMLFormElement)) {
+                throw new Error('submitValidForm() can only be called on <form> elements');
+            }
             var newEvent = new SubmitEvent('submit', submitEvent);
             if (form.dispatchEvent(newEvent)) {
-                form.submit();
+                // Because the submitter is not propagated when calling
+                // form.submit(), we recreate it here.
+                var submitter = submitEvent.submitter;
+                var initialFormAction = form.action;
+                if (submitter) {
+                    var name_1 = submitter.getAttribute('name');
+                    // If name is null, a submit button is not submitted.
+                    if (name_1) {
+                        var submitterInput = document.createElement('input');
+                        submitterInput.type = 'hidden';
+                        submitterInput.name = name_1;
+                        submitterInput.value = submitter.getAttribute('value');
+                        form.appendChild(submitterInput);
+                    }
+                    var formAction = submitter.getAttribute('formaction');
+                    if (formAction) {
+                        form.action = formAction;
+                    }
+                }
+                try {
+                    form.submit();
+                }
+                finally {
+                    form.action = initialFormAction;
+                }
             }
         };
         /**
@@ -540,50 +628,63 @@ var ValidationService = /** @class */ (function () {
          * @param form
          */
         this.focusFirstInvalid = function (form) {
+            if (!(form instanceof HTMLFormElement)) {
+                throw new Error('focusFirstInvalid() can only be called on <form> elements');
+            }
             var formUID = _this.getElementUID(form);
             var formInputUIDs = _this.formInputs[formUID];
-            var invalidFormInputUIDs = formInputUIDs.filter(function (uid) { return _this.summary[uid]; });
-            if (invalidFormInputUIDs.length > 0) {
-                var firstInvalid = _this.elementByUID[invalidFormInputUIDs[0]];
-                if (firstInvalid) {
+            var invalidFormInputUID = formInputUIDs === null || formInputUIDs === void 0 ? void 0 : formInputUIDs.find(function (uid) { return _this.summary[uid]; });
+            if (invalidFormInputUID) {
+                var firstInvalid = _this.elementByUID[invalidFormInputUID];
+                if (firstInvalid instanceof HTMLElement) {
                     firstInvalid.focus();
                 }
             }
         };
         /**
-         * Returns true if the provided form is valid, and then calls the callback. The form will be validated before checking, unless prevalidate is set to false
-         * @param form
-         * @param prevalidate
-         * @param callback
-         * @returns
+         * Returns true if the provided form is currently valid.
+         * The form will be validated unless prevalidate is set to false.
+         * @param form The form to validate.
+         * @param prevalidate Whether the form should be validated before returning.
+         * @param callback A callback that receives true or false indicating validity after all validation is complete. Ignored if prevalidate is false.
+         * @returns The current state of the form. May be inaccurate if any validation is asynchronous (e.g. remote); consider using `callback` instead.
          */
         this.isValid = function (form, prevalidate, callback) {
             if (prevalidate === void 0) { prevalidate = true; }
+            if (!(form instanceof HTMLFormElement)) {
+                throw new Error('isValid() can only be called on <form> elements');
+            }
             if (prevalidate) {
                 _this.validateForm(form, callback);
             }
             var formUID = _this.getElementUID(form);
             var formInputUIDs = _this.formInputs[formUID];
-            var invalidFormInputUIDs = formInputUIDs.filter(function (uid) { return _this.summary[uid]; });
-            return invalidFormInputUIDs.length == 0;
+            var formIsInvalid = (formInputUIDs === null || formInputUIDs === void 0 ? void 0 : formInputUIDs.some(function (uid) { return _this.summary[uid]; })) === true;
+            return !formIsInvalid;
         };
         /**
-         * Returns true if the provided field is valid, and then calls the callback. The form will be validated before checking, unless prevalidate is set to false
-         * @param field
-         * @param prevalidate
-         * @param callback
-         * @returns
+         * Returns true if the provided field is currently valid.
+         * The field will be validated unless prevalidate is set to false.
+         * @param field The field to validate.
+         * @param prevalidate Whether the field should be validated before returning.
+         * @param callback A callback that receives true or false indicating validity after all validation is complete. Ignored if prevalidate is false.
+         * @returns The current state of the field. May be inaccurate if any validation is asynchronous (e.g. remote); consider using `callback` instead.
          */
         this.isFieldValid = function (field, prevalidate, callback) {
             if (prevalidate === void 0) { prevalidate = true; }
             if (prevalidate) {
-                var form = field.closest("form");
-                if (form != null) {
-                    _this.validateForm(form, callback);
-                }
+                _this.validateField(field, callback);
             }
             var fieldUID = _this.getElementUID(field);
-            return _this.summary[fieldUID] != null;
+            return _this.summary[fieldUID] === undefined;
+        };
+        /**
+         * Options for this instance of @type {ValidationService}.
+         */
+        this.options = {
+            root: document.body,
+            watch: false,
+            addNoValidate: true,
         };
         /**
          * Override CSS class name for input validation error. Default: 'input-validation-error'
@@ -606,7 +707,7 @@ var ValidationService = /** @class */ (function () {
          */
         this.ValidationSummaryCssClassName = "validation-summary-errors";
         /**
-         * Override CSS class name for valid validation summary. Default: 'field-validation-valid'
+         * Override CSS class name for valid validation summary. Default: 'validation-summary-valid'
          */
         this.ValidationSummaryValidCssClassName = "validation-summary-valid";
         this.logger = logger || nullLogger;
@@ -655,16 +756,18 @@ var ValidationService = /** @class */ (function () {
         this.addProvider('remote', mvc.remote);
     };
     /**
-     * Scans document for all validation message <span> generated by ASP.NET Core MVC, then tracks them.
+     * Scans `root` for all validation message <span> generated by ASP.NET Core MVC, then calls `cb` for each.
+     * @param root The root node to scan
+     * @param cb The callback to invoke with each form and span
      */
-    ValidationService.prototype.scanMessages = function (root) {
+    ValidationService.prototype.scanMessages = function (root, cb) {
         /* If a validation span explicitly declares a form, we group the span with that form. */
         var validationMessageElements = Array.from(root.querySelectorAll('span[form]'));
         for (var _i = 0, validationMessageElements_1 = validationMessageElements; _i < validationMessageElements_1.length; _i++) {
             var span = validationMessageElements_1[_i];
             var form = document.getElementById(span.getAttribute('form'));
-            if (form) {
-                this.pushValidationMessageSpan(form, span);
+            if (form instanceof HTMLFormElement) {
+                cb.call(this, form, span);
             }
         }
         // Otherwise if a validation message span is inside a form, we group the span with the form it's inside.
@@ -674,24 +777,54 @@ var ValidationService = /** @class */ (function () {
             // we could use 'matches', but that's newer than querySelectorAll so we'll keep it simple and compatible.
             forms.push(root);
         }
+        // If root is the descendant of a form, we want to include that form too.
+        var containingForm = (root instanceof Element) ? root.closest('form') : null;
+        if (containingForm) {
+            forms.push(containingForm);
+        }
         for (var _a = 0, forms_1 = forms; _a < forms_1.length; _a++) {
             var form = forms_1[_a];
             var validationMessageElements_3 = Array.from(form.querySelectorAll('[data-valmsg-for]'));
             for (var _b = 0, validationMessageElements_2 = validationMessageElements_3; _b < validationMessageElements_2.length; _b++) {
                 var span = validationMessageElements_2[_b];
-                this.pushValidationMessageSpan(form, span);
+                cb.call(this, form, span);
             }
         }
     };
     ValidationService.prototype.pushValidationMessageSpan = function (form, span) {
+        var _a, _b;
+        var _c;
         var formId = this.getElementUID(form);
-        var name = "".concat(formId, ":").concat(span.getAttribute('data-valmsg-for'));
-        var spans = this.messageFor[name] || (this.messageFor[name] = []);
+        var formSpans = (_a = (_c = this.messageFor)[formId]) !== null && _a !== void 0 ? _a : (_c[formId] = {});
+        var messageForId = span.getAttribute('data-valmsg-for');
+        if (!messageForId)
+            return;
+        var spans = (_b = formSpans[messageForId]) !== null && _b !== void 0 ? _b : (formSpans[messageForId] = []);
         if (spans.indexOf(span) < 0) {
             spans.push(span);
         }
         else {
             this.logger.log("Validation element for '%s' is already tracked", name, span);
+        }
+    };
+    ValidationService.prototype.removeValidationMessageSpan = function (form, span) {
+        var formId = this.getElementUID(form);
+        var formSpans = this.messageFor[formId];
+        if (!formSpans)
+            return;
+        var messageForId = span.getAttribute('data-valmsg-for');
+        if (!messageForId)
+            return;
+        var spans = formSpans[messageForId];
+        if (!spans) {
+            return;
+        }
+        var index = spans.indexOf(span);
+        if (index >= 0) {
+            spans.splice(index, 1);
+        }
+        else {
+            this.logger.log("Validation element for '%s' was already removed", name, span);
         }
     };
     /**
@@ -772,18 +905,24 @@ var ValidationService = /** @class */ (function () {
             return Promise.resolve(true);
         }
         var formValidators = [];
-        for (var i = 0; i < formInputUIDs.length; i++) {
-            var inputUID = formInputUIDs[i];
-            formValidators.push(this.validators[inputUID]);
+        for (var _i = 0, formInputUIDs_1 = formInputUIDs; _i < formInputUIDs_1.length; _i++) {
+            var inputUID = formInputUIDs_1[_i];
+            var validator = this.validators[inputUID];
+            if (validator) {
+                formValidators.push(validator);
+            }
         }
         var tasks = formValidators.map(function (factory) { return factory(); });
         return Promise.all(tasks).then(function (result) { return result.every(function (e) { return e; }); });
     };
     // Retrieves the validation span for the input.
     ValidationService.prototype.getMessageFor = function (input) {
+        var _a;
+        if (!input.form) {
+            return undefined;
+        }
         var formId = this.getElementUID(input.form);
-        var name = "".concat(formId, ":").concat(input.name);
-        return this.messageFor[name];
+        return (_a = this.messageFor[formId]) === null || _a === void 0 ? void 0 : _a[input.name];
     };
     /**
      * Returns true if the event triggering the form submission indicates we should validate the form.
@@ -800,79 +939,133 @@ var ValidationService = /** @class */ (function () {
      */
     ValidationService.prototype.trackFormInput = function (form, inputUID) {
         var _this = this;
+        var _a;
+        var _b;
         var formUID = this.getElementUID(form);
-        if (!this.formInputs[formUID]) {
-            this.formInputs[formUID] = [];
-        }
-        var add = (this.formInputs[formUID].indexOf(inputUID) === -1);
+        var formInputUIDs = (_a = (_b = this.formInputs)[formUID]) !== null && _a !== void 0 ? _a : (_b[formUID] = []);
+        var add = formInputUIDs.indexOf(inputUID) === -1;
         if (add) {
-            this.formInputs[formUID].push(inputUID);
+            formInputUIDs.push(inputUID);
+            if (this.options.addNoValidate) {
+                this.logger.log('Setting novalidate on form', form);
+                form.setAttribute('novalidate', 'novalidate');
+            }
+            else {
+                this.logger.log('Not setting novalidate on form', form);
+            }
         }
         else {
             this.logger.log("Form input for UID '%s' is already tracked", inputUID);
         }
-        if (this.elementEvents[formUID]) {
+        if (this.formEvents[formUID]) {
             return;
         }
-        var validating = false;
+        var validationTask = null;
         var cb = function (e, callback) {
             // Prevent recursion
-            if (validating) {
-                return;
+            if (validationTask) {
+                return validationTask;
             }
             if (!_this.shouldValidate(e)) {
-                return;
+                return Promise.resolve(true);
             }
-            var validate = _this.getFormValidationTask(formUID);
-            if (!validate) {
-                return;
-            }
+            validationTask = _this.getFormValidationTask(formUID);
             //`preValidate` typically prevents submit before validation
             if (e) {
                 _this.preValidate(e);
             }
-            validating = true;
             _this.logger.log('Validating', form);
-            validate.then(function (success) {
-                _this.logger.log('Validated (success = %s)', success, form);
-                if (callback) {
-                    callback(success);
-                    return;
-                }
-                var validationEvent = new CustomEvent('validation', {
-                    detail: { valid: success }
+            return validationTask.then(function (success) { return __awaiter(_this, void 0, void 0, function () {
+                var validationEvent;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            this.logger.log('Validated (success = %s)', success, form);
+                            if (callback) {
+                                callback(success);
+                                return [2 /*return*/, success];
+                            }
+                            validationEvent = new CustomEvent('validation', {
+                                detail: { valid: success }
+                            });
+                            form.dispatchEvent(validationEvent);
+                            // Firefox fix: redispatch 'submit' after finished handling this event
+                            return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, 0); })];
+                        case 1:
+                            // Firefox fix: redispatch 'submit' after finished handling this event
+                            _a.sent();
+                            this.handleValidated(form, success, e);
+                            return [2 /*return*/, success];
+                    }
                 });
-                form.dispatchEvent(validationEvent);
-                _this.handleValidated(form, success, e);
-            }).catch(function (error) {
+            }); }).catch(function (error) {
                 _this.logger.log('Validation error', error);
+                return false;
             }).finally(function () {
-                validating = false;
+                validationTask = null;
             });
         };
         form.addEventListener('submit', cb);
-        form.addEventListener('reset', function (e) {
-            var uids = _this.formInputs[formUID];
-            for (var _i = 0, uids_1 = uids; _i < uids_1.length; _i++) {
-                var uid = uids_1[_i];
-                var input = _this.elementByUID[uid];
-                if (input.classList.contains(_this.ValidationInputCssClassName)) {
-                    input.classList.remove(_this.ValidationInputCssClassName);
-                }
-                if (input.classList.contains(_this.ValidationInputValidCssClassName)) {
-                    input.classList.remove(_this.ValidationInputValidCssClassName);
-                }
-                var spans = _this.getMessageFor(input);
-                if (spans) {
-                    for (var i = 0; i < spans.length; i++) {
-                        spans[i].innerHTML = '';
-                    }
-                }
-                delete _this.summary[uid];
+        var cbReset = function (e) {
+            var formInputUIDs = _this.formInputs[formUID];
+            for (var _i = 0, formInputUIDs_2 = formInputUIDs; _i < formInputUIDs_2.length; _i++) {
+                var inputUID_1 = formInputUIDs_2[_i];
+                _this.resetField(inputUID_1);
             }
             _this.renderSummary();
-        });
-        this.elementEvents[formUID] = cb;
+        };
+        form.addEventListener('reset', cbReset);
+        cb.remove = function () {
+            form.removeEventListener('submit', cb);
+            form.removeEventListener('reset', cbReset);
+        };
+        this.formEvents[formUID] = cb;
+    };
+    /*
+        Reset the state of a validatable input. This is used when it's enabled or disabled.
+    */
+    ValidationService.prototype.reset = function (input) {
+        if (this.isDisabled(input)) {
+            this.resetField(this.getElementUID(input));
+        }
+        else {
+            this.scan(input);
+        }
+    };
+    ValidationService.prototype.resetField = function (inputUID) {
+        var input = this.elementByUID[inputUID];
+        this.swapClasses(input, '', this.ValidationInputCssClassName);
+        this.swapClasses(input, '', this.ValidationInputValidCssClassName);
+        var spans = isValidatable(input) && this.getMessageFor(input);
+        if (spans) {
+            for (var i = 0; i < spans.length; i++) {
+                spans[i].innerHTML = '';
+                this.swapClasses(spans[i], '', this.ValidationMessageCssClassName);
+                this.swapClasses(spans[i], '', this.ValidationMessageValidCssClassName);
+            }
+        }
+        delete this.summary[inputUID];
+    };
+    ValidationService.prototype.untrackFormInput = function (form, inputUID) {
+        var _a;
+        var formUID = this.getElementUID(form);
+        var formInputUIDs = this.formInputs[formUID];
+        if (!formInputUIDs) {
+            return;
+        }
+        var indexToRemove = formInputUIDs.indexOf(inputUID);
+        if (indexToRemove >= 0) {
+            formInputUIDs.splice(indexToRemove, 1);
+            if (!formInputUIDs.length) {
+                (_a = this.formEvents[formUID]) === null || _a === void 0 ? void 0 : _a.remove();
+                delete this.formEvents[formUID];
+                delete this.formInputs[formUID];
+                delete this.messageFor[formUID];
+            }
+        }
+        else {
+            this.logger.log("Form input for UID '%s' was already removed", inputUID);
+        }
     };
     /**
      * Adds an input element to be managed and validated by the service.
@@ -887,32 +1080,67 @@ var ValidationService = /** @class */ (function () {
         if (input.form) {
             this.trackFormInput(input.form, uid);
         }
-        if (this.elementEvents[uid]) {
+        if (this.inputEvents[uid]) {
             return;
         }
-        var delay;
-        var cb = function (e) {
-            var validate = _this.validators[uid];
-            clearTimeout(delay);
-            delay = setTimeout(validate, _this.debounce);
+        var cb = function (event, callback) { return __awaiter(_this, void 0, void 0, function () {
+            var validate, success, error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        validate = this.validators[uid];
+                        if (!validate)
+                            return [2 /*return*/, true];
+                        this.logger.log('Validating', { event: event });
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, validate()];
+                    case 2:
+                        success = _a.sent();
+                        callback(success);
+                        return [2 /*return*/, success];
+                    case 3:
+                        error_1 = _a.sent();
+                        this.logger.log('Validation error', error_1);
+                        return [2 /*return*/, false];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        }); };
+        var debounceTimeoutID = 0;
+        cb.debounced = function (event, callback) {
+            clearTimeout(debounceTimeoutID);
+            debounceTimeoutID = setTimeout(function () {
+                cb(event, callback);
+            }, _this.debounce);
         };
-        var isDropdown = input.tagName.toLowerCase() === 'select';
-        var validateEvent = input.dataset.valEvent;
-        if (isDropdown) {
-            input.addEventListener('change', cb);
+        var validateEvent = input.dataset.valEvent || input instanceof HTMLSelectElement ? 'change' : 'input';
+        input.addEventListener(validateEvent, cb.debounced);
+        cb.remove = function () { return input.removeEventListener(validateEvent, cb.debounced); };
+        this.inputEvents[uid] = cb;
+    };
+    ValidationService.prototype.removeInput = function (input) {
+        var uid = this.getElementUID(input);
+        // Clean up event listener
+        var cb = this.inputEvents[uid];
+        if (cb === null || cb === void 0 ? void 0 : cb.remove) {
+            cb.remove();
+            delete cb.remove;
         }
-        else if (validateEvent) {
-            input.addEventListener(validateEvent, cb);
+        delete this.summary[uid];
+        delete this.inputEvents[uid];
+        delete this.validators[uid];
+        if (input.form) {
+            this.untrackFormInput(input.form, uid);
         }
-        else {
-            input.addEventListener('input', cb);
-        }
-        this.elementEvents[uid] = cb;
     };
     /**
-     * Scans the entire document for input elements to be validated.
+     * Scans `root` for input elements to be validated, then calls `cb` for each.
+     * @param root The root node to scan
+     * @param cb The callback to invoke with each input
      */
-    ValidationService.prototype.scanInputs = function (root) {
+    ValidationService.prototype.scanInputs = function (root, cb) {
         var inputs = Array.from(root.querySelectorAll(validatableSelector('[data-val="true"]')));
         // querySelectorAll does not include the root element itself.
         // we could use 'matches', but that's newer than querySelectorAll so we'll keep it simple and compatible.
@@ -921,7 +1149,7 @@ var ValidationService = /** @class */ (function () {
         }
         for (var i = 0; i < inputs.length; i++) {
             var input = inputs[i];
-            this.addInput(input);
+            cb.call(this, input);
         }
     };
     /**
@@ -931,11 +1159,28 @@ var ValidationService = /** @class */ (function () {
         if (!Object.keys(this.summary).length) {
             return null;
         }
+        var renderedMessages = [];
         var ul = document.createElement('ul');
         for (var key in this.summary) {
+            // It could be that the message we are rendering belongs to one of a fieldset of multiple inputs that's not selected,
+            // even if another one in the fieldset is. In that case the fieldset is valid, and we shouldn't render the message.
+            var matchingElement = this.elementByUID[key];
+            if (matchingElement instanceof HTMLInputElement) {
+                if (matchingElement.type === "checkbox" || matchingElement.type === "radio") {
+                    if (matchingElement.className === this.ValidationInputValidCssClassName) {
+                        continue;
+                    }
+                }
+            }
+            // With required multiple inputs, such as a checkbox list, we'll have one message per input.
+            // It's one from the inputs that's required, not all, so we should only have one message displayed.
+            if (renderedMessages.indexOf(this.summary[key]) > -1) {
+                continue;
+            }
             var li = document.createElement('li');
             li.innerHTML = this.summary[key];
             ul.appendChild(li);
+            renderedMessages.push(this.summary[key]);
         }
         return ul;
     };
@@ -947,6 +1192,7 @@ var ValidationService = /** @class */ (function () {
         if (!summaryElements.length) {
             return;
         }
+        // Prevents wasteful re-rendering of summary list element with identical items!
         // Using JSON.stringify for quick and painless deep compare of simple KVP. You need to sort the keys first, tho...
         var shadow = JSON.stringify(this.summary, Object.keys(this.summary).sort());
         if (shadow === this.renderedSummaryJSON) {
@@ -957,8 +1203,13 @@ var ValidationService = /** @class */ (function () {
         var ul = this.createSummaryDOM();
         for (var i = 0; i < summaryElements.length; i++) {
             var e = summaryElements[i];
-            e.innerHTML = '';
-            if (ul) {
+            // Remove existing list elements, but keep the summary's message.
+            var listElements = e.querySelectorAll("ul");
+            for (var j = 0; j < listElements.length; j++) {
+                listElements[j].remove();
+            }
+            // Style the summary element as valid/invalid depending on whether there are any messages to display.
+            if (ul && ul.hasChildNodes()) {
                 this.swapClasses(e, this.ValidationSummaryCssClassName, this.ValidationSummaryValidCssClassName);
                 e.appendChild(ul.cloneNode(true));
             }
@@ -982,13 +1233,15 @@ var ValidationService = /** @class */ (function () {
             }
         }
         this.swapClasses(input, this.ValidationInputCssClassName, this.ValidationInputValidCssClassName);
-        // Adding an error to one input should also add it to others with the same name (i.e. for radio button and checkbox lists).
-        var inputs = input.form.querySelectorAll("input[name=\"".concat(input.name, "\"]"));
-        for (var i = 0; i < inputs.length; i++) {
-            this.swapClasses(inputs[i], this.ValidationInputCssClassName, this.ValidationInputValidCssClassName);
+        if (input.form) {
+            // Adding an error to one input should also add it to others with the same name (i.e. for radio button and checkbox lists).
+            var inputs = input.form.querySelectorAll(validatableSelector("[name=\"".concat(input.name, "\"]")));
+            for (var i = 0; i < inputs.length; i++) {
+                this.swapClasses(inputs[i], this.ValidationInputCssClassName, this.ValidationInputValidCssClassName);
+                var uid = this.getElementUID(inputs[i]);
+                this.summary[uid] = message;
+            }
         }
-        var uid = this.getElementUID(input);
-        this.summary[uid] = message;
         this.renderSummary();
     };
     /**
@@ -1005,12 +1258,14 @@ var ValidationService = /** @class */ (function () {
         }
         this.swapClasses(input, this.ValidationInputValidCssClassName, this.ValidationInputCssClassName);
         // Removing an error from one input should also remove it from others with the same name (i.e. for radio button and checkbox lists).
-        var inputs = input.form.querySelectorAll("input[name=\"".concat(input.name, "\"]"));
-        for (var i = 0; i < inputs.length; i++) {
-            this.swapClasses(inputs[i], this.ValidationInputValidCssClassName, this.ValidationInputCssClassName);
+        if (input.form) {
+            var inputs = input.form.querySelectorAll(validatableSelector("[name=\"".concat(input.name, "\"]")));
+            for (var i = 0; i < inputs.length; i++) {
+                this.swapClasses(inputs[i], this.ValidationInputValidCssClassName, this.ValidationInputCssClassName);
+                var uid = this.getElementUID(inputs[i]);
+                delete this.summary[uid];
+            }
         }
-        var uid = this.getElementUID(input);
-        delete this.summary[uid];
         this.renderSummary();
     };
     /**
@@ -1025,7 +1280,7 @@ var ValidationService = /** @class */ (function () {
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
-                        if (!!this.isHidden(input)) return [3 /*break*/, 7];
+                        if (!(!this.isHidden(input) && !this.isDisabled(input))) return [3 /*break*/, 7];
                         _a = directives;
                         _b = [];
                         for (_c in _a)
@@ -1091,13 +1346,23 @@ var ValidationService = /** @class */ (function () {
         return !(this.allowHiddenFields || input.offsetWidth || input.offsetHeight || input.getClientRects().length);
     };
     /**
+     * Checks if the provided input is disabled
+     * @param input
+     * @returns
+     */
+    ValidationService.prototype.isDisabled = function (input) {
+        // If the input is validatable, we check the `disabled` property.
+        // Otherwise the `disabled` property is undefined and this returns false.
+        return input.disabled;
+    };
+    /**
      * Adds addClass and removes removeClass
      * @param element Element to modify
      * @param addClass Class to add
      * @param removeClass Class to remove
      */
     ValidationService.prototype.swapClasses = function (element, addClass, removeClass) {
-        if (!element.classList.contains(addClass)) {
+        if (addClass && !this.isDisabled(element) && !element.classList.contains(addClass)) {
             element.classList.add(addClass);
         }
         if (element.classList.contains(removeClass)) {
@@ -1107,17 +1372,18 @@ var ValidationService = /** @class */ (function () {
     /**
      * Load default validation providers and scans the entire document when ready.
      * @param options.watch If set to true, a MutationObserver will be used to continuously watch for new elements that provide validation directives.
+     * @param options.addNoValidate If set to true (the default), a novalidate attribute will be added to the containing form in validate elements.
      */
     ValidationService.prototype.bootstrap = function (options) {
         var _this = this;
-        options = options || {};
+        Object.assign(this.options, options);
         this.addMvcProviders();
         var document = window.document;
-        var root = options.root || document.body;
+        var root = this.options.root;
         var init = function () {
             _this.scan(root);
             // Watch for further mutations after initial scan
-            if (options.watch) {
+            if (_this.options.watch) {
                 _this.watch(root);
             }
         };
@@ -1131,19 +1397,32 @@ var ValidationService = /** @class */ (function () {
         }
     };
     /**
-     * Scans the provided root element for any validation directives and attaches behavior to them.
+     * Scans the root element for any validation directives and attaches behavior to them.
+     * @param root The root node to scan; if not provided, `options.root` (default: `document.body`) will be scanned
      */
     ValidationService.prototype.scan = function (root) {
+        root !== null && root !== void 0 ? root : (root = this.options.root);
         this.logger.log('Scanning', root);
-        this.scanMessages(root);
-        this.scanInputs(root);
+        this.scanMessages(root, this.pushValidationMessageSpan);
+        this.scanInputs(root, this.addInput);
+    };
+    /**
+     * Scans the root element for any validation directives and removes behavior from them.
+     * @param root The root node to scan; if not provided, `options.root` (default: `document.body`) will be scanned
+     */
+    ValidationService.prototype.remove = function (root) {
+        root !== null && root !== void 0 ? root : (root = this.options.root);
+        this.logger.log('Removing', root);
+        this.scanMessages(root, this.removeValidationMessageSpan);
+        this.scanInputs(root, this.removeInput);
     };
     /**
      * Watches the provided root element for mutations, and scans for new validation directives to attach behavior.
-     * @param root The root element to use, defaults to the document.documentElement.
+     * @param root The root node to watch; if not provided, `options.root` (default: `document.body`) will be watched
      */
     ValidationService.prototype.watch = function (root) {
         var _this = this;
+        root !== null && root !== void 0 ? root : (root = this.options.root);
         this.observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 _this.observed(mutation);
@@ -1166,14 +1445,29 @@ var ValidationService = /** @class */ (function () {
                     this.scan(node);
                 }
             }
+            for (var i = 0; i < mutation.removedNodes.length; i++) {
+                var node = mutation.removedNodes[i];
+                this.logger.log('Removed node', node);
+                if (node instanceof HTMLElement) {
+                    this.remove(node);
+                }
+            }
         }
         else if (mutation.type === 'attributes') {
             if (mutation.target instanceof HTMLElement) {
-                var oldValue = (_a = mutation.oldValue) !== null && _a !== void 0 ? _a : '';
-                var newValue = (_c = (_b = mutation.target.attributes[mutation.attributeName]) === null || _b === void 0 ? void 0 : _b.value) !== null && _c !== void 0 ? _c : '';
-                this.logger.log("Attribute '%s' changed from '%s' to '%s'", mutation.attributeName, oldValue, newValue, mutation.target);
-                if (oldValue !== newValue) {
-                    this.scan(mutation.target);
+                var attributeName = mutation.attributeName;
+                // Special case for disabled.
+                if (attributeName === 'disabled') {
+                    var target = mutation.target;
+                    this.reset(target);
+                }
+                else {
+                    var oldValue = (_a = mutation.oldValue) !== null && _a !== void 0 ? _a : '';
+                    var newValue = (_c = (_b = mutation.target.attributes[mutation.attributeName]) === null || _b === void 0 ? void 0 : _b.value) !== null && _c !== void 0 ? _c : '';
+                    this.logger.log("Attribute '%s' changed from '%s' to '%s'", mutation.attributeName, oldValue, newValue, mutation.target);
+                    if (oldValue !== newValue) {
+                        this.scan(mutation.target);
+                    }
                 }
             }
         }

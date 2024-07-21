@@ -53,49 +53,12 @@ var SlimSelect = (function () {
         return str[0] === str[0].toUpperCase() ? result.substring(1) : result;
     }
 
-    class Settings {
-        constructor(settings) {
-            this.id = '';
-            this.style = '';
-            this.class = [];
-            this.isMultiple = false;
-            this.isOpen = false;
-            this.isFullOpen = false;
-            this.intervalMove = null;
-            if (!settings) {
-                settings = {};
-            }
-            this.id = 'ss-' + generateID();
-            this.style = settings.style || '';
-            this.class = settings.class || [];
-            this.disabled = settings.disabled !== undefined ? settings.disabled : false;
-            this.alwaysOpen = settings.alwaysOpen !== undefined ? settings.alwaysOpen : false;
-            this.showSearch = settings.showSearch !== undefined ? settings.showSearch : true;
-            this.searchPlaceholder = settings.searchPlaceholder || 'Search';
-            this.searchText = settings.searchText || 'No Results';
-            this.searchingText = settings.searchingText || 'Searching...';
-            this.searchHighlight = settings.searchHighlight !== undefined ? settings.searchHighlight : false;
-            this.closeOnSelect = settings.closeOnSelect !== undefined ? settings.closeOnSelect : true;
-            this.contentLocation = settings.contentLocation || document.body;
-            this.contentPosition = settings.contentPosition || 'absolute';
-            this.openPosition = settings.openPosition || 'auto';
-            this.placeholderText = settings.placeholderText !== undefined ? settings.placeholderText : 'Select Value';
-            this.allowDeselect = settings.allowDeselect !== undefined ? settings.allowDeselect : false;
-            this.hideSelected = settings.hideSelected !== undefined ? settings.hideSelected : false;
-            this.showOptionTooltips = settings.showOptionTooltips !== undefined ? settings.showOptionTooltips : false;
-            this.minSelected = settings.minSelected || 0;
-            this.maxSelected = settings.maxSelected || 1000;
-            this.timeoutDelay = settings.timeoutDelay || 200;
-            this.maxValuesShown = settings.maxValuesShown || 20;
-            this.maxValuesMessage = settings.maxValuesMessage || '{number} selected';
-        }
-    }
-
     class Optgroup {
         constructor(optgroup) {
             this.id = !optgroup.id || optgroup.id === '' ? generateID() : optgroup.id;
             this.label = optgroup.label || '';
             this.selectAll = optgroup.selectAll === undefined ? false : optgroup.selectAll;
+            this.selectAllText = optgroup.selectAllText || 'Select All';
             this.closable = optgroup.closable || 'off';
             this.options = [];
             if (optgroup.options) {
@@ -257,6 +220,24 @@ var SlimSelect = (function () {
             }, false);
             return options.length ? options[0] : null;
         }
+        getSelectType() {
+            return this.selectType;
+        }
+        getFirstOption() {
+            let option = null;
+            for (let dataObj of this.data) {
+                if (dataObj instanceof Optgroup) {
+                    option = dataObj.options[0];
+                }
+                else if (dataObj instanceof Option) {
+                    option = dataObj;
+                }
+                if (option) {
+                    break;
+                }
+            }
+            return option;
+        }
         search(search, searchFilter) {
             search = search.trim();
             if (search === '') {
@@ -294,9 +275,6 @@ var SlimSelect = (function () {
                 }
             });
             return dataSearch;
-        }
-        getSelectType() {
-            return this.selectType;
         }
     }
 
@@ -417,7 +395,7 @@ var SlimSelect = (function () {
             var _a;
             const main = document.createElement('div');
             main.dataset.id = this.settings.id;
-            main.id = this.settings.id;
+            main.setAttribute('aria-label', this.settings.ariaLabel);
             main.tabIndex = 0;
             main.onkeydown = (e) => {
                 switch (e.key) {
@@ -441,6 +419,7 @@ var SlimSelect = (function () {
                         this.callbacks.close();
                         return false;
                 }
+                return false;
             };
             main.onclick = (e) => {
                 if (this.settings.disabled) {
@@ -477,13 +456,15 @@ var SlimSelect = (function () {
                         this.updateDeselectAll();
                     }
                     else {
-                        this.callbacks.setSelected([''], false);
+                        const firstOption = this.store.getFirstOption();
+                        const value = firstOption ? firstOption.value : '';
+                        this.callbacks.setSelected(value, false);
                     }
                     if (this.settings.closeOnSelect) {
                         this.callbacks.close();
                     }
                     if (this.callbacks.afterChange) {
-                        this.callbacks.afterChange(after);
+                        this.callbacks.afterChange(this.store.getSelectedOptions());
                     }
                 }
             };
@@ -545,6 +526,7 @@ var SlimSelect = (function () {
                 return;
             }
             this.renderMultipleValues();
+            this.updateDeselectAll();
         }
         renderSingleValue() {
             const selected = this.store.filter((o) => {
@@ -630,18 +612,22 @@ var SlimSelect = (function () {
                     }
                 }
                 if (shouldAdd) {
-                    if (currentNodes.length === 0) {
+                    if (this.settings.keepOrder) {
                         this.main.values.appendChild(this.multipleValue(selectedOptions[d]));
                     }
-                    else if (d === 0) {
-                        this.main.values.insertBefore(this.multipleValue(selectedOptions[d]), currentNodes[d]);
-                    }
                     else {
-                        currentNodes[d - 1].insertAdjacentElement('afterend', this.multipleValue(selectedOptions[d]));
+                        if (currentNodes.length === 0) {
+                            this.main.values.appendChild(this.multipleValue(selectedOptions[d]));
+                        }
+                        else if (d === 0) {
+                            this.main.values.insertBefore(this.multipleValue(selectedOptions[d]), currentNodes[d]);
+                        }
+                        else {
+                            currentNodes[d - 1].insertAdjacentElement('afterend', this.multipleValue(selectedOptions[d]));
+                        }
                     }
                 }
             }
-            this.updateDeselectAll();
         }
         multipleValue(option) {
             const value = document.createElement('div');
@@ -706,7 +692,6 @@ var SlimSelect = (function () {
         contentDiv() {
             const main = document.createElement('div');
             main.dataset.id = this.settings.id;
-            main.id = this.settings.id;
             const search = this.searchDiv();
             main.appendChild(search.main);
             const list = this.listDiv();
@@ -787,6 +772,7 @@ var SlimSelect = (function () {
                         }
                         return true;
                 }
+                return true;
             };
             main.appendChild(input);
             if (this.callbacks.addable) {
@@ -890,6 +876,20 @@ var SlimSelect = (function () {
                     return;
                 }
             }
+            let highlighted = false;
+            for (const o of options) {
+                if (o.classList.contains(this.classes.highlighted)) {
+                    highlighted = true;
+                }
+            }
+            if (!highlighted) {
+                for (const o of options) {
+                    if (o.classList.contains(this.classes.selected)) {
+                        o.classList.add(this.classes.highlighted);
+                        break;
+                    }
+                }
+            }
             for (let i = 0; i < options.length; i++) {
                 if (options[i].classList.contains(this.classes.highlighted)) {
                     const prevOption = options[i];
@@ -973,7 +973,7 @@ var SlimSelect = (function () {
                             selectAll.classList.add(this.classes.selected);
                         }
                         const selectAllText = document.createElement('span');
-                        selectAllText.textContent = 'Select All';
+                        selectAllText.textContent = d.selectAllText;
                         selectAll.appendChild(selectAllText);
                         const selectAllSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                         selectAllSvg.setAttribute('viewBox', '0 0 100 100');
@@ -1002,7 +1002,13 @@ var SlimSelect = (function () {
                             }
                             else {
                                 const newSelected = currentSelected.concat(d.options.map((o) => o.value));
+                                for (const o of d.options) {
+                                    if (!this.store.getOptionByID(o.id)) {
+                                        this.callbacks.addOption(o);
+                                    }
+                                }
                                 this.callbacks.setSelected(newSelected, true);
+                                return;
                             }
                         });
                         optgroupActions.appendChild(selectAll);
@@ -1256,7 +1262,8 @@ var SlimSelect = (function () {
             this.listen = false;
             this.observer = null;
             this.select = select;
-            this.select.addEventListener('change', this.valueChange.bind(this), {
+            this.valueChange = this.valueChange.bind(this);
+            this.select.addEventListener('change', this.valueChange, {
                 passive: true,
             });
             this.observer = new MutationObserver(this.observeCall.bind(this));
@@ -1353,6 +1360,7 @@ var SlimSelect = (function () {
                 id: optgroup.id,
                 label: optgroup.label,
                 selectAll: optgroup.dataset ? optgroup.dataset.selectall === 'true' : false,
+                selectAllText: optgroup.dataset ? optgroup.dataset.selectalltext : 'Select all',
                 closable: optgroup.dataset ? optgroup.dataset.closable : 'off',
                 options: [],
             };
@@ -1511,13 +1519,53 @@ var SlimSelect = (function () {
         }
         destroy() {
             this.changeListen(false);
-            this.select.removeEventListener('change', this.valueChange.bind(this));
+            this.select.removeEventListener('change', this.valueChange);
             if (this.observer) {
                 this.observer.disconnect();
                 this.observer = null;
             }
             delete this.select.dataset.id;
             this.showUI();
+        }
+    }
+
+    class Settings {
+        constructor(settings) {
+            this.id = '';
+            this.style = '';
+            this.class = [];
+            this.isMultiple = false;
+            this.isOpen = false;
+            this.isFullOpen = false;
+            this.intervalMove = null;
+            if (!settings) {
+                settings = {};
+            }
+            this.id = 'ss-' + generateID();
+            this.style = settings.style || '';
+            this.class = settings.class || [];
+            this.disabled = settings.disabled !== undefined ? settings.disabled : false;
+            this.alwaysOpen = settings.alwaysOpen !== undefined ? settings.alwaysOpen : false;
+            this.showSearch = settings.showSearch !== undefined ? settings.showSearch : true;
+            this.ariaLabel = settings.ariaLabel || 'Combobox';
+            this.searchPlaceholder = settings.searchPlaceholder || 'Search';
+            this.searchText = settings.searchText || 'No Results';
+            this.searchingText = settings.searchingText || 'Searching...';
+            this.searchHighlight = settings.searchHighlight !== undefined ? settings.searchHighlight : false;
+            this.closeOnSelect = settings.closeOnSelect !== undefined ? settings.closeOnSelect : true;
+            this.contentLocation = settings.contentLocation || document.body;
+            this.contentPosition = settings.contentPosition || 'absolute';
+            this.openPosition = settings.openPosition || 'auto';
+            this.placeholderText = settings.placeholderText !== undefined ? settings.placeholderText : 'Select Value';
+            this.allowDeselect = settings.allowDeselect !== undefined ? settings.allowDeselect : false;
+            this.hideSelected = settings.hideSelected !== undefined ? settings.hideSelected : false;
+            this.keepOrder = settings.keepOrder !== undefined ? settings.keepOrder : false;
+            this.showOptionTooltips = settings.showOptionTooltips !== undefined ? settings.showOptionTooltips : false;
+            this.minSelected = settings.minSelected || 0;
+            this.maxSelected = settings.maxSelected || 1000;
+            this.timeoutDelay = settings.timeoutDelay || 200;
+            this.maxValuesShown = settings.maxValuesShown || 20;
+            this.maxValuesMessage = settings.maxValuesMessage || '{number} selected';
         }
     }
 
@@ -1620,7 +1668,7 @@ var SlimSelect = (function () {
             if (config.data) {
                 this.select.updateOptions(this.store.getData());
             }
-            const callbacks = {
+            const renderCallbacks = {
                 open: this.open.bind(this),
                 close: this.close.bind(this),
                 addable: this.events.addable ? this.events.addable : undefined,
@@ -1630,7 +1678,7 @@ var SlimSelect = (function () {
                 beforeChange: this.events.beforeChange,
                 afterChange: this.events.afterChange,
             };
-            this.render = new Render(this.settings, this.store, callbacks);
+            this.render = new Render(this.settings, this.store, renderCallbacks);
             this.render.renderValues();
             this.render.renderOptions(this.store.getData());
             const selectAriaLabel = this.selectEl.getAttribute('aria-label');
@@ -1644,7 +1692,6 @@ var SlimSelect = (function () {
             if (this.selectEl.parentNode) {
                 this.selectEl.parentNode.insertBefore(this.render.main.main, this.selectEl.nextSibling);
             }
-            document.addEventListener('click', this.documentClick);
             window.addEventListener('resize', this.windowResize, false);
             if (this.settings.openPosition === 'auto') {
                 window.addEventListener('scroll', this.windowScroll, false);
@@ -1740,6 +1787,7 @@ var SlimSelect = (function () {
                 if (this.settings.isOpen) {
                     this.settings.isFullOpen = true;
                 }
+                document.addEventListener('click', this.documentClick);
             }, this.settings.timeoutDelay);
             if (this.settings.contentPosition === 'absolute') {
                 if (this.settings.intervalMove) {
@@ -1766,6 +1814,7 @@ var SlimSelect = (function () {
                 if (this.events.afterClose) {
                     this.events.afterClose();
                 }
+                document.removeEventListener('click', this.documentClick);
             }, this.settings.timeoutDelay);
             if (this.settings.intervalMove) {
                 clearInterval(this.settings.intervalMove);
