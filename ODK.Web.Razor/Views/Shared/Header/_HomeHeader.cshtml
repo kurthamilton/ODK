@@ -23,7 +23,7 @@
 }
 
 @await Html.PartialAsync("Header/_Header", new HeaderViewModel
-{
+{   
    ImageLink = "/",
    ImageUrl = "/assets/img/home-banner.png",
    Navbar = new NavbarViewModel
@@ -33,6 +33,7 @@
        Color = "dark",
        Compact = false,
        CssClass = "navbar--home d-md-none",
+       HideAccountMenu = true,
        Member = member,
        MenuItems = menuItems.Segment(5).ToArray()
    }

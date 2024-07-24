@@ -12085,7 +12085,6 @@ img {
 .account-links {
   cursor: pointer;
   right: 0;
-  bottom: 0;
   position: absolute;
   padding: 1rem;
 }

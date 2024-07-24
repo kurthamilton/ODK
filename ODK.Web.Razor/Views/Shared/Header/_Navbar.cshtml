@@ -36,9 +36,7 @@
 
             @if (!Model.HideAccountMenu)
             {
-                <div class="d-md-none">
-                    @await Html.PartialAsync("Header/_AccountMenu", accountMenu)
-                </div>
+                @await Html.PartialAsync("Header/_AccountMenu", accountMenu)
             }
         </div>
 
