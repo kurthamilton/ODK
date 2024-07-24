@@ -1,14 +1,19 @@
+:root {
+    --bg-section-header: #FF0000;
+    --color-section-header: #FFF;
+}
+
 .section--header,
 .section--footer {
-  padding: 1rem 0;
+    padding: 1rem 0;
 }
 
 .section--header {
-	color: #FFF;
-  background-color: #FF0000;    
+	color: var(--color-section-header);
+    background-color: var(--bg-section-header);
 
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 0;
-  }
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
 }

@@ -11977,14 +11977,19 @@ img {
   font-style: normal;
 }
 
+:root {
+  --bg-section-header: #FF0000;
+  --color-section-header: #FFF;
+}
+
 .section--header,
 .section--footer {
   padding: 1rem 0;
 }
 
 .section--header {
-  color: #FFF;
-  background-color: #FF0000;
+  color: var(--color-section-header);
+  background-color: var(--bg-section-header);
 }
 .section--header h1, .section--header .h1 {
   font-size: 2rem;
@@ -12431,11 +12436,16 @@ th.sortable.sort-desc:after {
   background-color: #fefde5 !important;
 }
 
-.chapter-theme--oxford .section--header {
-  background-color: #e03034;
+.chapter-theme--dublin {
+  --bg-section-header: #23DA40;
+  --color-section-header: #000;
 }
 
-.chapter-theme--manchester .section--header {
-  background-color: #F3D402;
-  color: #212529;
+.chapter-theme--manchester {
+  --bg-section-header: #F3D402;
+  --color-section-header: #000;
+}
+
+.chapter-theme--oxford {
+  --bg-section-header: #e03034;
 }

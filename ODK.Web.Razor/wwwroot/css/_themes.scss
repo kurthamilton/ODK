@@ -1,12 +1,13 @@
-.chapter-theme--oxford {
-  .section--header {
-    background-color: #e03034;
-  }
+.chapter-theme--dublin {
+    --bg-section-header: #23DA40;
+    --color-section-header: #000;
 }
 
 .chapter-theme--manchester {
-    .section--header {
-        background-color: #F3D402;
-        color: #212529;
-    }
+    --bg-section-header: #F3D402;
+    --color-section-header: #000;
+}
+
+.chapter-theme--oxford {
+    --bg-section-header: #e03034;
 }
