@@ -5,9 +5,11 @@ public class ChapterEventSettings
 
     public DayOfWeek? DefaultDayOfWeek { get; set; }
 
+    public string? DefaultDescription { get; set; }
+
     public DayOfWeek? DefaultScheduledEmailDayOfWeek { get; set; }
     
-    public string? DefaultScheduledEmailTimeOfDay { get; set; }
+    public string? DefaultScheduledEmailTimeOfDay { get; set; }    
 
     public DateTime? GetScheduledDateTime(DateTime? date)
     {

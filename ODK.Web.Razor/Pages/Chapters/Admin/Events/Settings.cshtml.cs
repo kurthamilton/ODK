@@ -25,6 +25,7 @@ public class SettingsModel : AdminPageModel
         await _chapterAdminService.UpdateChapterEventSettings(CurrentMemberId, Chapter.Id, new UpdateChapterEventSettings
         {
             DefaultDayOfWeek = viewModel.DefaultDayOfWeek,
+            DefaultDescription = viewModel.DefaultDescription,
             DefaultScheduledEmailDayOfWeek = viewModel.DefaultScheduledEmailDayOfWeek,
             DefaultScheduledEmailTimeOfDay = viewModel.DefaultScheduledEmailTimeOfDay
         });

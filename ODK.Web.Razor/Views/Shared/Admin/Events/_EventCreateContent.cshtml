@@ -25,7 +25,8 @@
     {
         ChapterId = Model.Id,
         CurrentMemberId = memberId,
-        Date = nextEventDate.Value
+        Date = nextEventDate.Value,
+        Description = settings?.DefaultDescription
     })
     
     <button type="submit" class="btn btn-primary">Create</button>

@@ -20,6 +20,7 @@
     @await Html.PartialAsync("Admin/Events/_SettingsForm", new EventSettingsFormViewModel
     {
         DefaultDayOfWeek = settings?.DefaultDayOfWeek,
+        DefaultDescription = settings?.DefaultDescription,
         DefaultScheduledEmailDayOfWeek = settings?.DefaultScheduledEmailDayOfWeek,
         DefaultScheduledEmailTimeOfDay = settings?.DefaultScheduledEmailTimeOfDay
     })

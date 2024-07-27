@@ -22,3 +22,9 @@
     @Html.TextBoxFor(x => x.DefaultScheduledEmailTimeOfDay, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.DefaultScheduledEmailTimeOfDay)
 </div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.DefaultDescription, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.DefaultDescription, new { @class = "form-control", rows = 8 })
+    @Html.ValidationMessageFor(x => x.DefaultDescription)
+</div>

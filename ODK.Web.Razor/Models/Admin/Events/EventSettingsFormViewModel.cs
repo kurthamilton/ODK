@@ -8,6 +8,9 @@ public class EventSettingsFormViewModel
     [DisplayName("Day of week")]
     public DayOfWeek? DefaultDayOfWeek { get; set; }
 
+    [DisplayName("Default description")]
+    public string? DefaultDescription { get; set; }
+
     [DisplayName("Scheduled email day of week")]    
     public DayOfWeek? DefaultScheduledEmailDayOfWeek { get; set; }
     

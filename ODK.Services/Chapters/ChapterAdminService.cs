@@ -400,6 +400,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         settings.DefaultDayOfWeek = model.DefaultDayOfWeek;
+        settings.DefaultDescription = model.DefaultDescription;
         settings.DefaultScheduledEmailDayOfWeek = model.DefaultScheduledEmailDayOfWeek;
         settings.DefaultScheduledEmailTimeOfDay = model.DefaultScheduledEmailTimeOfDay;
 
