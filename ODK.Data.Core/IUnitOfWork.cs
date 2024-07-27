@@ -28,6 +28,7 @@ public interface IUnitOfWork
     IEventInviteRepository EventInviteRepository { get; }
     IEventRepository EventRepository { get; }
     IEventResponseRepository EventResponseRepository { get; }
+    IFeatureRepository FeatureRepository { get; }
     IInstagramImageRepository InstagramImageRepository { get; }
     IInstagramPostRepository InstagramPostRepository { get; }
     IMemberActivationTokenRepository MemberActivationTokenRepository { get; }

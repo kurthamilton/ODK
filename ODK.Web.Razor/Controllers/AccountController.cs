@@ -4,6 +4,7 @@ using ODK.Core.Chapters;
 using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
+using ODK.Services.Features;
 using ODK.Services.Members;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Extensions;
@@ -18,14 +19,16 @@ namespace ODK.Web.Razor.Controllers;
 public class AccountController : OdkControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
+    private readonly IFeatureService _featureService;
     private readonly ILoginHandler _loginHandler;
     private readonly IMemberService _memberService;
     private readonly IRequestCache _requestCache;
 
     public AccountController(IMemberService memberService, ILoginHandler loginHandler, IRequestCache requestCache,
-        IAuthenticationService authenticationService)
+        IAuthenticationService authenticationService, IFeatureService featureService)
     {
         _authenticationService = authenticationService;
+        _featureService = featureService;
         _loginHandler = loginHandler;
         _memberService = memberService;
         _requestCache = requestCache;
@@ -110,6 +113,13 @@ public class AccountController : OdkControllerBase
     {
         await _memberService.UpdateMemberEmailOptIn(MemberId, false);
         return RedirectToReferrer();
+    }
+
+    [HttpPost("Account/FeatureTips/{name}/Hide")]
+    public async Task<IActionResult> HideFeatureTip(string name)
+    {
+        await _featureService.MarkAsSeen(MemberId, name);
+        return Ok();
     }
 
     [AllowAnonymous]

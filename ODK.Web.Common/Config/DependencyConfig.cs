@@ -11,6 +11,7 @@ using ODK.Services.Chapters;
 using ODK.Services.Countries;
 using ODK.Services.Emails;
 using ODK.Services.Events;
+using ODK.Services.Features;
 using ODK.Services.Files;
 using ODK.Services.Imaging;
 using ODK.Services.Logging;
@@ -91,6 +92,7 @@ public static class DependencyConfig
         services.AddScoped<IEmailAdminService, EmailAdminService>();
         services.AddScoped<IEventAdminService, EventAdminService>();
         services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IFeatureService, FeatureService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<ILoggingService, LoggingService>();
         services.AddScoped<IMailProvider, MailProvider>();

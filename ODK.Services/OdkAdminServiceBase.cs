@@ -133,4 +133,10 @@ public abstract class OdkAdminServiceBase
             throw new OdkNotAuthorizedException();
         }
     }
+
+    protected async Task AssertMemberIsSuperAdmin(Guid memberId)
+    {
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
+        AssertMemberIsSuperAdmin(member);
+    }
 }

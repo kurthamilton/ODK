@@ -1,0 +1,37 @@
+﻿@using Microsoft.AspNetCore.Html
+@using ODK.Services.Caching
+@using ODK.Services.Features
+@using ODK.Web.Razor.Pages.Chapters
+@model ODK.Web.Razor.Models.Components.FeatureTooltipViewModel
+@inject IFeatureService FeatureService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IRequestCache RequestCache
+@{
+    var feature = await FeatureService.GetUnseeen(Model.CurrentMemberId, Model.Name);
+    if (feature == null)
+    {
+        return;
+    }    
+
+    var chapter = await new ChapterPageContext(RequestCache, HttpContextAccessor.HttpContext!).GetChapterAsync();
+    var description = feature.Description.Replace("{chapter.name}", chapter?.Name ?? "");
+}
+
+<div class="ml-1 d-inline"
+   data-bs-toggle="popover" 
+   data-bs-container="body"
+   data-bs-html="true"
+   data-bs-trigger="manual"
+   data-bs-title="New feature"
+   data-popover-sanitize="false"
+   data-popover-show
+   data-feature-tip="@Model.Name">
+    <div class="d-none" data-popover-content>        
+        <div>@Html.Raw(description)</div>
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-link p-0 btn-sm" data-feature-hidetip="@Model.Name" type="button">
+                Close
+            </button>
+        </div>
+    </div>
+</div>

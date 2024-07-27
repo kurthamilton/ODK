@@ -1,0 +1,36 @@
+﻿@using ODK.Core.Emails
+@using ODK.Services.Emails
+@using ODK.Services.Features
+@using ODK.Web.Common.Extensions
+@using System.Web
+@model ODK.Core.Chapters.Chapter
+@inject IFeatureService FeatureService
+@{
+    var memberId = User.MemberId();
+    var features = await FeatureService.GetFeatures(memberId);
+}
+
+<p>
+    <a class="btn btn-primary" href="/@Model.Name/Admin/SuperAdmin/Features/Create">
+        Create
+    </a>
+</p>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Added</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var feature in features)
+    {
+        <tr>
+            <td>
+                <a href="/@Model.Name/Admin/SuperAdmin/Features/@feature.Id">@feature.Name</a>
+            </td>
+            <td>@feature.Created.ToString("yyyy-MM-dd")</td>
+        </tr>
+    }
+    </tbody>
+</table>

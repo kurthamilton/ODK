@@ -32,6 +32,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IEventInviteRepository> _eventInviteRepository;
     private readonly Lazy<IEventRepository> _eventRepository;
     private readonly Lazy<IEventResponseRepository> _eventResponseRepository;
+    private readonly Lazy<IFeatureRepository> _featureRepository;
     private readonly Lazy<IInstagramImageRepository> _instagramImageRepository;
     private readonly Lazy<IInstagramPostRepository> _instagramPostRepository;
     private readonly Lazy<IMemberActivationTokenRepository> _memberActivationTokenRepository;
@@ -72,6 +73,7 @@ public class UnitOfWork : IUnitOfWork
         _eventInviteRepository = new(() => new EventInviteRepository(_context));
         _eventRepository = new(() => new EventRepository(_context));
         _eventResponseRepository = new(() => new EventResponseRepository(_context));
+        _featureRepository = new(() => new FeatureRepository(_context));
         _instagramImageRepository = new(() => new InstagramImageRepository(_context));
         _instagramPostRepository = new(() => new InstagramPostRepository(_context));
         _memberActivationTokenRepository = new(() => new MemberActivationTokenRepository(_context));
@@ -109,6 +111,7 @@ public class UnitOfWork : IUnitOfWork
     public IEventInviteRepository EventInviteRepository => _eventInviteRepository.Value;
     public IEventRepository EventRepository => _eventRepository.Value;
     public IEventResponseRepository EventResponseRepository => _eventResponseRepository.Value;
+    public IFeatureRepository FeatureRepository => _featureRepository.Value;
     public IInstagramImageRepository InstagramImageRepository => _instagramImageRepository.Value;
     public IInstagramPostRepository InstagramPostRepository => _instagramPostRepository.Value;
     public IMemberActivationTokenRepository MemberActivationTokenRepository => _memberActivationTokenRepository.Value;

@@ -1,0 +1,18 @@
+﻿@page "/{chapterName}/Admin/SuperAdmin/Features/Create"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model ODK.Web.Razor.Pages.Chapters.SuperAdmin.FeatureCreateModel
+@{
+    Layout = "SuperAdmin/_SuperAdminLayout";
+    Model.Title = "Create feature | SuperAdmin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/SuperAdmin/Features", Text = "Features" },
+        new MenuItem { Text = "Create" }
+    },
+    Content = await Html.PartialAsync("SuperAdmin/_FeatureCreateContent", Model.Chapter)
+})

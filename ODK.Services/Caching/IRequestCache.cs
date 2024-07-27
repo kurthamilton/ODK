@@ -4,7 +4,7 @@ using ODK.Core.Members;
 namespace ODK.Services.Caching;
 
 public interface IRequestCache
-{
+{    
     Task<Chapter> GetChapterAsync(Guid chapterId);
 
     Task<Chapter> GetChapterAsync(string name);

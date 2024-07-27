@@ -1,8 +1,38 @@
 ﻿(function () {
+    bindFeaturePopovers();
     bindForms();
     bindMaps();
     bindMenuLinks();
+    bindPopovers();
     bindTooltips();
+
+    function bindFeaturePopovers() {
+        document.addEventListener('click', e => {
+            const target = e.target;
+            if (!target.hasAttribute('data-feature-hidetip')) {
+                return;
+            }
+            
+            const name = target.getAttribute('data-feature-hidetip');                        
+            const url = `/Account/FeatureTips/${encodeURIComponent(name)}/Hide`;
+            
+            fetch(url, {
+                method: 'POST'
+            }).then(() => {
+                target.removeAttribute('data-feature-hidetip');
+
+                const tips = document.querySelectorAll('[data-feature-tip]');
+                tips.forEach(tip => {
+                    const popover = bootstrap.Popover.getInstance(tip);
+                    if (!popover) {
+                        return;
+                    }
+
+                    popover.hide();
+                });
+            });
+        });
+    }
 
     function bindForms() {
         document.querySelectorAll('[data-onchange]').forEach(input => {
@@ -98,9 +128,33 @@
         });
     }
 
-    function bindTooltips() {
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    function bindPopovers() {
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+        popoverTriggerList.forEach(element => {
+            const content = element.querySelector('[data-popover-content]');
+            if (!content) {
+                return;
+            }
 
+            const html = content.innerHTML;            
+            element.setAttribute('data-bs-content', html);
+        });
+
+        popoverTriggerList.forEach(element => {
+            const options = {};
+            if (element.getAttribute('data-popover-sanitize') === 'false') {
+                options.sanitize = false;
+            }
+
+            const popover = new bootstrap.Popover(element, options);
+            if (element.hasAttribute('data-popover-show')) {            
+                popover.show();
+            }
+        });        
+    }
+
+    function bindTooltips() {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     }    
 })();

@@ -1,11 +1,12 @@
 ﻿@using ODK.Core.Venues
 @using ODK.Services.Venues
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Razor
 @model ODK.Web.Razor.Models.Admin.Events.EventFormViewModel
 @inject IVenueAdminService VenueAdminService
 @{
-    IReadOnlyCollection<Venue> venues = await VenueAdminService.GetVenues(Model.CurrentMemberId, Model.ChapterId);
-    IReadOnlyCollection<SelectListItem> venueOptions = venues
+    var venues = await VenueAdminService.GetVenues(Model.CurrentMemberId, Model.ChapterId);
+    var venueOptions = venues
         .OrderBy(x => x.Name)
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
         .ToArray();
@@ -42,6 +43,12 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Description, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_FeatureTooltip", 
+        new FeatureTooltipViewModel 
+        {
+            CurrentMemberId = Model.CurrentMemberId, 
+            Name = "Events.DefaultDescription"
+        })
     @Html.TextAreaFor(x => x.Description, new { @class = "form-control", rows = 8 })
 </div>
 
