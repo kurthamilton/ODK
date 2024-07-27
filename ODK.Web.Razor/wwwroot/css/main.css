@@ -11875,6 +11875,14 @@ textarea.form-control-lg {
   font-size: 0.8rem !important;
 }
 
+:root {
+  --odk-bg-light: #e9ecef;
+}
+
+[data-bs-theme=dark] {
+  --odk-bg-light: #403f3f;
+}
+
 @media (min-width: 992px) {
   html {
     font-size: 21px;
@@ -11894,7 +11902,7 @@ textarea.form-control-lg {
 }
 
 .breadcrumb {
-  background-color: #e9ecef;
+  background-color: var(--odk-bg-light);
   padding-top: 0.75rem;
   padding-bottom: 0.5rem;
   padding-left: 1rem;
@@ -11941,6 +11949,10 @@ img {
 
 .img--hero {
   width: 100%;
+}
+
+footer {
+  background-color: var(--odk-bg-light);
 }
 
 .form-inline .form-group {
@@ -12082,11 +12094,14 @@ img {
   padding-right: 0.5rem;
 }
 
-.account-links {
-  cursor: pointer;
+.account-links-container {
   right: 0;
   position: absolute;
   padding: 1rem;
+}
+
+.account-links {
+  cursor: pointer;
 }
 .account-links .dropdown-menu {
   min-width: inherit;
@@ -12106,7 +12121,7 @@ img {
 }
 
 @media (min-width: 576px) {
-  .chapter .account-links {
+  .chapter .account-links-container {
     position: absolute;
   }
   .chapter .account-links__user {
@@ -12116,8 +12131,6 @@ img {
 
 .anonymous-links {
   display: flex;
-  position: absolute;
-  right: 0.75rem;
 }
 .anonymous-links .anonymous-link {
   padding-top: 0.1rem;

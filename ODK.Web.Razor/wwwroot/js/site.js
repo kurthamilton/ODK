@@ -1,4 +1,5 @@
 ﻿(function () {
+    bindThemeSelector();
     bindFeaturePopovers();
     bindForms();
     bindMaps();
@@ -151,6 +152,40 @@
                 popover.show();
             }
         });        
+    }
+
+    function bindThemeSelector() {
+        const root = document.querySelector('[data-theme-root]');
+        const buttons = {
+            light: document.querySelector('[data-theme-selector="light"]'),
+            dark: document.querySelector('[data-theme-selector="dark"]')
+        };
+
+        const setTheme = (theme) => {
+            root.setAttribute('data-bs-theme', theme);
+            if (theme === 'dark') {
+                buttons.dark.classList.add('d-none');
+                buttons.light.classList.remove('d-none');
+            } else {
+                buttons.dark.classList.remove('d-none');
+                buttons.light.classList.add('d-none');
+            }
+                        
+            localStorage.setItem('odk.theme', theme);
+        };
+
+        const theme = localStorage.getItem('odk.theme');
+        if (theme === 'dark') {            
+            setTheme('dark');
+        }
+
+        buttons.dark.addEventListener('click', () => {
+            setTheme('dark');
+        });
+
+        buttons.light.addEventListener('click', () => {
+            setTheme('light');
+        });
     }
 
     function bindTooltips() {
