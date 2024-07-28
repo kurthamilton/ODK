@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
+using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -17,5 +18,8 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
 
         builder.Property(x => x.Id)
             .HasColumnName("ChapterId");
+
+        builder.Property(x => x.TimeZone)
+            .HasConversion<TimeZoneConverter>();
     }
 }

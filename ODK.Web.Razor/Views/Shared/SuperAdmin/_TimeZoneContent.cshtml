@@ -1,0 +1,16 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Web.Razor.Models.SuperAdmin
+@model ODK.Core.Chapters.Chapter
+@{
+}
+
+<h2>Time zone</h2>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("SuperAdmin/_TimeZoneForm", new TimeZoneFormViewModel
+    {
+        TimeZone = Model.TimeZone?.Id
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

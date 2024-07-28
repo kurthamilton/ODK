@@ -671,6 +671,24 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
     
+    public async Task<ServiceResult> UpdateChapterTimeZone(Guid currentMemberId, Chapter chapter, string? timeZoneId)
+    {
+        await AssertMemberIsSuperAdmin(currentMemberId);
+
+        TimeZoneInfo? timeZone = null;
+        if (!string.IsNullOrEmpty(timeZoneId) && !TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out timeZone))
+        {
+            return ServiceResult.Failure("Invalid time zone id");
+        }
+
+        chapter.TimeZone = timeZone;
+
+        _unitOfWork.ChapterRepository.Update(chapter);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     private ServiceResult ValidateChapterQuestion(ChapterQuestion question)
     {
         if (string.IsNullOrWhiteSpace(question.Name) ||

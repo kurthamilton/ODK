@@ -67,4 +67,6 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterSubscription(Guid currentMemberId, Guid subscriptionId, CreateChapterSubscription model);
 
     Task<ServiceResult> UpdateChapterTexts(Guid currentMemberId, Guid chapterId, UpdateChapterTexts model);
+
+    Task<ServiceResult> UpdateChapterTimeZone(Guid currentMemberId, Chapter chapter, string? timeZoneId);
 }

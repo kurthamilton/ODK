@@ -16,10 +16,6 @@ public class PaymentSettingsModel : SuperAdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
-    public void OnGet()
-    {
-    }
-
     public async Task<IActionResult> OnPostAsync(PaymentSettingsFormViewModel viewModel)
     {
         var result = await _chapterAdminService.UpdateChapterPaymentSettings(CurrentMemberId, Chapter.Id, new UpdateChapterPaymentSettings
