@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Events;
 
 namespace ODK.Services.Events;
 
@@ -24,7 +25,7 @@ public interface IEventAdminService
 
     Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId);
 
-    Task<DateTime?> GetNextAvailableEventDate(Guid currentMemberId, Guid chapterId);
+    Task<DateTime?> GetNextAvailableEventDate(Guid currentMemberId, Chapter chapter);
 
     Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes, 
         string subject, string body);

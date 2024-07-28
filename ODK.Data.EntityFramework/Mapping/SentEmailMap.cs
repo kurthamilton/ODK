@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Emails;
+using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -16,6 +17,7 @@ public class SentEmailMap : IEntityTypeConfiguration<SentEmail>
             .HasColumnName("SentEmailId");
 
         builder.Property(x => x.SentUtc)
-            .HasColumnName("SentDate");
+            .HasColumnName("SentDate")
+            .HasConversion<UtcDateTimeConverter>();
     }
 }

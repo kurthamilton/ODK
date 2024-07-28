@@ -115,7 +115,7 @@ public static class AuthorizationServiceTests
     {
         return new MemberSubscription
         {
-            ExpiryDate = expiryDate,
+            ExpiresUtc = expiryDate,
             MemberId = memberId ?? Guid.NewGuid(),
             Type = SubscriptionType.Full
         };

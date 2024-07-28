@@ -45,9 +45,9 @@
             Your @type has expired <a href="/@chapter.Name/Account/Subscription">@action</a>
         </div>
     }
-    else if (status == SubscriptionStatus.Expiring && memberSubscription.ExpiryDate != null)
+    else if (status == SubscriptionStatus.Expiring && memberSubscription.ExpiresUtc != null)
     {
-        var expiresOn = @memberSubscription.ExpiryDate.Value.ToString("d MMMM");
+        var expiresOn = chapter.ToChapterTime(memberSubscription.ExpiresUtc.Value).ToString("d MMMM");
         <div class="mt-3 alert alert-warning">
             Your @type expires @expiresOn <a href="/@chapter.Name/Account/Subscription">@action</a>
         </div>

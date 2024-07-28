@@ -34,6 +34,6 @@ public class MemberSubscriptionRepository : WriteRepositoryBase<MemberSubscripti
 
     public IDeferredQuerySingle<MemberSubscription> GetByMemberId(Guid memberId) => Set()
         .Where(x => x.MemberId == memberId)
-        .OrderByDescending(x => x.ExpiryDate)
+        .OrderByDescending(x => x.ExpiresUtc)
         .DeferredSingle();
 }

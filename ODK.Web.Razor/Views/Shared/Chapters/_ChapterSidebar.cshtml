@@ -4,7 +4,7 @@
 @model ODK.Web.Razor.Models.Chapters.ChapterSidebarViewModel
 @inject IEventService EventService
 @{
-    IReadOnlyCollection<EventResponseViewModel> events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter.Id);
+    var events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter);
 }
 
 <div class="sidebar">

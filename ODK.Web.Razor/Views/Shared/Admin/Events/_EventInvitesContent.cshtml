@@ -10,10 +10,10 @@
 @await Html.PartialAsync("Admin/Events/_EventHeader")
 @await Html.PartialAsync("Admin/Events/_EventAdminTabs")
 
-@if (invites.SentDate != null)
+@if (invites.SentUtc != null)
 {
     <p>
-        @invites.Sent invites were sent on @invites.SentDate.Value.ToString("dddd, MMMM d, yyyy")
+        @invites.Sent invites were sent on @Model.Chapter.ToChapterTime(invites.SentUtc.Value).ToString("dddd, MMMM d, yyyy")
     </p>
     @await Html.PartialAsync("Admin/Events/_EventResponses")
     @await Html.PartialAsync("Admin/Events/_EventInviteeUpdate", new EventUpdateViewModel
@@ -49,7 +49,7 @@
     {
         Chapter = Model.Chapter,
         EventId = Model.Event.Id,
-        ScheduledEmailDate = invites.ScheduledDate?.Date,
-        ScheduledEmailTime = invites.ScheduledDate?.TimeOfDay.ToString(@"hh\:mm")
+        ScheduledEmailDate = invites.ScheduledUtc?.Date,
+        ScheduledEmailTime = invites.ScheduledUtc?.TimeOfDay.ToString(@"hh\:mm")
     })
 </div>

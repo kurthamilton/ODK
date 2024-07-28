@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Members;
+using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -13,10 +14,12 @@ public class MemberPasswordResetRequestMap : IEntityTypeConfiguration<MemberPass
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.CreatedUtc)
-            .HasColumnName("Created");
+            .HasColumnName("Created")
+            .HasConversion<UtcDateTimeConverter>();
 
         builder.Property(x => x.ExpiresUtc)
-            .HasColumnName("Expires");
+            .HasColumnName("Expires")
+            .HasConversion<UtcDateTimeConverter>();
 
         builder.Property(x => x.Id)
             .HasColumnName("MemberPasswordResetRequestId");

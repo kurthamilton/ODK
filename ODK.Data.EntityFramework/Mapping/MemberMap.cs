@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Members;
+using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -12,7 +13,12 @@ public class MemberMap : IEntityTypeConfiguration<Member>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id).HasColumnName("MemberId");
+        builder.Property(x => x.CreatedUtc)
+            .HasColumnName("CreatedDate")
+            .HasConversion<UtcDateTimeConverter>();
+
+        builder.Property(x => x.Id)
+            .HasColumnName("MemberId");
 
         builder.Property(x => x.Version)
             .IsRowVersion();

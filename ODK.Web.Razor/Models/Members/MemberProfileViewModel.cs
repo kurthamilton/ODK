@@ -1,14 +1,18 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 
 namespace ODK.Web.Razor.Models.Members;
 
 public class MemberProfileViewModel
 {
-    public MemberProfileViewModel(Member member, Member currentMember)
+    public MemberProfileViewModel(Member member, Member currentMember, Chapter chapter)
     {
+        Chapter = chapter;
         CurrentMember = currentMember;
         Member = member;
     }
+
+    public Chapter Chapter { get; }
 
     public Member CurrentMember { get; }
 

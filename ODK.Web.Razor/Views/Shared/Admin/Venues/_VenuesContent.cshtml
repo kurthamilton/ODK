@@ -19,7 +19,7 @@
         .ToDictionary(x => x.Key, x => x.Count());
     var lastEvents = events
         .GroupBy(x => x.VenueId)
-        .ToDictionary(x => x.Key, x => x.Max(_ => _.DateUtc));
+        .ToDictionary(x => x.Key, x => x.Max(_ => _.Date));
 }
 
 <h2>Venues</h2>

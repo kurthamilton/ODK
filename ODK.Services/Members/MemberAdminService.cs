@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Exceptions;
 using ODK.Core.Members;
+using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -78,11 +79,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 member.EmailAddress,
                 member.FirstName,
                 member.LastName,
-                member.CreatedDate.ToString("yyyy-MM-dd"),
+                member.CreatedUtc.ToString("yyyy-MM-dd"),
                 member.Activated ? "Y" : "",
                 member.Disabled ? "Y" : "",
                 member.EmailOptIn ? "Y" : "",
-                subscription?.ExpiryDate?.ToString("yyyy-MM-dd") ?? "",
+                subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "",
                 subscription?.Type.ToString() ?? ""
             ]);
         }
@@ -214,7 +215,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             memberSubscription = new MemberSubscription();
         }
 
-        memberSubscription.ExpiryDate = expiryDate;
+        memberSubscription.ExpiresUtc = expiryDate;
         memberSubscription.Type = model.Type;
 
         var validationResult = ValidateMemberSubscription(memberSubscription);
@@ -268,12 +269,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return ServiceResult.Failure("Invalid type");
         }
 
-        if (subscription.Type == SubscriptionType.Alum && subscription.ExpiryDate != null)
+        if (subscription.Type == SubscriptionType.Alum && subscription.ExpiresUtc != null)
         {
             return ServiceResult.Failure("Alum should not have expiry date");
         }
 
-        if (subscription.Type != SubscriptionType.Alum && subscription.ExpiryDate < DateTime.UtcNow.Date)
+        if (subscription.Type != SubscriptionType.Alum && subscription.ExpiresUtc < DateTime.UtcNow.Date)
         {
             return ServiceResult.Failure("Expiry date should not be in the past");
         }

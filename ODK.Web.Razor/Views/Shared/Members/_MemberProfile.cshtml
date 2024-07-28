@@ -4,7 +4,7 @@
 @model ODK.Web.Razor.Models.Members.MemberProfileViewModel
 @inject IMemberService MemberService
 @{
-    MemberProfile? profile = await MemberService.GetMemberProfile(Model.CurrentMember, Model.Member);
+    var profile = await MemberService.GetMemberProfile(Model.CurrentMember, Model.Member);
     if (profile == null)
     {
         return;
@@ -43,7 +43,7 @@
     <div class="form-group mb-3">
         <label class="form-label">Date joined</label>
         <div class="form-control-plaintext">
-            <span>@profile.Joined.ToString("d MMMM yyyy")</span>
+            <span>@Model.Chapter.ToChapterTime(profile.Joined).ToString("d MMMM yyyy")</span>
         </div>
     </div>
 </form>

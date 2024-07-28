@@ -6,6 +6,8 @@ public class Chapter : IDatabaseEntity
 
     public Guid CountryId { get; set; }
 
+    public DateTime CurrentTime => ToChapterTime(DateTime.UtcNow);
+
     public int DisplayOrder { get; set; }
 
     public Guid Id { get; set; }
@@ -15,4 +17,8 @@ public class Chapter : IDatabaseEntity
     public string? RedirectUrl { get; set; }
 
     public TimeZoneInfo? TimeZone { get; set; }
+
+    public DateTime ToChapterTime(DateTime utc) => TimeZone != null
+        ? TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone)
+        : utc;
 }

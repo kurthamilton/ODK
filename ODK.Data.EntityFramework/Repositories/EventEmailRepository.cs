@@ -20,6 +20,6 @@ public class EventEmailRepository : ReadWriteRepositoryBase<EventEmail>, IEventE
         .DeferredMultiple();
 
     public IDeferredQueryMultiple<EventEmail> GetScheduled() => Set()
-        .Where(x => x.ScheduledDate != null && x.SentDate == null)
+        .Where(x => x.ScheduledUtc != null && x.SentUtc == null)
         .DeferredMultiple();
 }

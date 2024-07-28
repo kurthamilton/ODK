@@ -7,7 +7,7 @@
     Venue? venue = await VenueService.GetVenueAsync(Model.CurrentMember, Model.Event);
 }
 
-<h5>@Model.Event.DateUtc.EventDate()</h5>
+<h5>@Model.Event.Date.EventDate()</h5>
 <h5 class="d-flex justify-content-between">
     <a href="/@Model.Chapter.Name/Admin/Events/Venues/@venue!.Id">@venue.Name</a>
 </h5>

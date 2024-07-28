@@ -3,7 +3,7 @@
 @model ODK.Web.Razor.Models.Events.EventContentViewModel
 
 <h2>@Model.Venue.Name</h2>
-<h4>@Model.Event.DateUtc.EventDate(true)</h4>
+<h4>@Model.Event.Date.EventDate(true)</h4>
 @if (!string.IsNullOrEmpty(Model.Event.Time))
 {
     <h5>@Model.Event.Time</h5>

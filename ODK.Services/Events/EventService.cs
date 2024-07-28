@@ -1,6 +1,8 @@
-﻿using ODK.Core.Events;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Events;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
+using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 
@@ -42,9 +44,12 @@ public class EventService : IEventService
         };
     }
 
-    public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Guid chapterId)
+    public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Chapter chapter)
     {
-        return await GetEventResponseViewModels(member, chapterId, DateTime.Today);
+        var currentTime = chapter.CurrentTime;
+        var after = currentTime.StartOfDay();
+
+        return await GetEventResponseViewModels(member, chapter.Id, after);
     }
 
     public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member,
@@ -53,7 +58,9 @@ public class EventService : IEventService
         var isChapterMember = member?.IsMemberOf(chapterId) == true;
 
         var (events, venues) = await _unitOfWork.RunAsync(
-            x => isChapterMember ? x.EventRepository.GetByChapterId(chapterId, afterUtc) : x.EventRepository.GetPublicEventsByChapterId(chapterId, afterUtc),
+            x => isChapterMember 
+                ? x.EventRepository.GetByChapterId(chapterId, afterUtc) 
+                : x.EventRepository.GetPublicEventsByChapterId(chapterId, afterUtc),
             x => x.VenueRepository.GetByChapterId(chapterId));
 
         IReadOnlyCollection<EventResponse> responses = [];
@@ -94,7 +101,7 @@ public class EventService : IEventService
         var (@event, response) = await _unitOfWork.RunAsync(
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(member.Id, eventId));
-        if (@event.DateUtc < DateTime.Today)
+        if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
         }

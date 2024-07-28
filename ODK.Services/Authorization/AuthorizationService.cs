@@ -110,21 +110,21 @@ public class AuthorizationService : IAuthorizationService
             return SubscriptionStatus.Disabled;
         }
 
-        if (subscription.ExpiryDate == null || 
+        if (subscription.ExpiresUtc == null || 
             !membershipSettings.Enabled ||
             membershipSettings.MembershipDisabledAfterDaysExpired <= 0)
         {
             return SubscriptionStatus.Current;
         }
 
-        if (subscription.ExpiryDate >= DateTime.UtcNow)
+        if (subscription.ExpiresUtc >= DateTime.UtcNow)
         {
-            return subscription.ExpiryDate >= DateTime.UtcNow.AddDays(membershipSettings.MembershipExpiringWarningDays)
+            return subscription.ExpiresUtc >= DateTime.UtcNow.AddDays(membershipSettings.MembershipExpiringWarningDays)
                 ? SubscriptionStatus.Current
                 : SubscriptionStatus.Expiring;
         }
 
-        return subscription.ExpiryDate >= DateTime.UtcNow.AddDays(-1 * membershipSettings.MembershipDisabledAfterDaysExpired)
+        return subscription.ExpiresUtc >= DateTime.UtcNow.AddDays(-1 * membershipSettings.MembershipDisabledAfterDaysExpired)
             ? SubscriptionStatus.Expired
             : SubscriptionStatus.Disabled;
     }
@@ -156,7 +156,7 @@ public class AuthorizationService : IAuthorizationService
             return false;
         }
 
-        if (subscription.ExpiryDate == null || subscription.ExpiryDate >= DateTime.UtcNow)
+        if (subscription.ExpiresUtc == null || subscription.ExpiresUtc >= DateTime.UtcNow)
         {
             return true;
         }
@@ -171,7 +171,7 @@ public class AuthorizationService : IAuthorizationService
             return true;
         }
 
-        return subscription.ExpiryDate >= DateTime.UtcNow.AddDays(-1 * membershipSettings.MembershipDisabledAfterDaysExpired);
+        return subscription.ExpiresUtc >= DateTime.UtcNow.AddDays(-1 * membershipSettings.MembershipDisabledAfterDaysExpired);
     }
 
     private async Task<Member> GetMemberAsync(Guid id)

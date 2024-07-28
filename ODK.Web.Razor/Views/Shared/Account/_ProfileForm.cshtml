@@ -1,14 +1,17 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.DataTypes
 @using ODK.Core.Members
+@using ODK.Services.Caching
 @using ODK.Services.Chapters
 @using ODK.Services.Members
 @using ODK.Web.Razor.Models.Account
 @model ODK.Web.Razor.Models.Account.ProfileFormViewModel
 @inject IChapterService ChapterService
 @inject IMemberService MemberService
+@inject IRequestCache RequestCache
 @{
     var dto = await ChapterService.GetChapterMemberPropertiesDto(Model.MemberId, Model.ChapterId);
+    var chapter = await RequestCache.GetChapterAsync(Model.ChapterId);
 
     var chapterProperties = dto.ChapterProperties
         .Where(x => !x.Hidden)
@@ -207,7 +210,7 @@
     <div class="form-group mb-3">
         <label class="form-label">Date joined</label>
         <div class="form-control-plaintext">
-            <span>@Model.DateJoined.Value.ToString("d MMMM yyyy")</span>
+            <span>@chapter.ToChapterTime(Model.DateJoined.Value).ToString("d MMMM yyyy")</span>
         </div>
     </div>
 }

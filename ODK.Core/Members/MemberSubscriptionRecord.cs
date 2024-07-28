@@ -10,7 +10,7 @@ public class MemberSubscriptionRecord : IDatabaseEntity
 
     public int Months { get; set; }
 
-    public DateTime PurchaseDate { get; set; }
+    public DateTime PurchasedUtc { get; set; }
 
     public SubscriptionType Type { get; set; }
 }

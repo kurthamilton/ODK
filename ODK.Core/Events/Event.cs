@@ -8,7 +8,7 @@ public class Event : IDatabaseEntity
 
     public string CreatedBy { get; set; } = "";
 
-    public DateTime DateUtc { get; set; }
+    public DateTime Date { get; set; }
 
     public string? Description { get; set; }
 
@@ -19,12 +19,6 @@ public class Event : IDatabaseEntity
     public bool IsPublic { get; set; }
 
     public string Name { get; set; } = "";
-
-    public double? TicketCost => throw new NotImplementedException();
-
-    public int? TicketCount => throw new NotImplementedException();
-
-    public DateTime? TicketDeadline => throw new NotImplementedException();
 
     public string? Time { get; set; }
 

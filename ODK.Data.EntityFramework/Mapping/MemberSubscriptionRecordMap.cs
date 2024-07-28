@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Members;
+using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -11,6 +12,10 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
         builder.ToTable("MemberSubscriptionLog");
 
         builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.PurchasedUtc)
+            .HasColumnName("PurchaseDate")
+            .HasConversion<UtcDateTimeConverter>();
 
         builder.Property(x => x.Type)
             .HasColumnName("SubscriptionTypeId")

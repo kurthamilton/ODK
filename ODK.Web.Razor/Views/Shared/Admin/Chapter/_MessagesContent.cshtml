@@ -20,10 +20,10 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (ContactRequest message in messages.OrderByDescending(x => x.CreatedDate))
+    @foreach (ContactRequest message in messages.OrderByDescending(x => x.CreatedUtc))
     {
         <tr>
-            <td>@message.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@Model.ToChapterTime(message.CreatedUtc).ToString("dd/MM/yyyy HH:mm")</td>
             <td>@message.FromAddress</td>
             <td>@message.Message</td>
             <td>

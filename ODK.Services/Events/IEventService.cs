@@ -12,7 +12,7 @@ public interface IEventService
 
     Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Chapter chapter);
 
-    Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Chapter chapter, 
+    Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Guid chapterId, 
         DateTime? afterUtc);
     
     Task<ServiceResult> UpdateMemberResponse(Member member, Guid eventId, EventResponseType responseType);

@@ -6,7 +6,7 @@ public class EventInvitesDto
 
     public required int Sent { get; set; }
 
-    public required DateTime? ScheduledDate { get; set; }
+    public required DateTime? ScheduledUtc { get; set; }
 
-    public required DateTime? SentDate { get; set; }
+    public required DateTime? SentUtc { get; set; }
 }

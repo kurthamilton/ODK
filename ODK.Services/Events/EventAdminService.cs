@@ -26,7 +26,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> CreateEvent(Guid currentMemberId, CreateEvent model)
     {
-        var (chapterAdminMembers, currentMember, venue, settings) = await _unitOfWork.RunAsync(
+        var (chapter, chapterAdminMembers, currentMember, venue, settings) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(model.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(model.ChapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetById(model.VenueId),
@@ -38,7 +39,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             ChapterId = model.ChapterId,
             CreatedBy = currentMember.FullName,
-            DateUtc = model.Date,
+            Date = model.Date.SpecifyKind(DateTimeKind.Utc),
             Description = model.Description,
             ImageUrl = model.ImageUrl,
             IsPublic = model.IsPublic,
@@ -55,19 +56,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         _unitOfWork.EventRepository.Add(@event);
 
-        if (settings.DefaultScheduledEmailDayOfWeek != null &&
-            !string.IsNullOrEmpty(settings.DefaultScheduledEmailTimeOfDay))
-        {
-            var scheduledDate = @event.DateUtc.Previous(settings.DefaultScheduledEmailDayOfWeek.Value);
-            var scheduledDateTime = settings.GetScheduledDateTime(scheduledDate);
-
-            var eventEmail = new EventEmail
-            {
-                EventId = @event.Id,
-                ScheduledDate = scheduledDateTime
-            };
-            _unitOfWork.EventEmailRepository.Add(eventEmail);
-        }
+        ScheduleEventEmail(@event, chapter, settings);
         
         await _unitOfWork.SaveChangesAsync();
 
@@ -134,8 +123,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             EventId = eventId,
             Sent = invites.Count,
-            SentDate = eventEmail?.SentDate,
-            ScheduledDate = eventEmail?.ScheduledDate,
+            SentUtc = eventEmail?.SentUtc,
+            ScheduledUtc = eventEmail?.ScheduledUtc,
         };
     }
 
@@ -201,10 +190,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return events;
     }
     
-    public async Task<DateTime?> GetNextAvailableEventDate(Guid currentMemberId, Guid chapterId)
+    public async Task<DateTime?> GetNextAvailableEventDate(Guid currentMemberId, Chapter chapter)
     {
+        var chapterId = chapter.Id;
+        var startOfDay = chapter.CurrentTime.StartOfDay();
+
         var (events, settings) = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
-            x => x.EventRepository.GetByChapterId(chapterId, DateTime.Today),
+            x => x.EventRepository.GetByChapterId(chapterId, startOfDay),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapterId));
 
         if (settings.DefaultDayOfWeek == null)
@@ -212,14 +204,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return null;
         }
 
-        var nextEventDate = DateTime.Today.Next(settings.DefaultDayOfWeek.Value);
+        var nextEventDate = startOfDay.Next(settings.DefaultDayOfWeek.Value);
         if (events.Count == 0)
         {
             return nextEventDate;
         }
 
         var eventDates = events
-            .Select(x => x.DateUtc)
+            .Select(x => x.Date)
             .ToArray();
         var lastEventDate = eventDates.Max();
 
@@ -296,7 +288,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return validationResult;
         }
 
-        if (!test && eventEmail?.SentDate != null)
+        if (!test && eventEmail?.SentUtc != null)
         {
             return ServiceResult.Failure("Invites have already been sent for this event");
         }
@@ -334,11 +326,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task SendScheduledEmails()
     {
-        var emails = await _unitOfWork.EventEmailRepository.GetScheduled().RunAsync();
+        var (chapters, emails) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetAll(),
+            x => x.EventEmailRepository.GetScheduled());
+
         if (emails.Count == 0)
         {
             return;
         }
+
+        var chapterDictionary = chapters
+            .ToDictionary(x => x.Id);
 
         var eventIds = emails
             .Select(x => x.EventId)
@@ -351,22 +349,22 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         foreach (var @event in events)
         {
             var email = emailDictionary[@event.Id];
+            var chapter = chapterDictionary[@event.ChapterId];
 
-            if (@event.DateUtc < DateTime.Today)
+            if (@event.Date < chapter.CurrentTime.StartOfDay())
             {
-                email.ScheduledDate = null;
+                email.ScheduledUtc = null;
                 _unitOfWork.EventEmailRepository.Update(email);
                 await _unitOfWork.SaveChangesAsync();
                 continue;
             }
 
-            if (email.ScheduledDate > DateTime.Now)
+            if (email.ScheduledUtc > DateTime.Now)
             {
                 continue;
             }
 
-            var (chapter, venue, responses, invites, members) = await _unitOfWork.RunAsync(
-                x => x.ChapterRepository.GetById(@event.ChapterId),
+            var (venue, responses, invites, members) = await _unitOfWork.RunAsync(
                 x => x.VenueRepository.GetById(@event.VenueId),
                 x => x.EventResponseRepository.GetByEventId(@event.Id),
                 x => x.EventInviteRepository.GetByEventId(@event.Id),
@@ -391,7 +389,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         await AssertMemberIsChapterAdmin(memberId, @event.ChapterId);
 
-        @event.DateUtc = model.Date;
+        @event.Date = model.Date;
         @event.Description = model.Description;
         @event.ImageUrl = model.ImageUrl;
         @event.IsPublic = model.IsPublic;
@@ -475,12 +473,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Failure("Scheduled date cannot be in the past");
         }
 
-        if (date > @event.DateUtc)
+        if (date > @event.Date)
         {
             return ServiceResult.Failure("Scheduled date cannot be after event");
         }
 
-        eventEmail.ScheduledDate = date != null
+        eventEmail.ScheduledUtc = date != null
             ? date + TimeOnly.Parse(time ?? "").ToTimeSpan()
             : null;
 
@@ -500,7 +498,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         private static ServiceResult ValidateEventEmailCanBeSent(Event @event)
     {
-        if (@event.DateUtc < DateTime.UtcNow.Date)
+        if (@event.Date < DateTime.UtcNow.Date)
         {
             return ServiceResult.Failure("Invites cannot be sent to past events");
         }
@@ -515,7 +513,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Failure("Name is required");
         }
 
-        if (@event.DateUtc == DateTime.MinValue)
+        if (@event.Date == DateTime.MinValue)
         {
             return ServiceResult.Failure("Date is required");
         }
@@ -539,7 +537,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     private void AssertEventCanBeDeleted(EventEmail? eventEmail, IReadOnlyCollection<EventResponse> responses)
     {
-        if (eventEmail?.SentDate != null)
+        if (eventEmail?.SentUtc != null)
         {
             throw new OdkServiceException("Events that have had invite emails sent cannot be deleted");
         }
@@ -555,7 +553,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {"chapter.name", chapter.Name},
-            {"event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy")},
+            {"event.date", @event.Date.ToString("dddd dd MMMM, yyyy")},
             {"event.id", @event.Id.ToString()},
             {"event.location", venue.Name},
             {"event.name", @event.Name},
@@ -581,9 +579,36 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             EventId = x,
             Sent = invitesDictionary.ContainsKey(x) ? invitesDictionary[x] : 0,
-            SentDate = eventDictionary.ContainsKey(x) ? eventDictionary[x].SentDate : default,
-            ScheduledDate = eventDictionary.ContainsKey(x) ? eventDictionary[x].ScheduledDate : default,
+            SentUtc = eventDictionary.ContainsKey(x) ? eventDictionary[x].SentUtc : default,
+            ScheduledUtc = eventDictionary.ContainsKey(x) ? eventDictionary[x].ScheduledUtc : default,
         }).ToArray();
+    }
+
+    private void ScheduleEventEmail(Event @event, Chapter chapter, ChapterEventSettings? settings)
+    {
+        if (settings?.DefaultScheduledEmailDayOfWeek == null ||
+            string.IsNullOrEmpty(settings.DefaultScheduledEmailTimeOfDay))
+        {
+            return;
+        }
+
+        var scheduledDate = @event.Date.Previous(settings.DefaultScheduledEmailDayOfWeek.Value);
+        var scheduledDateTimeLocal = settings.GetScheduledDateTime(scheduledDate);
+        if (scheduledDateTimeLocal == null)
+        {
+            return;
+        }
+        
+        var scheduledDateTimeUtc = chapter.TimeZone != null
+            ? scheduledDateTimeLocal.Value.ToUtc(chapter.TimeZone)
+            : scheduledDateTimeLocal.SpecifyKind(DateTimeKind.Utc);
+
+        var eventEmail = new EventEmail
+        {
+            EventId = @event.Id,
+            ScheduledUtc = scheduledDateTimeUtc
+        };
+        _unitOfWork.EventEmailRepository.Add(eventEmail);
     }
 
     private async Task<ServiceResult> SendEventInvites(
@@ -620,7 +645,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             eventEmail = new();
         }
 
-        eventEmail.SentDate = sentDate;
+        eventEmail.SentUtc = sentDate;
 
         if (eventEmail.EventId == default)
         {
@@ -638,7 +663,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             {
                 EventId = @event.Id,
                 MemberId = x.Id,
-                SentDate = sentDate
+                SentUtc = sentDate
             });
 
         _unitOfWork.EventInviteRepository.AddMany(newInvites);

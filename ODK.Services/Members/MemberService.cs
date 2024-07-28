@@ -102,7 +102,7 @@ public class MemberService : IMemberService
         {
             Activated = false,
             ChapterId = chapterId,
-            CreatedDate = DateTime.UtcNow,
+            CreatedUtc = DateTime.UtcNow,
             Disabled = false,
             EmailAddress = model.EmailAddress,
             EmailOptIn = model.EmailOptIn ?? false,
@@ -114,7 +114,7 @@ public class MemberService : IMemberService
         
         var subscription = new MemberSubscription
         {
-            ExpiryDate = member.CreatedDate
+            ExpiresUtc = member.CreatedUtc
                 .AddMonths(membershipSettings?.TrialPeriodMonths ?? siteSettings.DefaultTrialPeriodMonths),
             MemberId = member.Id,
             Type = SubscriptionType.Trial
@@ -183,7 +183,7 @@ public class MemberService : IMemberService
         var members = await GetMembers(currentMember, chapterId);
 
         return members
-            .OrderByDescending(x => x.CreatedDate)
+            .OrderByDescending(x => x.CreatedUtc)
             .Take(8)
             .ToArray();
     }
@@ -282,8 +282,8 @@ public class MemberService : IMemberService
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
         }
 
-        var expiryDate = (memberSubscription.ExpiryDate ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
-        memberSubscription.ExpiryDate = expiryDate;
+        var expiresUtc = (memberSubscription.ExpiresUtc ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
+        memberSubscription.ExpiresUtc = expiresUtc;
         memberSubscription.Type = chapterSubscription.Type;
 
         _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
@@ -293,7 +293,7 @@ public class MemberService : IMemberService
             Amount = chapterSubscription.Amount,
             MemberId = memberId,
             Months = chapterSubscription.Months,
-            PurchaseDate = DateTime.UtcNow,
+            PurchasedUtc = DateTime.UtcNow,
             Type = chapterSubscription.Type
         });
 
@@ -307,7 +307,7 @@ public class MemberService : IMemberService
         {
             { "chapter.name", chapter.Name },
             { "subscription.amount", $"{country.CurrencySymbol}{chapterSubscription.Amount:0.00}" },
-            { "subscription.end", expiryDate.ToString("d MMMM yyyy") }
+            { "subscription.end", chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy") }
         });
 
         return ServiceResult.Successful();

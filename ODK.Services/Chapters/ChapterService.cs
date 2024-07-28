@@ -124,7 +124,7 @@ public class ChapterService : IChapterService
         _unitOfWork.ContactRequestRepository.Add(new ContactRequest
         {
             ChapterId = chapter.Id,
-            CreatedDate = DateTime.UtcNow,
+            CreatedUtc = DateTime.UtcNow,
             FromAddress = fromAddress,
             Message = message,
             Sent = false
