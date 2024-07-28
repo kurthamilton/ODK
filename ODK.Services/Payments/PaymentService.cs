@@ -43,7 +43,7 @@ public class PaymentService : IPaymentService
             Amount = amount,
             CurrencyCode = country.CurrencyCode,
             MemberId = member.Id,
-            PaidDate = DateTime.UtcNow,
+            PaidUtc = DateTime.UtcNow,
             Reference = reference
         });
         await _unitOfWork.SaveChangesAsync();

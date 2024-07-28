@@ -77,10 +77,10 @@
             </td>
             <td>@subscription?.Type</td>
             <td>
-                <span class="d-none" data-sort-value="@(subscription?.ExpiryDate?.ToString("yyyy-MM-dd") ?? "")"></span>
-                <span class="@(subscription?.ExpiryDate < DateTime.Today ? "text-danger" : null)
-                             @(subscription?.ExpiryDate < subscriptionWarningDate ? "text-warning" : null)">
-                    @subscription?.ExpiryDate?.ToString("yyyy-MM-dd")
+                <span class="d-none" data-sort-value="@(subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "")"></span>
+                <span class="@(subscription?.ExpiresUtc < DateTime.Today ? "text-danger" : null)
+                             @(subscription?.ExpiresUtc < subscriptionWarningDate ? "text-warning" : null)">
+                    @subscription?.ExpiresUtc?.ToString("yyyy-MM-dd")
                 </span>
             </td>
             <td>

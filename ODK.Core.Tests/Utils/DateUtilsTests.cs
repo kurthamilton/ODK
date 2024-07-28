@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using NUnit.Framework;
 using ODK.Core.Utils;
 
@@ -44,5 +45,24 @@ public static class DateUtilsTests
 
         // Assert
         return (result - date).Days;
+    }
+
+    [TestCase("Pacific Standard Time", "2024-01-01 12:00:00", ExpectedResult = "2024-01-01 20:00:00")]
+    [TestCase("Pacific Standard Time", "2024-07-01 12:00:00", ExpectedResult = "2024-07-01 19:00:00")]
+    [TestCase("GMT Standard Time", "2024-01-01 12:00:00", ExpectedResult = "2024-01-01 12:00:00")]
+    [TestCase("GMT Standard Time", "2024-07-01 12:00:00", ExpectedResult = "2024-07-01 11:00:00")]
+    [TestCase("AUS Eastern Standard Time", "2024-01-01 12:00:00", ExpectedResult = "2024-01-01 01:00:00")]
+    [TestCase("AUS Eastern Standard Time", "2024-07-01 12:00:00", ExpectedResult = "2024-07-01 02:00:00")]
+    public static string ToUtc(string timeZoneId, string timeString)
+    {
+        // Arrange
+        var time = DateTime.ParseExact(timeString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
+        // Act
+        var result = time.ToUtc(timeZone);
+
+        // Assert
+        return result.ToString("yyyy-MM-dd HH:mm:ss");
     }
 }

@@ -10,7 +10,7 @@ public class Payment : IDatabaseEntity
 
     public Guid MemberId { get; set; }
 
-    public DateTime PaidDate { get; set; }
+    public DateTime PaidUtc { get; set; }
 
     public string Reference { get; set; } = "";
 }

@@ -9,7 +9,7 @@
     var memberId = User.MemberId();
 
     var settings = await ChapterAdminService.GetChapterEventSettings(memberId, Model.Id);
-    var nextEventDate = await EventAdminService.GetNextAvailableEventDate(memberId, Model.Id);
+    var nextEventDate = await EventAdminService.GetNextAvailableEventDate(memberId, Model);
     if (nextEventDate == null)
     {
         nextEventDate = DateTime.Today;

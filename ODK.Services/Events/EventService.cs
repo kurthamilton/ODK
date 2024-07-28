@@ -1,6 +1,8 @@
-﻿using ODK.Core.Events;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Events;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
+using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 
@@ -42,18 +44,23 @@ public class EventService : IEventService
         };
     }
 
-    public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Guid chapterId)
+    public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Chapter chapter)
     {
-        return await GetEventResponseViewModels(member, chapterId, DateTime.Today);
+        var currentTime = chapter.CurrentTime;
+        var after = currentTime.StartOfDay();
+
+        return await GetEventResponseViewModels(member, chapter.Id, after);
     }
 
     public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member,
-        Guid chapterId, DateTime? after)
+        Guid chapterId, DateTime? afterUtc)
     {
         var isChapterMember = member?.IsMemberOf(chapterId) == true;
 
         var (events, venues) = await _unitOfWork.RunAsync(
-            x => isChapterMember ? x.EventRepository.GetByChapterId(chapterId, after) : x.EventRepository.GetPublicEventsByChapterId(chapterId, after),
+            x => isChapterMember 
+                ? x.EventRepository.GetByChapterId(chapterId, afterUtc) 
+                : x.EventRepository.GetPublicEventsByChapterId(chapterId, afterUtc),
             x => x.VenueRepository.GetByChapterId(chapterId));
 
         IReadOnlyCollection<EventResponse> responses = [];
@@ -61,10 +68,8 @@ public class EventService : IEventService
         var invitedEventIds = new HashSet<Guid>();
         if (member != null)
         {
-            bool allEvents = after == null;
-
             (responses, invites) = await _unitOfWork.RunAsync(
-                x => x.EventResponseRepository.GetByMemberId(member.Id, allEvents),
+                x => x.EventResponseRepository.GetByMemberId(member.Id, afterUtc),
                 x => x.EventInviteRepository.GetByMemberId(member.Id));
 
             invitedEventIds = new HashSet<Guid>(invites.Select(x => x.EventId));

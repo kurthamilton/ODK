@@ -6,5 +6,5 @@ public class EventInvite
 
     public Guid MemberId { get; set; }
 
-    public DateTime SentDate { get; set; }
+    public DateTime SentUtc { get; set; }
 }

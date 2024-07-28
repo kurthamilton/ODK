@@ -2,7 +2,7 @@
 
 public class Feature : IDatabaseEntity
 {
-    public DateTime Created { get; set; }
+    public DateTime CreatedUtc { get; set; }
 
     public string Description { get; set; } = "";
 

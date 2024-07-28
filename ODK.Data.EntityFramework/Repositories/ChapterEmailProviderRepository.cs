@@ -23,8 +23,8 @@ public class ChapterEmailProviderRepository : ReadWriteRepositoryBase<ChapterEma
             from sentEmail in Set<SentEmail>()
             where emailProvider.ChapterId == chapterId && 
                 sentEmail.ChapterEmailProviderId == emailProvider.Id && 
-                sentEmail.SentDate >= DateTime.Today &&
-                sentEmail.SentDate < DateTime.Today.AddDays(1)
+                sentEmail.SentUtc >= DateTime.UtcNow.Date &&
+                sentEmail.SentUtc < DateTime.UtcNow.Date.AddDays(1)
             group emailProvider by emailProvider.Id into g
             select new ChapterEmailProviderSummaryDto
             {

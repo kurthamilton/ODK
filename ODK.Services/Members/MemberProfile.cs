@@ -8,7 +8,7 @@ public class MemberProfile
     public MemberProfile(Member member, IEnumerable<MemberProperty> memberProperties, 
         IEnumerable<ChapterProperty> chapterProperties)
         : this(member.EmailAddress, member.EmailOptIn, member.FirstName, member.LastName, 
-            member.CreatedDate.Date, memberProperties, chapterProperties)
+            member.CreatedUtc.Date, memberProperties, chapterProperties)
     {
     }
 

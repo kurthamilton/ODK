@@ -13,7 +13,7 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_MemberForm", new MemberFormViewModel
     {
-        SubscriptionExpiryDate = subscription?.ExpiryDate,
+        SubscriptionExpiryDate = subscription?.ExpiresUtc,
         SubscriptionType = subscription?.Type
     })
     <div class="d-flex">

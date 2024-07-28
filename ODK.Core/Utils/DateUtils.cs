@@ -1,7 +1,7 @@
 ﻿namespace ODK.Core.Utils;
 
 public static class DateUtils
-{
+{    
     public static long DateVersion(DateTime date)
     {
         return long.Parse($"{date:yyyyMMdd}");
@@ -55,4 +55,14 @@ public static class DateUtils
 
         return date;
     }
+
+    public static DateTime SpecifyKind(this DateTime date, DateTimeKind kind) => DateTime.SpecifyKind(date, kind);
+
+    public static DateTime? SpecifyKind(this DateTime? date, DateTimeKind kind) 
+        => date != null ? date.Value.SpecifyKind(kind) : new DateTime?();
+
+    public static DateTime StartOfDay(this DateTime date) => date - date.TimeOfDay;
+
+    public static DateTime ToUtc(this DateTime local, TimeZoneInfo timeZone) 
+        => TimeZoneInfo.ConvertTimeToUtc(local.SpecifyKind(DateTimeKind.Unspecified), timeZone);
 }

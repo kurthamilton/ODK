@@ -2,9 +2,9 @@
 
 public class MemberPasswordResetRequest : IDatabaseEntity
 {
-    public DateTime Created { get; set; }
+    public DateTime CreatedUtc { get; set; }
 
-    public DateTime Expires { get; set; }
+    public DateTime ExpiresUtc { get; set; }
 
     public Guid Id { get; set; }
 

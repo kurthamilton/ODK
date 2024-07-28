@@ -12,6 +12,7 @@ public class EventMap : IEntityTypeConfiguration<Event>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id).HasColumnName("EventId");
+        builder.Property(x => x.Id)
+            .HasColumnName("EventId");
     }
 }

@@ -20,12 +20,6 @@ public class Event : IDatabaseEntity
 
     public string Name { get; set; } = "";
 
-    public double? TicketCost => throw new NotImplementedException();
-
-    public int? TicketCount => throw new NotImplementedException();
-
-    public DateTime? TicketDeadline => throw new NotImplementedException();
-
     public string? Time { get; set; }
 
     public Guid VenueId { get; set; }

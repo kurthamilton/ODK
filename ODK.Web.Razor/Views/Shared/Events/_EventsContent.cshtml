@@ -3,7 +3,7 @@
 @model ODK.Web.Razor.Models.Events.EventsContentViewModel
 @inject IEventService EventService
 @{
-    var events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter.Id);
+    var events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter);
 }
 
 @if (events.Count > 0)

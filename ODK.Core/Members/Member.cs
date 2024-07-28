@@ -9,7 +9,7 @@ public class Member : IVersioned, IDatabaseEntity
 
     public Guid ChapterId { get; set; }
 
-    public DateTime CreatedDate { get; set; }
+    public DateTime CreatedUtc { get; set; }
 
     public bool Disabled { get; set; }
 

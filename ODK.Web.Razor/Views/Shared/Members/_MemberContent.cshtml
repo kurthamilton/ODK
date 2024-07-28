@@ -6,6 +6,7 @@
         @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, Model.Member))
     </div>
     <div class="col-md-8 order-md-1">
-        @await Html.PartialAsync("Members/_MemberProfile", new MemberProfileViewModel(Model.Member, Model.CurrentMember))
+        @await Html.PartialAsync("Members/_MemberProfile", 
+            new MemberProfileViewModel(Model.Member, Model.CurrentMember, Model.Chapter))
     </div>    
 </div>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
+using ODK.Core.Utils;
 using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Members;
@@ -21,7 +22,7 @@ public class MemberModel : MemberAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, MemberFormViewModel viewModel)
     {
-        ServiceResult result = await MemberAdminService.UpdateMemberSubscription(CurrentMemberId, id, new UpdateMemberSubscription
+        var result = await MemberAdminService.UpdateMemberSubscription(CurrentMemberId, id, new UpdateMemberSubscription
         {
             ExpiryDate = viewModel.SubscriptionExpiryDate,
             Type = viewModel.SubscriptionType ?? SubscriptionType.None

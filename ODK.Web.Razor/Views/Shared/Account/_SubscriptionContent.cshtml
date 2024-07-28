@@ -33,7 +33,16 @@
 <div class="form-group mb-3">
     <label class="form-label">End date</label>
     <div class="form-control-plaintext">
-        @(memberSubscription.ExpiryDate?.ToString("d MMMM yyyy") ?? "-")
+        @if (memberSubscription.ExpiresUtc != null)
+        {
+            <span>
+                @Model.Chapter.ToChapterTime(memberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")
+            </span>
+        }
+        else
+        {
+            <span>-</span>
+        }
     </div>
 </div>
 

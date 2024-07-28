@@ -19,7 +19,7 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
 
         _unitOfWork.FeatureRepository.Add(new Feature
         {
-            Created = DateTime.UtcNow,
+            CreatedUtc = DateTime.UtcNow,
             Description = model.Description,
             Id = Guid.NewGuid(),
             Name = model.Name

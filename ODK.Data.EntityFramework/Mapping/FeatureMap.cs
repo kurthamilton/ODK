@@ -13,7 +13,8 @@ public class FeatureMap : IEntityTypeConfiguration<Feature>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Created)
+        builder.Property(x => x.CreatedUtc)
+            .HasColumnName("Created")
             .HasConversion<UtcDateTimeConverter>();
 
         builder.Property(x => x.Id)
