@@ -12,7 +12,14 @@ public class MemberPasswordResetRequestMap : IEntityTypeConfiguration<MemberPass
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id).HasColumnName("MemberPasswordResetRequestId");
+        builder.Property(x => x.CreatedUtc)
+            .HasColumnName("Created");
+
+        builder.Property(x => x.ExpiresUtc)
+            .HasColumnName("Expires");
+
+        builder.Property(x => x.Id)
+            .HasColumnName("MemberPasswordResetRequestId");
 
         builder.HasOne<Member>()
             .WithMany()

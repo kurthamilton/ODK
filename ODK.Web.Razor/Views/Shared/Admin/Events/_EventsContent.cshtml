@@ -50,7 +50,7 @@
 
         <tr>
             <td><a href="/@Model.Name/Admin/Events/@(@event.Id)">@(@event.Name)</a></td>
-            <td>@(@event.Date.EventDate())</td>
+            <td>@(@event.DateUtc.EventDate())</td>
             <td><a href="/@Model.Name/Admin/Venues/@venue.Id">@venue.Name</a></td>
             <td>
                 @if (eventInvites?.SentDate == null)

@@ -10,6 +10,9 @@ public class ErrorMap : IEntityTypeConfiguration<Error>
     {
         builder.ToTable("Errors");
 
-        builder.HasKey(x => x.Id);        
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.CreatedUtc)
+            .HasColumnName("CreatedDate");
     }
 }

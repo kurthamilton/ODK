@@ -23,13 +23,13 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (Event @event in events.OrderByDescending(x => x.Date))
+    @foreach (Event @event in events.OrderByDescending(x => x.DateUtc))
     {
         <tr>
             <td>
                 <a href="/@Model.Chapter.Name/Admin/Events/@(@event.Id)">@(@event.Name)</a>
             </td>
-            <td>@(@event.Date.EventDate())</td>
+            <td>@(@event.DateUtc.EventDate())</td>
         </tr>
     }
     </tbody>

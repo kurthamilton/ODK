@@ -26,14 +26,14 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
         .Where(x => eventIds.Contains(x.EventId))
         .DeferredMultiple();
 
-    public IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, bool allEvents = false)
+    public IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, DateTime? afterUtc)
     {
         var query =
             from @event in Set<Event>()
             from eventResponse in Set()
             where eventResponse.MemberId == memberId
                 && eventResponse.EventId == @event.Id
-                && (allEvents || @event.Date >= DateTime.Today)
+                && (afterUtc == null || @event.DateUtc >= afterUtc)
             select eventResponse;
         return query.DeferredMultiple();
     }

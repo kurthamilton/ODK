@@ -48,12 +48,12 @@ public class EventService : IEventService
     }
 
     public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member,
-        Guid chapterId, DateTime? after)
+        Guid chapterId, DateTime? afterUtc)
     {
         var isChapterMember = member?.IsMemberOf(chapterId) == true;
 
         var (events, venues) = await _unitOfWork.RunAsync(
-            x => isChapterMember ? x.EventRepository.GetByChapterId(chapterId, after) : x.EventRepository.GetPublicEventsByChapterId(chapterId, after),
+            x => isChapterMember ? x.EventRepository.GetByChapterId(chapterId, afterUtc) : x.EventRepository.GetPublicEventsByChapterId(chapterId, afterUtc),
             x => x.VenueRepository.GetByChapterId(chapterId));
 
         IReadOnlyCollection<EventResponse> responses = [];
@@ -61,10 +61,8 @@ public class EventService : IEventService
         var invitedEventIds = new HashSet<Guid>();
         if (member != null)
         {
-            bool allEvents = after == null;
-
             (responses, invites) = await _unitOfWork.RunAsync(
-                x => x.EventResponseRepository.GetByMemberId(member.Id, allEvents),
+                x => x.EventResponseRepository.GetByMemberId(member.Id, afterUtc),
                 x => x.EventInviteRepository.GetByMemberId(member.Id));
 
             invitedEventIds = new HashSet<Guid>(invites.Select(x => x.EventId));
@@ -96,7 +94,7 @@ public class EventService : IEventService
         var (@event, response) = await _unitOfWork.RunAsync(
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(member.Id, eventId));
-        if (@event.Date < DateTime.Today)
+        if (@event.DateUtc < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
         }

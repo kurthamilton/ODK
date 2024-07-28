@@ -235,7 +235,7 @@ public class MailProvider : IMailProvider
                 _unitOfWork.EmailRepository.AddSentEmail(new SentEmail
                 {
                     ChapterEmailProviderId = provider.Id,
-                    SentDate = DateTime.UtcNow,
+                    SentUtc = DateTime.UtcNow,
                     Subject = message.Subject,
                     To = to.ToString()
                 });                                

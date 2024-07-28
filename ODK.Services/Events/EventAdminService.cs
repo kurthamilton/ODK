@@ -38,7 +38,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             ChapterId = model.ChapterId,
             CreatedBy = currentMember.FullName,
-            Date = model.Date,
+            DateUtc = model.Date,
             Description = model.Description,
             ImageUrl = model.ImageUrl,
             IsPublic = model.IsPublic,
@@ -58,7 +58,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         if (settings.DefaultScheduledEmailDayOfWeek != null &&
             !string.IsNullOrEmpty(settings.DefaultScheduledEmailTimeOfDay))
         {
-            var scheduledDate = @event.Date.Previous(settings.DefaultScheduledEmailDayOfWeek.Value);
+            var scheduledDate = @event.DateUtc.Previous(settings.DefaultScheduledEmailDayOfWeek.Value);
             var scheduledDateTime = settings.GetScheduledDateTime(scheduledDate);
 
             var eventEmail = new EventEmail
@@ -219,7 +219,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         var eventDates = events
-            .Select(x => x.Date)
+            .Select(x => x.DateUtc)
             .ToArray();
         var lastEventDate = eventDates.Max();
 
@@ -352,7 +352,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             var email = emailDictionary[@event.Id];
 
-            if (@event.Date < DateTime.Today)
+            if (@event.DateUtc < DateTime.Today)
             {
                 email.ScheduledDate = null;
                 _unitOfWork.EventEmailRepository.Update(email);
@@ -391,7 +391,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         await AssertMemberIsChapterAdmin(memberId, @event.ChapterId);
 
-        @event.Date = model.Date;
+        @event.DateUtc = model.Date;
         @event.Description = model.Description;
         @event.ImageUrl = model.ImageUrl;
         @event.IsPublic = model.IsPublic;
@@ -475,7 +475,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Failure("Scheduled date cannot be in the past");
         }
 
-        if (date > @event.Date)
+        if (date > @event.DateUtc)
         {
             return ServiceResult.Failure("Scheduled date cannot be after event");
         }
@@ -500,7 +500,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         private static ServiceResult ValidateEventEmailCanBeSent(Event @event)
     {
-        if (@event.Date < DateTime.UtcNow.Date)
+        if (@event.DateUtc < DateTime.UtcNow.Date)
         {
             return ServiceResult.Failure("Invites cannot be sent to past events");
         }
@@ -515,7 +515,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Failure("Name is required");
         }
 
-        if (@event.Date == DateTime.MinValue)
+        if (@event.DateUtc == DateTime.MinValue)
         {
             return ServiceResult.Failure("Date is required");
         }
@@ -555,7 +555,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {"chapter.name", chapter.Name},
-            {"event.date", @event.Date.ToString("dddd dd MMMM, yyyy")},
+            {"event.date", @event.DateUtc.ToString("dddd dd MMMM, yyyy")},
             {"event.id", @event.Id.ToString()},
             {"event.location", venue.Name},
             {"event.name", @event.Name},

@@ -16,13 +16,13 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
 
     public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, DateTime? after) => Set()
         .Where(x => x.ChapterId == chapterId)
-        .ConditionalWhere(x => x.Date >= after, after != null)
-        .OrderByDescending(x => x.Date)
+        .ConditionalWhere(x => x.DateUtc >= after, after != null)
+        .OrderByDescending(x => x.DateUtc)
         .DeferredMultiple();
 
     public IDeferredQueryMultiple<Event> GetByChapterId(Guid chapterId, int page, int pageSize) => Set()
         .Where(x => x.ChapterId == chapterId)
-        .OrderByDescending(x => x.Date)
+        .OrderByDescending(x => x.DateUtc)
         .Page(page, pageSize)
         .DeferredMultiple();
 
@@ -36,7 +36,7 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
 
     public IDeferredQueryMultiple<Event> GetPublicEventsByChapterId(Guid chapterId, DateTime? after) => Set()
         .Where(x => x.ChapterId == chapterId && x.IsPublic)
-        .ConditionalWhere(x => x.Date >= after, after != null)
-        .OrderByDescending(x => x.Date)
+        .ConditionalWhere(x => x.DateUtc >= after, after != null)
+        .OrderByDescending(x => x.DateUtc)
         .DeferredMultiple();
 }

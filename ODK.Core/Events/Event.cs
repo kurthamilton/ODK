@@ -8,7 +8,7 @@ public class Event : IDatabaseEntity
 
     public string CreatedBy { get; set; } = "";
 
-    public DateTime Date { get; set; }
+    public DateTime DateUtc { get; set; }
 
     public string? Description { get; set; }
 

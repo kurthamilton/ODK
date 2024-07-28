@@ -22,7 +22,7 @@
         @foreach (var error in errors)
         {
             <tr>
-                <td>@error.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@error.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
                 <td>@error.ExceptionType</td>
                 <td>
                     <a href="/@Model.Name/Admin/SuperAdmin/Errors/@error.Id">@error.ExceptionMessage</a>

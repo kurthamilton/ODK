@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Events;
 using ODK.Core.Members;
 
 namespace ODK.Services.Events;
@@ -9,10 +10,10 @@ public interface IEventService
     
     Task<EventResponsesDto> GetEventResponsesDto(Event @event);
 
-    Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Guid chapterId);
+    Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Chapter chapter);
 
-    Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Guid chapterId, 
-        DateTime? after);
+    Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Chapter chapter, 
+        DateTime? afterUtc);
     
     Task<ServiceResult> UpdateMemberResponse(Member member, Guid eventId, EventResponseType responseType);
 }

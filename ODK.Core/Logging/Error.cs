@@ -2,7 +2,7 @@
 
 public class Error : IDatabaseEntity
 {
-    public DateTime CreatedDate { get; set; }
+    public DateTime CreatedUtc { get; set; }
 
     public string ExceptionMessage { get; set; } = "";
 
@@ -14,7 +14,7 @@ public class Error : IDatabaseEntity
     {
         return new Error
         {
-            CreatedDate = DateTime.UtcNow,
+            CreatedUtc = DateTime.UtcNow,
             ExceptionMessage = exception.Message,
             ExceptionType = exception.GetType().Name
         };

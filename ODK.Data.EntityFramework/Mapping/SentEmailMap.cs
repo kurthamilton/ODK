@@ -12,6 +12,10 @@ public class SentEmailMap : IEntityTypeConfiguration<SentEmail>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id).HasColumnName("SentEmailId");
+        builder.Property(x => x.Id)
+            .HasColumnName("SentEmailId");
+
+        builder.Property(x => x.SentUtc)
+            .HasColumnName("SentDate");
     }
 }

@@ -8,7 +8,7 @@ public class EventResponseViewModel
     public EventResponseViewModel(Event @event, Venue venue, EventResponseType response,
         bool invited, bool @public)
     {
-        Date = @event.Date;
+        Date = @event.DateUtc;
         EventId = @event.Id;
         EventName = @event.Name;
         Invited = invited;

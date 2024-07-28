@@ -146,9 +146,9 @@ public class AuthenticationService : IAuthenticationService
             return ServiceResult.Successful();
         }
 
-        DateTime created = DateTime.UtcNow;
-        DateTime expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
-        string token = RandomStringGenerator.Generate(64);
+        var created = DateTime.UtcNow;
+        var expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
+        var token = RandomStringGenerator.Generate(64);
         
         var chapter = await _unitOfWork.ChapterRepository
             .GetById(member.ChapterId)
@@ -156,8 +156,8 @@ public class AuthenticationService : IAuthenticationService
 
         _unitOfWork.MemberPasswordResetRequestRepository.Add(new MemberPasswordResetRequest
         {
-            Created = created,
-            Expires = expires,
+            CreatedUtc = created,
+            ExpiresUtc = expires,
             MemberId = member.Id,
             Token = token
         });
@@ -198,7 +198,7 @@ public class AuthenticationService : IAuthenticationService
 
         _unitOfWork.MemberPasswordResetRequestRepository.Delete(request);
 
-        if (request.Expires < DateTime.UtcNow)
+        if (request.ExpiresUtc < DateTime.UtcNow)
         {
             await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Failure(message);
