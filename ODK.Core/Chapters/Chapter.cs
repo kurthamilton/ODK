@@ -18,7 +18,15 @@ public class Chapter : IDatabaseEntity
 
     public TimeZoneInfo? TimeZone { get; set; }
 
+    public DateTime FromChapterTime(DateTime local) => TimeZone != null
+        ? TimeZoneInfo.ConvertTimeToUtc(local, TimeZone)
+        : local;
+
+    public DateTime? FromChapterTime(DateTime? local) => local != null ? FromChapterTime(local.Value) : null;
+
     public DateTime ToChapterTime(DateTime utc) => TimeZone != null
         ? TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone)
         : utc;
+
+    public DateTime? ToChapterTime(DateTime? utc) => utc != null ? ToChapterTime(utc.Value) : null;
 }

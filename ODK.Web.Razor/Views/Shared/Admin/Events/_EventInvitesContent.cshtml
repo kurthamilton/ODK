@@ -49,7 +49,7 @@
     {
         Chapter = Model.Chapter,
         EventId = Model.Event.Id,
-        ScheduledEmailDate = invites.ScheduledUtc?.Date,
-        ScheduledEmailTime = invites.ScheduledUtc?.TimeOfDay.ToString(@"hh\:mm")
+        ScheduledEmailDate = Model.Chapter.ToChapterTime(invites.ScheduledUtc)?.Date,
+        ScheduledEmailTime = Model.Chapter.ToChapterTime(invites.ScheduledUtc)?.TimeOfDay.ToString(@"hh\:mm")
     })
 </div>

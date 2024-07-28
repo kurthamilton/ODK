@@ -2,34 +2,32 @@
     margin-top: 30px;
 }
 
-
 .nav-tabs {
-  .nav-item {
-    margin-top: 1px; /* vertical margin if tabs overflow */
-  }
-
-  .nav-link {
-    background-color: $gray-100;
-    border: $nav-tabs-border-width solid $gray-300;
-    border-bottom-color: transparent;
-    border-radius: 0;
-    color: $body-color;
-    margin-right: 0.2rem;
-
-    &:hover {
-      border-top-color: $gray-300;
+    .nav-item {
+        margin-top: 1px; /* vertical margin if tabs overflow */
     }
 
-    &.active {
-      background-color: #fff;
-      border-bottom-color: #fff;
-      border-top-color: $primary;
-      cursor: default;
-    }
+    .nav-link {
+        background-color: transparent;
+        border: $nav-tabs-border-width solid var(--bs-border-color);
+        border-bottom-color: transparent;
+        border-radius: 0;
+        color: var(--bs-body-color);
+        margin-right: 0.2rem;
 
-    &:hover,
-    &.active {
-      border-top-width: 2px;
+        &:hover {
+            border-bottom-color: transparent;
+        }
+
+        &.active {
+            background-color: var(--bs-nav-tabs-link-active-bg);
+            border-bottom-color: transparent;
+            border-top-color: var(--bs-primary);
+            cursor: default;
+        }
+
+        &.active {
+            border-top-width: 2px;
+        }
     }
-  }
 }

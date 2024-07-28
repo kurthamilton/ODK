@@ -446,7 +446,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(eventId),
             x => x.EventEmailRepository.GetByEventId(eventId));
 
-        await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
+        var (chapter, chapterAdminMembers, currentMember) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(@event.ChapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(@event.ChapterId),
+            x => x.MemberRepository.GetById(currentMemberId));
+
+        AssertMemberIsChapterAdmin(currentMember, @event.ChapterId, chapterAdminMembers);
 
         if (eventEmail == null && date == null && string.IsNullOrEmpty(time))
         {
@@ -478,9 +483,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Failure("Scheduled date cannot be after event");
         }
 
-        eventEmail.ScheduledUtc = date != null
+        var scheduledLocal = date != null
             ? date + TimeOnly.Parse(time ?? "").ToTimeSpan()
             : null;
+
+        eventEmail.ScheduledUtc = chapter.FromChapterTime(scheduledLocal);
 
         if (eventEmail.EventId == default)
         {
