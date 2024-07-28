@@ -103,13 +103,10 @@ $navbar-dark-separator: rgba(255, 255, 255, .5);
     }
 }
 
-.account-links-container {
+.account-links {
     right: 0;
     position: absolute;
     padding: 1rem;
-}
-
-.account-links {
     cursor: pointer;
 
     .dropdown-menu {
@@ -135,7 +132,7 @@ $navbar-dark-separator: rgba(255, 255, 255, .5);
 
 .chapter {
   @include media-breakpoint-up(sm) {
-    .account-links-container {
+    .account-links {
       position: absolute;
     }
 
@@ -147,6 +144,8 @@ $navbar-dark-separator: rgba(255, 255, 255, .5);
 
 .anonymous-links {
     display: flex;
+    position: absolute;
+    right: $grid-gutter-width / 2;
     
     .anonymous-link {
         padding-top: 0.1rem;

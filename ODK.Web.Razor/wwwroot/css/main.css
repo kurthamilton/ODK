@@ -12094,13 +12094,10 @@ footer {
   padding-right: 0.5rem;
 }
 
-.account-links-container {
+.account-links {
   right: 0;
   position: absolute;
   padding: 1rem;
-}
-
-.account-links {
   cursor: pointer;
 }
 .account-links .dropdown-menu {
@@ -12121,7 +12118,7 @@ footer {
 }
 
 @media (min-width: 576px) {
-  .chapter .account-links-container {
+  .chapter .account-links {
     position: absolute;
   }
   .chapter .account-links__user {
@@ -12131,6 +12128,8 @@ footer {
 
 .anonymous-links {
   display: flex;
+  position: absolute;
+  right: 0.75rem;
 }
 .anonymous-links .anonymous-link {
   padding-top: 0.1rem;

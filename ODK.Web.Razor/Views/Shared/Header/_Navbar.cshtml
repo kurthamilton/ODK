@@ -33,22 +33,11 @@
                 type="button" data-bs-toggle="collapse" data-bs-target="#@id">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
-            <div class="account-links-container d-flex" data-bs-theme="dark">
-                <button type="button" class="d-flex align-items-center text-light btn-icon d-none me-3" data-theme-selector="light"
-                    data-bs-toggle="tooltip" data-bs-title="Light mode">
-                    <i class="fa-solid fa-sun"></i>
-                </button>
-                <button type="button" class="d-flex align-items-center text-light btn-icon me-3" data-theme-selector="dark"
-                    data-bs-toggle="tooltip" data-bs-title="Dark mode">
-                    <i class="fa-solid fa-moon"></i>
-                </button>
-
-                @if (!Model.HideAccountMenu)
-                {
-                    @await Html.PartialAsync("Header/_AccountMenu", accountMenu)
-                }
-            </div>            
+                
+            @if (!Model.HideAccountMenu)
+            {
+                @await Html.PartialAsync("Header/_AccountMenu", accountMenu)
+            }
         </div>
 
         <div class="collapse navbar-collapse flex-column" id="@id">
