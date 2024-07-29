@@ -8,7 +8,8 @@ public abstract class RepositoryBase
     protected RepositoryBase(OdkContext context)
     {
         _context = context;
-    }
+        _context.SavedChanges += OnContextSavedChanges;
+    }    
 
     protected void AddSingle<T>(T entity) where T : class => _context.Set<T>().Add(entity);
 
@@ -18,5 +19,11 @@ public abstract class RepositoryBase
 
     public void UpdateSingle<T>(T entity) where T : class => _context.Set<T>().Update(entity);
 
+    protected virtual void OnCommit()
+    {        
+    }
+
     protected IQueryable<T> Set<T>() where T : class => _context.Set<T>();
+
+    private void OnContextSavedChanges(object? sender, SavedChangesEventArgs e) => OnCommit();
 }

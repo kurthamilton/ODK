@@ -17,10 +17,11 @@ public class PaymentService : IPaymentService
 
     public async Task<ServiceResult> MakePayment(Member member, double amount, string cardToken, string reference)
     {
-        var (paymentSettings, chapter, country) = await _unitOfWork.RunAsync(
+        var (paymentSettings, chapter) = await _unitOfWork.RunAsync(
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(member.ChapterId),
-            x => x.ChapterRepository.GetById(member.ChapterId),
-            x => x.CountryRepository.GetByChapterId(member.ChapterId));
+            x => x.ChapterRepository.GetById(member.ChapterId));
+
+        var country = await _unitOfWork.CountryRepository.GetById(chapter.CountryId).RunAsync();
 
         if (paymentSettings == null || paymentSettings.Provider == null)
         {

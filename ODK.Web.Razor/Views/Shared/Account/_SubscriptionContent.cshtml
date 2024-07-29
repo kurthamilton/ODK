@@ -8,7 +8,12 @@
 @model ODK.Web.Razor.Models.Account.SubscriptionContentViewModel
 @inject IChapterService ChapterService
 @{
-    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(Model.CurrentMember.Id, Model.CurrentMember.ChapterId);
+    if (Model.CurrentMember.ChapterId != Model.Chapter.Id)
+    {
+        return;
+    }
+
+    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(Model.CurrentMember.Id, Model.Chapter);
     
     var (memberSubscription, chapterSubscriptions, country, paymentSettings) = 
         (dto.MemberSubscription, dto.ChapterSubscriptions, dto.Country, dto.PaymentSettings);

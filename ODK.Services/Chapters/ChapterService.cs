@@ -58,12 +58,14 @@ public class ChapterService : IChapterService
         };
     }
 
-    public async Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Guid chapterId)
+    public async Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Chapter chapter)
     {
+        var chapterId = chapter.Id;
+
         var (memberSubscription, chapterSubscriptions, country, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
-            x => x.CountryRepository.GetByChapterId(chapterId),
+            x => x.CountryRepository.GetById(chapter.CountryId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 

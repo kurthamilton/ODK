@@ -10,7 +10,7 @@
 @{
     var memberId = User.MemberId();
     
-    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(memberId, Model.Id);
+    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(memberId, Model);
 
     var (subscriptions, country, membershipSettings) = (dto.ChapterSubscriptions, dto.Country, dto.MembershipSettings);
 }

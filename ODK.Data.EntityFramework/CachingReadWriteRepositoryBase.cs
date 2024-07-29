@@ -1,20 +1,24 @@
 ﻿using ODK.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
+using ODK.Data.EntityFramework.Caching;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework;
-public abstract class ReadWriteRepositoryBase<T> : WriteRepositoryBase<T>, IReadWriteRepository<T> where T : class, IDatabaseEntity
+public abstract class CachingReadWriteRepositoryBase<T> : CachingWriteRepositoryBase<T, Guid>, IReadWriteRepository<T>
+    where T : class, IDatabaseEntity
 {
-    protected ReadWriteRepositoryBase(OdkContext context) 
-        : base(context)
+    private readonly EntityCache<Guid, T> _cache;
+
+    protected CachingReadWriteRepositoryBase(OdkContext context, EntityCache<Guid, T> cache)
+        : base(context, cache)
     {
+        _cache = cache;
     }
 
     public override void Add(T entity)
     {
         SetId(entity);
-        
         base.Add(entity);
     }
 
@@ -30,11 +34,15 @@ public abstract class ReadWriteRepositoryBase<T> : WriteRepositoryBase<T>, IRead
 
     public virtual IDeferredQuerySingle<T> GetById(Guid id) => Set()
         .Where(x => x.Id == id)
-        .DeferredSingle();
+        .DeferredSingle(
+            () => _cache.Get(id),
+            _cache.Set);
 
     public virtual IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid id) => Set()
         .Where(x => x.Id == id)
-        .DeferredSingleOrDefault();
+        .DeferredSingleOrDefault(
+            () => _cache.Get(id),
+            _cache.Set);
 
     public void Upsert(T entity)
     {

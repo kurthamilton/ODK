@@ -299,10 +299,9 @@ public class MemberService : IMemberService
 
         await _unitOfWork.SaveChangesAsync();
 
-        var (chapter, country) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(member.ChapterId),
-            x => x.CountryRepository.GetByChapterId(member.ChapterId));
-
+        var chapter = await _unitOfWork.ChapterRepository.GetById(member.ChapterId).RunAsync();
+        var country = await _unitOfWork.CountryRepository.GetById(chapter.CountryId).RunAsync();
+        
         await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.SubscriptionConfirmation, new Dictionary<string, string>
         {
             { "chapter.name", chapter.Name },

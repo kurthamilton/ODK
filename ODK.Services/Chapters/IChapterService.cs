@@ -10,7 +10,7 @@ public interface IChapterService
 
     Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid? currentMemberId, Guid chapterId);
 
-    Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Guid chapterId);
+    Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Chapter chapter);
 
     Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);
 
