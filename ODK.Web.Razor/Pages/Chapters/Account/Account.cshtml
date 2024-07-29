@@ -1,9 +1,9 @@
 ﻿@page "/{chapterName}/Account"
 @attribute [Authorize]
-@using ODK.Web.Razor.Models.Components
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
-@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
 @model AccountModel
 @{
     Layout = "_ChapterLayout";
@@ -12,7 +12,7 @@
     if (Model.CurrentMember == null)
     {
         return;
-    }
+    }    
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

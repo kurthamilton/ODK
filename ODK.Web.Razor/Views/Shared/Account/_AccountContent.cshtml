@@ -1,6 +1,12 @@
 ﻿@using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Members
 @model ODK.Web.Razor.Models.Account.AccountContentViewModel
+@{
+    if (Model.CurrentMember.ChapterId != Model.Chapter.Id)
+    {
+        return;
+    }
+}
 
 <div class="row row-cols-2">
     <div class="col">

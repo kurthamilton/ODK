@@ -13,14 +13,15 @@
         return;
     }
 
-    var chapterContext = new ChapterPageContext(RequestCache, Context);
-    var chapter = await chapterContext.GetChapterAsync();
-    if (chapter == null)
+    var member = await RequestCache.GetMemberAsync(memberId.Value);
+    if (member == null)
     {
         return;
     }
 
-    var membershipSettings = await RequestCache.GetChapterMembershipSettingsAsync(chapter.Id);
+    var chapter = await RequestCache.GetChapterAsync(member.ChapterId);
+
+    var membershipSettings = await RequestCache.GetChapterMembershipSettingsAsync(member.ChapterId);
     if (membershipSettings == null)
     {
         return;
