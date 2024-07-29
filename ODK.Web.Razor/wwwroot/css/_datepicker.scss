@@ -1,0 +1,28 @@
+﻿:root {
+    --odk-datepicker-bg: var(--bs-body-bg);
+    --odk-datepicker-bg-hover: #{darken($body-bg, 10%)};
+}
+
+[data-bs-theme="dark"] {
+    --odk-datepicker-bg: var(--bs-body-bg);
+    --odk-datepicker-bg-hover: #{lighten($body-bg-dark, 10%)};
+}
+
+.datepicker {
+    border: 1px solid var(--bs-border-color);
+}
+
+.datepicker-picker,
+.datepicker-cell.focused:not(.selected),
+.datepicker-header .datepicker-controls .button {
+    background-color: var(--odk-datepicker-bg);
+    color: var(--bs-body-color);
+}
+
+.datepicker-cell:not(.selected),
+.datepicker-cell.focused:not(.selected),
+.datepicker-header .datepicker-controls .button {
+    &:hover {
+        background-color: var(--odk-datepicker-bg-hover) !important;
+    }
+}
