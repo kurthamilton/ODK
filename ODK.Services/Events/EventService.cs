@@ -1,4 +1,6 @@
-﻿using ODK.Core.Chapters;
+﻿using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Exceptions;
 using ODK.Core.Members;
@@ -10,6 +12,9 @@ namespace ODK.Services.Events;
 
 public class EventService : IEventService
 {
+    private static readonly Regex HideCommentRegex = new Regex("http://|https://|<script>.*</script>|<img", 
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     private readonly IAuthorizationService _authorizationService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -18,6 +23,67 @@ public class EventService : IEventService
     {
         _authorizationService = authorizationService;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<ServiceResult> AddComment(Guid currentMemberId, Guid eventId, string comment)
+    {
+        var (member, @event) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.EventRepository.GetById(eventId));
+
+        var settings = await _unitOfWork.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId).RunAsync();
+        if (settings?.DisableComments == true || !@event.CanComment || !@event.IsAuthorized(member))
+        {
+            return ServiceResult.Failure("You cannot comment on this event");
+        }        
+
+        if (string.IsNullOrWhiteSpace(comment))
+        {
+            return ServiceResult.Failure("Comment required");
+        }
+
+        var hidden = HideCommentRegex.IsMatch(comment);
+
+        _unitOfWork.EventCommentRepository.Add(new EventComment
+        {
+            CreatedUtc = DateTime.UtcNow,
+            EventId = eventId,
+            Hidden = hidden,
+            MemberId = currentMemberId,
+            Text = comment
+        });
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<EventCommentsDto> GetCommentsDto(Member? member, Event @event)
+    {
+        var settings = await _unitOfWork.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId).RunAsync();
+        if (settings?.DisableComments == true || !@event.IsAuthorized(member) || !@event.CanComment)
+        {
+            return new EventCommentsDto
+            {
+                Comments = null,
+                Members = null
+            };
+        }
+
+        var comments = await _unitOfWork.EventCommentRepository.GetByEventId(@event.Id).RunAsync();
+        var memberIds = comments
+            .Select(x => x.MemberId)
+            .Distinct()
+            .ToArray();
+
+        var members = memberIds.Length > 0
+            ? await _unitOfWork.MemberRepository.GetByChapterId(@event.ChapterId, memberIds).RunAsync()
+            : [];
+
+        return new EventCommentsDto
+        {
+            Comments = comments,
+            Members = members
+        };
     }
 
     public async Task<Event> GetEvent(Guid chapterId, Guid eventId)

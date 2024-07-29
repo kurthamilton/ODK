@@ -36,6 +36,10 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         .Where(x => x.ChapterId == chapterId)
         .DeferredMultiple();
 
+    public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId, IEnumerable<Guid> memberIds) => Set()
+        .Where(x => x.ChapterId == chapterId && memberIds.Contains(x.Id))
+        .DeferredMultiple();
+
     private IQueryable<Member> Query(bool searchAll)
     {
         if (searchAll)

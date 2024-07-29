@@ -28,6 +28,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IEmailRepository> _emailRepository;
     private readonly Lazy<IErrorPropertyRepository> _errorPropertyRepository;
     private readonly Lazy<IErrorRepository> _errorRepository;
+    private readonly Lazy<IEventCommentRepository> _eventCommentRepository;
     private readonly Lazy<IEventEmailRepository> _eventEmailRepository;
     private readonly Lazy<IEventInviteRepository> _eventInviteRepository;
     private readonly Lazy<IEventRepository> _eventRepository;
@@ -69,6 +70,7 @@ public class UnitOfWork : IUnitOfWork
         _emailRepository = new(() => new EmailRepository(_context));
         _errorPropertyRepository = new(() => new ErrorPropertyRepository(_context));
         _errorRepository = new(() => new ErrorRepository(_context));
+        _eventCommentRepository = new(() => new EventCommentRepository(_context));
         _eventEmailRepository = new(() => new EventEmailRepository(_context));
         _eventInviteRepository = new(() => new EventInviteRepository(_context));
         _eventRepository = new(() => new EventRepository(_context));
@@ -107,6 +109,7 @@ public class UnitOfWork : IUnitOfWork
     public IEmailRepository EmailRepository => _emailRepository.Value;
     public IErrorPropertyRepository ErrorPropertyRepository => _errorPropertyRepository.Value;
     public IErrorRepository ErrorRepository => _errorRepository.Value;
+    public IEventCommentRepository EventCommentRepository => _eventCommentRepository.Value;
     public IEventEmailRepository EventEmailRepository => _eventEmailRepository.Value;
     public IEventInviteRepository EventInviteRepository => _eventInviteRepository.Value;
     public IEventRepository EventRepository => _eventRepository.Value;

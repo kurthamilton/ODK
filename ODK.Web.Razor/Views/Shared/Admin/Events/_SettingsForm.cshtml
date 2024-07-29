@@ -28,3 +28,8 @@
     @Html.TextAreaFor(x => x.DefaultDescription, new { @class = "form-control", rows = 8 })
     @Html.ValidationMessageFor(x => x.DefaultDescription)
 </div>
+
+<div class="mb-3 form-check">
+    @Html.CheckBoxFor(x => x.DisableComments, new { @class = "form-check-input" })
+    @Html.LabelFor(x => x.DisableComments, new { @class = "form-check-label" })
+</div>

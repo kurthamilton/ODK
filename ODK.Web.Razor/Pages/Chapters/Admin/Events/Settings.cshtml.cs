@@ -27,7 +27,8 @@ public class SettingsModel : AdminPageModel
             DefaultDayOfWeek = viewModel.DefaultDayOfWeek,
             DefaultDescription = viewModel.DefaultDescription,
             DefaultScheduledEmailDayOfWeek = viewModel.DefaultScheduledEmailDayOfWeek,
-            DefaultScheduledEmailTimeOfDay = viewModel.DefaultScheduledEmailTimeOfDay
+            DefaultScheduledEmailTimeOfDay = viewModel.DefaultScheduledEmailTimeOfDay,
+            DisableComments = viewModel.DisableComments
         });
 
         AddFeedback(new FeedbackViewModel("Event settings updated", FeedbackType.Success));

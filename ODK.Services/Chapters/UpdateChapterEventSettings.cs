@@ -9,4 +9,6 @@ public class UpdateChapterEventSettings
     public required DayOfWeek? DefaultScheduledEmailDayOfWeek { get; set; }
 
     public required string? DefaultScheduledEmailTimeOfDay { get; set; }
+
+    public required bool DisableComments { get; set; }
 }

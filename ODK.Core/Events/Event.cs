@@ -4,6 +4,8 @@ namespace ODK.Core.Events;
 
 public class Event : IDatabaseEntity
 {
+    public bool CanComment => !IsPublic;
+
     public Guid ChapterId { get; set; }
 
     public string CreatedBy { get; set; } = "";

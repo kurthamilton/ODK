@@ -9,4 +9,5 @@ public interface IMemberRepository : IReadWriteRepository<Member>
     IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress);
     IDeferredQuerySingleOrDefault<Member> GetByIdOrDefault(Guid memberId, bool searchAll);
     IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId, bool searchAll = false);
+    IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId, IEnumerable<Guid> memberIds);
 }

@@ -403,6 +403,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         settings.DefaultDescription = model.DefaultDescription;
         settings.DefaultScheduledEmailDayOfWeek = model.DefaultScheduledEmailDayOfWeek;
         settings.DefaultScheduledEmailTimeOfDay = model.DefaultScheduledEmailTimeOfDay;
+        settings.DisableComments = model.DisableComments;
 
         if (settings.ChapterId == default)
         {

@@ -11,6 +11,8 @@ public class ChapterEventSettings
     
     public string? DefaultScheduledEmailTimeOfDay { get; set; }    
 
+    public bool DisableComments { get; set; }
+
     public DateTime? GetScheduledDateTime(DateTime? date)
     {
         if (!TimeOnly.TryParse(DefaultScheduledEmailTimeOfDay, out var time))

@@ -1,5 +1,7 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Members
+@using ODK.Core.Utils
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Events
 @model ODK.Web.Razor.Models.Events.EventContentViewModel
 
 <h2>@Model.Venue.Name</h2>
@@ -21,6 +23,55 @@
     <p *ngIf="event.imageUrl">
         <img src="@Model.Event.ImageUrl" style="max-height: 500px;" />
     </p>
+}
+
+@if (Model.Event.CanComment && Model.Comments?.Comments != null)
+{
+    var memberDictionary = Model.Comments.Members != null
+        ? Model.Comments.Members.ToDictionary(x => x.Id)
+        : new Dictionary<Guid, Member>();
+
+    <h3 class="mt-5">
+        Comments
+        @if (Model.CurrentMember != null)
+        {
+            @await Html.PartialAsync("Components/_FeatureTooltip",
+                new FeatureTooltipViewModel
+                {
+                    CurrentMemberId = Model.CurrentMember.Id,
+                    Name = "Events.Comments"
+                })
+        }        
+    </h3>
+    @foreach (var comment in Model.Comments.Comments)
+    {
+        if (!memberDictionary.TryGetValue(comment.MemberId, out var member))
+        {
+            continue;
+        }
+
+        <div class="mb-3">
+            <div>
+                <strong>@member.FullName</strong>
+                <span>
+                    @Model.Chapter.ToChapterTime(comment.CreatedUtc).ToString("dddd dd MMMM yyyy HH:mm")
+                </span>
+            </div>
+            <div>
+                @comment.Text
+            </div>
+        </div>
+    }
+
+    <div>
+        <form action="/@Model.Chapter.Name/Events/@Model.Event.Id/Comments" method="post">
+            @await Html.PartialAsync("Events/_EventCommentForm", new EventCommentFormViewModel
+            {
+                Text = ""
+            })
+            <button class="btn btn-primary">Submit</button>
+        </form>
+    </div>
 }
 
 @if (!string.IsNullOrEmpty(Model.Venue.MapQuery))
