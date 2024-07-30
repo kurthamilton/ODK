@@ -268,7 +268,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var (chapterAdminMembers, currentMember, members) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberRepository.GetByChapterId(chapterId));
+            x => x.MemberRepository.GetAdminMembersByChapterId(chapterId));
         
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 

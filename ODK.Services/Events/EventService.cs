@@ -97,31 +97,10 @@ public class EventService : IEventService
 
     public async Task<EventCommentsDto> GetCommentsDto(Member? member, Event @event)
     {
-        var settings = await _unitOfWork.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId).RunAsync();
-        if (settings?.DisableComments == true || !@event.IsAuthorized(member) || !@event.CanComment)
-        {
-            return new EventCommentsDto
-            {
-                Comments = null,
-                Members = null
-            };
-        }
-
-        var comments = await _unitOfWork.EventCommentRepository.GetByEventId(@event.Id).RunAsync();
-        var memberIds = comments
-            .Select(x => x.MemberId)
-            .Distinct()
-            .ToArray();
-
-        var members = memberIds.Length > 0
-            ? await _unitOfWork.MemberRepository.GetByChapterId(@event.ChapterId, memberIds).RunAsync()
-            : [];
-
-        return new EventCommentsDto
-        {
-            Comments = comments,
-            Members = members
-        };
+        var (settings, comments) = await _unitOfWork.RunAsync(
+            x => x.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.EventCommentRepository.GetByEventId(@event.Id));
+        return await GetCommentsDto(member, @event, settings, comments);
     }
 
     public async Task<Event> GetEvent(Guid chapterId, Guid eventId)
@@ -135,6 +114,30 @@ public class EventService : IEventService
         return @event;
     }
     
+    public async Task<EventDto> GetEventDto(Member? member, Event @event)
+    {
+        var (venue, settings, comments, hosts, adminMembers) = await _unitOfWork.RunAsync(
+            x => x.VenueRepository.GetById(@event.VenueId),
+            x => x.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.EventCommentRepository.GetByEventId(@event.Id),
+            x => x.EventHostRepository.GetByEventId(@event.Id),
+            x => x.MemberRepository.GetAdminMembersByChapterId(@event.ChapterId));
+
+        var commentsDto = await GetCommentsDto(member, @event, settings, comments);
+        var adminMemberDictionary = adminMembers.ToDictionary(x => x.Id);
+        var hostMembers = hosts
+            .Where(x => adminMemberDictionary.ContainsKey(x.MemberId))
+            .Select(x => adminMemberDictionary[x.MemberId])
+            .ToArray();
+
+        return new EventDto
+        {
+            Comments = commentsDto,
+            Hosts = hostMembers,
+            Venue = venue
+        };
+    }
+
     public async Task<EventResponsesDto> GetEventResponsesDto(Event @event)
     {
         var (responses, members) = await _unitOfWork.RunAsync(
@@ -249,5 +252,32 @@ public class EventService : IEventService
         }
 
         return responseType;
+    }
+
+    private async Task<EventCommentsDto> GetCommentsDto(Member? member, Event @event, ChapterEventSettings settings, IReadOnlyCollection<EventComment> comments)
+    {        
+        if (settings?.DisableComments == true || !@event.IsAuthorized(member) || !@event.CanComment)
+        {
+            return new EventCommentsDto
+            {
+                Comments = null,
+                Members = null
+            };
+        }
+
+        var memberIds = comments
+            .Select(x => x.MemberId)
+            .Distinct()
+            .ToArray();
+
+        var members = memberIds.Length > 0
+            ? await _unitOfWork.MemberRepository.GetByChapterId(@event.ChapterId, memberIds).RunAsync()
+            : [];
+
+        return new EventCommentsDto
+        {
+            Comments = comments,
+            Members = members
+        };
     }
 }

@@ -1,5 +1,15 @@
-﻿@using ODK.Web.Razor.Models.Admin.Events
+﻿@using ODK.Core.Members
+@using ODK.Web.Razor.Models.Admin.Events
 @model ODK.Web.Razor.Models.Admin.Events.EventViewModel
+@{
+    var hostOptions = Model.ChapterAdminMembers?.Members
+        .Select(x => new SelectListItem
+        {
+            Value = x.Id.ToString(),
+            Text = x.FullName
+        })
+        .ToArray() ?? [];
+}
 
 @await Html.PartialAsync("Admin/Events/_EventHeader", Model)
 
@@ -13,6 +23,8 @@
         CurrentMemberId = Model.CurrentMember.Id,
         Date = Model.Event.Date,
         Description = Model.Event.Description,
+        Hosts = Model.Hosts?.Select(x => x.MemberId).ToList() ?? [],
+        HostOptions = hostOptions,
         ImageUrl = Model.Event.ImageUrl,
         Name = Model.Event.Name,
         Public = Model.Event.IsPublic,

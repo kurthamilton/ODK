@@ -8,6 +8,8 @@ public class CreateEvent
 
     public string? Description { get; set; }
 
+    public List<Guid> Hosts { get; set; } = new();
+
     public string? ImageUrl { get; set; }
 
     public bool IsPublic { get; set; }

@@ -14,7 +14,9 @@ public interface IEventAdminService
     Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid currentMemberId, Guid chapterId, IReadOnlyCollection<Guid> eventIds);
 
     Task<Event> GetEvent(Guid currentMemberId, Guid id);
-    
+
+    Task<IReadOnlyCollection<EventHost>> GetEventHosts(Guid currentMemberId, Event @event);
+
     Task<EventInvitesDto> GetEventInvites(Guid currentMemberId, Guid eventId);
 
     Task<EventResponsesDto> GetEventResponsesDto(Guid currentMemberId, Guid eventId);

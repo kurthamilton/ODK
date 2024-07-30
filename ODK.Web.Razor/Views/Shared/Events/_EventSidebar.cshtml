@@ -5,6 +5,7 @@
 @using ODK.Services.Events
 @using ODK.Services.Members
 @using ODK.Web.Razor.Models.Events
+@using ODK.Web.Razor.Models.Members
 @model ODK.Web.Razor.Models.Events.EventSidebarViewModel
 @inject IAuthorizationService AuthorizationService
 @inject IEventService EventService
@@ -34,6 +35,30 @@
 }
 
 <div class="sidebar">
+    @if (Model.Hosts.Count > 0)
+    {
+        <div class="card sidebar-card">
+            <div class="card-header">Hosts</div>
+            <div class="card-body card-body-sm">
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var host in Model.Hosts.OrderBy(x => x.FullName))
+                    {                    
+                        <div class="d-flex align-items-center">
+                            @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, host)
+                            {
+                                ImageHeight = 50,
+                                MaxWidth = 50
+                            })
+                            <span class="ms-2">
+                                <a href="/@Model.Chapter.Name/Knitwits/@host.Id" target="_blank">@host.FullName</a>
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
     <div class="card sidebar-card">
         <div class="card-header">RSVP</div>
         <div class="card-body card-body-sm">

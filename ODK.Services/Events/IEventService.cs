@@ -11,7 +11,9 @@ public interface IEventService
     Task<EventCommentsDto> GetCommentsDto(Member? member, Event @event);
 
     Task<Event> GetEvent(Guid chapterId, Guid eventId);
-    
+
+    Task<EventDto> GetEventDto(Member? member, Event @event);
+
     Task<EventResponsesDto> GetEventResponsesDto(Event @event);
 
     Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Chapter chapter);

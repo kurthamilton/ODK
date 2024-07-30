@@ -12,7 +12,7 @@ public class EventContentViewModel
         Member? currentMember,
         Chapter chapter, 
         Event @event, 
-        Venue venue, 
+        Venue venue,         
         EventCommentsDto? comments)
     {
         Chapter = chapter;
@@ -28,7 +28,7 @@ public class EventContentViewModel
 
     public Member? CurrentMember { get; }
 
-    public Event Event { get; }    
+    public Event Event { get; }        
 
     public Venue Venue { get; }
 }

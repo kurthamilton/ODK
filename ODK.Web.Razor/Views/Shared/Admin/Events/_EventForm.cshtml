@@ -56,3 +56,14 @@
     @Html.LabelFor(x => x.ImageUrl, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.ImageUrl, new { @class = "form-control" })
 </div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Hosts, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_FeatureTooltip", 
+        new FeatureTooltipViewModel 
+        {
+            CurrentMemberId = Model.CurrentMemberId, 
+            Name = "Events.Hosts"
+        })
+    @Html.ListBoxFor(x => x.Hosts, Model.HostOptions, new { @class = "form-control" })
+</div>

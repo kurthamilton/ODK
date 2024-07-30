@@ -1,11 +1,18 @@
 ﻿@page "/{chapterName}/Admin/Events/{id:guid}"
+@using ODK.Services.Chapters
+@using ODK.Services.Events
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Admin.Events
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventModel
+@inject IChapterAdminService ChapterAdminService
+@inject IEventAdminService EventAdminService
 @{
     Layout = "Admin/Events/_EventAdminLayout";
     Model.Title = "Edit Event | Admin";
+
+    var chapterAdminMembers = await ChapterAdminService.GetChapterAdminMemberDtos(Model.CurrentMember.Id, Model.Chapter.Id);
+    var hosts = await EventAdminService.GetEventHosts(Model.CurrentMember.Id, Model.Event);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -16,5 +23,5 @@
         new MenuItem { Text = Model.Event.Name }
     },
     Content = await Html.PartialAsync("Admin/Events/_EventContent", 
-        new EventViewModel(Model.Chapter, Model.CurrentMember, Model.Event))
+        new EventViewModel(Model.Chapter, Model.CurrentMember, Model.Event, chapterAdminMembers, hosts))
 })

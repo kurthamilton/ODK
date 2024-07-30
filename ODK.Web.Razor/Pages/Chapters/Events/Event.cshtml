@@ -14,8 +14,7 @@
     Layout = "_ChapterLayout";
     Model.Title = Model.Event.Name;    
 
-    var venue = await VenueService.GetVenueAsync(Model.CurrentMember, Model.Event);
-    var comments = await EventService.GetCommentsDto(Model.CurrentMember, Model.Event);
+    var dto = await EventService.GetEventDto(Model.CurrentMember, Model.Event);
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
@@ -27,6 +26,6 @@
         new MenuItem { Link = $"/{Model.Chapter.Name}/Events", Text = "Events" },
         new MenuItem { Text = Model.Event.Name }
     },
-    Content = await Html.PartialAsync("Events/_EventContent", new EventContentViewModel(Model.CurrentMember, Model.Chapter, Model.Event, venue, comments)),
-    SidebarContent = await Html.PartialAsync("Events/_EventSidebar", new EventSidebarViewModel(Model.Chapter, Model.Event, Model.CurrentMember))
+    Content = await Html.PartialAsync("Events/_EventContent", new EventContentViewModel(Model.CurrentMember, Model.Chapter, Model.Event, dto.Venue, dto.Comments)),
+    SidebarContent = await Html.PartialAsync("Events/_EventSidebar", new EventSidebarViewModel(Model.Chapter, Model.Event, Model.CurrentMember, dto.Hosts))
 })

@@ -24,6 +24,7 @@ public class EventModel : EventAdminPageModel
             ChapterId = viewModel.ChapterId,
             Date = viewModel.Date,
             Description = viewModel.Description,
+            Hosts = viewModel.Hosts,
             ImageUrl = viewModel.ImageUrl,
             IsPublic = viewModel.Public,
             Name = viewModel.Name,

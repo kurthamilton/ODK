@@ -110,6 +110,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return @event;
     }
     
+    public async Task<IReadOnlyCollection<EventHost>> GetEventHosts(Guid currentMemberId, Event @event)
+    {
+        return await GetChapterAdminRestrictedContent(currentMemberId, @event.ChapterId,
+            x => x.EventHostRepository.GetByEventId(@event.Id));
+    }
+
     public async Task<EventInvitesDto> GetEventInvites(Guid currentMemberId, Guid eventId)
     {
         var (@event, invites, eventEmail) = await _unitOfWork.RunAsync(
@@ -387,7 +393,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(id),
             x => x.VenueRepository.GetById(model.VenueId));
 
-        await AssertMemberIsChapterAdmin(memberId, @event.ChapterId);
+        var (chapterAdminMembers, adminMembers, currentMember, hosts) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(@event.ChapterId),
+            x => x.MemberRepository.GetAdminMembersByChapterId(@event.ChapterId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.EventHostRepository.GetByEventId(@event.Id));
+
+        AssertMemberIsChapterAdmin(currentMember, @event.ChapterId, chapterAdminMembers);
 
         @event.Date = model.Date;
         @event.Description = model.Description;
@@ -395,12 +407,42 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.IsPublic = model.IsPublic;
         @event.Name = model.Name;
         @event.Time = model.Time;
-        @event.VenueId = model.VenueId;
+        @event.VenueId = model.VenueId;        
 
         var validationResult = ValidateEvent(@event, venue);
         if (!validationResult.Success)
         {
             return validationResult;
+        }
+
+        var adminMemberDictionary = adminMembers.ToDictionary(x => x.Id);
+        var hostDictionary = hosts.ToDictionary(x => x.MemberId);
+
+        foreach (var host in model.Hosts)
+        {
+            if (!adminMemberDictionary.ContainsKey(host))
+            {
+                return ServiceResult.Failure("Host not found");
+            }
+
+            if (hostDictionary.ContainsKey(host))
+            {
+                continue;
+            }
+
+            _unitOfWork.EventHostRepository.Add(new EventHost
+            {                
+                EventId = @event.Id,
+                MemberId = host
+            });
+        }
+
+        foreach (var host in hosts)
+        {
+            if (!model.Hosts.Contains(host.MemberId))
+            {
+                _unitOfWork.EventHostRepository.Delete(host);
+            }
         }
 
         _unitOfWork.EventRepository.Update(@event);

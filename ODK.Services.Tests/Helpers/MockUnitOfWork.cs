@@ -39,6 +39,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IErrorRepository ErrorRepository => Mock.Object.ErrorRepository;
     public IEventCommentRepository EventCommentRepository => Mock.Object.EventCommentRepository;
     public IEventEmailRepository EventEmailRepository => Mock.Object.EventEmailRepository;
+    public IEventHostRepository EventHostRepository => Mock.Object.EventHostRepository;
     public IEventInviteRepository EventInviteRepository => Mock.Object.EventInviteRepository;
     public IEventRepository EventRepository => Mock.Object.EventRepository;
     public IEventResponseRepository EventResponseRepository => Mock.Object.EventResponseRepository;

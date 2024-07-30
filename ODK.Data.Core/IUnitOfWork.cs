@@ -27,6 +27,7 @@ public interface IUnitOfWork
     IErrorRepository ErrorRepository { get; }
     IEventCommentRepository EventCommentRepository { get; }
     IEventEmailRepository EventEmailRepository { get; }
+    IEventHostRepository EventHostRepository { get; }
     IEventInviteRepository EventInviteRepository { get; }
     IEventRepository EventRepository { get; }
     IEventResponseRepository EventResponseRepository { get; }
