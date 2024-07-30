@@ -56,10 +56,25 @@
                 <span>
                     @Model.Chapter.ToChapterTime(comment.CreatedUtc).ToString("dddd dd MMMM yyyy HH:mm")
                 </span>
+                <span>
+                    <a data-bs-toggle="collapse" href="#comment-reply-@comment.Id" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        Reply
+                    </a>
+                </span>
             </div>
             <div>
                 @comment.Text
             </div>
+            <div class="collapse" id="comment-reply-@comment.Id">
+                <form action="/@Model.Chapter.Name/Events/@Model.Event.Id/Comments" method="post">
+                    @await Html.PartialAsync("Events/_EventCommentForm", new EventCommentFormViewModel
+                    {
+                        Parent  = comment.Id,
+                        Text = ""
+                    })
+                    <button class="btn btn-primary">Submit</button>
+                </form>
+            </div>            
         </div>
     }
 

@@ -14,6 +14,9 @@ public class AdminMemberFormViewModel
     [DisplayName("Receive contact emails")]
     public bool ReceiveContactEmails { get; set; }
 
+    [DisplayName("Receive event comment emails")]
+    public bool ReceiveEventCommentEmails { get; set; }
+
     [DisplayName("Receive new member emails")]
     public bool ReceiveNewMemberEmails { get; set; }
 

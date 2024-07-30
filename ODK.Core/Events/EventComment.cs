@@ -12,5 +12,7 @@ public class EventComment : IDatabaseEntity
 
     public Guid MemberId { get; set; }
 
+    public Guid? ParentEventCommentId { get; set; }
+
     public string Text { get; set; } = "";
 }

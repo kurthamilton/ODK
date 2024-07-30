@@ -11,5 +11,6 @@ public enum EmailType
     NewMemberAdmin = 6,
     EmailAddressUpdate = 7,
     Layout = 8,
-    SubscriptionConfirmation = 9
+    SubscriptionConfirmation = 9,
+    EventComment = 10
 }

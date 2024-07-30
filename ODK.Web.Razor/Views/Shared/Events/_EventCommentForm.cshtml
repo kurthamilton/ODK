@@ -3,6 +3,8 @@
 @{
 }
 
+@Html.HiddenFor(x => x.Parent)
+
 <div class="form-group mb-3">
     @Html.TextAreaFor(x => x.Text, new { @class = "form-control", placeholder = "Add comment" })
     @Html.ValidationMessageFor(x => x.Text)

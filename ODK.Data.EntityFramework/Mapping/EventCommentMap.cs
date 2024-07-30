@@ -25,6 +25,10 @@ public class EventCommentMap : IEntityTypeConfiguration<EventComment>
             .HasForeignKey(x => x.EventId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne<EventComment>()
+            .WithMany()
+            .HasForeignKey(x => x.ParentEventCommentId);
+
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(x => x.MemberId)

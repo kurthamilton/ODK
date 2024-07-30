@@ -6,6 +6,8 @@ public class UpdateChapterAdminMember
 
     public bool ReceiveContactEmails { get; set; }
 
+    public bool ReceiveEventCommentEmails { get; set; }
+
     public bool ReceiveNewMemberEmails { get; set; }
 
     public bool SendNewMemberEmails { get; set; }

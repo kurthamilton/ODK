@@ -353,6 +353,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         existing.AdminEmailAddress = model.AdminEmailAddress;
         existing.ReceiveContactEmails = model.ReceiveContactEmails;
+        existing.ReceiveEventCommentEmails = model.ReceiveEventCommentEmails;
         existing.ReceiveNewMemberEmails = model.ReceiveNewMemberEmails;
         existing.SendNewMemberEmails = model.SendNewMemberEmails;
 

@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services.Exceptions;
@@ -81,6 +82,26 @@ public class EmailService : IEmailService
         var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveContactEmails), adminMembers);
 
         await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
+    }
+
+    public async Task SendEventCommentEmail(Chapter chapter, Member? replyToMember, EventComment comment,
+        IDictionary<string, string> parameters)
+    {
+        var (email, chapterEmail, chapterAdminMembers, adminMembers) = await _unitOfWork.RunAsync(
+            x => x.EmailRepository.GetByType(EmailType.EventComment),
+            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.EventComment),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberRepository.GetAdminMembersByChapterId(chapter.Id));
+
+        email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
+
+        var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveEventCommentEmails), adminMembers);
+        if (replyToMember != null)
+        {
+            to = to.Append(new EmailAddressee(replyToMember.EmailAddress, replyToMember.FullName));
+        }
+
+        await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, bcc: true);
     }
 
     public async Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, EmailType type, 

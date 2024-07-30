@@ -136,6 +136,12 @@ public static class DependencyConfig
             UnsubscribeUrlFormat = urls.Unsubscribe
         });
 
+        services.AddSingleton(new EventServiceSettings
+        {
+            BaseUrl = urls.AppBase,
+            EventUrlFormat = urls.Event
+        });
+
         services.AddSingleton(new MemberServiceSettings
         {
             ActivateAccountUrl = $"{urls.AppBase}{urls.ActivateAccount}",

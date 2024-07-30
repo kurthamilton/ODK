@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Events;
 using ODK.Core.Members;
 
 namespace ODK.Services.Emails;
@@ -21,6 +22,9 @@ public interface IEmailService
         string body);
 
     Task SendContactEmail(Chapter chapter, string from, string message, 
+        IDictionary<string, string> parameters);
+
+    Task SendEventCommentEmail(Chapter chapter, Member? replyToMember, EventComment comment,
         IDictionary<string, string> parameters);
 
     Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, EmailType type, 

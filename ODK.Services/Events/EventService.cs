@@ -1,5 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Exceptions;
@@ -7,6 +6,7 @@ using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
+using ODK.Services.Emails;
 
 namespace ODK.Services.Events;
 
@@ -16,22 +16,31 @@ public class EventService : IEventService
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private readonly IAuthorizationService _authorizationService;
+    private readonly IEmailService _emailService;
+    private readonly EventServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventService(IUnitOfWork unitOfWork,       
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        IEmailService emailService,
+        EventServiceSettings settings)
     {
         _authorizationService = authorizationService;
+        _emailService = emailService;
+        _settings = settings;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> AddComment(Guid currentMemberId, Guid eventId, string comment)
+    public async Task<ServiceResult> AddComment(Guid currentMemberId, Guid eventId, string comment, Guid? parentEventCommentId)
     {
         var (member, @event) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.EventRepository.GetById(eventId));
 
-        var settings = await _unitOfWork.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId).RunAsync();
+        var (chapter, settings) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(@event.ChapterId),
+            x => x.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId));        
+
         if (settings?.DisableComments == true || !@event.CanComment || !@event.IsAuthorized(member))
         {
             return ServiceResult.Failure("You cannot comment on this event");
@@ -42,17 +51,41 @@ public class EventService : IEventService
             return ServiceResult.Failure("Comment required");
         }
 
+        EventComment? parentComment = null;
+        Member? parentCommentMember = null;
+        if (parentEventCommentId != null)
+        {
+            parentComment = await _unitOfWork.EventCommentRepository.GetByIdOrDefault(parentEventCommentId.Value).RunAsync();
+            if (parentComment != null)
+            {
+                parentCommentMember = await _unitOfWork.MemberRepository.GetById(parentComment.MemberId).RunAsync();
+            }
+        }
+
         var hidden = HideCommentRegex.IsMatch(comment);
 
-        _unitOfWork.EventCommentRepository.Add(new EventComment
+        var eventComment = new EventComment
         {
             CreatedUtc = DateTime.UtcNow,
             EventId = eventId,
             Hidden = hidden,
             MemberId = currentMemberId,
+            ParentEventCommentId = parentComment?.Id,
             Text = comment
-        });
+        };
+        _unitOfWork.EventCommentRepository.Add(eventComment);
         await _unitOfWork.SaveChangesAsync();
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "chapter.name", chapter.Name },
+            { "comment.text", eventComment.Text },
+            { "event.id", @event.Id.ToString() }
+        }; 
+        
+        parameters.Add("event.url", (_settings.BaseUrl + _settings.EventUrlFormat).Interpolate(parameters));
+
+        await _emailService.SendEventCommentEmail(chapter, parentCommentMember, eventComment, parameters);
 
         return ServiceResult.Successful();
     }

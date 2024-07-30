@@ -50,6 +50,7 @@
         <th>Receive contact emails</th>
         <th>Receive new member emails</th>
         <th>Send new member emails</th>
+        <th>Receive event comment emails</th>
         <th></th>
     </tr>
     </thead>
@@ -77,6 +78,12 @@
             </td>
             <td>
                 @if (adminMember.SendNewMemberEmails)
+                {
+                    <i class="fa fa-check"></i>
+                }
+            </td>
+            <td>
+                @if (adminMember.ReceiveEventCommentEmails)
                 {
                     <i class="fa fa-check"></i>
                 }
