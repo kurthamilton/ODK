@@ -6,9 +6,9 @@ using ODK.Data.Core.Repositories;
 namespace ODK.Data.Core;
 public interface IUnitOfWork
 {
-    IChapterAdminMemberRepository ChapterAdminMemberRepository { get; }
-    IChapterEmailProviderRepository ChapterEmailProviderRepository { get; }
+    IChapterAdminMemberRepository ChapterAdminMemberRepository { get; }    
     IChapterEmailRepository ChapterEmailRepository { get; }
+    IChapterEmailSettingsRepository ChapterEmailSettingsRepository { get; }
     IChapterEventSettingsRepository ChapterEventSettingsRepository { get; }
     IChapterLinksRepository ChapterLinksRepository { get; }
     IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository { get; }
@@ -21,6 +21,7 @@ public interface IUnitOfWork
     ICountryRepository CountryRepository { get; }
     IChapterTextsRepository ChapterTextsRepository { get; }
     IContactRequestRepository ContactRequestRepository { get; }
+    IEmailProviderRepository EmailProviderRepository { get; }
     IEmailRepository EmailRepository { get; }
     IErrorPropertyRepository ErrorPropertyRepository { get; }
     IErrorRepository ErrorRepository { get; }
@@ -40,7 +41,7 @@ public interface IUnitOfWork
     IMemberPropertyRepository MemberPropertyRepository { get; }
     IMemberRepository MemberRepository { get; }
     IMemberSubscriptionRepository MemberSubscriptionRepository { get; }
-    IPaymentRepository PaymentRepository { get; }
+    IPaymentRepository PaymentRepository { get; }    
     ISiteSettingsRepository SiteSettingsRepository { get; }
     IVenueRepository VenueRepository { get; }
 
@@ -65,5 +66,14 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T3>> query3,
         Func<IUnitOfWork, IDeferredQuery<T4>> query4,
         Func<IUnitOfWork, IDeferredQuery<T5>> query5);
+
+    Task<(T1, T2, T3, T4, T5, T6)> RunAsync<T1, T2, T3, T4, T5, T6>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6);
+
     Task SaveChangesAsync();
 }

@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapterRepository, IDisposable
 {
-    private static readonly EntityCache<Guid, Chapter> _cache = new EntityCache<Guid, Chapter>(x => x.Id);
+    private static readonly EntityCache<Guid, Chapter> _cache = new DatabaseEntityCache<Chapter>();
 
     public ChapterRepository(OdkContext context)
         : base(context, _cache)

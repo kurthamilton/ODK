@@ -14,15 +14,6 @@ public class EmailProviderFormViewModel
     public int? DailyLimit { get; set; }
 
     [Required]
-    [EmailAddress]
-    [Display(Name = "From email address")]
-    public string FromEmailAddress { get; set; } = "";
-
-    [Required]
-    [Display(Name = "From name")]
-    public string FromName { get; set; } = "";
-
-    [Required]
     [Display(Name = "SMTP login")]
     public string SmtpLogin { get; set; } = "";
 

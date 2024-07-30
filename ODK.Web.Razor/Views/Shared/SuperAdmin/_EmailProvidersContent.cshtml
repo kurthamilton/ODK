@@ -1,11 +1,11 @@
 ﻿@using ODK.Core.Chapters
-@using ODK.Services.Emails
+@using ODK.Services.Settings
 @using ODK.Web.Common.Extensions
 @model ODK.Core.Chapters.Chapter
-@inject IEmailAdminService EmailAdminService
+@inject ISettingsService SettingsService
 @{
     var memberId = User.MemberId();
-    var providers = await EmailAdminService.GetChapterEmailProviders(memberId, Model.Id);
+    var providers = await SettingsService.GetEmailProviders(memberId);
 }
 
 <p>
@@ -21,7 +21,7 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (ChapterEmailProvider provider in providers)
+    @foreach (var provider in providers)
     {
         <tr>
             <td>

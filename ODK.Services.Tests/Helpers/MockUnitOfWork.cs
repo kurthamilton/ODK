@@ -18,9 +18,9 @@ internal class MockUnitOfWork : IUnitOfWork
 
     public Mock<IUnitOfWork> Mock { get; }
 
-    public IChapterAdminMemberRepository ChapterAdminMemberRepository => Mock.Object.ChapterAdminMemberRepository;
-    public IChapterEmailProviderRepository ChapterEmailProviderRepository => Mock.Object.ChapterEmailProviderRepository;
+    public IChapterAdminMemberRepository ChapterAdminMemberRepository => Mock.Object.ChapterAdminMemberRepository;    
     public IChapterEmailRepository ChapterEmailRepository => Mock.Object.ChapterEmailRepository;
+    public IChapterEmailSettingsRepository ChapterEmailSettingsRepository => Mock.Object.ChapterEmailSettingsRepository;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => Mock.Object.ChapterEventSettingsRepository;
     public IChapterLinksRepository ChapterLinksRepository => Mock.Object.ChapterLinksRepository;
     public IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository => Mock.Object.ChapterMembershipSettingsRepository;
@@ -33,9 +33,11 @@ internal class MockUnitOfWork : IUnitOfWork
     public ICountryRepository CountryRepository => Mock.Object.CountryRepository;
     public IChapterTextsRepository ChapterTextsRepository => Mock.Object.ChapterTextsRepository;
     public IContactRequestRepository ContactRequestRepository => Mock.Object.ContactRequestRepository;
+    public IEmailProviderRepository EmailProviderRepository => Mock.Object.EmailProviderRepository;
     public IEmailRepository EmailRepository => Mock.Object.EmailRepository;
     public IErrorPropertyRepository ErrorPropertyRepository => Mock.Object.ErrorPropertyRepository;
     public IErrorRepository ErrorRepository => Mock.Object.ErrorRepository;
+    public IEventCommentRepository EventCommentRepository => Mock.Object.EventCommentRepository;
     public IEventEmailRepository EventEmailRepository => Mock.Object.EventEmailRepository;
     public IEventInviteRepository EventInviteRepository => Mock.Object.EventInviteRepository;
     public IEventRepository EventRepository => Mock.Object.EventRepository;
@@ -51,7 +53,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberPropertyRepository MemberPropertyRepository => Mock.Object.MemberPropertyRepository;
     public IMemberRepository MemberRepository => Mock.Object.MemberRepository;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => Mock.Object.MemberSubscriptionRepository;
-    public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;
+    public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;    
     public ISiteSettingsRepository SiteSettingsRepository => Mock.Object.SiteSettingsRepository;
     public IVenueRepository VenueRepository => Mock.Object.VenueRepository;
 
@@ -118,6 +120,30 @@ internal class MockUnitOfWork : IUnitOfWork
             await q3.RunAsync(),
             await q4.RunAsync(),
             await q5.RunAsync());
+    }
+
+    public async Task<(T1, T2, T3, T4, T5, T6)> RunAsync<T1, T2, T3, T4, T5, T6>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6)
+    {
+        var q1 = query1(this);
+        var q2 = query2(this);
+        var q3 = query3(this);
+        var q4 = query4(this);
+        var q5 = query5(this);
+        var q6 = query6(this);
+
+        return (
+            await q1.RunAsync(),
+            await q2.RunAsync(),
+            await q3.RunAsync(),
+            await q4.RunAsync(),
+            await q5.RunAsync(),
+            await q6.RunAsync());
     }
 
     public Task SaveChangesAsync() => Mock.Object.SaveChangesAsync();

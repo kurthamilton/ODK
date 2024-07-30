@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
 using ODK.Services.Logging;
+using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Web.Common.Feedback;
 
@@ -15,21 +16,23 @@ public class SuperAdminController : OdkControllerBase
     private readonly IInstagramService _instagramService;
     private readonly ILoggingService _loggingService;
     private readonly IRequestCache _requestCache;
+    private readonly ISettingsService _settingsService;
 
     public SuperAdminController(IEmailAdminService emailAdminService, 
         ILoggingService loggingService, IInstagramService instagramService,
-        IRequestCache requestCache)
+        IRequestCache requestCache, ISettingsService settingsService)
     {
         _emailAdminService = emailAdminService;
         _instagramService = instagramService;
         _loggingService = loggingService;
         _requestCache = requestCache;
+        _settingsService = settingsService;
     }
 
     [HttpPost("{chapterName}/Admin/SuperAdmin/EmailProviders/{id:guid}/Delete")]
     public async Task<IActionResult> DeleteEmailProvider(Guid id)
     {
-        await _emailAdminService.DeleteChapterEmailProvider(MemberId, id);
+        await _settingsService.DeleteEmailProvider(MemberId, id);
 
         AddFeedback(new FeedbackViewModel("Email provider deleted", FeedbackType.Success));
 

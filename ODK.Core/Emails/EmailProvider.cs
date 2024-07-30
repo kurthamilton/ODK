@@ -1,16 +1,10 @@
-﻿namespace ODK.Core.Chapters;
+﻿namespace ODK.Core.Emails;
 
-public class ChapterEmailProvider : IDatabaseEntity
-{    
+public class EmailProvider : IDatabaseEntity
+{
     public int? BatchSize { get; set; }
 
-    public Guid ChapterId { get; set; }
-
     public int DailyLimit { get; set; }
-
-    public string FromEmailAddress { get; set; } = "";
-
-    public string FromName { get; set; } = "";
 
     public Guid Id { get; set; }
 
@@ -22,5 +16,5 @@ public class ChapterEmailProvider : IDatabaseEntity
 
     public int SmtpPort { get; set; }
 
-    public string SmtpServer { get; set; } = "";
+    public string SmtpServer { get; set; } = "";    
 }

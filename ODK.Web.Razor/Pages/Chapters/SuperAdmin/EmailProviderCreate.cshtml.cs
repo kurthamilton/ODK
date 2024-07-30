@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services;
 using ODK.Services.Caching;
-using ODK.Services.Emails;
+using ODK.Services.Settings;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
 
@@ -9,12 +8,12 @@ namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
 
 public class EmailProviderCreateModel : SuperAdminPageModel
 {
-    private readonly IEmailAdminService _emailAdminService;
+    private readonly ISettingsService _settingsService;
 
-    public EmailProviderCreateModel(IRequestCache requestCache, IEmailAdminService emailAdminService) 
+    public EmailProviderCreateModel(IRequestCache requestCache, ISettingsService settingsService) 
         : base(requestCache)
     {
-        _emailAdminService = emailAdminService;
+        _settingsService = settingsService;
     }
 
     public void OnGet()
@@ -28,12 +27,10 @@ public class EmailProviderCreateModel : SuperAdminPageModel
             return Page();
         }
 
-        ServiceResult result = await _emailAdminService.AddChapterEmailProvider(CurrentMemberId, Chapter.Id, new UpdateChapterEmailProvider
+        var result = await _settingsService.AddEmailProvider(CurrentMemberId, new UpdateEmailProvider
         {
             BatchSize = viewModel.BatchSize,
             DailyLimit = viewModel.DailyLimit ?? 0,
-            FromEmailAddress = viewModel.FromEmailAddress,
-            FromName = viewModel.FromName,
             SmtpLogin = viewModel.SmtpLogin,
             SmtpPassword = viewModel.SmtpPassword,
             SmtpPort = viewModel.SmtpPort ?? 0,

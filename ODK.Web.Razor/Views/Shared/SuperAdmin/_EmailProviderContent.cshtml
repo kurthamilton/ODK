@@ -1,5 +1,5 @@
 ﻿@using ODK.Web.Razor.Models.SuperAdmin
-@model ODK.Core.Chapters.ChapterEmailProvider
+@model ODK.Core.Emails.EmailProvider
 
 <form method="post">
     @Html.AntiForgeryToken()
@@ -7,8 +7,6 @@
     {
         BatchSize = Model.BatchSize,
         DailyLimit = Model.DailyLimit,
-        FromEmailAddress = Model.FromEmailAddress,
-        FromName = Model.FromName,
         SmtpLogin = Model.SmtpLogin,
         SmtpPassword = Model.SmtpPassword,
         SmtpPort = Model.SmtpPort,

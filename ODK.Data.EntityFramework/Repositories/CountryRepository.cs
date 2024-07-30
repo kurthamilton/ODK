@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class CountryRepository : CachingReadWriteRepositoryBase<Country>, ICountryRepository
 {
-    private static readonly EntityCache<Guid, Country> _cache = new EntityCache<Guid, Country>(x => x.Id);
+    private static readonly EntityCache<Guid, Country> _cache = new DatabaseEntityCache<Country>();
 
     public CountryRepository(OdkContext context)
         : base(context, _cache)

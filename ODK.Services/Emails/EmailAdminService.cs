@@ -1,5 +1,4 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Emails;
+﻿using ODK.Core.Emails;
 using ODK.Core.Exceptions;
 using ODK.Data.Core;
 
@@ -13,38 +12,6 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         : base(unitOfWork)
     {
         _unitOfWork = unitOfWork;
-    }
-
-    public async Task<ServiceResult> AddChapterEmailProvider(Guid currentMemberId, Guid chapterId, 
-        UpdateChapterEmailProvider model)
-    {
-        var existing = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
-            x => x.ChapterEmailProviderRepository.GetByChapterId(chapterId));
-
-        var provider = new ChapterEmailProvider
-        {
-            BatchSize = model.BatchSize,
-            ChapterId = chapterId,
-            DailyLimit = model.DailyLimit,
-            FromEmailAddress = model.FromEmailAddress,
-            FromName = model.FromName,
-            Order = existing.Count + 1,
-            SmtpLogin = model.SmtpLogin,
-            SmtpPassword = model.SmtpPassword,
-            SmtpPort = model.SmtpPort,
-            SmtpServer = model.SmtpServer
-        };
-
-        var validationResult = ValidateChapterEmailProvider(provider);
-        if (!validationResult.Success)
-        {
-            return validationResult;
-        }
-
-        _unitOfWork.ChapterEmailProviderRepository.Add(provider);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type)
@@ -74,18 +41,6 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return await DeleteChapterEmail(currentMemberId, chapter.Id, type);
     }
 
-    public async Task DeleteChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId)
-    {
-        var provider = await GetChapterEmailProvider(currentMemberId, chapterEmailProviderId);
-        if (provider == null)
-        {
-            return;
-        }
-
-        _unitOfWork.ChapterEmailProviderRepository.Delete(provider);
-        await _unitOfWork.SaveChangesAsync();
-    }
-
     public async Task<ChapterEmail> GetChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type)
     {
         var (chapterEmail, email) = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
@@ -104,25 +59,6 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             Subject = email.Subject,
             Type = email.Type
         };
-    }
-
-    public async Task<ChapterEmailProvider?> GetChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId)
-    {        
-        var provider = await _unitOfWork.ChapterEmailProviderRepository.GetByIdOrDefault(chapterEmailProviderId).RunAsync();
-        if (provider == null)
-        {
-            return null;
-        }
-
-        await AssertMemberIsChapterAdmin(currentMemberId, provider.ChapterId);
-
-        return provider;
-    }
-
-    public async Task<IReadOnlyCollection<ChapterEmailProvider>> GetChapterEmailProviders(Guid currentMemberId, Guid chapterId)
-    {
-        return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
-            x => x.ChapterEmailProviderRepository.GetByChapterId(chapterId));
     }
 
     public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid currentMemberId, Guid chapterId)
@@ -208,36 +144,6 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateChapterEmailProvider(Guid currentMemberId, Guid chapterEmailProviderId,
-        UpdateChapterEmailProvider update)
-    {
-        var provider = await GetChapterEmailProvider(currentMemberId, chapterEmailProviderId);
-        if (provider == null)
-        {
-            return ServiceResult.Failure("Chapter email provider not found");
-        }
-
-        provider.BatchSize = update.BatchSize;
-        provider.DailyLimit = update.DailyLimit;
-        provider.FromEmailAddress = update.FromEmailAddress;
-        provider.FromName = update.FromName;
-        provider.SmtpLogin = update.SmtpLogin;
-        provider.SmtpPassword = update.SmtpPassword;
-        provider.SmtpPort = update.SmtpPort;
-        provider.SmtpServer = update.SmtpServer;
-
-        var validationResult = ValidateChapterEmailProvider(provider);
-        if (!validationResult.Success)
-        {
-            return validationResult;
-        }
-
-        _unitOfWork.ChapterEmailProviderRepository.Update(provider);
-        await _unitOfWork.SaveChangesAsync();
-        
-        return ServiceResult.Successful();
-    }
-
     public async Task<ServiceResult> UpdateEmail(Guid currentMemberId, EmailType type, UpdateEmail email)
     {
         var existing = await GetSuperAdminRestrictedContent(currentMemberId,
@@ -267,22 +173,6 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
         if (string.IsNullOrWhiteSpace(chapterEmail.HtmlContent) ||
             string.IsNullOrWhiteSpace(chapterEmail.Subject))
-        {
-            return ServiceResult.Failure("Some required fields are missing");
-        }
-
-        return ServiceResult.Successful();
-    }
-    
-    private static ServiceResult ValidateChapterEmailProvider(ChapterEmailProvider provider)
-    {
-        if (string.IsNullOrWhiteSpace(provider.FromEmailAddress) ||
-            string.IsNullOrWhiteSpace(provider.FromName) ||
-            string.IsNullOrWhiteSpace(provider.SmtpLogin) ||
-            string.IsNullOrWhiteSpace(provider.SmtpPassword) ||
-            provider.SmtpPort == 0 ||
-            provider.DailyLimit <= 0 ||
-            provider.BatchSize <= 0)
         {
             return ServiceResult.Failure("Some required fields are missing");
         }

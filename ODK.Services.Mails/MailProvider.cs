@@ -5,6 +5,7 @@ using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Members;
+using ODK.Core.Settings;
 using ODK.Data.Core;
 using ODK.Services.Emails.Extensions;
 using ODK.Services.Exceptions;
@@ -46,15 +47,17 @@ public class MailProvider : IMailProvider
         Member? fromMember,
         bool bcc = true)
     {
-        var (email, chapterEmail, providers, summary) = await _unitOfWork.RunAsync(
+        var (email, chapterEmail, providers, siteSettings, chapterSettings, summary) = await _unitOfWork.RunAsync(
             x => x.EmailRepository.GetByType(EmailType.Layout),
             x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.Layout),
-            x => x.ChapterEmailProviderRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterEmailProviderRepository.GetEmailsSentToday(chapter.Id));
+            x => x.EmailProviderRepository.GetAll(),
+            x => x.SiteSettingsRepository.Get(),
+            x => x.ChapterEmailSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.EmailProviderRepository.GetEmailsSentToday());
         body = GetLayoutBody(chapterEmail?.ToEmail() ?? email, chapter, body);
 
         int i = 0;
-        List<EmailAddressee> toList = to.ToList();
+        var toList = to.ToList();
         while (i < toList.Count)
         {
             var (provider, remaining) = GetProvider(providers, summary);
@@ -66,7 +69,7 @@ public class MailProvider : IMailProvider
             }
 
             var batch = toList.Skip(i).Take(batchSize);
-            var message = CreateMessage(provider, fromAdminMember, fromMember, subject, body);
+            var message = CreateMessage(provider, siteSettings, chapterSettings, fromAdminMember, fromMember, subject, body);
             if (bcc)
             {
                 AddBulkEmailBccRecipients(message, message.From.First(), batch);
@@ -92,16 +95,18 @@ public class MailProvider : IMailProvider
         ChapterAdminMember? fromAdminMember,
         Member? fromMember)
     {
-        var (email, chapterEmail, providers, summary) = await _unitOfWork.RunAsync(
+        var (email, chapterEmail, providers, siteSettings, chapterSettings, summary) = await _unitOfWork.RunAsync(
             x => x.EmailRepository.GetByType(EmailType.Layout),
             x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.Layout),
-            x => x.ChapterEmailProviderRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterEmailProviderRepository.GetEmailsSentToday(chapter.Id));
+            x => x.EmailProviderRepository.GetAll(),
+            x => x.SiteSettingsRepository.Get(),
+            x => x.ChapterEmailSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.EmailProviderRepository.GetEmailsSentToday());
         body = GetLayoutBody(chapterEmail?.ToEmail() ?? email, chapter, body);
         
         var (provider, _) = GetProvider(providers, summary);
 
-        var message = CreateMessage(provider, fromAdminMember, fromMember, subject, body);
+        var message = CreateMessage(provider, siteSettings, chapterSettings, fromAdminMember, fromMember, subject, body);
         AddEmailRecipient(message, to.ToMailboxAddress());
 
         return await SendEmail(provider, message);
@@ -130,7 +135,9 @@ public class MailProvider : IMailProvider
         message.To.Add(to);
     }
 
-    private void AddEmailFrom(MimeMessage message, ChapterEmailProvider provider, 
+    private void AddEmailFrom(MimeMessage message, EmailProvider provider, 
+        SiteSettings siteSettings,
+        ChapterEmailSettings? chapterSettings,
         ChapterAdminMember? fromAdminMember,
         Member? fromMember)
     {
@@ -144,12 +151,16 @@ public class MailProvider : IMailProvider
         }
         else
         {
-            message.From.Add(new MailboxAddress(provider.FromName, provider.FromEmailAddress));
+            var name = !string.IsNullOrEmpty(chapterSettings?.FromName) ? chapterSettings.FromName : siteSettings.DefaultFromEmailName;
+            var address = !string.IsNullOrEmpty(chapterSettings?.FromEmailAddress) ? chapterSettings.FromEmailAddress : siteSettings.DefaultFromEmailAddress;
+            message.From.Add(new MailboxAddress(name, address));
         }
     }
 
     private MimeMessage CreateMessage(
-        ChapterEmailProvider provider, 
+        EmailProvider provider, 
+        SiteSettings siteSettings,
+        ChapterEmailSettings chapterSettings,
         ChapterAdminMember? fromAdminMember, 
         Member? fromMember,
         string subject, 
@@ -164,7 +175,7 @@ public class MailProvider : IMailProvider
             Subject = subject
         };
 
-        AddEmailFrom(message, provider, fromAdminMember, fromMember);
+        AddEmailFrom(message, provider, siteSettings, chapterSettings, fromAdminMember, fromMember);
 
         return message;
     }
@@ -180,12 +191,12 @@ public class MailProvider : IMailProvider
         return layout.HtmlContent;
     }
 
-    private (ChapterEmailProvider Provider, int Remaining) GetProvider(
-        IReadOnlyCollection<ChapterEmailProvider> providers, 
-        IReadOnlyCollection<ChapterEmailProviderSummaryDto> summary)
+    private (EmailProvider Provider, int Remaining) GetProvider(
+        IReadOnlyCollection<EmailProvider> providers, 
+        IReadOnlyCollection<EmailProviderSummaryDto> summary)
     {
         var summaryDictionary = summary
-            .ToDictionary(x => x.ChapterEmailProviderId, x => x.Sent);
+            .ToDictionary(x => x.EmailProviderId, x => x.Sent);
 
         foreach (var provider in providers)
         {
@@ -199,7 +210,7 @@ public class MailProvider : IMailProvider
         throw new OdkServiceException("No more emails can be sent today");
     }
 
-    private async Task<ServiceResult> SendEmail(ChapterEmailProvider provider, MimeMessage message)
+    private async Task<ServiceResult> SendEmail(EmailProvider provider, MimeMessage message)
     {
         if (message.To.Count == 0)
         {
@@ -233,9 +244,9 @@ public class MailProvider : IMailProvider
             foreach (var to in message.To.Union(message.Cc).Union(message.Bcc))
             {
                 _unitOfWork.EmailRepository.AddSentEmail(new SentEmail
-                {
-                    ChapterEmailProviderId = provider.Id,
+                {                    
                     SentUtc = DateTime.UtcNow,
+                    EmailProviderId = provider.Id,
                     Subject = message.Subject,
                     To = to.ToString()
                 });                                

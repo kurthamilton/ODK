@@ -3,18 +3,6 @@
 }
 
 <div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.FromEmailAddress, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.FromEmailAddress, new { @class = "form-control" })
-    @Html.ValidationMessageFor(x => x.FromEmailAddress)
-</div>
-
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.FromName, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.FromName, new { @class = "form-control" })
-    @Html.ValidationMessageFor(x => x.FromName)
-</div>
-
-<div class="form-group mb-3 required">
     @Html.LabelFor(x => x.SmtpServer, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.SmtpServer, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.SmtpServer)

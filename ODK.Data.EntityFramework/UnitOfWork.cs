@@ -11,8 +11,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly OdkContext _context;
 
     private readonly Lazy<IChapterAdminMemberRepository> _chapterAdminMemberRepository;
-    private readonly Lazy<IChapterEmailProviderRepository> _chapterEmailProviderRepository;
     private readonly Lazy<IChapterEmailRepository> _chapterEmailRepository;
+    private readonly Lazy<IChapterEmailSettingsRepository> _chapterEmailSettingsRepository;
     private readonly Lazy<IChapterEventSettingsRepository> _chapterEventSettingsRepository;
     private readonly Lazy<IChapterLinksRepository> _chapterLinksRepository;
     private readonly Lazy<IChapterMembershipSettingsRepository> _chapterMembershipSettingsRepository;
@@ -25,6 +25,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterTextsRepository> _chapterTextsRepository;
     private readonly Lazy<IContactRequestRepository> _contactRequestRepository;
     private readonly Lazy<ICountryRepository> _countryRepository;
+    private readonly Lazy<IEmailProviderRepository> _emailProviderRepository;
     private readonly Lazy<IEmailRepository> _emailRepository;
     private readonly Lazy<IErrorPropertyRepository> _errorPropertyRepository;
     private readonly Lazy<IErrorRepository> _errorRepository;
@@ -44,7 +45,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberPropertyRepository> _memberPropertyRepository;
     private readonly Lazy<IMemberRepository> _memberRepository;
     private readonly Lazy<IMemberSubscriptionRepository> _memberSubscriptionRepository;
-    private readonly Lazy<IPaymentRepository> _paymentRepository;
+    private readonly Lazy<IPaymentRepository> _paymentRepository;    
     private readonly Lazy<ISiteSettingsRepository> _siteSettingsRepository;
     private readonly Lazy<IVenueRepository> _venueRepository;
 
@@ -52,9 +53,9 @@ public class UnitOfWork : IUnitOfWork
     {
         _context = context;
 
-        _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));
-        _chapterEmailProviderRepository = new(() => new ChapterEmailProviderRepository(_context));
+        _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));        
         _chapterEmailRepository = new(() => new ChapterEmailRepository(_context));
+        _chapterEmailSettingsRepository = new(() => new ChapterEmailSettingsRepository(_context));
         _chapterEventSettingsRepository = new(() => new ChapterEventSettingsRepository(_context));
         _chapterLinksRepository = new(() => new ChapterLinksRepository(_context));
         _chapterMembershipSettingsRepository = new(() => new ChapterMembershipSettingsRepository(_context));
@@ -67,6 +68,7 @@ public class UnitOfWork : IUnitOfWork
         _chapterTextsRepository = new(() => new ChapterTextsRepository(_context));
         _contactRequestRepository = new(() => new ContactRequestRepository(_context));
         _countryRepository = new(() => new CountryRepository(_context));
+        _emailProviderRepository = new(() => new EmailProviderRepository(_context));
         _emailRepository = new(() => new EmailRepository(_context));
         _errorPropertyRepository = new(() => new ErrorPropertyRepository(_context));
         _errorRepository = new(() => new ErrorRepository(_context));
@@ -86,14 +88,14 @@ public class UnitOfWork : IUnitOfWork
         _memberPropertyRepository = new(() => new MemberPropertyRepository(_context));
         _memberRepository = new(() => new MemberRepository(_context));
         _memberSubscriptionRepository = new(() => new MemberSubscriptionRepository(_context));
-        _paymentRepository = new(() => new PaymentRepository(_context));
+        _paymentRepository = new(() => new PaymentRepository(_context));        
         _siteSettingsRepository = new(() => new SiteSettingsRepository(_context));
         _venueRepository = new(() => new VenueRepository(_context));
     }
 
     public IChapterAdminMemberRepository ChapterAdminMemberRepository => _chapterAdminMemberRepository.Value;
-    public IChapterEmailProviderRepository ChapterEmailProviderRepository => _chapterEmailProviderRepository.Value;
     public IChapterEmailRepository ChapterEmailRepository => _chapterEmailRepository.Value;
+    public IChapterEmailSettingsRepository ChapterEmailSettingsRepository => _chapterEmailSettingsRepository.Value;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => _chapterEventSettingsRepository.Value;
     public IChapterLinksRepository ChapterLinksRepository => _chapterLinksRepository.Value;
     public IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository => _chapterMembershipSettingsRepository.Value;
@@ -106,6 +108,7 @@ public class UnitOfWork : IUnitOfWork
     public IChapterTextsRepository ChapterTextsRepository => _chapterTextsRepository.Value;
     public IContactRequestRepository ContactRequestRepository => _contactRequestRepository.Value;
     public ICountryRepository CountryRepository => _countryRepository.Value;
+    public IEmailProviderRepository EmailProviderRepository => _emailProviderRepository.Value;
     public IEmailRepository EmailRepository => _emailRepository.Value;
     public IErrorPropertyRepository ErrorPropertyRepository => _errorPropertyRepository.Value;
     public IErrorRepository ErrorRepository => _errorRepository.Value;
@@ -125,7 +128,7 @@ public class UnitOfWork : IUnitOfWork
     public IMemberPropertyRepository MemberPropertyRepository => _memberPropertyRepository.Value;
     public IMemberRepository MemberRepository => _memberRepository.Value;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => _memberSubscriptionRepository.Value;
-    public IPaymentRepository PaymentRepository => _paymentRepository.Value;
+    public IPaymentRepository PaymentRepository => _paymentRepository.Value;    
     public ISiteSettingsRepository SiteSettingsRepository => _siteSettingsRepository.Value;
     public IVenueRepository VenueRepository => _venueRepository.Value;
 
@@ -192,6 +195,30 @@ public class UnitOfWork : IUnitOfWork
             await q3.RunAsync(),
             await q4.RunAsync(),
             await q5.RunAsync());
+    }
+
+    public async Task<(T1, T2, T3, T4, T5, T6)> RunAsync<T1, T2, T3, T4, T5, T6>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6)
+    {
+        var q1 = query1(this);
+        var q2 = query2(this);
+        var q3 = query3(this);
+        var q4 = query4(this);
+        var q5 = query5(this);
+        var q6 = query6(this);
+
+        return (
+            await q1.RunAsync(),
+            await q2.RunAsync(),
+            await q3.RunAsync(),
+            await q4.RunAsync(),
+            await q5.RunAsync(),
+            await q6.RunAsync());
     }
 
     public Task SaveChangesAsync() => _context.SaveChangesAsync();

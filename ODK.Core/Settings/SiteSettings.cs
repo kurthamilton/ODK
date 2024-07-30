@@ -2,6 +2,10 @@
 
 public class SiteSettings : IVersioned, IDatabaseEntity
 {
+    public string DefaultFromEmailAddress { get; set; } = "";
+
+    public string DefaultFromEmailName { get; set; } = "";
+
     public int DefaultTrialPeriodMonths { get; set; }
 
     public string GoogleMapsApiKey { get; set; } = "";

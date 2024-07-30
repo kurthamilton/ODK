@@ -1,14 +1,10 @@
-﻿namespace ODK.Services.Emails;
+﻿namespace ODK.Services.Settings;
 
-public class UpdateChapterEmailProvider
+public class UpdateEmailProvider
 {
     public int? BatchSize { get; set; }
 
     public int DailyLimit { get; set; }
-
-    public string FromEmailAddress { get; set; } = "";
-
-    public string FromName { get; set; } = "";
 
     public string SmtpLogin { get; set; } = "";
 
