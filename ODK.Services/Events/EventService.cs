@@ -56,6 +56,11 @@ public class EventService : IEventService
         if (parentEventCommentId != null)
         {
             parentComment = await _unitOfWork.EventCommentRepository.GetByIdOrDefault(parentEventCommentId.Value).RunAsync();
+            if (parentComment != null && parentComment.EventId != @event.Id)
+            {
+                parentComment = null;
+            }
+
             if (parentComment != null)
             {
                 parentCommentMember = await _unitOfWork.MemberRepository.GetById(parentComment.MemberId).RunAsync();
