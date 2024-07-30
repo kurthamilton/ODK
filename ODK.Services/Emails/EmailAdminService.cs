@@ -1,4 +1,5 @@
-﻿using ODK.Core.Emails;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Emails;
 using ODK.Core.Exceptions;
 using ODK.Data.Core;
 
@@ -102,6 +103,12 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             .ToArray();
     }
 
+    public async Task<ChapterEmailSettings?> GetChapterEmailSettings(Guid currentMemberId, Guid chapterId)
+    {
+        return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.ChapterEmailSettingsRepository.GetByChapterId(chapterId));
+    }
+
     public async Task<Email> GetEmail(Guid currentMemberId, EmailType type)
     {
         return await GetSuperAdminRestrictedContent(currentMemberId,
@@ -139,6 +146,34 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         }
 
         _unitOfWork.ChapterEmailRepository.Upsert(chapterEmail);        
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateChapterEmailSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailSettings model)
+    {
+        var settings = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.ChapterEmailSettingsRepository.GetByChapterId(chapterId));
+
+        if (settings == null)
+        {
+            settings = new ChapterEmailSettings();
+        }
+
+        settings.FromEmailAddress = model.FromAddress;
+        settings.FromName = model.FromName;
+
+        if (settings.ChapterId == Guid.Empty)
+        {
+            settings.ChapterId = chapterId;
+            _unitOfWork.ChapterEmailSettingsRepository.Add(settings);
+        }
+        else
+        {
+            _unitOfWork.ChapterEmailSettingsRepository.Update(settings);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();

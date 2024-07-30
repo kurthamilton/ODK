@@ -1,0 +1,13 @@
+﻿@model ODK.Web.Razor.Models.Admin.Chapters.ChapterEmailSettingsFormViewModel
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.FromAddress, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.FromAddress, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.FromAddress)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.FromName, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.FromName, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.FromName)
+</div>

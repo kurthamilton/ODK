@@ -40,6 +40,28 @@ public class ChapterAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("/{chapterName}/Admin/Chapter/Emails/Settings")]
+    public async Task<IActionResult> UpdateSettings(string chapterName, ChapterEmailSettingsFormViewModel viewModel)
+    {        
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var result = await _emailAdminService.UpdateChapterEmailSettings(MemberId, chapter.Id, new UpdateChapterEmailSettings
+        {
+            FromAddress = viewModel.FromAddress,
+            FromName = viewModel.FromName
+        });
+
+        if (result.Success)
+        {
+            AddFeedback(new FeedbackViewModel("Email sender updated", FeedbackType.Success));
+        }
+        else
+        {
+            AddFeedback(new FeedbackViewModel(result));
+        }
+
+        return RedirectToReferrer();
+    }
+
     [HttpPost("/{chapterName}/Admin/Chapter/Emails/{type}/RestoreDefault")]
     public async Task<IActionResult> RestoreDefaultEmail(string chapterName, EmailType type)
     {

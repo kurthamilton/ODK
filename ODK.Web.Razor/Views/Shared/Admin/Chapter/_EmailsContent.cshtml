@@ -1,12 +1,14 @@
 ﻿@using ODK.Core.Emails
 @using ODK.Services.Emails
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin.Chapters
 @model ODK.Core.Chapters.Chapter
 @inject IEmailAdminService EmailAdminService
 @{
     var memberId = User.MemberId();
 
-    IReadOnlyCollection<ChapterEmail> emails = await EmailAdminService.GetChapterEmails(memberId, Model.Id);
+    var emails = await EmailAdminService.GetChapterEmails(memberId, Model.Id);
+    var settings = await EmailAdminService.GetChapterEmailSettings(memberId, Model.Id);
 }
 
 <h2>Email templates</h2>
@@ -47,3 +49,13 @@
     }
     </tbody>
 </table>
+
+<h2>Sender</h2>
+<form action="/@Model.Name/Admin/Chapter/Emails/Settings" method="post">
+    @await Html.PartialAsync("Admin/Chapter/_EmailSettingsForm", new ChapterEmailSettingsFormViewModel
+    {
+        FromAddress = settings?.FromEmailAddress ?? "",
+        FromName = settings?.FromName ?? ""
+    })
+    <button class="btn btn-primary">Update</button>
+</form>
