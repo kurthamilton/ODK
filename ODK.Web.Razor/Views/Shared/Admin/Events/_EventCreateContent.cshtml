@@ -11,10 +11,20 @@
 
     var settings = await ChapterAdminService.GetChapterEventSettings(memberId, Model.Id);
     var nextEventDate = await EventAdminService.GetNextAvailableEventDate(memberId, Model);
+    var chapterAdminMembers = await ChapterAdminService.GetChapterAdminMemberDtos(memberId, Model.Id);
+
     if (nextEventDate == null)
     {
         nextEventDate = DateTime.Today;
     }
+
+    var hostOptions = chapterAdminMembers.Members
+        .Select(x => new SelectListItem
+                {
+                    Value = x.Id.ToString(),
+                    Text = x.FullName
+                })
+        .ToArray();
 }
 
 <h2>Create new event</h2>
@@ -27,7 +37,8 @@
         ChapterId = Model.Id,
         CurrentMemberId = memberId,
         Date = nextEventDate.Value,
-        Description = settings?.DefaultDescription
+        Description = settings?.DefaultDescription,
+        HostOptions = hostOptions
     })
     
     <div class="button-container">
