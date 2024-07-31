@@ -183,7 +183,7 @@ public class EventService : IEventService
         }
 
         var responseLookup = responses
-            .ToDictionary(x => x.EventId, x => x.ResponseTypeId);
+            .ToDictionary(x => x.EventId, x => x.Type);
 
         var venueLookup = venues.ToDictionary(x => x.Id);        
 
@@ -230,12 +230,12 @@ public class EventService : IEventService
             {
                 EventId = eventId,
                 MemberId = member.Id,
-                ResponseTypeId = responseType
+                Type = responseType
             });
         }
         else
         {
-            response.ResponseTypeId = responseType;
+            response.Type = responseType;
             _unitOfWork.EventResponseRepository.Update(response);
         }
 

@@ -22,6 +22,8 @@ public class Event : IDatabaseEntity
 
     public bool IsPublic { get; set; }
 
+    public bool IsPublished => PublishedUtc != null;
+
     public string Name { get; set; } = "";
 
     public DateTime? PublishedUtc { get; set; }
@@ -30,7 +32,7 @@ public class Event : IDatabaseEntity
 
     public Guid VenueId { get; set; }
 
-    public string GetDisplayName() => (PublishedUtc == null ? "[DRAFT] " : "") + Name;
+    public string GetDisplayName() => (!IsPublished ? "[DRAFT] " : "") + Name;
 
     public bool IsAuthorized(Member? member)
     {

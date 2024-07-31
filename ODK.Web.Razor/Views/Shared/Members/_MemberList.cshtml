@@ -15,10 +15,12 @@
     @foreach (ListMemberViewModel member in Model.Members)
     {
         <div class="@(Model.Cols > 0 ? "col" : null)">
-            @await Html.PartialAsync("Members/_ListMember", new ListMemberViewModel(Model.Chapter, member.Member)
+            @await Html.PartialAsync("Members/_ListMember", new ListMemberViewModel
             {
+                Chapter = Model.Chapter,
                 ImageHeight = Model.ImageHeight,
                 MaxWidth = Model.MaxWidth,
+                Member = member.Member,
                 Size = Model.Size                
             })
         </div>

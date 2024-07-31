@@ -6,18 +6,24 @@
         return;
     }
 
-    IEnumerable<ListMemberViewModel> members = Model.Members.Select(x => new ListMemberViewModel(Model.Chapter, x)
-    {
-        Size = "xs"
-    });
+    var members = Model.Members
+        .Select(x => new ListMemberViewModel
+        {
+            Chapter = Model.Chapter,
+            Member = x,
+            Size = "xs"
+        })
+        .ToArray();
 }
 
 <div class="card sidebar-card">
     <div class="card-header">@Model.Title</div>
     <div class="card-body card-body-sm">        
-        @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel(Model.Chapter, members)
+        @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
         {
+            Chapter = Model.Chapter,
             Cols = 4,
+            Members = members,
             Size = "xs"
         })
     </div>

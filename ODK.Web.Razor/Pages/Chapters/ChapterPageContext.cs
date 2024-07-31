@@ -19,6 +19,14 @@ namespace ODK.Web.Razor.Pages.Chapters
             _requestCache = requestCache;
         }
         
+        public static string? GetChapterName(HttpContext httpContext)
+        {
+            var chapterName = httpContext.Request.RouteValues["chapterName"] as string;
+            return (!string.IsNullOrWhiteSpace(chapterName) && ChapterNameRegex.IsMatch(chapterName))
+                ? chapterName
+                : null;
+        }
+
         public async Task<Chapter?> GetChapterAsync()
         {
             var chapterName = _httpContext?.Request.RouteValues["chapterName"] as string;

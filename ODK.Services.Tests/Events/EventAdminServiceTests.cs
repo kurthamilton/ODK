@@ -75,7 +75,7 @@ public static class EventAdminServiceTests
             Date = eventDate,            
             Name = "Name",
             VenueId = VenueId           
-        });
+        }, false);
 
         // Assert        
         Mock.Get(eventEmailRepository)
@@ -138,6 +138,13 @@ public static class EventAdminServiceTests
         return mock.Object;
     }
 
+    private static IEventHostRepository CreateMockEventHostRepository()
+    {
+        var mock = new Mock<IEventHostRepository>();        
+
+        return mock.Object;
+    }
+
     private static IEventRepository CreateMockEventRepository()
     {
         var mock = new Mock<IEventRepository>();
@@ -176,6 +183,9 @@ public static class EventAdminServiceTests
 
         mock.Setup(x => x.EventEmailRepository)
             .Returns(eventEmailRepository ?? CreateMockEventEmailRepository());
+
+        mock.Setup(x => x.EventHostRepository)
+            .Returns(CreateMockEventHostRepository());
 
         mock.Setup(x => x.EventRepository)
             .Returns(CreateMockEventRepository());

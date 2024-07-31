@@ -6,6 +6,7 @@ using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 
@@ -30,7 +31,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var (chapter, chapterAdminMembers, adminMembers, currentMember, venue, settings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(model.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(model.ChapterId),
-            x => x.MemberRepository.GetAdminMembersByChapterId(model.ChapterId),
+            x => model.Hosts.Any() 
+                ? x.MemberRepository.GetAdminMembersByChapterId(model.ChapterId)
+                : new DefaultDeferredQueryMultiple<Member>(),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetById(model.VenueId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(model.ChapterId));
@@ -246,7 +249,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
 
-        if (@event.PublishedUtc != null)
+        if (@event.IsPublished)
         {
             return;
         }
@@ -267,7 +270,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         AssertEventEmailsCanBeSent(@event);
 
         responses = responses
-            .Where(x => responseTypes.Contains(x.ResponseTypeId))
+            .Where(x => responseTypes.Contains(x.Type))
             .ToArray();
 
         var (chapterAdminMembers, currentMember, members, chapter) = await _unitOfWork.RunAsync(
@@ -288,7 +291,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 {
                     EventId = eventId,
                     MemberId = invite.MemberId,
-                    ResponseTypeId = EventResponseType.None
+                    Type = EventResponseType.None
                 };
 
                 responseDictionary.Add(invite.MemberId, response);
@@ -376,7 +379,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         foreach (var @event in events)
         {
-            if (@event.PublishedUtc == null)
+            if (!@event.IsPublished)
             {
                 continue;
             }
@@ -465,13 +468,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             {
                 EventId = eventId,
                 MemberId = memberId,
-                ResponseTypeId = responseType
+                Type = responseType
             };
             _unitOfWork.EventResponseRepository.Add(response);
         }
         else
         {
-            response.ResponseTypeId = responseType;
+            response.Type = responseType;
             _unitOfWork.EventResponseRepository.Update(response);
         }
 

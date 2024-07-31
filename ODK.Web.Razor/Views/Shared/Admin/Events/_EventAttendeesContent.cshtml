@@ -13,7 +13,7 @@
     var (members, responses) = (dto.Members, dto.Responses);
 
     var responsesDictionary = responses
-        .ToDictionary(x => x.MemberId, x => x.ResponseTypeId);
+        .ToDictionary(x => x.MemberId, x => x.Type);
 }
 
 @await Html.PartialAsync("Admin/Events/_EventHeader")

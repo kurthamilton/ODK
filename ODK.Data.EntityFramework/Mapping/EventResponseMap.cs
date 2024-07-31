@@ -11,5 +11,8 @@ public class EventResponseMap : IEntityTypeConfiguration<EventResponse>
         builder.ToTable("EventResponses");
 
         builder.HasKey(x => new { x.EventId, x.MemberId });
+
+        builder.Property(x => x.Type)
+            .HasColumnName("ResponseTypeId");
     }
 }

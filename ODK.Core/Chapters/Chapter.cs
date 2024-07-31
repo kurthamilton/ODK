@@ -20,6 +20,8 @@ public class Chapter : IDatabaseEntity
 
     public TimeZoneInfo? TimeZone { get; set; }
 
+    public DateTime TodayUtc => FromChapterTime(CurrentTime.Date);
+
     public DateTime FromChapterTime(DateTime local) => TimeZone != null
         ? TimeZoneInfo.ConvertTimeToUtc(local, TimeZone)
         : local;

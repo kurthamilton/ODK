@@ -6,5 +6,5 @@ public class EventResponse
 
     public Guid MemberId { get; set; }
 
-    public EventResponseType ResponseTypeId { get; set; }
+    public EventResponseType Type { get; set; }
 }

@@ -4,13 +4,20 @@
 @model ODK.Web.Razor.Models.Members.MembersContentViewModel
 @inject IMemberService MemberService
 @{
-    IReadOnlyCollection<Member> members = await MemberService.GetMembers(Model.Member, Model.Chapter.Id);
-    IEnumerable<ListMemberViewModel> list = members
+    var members = await MemberService.GetMembers(Model.Member, Model.Chapter.Id);
+    var list = members
         .OrderBy(x => x.FullName)
-        .Select(x => new ListMemberViewModel(Model.Chapter, x));
+        .Select(x => new ListMemberViewModel
+        {
+            Chapter = Model.Chapter,
+            Member = x
+        })
+        .ToArray();
 }
 
-@await Html.PartialAsync("Members/_MemberList", new MemberListViewModel(Model.Chapter, list)
+@await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
 {
-    Cols = 3
+    Chapter = Model.Chapter,
+    Cols = 3,
+    Members = list
 })

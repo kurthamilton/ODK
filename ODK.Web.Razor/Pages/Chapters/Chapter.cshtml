@@ -1,14 +1,19 @@
 ﻿@page "/{chapterName}"
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Chapters
 @model ODK.Web.Razor.Pages.Chapters.ChapterModel
+@inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_ChapterLayout";
+
+    var memberId = User.MemberIdOrDefault();
+    var viewModel = await ChapterViewModelService.GetHomePage(memberId, Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
 {
-    Title = Model.Chapter.Name,
-    Content = await Html.PartialAsync("Chapters/_ChapterContent", new ChapterContentViewModel(Model.Chapter, Model.CurrentMember)),
-    SidebarContent = await Html.PartialAsync("Chapters/_ChapterSidebar", new ChapterSidebarViewModel(Model.Chapter, Model.CurrentMember))
+    Title = viewModel.Chapter.Name,
+    Content = await Html.PartialAsync("Chapters/_ChapterContent", viewModel),
+    SidebarContent = await Html.PartialAsync("Chapters/_ChapterSidebar", viewModel)
 })

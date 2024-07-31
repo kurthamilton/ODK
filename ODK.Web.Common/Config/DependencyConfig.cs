@@ -87,6 +87,7 @@ public static class DependencyConfig
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IChapterAdminService, ChapterAdminService>();
         services.AddScoped<IChapterService, ChapterService>();
+        services.AddScoped<IChapterViewModelService, ChapterViewModelService>();
         services.AddScoped<ICountryService, CountryService>();
         services.AddScoped<ICsvService, CsvService>();
         services.AddScoped<IEmailAdminService, EmailAdminService>();

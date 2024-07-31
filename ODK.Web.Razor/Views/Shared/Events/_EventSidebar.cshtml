@@ -28,10 +28,10 @@
     
     var membersById = dto.Members.ToDictionary(x => x.Id);
     var membersByResponse = dto.Responses
-        .GroupBy(x => x.ResponseTypeId)
+        .GroupBy(x => x.Type)
         .ToDictionary(x => x.Key, x => (IReadOnlyCollection<Member>)x.Select(y => membersById[y.MemberId]).ToArray());
     var currentResponse = dto.Responses
-        .FirstOrDefault(x => x.MemberId == Model.Member?.Id)?.ResponseTypeId;
+        .FirstOrDefault(x => x.MemberId == Model.Member?.Id)?.Type;
 }
 
 <div class="sidebar">

@@ -40,6 +40,12 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         .Where(x => x.ChapterId == chapterId && memberIds.Contains(x.Id))
         .DeferredMultiple();
 
+    public IDeferredQueryMultiple<Member> GetLatestByChapterId(Guid chapterId, int pageSize) => Set()
+        .Where(x => x.ChapterId == chapterId)
+        .OrderByDescending(x => x.CreatedUtc)
+        .Take(pageSize)
+        .DeferredMultiple();
+
     private IQueryable<Member> Query(bool searchAll)
     {
         if (searchAll)

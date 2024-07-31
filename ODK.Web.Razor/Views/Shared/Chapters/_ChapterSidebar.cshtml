@@ -1,35 +1,41 @@
 ﻿@using ODK.Core.Utils
-@using ODK.Services.Events
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models.Events
-@model ODK.Web.Razor.Models.Chapters.ChapterSidebarViewModel
-@inject IEventService EventService
+@model ChapterHomePageViewModel
 @{
-    var events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter);
+    var responseDictionary = Model.MemberEventResponses.ToDictionary(x => x.EventId);
+    var venueDictionary = Model.EventVenues.ToDictionary(x => x.Id);
 }
 
 <div class="sidebar">
-    @if (events.Count > 0)
+    @if (Model.Events.Count > 0)
     {
         <div class="card sidebar-card">
             <div class="card-header">Upcoming events</div>
 
-            @foreach (EventResponseViewModel @event in events.OrderBy(x => x.Date))
+            @foreach (var @event in Model.Events.OrderBy(x => x.Date))
             {
+                responseDictionary.TryGetValue(@event.Id, out var response);
+                venueDictionary.TryGetValue(@event.VenueId, out var venue);
+
                 <div class="card-body card-body-sm">
                     <h6 class="card-title">
                         @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                         {
-                            ResponseType = @event.Response,
+                            ResponseType = response?.Type,
                             ReadOnly = true
                         })
                         
-                        <a href="/@Model.Chapter.Name/Events/@(@event.EventId)">
-                            @(@event.EventName)
+                        <a href="/@Model.Chapter.Name/Events/@(@event.Id)">
+                            @(@event.GetDisplayName())
                         </a>
                     </h6>
                     <div class="d-inline-block d-md-block">@(@event.Date.EventDate())</div>
                     <span class="d-md-none">&nbsp;|&nbsp;</span>
-                    <div class="d-inline-block d-md-block">@(@event.VenueName)</div>
+                    @if (venue != null)
+                    {
+                        <div class="d-inline-block d-md-block">@venue.Name</div>
+                    }                    
                 </div>
             }
         </div>

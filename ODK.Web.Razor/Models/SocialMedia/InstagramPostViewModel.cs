@@ -4,6 +4,10 @@ namespace ODK.Web.Razor.Models.SocialMedia;
 
 public class InstagramPostViewModel
 {
+    public InstagramPostViewModel()
+    {
+    }
+
     public InstagramPostViewModel(Chapter chapter, Guid instagramPostId, string? caption, 
         string externalId)
     {
@@ -13,11 +17,11 @@ public class InstagramPostViewModel
         InstagramPostId = instagramPostId;
     }
 
-    public string? Caption { get; }
+    public required string? Caption { get; init; }
 
-    public Chapter Chapter { get; }
+    public required Chapter Chapter { get; init; }
 
-    public string ExternalId { get; }
+    public required string ExternalId { get; init; }
 
-    public Guid InstagramPostId { get; }
+    public required Guid InstagramPostId { get; init; }
 }

@@ -42,15 +42,19 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
         .Where(x => x.MemberId == memberId && x.EventId == eventId)
         .DeferredSingleOrDefault();
 
+    public IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, IEnumerable<Guid> eventIds) => Set()
+        .Where(x => x.MemberId == memberId && eventIds.Contains(x.EventId))
+        .DeferredMultiple();
+
     public IDeferredQueryMultiple<EventResponseSummaryDto> GetResponseSummaries(IEnumerable<Guid> eventIds) => Set()
         .Where(x => eventIds.Contains(x.EventId))
         .GroupBy(x => x.EventId)
         .Select(x => new EventResponseSummaryDto
         {
             EventId = x.Key,
-            Yes = x.Count(x => x.ResponseTypeId == EventResponseType.Yes),
-            Maybe = x.Count(x => x.ResponseTypeId == EventResponseType.Maybe),
-            No = x.Count(x => x.ResponseTypeId == EventResponseType.No)
+            Yes = x.Count(x => x.Type == EventResponseType.Yes),
+            Maybe = x.Count(x => x.Type == EventResponseType.Maybe),
+            No = x.Count(x => x.Type == EventResponseType.No)
         })
         .DeferredMultiple();
 
