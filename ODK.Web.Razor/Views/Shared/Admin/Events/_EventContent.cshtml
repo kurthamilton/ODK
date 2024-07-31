@@ -2,11 +2,11 @@
 @using ODK.Web.Razor.Models.Admin.Events
 @model ODK.Web.Razor.Models.Admin.Events.EventViewModel
 @{
-    var hostOptions = Model.ChapterAdminMembers?.Members
-        .Select(x => new SelectListItem
+    var hostOptions = Model.ChapterAdminMembers
+        ?.Select(x => new SelectListItem
         {
             Value = x.Id.ToString(),
-            Text = x.FullName
+            Text = x.Member.FullName
         })
         .ToArray() ?? [];
 }

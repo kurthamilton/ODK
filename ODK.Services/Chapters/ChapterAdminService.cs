@@ -247,7 +247,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return _unitOfWork.ChapterRepository.GetByName(name).RunAsync();
     }
 
-    public async Task<ChapterAdminMemberDto> GetChapterAdminMemberDto(Guid currentMemberId, Guid chapterId, Guid memberId)
+    public async Task<ChapterAdminMember> GetChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId)
     {
         var (chapterAdminMembers, currentMember, member) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
@@ -262,27 +262,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             throw new OdkNotFoundException();
         }
 
-        return new ChapterAdminMemberDto
-        {
-            AdminMember = adminMember,
-            Member = member
-        };
+        return adminMember;
     }
 
-    public async Task<ChapterAdminMembersDto> GetChapterAdminMemberDtos(Guid currentMemberId, Guid chapterId)
+    public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(Guid currentMemberId, Guid chapterId)
     {
-        var (chapterAdminMembers, currentMember, members) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberRepository.GetAdminMembersByChapterId(chapterId));
+            x => x.MemberRepository.GetById(currentMemberId));
         
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
-        return new ChapterAdminMembersDto
-        {
-            AdminMembers = chapterAdminMembers,
-            Members = members
-        };
+        return chapterAdminMembers;
     }
 
     public async Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(Guid currentMemberId,

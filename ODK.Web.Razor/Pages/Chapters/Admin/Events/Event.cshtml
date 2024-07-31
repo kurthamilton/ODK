@@ -11,7 +11,7 @@
     Layout = "Admin/Events/_EventAdminLayout";
     Model.Title = "Edit Event | Admin";
 
-    var chapterAdminMembers = await ChapterAdminService.GetChapterAdminMemberDtos(Model.CurrentMember.Id, Model.Chapter.Id);
+    var chapterAdminMembers = await ChapterAdminService.GetChapterAdminMembers(Model.CurrentMember.Id, Model.Chapter.Id);
     var hosts = await EventAdminService.GetEventHosts(Model.CurrentMember.Id, Model.Event);
 }
 

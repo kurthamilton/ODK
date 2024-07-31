@@ -116,15 +116,15 @@ public class EventService : IEventService
     
     public async Task<EventDto> GetEventDto(Member? member, Event @event)
     {
-        var (venue, settings, comments, hosts, adminMembers) = await _unitOfWork.RunAsync(
+        var (venue, settings, comments, hosts, chapterAdminMembers) = await _unitOfWork.RunAsync(
             x => x.VenueRepository.GetById(@event.VenueId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.EventCommentRepository.GetByEventId(@event.Id),
             x => x.EventHostRepository.GetByEventId(@event.Id),
-            x => x.MemberRepository.GetAdminMembersByChapterId(@event.ChapterId));
+            x => x.ChapterAdminMemberRepository.GetByChapterId(@event.ChapterId));
 
         var commentsDto = await GetCommentsDto(member, @event, settings, comments);
-        var adminMemberDictionary = adminMembers.ToDictionary(x => x.Id);
+        var adminMemberDictionary = chapterAdminMembers.ToDictionary(x => x.MemberId);
         var hostMembers = hosts
             .Where(x => adminMemberDictionary.ContainsKey(x.MemberId))
             .Select(x => adminMemberDictionary[x.MemberId])
@@ -133,7 +133,7 @@ public class EventService : IEventService
         return new EventDto
         {
             Comments = commentsDto,
-            Hosts = hostMembers,
+            Hosts = hostMembers.Select(x => x.Member).ToArray(),
             Venue = venue
         };
     }

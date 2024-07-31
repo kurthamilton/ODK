@@ -35,7 +35,7 @@ public class MailProvider : IMailProvider
         string body, 
         bool bcc = true)
     {
-        await SendBulkEmail(chapter, to, subject, body, null, null, bcc);
+        await SendBulkEmail(chapter, to, subject, body, null, bcc);
     }
 
     public async Task SendBulkEmail(
@@ -44,7 +44,6 @@ public class MailProvider : IMailProvider
         string subject, 
         string body, 
         ChapterAdminMember? fromAdminMember,
-        Member? fromMember,
         bool bcc = true)
     {
         var (email, chapterEmail, providers, siteSettings, chapterSettings, summary) = await _unitOfWork.RunAsync(
@@ -69,7 +68,7 @@ public class MailProvider : IMailProvider
             }
 
             var batch = toList.Skip(i).Take(batchSize);
-            var message = CreateMessage(provider, siteSettings, chapterSettings, fromAdminMember, fromMember, subject, body);
+            var message = CreateMessage(provider, siteSettings, chapterSettings, fromAdminMember, subject, body);
             if (bcc)
             {
                 AddBulkEmailBccRecipients(message, message.From.First(), batch);
@@ -85,15 +84,14 @@ public class MailProvider : IMailProvider
     }
 
     public Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, string subject, string body)    
-        => SendEmail(chapter, to, subject, body, null, null);
+        => SendEmail(chapter, to, subject, body, null);
 
     public async Task<ServiceResult> SendEmail(
         Chapter chapter, 
         EmailAddressee to, 
         string subject, 
         string body, 
-        ChapterAdminMember? fromAdminMember,
-        Member? fromMember)
+        ChapterAdminMember? fromAdminMember)
     {
         var (email, chapterEmail, providers, siteSettings, chapterSettings, summary) = await _unitOfWork.RunAsync(
             x => x.EmailRepository.GetByType(EmailType.Layout),
@@ -106,7 +104,7 @@ public class MailProvider : IMailProvider
         
         var (provider, _) = GetProvider(providers, summary);
 
-        var message = CreateMessage(provider, siteSettings, chapterSettings, fromAdminMember, fromMember, subject, body);
+        var message = CreateMessage(provider, siteSettings, chapterSettings, fromAdminMember, subject, body);
         AddEmailRecipient(message, to.ToMailboxAddress());
 
         return await SendEmail(provider, message);
@@ -138,16 +136,15 @@ public class MailProvider : IMailProvider
     private void AddEmailFrom(MimeMessage message, EmailProvider provider, 
         SiteSettings siteSettings,
         ChapterEmailSettings? chapterSettings,
-        ChapterAdminMember? fromAdminMember,
-        Member? fromMember)
+        ChapterAdminMember? fromAdminMember)
     {
-        if (fromMember != null)
+        if (fromAdminMember != null)
         {
-            var emailAddress = !string.IsNullOrEmpty(fromAdminMember?.AdminEmailAddress)
+            var emailAddress = !string.IsNullOrEmpty(fromAdminMember.AdminEmailAddress)
                 ? fromAdminMember.AdminEmailAddress
-                : fromMember.EmailAddress;
+                : fromAdminMember.Member.EmailAddress;
 
-            message.From.Add(new MailboxAddress($"{fromMember.FullName}", emailAddress));
+            message.From.Add(new MailboxAddress($"{fromAdminMember.Member.FullName}", emailAddress));
         }
         else
         {
@@ -162,7 +159,6 @@ public class MailProvider : IMailProvider
         SiteSettings siteSettings,
         ChapterEmailSettings chapterSettings,
         ChapterAdminMember? fromAdminMember, 
-        Member? fromMember,
         string subject, 
         string body)
     {
@@ -175,7 +171,7 @@ public class MailProvider : IMailProvider
             Subject = subject
         };
 
-        AddEmailFrom(message, provider, siteSettings, chapterSettings, fromAdminMember, fromMember);
+        AddEmailFrom(message, provider, siteSettings, chapterSettings, fromAdminMember);
 
         return message;
     }

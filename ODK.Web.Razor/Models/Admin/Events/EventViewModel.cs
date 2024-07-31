@@ -11,7 +11,7 @@ public class EventViewModel
         Chapter chapter, 
         Member currentMember, 
         Event @event,
-        ChapterAdminMembersDto? chapterAdminMembers = null,
+        IReadOnlyCollection<ChapterAdminMember>? chapterAdminMembers = null,
         IReadOnlyCollection<EventHost>? hosts = null)
     {
         Chapter = chapter;
@@ -23,7 +23,7 @@ public class EventViewModel
 
     public Chapter Chapter { get; }
 
-    public ChapterAdminMembersDto? ChapterAdminMembers { get; }
+    public IReadOnlyCollection<ChapterAdminMember>? ChapterAdminMembers { get; }
 
     public Member CurrentMember { get; }
 

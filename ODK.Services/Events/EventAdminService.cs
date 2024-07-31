@@ -28,12 +28,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> CreateEvent(Guid currentMemberId, CreateEvent model, bool draft)
     {
-        var (chapter, chapterAdminMembers, adminMembers, currentMember, venue, settings) = await _unitOfWork.RunAsync(
+        var (chapter, chapterAdminMembers, currentMember, venue, settings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(model.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(model.ChapterId),
-            x => model.Hosts.Any() 
-                ? x.MemberRepository.GetAdminMembersByChapterId(model.ChapterId)
-                : new DefaultDeferredQueryMultiple<Member>(),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetById(model.VenueId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(model.ChapterId));
@@ -63,7 +60,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         _unitOfWork.EventRepository.Add(@event);
 
-        UpdateEventHosts(@event, model.Hosts, [], adminMembers);
+        UpdateEventHosts(@event, model.Hosts, [], chapterAdminMembers);
 
         ScheduleEventEmail(@event, chapter, settings);
         
@@ -346,7 +343,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         return await SendEventInvites(
             chapterAdminMember, 
-            currentMember, 
             chapter,
             @event, 
             venue,
@@ -408,7 +404,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
             try
             {
-                await SendEventInvites(null, null, chapter, @event, venue, responses, invites, members);
+                await SendEventInvites(null, chapter, @event, venue, responses, invites, members);
             }            
             catch
             {
@@ -423,9 +419,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(id),
             x => x.VenueRepository.GetById(model.VenueId));
 
-        var (chapterAdminMembers, adminMembers, currentMember, hosts) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, hosts) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(@event.ChapterId),
-            x => x.MemberRepository.GetAdminMembersByChapterId(@event.ChapterId),
             x => x.MemberRepository.GetById(memberId),
             x => x.EventHostRepository.GetByEventId(@event.Id));
 
@@ -445,7 +440,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return validationResult;
         }
 
-        UpdateEventHosts(@event, model.Hosts, hosts, adminMembers);
+        UpdateEventHosts(@event, model.Hosts, hosts, chapterAdminMembers);
 
         _unitOfWork.EventRepository.Update(@event);
         await _unitOfWork.SaveChangesAsync();
@@ -664,7 +659,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     private async Task<ServiceResult> SendEventInvites(
         ChapterAdminMember? chapterAdminMember, 
-        Member? currentMember,
         Chapter chapter,
         Event @event,
         Venue venue,
@@ -682,7 +676,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         await _emailService.SendBulkEmail(
             chapterAdminMember,
-            currentMember,
             chapter,
             invited,
             EmailType.EventInvite,
@@ -728,9 +721,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         Event @event,
         IReadOnlyCollection<Guid> hosts,
         IReadOnlyCollection<EventHost> existingHosts,
-        IReadOnlyCollection<Member> adminMembers)
+        IReadOnlyCollection<ChapterAdminMember> adminMembers)
     {
-        var adminMemberDictionary = adminMembers.ToDictionary(x => x.Id);
+        var adminMemberDictionary = adminMembers.ToDictionary(x => x.MemberId);
         var existingHostDictionary = existingHosts.ToDictionary(x => x.MemberId);
 
         foreach (var host in hosts)

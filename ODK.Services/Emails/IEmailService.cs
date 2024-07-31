@@ -9,7 +9,6 @@ public interface IEmailService
 {
     Task SendBulkEmail(
         ChapterAdminMember? fromAdminMember,
-        Member? fromMember, 
         Chapter chapter, 
         IEnumerable<Member> to, 
         EmailType type, 

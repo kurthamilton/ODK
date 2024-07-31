@@ -17,11 +17,11 @@ public class AdminMemberModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
-    public ChapterAdminMemberDto AdminMember { get; private set; } = null!;
+    public ChapterAdminMember AdminMember { get; private set; } = null!;
 
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
-        AdminMember = await _chapterAdminService.GetChapterAdminMemberDto(CurrentMemberId, Chapter.Id, id);
+        AdminMember = await _chapterAdminService.GetChapterAdminMember(CurrentMemberId, Chapter.Id, id);
         return Page();
     }
 

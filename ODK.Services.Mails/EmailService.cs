@@ -20,7 +20,6 @@ public class EmailService : IEmailService
 
     public async Task SendBulkEmail(
         ChapterAdminMember? fromAdminMember, 
-        Member? fromMember,
         Chapter chapter, 
         IEnumerable<Member> to, 
         EmailType type, 
@@ -37,8 +36,7 @@ public class EmailService : IEmailService
             to.Select(x => x.GetEmailAddressee()), 
             email.Subject, 
             email.HtmlContent, 
-            fromAdminMember,
-            fromMember);
+            fromAdminMember);
     }
 
     public async Task SendBulkEmail(
@@ -48,10 +46,7 @@ public class EmailService : IEmailService
         string subject, 
         string body)
     {
-        var (fromAdminMember, fromMember) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, chapter.Id),
-            x => x.MemberRepository.GetById(currentMemberId));
-
+        var fromAdminMember = await _unitOfWork.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, chapter.Id).RunAsync();
         if (fromAdminMember == null)
         {
             throw new OdkNotAuthorizedException();
@@ -62,8 +57,7 @@ public class EmailService : IEmailService
             to.Select(x => x.GetEmailAddressee()), 
             subject, 
             body, 
-            fromAdminMember,
-            fromMember);
+            fromAdminMember);
     }
 
     public async Task SendContactEmail(Chapter chapter, string from, string message, 
@@ -71,15 +65,14 @@ public class EmailService : IEmailService
     {
         var type = EmailType.ContactRequest;
 
-        var (chapterAdminMembers, adminMembers, email, chapterEmail) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, email, chapterEmail) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberRepository.GetAdminMembersByChapterId(chapter.Id),
             x => x.EmailRepository.GetByType(type),
             x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
 
         email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
 
-        var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveContactEmails), adminMembers);
+        var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveContactEmails));
 
         await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
     }
@@ -87,15 +80,14 @@ public class EmailService : IEmailService
     public async Task SendEventCommentEmail(Chapter chapter, Member? replyToMember, EventComment comment,
         IDictionary<string, string> parameters)
     {
-        var (email, chapterEmail, chapterAdminMembers, adminMembers) = await _unitOfWork.RunAsync(
+        var (email, chapterEmail, chapterAdminMembers) = await _unitOfWork.RunAsync(
             x => x.EmailRepository.GetByType(EmailType.EventComment),
             x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.EventComment),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberRepository.GetAdminMembersByChapterId(chapter.Id));
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id));
 
         email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
 
-        var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveEventCommentEmails), adminMembers);
+        var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveEventCommentEmails));
         if (replyToMember != null)
         {
             to = to.Append(new EmailAddressee(replyToMember.EmailAddress, replyToMember.FullName));
@@ -120,9 +112,8 @@ public class EmailService : IEmailService
     {
         var to = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
 
-        var (fromAdminMember, fromMember, chapter) = await _unitOfWork.RunAsync(
+        var (fromAdminMember, chapter) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, to.ChapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterRepository.GetById(to.ChapterId));
 
         return await _mailProvider.SendEmail(
@@ -130,8 +121,7 @@ public class EmailService : IEmailService
             to.GetEmailAddressee(), 
             subject, 
             body, 
-            fromAdminMember,
-            fromMember);
+            fromAdminMember);
     }
 
     public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, 
@@ -139,26 +129,23 @@ public class EmailService : IEmailService
     {
         var type = EmailType.NewMemberAdmin;
 
-        var (chapterAdminMembers, adminMembers, email, chapterEmail) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, email, chapterEmail) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberRepository.GetAdminMembersByChapterId(chapter.Id),
             x => x.EmailRepository.GetByType(type),
             x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
 
         email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
 
-        var to = GetAddressees(chapterAdminMembers.Where(x => x.SendNewMemberEmails), adminMembers);
+        var to = GetAddressees(chapterAdminMembers.Where(x => x.SendNewMemberEmails));
         
         await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
     }
 
-    private static IEnumerable<EmailAddressee> GetAddressees(IEnumerable<ChapterAdminMember> adminMembers, IEnumerable<Member> members)
+    private static IEnumerable<EmailAddressee> GetAddressees(IEnumerable<ChapterAdminMember> adminMembers)
     {
-        var memberDictionary = members.ToDictionary(x => x.Id);
-
         foreach (var adminMember in adminMembers)
         {
-            var member = memberDictionary[adminMember.MemberId];
+            var member = adminMember.Member;
             var address = !string.IsNullOrEmpty(adminMember.AdminEmailAddress)
                 ? adminMember.AdminEmailAddress
                 : member.EmailAddress;

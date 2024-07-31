@@ -1,6 +1,5 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
-using ODK.Core.Members;
 
 namespace ODK.Services.Emails;
 
@@ -14,7 +13,6 @@ public interface IMailProvider
         string subject, 
         string body, 
         ChapterAdminMember? fromAdminMember,
-        Member? fromMember,
         bool bcc = true);
 
     Task<ServiceResult> SendEmail(
@@ -28,6 +26,5 @@ public interface IMailProvider
         EmailAddressee to, 
         string subject, 
         string body, 
-        ChapterAdminMember fromAdminMember,
-        Member fromMember);
+        ChapterAdminMember fromAdminMember);
 }

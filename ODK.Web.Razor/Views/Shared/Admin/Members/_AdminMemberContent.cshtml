@@ -1,17 +1,18 @@
-﻿@using ODK.Services.Chapters
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Admin.Members
-@model ChapterAdminMemberDto
+@model ChapterAdminMember
 
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
     {
-        AdminEmailAddress = Model.AdminMember.AdminEmailAddress,
+        AdminEmailAddress = Model.AdminEmailAddress,
         Name = Model.Member.FullName,
-        ReceiveContactEmails = Model.AdminMember.ReceiveContactEmails,
-        ReceiveEventCommentEmails = Model.AdminMember.ReceiveEventCommentEmails,
-        ReceiveNewMemberEmails = Model.AdminMember.ReceiveNewMemberEmails,
-        SendNewMemberEmails = Model.AdminMember.SendNewMemberEmails
+        ReceiveContactEmails = Model.ReceiveContactEmails,
+        ReceiveEventCommentEmails = Model.ReceiveEventCommentEmails,
+        ReceiveNewMemberEmails = Model.ReceiveNewMemberEmails,
+        SendNewMemberEmails = Model.SendNewMemberEmails
     })
     <button class="btn btn-primary">Update</button>
 </form>

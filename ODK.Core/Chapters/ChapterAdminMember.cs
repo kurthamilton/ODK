@@ -1,4 +1,6 @@
-﻿namespace ODK.Core.Chapters;
+﻿using ODK.Core.Members;
+
+namespace ODK.Core.Chapters;
 
 public class ChapterAdminMember : IDatabaseEntity
 {    
@@ -7,6 +9,8 @@ public class ChapterAdminMember : IDatabaseEntity
     public Guid ChapterId { get; set; }
 
     public Guid Id { get; set; }
+
+    public Member Member { get; set; } = null!;
 
     public Guid MemberId { get; set; }
 

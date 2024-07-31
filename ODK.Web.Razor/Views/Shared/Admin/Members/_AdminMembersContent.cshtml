@@ -10,10 +10,8 @@
 @{
     var memberId = User.MemberId();
 
-    var dto = await ChapterAdminService.GetChapterAdminMemberDtos(memberId, Model.Id);
+    var adminMembers = await ChapterAdminService.GetChapterAdminMembers(memberId, Model.Id);
     var members = await MemberAdminService.GetMembers(memberId, Model.Id);
-
-    var adminMembers = dto.AdminMembers;
 
     var adminMemberDictionary = adminMembers.ToDictionary(x => x.MemberId);
     var memberDictionary = members.ToDictionary(x => x.Id);

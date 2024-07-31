@@ -1,5 +1,4 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -11,17 +10,6 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
     public MemberRepository(OdkContext context)
         : base(context)
     {
-    }
-
-    public IDeferredQueryMultiple<Member> GetAdminMembersByChapterId(Guid chapterId)
-    {
-        var query =
-            from member in Set()
-            from adminMember in Set<ChapterAdminMember>()
-            where adminMember.MemberId == member.Id
-                && adminMember.ChapterId == chapterId
-            select member;
-        return query.DeferredMultiple();
     }
 
     public IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress) => Set()

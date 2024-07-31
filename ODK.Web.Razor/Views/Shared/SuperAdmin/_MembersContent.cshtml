@@ -6,7 +6,7 @@
 @inject IChapterAdminService ChapterAdminService
 @{
     var memberId = User.MemberId();
-    var adminMembers = await ChapterAdminService.GetChapterAdminMemberDtos(memberId, Model.Id);
+    var adminMembers = await ChapterAdminService.GetChapterAdminMembers(memberId, Model.Id);
 }
 
 <h2>Members</h2>
@@ -18,19 +18,19 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var member in adminMembers.Members.OrderBy(x => x.FullName))
+        @foreach (var adminMember in adminMembers.OrderBy(x => x.Member.FullName))
         {
             <tr>
-                <td>@member.FullName</td>
+                <td>@adminMember.Member.FullName</td>
                 <td>
-                    @if (Model.OwnerId == member.Id)
+                    @if (Model.OwnerId == adminMember.Id)
                     {
                         <i class="fa-solid fa-star text-warning"></i>
                     }
                     else
                     {
                         <form action="/@Model.Name/Admin/Chapter/Owner" method="post">
-                            @Html.Hidden("memberId", member.Id)
+                            @Html.Hidden("memberId", adminMember.Id)
                             <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
                                 <i class="fa-regular fa-star text-warning"></i>
                             </button>
