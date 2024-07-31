@@ -38,7 +38,9 @@
     @if (Model.Hosts.Count > 0)
     {
         <div class="card sidebar-card">
-            <div class="card-header">Hosts</div>
+            <div class="card-header">
+                @(Model.Hosts.Count == 1 ? "Host" : "Hosts")
+            </div>
             <div class="card-body card-body-sm">
                 <div class="d-flex flex-column gap-2">
                     @foreach (var host in Model.Hosts.OrderBy(x => x.FullName))
