@@ -14,10 +14,10 @@ public static class DateUtils
             .OrderBy(day => day < firstDayOfWeek);
     }
 
-    public static string EventDate(this DateTime date, bool @long = false)
+    public static string EventDate(this DateTime date, bool @long = false, DayOfWeek defaultDayOfWeek = DayOfWeek.Wednesday)
     {
         bool includeYear = date.Year != DateTime.UtcNow.Year;
-        bool includeDayOfWeek = date.DayOfWeek != DayOfWeek.Wednesday;
+        bool includeDayOfWeek = date.DayOfWeek != defaultDayOfWeek;
         string format = "";
         if (includeDayOfWeek)
         {

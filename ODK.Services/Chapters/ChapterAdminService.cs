@@ -142,8 +142,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ServiceResult> DeleteChapterAdminMember(Guid currentMemberId, Guid chapterId,
         Guid memberId)
     {
-        var (chapterAdminMembers, currentMember, member) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, chapter, currentMember, member) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberRepository.GetById(memberId));
 
@@ -156,6 +157,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         if (member.SuperAdmin)
         {
             return ServiceResult.Failure("Cannot delete a super admin");
+        }
+
+        if (chapter.OwnerId == memberId)
+        {
+            return ServiceResult.Failure("Cannot delete owner");
         }
 
         _unitOfWork.ChapterAdminMemberRepository.Delete(adminMember);
@@ -335,6 +341,26 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId));        
+    }
+
+    public async Task SetOwner(Guid currentMemberId, Guid chapterId, Guid memberId)
+    {
+        var (chapterAdminMembers, currentMember, chapter) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterRepository.GetById(chapterId));
+
+        AssertMemberIsSuperAdmin(currentMember);
+
+        var chapterAdminMember = chapterAdminMembers.FirstOrDefault(x => x.MemberId == memberId);
+        if (chapterAdminMember == null)
+        {
+            return;
+        }
+
+        chapter.OwnerId = memberId;
+        _unitOfWork.ChapterRepository.Update(chapter);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<ServiceResult> UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId,

@@ -1,6 +1,5 @@
 ﻿using ODK.Core.Exceptions;
 using ODK.Core.Members;
-using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -90,6 +89,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         return csv;
     }
+
+    public Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId) => GetMembers(currentMemberId,
+        new MemberFilter
+        {
+            ChapterId = chapterId,
+            Statuses = Enum.GetValues<SubscriptionStatus>().ToList(),
+            Types = Enum.GetValues<SubscriptionType>().ToList()
+        });
 
     public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, MemberFilter filter)
     {

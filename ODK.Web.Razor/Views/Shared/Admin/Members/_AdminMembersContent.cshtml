@@ -11,8 +11,9 @@
     var memberId = User.MemberId();
 
     var dto = await ChapterAdminService.GetChapterAdminMemberDtos(memberId, Model.Id);
+    var members = await MemberAdminService.GetMembers(memberId, Model.Id);
 
-    var (members, adminMembers) = (dto.Members, dto.AdminMembers);
+    var adminMembers = dto.AdminMembers;
 
     var adminMemberDictionary = adminMembers.ToDictionary(x => x.MemberId);
     var memberDictionary = members.ToDictionary(x => x.Id);
@@ -89,13 +90,20 @@
                 }
             </td>
             <td>
-                <form method="post" action="/@Model.Name/Admin/Members/AdminMembers/@member.Id/Delete">
-                    <button data-bs-toggle="tooltip" data-bs-title="Remove" 
-                            class="btn-icon text-danger"
-                            onclick="return confirm('Are you sure you want to remove admin access for this member?');">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </form>
+                @if (Model.OwnerId != adminMember.MemberId)
+                {
+                    <form method="post" action="/@Model.Name/Admin/Members/AdminMembers/@member.Id/Delete">
+                        <button data-bs-toggle="tooltip" data-bs-title="Remove"
+                                class="btn-icon text-danger"
+                                onclick="return confirm('Are you sure you want to remove admin access for this member?');">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                }          
+                else
+                {
+                    <i class="fa-solid fa-star text-warning" data-bs-toggle="tooltip" data-bs-title="Owner"></i>
+                }
             </td>
         </tr>
     }

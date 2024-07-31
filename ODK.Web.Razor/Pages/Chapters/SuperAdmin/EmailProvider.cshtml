@@ -11,7 +11,7 @@
 {
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/SuperAdmin/EmailProviders", Text = "Email providers" },
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/SuperAdmin/Emails", Text = "Emails" },
         new MenuItem { Text = Model.Provider?.SmtpServer ?? "SMTP" }
     },
     Content = await Html.PartialAsync("SuperAdmin/_EmailProviderContent", Model.Provider)

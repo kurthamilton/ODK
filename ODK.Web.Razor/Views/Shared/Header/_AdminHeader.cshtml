@@ -8,12 +8,11 @@
         new() { Link = $"/{Model.Chapter.Name}/Admin/Chapter/Text", Text = Model.Chapter.Name },
         new() { Link = $"/{Model.Chapter.Name}/Admin/Events", Text = "Events" },
         new() { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" }
-        // new() { Link = $"/{Model.Chapter.Name}/Admin/Media", Text = "Media" }
     };
 
     if (User.IsInRole("SuperAdmin"))
     {
-        menuItems.Add(new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/SuperAdmin/PaymentSettings", Text = "SuperAdmin" });
+        menuItems.Add(new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/SuperAdmin", Text = "SuperAdmin" });
     }
 }
 

@@ -110,6 +110,14 @@ public class ChapterAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("/{chapterName}/Admin/Chapter/Owner")]
+    public async Task<IActionResult> SetOwner(string chapterName, [FromForm] Guid memberId)
+    {
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        await _chapterAdminService.SetOwner(MemberId, chapter.Id, memberId);
+        return RedirectToReferrer();
+    }
+
     [HttpPost("/{chapterName}/Admin/Chapter/Properties/{id:guid}/Delete")]
     public async Task<IActionResult> DeleteProperty(Guid id)
     {

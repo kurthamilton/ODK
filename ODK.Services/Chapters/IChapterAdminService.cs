@@ -46,6 +46,8 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid currentMemberId, Guid chapterId);
 
+    Task SetOwner(Guid currentMemberId, Guid chapterId, Guid memberId);
+
     Task<ServiceResult> UpdateChapterAdminMember(Guid currentMemberId, Guid chapterId, Guid memberId, UpdateChapterAdminMember model);
 
     Task UpdateChapterLinks(Guid currentMemberId, Guid chapterId, UpdateChapterLinks model);

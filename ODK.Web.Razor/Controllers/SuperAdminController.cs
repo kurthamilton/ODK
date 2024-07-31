@@ -29,6 +29,12 @@ public class SuperAdminController : OdkControllerBase
         _settingsService = settingsService;
     }
 
+    [HttpGet("{chapterName}/Admin/SuperAdmin")]
+    public IActionResult Index(string chapterName)
+    {
+        return Redirect($"/{chapterName}/Admin/SuperAdmin/Payments");
+    }
+
     [HttpPost("{chapterName}/Admin/SuperAdmin/EmailProviders/{id:guid}/Delete")]
     public async Task<IActionResult> DeleteEmailProvider(Guid id)
     {

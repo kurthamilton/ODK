@@ -1,13 +1,17 @@
 ﻿@using ODK.Core.Emails
 @using ODK.Services.Emails
+@using ODK.Services.Settings
 @using ODK.Web.Common.Extensions
 @model ODK.Core.Chapters.Chapter
 @inject IEmailAdminService EmailAdminService
+@inject ISettingsService SettingsService
 @{
     var memberId = User.MemberId();
     var emails = await EmailAdminService.GetEmails(memberId);
+    var providers = await SettingsService.GetEmailProviders(memberId);
 }
 
+<h2>Emails</h2>
 <table class="table table-striped">
     <thead>
     <tr>
@@ -25,5 +29,38 @@
             </td>
         </tr>
     }
+    </tbody>
+</table>
+
+<h3>Providers</h3>
+<p>
+    <a class="btn btn-primary" href="/@Model.Name/Admin/SuperAdmin/EmailProviders/Create">
+        Create
+    </a>
+</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Provider</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var provider in providers)
+        {
+            <tr>
+                <td>
+                    <a href="/@Model.Name/Admin/SuperAdmin/EmailProviders/@provider.Id">@provider.SmtpServer</a>
+                </td>
+                <td>
+                    <form method="post" action="/@Model.Name/Admin/SuperAdmin/EmailProviders/@provider.Id/Delete">
+                        <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                onclick="return confirm('Are you sure you want to delete this email provider?');">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
