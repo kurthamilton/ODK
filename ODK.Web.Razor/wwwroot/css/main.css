@@ -11938,6 +11938,11 @@ textarea.form-control-lg {
   --bs-btn-color: #fff;
 }
 
+.button-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .card-body-sm {
   padding-left: 0.5rem;
   padding-right: 0.5rem;

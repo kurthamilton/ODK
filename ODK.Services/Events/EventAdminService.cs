@@ -24,7 +24,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> CreateEvent(Guid currentMemberId, CreateEvent model)
+    public async Task<ServiceResult> CreateEvent(Guid currentMemberId, CreateEvent model, bool draft)
     {
         var (chapter, chapterAdminMembers, currentMember, venue, settings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(model.ChapterId),
@@ -39,11 +39,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             ChapterId = model.ChapterId,
             CreatedBy = currentMember.FullName,
+            CreatedUtc = DateTime.UtcNow,
             Date = model.Date.SpecifyKind(DateTimeKind.Utc),
             Description = model.Description,
             ImageUrl = model.ImageUrl,
             IsPublic = model.IsPublic,
             Name = model.Name,
+            PublishedUtc = !draft ? DateTime.UtcNow : null,
             Time = model.Time,
             VenueId = model.VenueId
         };
@@ -232,6 +234,22 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         return nextEventDate;
+    }
+
+    public async Task PublishEvent(Guid currentMemberId, Guid eventId)
+    {
+        var @event = await _unitOfWork.EventRepository.GetById(eventId).RunAsync();
+
+        await AssertMemberIsChapterAdmin(currentMemberId, @event.ChapterId);
+
+        if (@event.PublishedUtc != null)
+        {
+            return;
+        }
+
+        @event.PublishedUtc = DateTime.UtcNow;
+        _unitOfWork.EventRepository.Update(@event);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes,

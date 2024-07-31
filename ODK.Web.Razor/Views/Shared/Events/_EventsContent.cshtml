@@ -1,9 +1,20 @@
-﻿@using ODK.Services.Events
+﻿@using ODK.Services.Authentication
+@using ODK.Services.Events
 @using ODK.Web.Razor.Models.Events
 @model ODK.Web.Razor.Models.Events.EventsContentViewModel
 @inject IEventService EventService
 @{
     var events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter);
+}
+
+@if (User.IsInRole(OdkRoles.Admin) && Model.Member?.ChapterId == Model.Chapter.Id)
+{
+    <div class="mb-3">
+        <a href="/@Model.Chapter.Name/Admin/Events" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-pen-to-square"></i>
+            Edit
+        </a>
+    </div>
 }
 
 @if (events.Count > 0)

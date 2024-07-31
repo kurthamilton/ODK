@@ -10,7 +10,7 @@ public class EventResponseViewModel
     {
         Date = @event.Date;
         EventId = @event.Id;
-        EventName = @event.Name;
+        EventName = @event.GetDisplayName();
         Invited = invited;
         Public = @public;
         Response = response;

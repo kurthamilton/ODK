@@ -4,15 +4,15 @@
 
 <h4 class="d-flex align-items-center">  
     @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
-           {
-               ReadOnly = true,
-               ResponseType = Model.EventResponse.Response
-           })
+    {
+        ReadOnly = true,
+        ResponseType = Model.EventResponse.Response
+    })
     
     @if (Model.EventResponse.Public)
     {
         <a href="/@Model.Chapter.Name/Events/Public/@Model.EventResponse.EventId" class="@(Model.EventResponse.Response > 0 ? "ml-1" : null)">
-            @Model.EventResponse.EventName [Public event]
+            @Model.EventResponse.EventName
         </a>
     }
     else

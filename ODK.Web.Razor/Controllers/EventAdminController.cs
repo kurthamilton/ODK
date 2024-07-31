@@ -69,6 +69,14 @@ public class EventAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("{chapterName}/Admin/Events/{id:guid}/Publish")]
+    public async Task<IActionResult> PublishEvent(Guid id)
+    {
+        await _eventAdminService.PublishEvent(MemberId, id);
+        AddFeedback(new FeedbackViewModel("Event published", FeedbackType.Success));
+        return RedirectToReferrer();
+    }
+
     [HttpPost("{chapterName}/Admin/Events/{id:guid}/ScheduledEmail")]
     public async Task<IActionResult> UpdateScheduledEmail(Guid id, EventScheduledEmailFormViewModel viewModel)
     {

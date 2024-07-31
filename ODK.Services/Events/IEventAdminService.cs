@@ -5,7 +5,7 @@ namespace ODK.Services.Events;
 
 public interface IEventAdminService
 {
-    Task<ServiceResult> CreateEvent(Guid memberId, CreateEvent createEvent);
+    Task<ServiceResult> CreateEvent(Guid memberId, CreateEvent createEvent, bool draft);
 
     Task DeleteEvent(Guid currentMemberId, Guid id);
     
@@ -28,6 +28,8 @@ public interface IEventAdminService
     Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId);
 
     Task<DateTime?> GetNextAvailableEventDate(Guid currentMemberId, Chapter chapter);
+
+    Task PublishEvent(Guid currentMemberId, Guid eventId);
 
     Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes, 
         string subject, string body);

@@ -23,7 +23,7 @@ public class EventCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormViewModel viewModel)
     {
-        ServiceResult result = await _eventAdminService.CreateEvent(CurrentMemberId, new ODK.Services.Events.CreateEvent
+        var result = await _eventAdminService.CreateEvent(CurrentMemberId, new CreateEvent
         {
             ChapterId = Chapter.Id,
             Date = viewModel.Date,
@@ -33,7 +33,7 @@ public class EventCreateModel : AdminPageModel
             Name = viewModel.Name,
             Time = viewModel.Time,
             VenueId = viewModel.Venue
-        });
+        }, viewModel.Draft);
         
         if (!result.Success)
         {

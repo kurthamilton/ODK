@@ -27,7 +27,7 @@
     {
         <tr>
             <td>
-                <a href="/@Model.Chapter.Name/Admin/Events/@(@event.Id)">@(@event.Name)</a>
+                <a href="/@Model.Chapter.Name/Admin/Events/@(@event.Id)">@(@event.GetDisplayName())</a>
             </td>
             <td>@(@event.Date.EventDate())</td>
         </tr>

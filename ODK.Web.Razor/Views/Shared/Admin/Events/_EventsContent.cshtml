@@ -49,7 +49,7 @@
         var venue = venueDictionary[@event.VenueId];
 
         <tr>
-            <td><a href="/@Model.Name/Admin/Events/@(@event.Id)">@(@event.Name)</a></td>
+            <td><a href="/@Model.Name/Admin/Events/@(@event.Id)">@(@event.GetDisplayName())</a></td>
             <td>@(@event.Date.EventDate())</td>
             <td><a href="/@Model.Name/Admin/Venues/@venue.Id">@venue.Name</a></td>
             <td>

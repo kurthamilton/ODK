@@ -10,6 +10,8 @@ public class Event : IDatabaseEntity
 
     public string CreatedBy { get; set; } = "";
 
+    public DateTime CreatedUtc { get; set; }
+
     public DateTime Date { get; set; }
 
     public string? Description { get; set; }
@@ -22,9 +24,13 @@ public class Event : IDatabaseEntity
 
     public string Name { get; set; } = "";
 
+    public DateTime? PublishedUtc { get; set; }
+
     public string? Time { get; set; }
 
     public Guid VenueId { get; set; }
+
+    public string GetDisplayName() => (PublishedUtc == null ? "[DRAFT] " : "") + Name;
 
     public bool IsAuthorized(Member? member)
     {

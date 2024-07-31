@@ -2,6 +2,7 @@
 @using ODK.Services.Events
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Razor.Models.Components
 @model ODK.Core.Chapters.Chapter
 @inject IChapterAdminService ChapterAdminService
 @inject IEventAdminService EventAdminService
@@ -29,5 +30,14 @@
         Description = settings?.DefaultDescription
     })
     
-    <button type="submit" class="btn btn-primary">Create</button>
+    <div class="button-container">
+        <button type="submit" class="btn btn-primary">Create</button>
+        <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
+        @await Html.PartialAsync("Components/_FeatureTooltip",
+            new FeatureTooltipViewModel
+            {
+                CurrentMemberId = memberId,
+                Name = "Events.SaveDraft"
+            })
+    </div>
 </form>

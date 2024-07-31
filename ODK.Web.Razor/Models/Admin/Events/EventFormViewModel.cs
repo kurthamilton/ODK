@@ -14,6 +14,8 @@ public class EventFormViewModel
 
     public string? Description { get; set; } = "";
 
+    public bool Draft { get; set; }
+
     public IReadOnlyCollection<SelectListItem> HostOptions { get; set; } = [];
 
     public List<Guid> Hosts { get; set; } = new();

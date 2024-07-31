@@ -188,7 +188,7 @@ public class EventService : IEventService
         var venueLookup = venues.ToDictionary(x => x.Id);        
 
         var viewModels = new List<EventResponseViewModel>();
-        foreach (Event @event in events)
+        foreach (var @event in events.Where(x => x.PublishedUtc != null))
         {
             var invited = invitedEventIds.Contains(@event.Id);
             responseLookup.TryGetValue(@event.Id, out EventResponseType responseType);
