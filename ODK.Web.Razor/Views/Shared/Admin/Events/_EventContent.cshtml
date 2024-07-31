@@ -38,7 +38,7 @@
         Hosts = Model.Hosts?.Select(x => x.MemberId).ToList() ?? [],
         HostOptions = hostOptions,
         ImageUrl = Model.Event.ImageUrl,
-        Name = Model.Event.GetDisplayName(),
+        Name = Model.Event.Name,
         Public = Model.Event.IsPublic,
         Time = Model.Event.Time,
         Venue = Model.Event.VenueId

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using System.Reflection;
+using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
@@ -26,9 +27,10 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> CreateEvent(Guid currentMemberId, CreateEvent model, bool draft)
     {
-        var (chapter, chapterAdminMembers, currentMember, venue, settings) = await _unitOfWork.RunAsync(
+        var (chapter, chapterAdminMembers, adminMembers, currentMember, venue, settings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(model.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(model.ChapterId),
+            x => x.MemberRepository.GetAdminMembersByChapterId(model.ChapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetById(model.VenueId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(model.ChapterId));
@@ -54,9 +56,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         if (!validationResult.Success)
         {
             return validationResult;
-        }
+        }        
 
         _unitOfWork.EventRepository.Add(@event);
+
+        UpdateEventHosts(@event, model.Hosts, [], adminMembers);
 
         ScheduleEventEmail(@event, chapter, settings);
         
@@ -372,6 +376,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         foreach (var @event in events)
         {
+            if (@event.PublishedUtc == null)
+            {
+                continue;
+            }
+
             var email = emailDictionary[@event.Id];
             var chapter = chapterDictionary[@event.ChapterId];
 
@@ -433,35 +442,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return validationResult;
         }
 
-        var adminMemberDictionary = adminMembers.ToDictionary(x => x.Id);
-        var hostDictionary = hosts.ToDictionary(x => x.MemberId);
-
-        foreach (var host in model.Hosts)
-        {
-            if (!adminMemberDictionary.ContainsKey(host))
-            {
-                return ServiceResult.Failure("Host not found");
-            }
-
-            if (hostDictionary.ContainsKey(host))
-            {
-                continue;
-            }
-
-            _unitOfWork.EventHostRepository.Add(new EventHost
-            {                
-                EventId = @event.Id,
-                MemberId = host
-            });
-        }
-
-        foreach (var host in hosts)
-        {
-            if (!model.Hosts.Contains(host.MemberId))
-            {
-                _unitOfWork.EventHostRepository.Delete(host);
-            }
-        }
+        UpdateEventHosts(@event, model.Hosts, hosts, adminMembers);
 
         _unitOfWork.EventRepository.Update(@event);
         await _unitOfWork.SaveChangesAsync();
@@ -573,7 +554,16 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return ServiceResult.Successful();
     }
 
-    private ServiceResult ValidateEvent(Event @event, Venue venue)
+    private static void AssertEventEmailsCanBeSent(Event @event)
+    {
+        ServiceResult result = ValidateEventEmailCanBeSent(@event);
+        if (!result.Success)
+        {
+            throw new OdkServiceException(result.Message);
+        }
+    }
+
+    private static ServiceResult ValidateEvent(Event @event, Venue venue)
     {
         if (string.IsNullOrWhiteSpace(@event.Name))
         {
@@ -591,16 +581,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
         
         return ServiceResult.Successful();
-    }
-
-    private static void AssertEventEmailsCanBeSent(Event @event)
-    {
-        ServiceResult result = ValidateEventEmailCanBeSent(@event);
-        if (!result.Success)
-        {
-            throw new OdkServiceException(result.Message);
-        }
-    }
+    }        
 
     private void AssertEventCanBeDeleted(EventEmail? eventEmail, IReadOnlyCollection<EventResponse> responses)
     {
@@ -738,5 +719,42 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
+    }
+
+    private void UpdateEventHosts(
+        Event @event,
+        IReadOnlyCollection<Guid> hosts,
+        IReadOnlyCollection<EventHost> existingHosts,
+        IReadOnlyCollection<Member> adminMembers)
+    {
+        var adminMemberDictionary = adminMembers.ToDictionary(x => x.Id);
+        var existingHostDictionary = existingHosts.ToDictionary(x => x.MemberId);
+
+        foreach (var host in hosts)
+        {
+            if (!adminMemberDictionary.ContainsKey(host))
+            {
+                continue;
+            }
+
+            if (existingHostDictionary.ContainsKey(host))
+            {
+                continue;
+            }
+
+            _unitOfWork.EventHostRepository.Add(new EventHost
+            {
+                EventId = @event.Id,
+                MemberId = host
+            });
+        }
+
+        foreach (var existingHost in existingHosts)
+        {
+            if (!hosts.Contains(existingHost.MemberId))
+            {
+                _unitOfWork.EventHostRepository.Delete(existingHost);
+            }
+        }
     }
 }

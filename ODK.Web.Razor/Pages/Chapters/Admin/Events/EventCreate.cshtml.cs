@@ -28,6 +28,7 @@ public class EventCreateModel : AdminPageModel
             ChapterId = Chapter.Id,
             Date = viewModel.Date,
             Description = viewModel.Description,
+            Hosts = viewModel.Hosts,
             ImageUrl = viewModel.ImageUrl,
             IsPublic = viewModel.Public,
             Name = viewModel.Name,
