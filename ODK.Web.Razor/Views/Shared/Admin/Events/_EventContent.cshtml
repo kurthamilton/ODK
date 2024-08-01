@@ -5,7 +5,7 @@
     var hostOptions = Model.ChapterAdminMembers
         ?.Select(x => new SelectListItem
         {
-            Value = x.Id.ToString(),
+            Value = x.MemberId.ToString(),
             Text = x.Member.FullName
         })
         .ToArray() ?? [];

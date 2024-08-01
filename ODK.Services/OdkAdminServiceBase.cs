@@ -17,8 +17,14 @@ public abstract class OdkAdminServiceBase
     protected async Task AssertMemberIsChapterAdmin(Guid memberId, Guid chapterId)
     {
         var (chapterAdminMembers, member) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(memberId),
             x => x.MemberRepository.GetById(memberId));
+        var chapterAdminMember = chapterAdminMembers.FirstOrDefault(x => x.ChapterId == chapterId);
+        if (chapterAdminMember == null)
+        {
+            throw new OdkNotAuthorizedException();
+        }
+
         bool isChapterAdmin = MemberIsChapterAdmin(member, chapterId, chapterAdminMembers);
         if (!isChapterAdmin)
         {

@@ -1,8 +1,10 @@
-﻿using ODK.Core.Exceptions;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
+using ODK.Services.Exceptions;
 
 namespace ODK.Services.Members;
 
@@ -25,22 +27,25 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task DeleteMember(Guid currentMemberId, Guid memberId)
     {
-        var member = await GetMember(currentMemberId, memberId);
-        if (member == null)
-        {
-            return;
-        }
+        var (chapterAdminMembers, member) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+            x => x.MemberRepository.GetById(memberId));
+
+        AssertCurrentAdminMemberCanSeeMember(currentMemberId, chapterAdminMembers, member);
 
         _unitOfWork.MemberRepository.Delete(member);
         await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
-        _cacheService.RemoveVersionedItem<Member>(memberId);
     }
 
-    public async Task<Member?> GetMember(Guid currentMemberId, Guid memberId)
+    public async Task<Member> GetMember(Guid currentMemberId, Guid memberId)
     {
-        return await GetMember(currentMemberId, memberId, superAdmin: false);
+        var (chapterAdminMembers, member) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+            x => x.MemberRepository.GetById(memberId));
+
+        AssertCurrentAdminMemberCanSeeMember(currentMemberId, chapterAdminMembers, member);
+
+        return member;
     }
     
     public async Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(Guid currentMemberId, Guid chapterId)
@@ -101,7 +106,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, MemberFilter filter)
     {
         var (members, memberSubscriptions, membershipSettings) = await GetChapterAdminRestrictedContent(currentMemberId, filter.ChapterId,
-            x => x.MemberRepository.GetByChapterId(filter.ChapterId, true),
+            x => x.MemberRepository.GetAllByChapterId(filter.ChapterId),
             x => x.MemberSubscriptionRepository.GetByChapterId(filter.ChapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(filter.ChapterId));
 
@@ -140,7 +145,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public async Task<MembersDto> GetMembersDto(Guid currentMemberId, Guid chapterId)
     {
         var (members, subscriptions) = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
-            x => x.MemberRepository.GetByChapterId(chapterId, searchAll: true),
+            x => x.MemberRepository.GetAllByChapterId(chapterId),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapterId));
 
         return new MembersDto
@@ -150,13 +155,15 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         };
     }
 
-    public async Task<MemberSubscription?> GetMemberSubscription(Guid currentMemberId, Guid memberId)
+    public async Task<MemberSubscription?> GetMemberSubscription(Guid currentMemberId, Guid chapterId, Guid memberId)
     {
-        var (member, memberSubscription) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, member, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+            x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId));
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId));
 
-        await AssertMemberIsChapterAdmin(currentMemberId, member.ChapterId);
+        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
         return memberSubscription;
     }
@@ -175,43 +182,44 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     
     public async Task RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees)
     {
-        Member? member = await GetMember(currentMemberId, memberId);
-        if (member == null)
-        {
-            return;
-        }
-
+        var (chapterAdminMembers, member) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+            x => x.MemberRepository.GetById(memberId));
+        
         await _memberService.RotateMemberImage(member.Id, degrees);
 
         _cacheService.RemoveVersionedItem<MemberImage>(memberId);
     }
     
-    public async Task SendActivationEmail(Guid currentMemberId, Guid memberId)
+    public async Task SendActivationEmail(Guid currentMemberId, Guid chapterId, Guid memberId)
     {
-        var (currentMember, chapterAdminMembers, member, memberActivationToken) = await _unitOfWork.RunAsync(
+        var (chapter, currentMember, chapterAdminMembers, member, memberActivationToken) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberActivationTokenRepository.GetByMemberId(memberId));        
 
-        AssertMemberIsChapterAdmin(currentMember, member.ChapterId, chapterAdminMembers);
+        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
-        if (memberActivationToken == null)
+        if (!member.IsMemberOf(chapterId) || memberActivationToken == null)
         {
             throw new OdkNotFoundException();
         }
-
-        var chapter = await _unitOfWork.ChapterRepository.GetById(member.ChapterId).RunAsync();
-
+        
         await _memberService.SendActivationEmailAsync(chapter, member, memberActivationToken.ActivationToken);
     }
 
-    public async Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid memberId,
+    public async Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid chapterId, Guid memberId,
         UpdateMemberSubscription model)
     {
-        var (member, memberSubscription) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, member, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+            x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId));
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId));
+
+        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
         var expiryDate = model.Type == SubscriptionType.Alum 
             ? new DateTime?() 
@@ -233,6 +241,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         if (memberSubscription.MemberId == default)
         {
+            memberSubscription.ChapterId = chapterId;
             memberSubscription.MemberId = memberId;
             _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
         }
@@ -243,32 +252,30 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         await _unitOfWork.SaveChangesAsync();
 
-        _cacheService.RemoveVersionedItem<MemberSubscription>(memberId);
-        _cacheService.RemoveVersionedCollection<Member>(member.ChapterId);
-
         return ServiceResult.Successful();
     }
-    
-    private async Task<Member?> GetMember(Guid currentMemberId, Guid id, bool superAdmin)
+
+    private void AssertCurrentAdminMemberCanSeeMember(
+        Guid currentMemberId,
+        IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers,
+        Member member)
     {
-        var member = await _unitOfWork.MemberRepository.GetByIdOrDefault(id, true).RunAsync();
-        if (member == null)
+        if (!CurrentMemberCanSeeMember(currentMemberId, chapterAdminMembers, member))
         {
-            throw new OdkNotFoundException();
+            throw new OdkNotAuthorizedException();
         }
-
-        if (superAdmin)
-        {
-            await AssertMemberIsChapterSuperAdmin(currentMemberId, member.ChapterId);
-        }
-        else
-        {
-            await AssertMemberIsChapterAdmin(currentMemberId, member.ChapterId);
-        }
-
-        return member;
     }
-    
+
+    private bool CurrentMemberCanSeeMember(
+        Guid currentMemberId, 
+        IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers, 
+        Member member)
+    {
+        var chapterAdminMember = chapterAdminMembers
+            .FirstOrDefault(x => x.MemberId == currentMemberId);
+        return chapterAdminMember != null && member.SharesChapterWith(chapterAdminMember.Member);
+    }
+
     private ServiceResult ValidateMemberSubscription(MemberSubscription subscription)
     {
         if (!Enum.IsDefined(typeof(SubscriptionType), subscription.Type) || subscription.Type == SubscriptionType.None)

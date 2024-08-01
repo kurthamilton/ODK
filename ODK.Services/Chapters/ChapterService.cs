@@ -1,7 +1,9 @@
 ﻿using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Members;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
@@ -35,8 +37,12 @@ public class ChapterService : IChapterService
 
     public async Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
     {
-        await _authorizationService.AssertMemberIsChapterMemberAsync(currentMemberId, chapterId);
-        return await _unitOfWork.ChapterPaymentSettingsRepository.GetByChapterId(chapterId).RunAsync();
+        var (currentMember, paymentSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
+
+        AssertMemberIsChapterMember(currentMember, chapterId);
+        return paymentSettings;
     }
     
     public async Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid? currentMemberId, Guid chapterId)
@@ -44,7 +50,9 @@ public class ChapterService : IChapterService
         var (chapterProperties, chapterPropertyOptions, memberProperties, membershipSettings, siteSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapterId),
-            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId ?? Guid.Empty),
+            x => currentMemberId != null 
+                ? x.MemberPropertyRepository.GetByMemberId(currentMemberId.Value, chapterId)
+                : new DefaultDeferredQueryMultiple<MemberProperty>(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
             x => x.SiteSettingsRepository.Get());
 
@@ -62,12 +70,15 @@ public class ChapterService : IChapterService
     {
         var chapterId = chapter.Id;
 
-        var (memberSubscription, chapterSubscriptions, country, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId),
+        var (currentMember, memberSubscription, chapterSubscriptions, country, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
             x => x.CountryRepository.GetById(chapter.CountryId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+
+        AssertMemberIsChapterMember(currentMember, chapterId);
 
         return new ChapterMemberSubscriptionsDto
         {
@@ -140,5 +151,13 @@ public class ChapterService : IChapterService
         };
 
         await _emailService.SendContactEmail(chapter, fromAddress, message, parameters);
+    }
+
+    private static void AssertMemberIsChapterMember(Member currentMember, Guid chapterId)
+    {
+        if (!currentMember.IsMemberOf(chapterId))
+        {
+            throw new OdkNotAuthorizedException();
+        }
     }
 }

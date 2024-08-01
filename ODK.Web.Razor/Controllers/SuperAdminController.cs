@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
 using ODK.Services.Logging;
@@ -9,7 +8,6 @@ using ODK.Web.Common.Feedback;
 
 namespace ODK.Web.Razor.Controllers;
 
-[Authorize(Roles = "SuperAdmin")]
 public class SuperAdminController : OdkControllerBase
 {
     private readonly IEmailAdminService _emailAdminService;

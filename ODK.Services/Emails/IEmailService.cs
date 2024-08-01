@@ -29,7 +29,7 @@ public interface IEmailService
     Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, EmailType type, 
         IDictionary<string, string> parameters);
 
-    Task<ServiceResult> SendMemberEmail(Guid currentMemberId, Guid memberId, string subject, string body);
+    Task<ServiceResult> SendMemberEmail(Chapter chapter, Guid currentMemberId, Guid memberId, string subject, string body);
 
     Task SendNewMemberAdminEmail(Chapter chapter, Member member, 
         IDictionary<string, string> parameters);

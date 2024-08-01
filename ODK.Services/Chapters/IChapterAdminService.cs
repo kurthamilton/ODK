@@ -32,7 +32,11 @@ public interface IChapterAdminService
 
     Task<ChapterEventSettings?> GetChapterEventSettings(Guid currentMemberId, Guid chapterId);
 
+    Task<ChapterLinks?> GetChapterLinks(Guid currentMemberId, Guid chapterId);
+
     Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid currentMemberId, Guid chapterId);
+
+    Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Chapter chapter);
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);
 
@@ -42,9 +46,13 @@ public interface IChapterAdminService
 
     Task<ChapterQuestion> GetChapterQuestion(Guid currentMemberId, Guid questionId);
 
+    Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid currentMemberId, Guid chapterId);
+
     Task<ChapterSubscription> GetChapterSubscription(Guid currentMemberId, Guid id);
 
     Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid currentMemberId, Guid chapterId);
+
+    Task<ChapterTexts?> GetChapterTexts(Guid currentMemberId, Guid chapterId);
 
     Task SetOwner(Guid currentMemberId, Guid chapterId, Guid memberId);
 

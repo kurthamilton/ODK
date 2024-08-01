@@ -289,10 +289,41 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapterId));
     }
 
+    public async Task<ChapterLinks?> GetChapterLinks(Guid currentMemberId, Guid chapterId)
+    {
+        return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.ChapterLinksRepository.GetByChapterId(chapterId));
+    }
+
     public async Task<ChapterMembershipSettings?> GetChapterMembershipSettings(Guid currentMemberId, Guid chapterId)
     {
         return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+    }
+
+    public async Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Chapter chapter)
+    {
+        var chapterId = chapter.Id;
+
+        var (chapterAdminMembers, currentMember, memberSubscription, chapterSubscriptions, country, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapter.Id),
+            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
+            x => x.CountryRepository.GetById(chapter.CountryId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+
+        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+
+        return new ChapterMemberSubscriptionsDto
+        {
+            ChapterSubscriptions = chapterSubscriptions,
+            Country = country,
+            MembershipSettings = membershipSettings ?? new(),
+            MemberSubscription = memberSubscription,
+            PaymentSettings = paymentSettings
+        };
     }
 
     public async Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
@@ -328,10 +359,22 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return subscription;
     }
 
+    public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid currentMemberId, Guid chapterId)
+    {
+        return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.ChapterQuestionRepository.GetByChapterId(chapterId));
+    }
+
     public async Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(Guid currentMemberId, Guid chapterId)
     {
         return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId));        
+    }
+
+    public async Task<ChapterTexts?> GetChapterTexts(Guid currentMemberId, Guid chapterId)
+    {
+        return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.ChapterTextsRepository.GetByChapterId(chapterId));
     }
 
     public async Task SetOwner(Guid currentMemberId, Guid chapterId, Guid memberId)

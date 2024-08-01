@@ -5,7 +5,7 @@
 @using ODK.Web.Razor.Models.Events
 @model ODK.Web.Razor.Models.Events.EventContentViewModel
 
-@if (User.IsInRole(OdkRoles.Admin) && Model.CurrentMember?.ChapterId == Model.Chapter.Id)
+@if (User.IsInRole(OdkRoles.Admin) && Model.CurrentMember?.IsMemberOf(Model.Chapter.Id) == true)
 {
     <div class="mb-3 button-container">
         <a href="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id" class="btn btn-outline-secondary">

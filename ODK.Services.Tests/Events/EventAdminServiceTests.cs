@@ -158,7 +158,10 @@ public static class EventAdminServiceTests
         mock.Setup(x => x.GetById(It.IsAny<Guid>()))
             .Returns(new MockDeferredQuerySingle<Member>(new Member 
             { 
-                ChapterId = ChapterId,
+                Chapters = new List<MemberChapter>
+                {
+                    new MemberChapter { ChapterId = ChapterId }
+                },
                 Id = CurrentMemberId
             }));
 

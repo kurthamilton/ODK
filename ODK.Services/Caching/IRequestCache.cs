@@ -15,5 +15,5 @@ public interface IRequestCache
 
     Task<Member?> GetMemberAsync(Guid memberId);
 
-    Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId);
+    Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId, Guid chapterId);
 }

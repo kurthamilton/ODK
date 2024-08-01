@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
+using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Services.Caching;
 using ODK.Services.Members;
@@ -19,16 +20,12 @@ public abstract class MemberAdminPageModel : AdminPageModel
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id);
-        Member? member = await MemberAdminService.GetMember(CurrentMemberId, id);
-        if (member == null)
+        if (!Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id))
         {
-            Response.StatusCode = 404;
-            return;
+            throw new OdkNotFoundException();
         }
 
-        Member = member;
-
+        Member = await MemberAdminService.GetMember(CurrentMemberId, id);
         await base.OnPageHandlerExecutionAsync(context, next);
     }
 }

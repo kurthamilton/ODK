@@ -4,6 +4,8 @@ namespace ODK.Core.Members;
 
 public class MemberSubscription : IVersioned
 {
+    public Guid ChapterId { get; set; }
+
     public DateTime? ExpiresUtc { get; set; }
 
     public Guid MemberId { get; set; }

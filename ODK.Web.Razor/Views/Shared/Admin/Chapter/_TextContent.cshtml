@@ -1,10 +1,12 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ODK.Core.Chapters.Chapter
-@inject IChapterService ChapterService
+@inject IChapterAdminService ChapterAdminService
 @{
-    var texts = await ChapterService.GetChapterTexts(Model.Id);
+    var memberId = User.MemberId();
+    var texts = await ChapterAdminService.GetChapterTexts(memberId, Model.Id);
 }
 
 <form method="post" action="/@Model.Name/Admin/Chapter/Text">
@@ -12,8 +14,8 @@
 
     @await Html.PartialAsync("Admin/Chapter/_TextForm", new ChapterTextsFormViewModel
     {
-        RegisterMessage = texts.RegisterText,
-        WelcomeMessage = texts.WelcomeText
+        RegisterMessage = texts?.RegisterText,
+        WelcomeMessage = texts?.WelcomeText
     })
     <button class="btn btn-primary">Update</button>
 </form>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.EntityFramework.Converters;
 
@@ -20,6 +21,10 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
         builder.Property(x => x.Type)
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
+
+        builder.HasOne<Chapter>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterId);
 
         builder.HasOne<Member>()
             .WithMany()

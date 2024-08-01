@@ -35,18 +35,18 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("/Account/Login")]
-    public async Task<IActionResult> Login([FromForm] LoginViewModel viewModel, string? returnUrl)
+    [HttpPost("{chapterName}/Account/Login")]
+    public async Task<IActionResult> Login(string chapterName, [FromForm] LoginViewModel viewModel, string? returnUrl)
     {
-        AuthenticationResult result = await _loginHandler.Login(HttpContext, viewModel.Email ?? "",
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var result = await _loginHandler.Login(HttpContext, viewModel.Email ?? "",
             viewModel.Password ?? "", true);
 
         if (result.Success && result.Member != null)
         {
             if (string.IsNullOrEmpty(returnUrl))
             {
-                Chapter? chapter = await _requestCache.GetChapterAsync(result.Member.ChapterId);
-                return Redirect($"/{chapter?.Name}");
+                return Redirect($"/{chapter.Name}");
             }
 
             return Redirect(returnUrl);
@@ -66,9 +66,11 @@ public class AccountController : OdkControllerBase
     }
 
     [HttpPost("{ChapterName}/Account/Email/Change")]
-    public async Task<IActionResult> RequestEmailChange([FromForm] ChangeEmailFormViewModel viewModel)
+    public async Task<IActionResult> RequestEmailChange(string chapterName, [FromForm] ChangeEmailFormViewModel viewModel)
     {
-        ServiceResult result = await _memberService.RequestMemberEmailAddressUpdate(MemberId, viewModel.Email ?? "");
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+
+        var result = await _memberService.RequestMemberEmailAddressUpdate(MemberId, chapter.Id, viewModel.Email ?? "");
         if (result.Success)
         {
             string message = !string.IsNullOrEmpty(result.Message)
@@ -175,10 +177,11 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("/Account/Password/Forgotten")]
-    public async Task<IActionResult> ForgottenPassword([FromForm] ForgottenPasswordFormViewModel viewModel)
+    [HttpPost("/{ChapterName}/Account/Password/Forgotten")]
+    public async Task<IActionResult> ForgottenPassword(string chapterName, [FromForm] ForgottenPasswordFormViewModel viewModel)
     {
-        ServiceResult result = await _authenticationService.RequestPasswordResetAsync(viewModel.EmailAddress ?? "");
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var result = await _authenticationService.RequestPasswordResetAsync(chapter.Id, viewModel.EmailAddress ?? "");
         if (result.Success)
         {
             string message = "An email containing password reset instructions has been sent to that email address " +
@@ -223,9 +226,11 @@ public class AccountController : OdkControllerBase
     }
     
     [HttpPost("{ChapterName}/Account/Subscription/Purchase")]
-    public async Task<IActionResult> PurchaseSubscription([FromForm] PurchaseSubscriptionRequest request)
+    public async Task<IActionResult> PurchaseSubscription(string chapterName, [FromForm] PurchaseSubscriptionRequest request)
     {
-        ServiceResult result = await _memberService.PurchaseSubscription(MemberId, request.SubscriptionId, request.Token);
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+
+        var result = await _memberService.PurchaseSubscription(MemberId, chapter.Id, request.SubscriptionId, request.Token);
         AddFeedback(result.Success
             ? new FeedbackViewModel("Purchase complete. Thank you for subscribing.", FeedbackType.Success)
             : new FeedbackViewModel(result));

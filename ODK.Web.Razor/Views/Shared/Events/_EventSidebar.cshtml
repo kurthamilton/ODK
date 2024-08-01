@@ -11,7 +11,7 @@
 @inject IEventService EventService
 @inject IRequestCache RequestCache
 @{
-    if (Model.Member == null || Model.Member.ChapterId != Model.Chapter.Id)
+    if (Model.Member == null || !Model.Member.IsMemberOf(Model.Chapter.Id))
     {
         return;
     }
