@@ -18,8 +18,6 @@ public interface IAuthorizationService
     string? GetRestrictedContentMessage(Member? member, Chapter? chapter, MemberSubscription? subscription, 
         ChapterMembershipSettings? membershipSettings);
 
-    Task<string?> GetRestrictedContentMessageAsync(Guid? memberId, Chapter? chapter);
-
     SubscriptionStatus GetSubscriptionStatus(MemberSubscription subscription, ChapterMembershipSettings membershipSettings);
 
     Task<bool> MembershipIsActiveAsync(Guid memberId, Guid chapterId);

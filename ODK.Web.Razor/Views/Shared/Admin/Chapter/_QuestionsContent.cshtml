@@ -1,9 +1,11 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
 @model ODK.Core.Chapters.Chapter
-@inject IChapterService ChapterService
+@inject IChapterAdminService ChapterAdminService
 @{
-    IReadOnlyCollection<ChapterQuestion> questions = await ChapterService.GetChapterQuestions(Model.Id);
+    var memberId = User.MemberId();
+    var questions = await ChapterAdminService.GetChapterQuestions(memberId, Model.Id);
 }
 
 <h2>About page</h2>

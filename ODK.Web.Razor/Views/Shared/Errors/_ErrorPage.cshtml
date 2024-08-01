@@ -1,2 +1,11 @@
-﻿@model System.Net.HttpStatusCode
+﻿@using System.Net
+@model HttpStatusCode
 
+@switch (Model)
+{
+    case HttpStatusCode.Forbidden:
+        <p>
+            You are not permitted to view that page
+        </p>
+        break;
+}

@@ -8,6 +8,8 @@ public static class HttpStatusCodeExtensions
     {
         switch (statusCode)
         {
+            case HttpStatusCode.Forbidden:
+                return "Not permitted";
             case HttpStatusCode.NotFound:
                 return "Page not found";
             default:

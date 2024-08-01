@@ -46,18 +46,19 @@ public class MemberAdminController : OdkControllerBase
     }
 
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/ResendActivationEmail")]
-    public async Task<IActionResult> ResendActivationEmail(Guid id)
+    public async Task<IActionResult> ResendActivationEmail(string chapterName, Guid id)
     {
-        await _memberAdminService.SendActivationEmail(MemberId, id);
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        await _memberAdminService.SendActivationEmail(MemberId, chapter.Id, id);
         AddFeedback(new FeedbackViewModel("Email sent", FeedbackType.Success));
         return RedirectToReferrer();
     }
 
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/SendEmail")]
-    public async Task<IActionResult> SendEmail(Guid id, [FromForm] SendMemberEmailFormViewModel viewModel)
+    public async Task<IActionResult> SendEmail(string chapterName, Guid id, [FromForm] SendMemberEmailFormViewModel viewModel)
     {
-        ServiceResult result = await _emailService.SendMemberEmail(MemberId, id, 
-            viewModel.Subject, viewModel.Body);
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var result = await _emailService.SendMemberEmail(chapter, MemberId, id, viewModel.Subject, viewModel.Body);
 
         if (result.Success)
         {

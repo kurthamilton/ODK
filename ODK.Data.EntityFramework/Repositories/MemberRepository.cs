@@ -1,7 +1,9 @@
-﻿using ODK.Core.Members;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
+using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
@@ -16,40 +18,28 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         .Where(x => x.EmailAddress == emailAddress)
         .DeferredSingleOrDefault();
 
-    public IDeferredQuerySingleOrDefault<Member> GetByIdOrDefault(Guid memberId, bool searchAll) => Query(searchAll)
-        .Where(x => x.Id == memberId)
-        .DeferredSingleOrDefault();
+    public IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId) => Set()
+        .InChapter(chapterId)
+        .DeferredMultiple();
 
-    public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId, bool searchAll = false) => Query(searchAll)
-        .Where(x => x.ChapterId == chapterId)
+    public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId) => Set()
+        .Current(Set<MemberSubscription>(), chapterId)
+        .InChapter(chapterId)
         .DeferredMultiple();
 
     public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId, IEnumerable<Guid> memberIds) => Set()
-        .Where(x => x.ChapterId == chapterId && memberIds.Contains(x.Id))
+        .Current(Set<MemberSubscription>(), chapterId)
+        .InChapter(chapterId)
+        .Where(x => memberIds.Contains(x.Id))
         .DeferredMultiple();
 
     public IDeferredQueryMultiple<Member> GetLatestByChapterId(Guid chapterId, int pageSize) => Set()
-        .Where(x => x.ChapterId == chapterId)
+        .Current(Set<MemberSubscription>(), chapterId)
+        .InChapter(chapterId)
         .OrderByDescending(x => x.CreatedUtc)
         .Take(pageSize)
         .DeferredMultiple();
 
-    private IQueryable<Member> Query(bool searchAll)
-    {
-        if (searchAll)
-        {
-            return Set();
-        }
-
-        var subscriptionTypes = new[] { SubscriptionType.Trial, SubscriptionType.Full, SubscriptionType.Partial };
-        var query = Set()
-            .Where(x => x.Activated && !x.Disabled);
-
-        return
-            from member in query
-            from memberSubscription in Set<MemberSubscription>()
-            where memberSubscription.MemberId == member.Id
-                && subscriptionTypes.Contains(memberSubscription.Type)
-            select member;
-    }
+    protected override IQueryable<Member> Set() => base.Set()
+        .Include(x => x.Chapters);
 }

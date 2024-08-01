@@ -10,7 +10,7 @@
         new() { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" }
     };
 
-    if (User.IsInRole("SuperAdmin"))
+    if (Model.CurrentMember.SuperAdmin)
     {
         menuItems.Add(new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/SuperAdmin", Text = "SuperAdmin" });
     }

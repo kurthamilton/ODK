@@ -91,11 +91,11 @@ public class RequestCache : IRequestCache
         return member;
     }
 
-    public async Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId)
+    public async Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId, Guid chapterId)
     {
         if (!_memberSubscriptions.ContainsKey(memberId))
         {
-            var subscription = await _unitOfWork.MemberSubscriptionRepository.GetByMemberId(memberId).RunAsync();
+            var subscription = await _unitOfWork.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId).RunAsync();
             _memberSubscriptions[memberId] = subscription;
         }
 

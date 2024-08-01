@@ -4,6 +4,8 @@ public class MemberSubscriptionRecord : IDatabaseEntity
 {
     public double Amount { get; set; }
 
+    public Guid ChapterId { get; set; }
+
     public Guid Id { get; set; }
 
     public Guid MemberId { get; set; }

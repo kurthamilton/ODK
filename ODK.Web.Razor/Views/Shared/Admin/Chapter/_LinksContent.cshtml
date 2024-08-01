@@ -1,10 +1,12 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ODK.Core.Chapters.Chapter
-@inject IChapterService ChapterService
+@inject IChapterAdminService ChapterAdminService
 @{
-    var links = await ChapterService.GetChapterLinks(Model.Id);    
+    var memberId = User.MemberId();
+    var links = await ChapterAdminService.GetChapterLinks(memberId, Model.Id);
 }
 
 <h2>Social media links</h2>

@@ -26,5 +26,6 @@ public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMemb
         .DeferredSingleOrDefault();
 
     protected override IQueryable<ChapterAdminMember> Set() => base.Set()
-        .Include(x => x.Member);
+        .Include(x => x.Member)
+        .ThenInclude(x => x.Chapters);
 }

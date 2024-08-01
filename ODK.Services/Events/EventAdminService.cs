@@ -296,7 +296,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         var to = members
-            .Where(x => x.EmailOptIn && responseDictionary.ContainsKey(x.Id))
+            .Where(x => x.IsCurrent() && x.EmailOptIn && responseDictionary.ContainsKey(x.Id))
             .ToArray();
 
         await _emailService.SendBulkEmail(currentMemberId, chapter, to, subject, body);
@@ -671,7 +671,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var memberResponses = responses.ToDictionary(x => x.MemberId, x => x);
         var inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
         var invited = members
-            .Where(x => x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id) && !memberResponses.ContainsKey(x.Id))
+            .Where(x => x.IsCurrent() && x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id) && !memberResponses.ContainsKey(x.Id))
             .ToArray();
 
         await _emailService.SendBulkEmail(

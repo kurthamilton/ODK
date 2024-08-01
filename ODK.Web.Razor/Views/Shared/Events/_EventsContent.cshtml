@@ -7,7 +7,7 @@
     var events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter);
 }
 
-@if (User.IsInRole(OdkRoles.Admin) && Model.Member?.ChapterId == Model.Chapter.Id)
+@if (User.IsInRole(OdkRoles.Admin) && Model.Member?.IsMemberOf(Model.Chapter.Id) == true)
 {
     <div class="mb-3">
         <a href="/@Model.Chapter.Name/Admin/Events" class="btn btn-outline-secondary">

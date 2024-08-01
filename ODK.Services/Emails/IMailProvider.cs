@@ -26,5 +26,5 @@ public interface IMailProvider
         EmailAddressee to, 
         string subject, 
         string body, 
-        ChapterAdminMember fromAdminMember);
+        ChapterAdminMember? fromAdminMember);
 }

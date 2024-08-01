@@ -108,13 +108,11 @@ public class EmailService : IEmailService
         return await _mailProvider.SendEmail(chapter, to, email.Subject, email.HtmlContent);
     }
 
-    public async Task<ServiceResult> SendMemberEmail(Guid currentMemberId, Guid memberId, string subject, string body)
+    public async Task<ServiceResult> SendMemberEmail(Chapter chapter, Guid currentMemberId, Guid memberId, string subject, string body)
     {
-        var to = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
-
-        var (fromAdminMember, chapter) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, to.ChapterId),
-            x => x.ChapterRepository.GetById(to.ChapterId));
+        var (to, fromAdminMember) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, chapter.Id));
 
         return await _mailProvider.SendEmail(
             chapter, 

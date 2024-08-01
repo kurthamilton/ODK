@@ -23,7 +23,7 @@ public class AccountModel : ChapterPageModel
 
     public async Task<IActionResult> OnPostAsync(ProfileFormViewModel viewModel)
     {
-        UpdateMemberProfile update = new UpdateMemberProfile
+        var model = new UpdateMemberProfile
         {
             FirstName = viewModel.FirstName,
             LastName = viewModel.LastName,
@@ -39,7 +39,7 @@ public class AccountModel : ChapterPageModel
 
         var memberId = User.MemberId();
 
-        var result = await _memberService.UpdateMemberProfile(memberId, update);
+        var result = await _memberService.UpdateMemberProfile(memberId, Chapter.Id, model);
         if (!result.Success)
         {
             AddFeedback(new FeedbackViewModel(result));

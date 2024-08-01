@@ -4,7 +4,8 @@
 @inject IMemberAdminService MemberAdminService
 @model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
 @{
-    MemberSubscription? subscription = await MemberAdminService.GetMemberSubscription(Model.CurrentMember.Id, Model.Member.Id);
+    var subscription = await MemberAdminService
+        .GetMemberSubscription(Model.CurrentMember.Id, Model.Chapter.Id, Model.Member.Id);
 }
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)

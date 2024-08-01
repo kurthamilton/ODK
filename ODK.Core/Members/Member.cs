@@ -7,7 +7,7 @@ public class Member : IVersioned, IDatabaseEntity
 {
     public bool Activated { get; set; }
 
-    public Guid ChapterId { get; set; }
+    public ICollection<MemberChapter> Chapters { get; set; } = new List<MemberChapter>();
 
     public DateTime CreatedUtc { get; set; }
 
@@ -29,14 +29,13 @@ public class Member : IVersioned, IDatabaseEntity
 
     public byte[] Version { get; set; } = [];
 
-    public bool CanBeViewedBy(Member currentMember) => IsMemberOf(currentMember.ChapterId);
+    public bool CanBeViewedBy(Member other) => IsCurrent() && SharesChapterWith(other);
 
-    public EmailAddressee GetEmailAddressee()
-    {
-        return new EmailAddressee(EmailAddress, FullName);
-    }
+    public EmailAddressee GetEmailAddressee() => new EmailAddressee(EmailAddress, FullName);    
 
-    public bool IsMemberOf(Guid chapterId) => chapterId == ChapterId || SuperAdmin;
+    public bool IsMemberOf(Guid chapterId) => Chapters.Any(x => x.ChapterId == chapterId) || SuperAdmin;
 
     public bool IsCurrent() => Activated && !Disabled;
+
+    public bool SharesChapterWith(Member other) => other.Chapters.Any(x => IsMemberOf(x.ChapterId));
 }

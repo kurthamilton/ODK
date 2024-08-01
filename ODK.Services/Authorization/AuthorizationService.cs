@@ -53,7 +53,7 @@ public class AuthorizationService : IAuthorizationService
 
     public async Task AssertMembershipIsActiveAsync(Guid memberId, Guid chapterId)
     {
-        MemberSubscription? subscription = await GetMemberSubscriptionAsync(memberId);
+        var subscription = await GetMemberSubscriptionAsync(memberId, chapterId);
         if (subscription == null || !await MembershipIsActiveAsync(subscription, chapterId))
         {
             throw new OdkNotAuthorizedException();
@@ -87,21 +87,6 @@ public class AuthorizationService : IAuthorizationService
         }
     }
 
-    public async Task<string?> GetRestrictedContentMessageAsync(Guid? memberId, Chapter? chapter)
-    {
-        var member = memberId != null
-            ? await _requestCache.GetMemberAsync(memberId.Value)
-            : null;
-        var memberSubscription = memberId != null
-            ? await _requestCache.GetMemberSubscriptionAsync(memberId.Value)
-            : null;
-        var membershipSettings = chapter != null
-            ? await _requestCache.GetChapterMembershipSettingsAsync(chapter.Id)
-            : null;
-
-        return GetRestrictedContentMessage(member, chapter, memberSubscription, membershipSettings);
-    }
-
     public SubscriptionStatus GetSubscriptionStatus(MemberSubscription subscription, 
         ChapterMembershipSettings membershipSettings)
     {
@@ -131,7 +116,7 @@ public class AuthorizationService : IAuthorizationService
 
     public async Task<bool> MembershipIsActiveAsync(Guid memberId, Guid chapterId)
     {
-        var subscription = await _requestCache.GetMemberSubscriptionAsync(memberId);
+        var subscription = await _requestCache.GetMemberSubscriptionAsync(memberId, chapterId);
         if (subscription == null)
         {
             return false;
@@ -176,15 +161,15 @@ public class AuthorizationService : IAuthorizationService
 
     private async Task<Member> GetMemberAsync(Guid id)
     {
-        var member = await _unitOfWork.MemberRepository.GetByIdOrDefault(id, true).RunAsync();
+        var member = await _unitOfWork.MemberRepository.GetByIdOrDefault(id).RunAsync();
         AssertMemberIsCurrent(member);
         return member;
     }
 
-    private async Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId)
+    private async Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId, Guid chapterId)
     {
         return await _unitOfWork.MemberSubscriptionRepository
-            .GetByMemberId(memberId)
+            .GetByMemberId(memberId, chapterId)
             .RunAsync();
     }
 }

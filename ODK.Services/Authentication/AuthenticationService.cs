@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Web;
+using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
 using ODK.Core.Members;
@@ -38,7 +39,8 @@ public class AuthenticationService : IAuthenticationService
             return ServiceResult.Failure("The link you followed is no longer valid");
         }
 
-        var (member, memberPassword) = await _unitOfWork.RunAsync(
+        var (chapter, member, memberPassword) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(token.ChapterId),
             x => x.MemberRepository.GetById(token.MemberId),
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
 
@@ -61,7 +63,7 @@ public class AuthenticationService : IAuthenticationService
         
         await _unitOfWork.SaveChangesAsync();
 
-        await SendNewMemberEmailsAsync(member);
+        await SendNewMemberEmailsAsync(chapter, member);
 
         return ServiceResult.Successful();
     }
@@ -90,7 +92,7 @@ public class AuthenticationService : IAuthenticationService
         var member = await _unitOfWork.MemberRepository
             .GetByEmailAddress(username)
             .RunAsync();
-        if (member == null)
+        if (member == null || !member.IsCurrent())
         {
             return null;
         }
@@ -105,15 +107,11 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(Member member)
     {
-        var (chapter, adminMembers) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(member.ChapterId),
-            x => x.ChapterAdminMemberRepository.GetByMemberId(member.Id));
+        var adminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByMemberId(member.Id).RunAsync();
 
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, member.Id.ToString()),
-            new Claim("Chapter", chapter.Name),
-            new Claim("ChapterId", chapter.Id.ToString()),
             new Claim(ClaimTypes.Role, OdkRoles.Member)
         };
 
@@ -122,15 +120,10 @@ public class AuthenticationService : IAuthenticationService
             claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Admin));
         }
 
-        if (member.SuperAdmin)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, OdkRoles.SuperAdmin));
-        }
-
         return claims;
     }
     
-    public async Task<ServiceResult> RequestPasswordResetAsync(string emailAddress)
+    public async Task<ServiceResult> RequestPasswordResetAsync(Guid chapterId, string emailAddress)
     {
         if (!MailUtils.ValidEmailAddress(emailAddress))
         {
@@ -140,7 +133,7 @@ public class AuthenticationService : IAuthenticationService
         var member = await _unitOfWork.MemberRepository
             .GetByEmailAddress(emailAddress)
             .RunAsync();
-        if (member == null)
+        if (member == null || !member.IsCurrent())
         {
             // return fake success to avoid leaking valid email addresses
             return ServiceResult.Successful();
@@ -151,7 +144,7 @@ public class AuthenticationService : IAuthenticationService
         var token = RandomStringGenerator.Generate(64);
         
         var chapter = await _unitOfWork.ChapterRepository
-            .GetById(member.ChapterId)
+            .GetById(chapterId)
             .RunAsync();
 
         _unitOfWork.MemberPasswordResetRequestRepository.Add(new MemberPasswordResetRequest
@@ -244,12 +237,11 @@ public class AuthenticationService : IAuthenticationService
         return memberPassword.Hash == passwordHash;
     }
 
-    private async Task SendNewMemberEmailsAsync(Member member)
+    private async Task SendNewMemberEmailsAsync(Chapter chapter, Member member)
     {
-        var (chapter, chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(member.ChapterId),
-            x => x.ChapterPropertyRepository.GetByChapterId(member.ChapterId),
-            x => x.MemberPropertyRepository.GetByMemberId(member.Id));
+        var (chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+            x => x.MemberPropertyRepository.GetByMemberId(member.Id, chapter.Id));
         
         string eventsUrl = _settings.EventsUrl.Interpolate(new Dictionary<string, string>
         {

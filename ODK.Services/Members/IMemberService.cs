@@ -19,13 +19,13 @@ public interface IMemberService
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? width, int? height);
     
-    Task<MemberProfile?> GetMemberProfile(Member currentMember, Member? member);
+    Task<MemberProfile?> GetMemberProfile(Guid chapterId, Member currentMember, Member? member);
 
     Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId);
 
-    Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterSubscriptionId, string cardToken);
+    Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId, string cardToken);
 
-    Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress);
+    Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, Guid chapterId, string newEmailAddress);
 
     Task RotateMemberImage(Guid memberId, int degrees);
 
@@ -35,5 +35,5 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage model);
 
-    Task<ServiceResult> UpdateMemberProfile(Guid id, UpdateMemberProfile model);
+    Task<ServiceResult> UpdateMemberProfile(Guid id, Guid chapterId, UpdateMemberProfile model);
 }

@@ -5,12 +5,10 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Members
 @model ODK.Core.Chapters.Chapter
-@inject IChapterService ChapterService
 @inject IChapterAdminService ChapterAdminService
 @{
-    var memberId = User.MemberId();
-    
-    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(memberId, Model);
+    var memberId = User.MemberId();    
+    var dto = await ChapterAdminService.GetChapterMemberSubscriptionsDto(memberId, Model);
 
     var (subscriptions, country, membershipSettings) = (dto.ChapterSubscriptions, dto.Country, dto.MembershipSettings);
 }

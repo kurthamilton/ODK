@@ -5,7 +5,6 @@
 @inject IChapterAdminService ChapterAdminService
 @{
     var memberId = User.MemberId();
-
     var properties = await ChapterAdminService.GetChapterProperties(memberId, Model.Id);
 }
 

@@ -20,7 +20,7 @@
                     <a class="dropdown-item" href="/@Model.MemberChapter.Name/Admin/Events/Create">Create event</a>
                 }
             
-                @if (User.IsInRole(OdkRoles.SuperAdmin))
+                @if (Model.Member?.SuperAdmin == true)
                 {
                     if (Model.CurrentChapter != null && Model.CurrentChapter.Id != Model.MemberChapter.Id)
                     {

@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Caching;
@@ -20,6 +21,17 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
         .DeferredMultiple(           
             _cache.GetAll,
             _cache.SetAll);    
+
+    public IDeferredQueryMultiple<Chapter> GetByMemberId(Guid memberId)
+    {
+        var query = 
+            from chapter in Set()
+            from memberChapter in Set<MemberChapter>()
+            where memberChapter.MemberId == memberId
+                && memberChapter.ChapterId == chapter.Id
+            select chapter;
+        return query.DeferredMultiple();
+    }
 
     public IDeferredQuerySingleOrDefault<Chapter> GetByName(string name) => Set()
         .Where(x => x.Name == name)
