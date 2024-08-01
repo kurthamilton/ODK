@@ -83,7 +83,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 member.EmailAddress,
                 member.FirstName,
                 member.LastName,
-                member.CreatedUtc.ToString("yyyy-MM-dd"),
+                member.MemberChapter(chapterId).CreatedUtc.ToString("yyyy-MM-dd"),
                 member.Activated ? "Y" : "",
                 member.Disabled ? "Y" : "",
                 member.EmailOptIn ? "Y" : "",
@@ -208,6 +208,40 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
         
         await _memberService.SendActivationEmailAsync(chapter, member, memberActivationToken.ActivationToken);
+    }
+
+    public async Task SetMemberVisibility(Guid currentMemberId, Guid memberId, Guid chapterId, bool visible)
+    {
+        var member = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.MemberRepository.GetById(memberId));
+
+        if (!member.IsMemberOf(chapterId))
+        {
+            throw new OdkNotFoundException();
+        }
+
+        var privacySettings = member.PrivacySettings
+            .FirstOrDefault(x => x.ChapterId == chapterId);
+
+        if (privacySettings == null)
+        {
+            privacySettings = new MemberChapterPrivacySettings();
+        }
+
+        privacySettings.HideProfile = !visible;
+
+        if (privacySettings.MemberId == Guid.Empty)
+        {
+            privacySettings.ChapterId = chapterId;
+            privacySettings.MemberId = member.Id;
+            _unitOfWork.MemberChapterPrivacySettingsRepository.Add(privacySettings);
+        }
+        else
+        {
+            _unitOfWork.MemberChapterPrivacySettingsRepository.Update(privacySettings);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid chapterId, Guid memberId,

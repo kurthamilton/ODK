@@ -72,7 +72,7 @@
     @await Html.PartialAsync("Account/_ProfileForm", new ProfileFormViewModel
     {
         ChapterId = Model.Chapter.Id,
-        DateJoined = Model.CurrentMember.CreatedUtc,
+        DateJoined = Model.CurrentMember.MemberChapter(Model.Chapter.Id).CreatedUtc,
         EmailAddress = Model.CurrentMember.EmailAddress,
         FirstName = Model.CurrentMember.FirstName,
         LastName = Model.CurrentMember.LastName,

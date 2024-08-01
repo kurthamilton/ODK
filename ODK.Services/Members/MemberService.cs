@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
+using ODK.Core.Exceptions;
 using ODK.Core.Images;
 using ODK.Core.Members;
 using ODK.Core.Utils;
@@ -95,10 +96,11 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Email address already in use");
         }
 
+        var now = DateTime.UtcNow;
+
         var member = new Member
         {
             Activated = false,
-            CreatedUtc = DateTime.UtcNow,
             Disabled = false,
             EmailAddress = model.EmailAddress,
             EmailOptIn = model.EmailOptIn ?? false,
@@ -110,6 +112,7 @@ public class MemberService : IMemberService
 
         member.Chapters.Add(new MemberChapter
         {
+            CreatedUtc = now,
             MemberId = member.Id,
             ChapterId = chapterId
         });
@@ -117,8 +120,7 @@ public class MemberService : IMemberService
         var subscription = new MemberSubscription
         {
             ChapterId = chapterId,
-            ExpiresUtc = member.CreatedUtc
-                .AddMonths(membershipSettings?.TrialPeriodMonths ?? siteSettings.DefaultTrialPeriodMonths),
+            ExpiresUtc = now.AddMonths(membershipSettings?.TrialPeriodMonths ?? siteSettings.DefaultTrialPeriodMonths),
             MemberId = member.Id,
             Type = SubscriptionType.Trial
         };
@@ -172,24 +174,15 @@ public class MemberService : IMemberService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<IReadOnlyCollection<Member>> GetLatestMembers(Member currentMember, Guid chapterId)
+    public async Task<Member> GetMember(Guid memberId, Guid chapterId)
     {
-        await _authorizationService.AssertMemberIsChapterMemberAsync(currentMember.Id, chapterId);
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();        
+        if (!member.IsMemberOf(chapterId) || !member.Visible(chapterId))
+        {
+            throw new OdkNotFoundException();
+        }
 
-        var members = await GetMembers(currentMember, chapterId);
-
-        return members
-            .OrderByDescending(x => x.CreatedUtc)
-            .Take(8)
-            .ToArray();
-    }
-
-    public async Task<Member?> GetMember(Guid memberId, Guid chapterId)
-    {
-        var member = await _unitOfWork.MemberRepository.GetByIdOrDefault(memberId).RunAsync();
-        return member?.IsMemberOf(chapterId) == true
-            ? member 
-            : null;
+        return member;
     }
 
     public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size)
@@ -251,7 +244,10 @@ public class MemberService : IMemberService
             return [];
         }
 
-        return await _unitOfWork.MemberRepository.GetByChapterId(chapterId).RunAsync();
+        var members = await _unitOfWork.MemberRepository.GetByChapterId(chapterId).RunAsync();
+        return members
+            .Where(x => x.Visible(chapterId))
+            .ToArray();
     }
 
     public async Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId,
@@ -555,7 +551,7 @@ public class MemberService : IMemberService
                     MemberId = member.Id
                 });
 
-        return new MemberProfile(member, allMemberProperties, chapterProperties);
+        return new MemberProfile(chapterId, member, allMemberProperties, chapterProperties);
     }
     
     private void PrepareMemberImage(MemberImage image)

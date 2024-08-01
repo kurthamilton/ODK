@@ -15,6 +15,7 @@
         <tr>
             <th>Name</th>
             <th>Owner</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -36,6 +37,20 @@
                             </button>
                         </form>                        
                     }
+                </td>
+                <td>
+                    <form action="/@Model.Name/Admin/Members/@adminMember.MemberId/Visibility" method="post">
+                        @if (adminMember.Member.Visible(Model.Id))
+                        {
+                            @Html.Hidden("visible", false)
+                            <button class="btn btn-danger btn-sm" type="submit">Hide</button>
+                        }
+                        else
+                        {
+                            @Html.Hidden("visible", true)
+                            <button class="btn btn-success btn-sm" type="submit">Show</button>
+                        }
+                    </form>
                 </td>
             </tr>
         }

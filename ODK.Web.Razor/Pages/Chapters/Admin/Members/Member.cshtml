@@ -13,7 +13,7 @@
     Breadcrumbs = new []
     {
         new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" },
-        new MenuItem { Text = Model.Member.FullName }
+        new MenuItem { Text = Model.Member.GetDisplayName(Model.Chapter.Id) }
     },
     Content = await Html.PartialAsync("Admin/Members/_MemberContent", 
         new MemberViewModel(Model.Chapter, Model.CurrentMember, Model.Member))

@@ -39,6 +39,7 @@ public interface IUnitOfWork
     IMemberImageRepository MemberImageRepository { get; }
     IMemberPasswordRepository MemberPasswordRepository { get; }
     IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository { get; }
+    IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository { get; }
     IMemberPropertyRepository MemberPropertyRepository { get; }
     IMemberRepository MemberRepository { get; }
     IMemberSubscriptionRepository MemberSubscriptionRepository { get; }

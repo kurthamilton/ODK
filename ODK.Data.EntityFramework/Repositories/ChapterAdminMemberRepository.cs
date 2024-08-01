@@ -27,5 +27,7 @@ public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMemb
 
     protected override IQueryable<ChapterAdminMember> Set() => base.Set()
         .Include(x => x.Member)
-        .ThenInclude(x => x.Chapters);
+        .ThenInclude(x => x.Chapters)
+        .Include(x => x.Member)
+        .ThenInclude(x => x.PrivacySettings);
 }

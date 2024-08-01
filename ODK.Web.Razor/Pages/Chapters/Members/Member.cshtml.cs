@@ -20,14 +20,7 @@ public class MemberModel : ChapterPageModel
 
     public async Task<IActionResult> OnGet(Guid id)
     {
-        var member = await _memberService.GetMember(id, Chapter.Id);
-        if (member == null)
-        {
-            throw new OdkNotFoundException();
-        }
-
-        Member = member;
-
+        Member = await _memberService.GetMember(id, Chapter.Id);        
         return Page();
     }
 }

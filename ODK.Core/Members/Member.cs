@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Emails;
+using ODK.Core.Exceptions;
 using ODK.Core.Utils;
 
 namespace ODK.Core.Members;
@@ -8,8 +9,6 @@ public class Member : IVersioned, IDatabaseEntity
     public bool Activated { get; set; }
 
     public ICollection<MemberChapter> Chapters { get; set; } = new List<MemberChapter>();
-
-    public DateTime CreatedUtc { get; set; }
 
     public bool Disabled { get; set; }
 
@@ -25,17 +24,46 @@ public class Member : IVersioned, IDatabaseEntity
 
     public string LastName { get; set; } = "";
 
+    public ICollection<MemberChapterPrivacySettings> PrivacySettings { get; set; } = new HashSet<MemberChapterPrivacySettings>();
+
     public bool SuperAdmin { get; set; }
 
     public byte[] Version { get; set; } = [];
 
     public bool CanBeViewedBy(Member other) => IsCurrent() && SharesChapterWith(other);
 
+    public string GetDisplayName(Guid chapterId)
+    {
+        if (!IsMemberOf(chapterId))
+        {
+            throw new OdkNotFoundException();
+        }
+
+        var visible = Visible(chapterId);
+
+        var name = FullName;
+        if (!visible)
+        {
+            name += " [HIDDEN]";
+        }
+
+        if (Disabled)
+        {
+            name += " [DISABLED]";
+        }
+
+        return name;
+    }
+
     public EmailAddressee GetEmailAddressee() => new EmailAddressee(EmailAddress, FullName);    
 
-    public bool IsMemberOf(Guid chapterId) => Chapters.Any(x => x.ChapterId == chapterId) || SuperAdmin;
+    public MemberChapter MemberChapter(Guid chapterId) => Chapters.First(x => x.ChapterId == chapterId);
+
+    public bool IsMemberOf(Guid chapterId) => Chapters.Any(x => x.ChapterId == chapterId);
 
     public bool IsCurrent() => Activated && !Disabled;
 
     public bool SharesChapterWith(Member other) => other.Chapters.Any(x => IsMemberOf(x.ChapterId));
+
+    public bool Visible(Guid chapterId) => !PrivacySettings.Any(x => x.ChapterId == chapterId && x.HideProfile);
 }

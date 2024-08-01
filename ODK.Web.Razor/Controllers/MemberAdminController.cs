@@ -72,6 +72,18 @@ public class MemberAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("{chapterName}/Admin/Members/{id:guid}/Visibility")]
+    public async Task<IActionResult> SetMemberVisibility(string chapterName, Guid id, [FromForm] bool visible)
+    {
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+
+        await _memberAdminService.SetMemberVisibility(MemberId, id, chapter.Id, visible);
+
+        AddFeedback(new FeedbackViewModel("Member updated", FeedbackType.Success));
+
+        return RedirectToReferrer();
+    }
+
     [HttpPost("{chapterName}/Admin/Members/AdminMembers/Add")]
     public async Task<IActionResult> AddAdminMember(string chapterName, [FromForm] AdminMemberAddFormViewModel viewModel)
     {

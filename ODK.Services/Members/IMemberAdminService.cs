@@ -24,6 +24,8 @@ public interface IMemberAdminService
 
     Task SendActivationEmail(Guid currentMemberId, Guid chapterId, Guid memberId);
 
+    Task SetMemberVisibility(Guid currentMemberId, Guid memberId, Guid chapterId, bool visible);
+
     Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid chapterId, Guid memberId, 
         UpdateMemberSubscription subscription);
 }

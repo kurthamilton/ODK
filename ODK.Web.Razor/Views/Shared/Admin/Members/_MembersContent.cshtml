@@ -63,16 +63,11 @@
     @foreach (var member in members)
     {
         subscriptionDictionary.TryGetValue(member.Id, out var subscription);
-        var fullName = member.FullName;
-        if (member.Disabled)
-        {
-            fullName += " [DISABLED]";
-        }
 
-        <tr data-filter-name="@fullName" data-filter-type="@subscription?.Type">
+        <tr data-filter-name="@member.FullName" data-filter-type="@subscription?.Type">
             <td>
-                <a href="/@Model.Name/Admin/Members/@member.Id" data-sort-value="@fullName">
-                    @fullName
+                    <a href="/@Model.Name/Admin/Members/@member.Id" data-sort-value="@member.FullName">
+                    @member.GetDisplayName(Model.Id)
                 </a>
             </td>
             <td>@subscription?.Type</td>

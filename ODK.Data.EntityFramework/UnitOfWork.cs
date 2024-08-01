@@ -43,6 +43,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberImageRepository> _memberImageRepository;
     private readonly Lazy<IMemberPasswordRepository> _memberPasswordRepository;
     private readonly Lazy<IMemberPasswordResetRequestRepository> _memberPasswordResetRequestRepository;
+    private readonly Lazy<IMemberPrivacySettingsRepository> _memberPrivacySettingsRepository;
     private readonly Lazy<IMemberPropertyRepository> _memberPropertyRepository;
     private readonly Lazy<IMemberRepository> _memberRepository;
     private readonly Lazy<IMemberSubscriptionRepository> _memberSubscriptionRepository;
@@ -87,6 +88,7 @@ public class UnitOfWork : IUnitOfWork
         _memberImageRepository = new(() => new MemberImageRepository(_context));
         _memberPasswordRepository = new(() => new MemberPasswordRepository(_context));
         _memberPasswordResetRequestRepository = new(() => new MemberPasswordResetRequestRepository(_context));
+        _memberPrivacySettingsRepository = new(() => new MemberPrivacySettingsRepository(_context));
         _memberPropertyRepository = new(() => new MemberPropertyRepository(_context));
         _memberRepository = new(() => new MemberRepository(_context));
         _memberSubscriptionRepository = new(() => new MemberSubscriptionRepository(_context));
@@ -128,6 +130,7 @@ public class UnitOfWork : IUnitOfWork
     public IMemberImageRepository MemberImageRepository => _memberImageRepository.Value;
     public IMemberPasswordRepository MemberPasswordRepository => _memberPasswordRepository.Value;
     public IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository => _memberPasswordResetRequestRepository.Value;
+    public IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository => _memberPrivacySettingsRepository.Value;
     public IMemberPropertyRepository MemberPropertyRepository => _memberPropertyRepository.Value;
     public IMemberRepository MemberRepository => _memberRepository.Value;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => _memberSubscriptionRepository.Value;

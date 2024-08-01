@@ -22,18 +22,11 @@ public class MemberSubscriptionRepository : WriteRepositoryBase<MemberSubscripti
         AddSingle(record);
     }
 
-    public IDeferredQueryMultiple<MemberSubscription> GetByChapterId(Guid chapterId)
-    {
-        var query = 
-            from memberSubscription in Set()
-            from member in Set<Member>().InChapter(chapterId)
-            where memberSubscription.MemberId == member.Id
-            select memberSubscription;
-        return query.DeferredMultiple();
-    }
+    public IDeferredQueryMultiple<MemberSubscription> GetByChapterId(Guid chapterId) => Set()
+        .Where(x => x.ChapterId ==  chapterId)
+        .DeferredMultiple();
 
     public IDeferredQuerySingle<MemberSubscription> GetByMemberId(Guid memberId, Guid chapterId) => Set()
-        .Where(x => x.MemberId == memberId)
-        .OrderByDescending(x => x.ExpiresUtc)
+        .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
         .DeferredSingle();
 }

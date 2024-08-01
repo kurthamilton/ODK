@@ -14,16 +14,17 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
     {
     }
 
-    public IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress) => Set()
-        .Where(x => x.EmailAddress == emailAddress)
-        .DeferredSingleOrDefault();
-
     public IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId) => Set()
         .InChapter(chapterId)
         .DeferredMultiple();
 
+    public IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress) => Set()
+        .Where(x => x.EmailAddress == emailAddress)
+        .DeferredSingleOrDefault();    
+
     public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId) => Set()
         .Current(Set<MemberSubscription>(), chapterId)
+        .Visible(chapterId)
         .InChapter(chapterId)
         .DeferredMultiple();
 
@@ -33,13 +34,24 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         .Where(x => memberIds.Contains(x.Id))
         .DeferredMultiple();
 
-    public IDeferredQueryMultiple<Member> GetLatestByChapterId(Guid chapterId, int pageSize) => Set()
-        .Current(Set<MemberSubscription>(), chapterId)
-        .InChapter(chapterId)
-        .OrderByDescending(x => x.CreatedUtc)
-        .Take(pageSize)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<Member> GetLatestByChapterId(Guid chapterId, int pageSize)
+    {
+        var query =
+            from member in Set()
+                .Current(Set<MemberSubscription>(), chapterId)
+                .Visible(chapterId)
+            from memberChapter in Set<MemberChapter>()
+            where memberChapter.MemberId == member.Id
+                && memberChapter.ChapterId == chapterId
+            orderby memberChapter.CreatedUtc descending
+            select member;
+
+        return query
+            .Take(pageSize)
+            .DeferredMultiple();
+    }
 
     protected override IQueryable<Member> Set() => base.Set()
-        .Include(x => x.Chapters);
+        .Include(x => x.Chapters)
+        .Include(x => x.PrivacySettings);
 }

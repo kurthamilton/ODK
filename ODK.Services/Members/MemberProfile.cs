@@ -5,10 +5,10 @@ namespace ODK.Services.Members;
 
 public class MemberProfile
 {
-    public MemberProfile(Member member, IEnumerable<MemberProperty> memberProperties, 
+    public MemberProfile(Guid chapterId, Member member, IEnumerable<MemberProperty> memberProperties, 
         IEnumerable<ChapterProperty> chapterProperties)
         : this(member.EmailAddress, member.EmailOptIn, member.FirstName, member.LastName, 
-            member.CreatedUtc.Date, memberProperties, chapterProperties)
+            member.MemberChapter(chapterId).CreatedUtc.Date, memberProperties, chapterProperties)
     {
     }
 
@@ -28,13 +28,13 @@ public class MemberProfile
 
     public string EmailAddress { get; }
 
-    public bool EmailOptIn { get; set; }
+    public bool EmailOptIn { get; }
 
-    public string FirstName { get; set; }
+    public string FirstName { get; }
 
     public DateTime Joined { get; }
 
-    public string LastName { get; set; }
+    public string LastName { get; }
 
     public IReadOnlyCollection<MemberProperty> MemberProperties { get; }
 }

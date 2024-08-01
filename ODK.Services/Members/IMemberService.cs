@@ -11,9 +11,7 @@ public interface IMemberService
 
     Task DeleteMember(Guid memberId);
 
-    Task<IReadOnlyCollection<Member>> GetLatestMembers(Member currentMember, Guid chapterId);
-
-    Task<Member?> GetMember(Guid memberId, Guid chapterId);
+    Task<Member> GetMember(Guid memberId, Guid chapterId);
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size);
 
