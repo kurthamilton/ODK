@@ -4,7 +4,13 @@ public interface IImageService
 {
     byte[] Crop(byte[] data, int width, int height);
 
+    byte[] Crop(byte[] data, int width, int height, int x, int y);
+
     bool IsImage(byte[] data);
+
+    string? MimeType(byte[] data);
+
+    byte[] Pad(byte[] data, int width, int height);
 
     byte[] Reduce(byte[] data, int maxWidth, int maxHeight);
 

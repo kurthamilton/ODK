@@ -107,6 +107,10 @@ public static class DependencyConfig
         services.AddScoped<IMediaFileProvider, MediaFileProvider>();
         services.AddScoped<IMediaService, MediaService>();
         services.AddScoped<IMemberAdminService, MemberAdminService>();
+        services.AddSingleton(new MemberAdminServiceSettings
+        {
+            MemberAvatarSize = appSettings.Members.AvatarSize
+        });
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IRecaptchaService, RecaptchaService>();
@@ -147,7 +151,9 @@ public static class DependencyConfig
         {
             ActivateAccountUrl = $"{urls.AppBase}{urls.ActivateAccount}",
             ConfirmEmailAddressUpdateUrl = $"{urls.AppBase}{urls.ConfirmEmailAddressUpdate}",
-            MaxImageSize = members.MaxImageSize
+            MaxImageSize = members.MaxImageSize,
+            MemberAvatarSize = members.AvatarSize,
+            UseAvatars = members.UseAvatars
         });
 
         services.AddSingleton(new MediaFileProviderSettings

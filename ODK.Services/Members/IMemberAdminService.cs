@@ -10,6 +10,11 @@ public interface IMemberAdminService
 
     Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(Guid currentMemberId, Guid chapterId);
 
+    // TEMP METHODS!!
+    Task<IReadOnlyCollection<MemberAvatar>> GetMemberAvatars(Guid currentMemberId, Guid chapterId);
+    Task<IReadOnlyCollection<MemberImage>> GetMemberImages(Guid currentMemberId, Guid chapterId);
+    Task<MemberImage?> GetMemberImage(Guid currentMemberId, Guid chapterId, Guid memberId);
+
     Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId);
 
     Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, MemberFilter filter);
@@ -19,12 +24,16 @@ public interface IMemberAdminService
     Task<MemberSubscription?> GetMemberSubscription(Guid currentMemberId, Guid chapterId, Guid memberId);
 
     Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId);
-    
+
+    Task ResizeAllAvatars(Guid currentMemberId, Guid chapterId);
+
     Task RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees);
 
     Task SendActivationEmail(Guid currentMemberId, Guid chapterId, Guid memberId);
 
     Task SetMemberVisibility(Guid currentMemberId, Guid memberId, Guid chapterId, bool visible);
+
+    Task UpdateMemberAvatar(Guid currentMemberId, Guid chapterId, Guid memberId, MemberImageCropInfo cropInfo);
 
     Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid chapterId, Guid memberId, 
         UpdateMemberSubscription subscription);

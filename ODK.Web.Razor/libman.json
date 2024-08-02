@@ -34,6 +34,11 @@
       "provider": "cdnjs",
       "library": "slim-select@2.8.2",
       "destination": "wwwroot/lib/slim-select/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "cropperjs@1.6.2",
+      "destination": "wwwroot/lib/cropperjs/"
     }
   ]
 }

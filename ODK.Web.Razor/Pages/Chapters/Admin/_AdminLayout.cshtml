@@ -28,10 +28,18 @@
 
 @RenderBody()
 
+@section styles
+{
+    @await RenderSectionAsync("styles", required: false)
+}
+
 @section scripts
 {
     <script type="text/javascript" src="/lib/ckeditor5/ckeditor.js"></script>
     <script type="text/javascript" src="/lib/slim-select/slimselect.js"></script>
     <script type="text/javascript" src="/js/odk.admin.js"></script>
     <script type="text/javascript" src="/js/odk.selects.js"></script>
+
+    @await RenderSectionAsync("scripts", required: false)
 }
+

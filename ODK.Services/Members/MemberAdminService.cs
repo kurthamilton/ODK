@@ -1,10 +1,12 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
+using ODK.Core.Images;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
+using ODK.Services.Imaging;
 
 namespace ODK.Services.Members;
 
@@ -12,16 +14,21 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
+    private readonly IImageService _imageService;
     private readonly IMemberService _memberService;
+    private readonly MemberAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberAdminService(IUnitOfWork unitOfWork, IMemberService memberService, 
-        ICacheService cacheService, IAuthorizationService authorizationService)
+        ICacheService cacheService, IAuthorizationService authorizationService,
+        IImageService imageService, MemberAdminServiceSettings settings)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
+        _imageService = imageService;
         _memberService = memberService;
+        _settings = settings;
         _unitOfWork = unitOfWork;
     }
 
@@ -93,6 +100,24 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
 
         return csv;
+    }
+
+    public async Task<IReadOnlyCollection<MemberAvatar>> GetMemberAvatars(Guid currentMemberId, Guid chapterId)
+    {
+        return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.MemberAvatarRepository.GetByChapterId(chapterId));
+    }
+
+    public async Task<IReadOnlyCollection<MemberImage>> GetMemberImages(Guid currentMemberId, Guid chapterId)
+    {
+        return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.MemberImageRepository.GetByChapterId(chapterId));
+    }
+
+    public async Task<MemberImage?> GetMemberImage(Guid currentMemberId, Guid chapterId, Guid memberId)
+    {
+        return await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+                    x => x.MemberImageRepository.GetByMemberId(memberId));
     }
 
     public Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId) => GetMembers(currentMemberId,
@@ -180,6 +205,20 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return subscriptions;
     }
     
+    public async Task ResizeAllAvatars(Guid currentMemberId, Guid chapterId)
+    {
+        var avatars = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.MemberAvatarRepository.GetByChapterId(chapterId));
+
+        foreach (var avatar in avatars)
+        {
+            avatar.ImageData = _imageService.Resize(avatar.ImageData, _settings.MemberAvatarSize, _settings.MemberAvatarSize);
+            _unitOfWork.MemberAvatarRepository.Update(avatar);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees)
     {
         var (chapterAdminMembers, member) = await _unitOfWork.RunAsync(
@@ -239,6 +278,57 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         else
         {
             _unitOfWork.MemberChapterPrivacySettingsRepository.Update(privacySettings);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UpdateMemberAvatar(Guid currentMemberId, Guid chapterId, Guid memberId, MemberImageCropInfo cropInfo)
+    {
+        var (avatar, memberImage) = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
+            x => x.MemberAvatarRepository.GetByMemberId(memberId),
+            x => x.MemberImageRepository.GetByMemberId(memberId));
+
+        if (memberImage == null)
+        {
+            return;
+        }
+
+        if (avatar == null)
+        {
+            avatar = new MemberAvatar();
+        }
+
+        var imageData = memberImage.ImageData;
+        if (cropInfo.CropWidth > 0 && cropInfo.CropHeight > 0 && cropInfo.CropX >= 0 && cropInfo.CropY >= 0)
+        {
+            imageData = _imageService.Crop(imageData, cropInfo.CropWidth, cropInfo.CropHeight, cropInfo.CropX, cropInfo.CropY);
+        }
+
+        imageData = _imageService.Resize(imageData, _settings.MemberAvatarSize, _settings.MemberAvatarSize);
+        imageData = _imageService.Pad(imageData, _settings.MemberAvatarSize, _settings.MemberAvatarSize);
+
+        var mimeType = _imageService.MimeType(imageData);
+        if (mimeType == null)
+        {
+            throw new OdkServiceException("Error getting mime type");
+        }
+
+        avatar.ImageData = imageData;
+        avatar.MimeType = mimeType;
+        avatar.X = cropInfo.CropX;
+        avatar.Y = cropInfo.CropY;
+        avatar.Width = cropInfo.CropWidth;
+        avatar.Height = cropInfo.CropHeight;
+
+        if (avatar.MemberId == Guid.Empty)
+        {
+            avatar.MemberId = memberId;
+            _unitOfWork.MemberAvatarRepository.Add(avatar);
+        }
+        else
+        {
+            _unitOfWork.MemberAvatarRepository.Update(avatar);
         }
 
         await _unitOfWork.SaveChangesAsync();

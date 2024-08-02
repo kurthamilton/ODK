@@ -95,8 +95,15 @@ public class RequestCache : IRequestCache
     {
         if (!_memberSubscriptions.ContainsKey(memberId))
         {
-            var subscription = await _unitOfWork.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId).RunAsync();
-            _memberSubscriptions[memberId] = subscription;
+            try
+            {
+                var subscription = await _unitOfWork.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId).RunAsync();
+                _memberSubscriptions[memberId] = subscription;
+            }            
+            catch
+            {
+                return null;
+            }
         }
 
         return _memberSubscriptions[memberId];

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
+using ODK.Core.Images;
 using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
@@ -129,26 +129,30 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> Join(string chapterName, [FromForm] ProfileFormViewModel viewModel, [FromForm] IFormFile image)
     {
         var chapter = await _requestCache.GetChapterAsync(chapterName);
-        
-        var result = await _memberService.CreateMember(chapter.Id, new CreateMemberProfile(new UpdateMemberImage
+
+        if (!ImageHelper.TryParseDataUrl(viewModel.ImageDataUrl, out var imageData))
         {
-            ImageData = await image.ToByteArrayAsync() ?? Array.Empty<byte>(),
-            MimeType = image.ContentType
-        })
+            imageData = await image.ToByteArrayAsync() ?? Array.Empty<byte>();
+        }
+
+        var model = new CreateMemberProfile
         {
             EmailAddress = viewModel.EmailAddress,
             EmailOptIn = viewModel.EmailOptIn,
             FirstName = viewModel.FirstName,
+            ImageData = imageData,
             LastName = viewModel.LastName,
             Properties = viewModel.Properties.Select(x => new UpdateMemberProperty
             {
                 ChapterPropertyId = x.ChapterPropertyId,
-                Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) && 
-                        !string.IsNullOrEmpty(x.OtherValue) 
+                Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&
+                        !string.IsNullOrEmpty(x.OtherValue)
                     ? x.OtherValue ?? ""
                     : x.Value ?? ""
             })
-        });
+        };
+
+        var result = await _memberService.CreateMember(chapter.Id, model);
 
         if (result.Success)
         {

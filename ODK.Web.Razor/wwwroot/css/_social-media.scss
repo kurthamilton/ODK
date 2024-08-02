@@ -1,6 +1,8 @@
 .social-media-image-tile {
   padding: 5px;
   margin: 5px;
+  display: flex;
+  justify-content: center;
 
   img {
     max-height: 150px;

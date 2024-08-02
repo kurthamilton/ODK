@@ -5,16 +5,16 @@ using ODK.Data.EntityFramework.Extensions;
 using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
-public class MemberImageRepository : WriteRepositoryBase<MemberImage>, IMemberImageRepository
+public class MemberAvatarRepository : WriteRepositoryBase<MemberAvatar>, IMemberAvatarRepository
 {
-    public MemberImageRepository(OdkContext context) 
+    public MemberAvatarRepository(OdkContext context) 
         : base(context)
     {
     }
 
-    public IDeferredQueryMultiple<MemberImage> GetByChapterId(Guid chapterId)
+    public IDeferredQueryMultiple<MemberAvatar> GetByChapterId(Guid chapterId)
     {
-        var query = 
+        var query =
             from memberImage in Set()
             from member in Set<Member>().InChapter(chapterId)
             where member.Id == memberImage.MemberId
@@ -22,7 +22,7 @@ public class MemberImageRepository : WriteRepositoryBase<MemberImage>, IMemberIm
         return query.DeferredMultiple();
     }
 
-    public IDeferredQuerySingleOrDefault<MemberImage> GetByMemberId(Guid memberId) => Set()
+    public IDeferredQuerySingleOrDefault<MemberAvatar> GetByMemberId(Guid memberId) => Set()
         .Where(x => x.MemberId == memberId)
         .DeferredSingleOrDefault();
 }

@@ -38,6 +38,24 @@ public class MemberAdminController : OdkControllerBase
         return Redirect($"/{chapterName}/Admin/Members");
     }
 
+    [HttpPost("{chapterName}/Admin/Members/{id:guid}/Avatar")]
+    public async Task<IActionResult> UpdateAvatar(string chapterName, Guid id, [FromForm] MemberImageCropInfo cropInfo)
+    {
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+
+        await _memberAdminService.UpdateMemberAvatar(MemberId, chapter.Id, id, cropInfo);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("{chapterName}/Admin/Members/Avatars/Resize")]
+    public async Task<IActionResult> ResizeAllAvatars(string chapterName)
+    {
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+
+        await _memberAdminService.ResizeAllAvatars(MemberId, chapter.Id);
+        return RedirectToReferrer();
+    }
+
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/Picture/Rotate")]
     public async Task<IActionResult> RotatePicture(Guid id)
     {

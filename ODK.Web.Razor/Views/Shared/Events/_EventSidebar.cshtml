@@ -46,9 +46,8 @@
                     @foreach (var host in Model.Hosts.OrderBy(x => x.FullName))
                     {                    
                         <div class="d-flex align-items-center">
-                            @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, host)
+                            @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel(Model.Chapter, host)
                             {
-                                ImageHeight = 50,
                                 MaxWidth = 50
                             })
                             <span class="ms-2">

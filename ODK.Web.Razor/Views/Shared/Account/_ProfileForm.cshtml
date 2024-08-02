@@ -174,10 +174,16 @@
 
 @if (Model.MemberId == null)
 {
-    <div class="form-group mb-3 required">
+    <div class="form-group mb-3 required" data-img-container-DISABLED>
         <label class="form-label">Picture</label>
-        <input name="image" type="file" accept="image/*" required class="form-control" />
-    </div>
+        <input name="image" type="file" accept="image/*" required class="form-control" data-img-input />        
+
+        <div class="mt-3">
+            <img class="d-none" data-img-preview data-img-resize />
+        </div>
+
+        @Html.HiddenFor(x => x.ImageDataUrl, new { data_img_dataurl="" })
+    </div>    
 
     <div class="mb-3 form-check required">
         @Html.CheckBoxFor(x => x.ThreeTenets, new { @class = "form-check-input" })

@@ -19,6 +19,8 @@ public class ProfileFormViewModel
     [DisplayName("First Name")] 
     public string FirstName { get; set; } = "";
 
+    public string? ImageDataUrl { get; set; } = "";
+
     [Required] 
     [DisplayName("Last Name")] 
     public string LastName { get; set; } = "";

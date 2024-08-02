@@ -1,9 +1,12 @@
-﻿@using ODK.Web.Razor.Models.Members
+﻿@using ODK.Services.Authentication
+@using ODK.Services.Members
+@using ODK.Web.Razor.Models.Members
 @model ODK.Web.Razor.Models.Members.MemberContentViewModel
+@inject IMemberService MemberService
 
 <div class="row">
     <div class="col-md-4 text-right order-md-2">
-        @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, Model.Member))
+        @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, Model.Member))        
     </div>
     <div class="col-md-8 order-md-1">
         @await Html.PartialAsync("Members/_MemberProfile", 

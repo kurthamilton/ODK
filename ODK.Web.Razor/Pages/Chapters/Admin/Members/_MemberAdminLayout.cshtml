@@ -23,3 +23,13 @@
 })
 
 @RenderBody()
+
+@section styles
+{
+    @await RenderSectionAsync("styles", required: false)
+}
+
+@section scripts
+{
+    @await RenderSectionAsync("scripts", required: false)
+}

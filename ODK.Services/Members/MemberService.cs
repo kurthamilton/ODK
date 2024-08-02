@@ -85,7 +85,13 @@ public class MemberService : IMemberService
             return validationResult;
         }
 
-        var imageResult = ValidateMemberImage(model.Image.MimeType, model.Image.ImageData);
+        var image = new MemberImage
+        {
+            ImageData = model.ImageData,
+            MimeType = _imageService.MimeType(model.ImageData) ?? "",
+        };
+
+        var imageResult = ValidateMemberImage(image.MimeType, image.ImageData);
         if (!imageResult.Success)
         {
             return imageResult;
@@ -126,12 +132,8 @@ public class MemberService : IMemberService
         };
         _unitOfWork.MemberSubscriptionRepository.Add(subscription);
 
-        var image = new MemberImage
-        {
-            ImageData = model.Image.ImageData,
-            MemberId = member.Id,
-            MimeType = model.Image.MimeType
-        };
+        image.MemberId = member.Id;
+        
         PrepareMemberImage(image);
         _unitOfWork.MemberImageRepository.Add(image);
 
@@ -183,7 +185,7 @@ public class MemberService : IMemberService
         }
 
         return member;
-    }
+    }    
 
     public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size)
     {
@@ -203,7 +205,7 @@ public class MemberService : IMemberService
             return result;
         }
 
-        MemberImage? image = result.Value;
+        var image = result.Value;
         if (image == null)
         {
             return new VersionedServiceResult<MemberImage>(0, null);
@@ -225,6 +227,28 @@ public class MemberService : IMemberService
         }
 
         return new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image);
+    }
+
+    public async Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId)
+    {
+        var result = await _cacheService.GetOrSetVersionedItem(
+            () => _unitOfWork.MemberAvatarRepository.GetByMemberId(memberId).RunAsync(),
+            memberId,
+            currentVersion);
+
+        if (currentVersion == result.Version)
+        {
+            return result;
+        }
+
+        var image = result.Value;
+        if (image == null)
+        {
+            return new VersionedServiceResult<MemberAvatar>(0, null);
+        }
+
+        var version = BitConverter.ToInt64(image.Version);
+        return new VersionedServiceResult<MemberAvatar>(version, image);
     }
 
     public async Task<MemberProfile?> GetMemberProfile(Guid chapterId, Member currentMember, Member? member)

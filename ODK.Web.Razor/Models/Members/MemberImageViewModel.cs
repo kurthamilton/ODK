@@ -3,21 +3,12 @@ using ODK.Core.Members;
 
 namespace ODK.Web.Razor.Models.Members;
 
-public class MemberImageViewModel
+public class MemberImageViewModel : MemberAvatarViewModel
 {
     public MemberImageViewModel(Chapter chapter, Member member)
+        : base(chapter, member)
     {
-        Chapter = chapter;
-        Member = member;
     }
 
-    public Chapter Chapter { get; }
-
     public int ImageHeight { get; set; }
-
-    public bool IsTop { get; set; }
-
-    public int MaxWidth { get; set; }
-
-    public Member Member { get; }
 }

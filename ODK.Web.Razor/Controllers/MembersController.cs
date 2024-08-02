@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
@@ -13,10 +14,20 @@ public class MembersController : ControllerBase
     private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");
 
     private readonly IMemberService _memberService;
-
+    
     public MembersController(IMemberService memberService)
     {
         _memberService = memberService;
+    }
+
+    [Authorize]
+    [HttpGet("{Chapter}/Members/{Id}/Avatar")]
+    public async Task<IActionResult> Avatar(Guid id, string chapter)
+    {
+        var avatar = await _memberService.GetMemberAvatar(null, id);
+        return MemberAvatarResult(avatar.Value);
+        // return await HandleVersionedRequest(version => _memberService.GetMemberAvatar(version, id),
+        //     MemberAvatarResult);
     }
 
     [Authorize]
@@ -30,7 +41,7 @@ public class MembersController : ControllerBase
         }
 
         return await HandleVersionedRequest(version => _memberService.GetMemberImage(version, id, size),
-                           MemberImageResult);
+            MemberImageResult);
     }
 
     private void AddVersionHeader(long version)
@@ -66,7 +77,7 @@ public class MembersController : ControllerBase
         return map(result.Value);
     }
 
-    protected IActionResult MemberImageResult(MemberImage? image)
+    protected IActionResult MemberAvatarResult(MemberAvatar? image)
     {
         if (image == null)
         {
@@ -75,4 +86,14 @@ public class MembersController : ControllerBase
 
         return File(image.ImageData, image.MimeType);
     }
+
+    protected IActionResult MemberImageResult(MemberImage? image)
+    {
+        if (image == null)
+        {
+            return NoContent();
+        }
+
+        return File(image.ImageData, image.MimeType);
+    }    
 }

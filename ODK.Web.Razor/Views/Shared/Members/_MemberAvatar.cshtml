@@ -1,0 +1,11 @@
+﻿@model ODK.Web.Razor.Models.Members.MemberAvatarViewModel
+@{
+    var imageUrl = $"/{Model.Chapter.Name}/Members/{Model.Member.Id}/Avatar";    
+}
+
+<div class="d-flex align-items-end justify-content-center">
+    <img style="@(Model.MaxWidth > 0 ? $"max-width: {Model.MaxWidth}px" : null)"
+         class="@(Model.IsTop ? "card-img-top" : "card-img")" 
+         src="@imageUrl" 
+         alt="Photo of @Model.Member.FullName" />
+</div>

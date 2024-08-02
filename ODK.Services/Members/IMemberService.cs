@@ -11,12 +11,14 @@ public interface IMemberService
 
     Task DeleteMember(Guid memberId);
 
-    Task<Member> GetMember(Guid memberId, Guid chapterId);
+    Task<Member> GetMember(Guid memberId, Guid chapterId);    
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size);
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? width, int? height);
-    
+
+    Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
+
     Task<MemberProfile?> GetMemberProfile(Guid chapterId, Member currentMember, Member? member);
 
     Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId);

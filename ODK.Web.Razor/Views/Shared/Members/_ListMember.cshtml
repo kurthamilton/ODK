@@ -4,11 +4,10 @@
 <div class="card member-tile @(Model.HideName ? "member-tile-sm" : null)">
     <a href="/@Model.Chapter.Name/Knitwits/@Model.Member.Id" 
        data-bs-toggle="@(Model.HideName ? "tooltip" : "")" data-bs-title="@(Model.HideName ? Model.Member.FullName : "")" container="body">
-        @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, Model.Member)
+        @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel(Model.Chapter, Model.Member)
         {
-            ImageHeight = Model.ImageHeight,
             IsTop = !Model.HideName,
-            MaxWidth = Model.MaxWidth,
+            MaxWidth = Model.MaxWidth
         })
             
         @if (!Model.HideName)

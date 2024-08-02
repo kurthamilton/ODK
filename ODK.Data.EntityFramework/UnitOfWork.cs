@@ -39,6 +39,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IInstagramImageRepository> _instagramImageRepository;
     private readonly Lazy<IInstagramPostRepository> _instagramPostRepository;
     private readonly Lazy<IMemberActivationTokenRepository> _memberActivationTokenRepository;
+    private readonly Lazy<IMemberAvatarRepository> _memberAvatarRepository;
     private readonly Lazy<IMemberEmailAddressUpdateTokenRepository> _memberEmailAddressUpdateTokenRepository;
     private readonly Lazy<IMemberImageRepository> _memberImageRepository;
     private readonly Lazy<IMemberPasswordRepository> _memberPasswordRepository;
@@ -84,6 +85,7 @@ public class UnitOfWork : IUnitOfWork
         _instagramImageRepository = new(() => new InstagramImageRepository(_context));
         _instagramPostRepository = new(() => new InstagramPostRepository(_context));
         _memberActivationTokenRepository = new(() => new MemberActivationTokenRepository(_context));
+        _memberAvatarRepository = new(() => new MemberAvatarRepository(_context));
         _memberEmailAddressUpdateTokenRepository = new(() => new MemberEmailAddressUpdateTokenRepository(_context));
         _memberImageRepository = new(() => new MemberImageRepository(_context));
         _memberPasswordRepository = new(() => new MemberPasswordRepository(_context));
@@ -126,6 +128,7 @@ public class UnitOfWork : IUnitOfWork
     public IInstagramImageRepository InstagramImageRepository => _instagramImageRepository.Value;
     public IInstagramPostRepository InstagramPostRepository => _instagramPostRepository.Value;
     public IMemberActivationTokenRepository MemberActivationTokenRepository => _memberActivationTokenRepository.Value;
+    public IMemberAvatarRepository MemberAvatarRepository => _memberAvatarRepository.Value;
     public IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository => _memberEmailAddressUpdateTokenRepository.Value;
     public IMemberImageRepository MemberImageRepository => _memberImageRepository.Value;
     public IMemberPasswordRepository MemberPasswordRepository => _memberPasswordRepository.Value;
