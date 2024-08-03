@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ChapterLinks : IVersioned
+public class ChapterLinks : IVersioned, IChapterEntity
 {
     public Guid ChapterId { get; set; }
 

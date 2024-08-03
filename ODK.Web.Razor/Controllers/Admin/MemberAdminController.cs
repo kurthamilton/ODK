@@ -1,29 +1,25 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ODK.Services;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
-using ODK.Services.Emails;
 using ODK.Services.Members;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
-namespace ODK.Web.Razor.Controllers;
+namespace ODK.Web.Razor.Controllers.Admin;
 
-[Authorize(Roles = "Admin")]
-public class MemberAdminController : OdkControllerBase
+public class MemberAdminController : AdminControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
-    private readonly IEmailService _emailService;
     private readonly IMemberAdminService _memberAdminService;
     private readonly IRequestCache _requestCache;
 
-    public MemberAdminController(IMemberAdminService memberAdminService, IEmailService emailService,
+    public MemberAdminController(
+        IMemberAdminService memberAdminService, 
         IChapterAdminService chapterAdminService,
         IRequestCache requestCache)
+        : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;
-        _emailService = emailService;
         _memberAdminService = memberAdminService;
         _requestCache = requestCache;
     }
@@ -31,7 +27,8 @@ public class MemberAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/Delete")]
     public async Task<IActionResult> DeleteMember(string chapterName, Guid id)
     {
-        await _memberAdminService.DeleteMember(MemberId, id);
+        var request = await GetAdminServiceRequest(chapterName);
+        await _memberAdminService.DeleteMember(request, id);
 
         AddFeedback(new FeedbackViewModel("Member deleted", FeedbackType.Success));
 
@@ -41,17 +38,16 @@ public class MemberAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/Picture/Rotate")]
     public async Task<IActionResult> RotatePicture(string chapterName, Guid id)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-
-        await _memberAdminService.RotateMemberImage(MemberId, chapter.Id, id);
+        var request = await GetAdminServiceRequest(chapterName);
+        await _memberAdminService.RotateMemberImage(request, id);
         return RedirectToReferrer();
     }
 
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/ResendActivationEmail")]
     public async Task<IActionResult> ResendActivationEmail(string chapterName, Guid id)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        await _memberAdminService.SendActivationEmail(MemberId, chapter.Id, id);
+        var request = await GetAdminServiceRequest(chapterName);
+        await _memberAdminService.SendActivationEmail(request, id);
         AddFeedback(new FeedbackViewModel("Email sent", FeedbackType.Success));
         return RedirectToReferrer();
     }
@@ -59,8 +55,8 @@ public class MemberAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/SendEmail")]
     public async Task<IActionResult> SendEmail(string chapterName, Guid id, [FromForm] SendMemberEmailFormViewModel viewModel)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var result = await _emailService.SendMemberEmail(chapter, MemberId, id, viewModel.Subject, viewModel.Body);
+        var request = await GetAdminServiceRequest(chapterName);
+        var result = await _memberAdminService.SendMemberEmail(request, id, viewModel.Subject, viewModel.Body);
 
         if (result.Success)
         {
@@ -77,9 +73,8 @@ public class MemberAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/Visibility")]
     public async Task<IActionResult> SetMemberVisibility(string chapterName, Guid id, [FromForm] bool visible)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-
-        await _memberAdminService.SetMemberVisibility(MemberId, id, chapter.Id, visible);
+        var request = await GetAdminServiceRequest(chapterName); 
+        await _memberAdminService.SetMemberVisibility(request, id, visible);
 
         AddFeedback(new FeedbackViewModel("Member updated", FeedbackType.Success));
 
@@ -87,11 +82,11 @@ public class MemberAdminController : OdkControllerBase
     }
 
     [HttpPost("{chapterName}/Admin/Members/AdminMembers/Add")]
-    public async Task<IActionResult> AddAdminMember(string chapterName, [FromForm] AdminMemberAddFormViewModel viewModel)
+    public async Task<IActionResult> AddAdminMember(string chapterName, 
+        [FromForm] AdminMemberAddFormViewModel viewModel)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var result = await _chapterAdminService.AddChapterAdminMember(MemberId, chapter.Id, 
-            viewModel.MemberId!.Value);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _chapterAdminService.AddChapterAdminMember(serviceRequest, viewModel.MemberId!.Value);
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Admin member added", FeedbackType.Success));
@@ -107,8 +102,8 @@ public class MemberAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/Members/AdminMembers/{id:guid}/Delete")]
     public async Task<IActionResult> AddAdminMember(string chapterName, Guid id)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var result = await _chapterAdminService.DeleteChapterAdminMember(MemberId, chapter.Id, id);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _chapterAdminService.DeleteChapterAdminMember(serviceRequest, id);
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Admin member removed", FeedbackType.Success));
@@ -124,35 +119,33 @@ public class MemberAdminController : OdkControllerBase
     [HttpGet("{chapterName}/Admin/Members/Download")]
     public async Task<IActionResult> DownloadAdminMembers(string chapterName)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var data = await _memberAdminService.GetMemberCsv(MemberId, chapter.Id);
-        
+        var request = await GetAdminServiceRequest(chapterName);
+        var data = await _memberAdminService.GetMemberCsv(request);
+
         return DownloadCsv(data, $"Members.{DateTime.UtcNow:yyyyMMdd}.csv");
     }
 
     [HttpPost("{chapterName}/Admin/Members/SendEmail")]
     public async Task<IActionResult> SendBulkEmail(string chapterName, [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var request = await GetAdminServiceRequest(chapterName);
 
-        var members = await _memberAdminService.GetMembers(MemberId, new MemberFilter
+        var filter = new MemberFilter
         {
-            ChapterId = chapter.Id,
             Statuses = viewModel.Status,
             Types = viewModel.Type
-        });
+        };
 
-        await _emailService.SendBulkEmail(MemberId, chapter, members, viewModel.Subject, viewModel.Body);
-
-        AddFeedback(new FeedbackViewModel($"Bulk email sent to {members.Count} members", FeedbackType.Success));
-
+        var result = await _memberAdminService.SendBulkEmail(request, filter, viewModel.Subject, viewModel.Body);
+        AddFeedback(new FeedbackViewModel(result));
         return RedirectToReferrer();
     }
 
     [HttpPost("{chapterName}/Admin/Members/Subscriptions/{id:guid}/Delete")]
-    public async Task<IActionResult> DeleteSubscription(Guid id)
+    public async Task<IActionResult> DeleteSubscription(string chapterName, Guid id)
     {
-        ServiceResult result = await _chapterAdminService.DeleteChapterSubscription(MemberId, id);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _chapterAdminService.DeleteChapterSubscription(serviceRequest, id);
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Subscription deleted", FeedbackType.Success));

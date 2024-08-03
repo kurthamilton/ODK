@@ -19,14 +19,16 @@ public abstract class VenueAdminPageModel : AdminPageModel
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
+        await base.OnPageHandlerExecutionAsync(context, next);
+
         Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id);
-        Venue = await VenueAdminService.GetVenue(CurrentMemberId, id);
+
+        var request = GetAdminServiceRequest();
+        Venue = await VenueAdminService.GetVenue(request, id);
         if (Venue == null)
         {
             Response.Redirect($"{Request.RouteValues["chapterName"]}/Admin/Events/Venues");
             return;
-        }
-
-        await base.OnPageHandlerExecutionAsync(context, next);
+        }        
     }
 }

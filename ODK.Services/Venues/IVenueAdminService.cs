@@ -4,13 +4,13 @@ namespace ODK.Services.Venues;
 
 public interface IVenueAdminService
 {
-    Task<ServiceResult> CreateVenue(Guid currentMemberId, CreateVenue venue);
+    Task<ServiceResult> CreateVenue(AdminServiceRequest request, CreateVenue venue);
 
-    Task<Venue> GetVenue(Guid currentMemberId, Guid venueId);
+    Task<Venue> GetVenue(AdminServiceRequest request, Guid venueId);
 
-    Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId);
+    Task<IReadOnlyCollection<Venue>> GetVenues(AdminServiceRequest request);
 
-    Task<VenuesDto> GetVenuesDto(Guid currentMemberId, Guid chapterId);
+    Task<VenuesDto> GetVenuesDto(AdminServiceRequest request);
 
-    Task<ServiceResult> UpdateVenue(Guid memberId, Guid id, CreateVenue venue);
+    Task<ServiceResult> UpdateVenue(AdminServiceRequest request, Guid id, CreateVenue venue);
 }

@@ -1,5 +1,5 @@
 ﻿namespace ODK.Core.Chapters;
-public class ChapterEventSettings
+public class ChapterEventSettings : IChapterEntity
 {
     public Guid ChapterId { get; set; }
 

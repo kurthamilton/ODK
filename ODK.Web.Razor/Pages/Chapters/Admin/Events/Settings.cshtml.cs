@@ -22,7 +22,8 @@ public class SettingsModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(EventSettingsFormViewModel viewModel)
     {
-        await _chapterAdminService.UpdateChapterEventSettings(CurrentMemberId, Chapter.Id, new UpdateChapterEventSettings
+        var serviceRequest = GetAdminServiceRequest();
+        await _chapterAdminService.UpdateChapterEventSettings(serviceRequest, new UpdateChapterEventSettings
         {
             DefaultDayOfWeek = viewModel.DefaultDayOfWeek,
             DefaultDescription = viewModel.DefaultDescription,

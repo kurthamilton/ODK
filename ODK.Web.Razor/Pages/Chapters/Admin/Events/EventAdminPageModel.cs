@@ -19,14 +19,16 @@ public abstract class EventAdminPageModel : AdminPageModel
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
+        await base.OnPageHandlerExecutionAsync(context, next);
+
         Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id);
-        Event = await EventAdminService.GetEvent(CurrentMemberId, id);
+
+        var request = GetAdminServiceRequest();
+        Event = await EventAdminService.GetEvent(request, id);
         if (Event == null)
         {
             Response.Redirect($"{Request.RouteValues["chapterName"]}/Admin/Events");
             return;
-        }
-
-        await base.OnPageHandlerExecutionAsync(context, next);
+        }        
     }
 }

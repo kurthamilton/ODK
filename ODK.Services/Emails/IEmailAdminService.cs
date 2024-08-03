@@ -5,23 +5,23 @@ namespace ODK.Services.Emails;
 
 public interface IEmailAdminService
 {
-    Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type);
+    Task<ServiceResult> DeleteChapterEmail(AdminServiceRequest request, EmailType type);
 
-    Task<ServiceResult> DeleteChapterEmail(Guid currentMemberId, string chapterName, EmailType type);
+    Task<ChapterEmail> GetChapterEmail(AdminServiceRequest request, EmailType type);
 
-    Task<ChapterEmail> GetChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type);
+    Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(AdminServiceRequest request);
 
-    Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(Guid currentMemberId, Guid chapterId);
-
-    Task<ChapterEmailSettings?> GetChapterEmailSettings(Guid currentMemberId, Guid chapterId);
+    Task<ChapterEmailSettings?> GetChapterEmailSettings(AdminServiceRequest request);
 
     Task<Email> GetEmail(Guid currentMemberId, EmailType type);
     
     Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId);
 
-    Task<ServiceResult> UpdateChapterEmail(Guid currentMemberId, Guid chapterId, EmailType type, UpdateEmail model);
+    Task<ServiceResult> SendTestEmail(AdminServiceRequest request, EmailType type);
 
-    Task<ServiceResult> UpdateChapterEmailSettings(Guid currentMemberId, Guid chapterId, UpdateChapterEmailSettings model);
+    Task<ServiceResult> UpdateChapterEmail(AdminServiceRequest request, EmailType type, UpdateEmail model);
+
+    Task<ServiceResult> UpdateChapterEmailSettings(AdminServiceRequest request, UpdateChapterEmailSettings model);
 
     Task<ServiceResult> UpdateEmail(Guid currentMemberId, EmailType type, UpdateEmail model);
 }

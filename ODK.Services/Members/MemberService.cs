@@ -223,14 +223,31 @@ public class MemberService : IMemberService
         return new VersionedServiceResult<MemberAvatar>(version, image);
     }
 
-    public async Task<MemberProfile?> GetMemberProfile(Guid chapterId, Member currentMember, Member? member)
+    public async Task<MemberProfile?> GetMemberProfile(Guid chapterId, Guid currentMemberId, Member member)
     {
+        var (currentMember, chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
+            x => x.MemberPropertyRepository.GetByMemberId(member.Id, chapterId));
+
         if (member == null || !member.CanBeViewedBy(currentMember))
         {
             return null;
         }
 
-        return await GetMemberProfile(member, chapterId);
+        var memberPropertyDictionary = memberProperties
+            .ToDictionary(x => x.ChapterPropertyId);
+
+        var allMemberProperties = chapterProperties
+            .Select(x => memberPropertyDictionary.ContainsKey(x.Id)
+                ? memberPropertyDictionary[x.Id]
+                : new MemberProperty
+                {
+                    ChapterPropertyId = x.Id,
+                    MemberId = member.Id
+                });
+
+        return new MemberProfile(chapterId, member, allMemberProperties, chapterProperties);
     }
 
     public async Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId)
@@ -567,27 +584,6 @@ public class MemberService : IMemberService
         }
     }        
     
-    private async Task<MemberProfile> GetMemberProfile(Member member, Guid chapterId)
-    {
-        var (chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
-            x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
-            x => x.MemberPropertyRepository.GetByMemberId(member.Id, chapterId));
-
-        var memberPropertyDictionary = memberProperties
-            .ToDictionary(x => x.ChapterPropertyId);
-
-        var allMemberProperties = chapterProperties
-            .Select(x => memberPropertyDictionary.ContainsKey(x.Id) 
-                ? memberPropertyDictionary[x.Id] 
-                : new MemberProperty
-                {
-                    ChapterPropertyId = x.Id,
-                    MemberId = member.Id
-                });
-
-        return new MemberProfile(chapterId, member, allMemberProperties, chapterProperties);
-    }        
-
     private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, UpdateMemberProfile profile)
     {
         IReadOnlyCollection<string> missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();

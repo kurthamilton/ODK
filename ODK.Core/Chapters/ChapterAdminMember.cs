@@ -2,7 +2,7 @@
 
 namespace ODK.Core.Chapters;
 
-public class ChapterAdminMember : IDatabaseEntity
+public class ChapterAdminMember : IDatabaseEntity, IChapterEntity
 {    
     public string? AdminEmailAddress { get; set; }
 

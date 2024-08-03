@@ -1,4 +1,5 @@
 ﻿@using ODK.Core.Emails
+@using ODK.Services
 @using ODK.Services.Emails
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Chapters
@@ -7,8 +8,9 @@
 @{
     var memberId = User.MemberId();
 
-    var emails = await EmailAdminService.GetChapterEmails(memberId, Model.Id);
-    var settings = await EmailAdminService.GetChapterEmailSettings(memberId, Model.Id);
+    var request = new AdminServiceRequest(Model.Id, memberId);
+    var emails = await EmailAdminService.GetChapterEmails(request);
+    var settings = await EmailAdminService.GetChapterEmailSettings(request);
 }
 
 <h2>Email templates</h2>

@@ -23,9 +23,9 @@ public class EventCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormViewModel viewModel)
     {
-        var result = await _eventAdminService.CreateEvent(CurrentMemberId, new CreateEvent
+        var request = GetAdminServiceRequest();
+        var result = await _eventAdminService.CreateEvent(request, new CreateEvent
         {
-            ChapterId = Chapter.Id,
             Date = viewModel.Date,
             Description = viewModel.Description,
             Hosts = viewModel.Hosts,

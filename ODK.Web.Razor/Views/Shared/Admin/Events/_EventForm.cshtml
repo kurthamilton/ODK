@@ -1,11 +1,15 @@
 ﻿@using ODK.Core.Venues
+@using ODK.Services
 @using ODK.Services.Venues
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Razor
 @model ODK.Web.Razor.Models.Admin.Events.EventFormViewModel
 @inject IVenueAdminService VenueAdminService
 @{
-    var venues = await VenueAdminService.GetVenues(Model.CurrentMemberId, Model.ChapterId);
+    var memberId = User.MemberId();
+    var request = new AdminServiceRequest(Model.ChapterId, memberId);
+    var venues = await VenueAdminService.GetVenues(request);
     var venueOptions = venues
         .OrderBy(x => x.Name)
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
@@ -46,7 +50,6 @@
     @await Html.PartialAsync("Components/_FeatureTooltip", 
         new FeatureTooltipViewModel 
         {
-            CurrentMemberId = Model.CurrentMemberId, 
             Name = "Events.DefaultDescription"
         })
     @Html.TextAreaFor(x => x.Description, new { @class = "form-control", rows = 8 })
@@ -62,7 +65,6 @@
     @await Html.PartialAsync("Components/_FeatureTooltip", 
         new FeatureTooltipViewModel 
         {
-            CurrentMemberId = Model.CurrentMemberId, 
             Name = "Events.Hosts"
         })
     @Html.ListBoxFor(x => x.Hosts, Model.HostOptions, new { @class = "form-control" })

@@ -22,7 +22,8 @@ public class QuestionCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(ChapterQuestionFormViewModel viewModel)
     {
-        var result = await _chapterAdminService.CreateChapterQuestion(CurrentMemberId, Chapter.Id, 
+        var serviceRequest = GetAdminServiceRequest();
+        var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest, 
             new CreateChapterQuestion(viewModel.Answer, viewModel.Question));
 
         if (!result.Success)

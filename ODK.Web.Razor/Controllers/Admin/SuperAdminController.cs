@@ -6,7 +6,7 @@ using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Web.Common.Feedback;
 
-namespace ODK.Web.Razor.Controllers;
+namespace ODK.Web.Razor.Controllers.Admin;
 
 public class SuperAdminController : OdkControllerBase
 {
@@ -16,7 +16,7 @@ public class SuperAdminController : OdkControllerBase
     private readonly IRequestCache _requestCache;
     private readonly ISettingsService _settingsService;
 
-    public SuperAdminController(IEmailAdminService emailAdminService, 
+    public SuperAdminController(IEmailAdminService emailAdminService,
         ILoggingService loggingService, IInstagramService instagramService,
         IRequestCache requestCache, ISettingsService settingsService)
     {

@@ -21,13 +21,15 @@ public class AdminMemberModel : AdminPageModel
 
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
-        AdminMember = await _chapterAdminService.GetChapterAdminMember(CurrentMemberId, Chapter.Id, id);
+        var serviceRequest = GetAdminServiceRequest();
+        AdminMember = await _chapterAdminService.GetChapterAdminMember(serviceRequest, id);
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(Guid id, AdminMemberFormViewModel viewModel)
     {
-        var result = await _chapterAdminService.UpdateChapterAdminMember(CurrentMemberId, Chapter.Id, id, new UpdateChapterAdminMember
+        var serviceRequest = GetAdminServiceRequest();
+        var result = await _chapterAdminService.UpdateChapterAdminMember(serviceRequest, id, new UpdateChapterAdminMember
         {
             AdminEmailAddress = viewModel.AdminEmailAddress,
             ReceiveContactEmails = viewModel.ReceiveContactEmails,

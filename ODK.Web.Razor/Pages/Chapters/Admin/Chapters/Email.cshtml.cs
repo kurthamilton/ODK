@@ -22,13 +22,15 @@ public class EmailModel : AdminPageModel
 
     public async Task<IActionResult> OnGetAsync(EmailType type)
     {
-        Email = await _emailAdminService.GetChapterEmail(CurrentMemberId, Chapter.Id, type);        
+        var request = GetAdminServiceRequest();
+        Email = await _emailAdminService.GetChapterEmail(request, type);        
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(EmailType type, ChapterEmailFormViewModel viewModel)
     {
-        ServiceResult result = await _emailAdminService.UpdateChapterEmail(CurrentMemberId, Chapter.Id, type, new UpdateEmail
+        var request = GetAdminServiceRequest();
+        var result = await _emailAdminService.UpdateChapterEmail(request, type, new UpdateEmail
         {
             HtmlContent = viewModel.Content,
             Subject = viewModel.Subject

@@ -19,9 +19,11 @@ public class MediaAdminService : OdkAdminServiceBase, IMediaAdminService
         _mediaFileProvider = mediaFileProvider;
     }
 
-    public async Task<IReadOnlyCollection<MediaFile>> DeleteMediaFile(Guid currentMemberId, Guid chapterId, string name)
+    public async Task<IReadOnlyCollection<MediaFile>> DeleteMediaFile(AdminServiceRequest request, string name)
     {
-        await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+        var chapterId = request.ChapterId;
+
+        await AssertMemberIsChapterAdmin(request);
 
         MediaFile? mediaFile = await _mediaFileProvider.GetMediaFile(chapterId, name);
         if (mediaFile == null)
@@ -34,16 +36,18 @@ public class MediaAdminService : OdkAdminServiceBase, IMediaAdminService
         return await _mediaFileProvider.GetMediaFiles(chapterId);
     }
 
-    public async Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(Guid currentMemberId, Guid chapterId)
+    public async Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(AdminServiceRequest request)
     {
-        await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+        await AssertMemberIsChapterAdmin(request);
 
-        return await _mediaFileProvider.GetMediaFiles(chapterId);
+        return await _mediaFileProvider.GetMediaFiles(request.ChapterId);
     }
 
-    public async Task<MediaFile?> SaveMediaFile(Guid currentMemberId, Guid chapterId, string name, byte[] data)
+    public async Task<MediaFile?> SaveMediaFile(AdminServiceRequest request, string name, byte[] data)
     {
-        await AssertMemberIsChapterAdmin(currentMemberId, chapterId);
+        var chapterId = request.ChapterId;
+
+        await AssertMemberIsChapterAdmin(request);
 
         if (!_imageService.IsImage(data))
         {

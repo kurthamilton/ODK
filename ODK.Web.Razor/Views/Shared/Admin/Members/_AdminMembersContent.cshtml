@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Members
+@using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Members
 @using ODK.Web.Common.Extensions
@@ -10,8 +11,9 @@
 @{
     var memberId = User.MemberId();
 
-    var adminMembers = await ChapterAdminService.GetChapterAdminMembers(memberId, Model.Id);
-    var members = await MemberAdminService.GetMembers(memberId, Model.Id);
+    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
+    var adminMembers = await ChapterAdminService.GetChapterAdminMembers(serviceRequest);
+    var members = await MemberAdminService.GetMembers(serviceRequest);
 
     var adminMemberDictionary = adminMembers.ToDictionary(x => x.MemberId);
     var memberDictionary = members.ToDictionary(x => x.Id);

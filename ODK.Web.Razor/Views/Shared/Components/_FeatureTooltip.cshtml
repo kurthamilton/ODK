@@ -1,13 +1,15 @@
 ﻿@using Microsoft.AspNetCore.Html
 @using ODK.Services.Caching
 @using ODK.Services.Features
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Pages.Chapters
 @model ODK.Web.Razor.Models.Components.FeatureTooltipViewModel
 @inject IFeatureService FeatureService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IRequestCache RequestCache
 @{
-    var feature = await FeatureService.GetUnseeen(Model.CurrentMemberId, Model.Name);
+    var memberId = User.MemberId();
+    var feature = await FeatureService.GetUnseeen(memberId, Model.Name);
     if (feature == null)
     {
         return;

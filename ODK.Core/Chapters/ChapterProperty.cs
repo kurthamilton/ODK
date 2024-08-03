@@ -2,7 +2,7 @@
 
 namespace ODK.Core.Chapters;
 
-public class ChapterProperty : IDatabaseEntity
+public class ChapterProperty : IDatabaseEntity, IChapterEntity
 {
     public Guid ChapterId { get; set; }
 

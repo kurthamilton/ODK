@@ -21,9 +21,9 @@ public class ChapterAdminMemberRepository : WriteRepositoryBase<ChapterAdminMemb
         .Where(x => x.MemberId == memberId)
         .DeferredMultiple();
 
-    public IDeferredQuerySingleOrDefault<ChapterAdminMember> GetByMemberId(Guid memberId, Guid chapterId) => Set()
+    public IDeferredQuerySingle<ChapterAdminMember> GetByMemberId(Guid memberId, Guid chapterId) => Set()
         .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
-        .DeferredSingleOrDefault();
+        .DeferredSingle();
 
     protected override IQueryable<ChapterAdminMember> Set() => base.Set()
         .Include(x => x.Member)

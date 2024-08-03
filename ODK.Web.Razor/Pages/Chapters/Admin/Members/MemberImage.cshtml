@@ -16,5 +16,5 @@
         new MenuItem { Text = Model.Member.GetDisplayName(Model.Chapter.Id) }
     },
     Content = await Html.PartialAsync("Admin/Members/_MemberImageContent", 
-        new MemberViewModel(Model.Chapter, Model.CurrentMember, Model.Member))
+        new MemberViewModel(Model.Chapter, Model.Member))
 })

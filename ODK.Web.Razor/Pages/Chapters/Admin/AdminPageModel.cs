@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using ODK.Core.Members;
+using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Web.Common.Extensions;
 
@@ -16,4 +17,7 @@ public abstract class AdminPageModel : ChapterPageModel
     public new Member CurrentMember => base.CurrentMember!;
 
     protected Guid CurrentMemberId => User.MemberId();
+
+    protected AdminServiceRequest GetAdminServiceRequest() 
+        => new AdminServiceRequest(Chapter.Id, CurrentMemberId);
 }

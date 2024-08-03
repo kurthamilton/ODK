@@ -12,13 +12,14 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-   Title = "My subscription",
-   HideSubscriptionAlert = true,
-   Breadcrumbs = new []
-   {
-       new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
-       new MenuItem { Link = $"/{Model.Chapter.Name}/Account", Text = "Profile" },
-       new MenuItem { Text = "Subscription" }
-   },
-   Content = await Html.PartialAsync("Account/_SubscriptionContent", new SubscriptionContentViewModel(Model.Chapter, Model.CurrentMember!))
+    Title = "My subscription",
+    HideSubscriptionAlert = true,
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Account", Text = "Profile" },
+        new MenuItem { Text = "Subscription" }
+    },
+    Content = await Html.PartialAsync("Account/_SubscriptionContent", 
+        new SubscriptionContentViewModel(Model.Chapter))
 })

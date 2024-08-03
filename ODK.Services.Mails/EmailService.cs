@@ -3,7 +3,6 @@ using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Data.Core;
-using ODK.Services.Exceptions;
 
 namespace ODK.Services.Emails;
 
@@ -40,23 +39,17 @@ public class EmailService : IEmailService
     }
 
     public async Task SendBulkEmail(
-        Guid currentMemberId, 
-        Chapter chapter, 
-        IEnumerable<Member> to, 
-        string subject, 
+        ChapterAdminMember fromAdminMember,
+        Chapter chapter,
+        IEnumerable<Member> to,
+        string subject,
         string body)
     {
-        var fromAdminMember = await _unitOfWork.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, chapter.Id).RunAsync();
-        if (fromAdminMember == null)
-        {
-            throw new OdkNotAuthorizedException();
-        }
-
         await _mailProvider.SendBulkEmail(
-            chapter, 
-            to.Select(x => x.GetEmailAddressee()), 
-            subject, 
-            body, 
+            chapter,
+            to.Select(x => x.GetEmailAddressee()),
+            subject,
+            body,
             fromAdminMember);
     }
 
@@ -108,12 +101,8 @@ public class EmailService : IEmailService
         return await _mailProvider.SendEmail(chapter, to, email.Subject, email.HtmlContent);
     }
 
-    public async Task<ServiceResult> SendMemberEmail(Chapter chapter, Guid currentMemberId, Guid memberId, string subject, string body)
+    public async Task<ServiceResult> SendMemberEmail(Chapter chapter, ChapterAdminMember fromAdminMember, Member to, string subject, string body)
     {
-        var (to, fromAdminMember) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, chapter.Id));
-
         return await _mailProvider.SendEmail(
             chapter, 
             to.GetEmailAddressee(), 

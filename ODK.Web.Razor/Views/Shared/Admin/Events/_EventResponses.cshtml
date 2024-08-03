@@ -1,7 +1,9 @@
 ﻿@using ODK.Core.Events
 @using ODK.Core.Members
+@using ODK.Services
 @using ODK.Services.Events
 @using ODK.Services.Members
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Members
 @model EventViewModel
@@ -10,7 +12,9 @@
 @{
     const int cols = 6;
 
-    var dto = await EventAdminService.GetEventResponsesDto(Model.CurrentMember.Id, Model.Event.Id);
+    var memberId = User.MemberId();
+    var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
+    var dto = await EventAdminService.GetEventResponsesDto(request, Model.Event.Id);
 
     var (members, responses) = (dto.Members, dto.Responses);
 

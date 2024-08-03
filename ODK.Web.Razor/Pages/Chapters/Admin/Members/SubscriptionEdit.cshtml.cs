@@ -22,13 +22,15 @@ public class SubscriptionEditModel : AdminPageModel
 
     public async Task<IActionResult> OnGet(Guid id)
     {
-        Subscription = await _chapterAdminService.GetChapterSubscription(CurrentMemberId, id);        
+        var serviceRequest = GetAdminServiceRequest();
+        Subscription = await _chapterAdminService.GetChapterSubscription(serviceRequest, id);        
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(Guid id, SubscriptionFormViewModel viewModel)
     {
-        ServiceResult result = await _chapterAdminService.UpdateChapterSubscription(CurrentMemberId, id, new CreateChapterSubscription
+        var serviceRequest = GetAdminServiceRequest();
+        var result = await _chapterAdminService.UpdateChapterSubscription(serviceRequest, id, new CreateChapterSubscription
         {
             Amount = viewModel.Amount ?? 0,
             ChapterId = Chapter.Id,

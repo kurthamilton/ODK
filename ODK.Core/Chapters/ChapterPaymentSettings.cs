@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ChapterPaymentSettings
+public class ChapterPaymentSettings : IChapterEntity
 {
     public string? ApiPublicKey { get; set; }
 

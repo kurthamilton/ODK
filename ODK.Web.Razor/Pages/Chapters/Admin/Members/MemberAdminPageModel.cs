@@ -20,12 +20,14 @@ public abstract class MemberAdminPageModel : AdminPageModel
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
+        await base.OnPageHandlerExecutionAsync(context, next);
+
         if (!Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id))
         {
             throw new OdkNotFoundException();
         }
 
-        Member = await MemberAdminService.GetMember(CurrentMemberId, id);
-        await base.OnPageHandlerExecutionAsync(context, next);
+        var request = GetAdminServiceRequest();
+        Member = await MemberAdminService.GetMember(request, id);        
     }
 }

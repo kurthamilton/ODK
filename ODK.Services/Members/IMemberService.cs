@@ -17,7 +17,7 @@ public interface IMemberService
 
     Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
 
-    Task<MemberProfile?> GetMemberProfile(Guid chapterId, Member currentMember, Member? member);
+    Task<MemberProfile?> GetMemberProfile(Guid chapterId, Guid currentMemberId, Member member);
 
     Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId);
 

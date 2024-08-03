@@ -6,8 +6,7 @@ namespace ODK.Web.Razor.Models.Admin.Venues;
 public class VenueFormViewModel
 {
     public Guid ChapterId { get; set; }
-    public Guid CurrentMemberId { get; set; }
-
+    
     public string? Address { get; set; }
 
     [Required]

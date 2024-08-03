@@ -68,10 +68,11 @@ public static class EventAdminServiceTests
         var service = CreateService(
             unitOfWork: unitOfWork);
 
+        var request = new AdminServiceRequest(ChapterId, CurrentMemberId);
+
         // Act
-        await service.CreateEvent(CurrentMemberId, new CreateEvent
+        await service.CreateEvent(request, new CreateEvent
         {
-            ChapterId = ChapterId,
             Date = eventDate,            
             Name = "Name",
             VenueId = VenueId           

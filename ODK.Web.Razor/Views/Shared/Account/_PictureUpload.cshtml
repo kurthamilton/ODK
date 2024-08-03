@@ -1,10 +1,12 @@
 ﻿@using ODK.Services.Members
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Account
 @inject IMemberService MemberService
 @model PictureUploadViewModel
 @{
-    var imageSrc = Model.MemberId != null
-        ? $"/{Model.Chapter.Name}/Members/{Model.MemberId}/Image"
+    var memberId = User.MemberIdOrDefault();
+    var imageSrc = memberId != null
+        ? $"/{Model.Chapter.Name}/Members/{memberId}/Image"
         : null;
 }
 

@@ -8,8 +8,6 @@ public class EventFormViewModel
 {
     public Guid ChapterId { get; set; }
 
-    public Guid CurrentMemberId { get; set; }
-
     public DateTime Date { get; set; }
 
     public string? Description { get; set; } = "";

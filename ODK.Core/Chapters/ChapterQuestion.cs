@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ChapterQuestion : IVersioned, IDatabaseEntity
+public class ChapterQuestion : IVersioned, IDatabaseEntity, IChapterEntity
 {
     public string Answer { get; set; } = "";
 

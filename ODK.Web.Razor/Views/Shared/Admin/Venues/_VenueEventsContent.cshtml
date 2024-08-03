@@ -1,10 +1,14 @@
 ﻿@using ODK.Core.Events
 @using ODK.Core.Utils
+@using ODK.Services
 @using ODK.Services.Events
+@using ODK.Web.Common.Extensions
 @model ODK.Web.Razor.Models.Admin.Venues.VenueViewModel
 @inject IEventAdminService EventAdminService
 @{
-    IReadOnlyCollection<Event> events = await EventAdminService.GetEventsByVenue(Model.CurrentMember.Id, Model.Venue.Id);
+    var memberId = User.MemberId();
+    var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
+    var events = await EventAdminService.GetEventsByVenue(request, Model.Venue.Id);
 }
 
 @await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", Model)

@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ChapterEmailSettings
+public class ChapterEmailSettings : IChapterEntity
 {
     public Guid ChapterId { get; set; }
 

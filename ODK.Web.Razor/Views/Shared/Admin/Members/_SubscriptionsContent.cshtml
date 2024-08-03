@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Countries
+@using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Countries
 @using ODK.Web.Common.Extensions
@@ -8,7 +9,8 @@
 @inject IChapterAdminService ChapterAdminService
 @{
     var memberId = User.MemberId();    
-    var dto = await ChapterAdminService.GetChapterMemberSubscriptionsDto(memberId, Model);
+    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
+    var dto = await ChapterAdminService.GetChapterMemberSubscriptionsDto(serviceRequest);
 
     var (subscriptions, country, membershipSettings) = (dto.ChapterSubscriptions, dto.Country, dto.MembershipSettings);
 }

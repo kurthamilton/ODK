@@ -1,37 +1,33 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
-using ODK.Core.Exceptions;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
-namespace ODK.Web.Razor.Controllers;
+namespace ODK.Web.Razor.Controllers.Admin;
 
-[Authorize(Roles = "Admin")]
-public class ChapterAdminController : OdkControllerBase
+public class ChapterAdminController : AdminControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
     private readonly IEmailAdminService _emailAdminService;
-    private readonly IEmailService _emailService;
-    private readonly IRequestCache _requestCache;
 
-    public ChapterAdminController(IChapterAdminService chapterAdminService, IEmailAdminService emailAdminService,
-        IEmailService emailService, IRequestCache requestCache)
+    public ChapterAdminController(
+        IChapterAdminService chapterAdminService,
+        IEmailAdminService emailAdminService,
+        IRequestCache requestCache)
+        : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;
         _emailAdminService = emailAdminService;
-        _emailService = emailService;
-        _requestCache = requestCache;
     }
 
     [HttpPost("/{chapterName}/Admin/Chapter/ContactRequests/{id}/Delete")]
     public async Task<IActionResult> DeleteContactRequest(string chapterName, Guid id)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var result = await _chapterAdminService.DeleteChapterContactRequest(MemberId, id);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _chapterAdminService.DeleteChapterContactRequest(serviceRequest, id);
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Contact request deleted", FeedbackType.Success));
@@ -42,13 +38,15 @@ public class ChapterAdminController : OdkControllerBase
 
     [HttpPost("/{chapterName}/Admin/Chapter/Emails/Settings")]
     public async Task<IActionResult> UpdateSettings(string chapterName, ChapterEmailSettingsFormViewModel viewModel)
-    {        
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var result = await _emailAdminService.UpdateChapterEmailSettings(MemberId, chapter.Id, new UpdateChapterEmailSettings
-        {
-            FromAddress = viewModel.FromAddress,
-            FromName = viewModel.FromName
-        });
+    {
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _emailAdminService.UpdateChapterEmailSettings(
+            serviceRequest,
+            new UpdateChapterEmailSettings
+            {
+                FromAddress = viewModel.FromAddress,
+                FromName = viewModel.FromName
+            });
 
         if (result.Success)
         {
@@ -65,7 +63,8 @@ public class ChapterAdminController : OdkControllerBase
     [HttpPost("/{chapterName}/Admin/Chapter/Emails/{type}/RestoreDefault")]
     public async Task<IActionResult> RestoreDefaultEmail(string chapterName, EmailType type)
     {
-        var result = await _emailAdminService.DeleteChapterEmail(MemberId, chapterName, type);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _emailAdminService.DeleteChapterEmail(serviceRequest, type);
 
         if (result.Success)
         {
@@ -82,21 +81,8 @@ public class ChapterAdminController : OdkControllerBase
     [HttpPost("/{chapterName}/Admin/Chapter/Emails/{type}/SendTest")]
     public async Task<IActionResult> SendTestEmail(string chapterName, EmailType type)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var member = await _requestCache.GetMemberAsync(MemberId);
-
-        if (member == null)
-        {
-            throw new OdkNotFoundException();
-        }
-
-        var result = await _emailService.SendEmail(chapter, member.GetEmailAddressee(), type, new Dictionary<string, string>
-        {
-            { "chapter.name", chapter.Name },
-            { "member.emailAddress", member.FirstName },
-            { "member.firstName", member.FirstName },
-            { "member.lastName", member.FirstName }
-        });
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _emailAdminService.SendTestEmail(serviceRequest, type);
 
         if (result.Success)
         {
@@ -113,60 +99,67 @@ public class ChapterAdminController : OdkControllerBase
     [HttpPost("/{chapterName}/Admin/Chapter/Owner")]
     public async Task<IActionResult> SetOwner(string chapterName, [FromForm] Guid memberId)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        await _chapterAdminService.SetOwner(MemberId, chapter.Id, memberId);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        await _chapterAdminService.SetOwner(serviceRequest, memberId);
         return RedirectToReferrer();
     }
 
     [HttpPost("/{chapterName}/Admin/Chapter/Properties/{id:guid}/Delete")]
-    public async Task<IActionResult> DeleteProperty(Guid id)
+    public async Task<IActionResult> DeleteProperty(string chapterName, Guid id)
     {
-        await _chapterAdminService.DeleteChapterProperty(MemberId, id);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        await _chapterAdminService.DeleteChapterProperty(serviceRequest, id);
         AddFeedback(new FeedbackViewModel("Property deleted", FeedbackType.Success));
         return RedirectToReferrer();
     }
 
     [HttpPost("/{chapterName}/Admin/Chapter/Properties/{id:guid}/MoveDown")]
-    public async Task<IActionResult> MovePropertyDown(Guid id)
+    public async Task<IActionResult> MovePropertyDown(string chapterName, Guid id)
     {
-        await _chapterAdminService.UpdateChapterPropertyDisplayOrder(MemberId, id, 1);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        await _chapterAdminService.UpdateChapterPropertyDisplayOrder(serviceRequest, id, 1);
         return RedirectToReferrer();
     }
 
     [HttpPost("/{chapterName}/Admin/Chapter/Properties/{id:guid}/MoveUp")]
-    public async Task<IActionResult> MovePropertyUp(Guid id)
+    public async Task<IActionResult> MovePropertyUp(string chapterName, Guid id)
     {
-        await _chapterAdminService.UpdateChapterPropertyDisplayOrder(MemberId, id, -1);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        await _chapterAdminService.UpdateChapterPropertyDisplayOrder(serviceRequest, id, -1);
         return RedirectToReferrer();
     }
 
     [HttpPost("/{chapterName}/Admin/Chapter/Questions/{id:guid}/Delete")]
-    public async Task<IActionResult> DeleteQuestion(Guid id)
+    public async Task<IActionResult> DeleteQuestion(string chapterName, Guid id)
     {
-        await _chapterAdminService.DeleteChapterQuestion(MemberId, id);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        await _chapterAdminService.DeleteChapterQuestion(serviceRequest, id);
         AddFeedback(new FeedbackViewModel("Question deleted", FeedbackType.Success));
         return RedirectToReferrer();
     }
 
     [HttpPost("/{chapterName}/Admin/Chapter/Questions/{id:guid}/MoveDown")]
-    public async Task<IActionResult> MoveQuestionDown(Guid id)
+    public async Task<IActionResult> MoveQuestionDown(string chapterName, Guid id)
     {
-        await _chapterAdminService.UpdateChapterQuestionDisplayOrder(MemberId, id, 1);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        await _chapterAdminService.UpdateChapterQuestionDisplayOrder(serviceRequest, id, 1);
         return RedirectToReferrer();
     }
 
     [HttpPost("/{chapterName}/Admin/Chapter/Questions/{id:guid}/MoveUp")]
-    public async Task<IActionResult> MoveQuestionUp(Guid id)
+    public async Task<IActionResult> MoveQuestionUp(string chapterName, Guid id)
     {
-        await _chapterAdminService.UpdateChapterQuestionDisplayOrder(MemberId, id, -1);
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        await _chapterAdminService.UpdateChapterQuestionDisplayOrder(serviceRequest, id, -1);
         return RedirectToReferrer();
     }
 
     [HttpPost("/{chapterName}/Admin/Chapter/Text")]
-    public async Task<IActionResult> UpdateChapterTexts(string chapterName, [FromForm] ChapterTextsFormViewModel viewModel)
+    public async Task<IActionResult> UpdateChapterTexts(string chapterName,
+        [FromForm] ChapterTextsFormViewModel viewModel)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var result = await _chapterAdminService.UpdateChapterTexts(MemberId, chapter.Id, new UpdateChapterTexts
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _chapterAdminService.UpdateChapterTexts(serviceRequest, new UpdateChapterTexts
         {
             RegisterText = viewModel.RegisterMessage,
             WelcomeText = viewModel.WelcomeMessage

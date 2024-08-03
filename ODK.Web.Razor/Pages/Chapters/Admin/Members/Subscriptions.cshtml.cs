@@ -22,7 +22,8 @@ public class SubscriptionsModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(MembershipSettingsFormViewModel viewModel)
     {
-        var result = await _chapterAdminService.UpdateChapterMembershipSettings(CurrentMemberId, Chapter.Id, 
+        var serviceRequest = GetAdminServiceRequest();
+        var result = await _chapterAdminService.UpdateChapterMembershipSettings(serviceRequest, 
             new UpdateChapterMembershipSettings
             {
                 Enabled = viewModel.Enabled,

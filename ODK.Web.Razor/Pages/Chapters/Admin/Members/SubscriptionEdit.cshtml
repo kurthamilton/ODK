@@ -16,5 +16,5 @@
         new MenuItem { Text = Model.Subscription.Name }
     },
     Content = await Html.PartialAsync("Admin/Members/_SubscriptionEditContent", 
-        new SubscriptionEditViewModel(Model.Chapter, Model.CurrentMember, Model.Subscription))
+        new SubscriptionEditViewModel(Model.Chapter, Model.Subscription))
 })

@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ChapterTexts
+public class ChapterTexts : IChapterEntity
 {
     public Guid ChapterId { get; set; }
 

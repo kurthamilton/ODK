@@ -1,46 +1,48 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Events;
+﻿using ODK.Core.Events;
 
 namespace ODK.Services.Events;
 
 public interface IEventAdminService
 {
-    Task<ServiceResult> CreateEvent(Guid memberId, CreateEvent createEvent, bool draft);
+    Task<ServiceResult> CreateEvent(AdminServiceRequest request, CreateEvent createEvent, bool draft);
 
-    Task DeleteEvent(Guid currentMemberId, Guid id);
+    Task DeleteEvent(AdminServiceRequest request, Guid id);
     
-    Task<IReadOnlyCollection<EventInvitesDto>> GetChapterInvites(Guid currentMemberId, Guid chapterId, IReadOnlyCollection<Guid> eventIds);
+    Task<IReadOnlyCollection<EventInvitesDto>> GetChapterInvites(AdminServiceRequest request, 
+        IReadOnlyCollection<Guid> eventIds);
     
-    Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(Guid currentMemberId, Guid chapterId, IReadOnlyCollection<Guid> eventIds);
+    Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(AdminServiceRequest request, 
+        IReadOnlyCollection<Guid> eventIds);
 
-    Task<Event> GetEvent(Guid currentMemberId, Guid id);
+    Task<Event> GetEvent(AdminServiceRequest request, Guid id);
 
-    Task<IReadOnlyCollection<EventHost>> GetEventHosts(Guid currentMemberId, Event @event);
+    Task<IReadOnlyCollection<EventHost>> GetEventHosts(AdminServiceRequest request, Guid eventId);
 
-    Task<EventInvitesDto> GetEventInvites(Guid currentMemberId, Guid eventId);
+    Task<EventInvitesDto> GetEventInvites(AdminServiceRequest request, Guid eventId);
 
-    Task<EventResponsesDto> GetEventResponsesDto(Guid currentMemberId, Guid eventId);
+    Task<EventResponsesDto> GetEventResponsesDto(AdminServiceRequest request, Guid eventId);
 
-    Task<IReadOnlyCollection<Event>> GetEvents(Guid currentMemberId, Guid chapterId, int page, int pageSize);
+    Task<IReadOnlyCollection<Event>> GetEvents(AdminServiceRequest request, int page, int pageSize);
 
-    Task<EventsDto> GetEventsDto(Guid currentMemberId, Guid chapterId, int page, int pageSize);
+    Task<EventsDto> GetEventsDto(AdminServiceRequest request, int page, int pageSize);
 
-    Task<IReadOnlyCollection<Event>> GetEventsByVenue(Guid currentMemberId, Guid venueId);
+    Task<IReadOnlyCollection<Event>> GetEventsByVenue(AdminServiceRequest request, Guid venueId);
 
-    Task<DateTime?> GetNextAvailableEventDate(Guid currentMemberId, Chapter chapter);
+    Task<DateTime?> GetNextAvailableEventDate(AdminServiceRequest request);
 
-    Task PublishEvent(Guid currentMemberId, Guid eventId);
+    Task PublishEvent(AdminServiceRequest request, Guid eventId);
 
-    Task SendEventInviteeEmail(Guid currentMemberId, Guid eventId, IEnumerable<EventResponseType> responseTypes, 
-        string subject, string body);
+    Task SendEventInviteeEmail(AdminServiceRequest request, Guid eventId, 
+        IEnumerable<EventResponseType> responseTypes, string subject, string body);
 
-    Task<ServiceResult> SendEventInvites(Guid currentMemberId, Guid eventId, bool test = false);
+    Task<ServiceResult> SendEventInvites(AdminServiceRequest request, Guid eventId, bool test = false);
 
     Task SendScheduledEmails();
 
-    Task<ServiceResult> UpdateEvent(Guid memberId, Guid id, CreateEvent @event);
+    Task<ServiceResult> UpdateEvent(AdminServiceRequest request, Guid id, CreateEvent @event);
 
-    Task<EventResponse> UpdateMemberResponse(Guid currentMemberId, Guid eventId, Guid memberId, EventResponseType responseType);
+    Task<EventResponse> UpdateMemberResponse(AdminServiceRequest request, Guid eventId, Guid memberId, 
+        EventResponseType responseType);
 
-    Task<ServiceResult> UpdateScheduledEmail(Guid currentMemberId, Guid eventId, DateTime? date, string? time);
+    Task<ServiceResult> UpdateScheduledEmail(AdminServiceRequest request, Guid eventId, DateTime? date, string? time);
 }

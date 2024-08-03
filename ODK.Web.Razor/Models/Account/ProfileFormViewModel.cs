@@ -23,8 +23,6 @@ public class ProfileFormViewModel
     [DisplayName("Last Name")] 
     public string LastName { get; set; } = "";
 
-    public Guid? MemberId { get; set; }
-
     [Required]
     public bool PrivacyPolicy { get; set; }
 

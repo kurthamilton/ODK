@@ -1,11 +1,14 @@
 ﻿@using ODK.Core.Members
+@using ODK.Services
 @using ODK.Services.Members
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Members
 @inject IMemberAdminService MemberAdminService
 @model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
 @{
-    var subscription = await MemberAdminService
-        .GetMemberSubscription(Model.CurrentMember.Id, Model.Chapter.Id, Model.Member.Id);
+    var currentMemberId = User.MemberId();
+    var serviceRequest = new AdminServiceRequest(Model.Chapter.Id, currentMemberId);
+    var subscription = await MemberAdminService.GetMemberSubscription(serviceRequest, Model.Member.Id);
 }
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)

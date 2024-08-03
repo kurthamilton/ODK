@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Venues;
 
-public class Venue : IVersioned, IDatabaseEntity
+public class Venue : IVersioned, IDatabaseEntity, IChapterEntity
 {
     public string? Address { get; set; }
 

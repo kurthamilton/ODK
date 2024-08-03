@@ -2,7 +2,7 @@
 
 namespace ODK.Core.Events;
 
-public class Event : IDatabaseEntity
+public class Event : IDatabaseEntity, IChapterEntity
 {
     public bool CanComment => !IsPublic;
 

@@ -1,10 +1,14 @@
 ﻿@using ODK.Core.Events
+@using ODK.Services
 @using ODK.Services.Events
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Events
 @model ODK.Web.Razor.Models.Admin.Events.EventViewModel
 @inject IEventAdminService EventAdminService
 @{
-    var invites = await EventAdminService.GetEventInvites(Model.CurrentMember.Id, Model.Event.Id);    
+    var memberId = User.MemberId();
+    var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
+    var invites = await EventAdminService.GetEventInvites(request, Model.Event.Id);    
 }
 
 @await Html.PartialAsync("Admin/Events/_EventHeader")

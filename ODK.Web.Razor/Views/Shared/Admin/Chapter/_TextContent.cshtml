@@ -1,4 +1,5 @@
 ﻿@using ODK.Core.Chapters
+@using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Chapters
@@ -6,7 +7,8 @@
 @inject IChapterAdminService ChapterAdminService
 @{
     var memberId = User.MemberId();
-    var texts = await ChapterAdminService.GetChapterTexts(memberId, Model.Id);
+    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
+    var texts = await ChapterAdminService.GetChapterTexts(serviceRequest);
 }
 
 <form method="post" action="/@Model.Name/Admin/Chapter/Text">

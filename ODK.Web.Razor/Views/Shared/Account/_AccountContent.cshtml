@@ -1,4 +1,5 @@
 ﻿@using ODK.Services.Members
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
@@ -10,7 +11,8 @@
         return;
     }
 
-    var avatar = await MemberService.GetMemberAvatar(null, Model.CurrentMember.Id);
+    var memberId = User.MemberId();
+    var avatar = await MemberService.GetMemberAvatar(null, memberId);
 }
 
 <div class="row row-cols-2">
@@ -83,8 +85,7 @@
                 CropHeight = avatar.Value?.CropHeight,
                 CropWidth = avatar.Value?.CropWidth,
                 CropX = avatar.Value?.CropX,
-                CropY = avatar.Value?.CropY,
-                MemberId = Model.CurrentMember.Id
+                CropY = avatar.Value?.CropY
             })
 
             <div class="d-flex justify-content-end mt-3">
@@ -103,8 +104,7 @@
         DateJoined = Model.CurrentMember.MemberChapter(Model.Chapter.Id).CreatedUtc,
         EmailAddress = Model.CurrentMember.EmailAddress,
         FirstName = Model.CurrentMember.FirstName,
-        LastName = Model.CurrentMember.LastName,
-        MemberId = Model.CurrentMember.Id
+        LastName = Model.CurrentMember.LastName
     })
 
     <button type="submit" class="btn btn-primary">Update</button>

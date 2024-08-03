@@ -15,6 +15,4 @@ public class PictureUploadViewModel
     public int? CropY { get; set; }
 
     public string? ImageDataUrl { get; set; }
-
-    public Guid? MemberId { get; set; }
 }

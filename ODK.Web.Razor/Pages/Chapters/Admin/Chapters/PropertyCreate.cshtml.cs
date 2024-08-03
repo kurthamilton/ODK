@@ -22,7 +22,8 @@ public class PropertyCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(ChapterPropertyFormViewModel viewModel)
     {
-        var result = await _chapterAdminService.CreateChapterProperty(CurrentMemberId, Chapter.Id, new CreateChapterProperty
+        var serviceRequest = GetAdminServiceRequest();
+        var result = await _chapterAdminService.CreateChapterProperty(serviceRequest, new CreateChapterProperty
         {
             DataType = viewModel.DataType,
             HelpText = viewModel.HelpText,

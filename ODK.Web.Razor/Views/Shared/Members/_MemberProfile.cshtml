@@ -1,10 +1,12 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Members
 @using ODK.Services.Members
+@using ODK.Web.Common.Extensions
 @model ODK.Web.Razor.Models.Members.MemberProfileViewModel
 @inject IMemberService MemberService
 @{
-    var profile = await MemberService.GetMemberProfile(Model.Chapter.Id, Model.CurrentMember, Model.Member);
+    var currentMemberId = User.MemberId();
+    var profile = await MemberService.GetMemberProfile(Model.Chapter.Id, currentMemberId, Model.Member);
     if (profile == null)
     {
         return;

@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Events
 @using ODK.Core.Utils
 @using ODK.Core.Venues
+@using ODK.Services
 @using ODK.Services.Events
 @using ODK.Services.Venues
 @using ODK.Web.Common.Extensions
@@ -10,7 +11,8 @@
 @{
     var memberId = User.MemberId();
 
-    var dto = await VenueAdminService.GetVenuesDto(memberId, Model.Id);
+    var request = new AdminServiceRequest(Model.Id, memberId);
+    var dto = await VenueAdminService.GetVenuesDto(request);
 
     var (venues, events) = (dto.Venues, dto.Events);
 

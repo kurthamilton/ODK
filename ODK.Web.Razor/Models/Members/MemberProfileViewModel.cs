@@ -5,16 +5,13 @@ namespace ODK.Web.Razor.Models.Members;
 
 public class MemberProfileViewModel
 {
-    public MemberProfileViewModel(Member member, Member currentMember, Chapter chapter)
+    public MemberProfileViewModel(Member member, Chapter chapter)
     {
         Chapter = chapter;
-        CurrentMember = currentMember;
         Member = member;
     }
 
     public Chapter Chapter { get; }
-
-    public Member CurrentMember { get; }
 
     public Member Member { get; }
 }

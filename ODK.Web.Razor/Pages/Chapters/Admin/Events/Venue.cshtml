@@ -17,5 +17,5 @@
        new MenuItem { Text = Model.Venue.Name }
     },
     Content = await Html.PartialAsync("Admin/Venues/_VenueContent", 
-       new VenueViewModel(Model.Chapter, Model.CurrentMember, Model.Venue))
+       new VenueViewModel(Model.Chapter, Model.Venue))
 })

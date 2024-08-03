@@ -4,12 +4,14 @@
 @using ODK.Services.Chapters
 @using ODK.Services.Countries
 @using ODK.Services.Members
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Models.Account.SubscriptionContentViewModel
 @inject IChapterService ChapterService
-@{    
-    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(Model.CurrentMember.Id, Model.Chapter);
+@{
+    var memberId = User.MemberId();
+    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(memberId, Model.Chapter);
     
     var (memberSubscription, chapterSubscriptions, country, paymentSettings) = 
         (dto.MemberSubscription, dto.ChapterSubscriptions, dto.Country, dto.PaymentSettings);

@@ -32,7 +32,6 @@
     @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
     {
         ChapterId = Model.Chapter.Id,
-        CurrentMemberId = Model.CurrentMember.Id,
         Date = Model.Event.Date,
         Description = Model.Event.Description,
         Hosts = Model.Hosts?.Select(x => x.MemberId).ToList() ?? [],

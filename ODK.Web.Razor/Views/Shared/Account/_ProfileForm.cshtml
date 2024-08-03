@@ -4,13 +4,15 @@
 @using ODK.Services.Caching
 @using ODK.Services.Chapters
 @using ODK.Services.Members
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Account
 @model ODK.Web.Razor.Models.Account.ProfileFormViewModel
 @inject IChapterService ChapterService
 @inject IMemberService MemberService
 @inject IRequestCache RequestCache
 @{
-    var dto = await ChapterService.GetChapterMemberPropertiesDto(Model.MemberId, Model.ChapterId);
+    var memberId = User.MemberIdOrDefault();
+    var dto = await ChapterService.GetChapterMemberPropertiesDto(memberId, Model.ChapterId);
     var chapter = await RequestCache.GetChapterAsync(Model.ChapterId);
 
     var chapterProperties = dto.ChapterProperties
@@ -36,10 +38,10 @@
     var trialPeriodMonths = membershipSettings?.TrialPeriodMonths ?? siteSettings.DefaultTrialPeriodMonths;
 }
 
-<div class="form-group mb-3 @(Model.MemberId == null ? "required" : null)">
+<div class="form-group mb-3 @(memberId == null ? "required" : null)">
     @Html.LabelFor(x => x.EmailAddress, new { @class = "form-label" })
     
-    @if (Model.MemberId != null)
+    @if (memberId != null)
     {
         <div class="form-control-plaintext">
             @Model.EmailAddress
@@ -53,7 +55,7 @@
     }
 </div>
 
-@if (Model.MemberId == null)
+@if (memberId == null)
 {
     <div class="mb-3 form-check">
         @Html.CheckBoxFor(x => x.EmailOptIn, new { @class = "form-check-input" })
@@ -172,7 +174,7 @@
     </div>
 }
 
-@if (Model.MemberId == null)
+@if (memberId == null)
 {
     <div class="form-group mb-3 required">
         <label class="form-label">Picture</label>

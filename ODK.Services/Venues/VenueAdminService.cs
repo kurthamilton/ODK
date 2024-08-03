@@ -17,19 +17,17 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> CreateVenue(Guid currentMemberId, CreateVenue model)
+    public async Task<ServiceResult> CreateVenue(AdminServiceRequest request, CreateVenue model)
     {
-        var (chapterAdminMembers, currentMember, existing) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(model.ChapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.VenueRepository.GetByName(model.ChapterId, model.Name));
+        var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
 
-        AssertMemberIsChapterAdmin(currentMember, model.ChapterId, chapterAdminMembers);
+        var existing = await GetChapterAdminRestrictedContent(request,
+            x => x.VenueRepository.GetByName(chapterId, model.Name));
 
         var venue = new Venue
         {
             Address = model.Address,
-            ChapterId = model.ChapterId,
+            ChapterId = chapterId,
             MapQuery = model.MapQuery,
             Name = model.Name            
         };
@@ -43,36 +41,31 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         _unitOfWork.VenueRepository.Add(venue);
         await _unitOfWork.SaveChangesAsync();
 
-        _cacheService.RemoveVersionedCollection<Venue>(model.ChapterId);
+        _cacheService.RemoveVersionedCollection<Venue>(request.ChapterId);
 
         return ServiceResult.Successful();
     }
     
-    public async Task<Venue> GetVenue(Guid currentMemberId, Guid venueId)
+    public async Task<Venue> GetVenue(AdminServiceRequest request, Guid venueId)
     {
-        var venue = await _unitOfWork.VenueRepository.GetById(venueId).RunAsync();
-        await AssertMemberIsChapterAdmin(currentMemberId, venue.ChapterId);
+        var venue = await GetChapterAdminRestrictedContent(request,
+            x => x.VenueRepository.GetById(venueId));
+        AssertBelongsToChapter(venue, request);
         return venue;
     }
 
-    public async Task<IReadOnlyCollection<Venue>> GetVenues(Guid currentMemberId, Guid chapterId)
+    public async Task<IReadOnlyCollection<Venue>> GetVenues(AdminServiceRequest request)
     {
-        var (chapterAdminMembers, currentMember, venues) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.VenueRepository.GetByChapterId(chapterId));
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
-        return venues;
+        return await GetChapterAdminRestrictedContent(request,
+            x => x.VenueRepository.GetByChapterId(request.ChapterId));
     }
 
-    public async Task<VenuesDto> GetVenuesDto(Guid currentMemberId, Guid chapterId)
+    public async Task<VenuesDto> GetVenuesDto(AdminServiceRequest request)
     {
-        var (chapterAdminMembers, currentMember, venues, events) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.VenueRepository.GetByChapterId(chapterId),
-            x => x.EventRepository.GetByChapterId(chapterId));
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+        var (venues, events) = await GetChapterAdminRestrictedContent(request,
+            x => x.VenueRepository.GetByChapterId(request.ChapterId),
+            x => x.EventRepository.GetByChapterId(request.ChapterId));
+
         return new VenuesDto
         {
             Events = events,
@@ -80,15 +73,13 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         };
     }
 
-    public async Task<ServiceResult> UpdateVenue(Guid currentMemberId, Guid id, CreateVenue model)
+    public async Task<ServiceResult> UpdateVenue(AdminServiceRequest request, Guid id, CreateVenue model)
     {       
-        var (chapterAdminMembers, currentMember, venue, existing) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(model.ChapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
+        var (venue, existing) = await GetChapterAdminRestrictedContent(request,
             x => x.VenueRepository.GetById(id),
-            x => x.VenueRepository.GetByName(model.ChapterId, model.Name));
+            x => x.VenueRepository.GetByName(request.ChapterId, model.Name));
 
-        AssertMemberIsChapterAdmin(currentMember, model.ChapterId, chapterAdminMembers);
+        AssertBelongsToChapter(venue, request);
 
         venue.Address = model.Address;
         venue.MapQuery = model.MapQuery;

@@ -4,26 +4,30 @@ namespace ODK.Services.Members;
 
 public interface IMemberAdminService
 {
-    Task DeleteMember(Guid currentMemberId, Guid memberId);
+    Task DeleteMember(AdminServiceRequest request, Guid memberId);
 
-    Task<Member> GetMember(Guid currentMemberId, Guid memberId);
+    Task<Member> GetMember(AdminServiceRequest request, Guid memberId);
 
-    Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(Guid currentMemberId, Guid chapterId);
+    Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(AdminServiceRequest request);
 
-    Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, Guid chapterId);
+    Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request);
 
-    Task<IReadOnlyCollection<Member>> GetMembers(Guid currentMemberId, MemberFilter filter);
+    Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request, MemberFilter filter);
 
-    Task<MembersDto> GetMembersDto(Guid currentMemberId, Guid chapterId);
+    Task<MembersDto> GetMembersDto(AdminServiceRequest request);
 
-    Task<MemberSubscription?> GetMemberSubscription(Guid currentMemberId, Guid chapterId, Guid memberId);
+    Task<MemberSubscription?> GetMemberSubscription(AdminServiceRequest request, Guid memberId);
 
-    Task RotateMemberImage(Guid currentMemberId, Guid chapterId, Guid memberId);
+    Task RotateMemberImage(AdminServiceRequest request, Guid memberId);
 
-    Task SendActivationEmail(Guid currentMemberId, Guid chapterId, Guid memberId);
+    Task SendActivationEmail(AdminServiceRequest request, Guid memberId);
 
-    Task SetMemberVisibility(Guid currentMemberId, Guid memberId, Guid chapterId, bool visible);
+    Task<ServiceResult> SendBulkEmail(AdminServiceRequest request, MemberFilter filter, string subject, string body);
 
-    Task<ServiceResult> UpdateMemberSubscription(Guid currentMemberId, Guid chapterId, Guid memberId, 
+    Task<ServiceResult> SendMemberEmail(AdminServiceRequest request, Guid memberId, string subject, string body);
+
+    Task SetMemberVisibility(AdminServiceRequest request, Guid memberId, bool visible);
+
+    Task<ServiceResult> UpdateMemberSubscription(AdminServiceRequest request, Guid memberId, 
         UpdateMemberSubscription subscription);
 }

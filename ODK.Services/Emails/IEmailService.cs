@@ -14,10 +14,11 @@ public interface IEmailService
         EmailType type, 
         IDictionary<string, string> parameters);
 
-    Task SendBulkEmail(Guid currentMemberId, 
-        Chapter chapter, 
-        IEnumerable<Member> to, 
-        string subject, 
+    Task SendBulkEmail(
+        ChapterAdminMember fromAdminMember,
+        Chapter chapter,
+        IEnumerable<Member> to,
+        string subject,
         string body);
 
     Task SendContactEmail(Chapter chapter, string from, string message, 
@@ -29,7 +30,7 @@ public interface IEmailService
     Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, EmailType type, 
         IDictionary<string, string> parameters);
 
-    Task<ServiceResult> SendMemberEmail(Chapter chapter, Guid currentMemberId, Guid memberId, string subject, string body);
+    Task<ServiceResult> SendMemberEmail(Chapter chapter, ChapterAdminMember fromAdminMember, Member to, string subject, string body);
 
     Task SendNewMemberAdminEmail(Chapter chapter, Member member, 
         IDictionary<string, string> parameters);

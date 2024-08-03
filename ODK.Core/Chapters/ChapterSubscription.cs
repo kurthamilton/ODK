@@ -2,7 +2,7 @@
 
 namespace ODK.Core.Chapters;
 
-public class ChapterSubscription : IDatabaseEntity
+public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 {
     public double Amount { get; set; }
 

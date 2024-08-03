@@ -1,11 +1,13 @@
 ﻿@using ODK.Core.Chapters
+@using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Extensions
 @model ODK.Core.Chapters.Chapter
 @inject IChapterAdminService ChapterAdminService
 @{
     var memberId = User.MemberId();
-    var questions = await ChapterAdminService.GetChapterQuestions(memberId, Model.Id);
+    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
+    var questions = await ChapterAdminService.GetChapterQuestions(serviceRequest);
 }
 
 <h2>About page</h2>
