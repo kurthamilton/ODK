@@ -78,17 +78,34 @@
     }
 
     function bindImages() {
-        const constraintImage = (image) => {
+        const constrainImage = image => {
             image.style.maxWidth = `${image.naturalWidth}px`;
             image.style.maxHeight = `${image.naturalHeight}px`;
         };
 
-        const images = document.querySelectorAll('[data-img-naturalsize]');
-        images.forEach(image => {
+        const loadFallback = image => {
+            const fallbackUrl = image.getAttribute('data-img-fallback');
+            image.src = fallbackUrl;
+            image.onerror = null;
+        };
+
+        const naturalSizeImages = document.querySelectorAll('[data-img-naturalsize]');
+        naturalSizeImages.forEach(image => {
             if (image.complete) {
-                constraintImage(image);
+                constrainImage(image);
             } else {
-                image.onload = () => constraintImage(image);
+                image.onload = () => constrainImage(image);
+            }            
+        });
+
+        const fallbackImages = document.querySelectorAll('[data-img-fallback]');
+        fallbackImages.forEach(image => {
+            if (image.complete) { 
+                if (image.error) {
+                    loadFallback(image);
+                }
+            } else {
+                image.onerror = () => loadFallback(image);
             }            
         });
     }

@@ -7,4 +7,6 @@
 <img style="@(maxWidth > 0 ? $"max-width: {maxWidth}px" : null)"
      class="@(Model.IsTop ? "card-img-top" : "card-img")"
      src="@imageUrl"
-     alt="Photo of @Model.Member.FullName" />
+     alt="Photo of @Model.Member.FullName"
+     data-img-fallback="/assets/img/member.png"
+     onerror="setImageError(this)" />
