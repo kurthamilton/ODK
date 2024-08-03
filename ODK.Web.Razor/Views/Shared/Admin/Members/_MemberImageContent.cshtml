@@ -4,10 +4,9 @@
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <div class="d-inline-block">
-    @await Html.PartialAsync("~/Views/Shared/Members/_MemberImage.cshtml", new MemberImageViewModel(Model.Chapter, Model.Member)
-    {
-        MaxWidth = 250
-    })
+    <div class="d-flex align-items-end justify-content-start">
+        @await Html.PartialAsync("Members/_MemberAvatar", new MemberImageViewModel(Model.Chapter, Model.Member))
+    </div>
 </div>
 <div>
     <form method="post" action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/Picture/Rotate">

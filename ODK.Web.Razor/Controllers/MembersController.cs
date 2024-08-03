@@ -13,25 +13,21 @@ public class MembersController : ControllerBase
     private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");
 
     private readonly IMemberService _memberService;
-
+    
     public MembersController(IMemberService memberService)
     {
         _memberService = memberService;
     }
 
     [Authorize]
-    [HttpGet("{Chapter}/Members/{Id}/Image")]
-    public async Task<IActionResult> Image(Guid id, string chapter, int? size = null, int? w = null, int? h = null)
-    {
-        if (w > 0 || h > 0)
-        {
-            return await HandleVersionedRequest(version => _memberService.GetMemberImage(version, id, w, h),
-                MemberImageResult);
-        }
+    [HttpGet("{Chapter}/Members/{Id}/Avatar")]
+    public Task<IActionResult> Avatar(Guid id, string chapter) 
+        => HandleVersionedRequest(version => _memberService.GetMemberAvatar(version, id), MemberAvatarResult);
 
-        return await HandleVersionedRequest(version => _memberService.GetMemberImage(version, id, size),
-                           MemberImageResult);
-    }
+    [Authorize]
+    [HttpGet("{Chapter}/Members/{Id}/Image")]
+    public Task<IActionResult> Image(Guid id, string chapter)
+        => HandleVersionedRequest(version => _memberService.GetMemberImage(version, id), MemberImageResult);
 
     private void AddVersionHeader(long version)
     {
@@ -66,7 +62,7 @@ public class MembersController : ControllerBase
         return map(result.Value);
     }
 
-    protected IActionResult MemberImageResult(MemberImage? image)
+    protected IActionResult MemberAvatarResult(MemberAvatar? image)
     {
         if (image == null)
         {
@@ -75,4 +71,14 @@ public class MembersController : ControllerBase
 
         return File(image.ImageData, image.MimeType);
     }
+
+    protected IActionResult MemberImageResult(MemberImage? image)
+    {
+        if (image == null)
+        {
+            return NoContent();
+        }
+
+        return File(image.ImageData, image.MimeType);
+    }    
 }

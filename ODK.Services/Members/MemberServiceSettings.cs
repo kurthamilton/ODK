@@ -1,10 +1,8 @@
 ﻿namespace ODK.Services.Members;
 
-public class MemberServiceSettings
+public record MemberServiceSettings
 {
-    public string ActivateAccountUrl { get; set; } = "";
+    public required string ActivateAccountUrl { get; init; }
 
-    public string ConfirmEmailAddressUpdateUrl { get; set; } = "";
-
-    public int MaxImageSize { get; set; }
+    public required string ConfirmEmailAddressUpdateUrl { get; init; }    
 }

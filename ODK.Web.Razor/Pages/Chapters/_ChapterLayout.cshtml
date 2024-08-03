@@ -17,6 +17,11 @@
     var member = await chapterContext.GetMemberAsync();
 }
 
+@section styles
+{
+    @await RenderSectionAsync("styles", required: false)
+}
+
 @section header
 {
     @await Html.PartialAsync("Header/_ChapterHeader", new ChapterHeaderViewModel(chapter, member))

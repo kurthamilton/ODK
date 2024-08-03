@@ -3,14 +3,12 @@ using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
 using ODK.Core.Exceptions;
-using ODK.Core.Images;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
-using ODK.Services.Imaging;
 using ODK.Services.Payments;
 
 namespace ODK.Services.Members;
@@ -20,19 +18,19 @@ public class MemberService : IMemberService
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
     private readonly IEmailService _emailService;
-    private readonly IImageService _imageService;
+    private readonly IMemberImageService _memberImageService;
     private readonly IPaymentService _paymentService;
     private readonly MemberServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberService(IUnitOfWork unitOfWork, IAuthorizationService authorizationService,
-        IEmailService emailService, MemberServiceSettings settings, IImageService imageService, IPaymentService paymentService,
-        ICacheService cacheService)
+        IEmailService emailService, MemberServiceSettings settings, IPaymentService paymentService,
+        ICacheService cacheService, IMemberImageService memberImageService)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
         _emailService = emailService;
-        _imageService = imageService;
+        _memberImageService = memberImageService;
         _paymentService = paymentService;
         _settings = settings;
         _unitOfWork = unitOfWork;
@@ -85,10 +83,13 @@ public class MemberService : IMemberService
             return validationResult;
         }
 
-        var imageResult = ValidateMemberImage(model.Image.MimeType, model.Image.ImageData);
-        if (!imageResult.Success)
+        var image = new MemberImage();
+        var avatar = new MemberAvatar();
+
+        var imageValidationResult = _memberImageService.ProcessMemberImage(image, avatar, model.Image, model.ImageCropInfo);
+        if (!imageValidationResult.Success)
         {
-            return imageResult;
+            return imageValidationResult;
         }
 
         if (existing != null)
@@ -126,14 +127,11 @@ public class MemberService : IMemberService
         };
         _unitOfWork.MemberSubscriptionRepository.Add(subscription);
 
-        var image = new MemberImage
-        {
-            ImageData = model.Image.ImageData,
-            MemberId = member.Id,
-            MimeType = model.Image.MimeType
-        };
-        PrepareMemberImage(image);
+        image.MemberId = member.Id;
         _unitOfWork.MemberImageRepository.Add(image);
+
+        avatar.MemberId = member.Id;
+        _unitOfWork.MemberAvatarRepository.Add(avatar);
 
         foreach (var property in model.Properties)
         {
@@ -183,15 +181,9 @@ public class MemberService : IMemberService
         }
 
         return member;
-    }
+    }    
 
-    public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size)
-    {
-        return await GetMemberImage(currentVersion, memberId, size, size);
-    }
-
-    public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId,
-        int? width, int? height)
+    public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId)
     {
         var result = await _cacheService.GetOrSetVersionedItem(
             () => _unitOfWork.MemberImageRepository.GetByMemberId(memberId).RunAsync(),
@@ -203,28 +195,32 @@ public class MemberService : IMemberService
             return result;
         }
 
-        MemberImage? image = result.Value;
+        var image = result.Value;
+        return image != null
+            ? new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image)
+            : new VersionedServiceResult<MemberImage>(0, null);
+    }
+
+    public async Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId)
+    {
+        var result = await _cacheService.GetOrSetVersionedItem(
+            () => _unitOfWork.MemberAvatarRepository.GetByMemberId(memberId).RunAsync(),
+            memberId,
+            currentVersion);
+
+        if (currentVersion == result.Version)
+        {
+            return result;
+        }
+
+        var image = result.Value;
         if (image == null)
         {
-            return new VersionedServiceResult<MemberImage>(0, null);
+            return new VersionedServiceResult<MemberAvatar>(0, null);
         }
 
-        if (width > 0 || height > 0)
-        {
-            int w = NumberUtils.FirstPositive(width, height) ?? 0;
-            int h = NumberUtils.FirstPositive(height, width) ?? 0;
-
-            byte[] imageData = _imageService.Crop(image.ImageData, w, h);
-            image = new MemberImage
-            {
-                ImageData = imageData,
-                MemberId = memberId,
-                MimeType = image.MimeType,
-                Version = image.Version
-            };
-        }
-
-        return new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image);
+        var version = BitConverter.ToInt64(image.Version);
+        return new VersionedServiceResult<MemberAvatar>(version, image);
     }
 
     public async Task<MemberProfile?> GetMemberProfile(Guid chapterId, Member currentMember, Member? member)
@@ -303,27 +299,7 @@ public class MemberService : IMemberService
         });
 
         return ServiceResult.Successful();
-    }
-    
-    public async Task RotateMemberImage(Guid memberId, int degrees)
-    {
-        var (member, image) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
-            x => x.MemberImageRepository.GetByMemberId(memberId));
-        
-        if (image == null)
-        {
-            return;
-        }
-
-        var data = _imageService.Rotate(image.ImageData, degrees);
-        image.ImageData = data;
-
-        _unitOfWork.MemberImageRepository.Update(image);
-        await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedItem<MemberImage>(memberId);
-    }
+    }        
 
     public async Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, Guid chapterId, string newEmailAddress)
     {
@@ -374,6 +350,43 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
+    public async Task RotateMemberImage(Guid memberId)
+    {
+        var (member, image, avatar) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberImageRepository.GetByMemberId(memberId),
+            x => x.MemberAvatarRepository.GetByMemberId(memberId));
+
+        if (image == null)
+        {
+            return;
+        }
+
+        if (avatar == null)
+        {
+            avatar = new MemberAvatar();
+        }
+
+        _memberImageService.RotateMemberImage(image, avatar);
+
+        _unitOfWork.MemberImageRepository.Update(image);
+
+        if (avatar.MemberId == Guid.Empty)
+        {
+            avatar.MemberId = memberId;
+            _unitOfWork.MemberAvatarRepository.Add(avatar);
+        }
+        else
+        {
+            _unitOfWork.MemberAvatarRepository.Update(avatar);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        _cacheService.RemoveVersionedItem<MemberImage>(memberId);
+        _cacheService.RemoveVersionedItem<MemberAvatar>(memberId);
+    }
+
     public async Task SendActivationEmailAsync(Chapter chapter, Member member, string activationToken)
     {
         var url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
@@ -403,27 +416,53 @@ public class MemberService : IMemberService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage model)
+    public async Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage? model, MemberImageCropInfo cropInfo)
     {
-        var (member, image) = await _unitOfWork.RunAsync(
+        var (member, image, avatar) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(id),
-            x => x.MemberImageRepository.GetByMemberId(id));
+            x => x.MemberImageRepository.GetByMemberId(id),
+            x => x.MemberAvatarRepository.GetByMemberId(id));
 
-        image.MimeType = model.MimeType;
-        image.ImageData = model.ImageData;
-
-        var validationResult = ValidateMemberImage(image.MimeType, image.ImageData);
-        if (!validationResult.Success)
+        if (image == null)
         {
-            return validationResult;
+            image = new MemberImage();
         }
 
-        PrepareMemberImage(image);        
+        if (avatar == null)
+        {
+            avatar = new MemberAvatar();
+        }
 
-        _unitOfWork.MemberImageRepository.Update(image);
+        var result = _memberImageService.ProcessMemberImage(image, avatar, model, cropInfo);
+        if (!result.Success)
+        {
+            return result;
+        }
+
+        if (image.MemberId == Guid.Empty)
+        {
+            image.MemberId = member.Id;
+            _unitOfWork.MemberImageRepository.Add(image);
+        }
+        else
+        {
+            _unitOfWork.MemberImageRepository.Update(image);
+        }
+
+        if (avatar.MemberId == Guid.Empty)
+        {
+            avatar.MemberId = member.Id;
+            _unitOfWork.MemberAvatarRepository.Add(avatar);
+        }
+        else
+        {
+            _unitOfWork.MemberAvatarRepository.Update(avatar);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         _cacheService.RemoveVersionedItem<MemberImage>(id);
+        _cacheService.RemoveVersionedItem<MemberAvatar>(id);
 
         return ServiceResult.Successful("Picture updated");
     }
@@ -527,12 +566,7 @@ public class MemberService : IMemberService
             }
         }
     }        
-
-    private byte[] EnforceMaxImageSize(byte[] imageData)
-    {
-        return _imageService.Reduce(imageData, _settings.MaxImageSize, _settings.MaxImageSize);
-    }
-
+    
     private async Task<MemberProfile> GetMemberProfile(Member member, Guid chapterId)
     {
         var (chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
@@ -552,24 +586,7 @@ public class MemberService : IMemberService
                 });
 
         return new MemberProfile(chapterId, member, allMemberProperties, chapterProperties);
-    }
-    
-    private void PrepareMemberImage(MemberImage image)
-    {
-        var data = EnforceMaxImageSize(image.ImageData);
-        image.ImageData = data;
-    }
-
-    private ServiceResult ValidateMemberImage(string mimeType, byte[] data)
-    {
-        if (!ImageValidator.IsValidMimeType(mimeType) || 
-            !_imageService.IsImage(data))
-        {
-            return ServiceResult.Failure("File is not a valid image");
-        }
-
-        return ServiceResult.Successful();
-    }
+    }        
 
     private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, UpdateMemberProfile profile)
     {

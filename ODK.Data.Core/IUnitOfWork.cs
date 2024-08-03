@@ -35,6 +35,7 @@ public interface IUnitOfWork
     IInstagramImageRepository InstagramImageRepository { get; }
     IInstagramPostRepository InstagramPostRepository { get; }
     IMemberActivationTokenRepository MemberActivationTokenRepository { get; }
+    IMemberAvatarRepository MemberAvatarRepository { get; }
     IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository { get; }
     IMemberImageRepository MemberImageRepository { get; }
     IMemberPasswordRepository MemberPasswordRepository { get; }

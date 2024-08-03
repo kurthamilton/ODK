@@ -45,7 +45,7 @@ public class CacheService : ICacheService
         long? version = TryGetCachedVersion<T>(key);
 
         T? item = null;
-        if (version == null)
+        if (version == null || currentVersion == null)
         {
             item = await getter();
             if (item == null)

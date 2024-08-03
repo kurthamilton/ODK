@@ -12,16 +12,21 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
+    private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
+    private readonly MemberAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberAdminService(IUnitOfWork unitOfWork, IMemberService memberService, 
-        ICacheService cacheService, IAuthorizationService authorizationService)
+        ICacheService cacheService, IAuthorizationService authorizationService,
+        MemberAdminServiceSettings settings, IMemberImageService memberImageService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
+        _memberImageService = memberImageService;
         _memberService = memberService;
+        _settings = settings;
         _unitOfWork = unitOfWork;
     }
 
@@ -168,27 +173,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return memberSubscription;
     }
 
-    public async Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId)
+    public async Task RotateMemberImage(Guid currentMemberId, Guid chapterId, Guid memberId)
     {
-        var (chapterAdminMembers, currentMember, subscriptions) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberSubscriptionRepository.GetByChapterId(chapterId));
-
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
-
-        return subscriptions;
-    }
-    
-    public async Task RotateMemberImage(Guid currentMemberId, Guid memberId, int degrees)
-    {
-        var (chapterAdminMembers, member) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+        var member = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
             x => x.MemberRepository.GetById(memberId));
         
-        await _memberService.RotateMemberImage(member.Id, degrees);
-
-        _cacheService.RemoveVersionedItem<MemberImage>(memberId);
+        await _memberService.RotateMemberImage(member.Id);
     }
     
     public async Task SendActivationEmail(Guid currentMemberId, Guid chapterId, Guid memberId)

@@ -1,10 +1,11 @@
 ﻿(function () {
     bindFeaturePopovers();
     bindForms();
+    bindImages();
     bindMaps();
     bindMenuLinks();
     bindPopovers();
-    bindTooltips();
+    bindTooltips();    
 
     function bindFeaturePopovers() {
         document.addEventListener('click', e => {
@@ -73,6 +74,22 @@
             });
 
             setVisibility();
+        });
+    }
+
+    function bindImages() {
+        const constraintImage = (image) => {
+            image.style.maxWidth = `${image.naturalWidth}px`;
+            image.style.maxHeight = `${image.naturalHeight}px`;
+        };
+
+        const images = document.querySelectorAll('[data-img-naturalsize]');
+        images.forEach(image => {
+            if (image.complete) {
+                constraintImage(image);
+            } else {
+                image.onload = () => constraintImage(image);
+            }            
         });
     }
 

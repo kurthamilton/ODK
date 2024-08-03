@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Data.EntityFramework;
 using ODK.Services.Authentication;
@@ -107,6 +108,16 @@ public static class DependencyConfig
         services.AddScoped<IMediaFileProvider, MediaFileProvider>();
         services.AddScoped<IMediaService, MediaService>();
         services.AddScoped<IMemberAdminService, MemberAdminService>();
+        services.AddSingleton(new MemberAdminServiceSettings
+        {
+            MemberAvatarSize = appSettings.Members.AvatarSize
+        });
+        services.AddScoped<IMemberImageService, MemberImageService>();
+        services.AddSingleton(new MemberImageServiceSettings
+        {
+            MaxImageSize = appSettings.Members.MaxImageSize,
+            MemberAvatarSize = appSettings.Members.AvatarSize
+        });
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IRecaptchaService, RecaptchaService>();
@@ -146,8 +157,7 @@ public static class DependencyConfig
         services.AddSingleton(new MemberServiceSettings
         {
             ActivateAccountUrl = $"{urls.AppBase}{urls.ActivateAccount}",
-            ConfirmEmailAddressUpdateUrl = $"{urls.AppBase}{urls.ConfirmEmailAddressUpdate}",
-            MaxImageSize = members.MaxImageSize
+            ConfirmEmailAddressUpdateUrl = $"{urls.AppBase}{urls.ConfirmEmailAddressUpdate}"
         });
 
         services.AddSingleton(new MediaFileProviderSettings

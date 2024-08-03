@@ -25,10 +25,9 @@
         responsesDictionary.TryGetValue(member.Id, out EventResponseType response);
 
         <div class="col text-center overlay-container mb-3">
-            @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, member)
-            {
-                MaxWidth = 100
-            })
+            <div class="d-flex align-items-end justify-content-center">
+                @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel(Model.Chapter, member))
+            </div>
             <div>
                 <a href="/@Model.Chapter.Name/Admin/Members/@member.Id">@member.FullName</a>
             </div>

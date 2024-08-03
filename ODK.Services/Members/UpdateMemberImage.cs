@@ -1,8 +1,8 @@
 ﻿namespace ODK.Services.Members;
 
 public class UpdateMemberImage
-{
-    public byte[] ImageData { get; set; } = Array.Empty<byte>();
+{    
+    public required byte[] ImageData { get; set; }
 
-    public string MimeType { get; set; } = "";
+    public required string MimeType { get; set; }
 }

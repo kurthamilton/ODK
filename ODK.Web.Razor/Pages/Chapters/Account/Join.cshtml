@@ -18,3 +18,14 @@
     },
     Content = await Html.PartialAsync("Account/_JoinContent", new JoinContentViewModel(Model.Chapter))
 })
+
+@section styles
+{
+    <link rel="stylesheet" href="/lib/cropperjs/cropper.css" />
+}
+
+@section scripts 
+{
+    <script src="/lib/cropperjs/cropper.js"></script>
+    <script src="/js/odk.imaging.js"></script>
+}

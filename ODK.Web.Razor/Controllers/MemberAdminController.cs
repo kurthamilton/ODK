@@ -39,9 +39,11 @@ public class MemberAdminController : OdkControllerBase
     }
 
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/Picture/Rotate")]
-    public async Task<IActionResult> RotatePicture(Guid id)
+    public async Task<IActionResult> RotatePicture(string chapterName, Guid id)
     {
-        await _memberAdminService.RotateMemberImage(MemberId, id, 90);
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+
+        await _memberAdminService.RotateMemberImage(MemberId, chapter.Id, id);
         return RedirectToReferrer();
     }
 

@@ -176,8 +176,11 @@
 {
     <div class="form-group mb-3 required">
         <label class="form-label">Picture</label>
-        <input name="image" type="file" accept="image/*" required class="form-control" />
-    </div>
+        @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
+        {
+            Chapter = chapter
+        })
+    </div>    
 
     <div class="mb-3 form-check required">
         @Html.CheckBoxFor(x => x.ThreeTenets, new { @class = "form-check-input" })

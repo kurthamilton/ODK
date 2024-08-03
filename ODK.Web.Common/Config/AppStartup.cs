@@ -18,7 +18,7 @@ public static class AppStartup
         });
 
         AppSettings settings = GetAppSettings(config);
-        services.ConfigureDependencies(config, settings);
+        services.ConfigureDependencies(config, settings);        
     }
 
     private static AppSettings GetAppSettings(IConfiguration config)

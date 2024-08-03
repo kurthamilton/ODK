@@ -1,0 +1,24 @@
+﻿@using ODK.Services.Authentication
+@using ODK.Web.Razor.Models.Components
+@model AdminBarViewModel
+
+@if (!User.IsInRole(OdkRoles.Admin) || Model.CurrentMember?.IsMemberOf(Model.Chapter.Id) != true)
+{
+    return;    
+}
+
+<div class="mb-3 button-container">
+    <a href="@Model.AdminLink" class="btn btn-outline-secondary">
+        @if (Model.AdminLinkText == "Edit")
+        {
+            <i class="fa-solid fa-pen-to-square"></i>
+        }
+        
+        @Model.AdminLinkText
+    </a>
+
+    @if (Model.Toolbar != null)
+    {
+        @Model.Toolbar.Invoke(null)
+    }
+</div>

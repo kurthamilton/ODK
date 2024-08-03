@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
+using ODK.Core.Images;
 using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
@@ -126,29 +126,39 @@ public class AccountController : OdkControllerBase
 
     [AllowAnonymous]
     [HttpPost("{chapterName}/Account/Join")]
-    public async Task<IActionResult> Join(string chapterName, [FromForm] ProfileFormViewModel viewModel, [FromForm] IFormFile image)
+    public async Task<IActionResult> Join(
+        string chapterName, 
+        [FromForm] ProfileFormViewModel viewModel, 
+        [FromForm] MemberImageCropInfo cropInfo, 
+        [FromForm] IFormFile image)
     {
         var chapter = await _requestCache.GetChapterAsync(chapterName);
-        
-        var result = await _memberService.CreateMember(chapter.Id, new CreateMemberProfile(new UpdateMemberImage
+
+        var imageModel = new UpdateMemberImage
         {
-            ImageData = await image.ToByteArrayAsync() ?? Array.Empty<byte>(),
+            ImageData = await image.ToByteArrayAsync(),
             MimeType = image.ContentType
-        })
+        };
+
+        var model = new CreateMemberProfile
         {
             EmailAddress = viewModel.EmailAddress,
             EmailOptIn = viewModel.EmailOptIn,
             FirstName = viewModel.FirstName,
+            Image = imageModel,
+            ImageCropInfo = cropInfo,
             LastName = viewModel.LastName,
             Properties = viewModel.Properties.Select(x => new UpdateMemberProperty
             {
                 ChapterPropertyId = x.ChapterPropertyId,
-                Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) && 
-                        !string.IsNullOrEmpty(x.OtherValue) 
+                Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&
+                        !string.IsNullOrEmpty(x.OtherValue)
                     ? x.OtherValue ?? ""
                     : x.Value ?? ""
             })
-        });
+        };
+
+        var result = await _memberService.CreateMember(chapter.Id, model);
 
         if (result.Success)
         {
@@ -197,22 +207,15 @@ public class AccountController : OdkControllerBase
     }
 
     [HttpPost("{ChapterName}/Account/Picture/Change")]
-    public async Task<IActionResult> UpdatePicture(List<IFormFile> files)
+    public async Task<IActionResult> UpdatePicture([FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
     {
-        if (files.Count == 0)
-        {
-            return RedirectToReferrer();
-        }
+        var model = image != null ? new UpdateMemberImage
+        {            
+            ImageData = await image.ToByteArrayAsync(),
+            MimeType = image.ContentType
+        } : null;
 
-        var file = files[0];
-        
-        var model = new UpdateMemberImage
-        {
-            ImageData = await file.ToByteArrayAsync() ?? Array.Empty<byte>(),
-            MimeType = file.ContentType
-        };
-
-        var result = await _memberService.UpdateMemberImage(MemberId, model);
+        var result = await _memberService.UpdateMemberImage(MemberId, model, cropInfo);
         AddFeedback(new FeedbackViewModel(result));
         return RedirectToReferrer();
     }
@@ -220,7 +223,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("{ChapterName}/Account/Picture/Rotate")]
     public async Task<IActionResult> RotatePicture()
     {
-        await _memberService.RotateMemberImage(MemberId, 90);
+        await _memberService.RotateMemberImage(MemberId);
 
         return RedirectToReferrer();
     }
