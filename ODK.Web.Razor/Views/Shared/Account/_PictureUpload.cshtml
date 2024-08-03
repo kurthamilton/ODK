@@ -1,0 +1,22 @@
+﻿@using ODK.Services.Members
+@using ODK.Web.Razor.Models.Account
+@inject IMemberService MemberService
+@model PictureUploadViewModel
+@{
+    var imageSrc = Model.MemberId != null
+        ? $"/{Model.Chapter.Name}/Members/{Model.MemberId}/Image"
+        : null;
+}
+
+<div data-img-container>
+    @Html.HiddenFor(x => x.CropHeight, new { data_img_crop_height = "" })
+    @Html.HiddenFor(x => x.CropWidth, new { data_img_crop_width = "" })
+    @Html.HiddenFor(x => x.CropX, new { data_img_crop_x = "" })
+    @Html.HiddenFor(x => x.CropY, new { data_img_crop_y = "" })
+    
+    <input type="file" name="image" accept="image/*" class="form-control" data-img-input />
+
+    <div class="mt-3">
+        <img src="@imageSrc" data-img-preview data-img-resize />
+    </div>            
+</div>

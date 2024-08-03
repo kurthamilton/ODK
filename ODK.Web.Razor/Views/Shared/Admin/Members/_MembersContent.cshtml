@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Members
 @using ODK.Services.Members
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Members
 @model ODK.Core.Chapters.Chapter
 @inject IMemberAdminService MemberAdminService
 @{
@@ -52,6 +53,7 @@
 <table class="table" data-sortable id="members-table" data-table-striped>
     <thead>
     <tr>
+        <th></th>
         <th data-sortable-sort="default">Name</th>
         <th data-sortable-sort>Type</th>
         <th data-sortable-sort>Expires</th>
@@ -65,6 +67,12 @@
         subscriptionDictionary.TryGetValue(member.Id, out var subscription);
 
         <tr data-filter-name="@member.FullName" data-filter-type="@subscription?.Type">
+            <td width="30px">
+                @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel(Model, member)
+                {
+                    MaxWidth = 30
+                })
+            </td>
             <td>
                     <a href="/@Model.Name/Admin/Members/@member.Id" data-sort-value="@member.FullName">
                     @member.GetDisplayName(Model.Id)

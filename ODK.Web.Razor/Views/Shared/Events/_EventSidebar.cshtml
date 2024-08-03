@@ -45,7 +45,7 @@
                 <div class="d-flex flex-column gap-2">
                     @foreach (var host in Model.Hosts.OrderBy(x => x.FullName))
                     {                    
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center justify-content-start">
                             @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel(Model.Chapter, host)
                             {
                                 MaxWidth = 50

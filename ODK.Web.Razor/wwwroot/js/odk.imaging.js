@@ -24,8 +24,12 @@
             return;
         }
 
+        if (context.preview.getAttribute('src') && !!context.preview.complete) {
+            context.preview.addEventListener('load', () => bindCropper(context));
+        }
+
         context.fileUpload.addEventListener('change', e => {
-            const [file] = fileUpload.files
+            const [file] = context.fileUpload.files
             if (!file) {
                 return;
             }
@@ -33,6 +37,7 @@
             context.preview.src = URL.createObjectURL(file);
             context.preview.classList.remove('d-none');
 
+            setCropData(context, {});
             bindCropper(context);
         });        
     }
@@ -45,13 +50,17 @@
         if (!context.resize) {
             return;            
         }        
-
+        
         const options = {
             aspectRatio: 1,
+            autoCrop: true,
             autoCropArea: 1,
+            data: getCropData(context),
             viewMode: 1
         };
         context.cropper = new Cropper(context.resize, options);
+
+        handleModals(context);
     }
 
     function bindForm(context) {
@@ -60,11 +69,10 @@
             return;
         }
 
-        const cropXInput = context.container.querySelector('[data-img-crop-x]');
-        const cropYInput = context.container.querySelector('[data-img-crop-y]');
-        const cropWidthInput = context.container.querySelector('[data-img-crop-width]');
-        const cropHeightInput = context.container.querySelector('[data-img-crop-height]');
-        
+        context.cropXInput = context.container.querySelector('[data-img-crop-x]');
+        context.cropYInput = context.container.querySelector('[data-img-crop-y]');
+        context.cropWidthInput = context.container.querySelector('[data-img-crop-width]');
+        context.cropHeightInput = context.container.querySelector('[data-img-crop-height]');        
 
         form.addEventListener('submit', (e) => {
             if (!context.cropper) {
@@ -72,13 +80,55 @@
             }            
 
             const data = context.cropper.getData(true);
-            setValue(cropXInput, data.x);
-            setValue(cropYInput, data.y);
-            setValue(cropWidthInput, data.width);
-            setValue(cropHeightInput, data.height);
+            setCropData(context, data);
 
             // const dataUrl = context.cropper.getCroppedCanvas().toDataURL('image/png');
         });
+    }
+
+    function getCropData(context) {
+        return {
+            x: getValue(context.cropXInput),
+            y: getValue(context.cropYInput),
+            width: getValue(context.cropWidthInput),
+            height: getValue(context.cropHeightInput)
+        };
+    }
+
+    function getValue(el) {
+        if (!el) {
+            return;
+        }
+
+        var value = parseInt(el.value);
+        if (isNaN(value)) {
+            return;
+        }
+
+        return value;
+    }
+
+    function handleModals(context) {
+        if (context.modalChecked) {
+            return;
+        }
+
+        context.modalChecked = true;
+
+        context.modal = context.resize.closest('.modal');
+        if (!context.modal) {
+            return;
+        }
+
+        // force cropper to re-bind on modal open to fix layout issues
+        context.modal.addEventListener('shown.bs.modal', () => bindCropper(context));
+    }    
+
+    function setCropData(context, data) {
+        setValue(context.cropXInput, data.x);
+        setValue(context.cropYInput, data.y);
+        setValue(context.cropWidthInput, data.width);
+        setValue(context.cropHeightInput, data.height);
     }
 
     function setValue(el, value) {
@@ -87,5 +137,5 @@
         }
 
         el.value = value;
-    }
+    }    
 })(Cropper);

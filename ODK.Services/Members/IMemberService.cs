@@ -13,9 +13,7 @@ public interface IMemberService
 
     Task<Member> GetMember(Guid memberId, Guid chapterId);    
 
-    Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? size);
-
-    Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId, int? width, int? height);
+    Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId);
 
     Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
 
@@ -27,13 +25,13 @@ public interface IMemberService
 
     Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, Guid chapterId, string newEmailAddress);
 
-    Task RotateMemberImage(Guid memberId, int degrees);
+    Task RotateMemberImage(Guid memberId);
 
     Task SendActivationEmailAsync(Chapter chapter, Member member, string activationToken);
 
     Task UpdateMemberEmailOptIn(Guid memberId, bool optIn);
 
-    Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage model);
+    Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage? model, MemberImageCropInfo cropInfo);
 
     Task<ServiceResult> UpdateMemberProfile(Guid id, Guid chapterId, UpdateMemberProfile model);
 }

@@ -1,4 +1,6 @@
-﻿namespace ODK.Services.Imaging;
+﻿using ODK.Core.Images;
+
+namespace ODK.Services.Imaging;
 
 public interface IImageService
 {
@@ -17,4 +19,6 @@ public interface IImageService
     byte[] Resize(byte[] data, int width, int height);
 
     byte[] Rotate(byte[] data, int degrees);
+
+    ImageSize Size(byte[] data);
 }

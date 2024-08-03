@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
@@ -22,27 +21,13 @@ public class MembersController : ControllerBase
 
     [Authorize]
     [HttpGet("{Chapter}/Members/{Id}/Avatar")]
-    public async Task<IActionResult> Avatar(Guid id, string chapter)
-    {
-        var avatar = await _memberService.GetMemberAvatar(null, id);
-        return MemberAvatarResult(avatar.Value);
-        // return await HandleVersionedRequest(version => _memberService.GetMemberAvatar(version, id),
-        //     MemberAvatarResult);
-    }
+    public Task<IActionResult> Avatar(Guid id, string chapter) 
+        => HandleVersionedRequest(version => _memberService.GetMemberAvatar(version, id), MemberAvatarResult);
 
     [Authorize]
     [HttpGet("{Chapter}/Members/{Id}/Image")]
-    public async Task<IActionResult> Image(Guid id, string chapter, int? size = null, int? w = null, int? h = null)
-    {
-        if (w > 0 || h > 0)
-        {
-            return await HandleVersionedRequest(version => _memberService.GetMemberImage(version, id, w, h),
-                MemberImageResult);
-        }
-
-        return await HandleVersionedRequest(version => _memberService.GetMemberImage(version, id, size),
-            MemberImageResult);
-    }
+    public Task<IActionResult> Image(Guid id, string chapter)
+        => HandleVersionedRequest(version => _memberService.GetMemberImage(version, id), MemberImageResult);
 
     private void AddVersionHeader(long version)
     {

@@ -2,7 +2,7 @@
 
 public class MemberAvatar : IVersioned
 {
-    public int Height { get; set; }
+    public int CropHeight { get; set; }
 
     public byte[] ImageData { get; set; } = [];
 
@@ -12,9 +12,9 @@ public class MemberAvatar : IVersioned
 
     public byte[] Version { get; set; } = [];
 
-    public int Width { get; set; }
+    public int CropWidth { get; set; }
 
-    public int X { get; set; }
+    public int CropX { get; set; }
 
-    public int Y { get; set; }
+    public int CropY { get; set; }
 }

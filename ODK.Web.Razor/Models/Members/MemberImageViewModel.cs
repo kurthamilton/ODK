@@ -9,6 +9,4 @@ public class MemberImageViewModel : MemberAvatarViewModel
         : base(chapter, member)
     {
     }
-
-    public int ImageHeight { get; set; }
 }

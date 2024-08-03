@@ -1,29 +1,28 @@
 ﻿@using ODK.Core.Members
 @using ODK.Core.Utils
-@using ODK.Services.Authentication
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
-@model ODK.Web.Razor.Models.Events.EventContentViewModel
+@model EventContentViewModel
 
-@if (User.IsInRole(OdkRoles.Admin) && Model.CurrentMember?.IsMemberOf(Model.Chapter.Id) == true)
+@await Html.PartialAsync("Components/_AdminBar", new AdminBarViewModel
 {
-    <div class="mb-3 button-container">
-        <a href="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id" class="btn btn-outline-secondary">
-            <i class="fa-solid fa-pen-to-square"></i>
-            Edit
-        </a>
-
-        @if (Model.Event.PublishedUtc == null)
-        {
-            <form action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Publish" method="post">
-                <button class="btn btn-primary">
-                    <i class="fa-solid fa-upload"></i>
-                    Publish
-                </button>
-            </form>
-        }
-    </div>
-}
+    AdminLink = $"/{Model.Chapter.Name}/Admin/Events/{Model.Event.Id}",
+    AdminLinkText = "Edit",
+    Chapter = Model.Chapter,
+    CurrentMember = Model.CurrentMember,
+    Toolbar = 
+        @<div>
+            @if (Model.Event.PublishedUtc == null)
+            {
+                <form action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Publish" method="post">
+                    <button class="btn btn-primary">
+                        <i class="fa-solid fa-upload"></i>
+                        Publish
+                    </button>
+                </form>
+            }
+        </div>
+})
 
 <h2>@Model.Venue.Name</h2>
 <h4>@Model.Event.Date.EventDate(true)</h4>

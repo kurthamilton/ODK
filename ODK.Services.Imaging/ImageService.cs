@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp;
+﻿using ODK.Core.Images;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 
@@ -36,16 +37,8 @@ public class ImageService : IImageService
 
     public bool IsImage(byte[] data)
     {
-        try
-        {
-            var imageInfo = Image.DetectFormat(data);
-            using var image = Image.Load(data);
-            return true;
-        }        
-        catch
-        {
-            return false;
-        }
+        var image = TryLoadImage(data);
+        return image != null;
     }
 
     public string? MimeType(byte[] data)
@@ -115,6 +108,12 @@ public class ImageService : IImageService
         });
     }
 
+    public ImageSize Size(byte[] data)
+    {
+        var image = TryLoadImage(data);
+        return new ImageSize(image?.Width ?? 0, image?.Height ?? 0);
+    }
+
     private static Size GetRescaledSize(Size current, Size maxSize, Func<double, double, double> chooseRatio)
     {
         double widthRatio = (double)maxSize.Width / current.Width;
@@ -149,5 +148,19 @@ public class ImageService : IImageService
                 .AutoOrient()
                 .Resize(rescaled);
         });
+    }
+
+    private static Image? TryLoadImage(byte[] data)
+    {
+        try
+        {
+            var imageInfo = Image.DetectFormat(data);
+            using var image = Image.Load(data);
+            return image;
+        }        
+        catch
+        {
+            return null;
+        }
     }
 }
