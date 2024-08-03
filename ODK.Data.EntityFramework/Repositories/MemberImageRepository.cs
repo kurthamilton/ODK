@@ -12,16 +12,6 @@ public class MemberImageRepository : WriteRepositoryBase<MemberImage>, IMemberIm
     {
     }
 
-    public IDeferredQueryMultiple<MemberImage> GetByChapterId(Guid chapterId)
-    {
-        var query = 
-            from memberImage in Set()
-            from member in Set<Member>().InChapter(chapterId)
-            where member.Id == memberImage.MemberId
-            select memberImage;
-        return query.DeferredMultiple();
-    }
-
     public IDeferredQuerySingleOrDefault<MemberImage> GetByMemberId(Guid memberId) => Set()
         .Where(x => x.MemberId == memberId)
         .DeferredSingleOrDefault();

@@ -173,48 +173,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return memberSubscription;
     }
 
-    public async Task<IReadOnlyCollection<MemberSubscription>> GetMemberSubscriptions(Guid currentMemberId, Guid chapterId)
-    {
-        var (chapterAdminMembers, currentMember, subscriptions) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberSubscriptionRepository.GetByChapterId(chapterId));
-
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
-
-        return subscriptions;
-    }
-    
-    public async Task ResizeAllAvatars(Guid currentMemberId, Guid chapterId)
-    {
-        var (images, avatars) = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.MemberImageRepository.GetByChapterId(chapterId),
-            x => x.MemberAvatarRepository.GetByChapterId(chapterId));
-
-        var imageDictionary = images.ToDictionary(x => x.MemberId);
-        var avatarDictionary = avatars.ToDictionary(x => x.MemberId);
-
-        foreach (var memberId in imageDictionary.Keys)
-        {
-            if (avatarDictionary.ContainsKey(memberId))
-            {
-                continue;
-            }
-
-            var image = imageDictionary[memberId];
-            var avatar = new MemberAvatar
-            {
-                MemberId = memberId
-            };
-
-            _memberImageService.ProcessMemberImage(image, avatar, null, new MemberImageCropInfo());
-
-            _unitOfWork.MemberAvatarRepository.Add(avatar);
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-    }
-
     public async Task RotateMemberImage(Guid currentMemberId, Guid chapterId, Guid memberId)
     {
         var member = await GetChapterAdminRestrictedContent(currentMemberId, chapterId,
