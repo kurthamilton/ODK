@@ -1,10 +1,8 @@
-﻿using ODK.Core.Chapters;
-
-namespace ODK.Web.Razor.Models.Account;
+﻿namespace ODK.Web.Razor.Models.Account;
 
 public class PictureUploadViewModel
 {
-    public required Chapter Chapter { get; set; }
+    public required string ChapterName { get; set; }
 
     public int? CropHeight { get; set; }
 

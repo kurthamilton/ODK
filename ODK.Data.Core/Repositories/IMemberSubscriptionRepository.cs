@@ -7,4 +7,5 @@ public interface IMemberSubscriptionRepository : IWriteRepository<MemberSubscrip
     void AddMemberSubscriptionRecord(MemberSubscriptionRecord record);
     IDeferredQueryMultiple<MemberSubscription> GetByChapterId(Guid chapterId);
     IDeferredQuerySingle<MemberSubscription> GetByMemberId(Guid memberId, Guid chapterId);
+    IDeferredQuerySingleOrDefault<MemberSubscription> GetByMemberIdOrDefault(Guid memberId, Guid chapterId);
 }

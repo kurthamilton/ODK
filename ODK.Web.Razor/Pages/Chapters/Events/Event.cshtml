@@ -1,5 +1,4 @@
 ﻿@page "/{chapterName}/Events/{id:guid}"
-@attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Venues
 @using ODK.Services.Events
@@ -8,24 +7,27 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model EventModel
-@inject IEventService EventService
-@inject IVenueService VenueService
+@inject IEventViewModelService EventViewModelService
 @{
     Layout = "_ChapterLayout";
-    Model.Title = Model.Event.GetDisplayName();    
 
-    var dto = await EventService.GetEventDto(Model.CurrentMember, Model.Event);
+    var viewModel = await EventViewModelService.GetEventPageViewModel(
+        Model.CurrentMemberIdOrDefault,
+        Model.ChapterName,
+        Model.EventId);
+
+    Model.Title = viewModel.Event.GetDisplayName();
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
 {
-    Title = Model.Event.GetDisplayName(),
+    Title = viewModel.Event.GetDisplayName(),
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Events", Text = "Events" },
-        new MenuItem { Text = Model.Event.GetDisplayName() }
+        new MenuItem { Link = $"/{viewModel.Chapter.Name}", Text = viewModel.Chapter.Name },
+        new MenuItem { Link = $"/{viewModel.Chapter.Name}/Events", Text = "Events" },
+        new MenuItem { Text = viewModel.Event.GetDisplayName() }
     },
-    Content = await Html.PartialAsync("Events/_EventContent", new EventContentViewModel(Model.CurrentMember, Model.Chapter, Model.Event, dto.Venue, dto.Comments)),
-    SidebarContent = await Html.PartialAsync("Events/_EventSidebar", new EventSidebarViewModel(Model.Chapter, Model.Event, Model.CurrentMember, dto.Hosts))
+    Content = await Html.PartialAsync("Events/_EventContent", viewModel),
+    SidebarContent = await Html.PartialAsync("Events/_EventSidebar", viewModel)
 })

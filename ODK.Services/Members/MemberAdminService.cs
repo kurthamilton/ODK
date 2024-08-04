@@ -1,5 +1,5 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Exceptions;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
@@ -155,7 +155,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.MemberActivationTokenRepository.GetByMemberId(memberId));
 
         AssertMemberIsInChapter(member, request);
-        AssertExists(memberActivationToken);
+        OdkAssertions.Exists(memberActivationToken);
         
         await _memberService.SendActivationEmailAsync(chapter, member, memberActivationToken.ActivationToken);
     }
@@ -265,12 +265,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     }
 
     private static void AssertMemberIsInChapter(Member member, AdminServiceRequest request)
-    {
-        if (!member.IsMemberOf(request.ChapterId))
-        {
-            throw new OdkNotFoundException();
-        }
-    }
+        => OdkAssertions.MeetsCondition(member, x => x.IsMemberOf(request.ChapterId));
 
     private IEnumerable<Member> FilterMembers(
         IEnumerable<Member> members, 

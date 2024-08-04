@@ -6,6 +6,7 @@
 @using ODK.Web.Razor.Pages.Chapters
 @inject IAuthorizationService AuthorizationService
 @inject IRequestCache RequestCache
+
 @{
     var memberId = User.MemberIdOrDefault();
     if (memberId == null)

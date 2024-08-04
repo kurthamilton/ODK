@@ -1,18 +1,11 @@
-﻿@using ODK.Services.Members
+﻿@using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
-@model ODK.Web.Razor.Models.Account.AccountContentViewModel
-@inject IMemberService MemberService
+@model AccountPageViewModel
 @{
-    if (!Model.CurrentMember.IsMemberOf(Model.Chapter.Id))
-    {
-        return;
-    }
-
-    var memberId = User.MemberId();
-    var avatar = await MemberService.GetMemberAvatar(null, memberId);
+    var dateJoined = Model.CurrentMember.MemberChapter(Model.Chapter.Id).CreatedUtc;
 }
 
 <div class="row row-cols-2">
@@ -50,7 +43,11 @@
         <div class="form-group text-end">
             <div class="d-inline-block">
                 <div class="d-flex justify-content-end">
-                    @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, Model.CurrentMember))
+                    @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
+                    {
+                        ChapterName = Model.Chapter.Name,
+                        Member = Model.CurrentMember
+                    })
                 </div>                
                 
                 <div class="d-flex justify-content-center">
@@ -81,11 +78,11 @@
         <form method="post" action="/@Model.Chapter.Name/Account/Picture/Change" enctype="multipart/form-data">
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
             {
-                Chapter = Model.Chapter,
-                CropHeight = avatar.Value?.CropHeight,
-                CropWidth = avatar.Value?.CropWidth,
-                CropX = avatar.Value?.CropX,
-                CropY = avatar.Value?.CropY
+                ChapterName = Model.Chapter.Name,
+                CropHeight = Model.Avatar?.CropHeight,
+                CropWidth = Model.Avatar?.CropWidth,
+                CropX = Model.Avatar?.CropX,
+                CropY = Model.Avatar?.CropY
             })
 
             <div class="d-flex justify-content-end mt-3">
@@ -98,14 +95,14 @@
 <form method="post">
     @Html.AntiForgeryToken()
 
-    @await Html.PartialAsync("Account/_ProfileForm", new ProfileFormViewModel
-    {
-        ChapterId = Model.Chapter.Id,
-        DateJoined = Model.CurrentMember.MemberChapter(Model.Chapter.Id).CreatedUtc,
-        EmailAddress = Model.CurrentMember.EmailAddress,
-        FirstName = Model.CurrentMember.FirstName,
-        LastName = Model.CurrentMember.LastName
-    })
+    @await Html.PartialAsync("Account/_ProfileForm", Model.Profile)
+
+    <div class="form-group mb-3">
+        <label class="form-label">Date joined</label>
+        <div class="form-control-plaintext">
+            <span>@Model.Chapter.ToChapterTime(dateJoined).ToString("d MMMM yyyy")</span>
+        </div>
+    </div>
 
     <button type="submit" class="btn btn-primary">Update</button>
 </form>

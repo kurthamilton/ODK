@@ -6,7 +6,7 @@
 @{
     var memberId = User.MemberIdOrDefault();
     var imageSrc = memberId != null
-        ? $"/{Model.Chapter.Name}/Members/{memberId}/Image"
+        ? $"/{Model.ChapterName}/Members/{memberId}/Image"
         : null;
 }
 

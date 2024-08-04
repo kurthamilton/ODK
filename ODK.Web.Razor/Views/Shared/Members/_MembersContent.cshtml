@@ -1,15 +1,14 @@
 ﻿@using ODK.Core.Members
 @using ODK.Services.Members
+@using ODK.Services.Members.ViewModels
 @using ODK.Web.Razor.Models.Members
-@model ODK.Web.Razor.Models.Members.MembersContentViewModel
-@inject IMemberService MemberService
+@model MembersPageViewModel
 @{
-    var members = await MemberService.GetMembers(Model.Member, Model.Chapter.Id);
-    var list = members
+    var list = Model.Members
         .OrderBy(x => x.FullName)
         .Select(x => new ListMemberViewModel
         {
-            Chapter = Model.Chapter,
+            ChapterName = Model.ChapterName,
             Member = x
         })
         .ToArray();
@@ -17,7 +16,7 @@
 
 @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
 {
-    Chapter = Model.Chapter,
+    ChapterName = Model.ChapterName,
     Cols = 3,
     Members = list
 })

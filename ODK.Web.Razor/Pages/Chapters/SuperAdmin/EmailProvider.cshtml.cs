@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
-using ODK.Core.Exceptions;
 using ODK.Services.Caching;
 using ODK.Services.Settings;
 using ODK.Web.Common.Feedback;
@@ -24,10 +24,7 @@ public class EmailProviderModel : SuperAdminPageModel
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
         Provider = await _settingsService.GetEmailProvider(CurrentMemberId, id);
-        if (Provider == null)
-        {
-            throw new OdkNotFoundException();
-        }
+        OdkAssertions.Exists(Provider);
 
         return Page();
     }

@@ -29,4 +29,8 @@ public class MemberSubscriptionRepository : WriteRepositoryBase<MemberSubscripti
     public IDeferredQuerySingle<MemberSubscription> GetByMemberId(Guid memberId, Guid chapterId) => Set()
         .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
         .DeferredSingle();
+
+    public IDeferredQuerySingleOrDefault<MemberSubscription> GetByMemberIdOrDefault(Guid memberId, Guid chapterId) => Set()
+        .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
+        .DeferredSingleOrDefault();
 }

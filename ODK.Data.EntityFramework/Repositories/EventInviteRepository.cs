@@ -23,6 +23,10 @@ public class EventInviteRepository : WriteRepositoryBase<EventInvite>, IEventInv
         .Where(x => x.MemberId == memberId)
         .DeferredMultiple();
 
+    public IDeferredQueryMultiple<EventInvite> GetByMemberId(Guid memberId, IEnumerable<Guid> eventIds) => Set()
+        .Where(x => x.MemberId == memberId && eventIds.Contains(x.EventId))
+        .DeferredMultiple();
+
     public IDeferredQueryMultiple<EventInvite> GetChapterInvites(Guid chapterId, IEnumerable<Guid> eventIds)
     {
         var query = 

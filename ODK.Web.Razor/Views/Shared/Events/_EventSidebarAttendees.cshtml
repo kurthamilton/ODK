@@ -9,7 +9,7 @@
     var members = Model.Members
         .Select(x => new ListMemberViewModel
         {
-            Chapter = Model.Chapter,
+            ChapterName = Model.Chapter.Name,
             Member = x,
             Size = "xs"
         })
@@ -21,7 +21,7 @@
     <div class="card-body card-body-sm">        
         @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
         {
-            Chapter = Model.Chapter,
+            ChapterName = Model.Chapter.Name,
             Cols = 4,
             Members = members,
             Size = "xs"

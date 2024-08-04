@@ -1,6 +1,6 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
-using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -64,6 +64,6 @@ public class ChapterViewModelService : IChapterViewModelService
     private async Task<Chapter> GetChapter(string name)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(name).RunAsync();
-        return chapter ?? throw new OdkNotFoundException();
+        return OdkAssertions.Exists(chapter);        
     }
 }

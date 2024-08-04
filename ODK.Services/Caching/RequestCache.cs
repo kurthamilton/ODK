@@ -1,5 +1,5 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Exceptions;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.Core;
 
@@ -28,22 +28,14 @@ public class RequestCache : IRequestCache
     {
         var chapters = await GetChaptersAsync();
         var chapter = chapters.FirstOrDefault(x => x.Id == chapterId);
-        if (chapter == null)
-        {
-            throw new OdkNotFoundException();
-        }
-        return chapter;
+        return OdkAssertions.Exists(chapter);
     }
 
     public async Task<Chapter> GetChapterAsync(string name)
     {
         var chapters = await GetChaptersAsync();
         var chapter = chapters.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
-        if (chapter == null)
-        {
-            throw new OdkNotFoundException();
-        }
-        return chapter;
+        return OdkAssertions.Exists(chapter);
     }
 
     public async Task<IReadOnlyCollection<Chapter>> GetChaptersAsync()

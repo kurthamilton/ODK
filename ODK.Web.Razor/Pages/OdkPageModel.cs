@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using ODK.Core.Members;
-using ODK.Services.Caching;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 
@@ -9,14 +6,9 @@ namespace ODK.Web.Razor.Pages;
 
 public abstract class OdkPageModel : PageModel
 {
-    protected OdkPageModel(IRequestCache requestCache)
-    {
-        RequestCache = requestCache;
-    }
+    public Guid CurrentMemberId => User.MemberId();
 
-    public Member? CurrentMember { get; private set; }
-    
-    public IRequestCache RequestCache { get; private set; }
+    public Guid? CurrentMemberIdOrDefault => User.MemberIdOrDefault();
 
     public string? Title
     {
@@ -24,16 +16,13 @@ public abstract class OdkPageModel : PageModel
         set => ViewData["Title"] = value;
     }
 
-    public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
-    {
-        var memberId = HttpContext.User.MemberIdOrDefault();
-        CurrentMember = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
-
-        await base.OnPageHandlerExecutionAsync(context, next);
-    }
-
     protected void AddFeedback(FeedbackViewModel viewModel)
     {
         TempData!.AddFeedback(viewModel);
+    }
+
+    protected void AddFeedback(string message, FeedbackType type = FeedbackType.Success)
+    {
+        AddFeedback(new FeedbackViewModel(message, type));
     }
 }

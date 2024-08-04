@@ -1,4 +1,5 @@
 ﻿using System.Web;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Members;
@@ -41,7 +42,7 @@ public class ChapterService : IChapterService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
 
-        AssertMemberIsChapterMember(currentMember, chapterId);
+        OdkAssertions.MemberOf(currentMember, chapterId);
         return paymentSettings;
     }
     
@@ -78,7 +79,7 @@ public class ChapterService : IChapterService
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
-        AssertMemberIsChapterMember(currentMember, chapterId);
+        OdkAssertions.MemberOf(currentMember, chapterId);
 
         return new ChapterMemberSubscriptionsDto
         {
@@ -151,13 +152,5 @@ public class ChapterService : IChapterService
         };
 
         await _emailService.SendContactEmail(chapter, fromAddress, message, parameters);
-    }
-
-    private static void AssertMemberIsChapterMember(Member currentMember, Guid chapterId)
-    {
-        if (!currentMember.IsMemberOf(chapterId))
-        {
-            throw new OdkNotAuthorizedException();
-        }
     }
 }

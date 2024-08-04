@@ -1,27 +1,28 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Members
 @using ODK.Services.Members
+@using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Extensions
-@model ODK.Web.Razor.Models.Members.MemberProfileViewModel
-@inject IMemberService MemberService
+@model MemberPageViewModel
 @{
-    var currentMemberId = User.MemberId();
-    var profile = await MemberService.GetMemberProfile(Model.Chapter.Id, currentMemberId, Model.Member);
-    if (profile == null)
-    {
-        return;
-    }
+    var chapterPropertyDictionary = Model.ChapterProperties.ToDictionary(x => x.Id);
+    var memberPropertyDictionary = Model.MemberProperties.ToDictionary(x => x.ChapterPropertyId);
+    var memberProperties = Model.MemberProperties
+        .OrderBy(x => chapterPropertyDictionary[x.ChapterPropertyId].DisplayOrder)
+        .ToArray();
+
+    var joined = Model.Member.MemberChapter(Model.Chapter.Id).CreatedUtc;
 }
 
 <form>
-    @foreach (MemberProperty property in profile.MemberProperties.OrderBy(x => profile.ChapterProperties[x.ChapterPropertyId].DisplayOrder))
+    @foreach (var property in memberProperties)
     {
         if (string.IsNullOrEmpty(property.Value))
         {
             continue;
         }
 
-        if (!profile.ChapterProperties.TryGetValue(property.ChapterPropertyId, out ChapterProperty? chapterProperty))
+        if (!chapterPropertyDictionary.TryGetValue(property.ChapterPropertyId, out var chapterProperty))
         {
             continue;
         }
@@ -45,7 +46,7 @@
     <div class="form-group mb-3">
         <label class="form-label">Date joined</label>
         <div class="form-control-plaintext">
-            <span>@Model.Chapter.ToChapterTime(profile.Joined).ToString("d MMMM yyyy")</span>
+            <span>@Model.Chapter.ToChapterTime(joined).ToString("d MMMM yyyy")</span>
         </div>
     </div>
 </form>

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Exceptions;
+﻿using ODK.Core;
+using ODK.Core.Exceptions;
 using ODK.Data.Core.Deferred;
 using Z.EntityFramework.Plus;
 
@@ -46,10 +47,7 @@ public class DeferredQuerySingle<T> : IDeferredQuerySingle<T> where T : class
         }
 
         var value = await _query.ValueAsync();
-        if (value == null)
-        {
-            throw new OdkNotFoundException();
-        }
+        OdkAssertions.Exists(value);
 
         _updateCache?.Invoke(value);
 

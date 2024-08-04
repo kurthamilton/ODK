@@ -7,14 +7,17 @@ namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
 
 public abstract class SuperAdminPageModel : AdminPageModel
 {
+    private readonly IRequestCache _requestCache;
+
     protected SuperAdminPageModel(IRequestCache requestCache) 
         : base(requestCache)
     {
+        _requestCache = requestCache;
     }
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        var member = await RequestCache.GetMemberAsync(CurrentMemberId);
+        var member = await _requestCache.GetMemberAsync(CurrentMemberId);
         if (member?.SuperAdmin != true)
         {
             throw new OdkNotAuthorizedException();

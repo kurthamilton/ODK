@@ -1,20 +1,8 @@
-﻿using ODK.Core.Chapters;
-
-namespace ODK.Web.Razor.Models.Members;
+﻿namespace ODK.Web.Razor.Models.Members;
 
 public class MemberListViewModel
 {
-    public MemberListViewModel()
-    {
-    }
-
-    public MemberListViewModel(Chapter chapter, IEnumerable<ListMemberViewModel> members)
-    {
-        Chapter = chapter;
-        Members = members.ToArray();
-    }
-
-    public required Chapter Chapter { get; init; }
+    public required string ChapterName { get; init; }
 
     public int Cols { get; set; }
 

@@ -1,23 +1,38 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
+using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Services;
 using ODK.Services.Caching;
-using ODK.Web.Common.Extensions;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin;
 
 [Authorize(Roles = "Admin")]
-public abstract class AdminPageModel : ChapterPageModel
+public abstract class AdminPageModel : ChapterPageModel2
 {
+    private readonly IRequestCache _requestCache;
+
     protected AdminPageModel(IRequestCache requestCache) 
-        : base(requestCache)
     {
+        _requestCache = requestCache;
     }
 
-    public new Member CurrentMember => base.CurrentMember!;
+    public Chapter Chapter { get; set; } = null!;
 
-    protected Guid CurrentMemberId => User.MemberId();
+    public Member CurrentMember { get; private set; } = null!;    
 
     protected AdminServiceRequest GetAdminServiceRequest() 
         => new AdminServiceRequest(Chapter.Id, CurrentMemberId);
+
+    public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, 
+        PageHandlerExecutionDelegate next)
+    {
+        await base.OnPageHandlerExecutionAsync(context, next);
+
+        Chapter = await _requestCache.GetChapterAsync(ChapterName);
+        var member = await _requestCache.GetMemberAsync(CurrentMemberId);
+        OdkAssertions.Exists(member);
+        CurrentMember = member;        
+    }
 }

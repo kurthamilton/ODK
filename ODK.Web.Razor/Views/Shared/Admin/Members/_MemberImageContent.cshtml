@@ -5,7 +5,11 @@
 
 <div class="d-inline-block">
     <div class="d-flex align-items-end justify-content-start">
-        @await Html.PartialAsync("Members/_MemberAvatar", new MemberImageViewModel(Model.Chapter, Model.Member))
+        @await Html.PartialAsync("Members/_MemberAvatar", new MemberImageViewModel
+        {
+            ChapterName = Model.Chapter.Name,
+            Member = Model.Member
+        })
     </div>
 </div>
 <div>

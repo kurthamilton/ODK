@@ -1,13 +1,17 @@
 ﻿@page "/{chapterName}/Account/Emails"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Users
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Account.EmailsModel
+@inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_ChapterLayout";
     Model.Title = "Email preferences";
+
+    var viewModel = await AccountViewModelService.GetAccountViewModel(Model.CurrentMemberId, Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -15,9 +19,13 @@
     Title = "Email preferences",
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Account", Text = "Profile" },
+        new MenuItem { Link = $"/{viewModel.ChapterName}", Text = viewModel.ChapterName },
+        new MenuItem { Link = $"/{viewModel.ChapterName}/Account", Text = "Profile" },
         new MenuItem { Text = "Email preferences" }
     },
-    Content = await Html.PartialAsync("Account/_EmailPreferencesContent", new EmailPreferencesContentViewModel(Model.Chapter, Model.CurrentMember!))
+    Content = await Html.PartialAsync("Account/_EmailPreferencesContent", new EmailPreferencesContentViewModel
+    {
+        ChapterName = viewModel.ChapterName,
+        CurrentMember = viewModel.CurrentMember
+    })
 })

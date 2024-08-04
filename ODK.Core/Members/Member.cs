@@ -34,10 +34,7 @@ public class Member : IVersioned, IDatabaseEntity
 
     public string GetDisplayName(Guid chapterId)
     {
-        if (!IsMemberOf(chapterId))
-        {
-            throw new OdkNotFoundException();
-        }
+        OdkAssertions.MemberOf(this, chapterId);
 
         var visible = Visible(chapterId);
 

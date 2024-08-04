@@ -3,35 +3,13 @@
 @using ODK.Services.Authorization
 @using ODK.Services.Caching
 @using ODK.Services.Events
+@using ODK.Services.Events.ViewModels
 @using ODK.Services.Members
 @using ODK.Web.Razor.Models.Events
 @using ODK.Web.Razor.Models.Members
-@model ODK.Web.Razor.Models.Events.EventSidebarViewModel
-@inject IAuthorizationService AuthorizationService
-@inject IEventService EventService
-@inject IRequestCache RequestCache
+@model EventPageViewModel
 @{
-    if (Model.Member == null || !Model.Member.IsMemberOf(Model.Chapter.Id))
-    {
-        return;
-    }
-
-    var active = await AuthorizationService.MembershipIsActiveAsync(Model.Member.Id, Model.Chapter.Id);    
-    if (!active)
-    {
-        return;
-    }
-
     var responseTypes = new[] { EventResponseType.Yes, EventResponseType.Maybe, EventResponseType.No };
-
-    var dto = await EventService.GetEventResponsesDto(Model.Event);
-    
-    var membersById = dto.Members.ToDictionary(x => x.Id);
-    var membersByResponse = dto.Responses
-        .GroupBy(x => x.Type)
-        .ToDictionary(x => x.Key, x => (IReadOnlyCollection<Member>)x.Select(y => membersById[y.MemberId]).ToArray());
-    var currentResponse = dto.Responses
-        .FirstOrDefault(x => x.MemberId == Model.Member?.Id)?.Type;
 }
 
 <div class="sidebar">
@@ -46,8 +24,10 @@
                     @foreach (var host in Model.Hosts.OrderBy(x => x.FullName))
                     {                    
                         <div class="d-flex align-items-center justify-content-start">
-                            @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel(Model.Chapter, host)
+                            @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                             {
+                                ChapterName = Model.Chapter.Name,
+                                Member = host,
                                 MaxWidth = 50
                             })
                             <span class="ms-2">
@@ -64,12 +44,12 @@
         <div class="card-header">RSVP</div>
         <div class="card-body card-body-sm">
             <div class="d-flex justify-content-around">
-                @foreach (EventResponseType responseType in responseTypes)
+                @foreach (var responseType in responseTypes)
                 {
-                    <form method="post">
+                    <form action="/@Model.Chapter.Name/Events/@Model.Event.Id/RSVP" method="post">
                         @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                         {
-                            Active = currentResponse == responseType,
+                            Active = Model.MemberResponse == responseType,
                             ResponseType = responseType
                         })
                     </form>
@@ -78,12 +58,14 @@
         </div>
     </div>
     
-    @foreach (EventResponseType responseType in responseTypes)
+    @foreach (var responseType in responseTypes)
     {
-        @if (membersByResponse.TryGetValue(responseType, out var members))
+        @if (Model.MembersByResponse.TryGetValue(responseType, out var members))
         {
-            @await Html.PartialAsync("Events/_EventSidebarAttendees", new EventSidebarAttendeesViewModel(Model.Chapter, members)
+            @await Html.PartialAsync("Events/_EventSidebarAttendees", new EventSidebarAttendeesViewModel
             {
+                Chapter = Model.Chapter,
+                Members = members,
                 Title = responseType.ToString(forAction: false)
             })
         }

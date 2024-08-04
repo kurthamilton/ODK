@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
-using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Data.Core;
@@ -95,70 +95,6 @@ public class EventService : IEventService
         return ServiceResult.Successful();
     }
 
-    public async Task<EventCommentsDto> GetCommentsDto(Member? member, Event @event)
-    {
-        var (settings, comments) = await _unitOfWork.RunAsync(
-            x => x.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.EventCommentRepository.GetByEventId(@event.Id));
-        return await GetCommentsDto(member, @event, settings, comments);
-    }
-
-    public async Task<Event> GetEvent(Guid chapterId, Guid eventId)
-    {
-        var @event = await _unitOfWork.EventRepository.GetById(eventId).RunAsync();
-        if (@event.ChapterId != chapterId)
-        {
-            throw new OdkNotFoundException();
-        }
-
-        return @event;
-    }
-    
-    public async Task<EventDto> GetEventDto(Member? member, Event @event)
-    {
-        var (venue, settings, comments, hosts, chapterAdminMembers) = await _unitOfWork.RunAsync(
-            x => x.VenueRepository.GetById(@event.VenueId),
-            x => x.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId),
-            x => x.EventCommentRepository.GetByEventId(@event.Id),
-            x => x.EventHostRepository.GetByEventId(@event.Id),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(@event.ChapterId));
-
-        var commentsDto = await GetCommentsDto(member, @event, settings, comments);
-        var adminMemberDictionary = chapterAdminMembers.ToDictionary(x => x.MemberId);
-        var hostMembers = hosts
-            .Where(x => adminMemberDictionary.ContainsKey(x.MemberId))
-            .Select(x => adminMemberDictionary[x.MemberId])
-            .ToArray();
-
-        return new EventDto
-        {
-            Comments = commentsDto,
-            Hosts = hostMembers.Select(x => x.Member).ToArray(),
-            Venue = venue
-        };
-    }
-
-    public async Task<EventResponsesDto> GetEventResponsesDto(Event @event)
-    {
-        var (responses, members) = await _unitOfWork.RunAsync(
-            x => x.EventResponseRepository.GetByEventId(@event.Id),
-            x => x.MemberRepository.GetByChapterId(@event.ChapterId));
-
-        return new EventResponsesDto
-        {
-            Members = members,
-            Responses = responses
-        };
-    }
-
-    public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Chapter chapter)
-    {
-        var currentTime = chapter.CurrentTime;
-        var after = currentTime.StartOfDay();
-
-        return await GetEventResponseViewModels(member, chapter.Id, after);
-    }
-
     public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member,
         Guid chapterId, DateTime? afterUtc)
     {
@@ -200,14 +136,15 @@ public class EventService : IEventService
         return viewModels;
     }
     
-    public async Task<ServiceResult> UpdateMemberResponse(Member member, Guid eventId,
+    public async Task<ServiceResult> UpdateMemberResponse(Guid memberId, Guid eventId,
         EventResponseType responseType)
     {
         responseType = NormalizeResponseType(responseType);
 
-        var (@event, response) = await _unitOfWork.RunAsync(
+        var (member, @event, response) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetById(eventId),
-            x => x.EventResponseRepository.GetByMemberId(member.Id, eventId));
+            x => x.EventResponseRepository.GetByMemberId(memberId, eventId));
         if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");

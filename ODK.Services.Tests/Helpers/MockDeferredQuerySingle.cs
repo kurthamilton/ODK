@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using ODK.Core;
 using ODK.Core.Exceptions;
 using ODK.Data.Core.Deferred;
 
@@ -16,11 +17,7 @@ internal class MockDeferredQuerySingle<T> : IDeferredQuerySingle<T>
 
     public Task<T> RunAsync()
     {
-        if (_value == null)
-        {
-            throw new OdkNotFoundException();
-        }
-
+        OdkAssertions.Exists(_value);
         return Task.FromResult(_value);
     }
 }

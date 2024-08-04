@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Events;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -15,4 +16,7 @@ public class EventHostRepository : ReadWriteRepositoryBase<EventHost>, IEventHos
     public IDeferredQueryMultiple<EventHost> GetByEventId(Guid eventId) => Set()
         .Where(x => x.EventId == eventId)
         .DeferredMultiple();
+
+    protected override IQueryable<EventHost> Set() => base.Set()
+        .Include(x => x.Member);
 }

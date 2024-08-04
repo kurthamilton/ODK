@@ -1,11 +1,10 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 
 namespace ODK.Web.Razor.Models.Members;
 
 public class ListMemberViewModel
 {
-    public required Chapter Chapter { get; init; }
+    public required string ChapterName { get; init; }
 
     public bool HideName => Size is "sm" or "xs";
 

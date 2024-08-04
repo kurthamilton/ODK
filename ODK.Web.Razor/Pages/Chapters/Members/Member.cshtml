@@ -1,23 +1,27 @@
 ﻿@page "/{chapterName}/knitwits/{id:guid}"
 @attribute [Authorize]
-@using ODK.Web.Razor.Models.Components
+@using ODK.Services.Members
 @using ODK.Web.Common.Components
-@using ODK.Web.Razor.Models.Members
+@using ODK.Web.Razor.Models.Components
 @using Microsoft.AspNetCore.Authorization
+@inject IMemberViewModelService MemberViewModelService
 @model MemberModel
 @{
     Layout = "_ChapterLayout";
-    Model.Title = Model.Member.FullName;
+
+    var viewModel = await MemberViewModelService.GetMemberPage(Model.CurrentMemberId, Model.ChapterName, Model.MemberId);
+
+    Model.Title = viewModel.Member.FullName;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = Model.Member.FullName,
+    Title = viewModel.Member.FullName,
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Knitwits", Text = "Knitwits" },
-        new MenuItem { Text = Model.Member.FullName }
+        new MenuItem { Link = $"/{viewModel.Chapter.Name}", Text = viewModel.Chapter.Name },
+        new MenuItem { Link = $"/{viewModel.Chapter.Name}/Knitwits", Text = "Knitwits" },
+        new MenuItem { Text = viewModel.Member.FullName }
     },
-    Content = await Html.PartialAsync("Members/_MemberContent", new MemberContentViewModel(Model.Chapter, Model.Member, Model.CurrentMember!))
+    Content = await Html.PartialAsync("Members/_MemberContent", viewModel)
 })

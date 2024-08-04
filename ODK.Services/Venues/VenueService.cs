@@ -1,5 +1,5 @@
-﻿using ODK.Core.Events;
-using ODK.Core.Exceptions;
+﻿using ODK.Core;
+using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -18,11 +18,7 @@ public class VenueService : IVenueService
     public async Task<Venue> GetVenueAsync(Member? currentMember, Event @event)
     {
         var venue = await _unitOfWork.VenueRepository.GetByIdOrDefault(@event.VenueId).RunAsync();
-        if (venue != null && @event.IsAuthorized(currentMember))
-        {
-            return venue;
-        }
-
-        throw new OdkNotFoundException();
+        return OdkAssertions.MeetsCondition(venue, 
+            _ => @event.IsAuthorized(currentMember));
     }
 }

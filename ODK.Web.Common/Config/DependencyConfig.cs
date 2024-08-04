@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Data.EntityFramework;
 using ODK.Services.Authentication;
@@ -25,6 +24,7 @@ using ODK.Services.Payments.Stripe;
 using ODK.Services.Recaptcha;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
+using ODK.Services.Users;
 using ODK.Services.Venues;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Config.Settings;
@@ -83,6 +83,7 @@ public static class DependencyConfig
 
     private static void ConfigureServices(this IServiceCollection services, AppSettings appSettings)
     {
+        services.AddScoped<IAccountViewModelService, AccountViewModelService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IAuthorizationService, AuthorizationService>();
         services.AddScoped<ICacheService, CacheService>();
@@ -94,6 +95,7 @@ public static class DependencyConfig
         services.AddScoped<IEmailAdminService, EmailAdminService>();
         services.AddScoped<IEventAdminService, EventAdminService>();
         services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IEventViewModelService, EventViewModelService>();
         services.AddScoped<IFeatureService, FeatureService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<ILoggingService, LoggingService>();
@@ -119,6 +121,7 @@ public static class DependencyConfig
             MemberAvatarSize = appSettings.Members.AvatarSize
         });
         services.AddScoped<IMemberService, MemberService>();
+        services.AddScoped<IMemberViewModelService, MemberViewModelService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IRecaptchaService, RecaptchaService>();
         services.AddScoped<IRequestCache, RequestCache>();

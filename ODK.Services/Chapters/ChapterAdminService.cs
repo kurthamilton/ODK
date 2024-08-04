@@ -1,6 +1,6 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.DataTypes;
-using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services.Caching;
@@ -187,7 +187,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var contactRequest = await GetChapterAdminRestrictedContent(request,
             x => x.ContactRequestRepository.GetById(id));
 
-        AssertBelongsToChapter(contactRequest, request);
+        OdkAssertions.BelongsToChapter(contactRequest, request.ChapterId);
 
         _unitOfWork.ContactRequestRepository.Delete(contactRequest);
         await _unitOfWork.SaveChangesAsync();
@@ -201,7 +201,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId, true));
 
         var property = properties.FirstOrDefault(x => x.Id == id);
-        AssertExists(property);
+        OdkAssertions.Exists(property);
 
         var displayOrder = 1;
         foreach (var reorder in properties.Where(x => x.Id != id).OrderBy(x => x.DisplayOrder))
@@ -227,7 +227,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterQuestionRepository.GetByChapterId(request.ChapterId));
 
         var question = questions.FirstOrDefault(x => x.Id == id);
-        AssertExists(question);
+        OdkAssertions.Exists(question);
 
         var displayOrder = 1;
         foreach (var reorder in questions.Where(x => x.Id != id).OrderBy(x => x.DisplayOrder))
@@ -270,9 +270,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
         var adminMember = chapterAdminMembers.FirstOrDefault(x => x.MemberId == memberId);
-        AssertExists(adminMember);
-
-        return adminMember;
+        return OdkAssertions.Exists(adminMember);
     }
 
     public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(AdminServiceRequest request)
@@ -357,7 +355,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var property = await GetChapterAdminRestrictedContent(request, 
             x => x.ChapterPropertyRepository.GetById(id));
-        AssertBelongsToChapter(property, request);
+        OdkAssertions.BelongsToChapter(property, request.ChapterId);
         return property;
     }
 
@@ -365,7 +363,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var question = await GetChapterAdminRestrictedContent(request, 
             x => x.ChapterQuestionRepository.GetById(questionId));
-        AssertBelongsToChapter(question, request);
+        OdkAssertions.BelongsToChapter(question, request.ChapterId);
         return question;
     }
 
@@ -373,7 +371,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var subscription = await GetChapterAdminRestrictedContent(request, 
             x => x.ChapterSubscriptionRepository.GetById(id));
-        AssertBelongsToChapter(subscription, request);
+        OdkAssertions.BelongsToChapter(subscription, request.ChapterId);
         return subscription;
     }
 
@@ -421,7 +419,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
         var existing = chapterAdminMembers.FirstOrDefault(x => x.MemberId == memberId);
-        AssertExists(existing);
+        OdkAssertions.Exists(existing);
 
         existing.AdminEmailAddress = model.AdminEmailAddress;
         existing.ReceiveContactEmails = model.ReceiveContactEmails;
@@ -567,8 +565,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
              x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId));
 
         var property = properties.FirstOrDefault(x => x.Id == propertyId);
-        AssertExists(property);
-        AssertBelongsToChapter(property, request);
+        OdkAssertions.Exists(property);
+        OdkAssertions.BelongsToChapter(property, request.ChapterId);
 
         property.HelpText = model.HelpText;
         property.Hidden = model.Hidden;
@@ -594,7 +592,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var properties = await GetChapterProperties(request);
         var property = properties.FirstOrDefault(x => x.Id == propertyId);
-        AssertExists(property);
+        OdkAssertions.Exists(property);
 
         if (moveBy == 0)
         {
@@ -660,7 +658,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var questions = await GetChapterQuestions(request);
         var question = questions.FirstOrDefault(x => x.Id == questionId);
-        AssertExists(question);
+        OdkAssertions.Exists(question);
 
         if (moveBy == 0)
         {
@@ -708,7 +706,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var subscriptions = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterSubscriptionRepository.GetByChapterId(request.ChapterId));
         var subscription = subscriptions.FirstOrDefault(x => x.Id == id);
-        AssertExists(subscription);
+        OdkAssertions.Exists(subscription);
 
         subscription.Amount = model.Amount;
         subscription.Description = model.Description;

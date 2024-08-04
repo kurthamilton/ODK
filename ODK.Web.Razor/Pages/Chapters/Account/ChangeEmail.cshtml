@@ -1,13 +1,19 @@
 ﻿@page "/{chapterName}/Account/Email/Change"
 @attribute [Authorize]
+@using ODK.Services.Users
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
 @using Microsoft.AspNetCore.Authorization
 @model ODK.Web.Razor.Pages.Chapters.Account.ChangeEmailModel
+@inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_ChapterLayout";
     Model.Title = "Change email";
+
+    var memberId = User.MemberId();
+    var viewModel = await AccountViewModelService.GetAccountViewModel(memberId, Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -15,9 +21,13 @@
     Title = "Update email address",
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Account", Text = "Profile" },
+        new MenuItem { Link = $"/{viewModel.ChapterName}", Text = viewModel.ChapterName },
+        new MenuItem { Link = $"/{viewModel.ChapterName}/Account", Text = "Profile" },
         new MenuItem { Text = "Update email address" }
     },
-    Content = await Html.PartialAsync("Account/_ChangeEmailContent", new ChangeEmailContentViewModel(Model.Chapter, Model.CurrentMember!))
+    Content = await Html.PartialAsync("Account/_ChangeEmailContent", new ChangeEmailContentViewModel
+    {
+        ChapterName = viewModel.ChapterName,
+        CurrentMember = viewModel.CurrentMember
+    })
 })

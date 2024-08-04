@@ -1,18 +1,17 @@
 ﻿@page "/{chapterName}/Account"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Users
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model AccountModel
+@inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_ChapterLayout";
     Model.Title = "Profile";
 
-    if (Model.CurrentMember == null)
-    {
-        return;
-    }    
+    var viewModel = await AccountViewModelService.GetAccountPage(Model.CurrentMemberId, Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -20,10 +19,10 @@
     Title = "My profile",
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Link = $"/{Model.ChapterName}", Text = Model.ChapterName },
         new MenuItem { Text = "Profile" }
     },
-    Content = await Html.PartialAsync("Account/_AccountContent", new AccountContentViewModel(Model.Chapter, Model.CurrentMember))
+    Content = await Html.PartialAsync("Account/_AccountContent", viewModel)
 })
 
 @section styles
