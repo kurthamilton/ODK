@@ -12,7 +12,7 @@
     Layout = "_ChapterLayout";
 
     var viewModel = await EventViewModelService.GetEventPageViewModel(
-        Model.MemberIdOrDefault,
+        Model.CurrentMemberIdOrDefault,
         Model.ChapterName,
         Model.EventId);
 

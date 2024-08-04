@@ -121,6 +121,7 @@ public static class DependencyConfig
             MemberAvatarSize = appSettings.Members.AvatarSize
         });
         services.AddScoped<IMemberService, MemberService>();
+        services.AddScoped<IMemberViewModelService, MemberViewModelService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IRecaptchaService, RecaptchaService>();
         services.AddScoped<IRequestCache, RequestCache>();

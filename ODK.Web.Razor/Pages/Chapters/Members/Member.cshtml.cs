@@ -1,26 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Exceptions;
-using ODK.Core.Members;
-using ODK.Services.Caching;
-using ODK.Services.Members;
 
 namespace ODK.Web.Razor.Pages.Chapters.Members;
 
-public class MemberModel : ChapterPageModel
+public class MemberModel : ChapterPageModel2
 {
-    private readonly IMemberService _memberService;
+    public Guid MemberId { get; private set; }
 
-    public MemberModel(IRequestCache requestCache, IMemberService memberService)
-        : base(requestCache)
+    public IActionResult OnGet(Guid id)
     {
-        _memberService = memberService;
-    }
-
-    public Member Member { get; private set; } = null!;
-
-    public async Task<IActionResult> OnGet(Guid id)
-    {
-        Member = await _memberService.GetMember(id, Chapter.Id);        
+        MemberId = id;
         return Page();
     }
 }

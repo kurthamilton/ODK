@@ -31,7 +31,7 @@
             group => group
                 .Select(x => new ListMemberViewModel
                 {
-                    Chapter = Model.Chapter,
+                    ChapterName = Model.Chapter.Name,
                     Member = memberDictionary[x.MemberId]
                 })
                 .ToArray());
@@ -42,7 +42,7 @@
     <h5>Going</h5>
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     { 
-        Chapter = Model.Chapter,
+        ChapterName = Model.Chapter.Name,
         Members = membersByResponse[EventResponseType.Yes],
         Size = "xs",
         Cols = cols
@@ -54,7 +54,7 @@
     <h5>Maybe</h5>
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     {
-        Chapter = Model.Chapter,
+        ChapterName = Model.Chapter.Name,
         Members = membersByResponse[EventResponseType.Maybe],
         Size = "xs",
         Cols = cols
@@ -66,7 +66,7 @@
     <h5>Declined</h5>
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     {
-        Chapter = Model.Chapter,
+        ChapterName = Model.Chapter.Name,
         Members = membersByResponse[EventResponseType.No],
         Size = "xs",
         Cols = cols
@@ -78,7 +78,7 @@
     <h5>No response</h5>
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     {
-        Chapter = Model.Chapter,
+        ChapterName = Model.Chapter.Name,
         Members = membersByResponse[EventResponseType.None],
         Size = "xs",
         Cols = cols
@@ -90,7 +90,7 @@
     <h5>Not invited</h5>
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     {
-        Chapter = Model.Chapter,
+        ChapterName = Model.Chapter.Name,
         Members = membersByResponse[EventResponseType.NotInvited],
         Size = "xs",
         Cols = cols

@@ -11,7 +11,7 @@
     Layout = "_ChapterLayout";
     Model.Title = "Email preferences";
 
-    var viewModel = await AccountViewModelService.GetAccountViewModel(Model.MemberId, Model.ChapterName);
+    var viewModel = await AccountViewModelService.GetAccountViewModel(Model.CurrentMemberId, Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

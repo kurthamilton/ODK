@@ -11,7 +11,7 @@
     Layout = "_ChapterLayout";
     Model.Title = "Profile";
 
-    var viewModel = await AccountViewModelService.GetAccountPage(Model.MemberId, Model.ChapterName);
+    var viewModel = await AccountViewModelService.GetAccountPage(Model.CurrentMemberId, Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

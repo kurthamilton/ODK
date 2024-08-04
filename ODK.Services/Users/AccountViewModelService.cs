@@ -34,7 +34,7 @@ public class AccountViewModelService : IAccountViewModelService
                 x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapter.Id),
                 x => x.MemberAvatarRepository.GetByMemberId(currentMemberId));
 
-        OdkAssertions.MeetsCondition(chapter, x => member.IsMemberOf(chapter.Id));        
+        OdkAssertions.MemberOf(member, chapter.Id);
 
         return new AccountPageViewModel 
         { 
@@ -58,7 +58,8 @@ public class AccountViewModelService : IAccountViewModelService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterRepository.GetByName(chapterName));
 
-        OdkAssertions.MeetsCondition(chapter, x => member.IsMemberOf(chapter.Id));
+        OdkAssertions.Exists(chapter);
+        OdkAssertions.MemberOf(member, chapter.Id);
 
         return new AccountViewModel 
         { 

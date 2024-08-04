@@ -24,7 +24,7 @@ public class EventModel : ChapterPageModel2
             try
             {
                 var response = Enum.Parse<EventResponseType>(rsvp, true);
-                await _eventService.UpdateMemberResponse(MemberId, id, response);
+                await _eventService.UpdateMemberResponse(CurrentMemberId, id, response);
             }
             catch
             {

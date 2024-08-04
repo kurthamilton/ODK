@@ -6,9 +6,9 @@ namespace ODK.Web.Razor.Pages;
 
 public abstract class OdkPageModel2 : PageModel
 {
-    public Guid MemberId => User.MemberId();
+    public Guid CurrentMemberId => User.MemberId();
 
-    public Guid? MemberIdOrDefault => User.MemberIdOrDefault();
+    public Guid? CurrentMemberIdOrDefault => User.MemberIdOrDefault();
 
     public string? Title
     {

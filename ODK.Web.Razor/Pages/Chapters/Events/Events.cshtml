@@ -8,7 +8,7 @@
     Layout = "_ChapterLayout";
     Model.Title = "Events";
 
-    var viewModel = await EventViewModelService.GetEventsPage(Model.MemberIdOrDefault, Model.ChapterName);
+    var viewModel = await EventViewModelService.GetEventsPage(Model.CurrentMemberIdOrDefault, Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
