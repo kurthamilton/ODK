@@ -4,38 +4,19 @@
 @using ODK.Services.Caching
 @using ODK.Services.Chapters
 @using ODK.Services.Members
+@using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Account
-@model ODK.Web.Razor.Models.Account.ProfileFormViewModel
-@inject IChapterService ChapterService
-@inject IMemberService MemberService
-@inject IRequestCache RequestCache
+@model ProfileFormViewModel
 @{
     var memberId = User.MemberIdOrDefault();
-    var dto = await ChapterService.GetChapterMemberPropertiesDto(memberId, Model.ChapterId);
-    var chapter = await RequestCache.GetChapterAsync(Model.ChapterId);
 
-    var chapterProperties = dto.ChapterProperties
-        .Where(x => !x.Hidden)
-        .OrderBy(x => x.DisplayOrder)
-        .ToArray();
+    var chapterPropertyDictionary = Model.ChapterProperties
+        .ToDictionary(x => x.Id);
 
-    var memberProperties = dto.MemberProperties
-        .ToDictionary(x => x.ChapterPropertyId, x => x.Value);
-
-    var chapterPropertyOptions = dto.ChapterPropertyOptions        
+    var chapterPropertyOptionDictionary = Model.ChapterPropertyOptions
         .GroupBy(x => x.ChapterPropertyId)
-        .ToDictionary(x => x.Key, x => x.OrderBy(y => y.DisplayOrder).ToArray());
-
-    Model.Properties.AddRange(chapterProperties
-        .Select(x => new ProfileFormPropertyViewModel
-        {
-            ChapterPropertyId = x.Id,
-            Value = memberProperties.TryGetValue(x.Id, out string? value) ? value ?? "" : "",
-        }));
-
-    var (membershipSettings, siteSettings) = (dto.MembershipSettings, dto.SiteSettings);
-    var trialPeriodMonths = membershipSettings?.TrialPeriodMonths ?? siteSettings.DefaultTrialPeriodMonths;
+        .ToDictionary(x => x.Key, x => x.ToArray());
 }
 
 <div class="form-group mb-3 @(memberId == null ? "required" : null)">
@@ -81,12 +62,14 @@
     @Html.ValidationMessageFor(x => x.LastName)
 </div>
 
-@for (int i = 0; i < chapterProperties.Length; i++)
+@for (int i = 0; i < Model.Properties.Count; i++)
 {
-    ChapterProperty chapterProperty = chapterProperties.ElementAt(i);
+    var property = Model.Properties[i];
 
-    IDictionary<string, object> htmlAttributes = new Dictionary<string, object>();
-    if (chapterProperty.Required)
+    chapterPropertyDictionary.TryGetValue(property.ChapterPropertyId, out var chapterProperty);
+
+    var htmlAttributes = new Dictionary<string, object>();
+    if (chapterProperty?.Required == true)
     {
         htmlAttributes.Add("data-val", "true");
         htmlAttributes.Add("data-val-required", $"The {chapterProperty.Label} field is required.");
@@ -94,29 +77,27 @@
 
     @Html.HiddenFor(x => x.Properties[i].ChapterPropertyId)
 
-    <div class="form-group mb-3 @(chapterProperty.Required ? "required" : null)">
-        @Html.LabelFor(x => x.Properties[i].Value, chapterProperty.Label, new { @class = "form-label" })
-        @if (!string.IsNullOrEmpty(chapterProperty.HelpText))
+    <div class="form-group mb-3 @(chapterProperty?.Required == true ? "required" : null)">
+        @Html.LabelFor(x => x.Properties[i].Value, chapterProperty?.Label ?? "", new { @class = "form-label" })
+        @if (!string.IsNullOrEmpty(chapterProperty?.HelpText))
         {
             <span>
                 @await Html.PartialAsync("Components/_Tooltip", chapterProperty.HelpText)
             </span>
         }
         
-        @if (!string.IsNullOrEmpty(chapterProperty.Subtitle))
+        @if (!string.IsNullOrEmpty(chapterProperty?.Subtitle))
         {
             <span class="ml-1 text-muted">@chapterProperty.Subtitle</span>
         }
 
-        @if (chapterProperty.DataType == DataType.DropDown)
+        @if (chapterProperty?.DataType == DataType.DropDown)
         {
-            IReadOnlyCollection<ChapterPropertyOption> options = chapterPropertyOptions.ContainsKey(chapterProperty.Id)
-                ? chapterPropertyOptions[chapterProperty.Id]
-                : Array.Empty<ChapterPropertyOption>();
+            chapterPropertyOptionDictionary.TryGetValue(property.ChapterPropertyId, out var options);
 
-            IReadOnlyCollection<SelectListItem> selectList = options
-                .Select(x => new SelectListItem { Text = x.Value })
-                .ToArray();
+            var selectList = options
+                ?.Select(x => new SelectListItem { Text = x.Value })
+                .ToArray() ?? [];
 
             string? selectedValue = Model.Properties[i].Value;
             if (!string.IsNullOrEmpty(selectedValue) 
@@ -127,7 +108,7 @@
                 Model.Properties[i].Value = "Other";
             }
 
-            IDictionary<string, object> textBoxHtmlAttributes = new Dictionary<string, object>(htmlAttributes);
+            var textBoxHtmlAttributes = new Dictionary<string, object>(htmlAttributes);
             textBoxHtmlAttributes.Add("class", "form-control d-none");
 
             htmlAttributes.Add("class", "form-select");
@@ -138,14 +119,14 @@
             @Html.TextBoxFor(x => x.Properties[i].OtherValue, textBoxHtmlAttributes)
             @Html.ValidationMessageFor(x => x.Properties[i].OtherValue)
         }
-        else if (chapterProperty.DataType == DataType.LongText)
+        else if (chapterProperty?.DataType == DataType.LongText)
         {
             htmlAttributes.Add("class", "form-control");
             htmlAttributes.Add("rows", "3");
 
             @Html.TextAreaFor(x => x.Properties[i].Value, htmlAttributes)
         }
-        else if (chapterProperty.DataType == DataType.Url)
+        else if (chapterProperty?.DataType == DataType.Url)
         {
             htmlAttributes.Add("class", "form-control");
 
@@ -180,7 +161,7 @@
         <label class="form-label">Picture</label>
         @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
         {
-            Chapter = chapter
+            ChapterName = Model.ChapterName
         })
     </div>    
 
@@ -204,18 +185,8 @@
         @Html.CheckBoxFor(x => x.SubscriptionPolicy, new { @class = "form-check-input" })
 
         <label for="@Html.IdFor(x => x.SubscriptionPolicy)" class="form-check-label">
-            If I choose to continue attending after my free @trialPeriodMonths month trial period has expired, I agree to purchase a subscription.
+            If I choose to continue attending after my free @Model.TrialPeriodMonths month trial period has expired, I agree to purchase a subscription.
         </label>
         @Html.ValidationMessageFor(x => x.SubscriptionPolicy)
-    </div>
-}
-
-@if (Model.DateJoined != null)
-{
-    <div class="form-group mb-3">
-        <label class="form-label">Date joined</label>
-        <div class="form-control-plaintext">
-            <span>@chapter.ToChapterTime(Model.DateJoined.Value).ToString("d MMMM yyyy")</span>
-        </div>
     </div>
 }

@@ -79,10 +79,13 @@
                 return;
             }            
 
+            if (!context.cropper.element.src) {
+                // no image has been loaded
+                return;
+            }
+
             const data = context.cropper.getData(true);
             setCropData(context, data);
-
-            // const dataUrl = context.cropper.getCroppedCanvas().toDataURL('image/png');
         });
     }
 

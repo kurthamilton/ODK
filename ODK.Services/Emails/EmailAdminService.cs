@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Data.Core;
 
@@ -21,7 +22,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         var chapterEmail = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterEmailRepository.GetByChapterId(request.ChapterId, type));
 
-        AssertExists(chapterEmail);
+        OdkAssertions.Exists(chapterEmail);
 
         _unitOfWork.ChapterEmailRepository.Delete(chapterEmail);
         await _unitOfWork.SaveChangesAsync();

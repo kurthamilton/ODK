@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
@@ -113,7 +114,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var @event = await GetChapterAdminRestrictedContent(request,
             x => x.EventRepository.GetById(id));
-        AssertBelongsToChapter(@event, request);
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
         return @event;
     }
     
@@ -123,7 +124,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(eventId),
             x => x.EventHostRepository.GetByEventId(eventId));
 
-        AssertBelongsToChapter(@event, request);
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
         return hosts;
     }
@@ -134,8 +135,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(eventId),
             x => x.EventInviteRepository.GetByEventId(eventId),
             x => x.EventEmailRepository.GetByEventId(eventId));
-        
-        AssertBelongsToChapter(@event, request);
+
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
         return new EventInvitesDto
         {
@@ -153,7 +154,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByChapterId(request.ChapterId));
 
-        AssertBelongsToChapter(@event, request);
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
         return new EventResponsesDto
         {
@@ -203,7 +204,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.VenueRepository.GetById(venueId),
             x => x.EventRepository.GetByVenueId(venueId));
 
-        AssertBelongsToChapter(venue, request);
+        OdkAssertions.BelongsToChapter(venue, request.ChapterId);
 
         return events;
     }
@@ -252,7 +253,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var @event = await GetChapterAdminRestrictedContent(request, 
             x => x.EventRepository.GetById(eventId));
 
-        AssertBelongsToChapter(@event, request);
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
         if (@event.IsPublished)
         {
@@ -273,9 +274,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetByChapterId(request.ChapterId),
             x => x.EventResponseRepository.GetByEventId(eventId),
-            x => x.EventInviteRepository.GetByEventId(eventId));        
+            x => x.EventInviteRepository.GetByEventId(eventId));
 
-        AssertBelongsToChapter(@event, request);
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
         AssertEventEmailsCanBeSent(@event);
 
         responses = responses
@@ -319,7 +320,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.EventInviteRepository.GetByEventId(eventId));
 
-        AssertBelongsToChapter(@event, request);
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
         AssertMemberIsChapterAdmin(currentMember, request.ChapterId, chapterAdminMembers);
 
         var validationResult = ValidateEventEmailCanBeSent(@event);
@@ -424,7 +425,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventHostRepository.GetByEventId(id),
             x => x.VenueRepository.GetById(model.VenueId));
 
-        AssertBelongsToChapter(@event, request);
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
         @event.Date = model.Date;
         @event.Description = model.Description;
@@ -455,7 +456,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(memberId, eventId));
 
-        AssertBelongsToChapter(@event, request);
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
         if (response == null)
         {
@@ -488,7 +489,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetById(eventId),
             x => x.EventEmailRepository.GetByEventId(eventId));
 
-        AssertBelongsToChapter(@event, request);
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
         if (eventEmail == null && date == null && string.IsNullOrEmpty(time))
         {

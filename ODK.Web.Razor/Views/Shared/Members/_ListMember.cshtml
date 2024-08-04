@@ -6,8 +6,10 @@
        data-bs-toggle="@(Model.HideName ? "tooltip" : "")" data-bs-title="@(Model.HideName ? Model.Member.FullName : "")" container="body">
 
         <div class="d-flex align-items-end justify-content-center">
-           @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel(Model.Chapter, Model.Member)
+           @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
             {
+                ChapterName = Model.Chapter.Name,
+                Member = Model.Member,
                 IsTop = !Model.HideName,
                 MaxWidth = Model.MaxWidth
             })

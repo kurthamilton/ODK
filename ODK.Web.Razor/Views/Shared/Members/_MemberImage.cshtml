@@ -1,6 +1,6 @@
 ﻿@model ODK.Web.Razor.Models.Members.MemberImageViewModel
 @{
-    var imageUrl = $"/{Model.Chapter.Name}/Members/{Model.Member.Id}/Image";    
+    var imageUrl = $"/{Model.ChapterName}/Members/{Model.Member.Id}/Image";    
 }
 
 <img class="@(Model.IsTop ? "card-img-top" : "card-img")"

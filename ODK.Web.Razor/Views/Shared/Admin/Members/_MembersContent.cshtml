@@ -69,9 +69,11 @@
         subscriptionDictionary.TryGetValue(member.Id, out var subscription);
 
         <tr data-filter-name="@member.FullName" data-filter-type="@subscription?.Type">
-            <td width="30px">
-                @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel(Model, member)
+            <td width="30px" class="px-0">
+                @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                 {
+                    ChapterName = Model.Name,
+                    Member = member,
                     MaxWidth = 30
                 })
             </td>

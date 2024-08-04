@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services.Caching;
-using ODK.Services.Exceptions;
 
 namespace ODK.Services.Authorization;
 
@@ -20,72 +19,8 @@ public class AuthorizationService : IAuthorizationService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task AssertMemberIsChapterMemberAsync(Guid memberId, Guid chapterId)
-    {
-        var member = await GetMemberAsync(memberId);
-        AssertMemberIsChapterMember(member, chapterId);
-    }
-
-    public void AssertMemberIsChapterMember(Member member, Guid chapterId)
-    {
-        AssertMemberIsCurrent(member);
-        if (member.IsMemberOf(chapterId))
-        {
-            return;
-        }
-
-        throw new OdkNotAuthorizedException();
-    }
-
-    public async Task AssertMemberIsCurrent(Guid memberId)
-    {
-        Member member = await GetMemberAsync(memberId);
-        AssertMemberIsCurrent(member);
-    }
-
     public void AssertMemberIsCurrent([NotNull] Member? member)
-    {
-        if (member == null || !member.IsCurrent())
-        {
-            throw new OdkNotFoundException();
-        }
-    }
-
-    public async Task AssertMembershipIsActiveAsync(Guid memberId, Guid chapterId)
-    {
-        var subscription = await GetMemberSubscriptionAsync(memberId, chapterId);
-        if (subscription == null || !await MembershipIsActiveAsync(subscription, chapterId))
-        {
-            throw new OdkNotAuthorizedException();
-        }
-    }
-
-    public string? GetRestrictedContentMessage(Member? member, Chapter? chapter, MemberSubscription? subscription,
-        ChapterMembershipSettings? membershipSettings)
-    {
-        if (chapter == null)
-        {
-            return "Chapter not found";
-        }
-
-        var defaultMessage = $"This page is only visible to {chapter.Name} members";
-        if (member == null ||
-            !member.IsMemberOf(chapter.Id) ||
-            subscription == null ||
-            membershipSettings == null)
-        {
-            return defaultMessage;
-        }
-
-        var subscriptionStatus = GetSubscriptionStatus(subscription, membershipSettings);
-        switch (subscriptionStatus)
-        {
-            case SubscriptionStatus.Disabled:
-                return defaultMessage;
-            default:
-                return null;
-        }
-    }
+        => OdkAssertions.MeetsCondition(member, x => x.IsCurrent());
 
     public SubscriptionStatus GetSubscriptionStatus(MemberSubscription subscription, 
         ChapterMembershipSettings membershipSettings)

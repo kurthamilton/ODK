@@ -1,8 +1,8 @@
 ﻿using ODK.Core.Members;
 
-namespace ODK.Web.Razor.Models.Account;
+namespace ODK.Services.Users.ViewModels;
 
-public class ChangeEmailContentViewModel
+public class AccountViewModel
 {
     public required string ChapterName { get; init; }
 

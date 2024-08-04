@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
-using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Data.Core;
@@ -106,12 +106,7 @@ public class EventService : IEventService
     public async Task<Event> GetEvent(Guid chapterId, Guid eventId)
     {
         var @event = await _unitOfWork.EventRepository.GetById(eventId).RunAsync();
-        if (@event.ChapterId != chapterId)
-        {
-            throw new OdkNotFoundException();
-        }
-
-        return @event;
+        return OdkAssertions.BelongsToChapter(@event, chapterId);
     }
     
     public async Task<EventDto> GetEventDto(Member? member, Event @event)

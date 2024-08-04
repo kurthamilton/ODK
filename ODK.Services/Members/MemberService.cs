@@ -1,8 +1,8 @@
 ﻿using System.Web;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
-using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Data.Core;
@@ -175,12 +175,8 @@ public class MemberService : IMemberService
     public async Task<Member> GetMember(Guid memberId, Guid chapterId)
     {
         var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();        
-        if (!member.IsMemberOf(chapterId) || !member.Visible(chapterId))
-        {
-            throw new OdkNotFoundException();
-        }
-
-        return member;
+        return OdkAssertions.MeetsCondition(member, 
+            x => x.IsMemberOf(chapterId) && member.Visible(chapterId));
     }    
 
     public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId)

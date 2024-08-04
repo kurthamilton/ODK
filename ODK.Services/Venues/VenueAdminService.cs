@@ -1,4 +1,5 @@
-﻿using ODK.Core.Venues;
+﻿using ODK.Core;
+using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Services.Caching;
 
@@ -50,8 +51,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     {
         var venue = await GetChapterAdminRestrictedContent(request,
             x => x.VenueRepository.GetById(venueId));
-        AssertBelongsToChapter(venue, request);
-        return venue;
+        return OdkAssertions.BelongsToChapter(venue, request.ChapterId);
     }
 
     public async Task<IReadOnlyCollection<Venue>> GetVenues(AdminServiceRequest request)
@@ -79,7 +79,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             x => x.VenueRepository.GetById(id),
             x => x.VenueRepository.GetByName(request.ChapterId, model.Name));
 
-        AssertBelongsToChapter(venue, request);
+        OdkAssertions.BelongsToChapter(venue, request.ChapterId);
 
         venue.Address = model.Address;
         venue.MapQuery = model.MapQuery;

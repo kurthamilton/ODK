@@ -1,9 +1,7 @@
 ﻿@using ODK.Services.Authentication
-@using ODK.Services.Members
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
 @model ODK.Web.Razor.Models.Members.MemberContentViewModel
-@inject IMemberService MemberService
 
 @await Html.PartialAsync("Components/_AdminBar", new AdminBarViewModel
 {
@@ -16,7 +14,11 @@
 <div class="row">
     <div class="col-md-4 text-right order-md-2">
         <div class="d-flex align-items-end justify-content-end">
-            @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel(Model.Chapter, Model.Member))        
+            @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
+            {
+                ChapterName = Model.Chapter.Name,
+                Member = Model.Member
+            })        
         </div>
     </div>
     <div class="col-md-8 order-md-1">

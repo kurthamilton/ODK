@@ -1,4 +1,4 @@
-﻿namespace ODK.Web.Razor.Models.Account;
+﻿namespace ODK.Services.Users.ViewModels;
 
 public class ProfileFormPropertyViewModel
 {

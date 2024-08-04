@@ -46,8 +46,10 @@
                     @foreach (var host in Model.Hosts.OrderBy(x => x.FullName))
                     {                    
                         <div class="d-flex align-items-center justify-content-start">
-                            @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel(Model.Chapter, host)
+                            @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                             {
+                                ChapterName = Model.Chapter.Name,
+                                Member = host,
                                 MaxWidth = 50
                             })
                             <span class="ms-2">

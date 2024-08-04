@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Chapters;
 using ODK.Core.Images;
 using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
 using ODK.Services.Features;
 using ODK.Services.Members;
+using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
@@ -103,17 +105,48 @@ public class AccountController : OdkControllerBase
         return Redirect($"/{chapterName}/Account");
     }
 
-    [HttpPost("/{ChapterName}/Account/Emails/Subscribe")]
+    [HttpPost("{ChapterName}/Account/Emails/Subscribe")]
     public async Task<IActionResult> SubscribeToEmails()
     {
         await _memberService.UpdateMemberEmailOptIn(MemberId, true);
         return RedirectToReferrer();
     }
 
-    [HttpPost("/{ChapterName}/Account/Emails/Unsubscribe")]
+    [HttpPost("{ChapterName}/Account/Emails/Unsubscribe")]
     public async Task<IActionResult> UnsubscribeFromEmails()
     {
         await _memberService.UpdateMemberEmailOptIn(MemberId, false);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("{ChapterName}/Account/Profile")]
+    public async Task<IActionResult> UpdateProfile(string chapterName, [FromForm] ProfileFormSubmitViewModel viewModel)
+    {
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var model = new UpdateMemberProfile
+        {
+            FirstName = viewModel.FirstName,
+            LastName = viewModel.LastName,
+            Properties = viewModel.Properties.Select(x => new UpdateMemberProperty
+            {
+                ChapterPropertyId = x.ChapterPropertyId,
+                Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&
+                        !string.IsNullOrEmpty(x.OtherValue)
+                    ? x.OtherValue ?? ""
+                    : x.Value ?? ""
+            })
+        };
+
+        var memberId = User.MemberId();
+
+        var result = await _memberService.UpdateMemberProfile(memberId, chapter.Id, model);
+        if (!result.Success)
+        {
+            AddFeedback(new FeedbackViewModel(result));
+            return View();
+        }
+
+        AddFeedback(new FeedbackViewModel("Profile updated", FeedbackType.Success));
         return RedirectToReferrer();
     }
 
@@ -128,7 +161,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("{chapterName}/Account/Join")]
     public async Task<IActionResult> Join(
         string chapterName, 
-        [FromForm] ProfileFormViewModel viewModel, 
+        [FromForm] ProfileFormSubmitViewModel viewModel, 
         [FromForm] MemberImageCropInfo cropInfo, 
         [FromForm] IFormFile image)
     {

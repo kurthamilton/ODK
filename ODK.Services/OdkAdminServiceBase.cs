@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using ODK.Core;
-using ODK.Core.Chapters;
-using ODK.Core.Exceptions;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -15,25 +12,6 @@ public abstract class OdkAdminServiceBase
     protected OdkAdminServiceBase(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-    }
-
-    protected static void AssertBelongsToChapter<T>(T value, Guid chapterId) where T : IChapterEntity
-    {
-        if (value.ChapterId != chapterId)
-        {
-            throw new OdkNotFoundException();
-        }
-    }
-
-    protected static void AssertBelongsToChapter<T>(T value, AdminServiceRequest request) where T : IChapterEntity
-        => AssertBelongsToChapter(value, request.ChapterId);
-
-    protected static void AssertExists<T>([NotNull] T? value)
-    {
-        if (value == null)
-        {
-            throw new OdkNotFoundException();
-        }
     }
 
     protected async Task AssertMemberIsChapterAdmin(AdminServiceRequest request)

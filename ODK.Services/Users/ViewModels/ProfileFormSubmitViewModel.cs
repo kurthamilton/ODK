@@ -1,26 +1,22 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace ODK.Web.Razor.Models.Account;
+namespace ODK.Services.Users.ViewModels;
 
-public class ProfileFormViewModel
+public class ProfileFormSubmitViewModel
 {
-    public Guid ChapterId { get; set; }
-
-    public DateTime? DateJoined { get; set; }
-
-    [DisplayName("Email address")] 
+    [DisplayName("Email address")]
     public string EmailAddress { get; set; } = "";
 
-    [DisplayName("Receive event emails")] 
+    [DisplayName("Receive event emails")]
     public bool EmailOptIn { get; set; } = true;
 
-    [Required] 
-    [DisplayName("First Name")] 
+    [Required]
+    [DisplayName("First Name")]
     public string FirstName { get; set; } = "";
 
-    [Required] 
-    [DisplayName("Last Name")] 
+    [Required]
+    [DisplayName("Last Name")]
     public string LastName { get; set; } = "";
 
     [Required]

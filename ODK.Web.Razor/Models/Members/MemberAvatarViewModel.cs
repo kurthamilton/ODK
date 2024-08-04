@@ -1,21 +1,14 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 
 namespace ODK.Web.Razor.Models.Members;
 
 public class MemberAvatarViewModel
 {
-    public MemberAvatarViewModel(Chapter chapter, Member member)
-    {
-        Chapter = chapter;
-        Member = member;
-    }
-
-    public Chapter Chapter { get; }
+    public required string ChapterName { get; init; }
 
     public bool IsTop { get; set; }
 
     public int MaxWidth { get; set; }
 
-    public Member Member { get; }
+    public required Member Member { get; init; }
 }

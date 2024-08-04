@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
+using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Core.Exceptions;
 using ODK.Services.Caching;
 
 namespace ODK.Web.Razor.Pages.Chapters;
@@ -17,10 +17,7 @@ public abstract class ChapterPageModel : OdkPageModel
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
         var chapter = await new ChapterPageContext(RequestCache, HttpContext).GetChapterAsync();
-        if (chapter == null)
-        {
-            throw new OdkNotFoundException();
-        }
+        OdkAssertions.Exists(chapter);
 
         Chapter = chapter;
 
