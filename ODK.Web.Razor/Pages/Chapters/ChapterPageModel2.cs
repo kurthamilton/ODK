@@ -3,7 +3,7 @@ using ODK.Core;
 
 namespace ODK.Web.Razor.Pages.Chapters;
 
-public abstract class ChapterPageModel2 : OdkPageModel2
+public abstract class ChapterPageModel2 : OdkPageModel
 {
     public string ChapterName { get; private set; } = null!;
     

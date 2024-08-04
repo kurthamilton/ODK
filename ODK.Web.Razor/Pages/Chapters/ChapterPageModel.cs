@@ -7,16 +7,18 @@ namespace ODK.Web.Razor.Pages.Chapters;
 
 public abstract class ChapterPageModel : OdkPageModel
 {
+    private readonly IRequestCache _requestCache;
+
     protected ChapterPageModel(IRequestCache requestCache)
-        : base(requestCache)
     {
+        _requestCache = requestCache;
     }
 
     public Chapter Chapter { get; private set; } = null!;
     
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        var chapter = await new ChapterPageContext(RequestCache, HttpContext).GetChapterAsync();
+        var chapter = await new ChapterPageContext(_requestCache, HttpContext).GetChapterAsync();
         OdkAssertions.Exists(chapter);
 
         Chapter = chapter;

@@ -2,7 +2,7 @@ using System.Net;
 
 namespace ODK.Web.Razor.Pages.Errors;
 
-public class ErrorModel : OdkPageModel2
+public class ErrorModel : OdkPageModel
 {
     public HttpStatusCode ErrorStatusCode { get; private set; }
 
