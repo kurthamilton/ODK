@@ -1,11 +1,14 @@
 ﻿@page "/{chapterName}/Events"
+@using ODK.Services.Events
 @using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Models.Events
 @using ODK.Web.Common.Components
 @model EventsModel
+@inject IEventViewModelService EventViewModelService
 @{
     Layout = "_ChapterLayout";
     Model.Title = "Events";
+
+    var viewModel = await EventViewModelService.GetEventsPage(Model.MemberIdOrDefault, Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -13,8 +16,8 @@
     Title = "Events",
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem { Link = $"/{viewModel.Chapter.Name}", Text = viewModel.Chapter.Name },
         new MenuItem { Text = "Events" }
     },
-    Content = await Html.PartialAsync("Events/_EventsContent", new EventsContentViewModel(Model.Chapter, Model.CurrentMember))
+    Content = await Html.PartialAsync("Events/_EventsContent", viewModel)
 })

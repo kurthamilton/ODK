@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using Microsoft.Extensions.Logging;
+using ODK.Core.Events;
 using ODK.Core.Venues;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -31,6 +32,18 @@ public class VenueRepository : ReadWriteRepositoryBase<Venue>, IVenueRepository
 
         return query.DeferredSingle();
     }
+
+    public IDeferredQueryMultiple<Venue> GetByEventIds(IEnumerable<Guid> eventIds)
+    {
+        var query =
+            from venue in Set()
+            from @event in Set<Event>().Where(x => eventIds.Contains(x.Id))
+            where @event.VenueId == venue.Id
+            select venue;
+
+        return query.DeferredMultiple();
+    }
+        
 
     public IDeferredQuerySingleOrDefault<Venue> GetByName(Guid chapterId, string name) => Set()
         .Where(x => x.ChapterId == chapterId && x.Name == name)

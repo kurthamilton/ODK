@@ -9,7 +9,7 @@
     Layout = "_ChapterLayout";
     Model.Title = "Join";
 
-    var viewModel = await AccountViewModelService.GetJoinPageViewModel(Model.ChapterName);
+    var viewModel = await AccountViewModelService.GetJoinPage(Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

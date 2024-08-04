@@ -1,8 +1,9 @@
 ﻿@using ODK.Core.Members
 @using ODK.Core.Utils
+@using ODK.Services.Events.ViewModels
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
-@model EventContentViewModel
+@model EventPageViewModel
 
 @await Html.PartialAsync("Components/_AdminBar", new AdminBarViewModel
 {
@@ -62,6 +63,7 @@
                 })
         }        
     </h3>
+
     @foreach (var comment in Model.Comments.Comments)
     {
         if (!memberDictionary.TryGetValue(comment.MemberId, out var member))

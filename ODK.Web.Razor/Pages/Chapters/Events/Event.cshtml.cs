@@ -1,18 +1,39 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
+using ODK.Core.Events;
 using ODK.Services.Events;
 
 namespace ODK.Web.Razor.Pages.Chapters.Events;
 
-public class EventModel : EventPageModel
+public class EventModel : ChapterPageModel2
 {
-    public EventModel(IRequestCache requestCache, IEventService eventService)
-        : base(requestCache, eventService)
+    private readonly IEventService _eventService;
+
+    public EventModel(IEventService eventService)
     {
+        _eventService = eventService;
     }
 
-    protected override IActionResult RedirectToSelf(Guid id)
+    public Guid EventId { get; private set; }
+
+    public async Task<IActionResult> OnGet(Guid id, string? rsvp = null)
     {
-        return Redirect($"/{Chapter.Name}/Events/{id}");
+        EventId = id;
+
+        if (!string.IsNullOrEmpty(rsvp))
+        {
+            try
+            {
+                var response = Enum.Parse<EventResponseType>(rsvp, true);
+                await _eventService.UpdateMemberResponse(MemberId, id, response);
+            }
+            catch
+            {
+                // do nothing
+            }
+
+            return Redirect($"/{ChapterName}/Events/{id}");
+        }
+
+        return Page();
     }
 }

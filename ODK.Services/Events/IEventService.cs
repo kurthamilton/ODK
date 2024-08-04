@@ -21,5 +21,5 @@ public interface IEventService
     Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Guid chapterId, 
         DateTime? afterUtc);
     
-    Task<ServiceResult> UpdateMemberResponse(Member member, Guid eventId, EventResponseType responseType);
+    Task<ServiceResult> UpdateMemberResponse(Guid currentMemberId, Guid eventId, EventResponseType responseType);
 }

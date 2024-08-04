@@ -1,13 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using ODK.Core;
+﻿using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Core.Exceptions;
 using ODK.Core.Members;
 using ODK.Core.Settings;
 using ODK.Data.Core;
-using ODK.Services.Caching;
-using ODK.Services.Chapters;
 using ODK.Services.Users.ViewModels;
 
 namespace ODK.Services.Users;
@@ -21,7 +16,7 @@ public class AccountViewModelService : IAccountViewModelService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<AccountPageViewModel> GetAccountPageViewModel(Guid currentMemberId, string chapterName)
+    public async Task<AccountPageViewModel> GetAccountPage(Guid currentMemberId, string chapterName)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
         OdkAssertions.Exists(chapter);
@@ -72,7 +67,7 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
-    public async Task<JoinPageViewModel> GetJoinPageViewModel(string chapterName)
+    public async Task<JoinPageViewModel> GetJoinPage(string chapterName)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
         OdkAssertions.Exists(chapter);

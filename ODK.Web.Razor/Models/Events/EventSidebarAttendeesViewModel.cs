@@ -5,15 +5,9 @@ namespace ODK.Web.Razor.Models.Events;
 
 public class EventSidebarAttendeesViewModel
 {
-    public EventSidebarAttendeesViewModel(Chapter chapter, IEnumerable<Member> members)
-    {
-        Chapter = chapter;
-        Members = members.ToArray();
-    }
+    public required Chapter Chapter { get; init; }
 
-    public Chapter Chapter { get; }
-
-    public IReadOnlyCollection<Member> Members { get; }
+    public required IReadOnlyCollection<Member> Members { get; init; }
 
     public string? Title { get; set; }
 }

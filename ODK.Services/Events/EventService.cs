@@ -195,14 +195,15 @@ public class EventService : IEventService
         return viewModels;
     }
     
-    public async Task<ServiceResult> UpdateMemberResponse(Member member, Guid eventId,
+    public async Task<ServiceResult> UpdateMemberResponse(Guid memberId, Guid eventId,
         EventResponseType responseType)
     {
         responseType = NormalizeResponseType(responseType);
 
-        var (@event, response) = await _unitOfWork.RunAsync(
+        var (member, @event, response) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetById(eventId),
-            x => x.EventResponseRepository.GetByMemberId(member.Id, eventId));
+            x => x.EventResponseRepository.GetByMemberId(memberId, eventId));
         if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");

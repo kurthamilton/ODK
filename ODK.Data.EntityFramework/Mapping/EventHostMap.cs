@@ -27,7 +27,7 @@ public class EventHostMap : IEntityTypeConfiguration<EventHost>
             .WithMany()
             .HasForeignKey(x => x.EventId);
 
-        builder.HasOne<Member>()
+        builder.HasOne(x => x.Member)
             .WithMany()
             .HasForeignKey(x => x.MemberId);
     }

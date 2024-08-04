@@ -95,6 +95,7 @@ public static class DependencyConfig
         services.AddScoped<IEmailAdminService, EmailAdminService>();
         services.AddScoped<IEventAdminService, EventAdminService>();
         services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IEventViewModelService, EventViewModelService>();
         services.AddScoped<IFeatureService, FeatureService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<ILoggingService, LoggingService>();

@@ -1,27 +1,28 @@
 ﻿@using ODK.Services.Events
+@using ODK.Services.Events.ViewModels
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
-@model EventsContentViewModel
-@inject IEventService EventService
-@{
-    var events = await EventService.GetEventResponseViewModels(Model.Member, Model.Chapter);
-}
+@model EventsPageViewModel
 
 @await Html.PartialAsync("Components/_AdminBar", new AdminBarViewModel
 {
     AdminLink = $"/{Model.Chapter.Name}/Admin/Events",
     AdminLinkText = "Edit",
     Chapter = Model.Chapter,
-    CurrentMember = Model.Member
+    CurrentMember = Model.CurrentMember
 })
 
-@if (events.Count > 0)
+@if (Model.Events.Count > 0)
 {
-    @await Html.PartialAsync("Events/_EventList", new EventListViewModel(Model.Chapter, events))
+    @await Html.PartialAsync("Events/_EventList", new EventListViewModel
+    {
+        ChapterName = Model.Chapter.Name,
+        Events = Model.Events
+    })
 }
 else
 {
-    if (Model.Member?.IsMemberOf(Model.Chapter.Id) == true)
+    if (Model.CurrentMember?.IsMemberOf(Model.Chapter.Id) == true)
     {
         <p>There are no upcoming events</p>
     }

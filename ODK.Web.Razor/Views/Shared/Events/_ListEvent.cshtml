@@ -6,23 +6,14 @@
     @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
     {
         ReadOnly = true,
-        ResponseType = Model.EventResponse.Response
+        ResponseType = Model.Event.Response
     })
     
-    @if (Model.EventResponse.Public)
-    {
-        <a href="/@Model.Chapter.Name/Events/Public/@Model.EventResponse.EventId" class="@(Model.EventResponse.Response > 0 ? "ml-1" : null)">
-            @Model.EventResponse.EventName
-        </a>
-    }
-    else
-    {
-        <a href="/@Model.Chapter.Name/Events/@Model.EventResponse.EventId" class="@(Model.EventResponse.Response > 0 ? "ml-1" : null)">
-            @Model.EventResponse.EventName
-        </a>   
-    }
+    <a href="/@Model.ChapterName/Events/@Model.Event.EventId" class="@(Model.Event.Response > 0 ? "ms-1" : null)">
+        @Model.Event.EventName
+    </a>
 </h4>
 <h5>
-    @Model.EventResponse.Date.EventDate(true)
+    @Model.Event.Date.EventDate(true)
 </h5>
-<div>@Model.EventResponse.VenueName</div>
+<div>@Model.Event.VenueName</div>
