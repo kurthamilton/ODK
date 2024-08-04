@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/knitwits/{id:guid}"
+﻿@page "/{chapterName}/Members/{id:guid}"
 @attribute [Authorize]
 @using ODK.Services.Members
 @using ODK.Web.Common.Components
@@ -20,7 +20,7 @@
     Breadcrumbs = new []
     {
         new MenuItem { Link = $"/{viewModel.Chapter.Name}", Text = viewModel.Chapter.Name },
-        new MenuItem { Link = $"/{viewModel.Chapter.Name}/Knitwits", Text = "Knitwits" },
+        new MenuItem { Link = $"/{viewModel.Chapter.Name}/Members", Text = "Knitwits" },
         new MenuItem { Text = viewModel.Member.FullName }
     },
     Content = await Html.PartialAsync("Members/_MemberContent", viewModel)

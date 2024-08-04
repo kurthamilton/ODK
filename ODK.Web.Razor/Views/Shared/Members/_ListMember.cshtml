@@ -2,7 +2,7 @@
 @model ODK.Web.Razor.Models.Members.ListMemberViewModel
 
 <div class="card member-tile @(Model.HideName ? "member-tile-sm" : null)">
-    <a href="/@Model.ChapterName/Knitwits/@Model.Member.Id" 
+    <a href="/@Model.ChapterName/Members/@Model.Member.Id" 
        data-bs-toggle="@(Model.HideName ? "tooltip" : "")" data-bs-title="@(Model.HideName ? Model.Member.FullName : "")" container="body">
 
         <div class="d-flex align-items-end justify-content-center">
