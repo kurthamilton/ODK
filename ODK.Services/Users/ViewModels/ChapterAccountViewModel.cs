@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Users.ViewModels;
 
-public class AccountViewModel
+public class ChapterAccountViewModel
 {
     public required string ChapterName { get; init; }
 

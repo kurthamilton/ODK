@@ -1,42 +1,21 @@
-﻿@using ODK.Services.Users.ViewModels
+﻿@using ODK.Core.Extensions
+@using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
-@model AccountPageViewModel
+@model ChapterAccountPageViewModel
 @{
     var dateJoined = Model.CurrentMember.MemberChapter(Model.Chapter.Id).CreatedUtc;
 }
 
 <div class="row row-cols-2">
     <div class="col">
-        <div>
-            <a href="/@Model.Chapter.Name/Account/Subscription">My subscription</a>
-        </div>
-        <div>
-            <a href="/@Model.Chapter.Name/Account/Password/Change">Change password</a>
-        </div>
-        <div>
-            <a href="/@Model.Chapter.Name/Account/Email/Change">Update email address</a>
-        </div>
-        <div>
-            <a href="/@Model.Chapter.Name/Account/Emails">Email preferences</a>
-        </div>
-        <div>
-            <a href="/@Model.Chapter.Name/Account/Delete">Delete my account</a>
-        </div>
-        <div class="my-3" data-theme-selector-container>
-            <button type="button" class="d-flex align-items-center btn btn-outline-light d-none me-3"
-                    data-theme-selector="light">
-                <i class="fa-solid fa-sun me-2"></i>
-                <span>Light mode</span>
-            </button>
-            <button type="button" class="d-flex align-items-center btn btn-outline-dark me-3"
-                    data-theme-selector="dark">
-                <i class="fa-solid fa-moon me-2"></i>
-                <span>Dark mode</span>
-            </button>
-        </div>
+        @await Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
+        {
+            ChapterName = Model.Chapter.Name
+        })
     </div>
 
     <div class="col">
@@ -50,13 +29,13 @@
                     })
                 </div>                
                 
-                <div class="d-flex justify-content-center">
+                <div class="d-flex justify-content-end">
                     <div class="d-flex">
                         <button class="btn btn-link" type="button" data-bs-toggle="modal" data-bs-target="#change-picture-modal">
                             Change picture
                         </button>                                                
 
-                        <form class="d-flex align-items-center" method="post" action="/@Model.Chapter.Name/Account/Picture/Rotate">
+                        <form class="d-flex align-items-center" method="post" action="@OdkRoutes.Account.PictureRotate(Model.Chapter.Name)">
                             <button class="btn-icon" data-bs-toggle="tooltip" data-bs-title="Rotate right">
                                 <i class="fas fa-undo flip-horizontal"></i>
                             </button>
@@ -75,7 +54,7 @@
     Size = "modal-lg",
     Body =
     @<div>
-        <form method="post" action="/@Model.Chapter.Name/Account/Picture/Change" enctype="multipart/form-data">
+        <form method="post" action="@OdkRoutes.Account.PictureUpload(Model.Chapter.Name)" enctype="multipart/form-data">
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
             {
                 ChapterName = Model.Chapter.Name,
@@ -92,15 +71,17 @@
     </div>
 })
 
-<form method="post">
+<form method="post" action="/@Model.Chapter.Name/Account/Profile">
     @Html.AntiForgeryToken()
 
-    @await Html.PartialAsync("Account/_ChapterProfileForm", Model.Profile)
+    @await Html.PartialAsync("Account/_PersonalDetailsForm", Model.PersonalDetails)
+
+    @await Html.PartialAsync("Account/_ChapterProfileForm", Model.ChapterProfile)
 
     <div class="form-group mb-3">
         <label class="form-label">Date joined</label>
         <div class="form-control-plaintext">
-            <span>@Model.Chapter.ToChapterTime(dateJoined).ToString("d MMMM yyyy")</span>
+            <span>@TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, dateJoined).ToString("d MMMM yyyy")</span>
         </div>
     </div>
 

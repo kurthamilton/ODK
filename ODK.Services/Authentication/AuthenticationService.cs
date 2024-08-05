@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Web;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Data.Core;
-using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
@@ -41,15 +41,12 @@ public class AuthenticationService : IAuthenticationService
         var token = await _unitOfWork.MemberActivationTokenRepository
             .GetByToken(activationToken)
             .RunAsync();
-        if (token == null)
+        if (token == null || token.ChapterId != null)
         {
             return ServiceResult.Failure("The link you followed is no longer valid");
         }
 
-        var (chapter, member, memberPassword) = await _unitOfWork.RunAsync(
-            x => token.ChapterId != null 
-                ? x.ChapterRepository.GetByIdOrDefault(token.ChapterId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Chapter>(),
+        var (member, memberPassword) = await _unitOfWork.RunAsync(            
             x => x.MemberRepository.GetById(token.MemberId),
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
 
@@ -70,6 +67,47 @@ public class AuthenticationService : IAuthenticationService
         
         _unitOfWork.MemberActivationTokenRepository.Delete(token);
         
+        await _unitOfWork.SaveChangesAsync();
+
+        await SendNewMemberEmailsAsync(null, member);
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> ActivateChapterAccountAsync(Guid chapterId, string activationToken, string password)
+    {
+        var token = await _unitOfWork.MemberActivationTokenRepository
+            .GetByToken(activationToken)
+            .RunAsync();
+        if (token == null)
+        {
+            return ServiceResult.Failure("The link you followed is no longer valid");
+        }
+
+        var (chapter, member, memberPassword) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.MemberRepository.GetById(token.MemberId),
+            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
+
+        OdkAssertions.MeetsCondition(token, x => x.ChapterId == chapterId);
+
+        memberPassword = UpdatePassword(memberPassword, password);
+        member.Activated = true;
+
+        _unitOfWork.MemberRepository.Update(member);
+
+        if (memberPassword.MemberId == default)
+        {
+            memberPassword.MemberId = member.Id;
+            _unitOfWork.MemberPasswordRepository.Add(memberPassword);
+        }
+        else
+        {
+            _unitOfWork.MemberPasswordRepository.Update(memberPassword);
+        }
+
+        _unitOfWork.MemberActivationTokenRepository.Delete(token);
+
         await _unitOfWork.SaveChangesAsync();
 
         await SendNewMemberEmailsAsync(chapter, member);

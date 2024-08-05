@@ -1,4 +1,6 @@
-﻿namespace ODK.Web.Razor.Models.Account;
+﻿using ODK.Core.Members;
+
+namespace ODK.Web.Razor.Models.Account;
 
 public class PictureUploadViewModel
 {
@@ -16,4 +18,6 @@ public class PictureUploadViewModel
     /// Dummy form field
     /// </summary>
     public string? Image { get; set; }
+
+    public MemberImage? MemberImage { get; set; } 
 }

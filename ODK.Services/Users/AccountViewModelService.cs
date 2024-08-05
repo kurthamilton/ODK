@@ -16,43 +16,52 @@ public class AccountViewModelService : IAccountViewModelService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<AccountPageViewModel> GetAccountPage(Guid currentMemberId, string chapterName)
+    public async Task<ChapterAccountPageViewModel> GetChapterAccountPage(Guid currentMemberId, string chapterName)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
         OdkAssertions.Exists(chapter);
 
         var (
-                chapterProperties, 
-                chapterPropertyOptions, 
-                member, 
+                chapterProperties,
+                chapterPropertyOptions,
+                member,
                 memberProperties,
-                avatar
-            ) = await _unitOfWork.RunAsync(            
+                avatar,
+                image
+            ) = await _unitOfWork.RunAsync(
                 x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
                 x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
                 x => x.MemberRepository.GetById(currentMemberId),
                 x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapter.Id),
-                x => x.MemberAvatarRepository.GetByMemberId(currentMemberId));
+                x => x.MemberAvatarRepository.GetByMemberId(currentMemberId),
+                x => x.MemberImageRepository.GetByMemberId(currentMemberId));
 
         OdkAssertions.MemberOf(member, chapter.Id);
 
-        return new AccountPageViewModel 
-        { 
+        return new ChapterAccountPageViewModel
+        {
             Avatar = avatar,
+            Image = image,
             Chapter = chapter,
             CurrentMember = member,
-            Profile = CreateProfileFormViewModel(
-                chapter, 
-                chapterProperties, 
-                chapterPropertyOptions, 
-                null, 
+            ChapterProfile = CreateProfileFormViewModel(
+                chapter,
+                chapterProperties,
+                chapterPropertyOptions,
                 null,
-                member, 
-                memberProperties)
+                null,
+                member,
+                memberProperties),
+            PersonalDetails = new PersonalDetailsFormViewModel
+            {
+                EmailAddress = member.EmailAddress,
+                FirstName = member.FirstName,
+                LastName = member.LastName
+            }
         };
     }
 
-    public async Task<AccountViewModel> GetAccountViewModel(Guid currentMemberId, string chapterName)
+    public async Task<ChapterAccountViewModel> GetChapterAccountViewModel(Guid currentMemberId, string chapterName)
     {
         var (member, chapter) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
@@ -61,12 +70,33 @@ public class AccountViewModelService : IAccountViewModelService
         OdkAssertions.Exists(chapter);
         OdkAssertions.MemberOf(member, chapter.Id);
 
-        return new AccountViewModel 
-        { 
+        return new ChapterAccountViewModel
+        {
             ChapterName = chapter.Name,
-            CurrentMember = member 
+            CurrentMember = member
         };
     }
+
+    public async Task<SiteAccountPageViewModel> GetSiteAccountPage(Guid currentMemberId)
+    {
+       var (member, avatar, image) = await _unitOfWork.RunAsync(                            
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberAvatarRepository.GetByMemberId(currentMemberId),
+            x => x.MemberImageRepository.GetByMemberId(currentMemberId));
+
+        return new SiteAccountPageViewModel 
+        { 
+            Avatar = avatar,
+            CurrentMember = member,
+            Image = image,
+            PersonalDetails = new PersonalDetailsFormViewModel
+            {
+                EmailAddress = member.EmailAddress,
+                FirstName = member.FirstName,
+                LastName = member.LastName                
+            }
+        };
+    }    
 
     public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName)
     {
@@ -109,13 +139,8 @@ public class AccountViewModelService : IAccountViewModelService
         {
             ChapterName = chapter.Name,
             ChapterProperties = chapterProperties,
-            ChapterPropertyOptions = chapterPropertyOptions,
+            ChapterPropertyOptions = chapterPropertyOptions,            
             TrialPeriodMonths = membershipSettings?.TrialPeriodMonths ?? siteSettings?.DefaultTrialPeriodMonths ?? 0,
-
-            EmailAddress = member?.EmailAddress ?? "",
-            EmailOptIn = member?.EmailOptIn ?? true,
-            FirstName = member?.FirstName ?? "",
-            LastName = member?.LastName ?? "",
             Properties = chapterProperties.Select(x => new ChapterProfileFormPropertyViewModel
             {
                 ChapterPropertyId = x.Id,

@@ -3,11 +3,13 @@ using ODK.Core.Utils;
 
 namespace ODK.Core.Members;
 
-public class Member : IVersioned, IDatabaseEntity
+public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 {
     public bool Activated { get; set; }
 
     public ICollection<MemberChapter> Chapters { get; set; } = new List<MemberChapter>();
+
+    public DateTime CreatedUtc { get; set; }
 
     public bool Disabled { get; set; }
 
@@ -26,6 +28,8 @@ public class Member : IVersioned, IDatabaseEntity
     public ICollection<MemberChapterPrivacySettings> PrivacySettings { get; set; } = new HashSet<MemberChapterPrivacySettings>();
 
     public bool SuperAdmin { get; set; }
+
+    public TimeZoneInfo? TimeZone { get; set; }
 
     public byte[] Version { get; set; } = [];
 

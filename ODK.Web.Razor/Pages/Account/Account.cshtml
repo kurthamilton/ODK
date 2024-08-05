@@ -1,5 +1,36 @@
 ﻿@page "/Account"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Users
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Account.AccountModel
+@inject IAccountViewModelService AccountViewModelService
 @{
-    Layout = "Shared/_HomeLayout";
+    Layout = "_HomeLayout";
+    Model.Title = "Profile";
+
+    var viewModel = await AccountViewModelService.GetSiteAccountPage(Model.CurrentMemberId);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "My profile",
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = "/", Text = "Home" },
+        new MenuItem { Text = "Profile" }
+    },
+    Content = await Html.PartialAsync("Account/_SiteAccountContent", viewModel)
+})
+
+@section styles
+{
+    <link rel="stylesheet" href="/lib/cropperjs/cropper.css" />
+}
+
+@section scripts
+{
+    <script src="/lib/cropperjs/cropper.js"></script>
+    <script src="/js/odk.imaging.js"></script>
 }

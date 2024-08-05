@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
+using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
@@ -220,7 +221,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var chapter = await _unitOfWork.ChapterRepository.GetById(request.ChapterId).RunAsync();
 
-        var startOfDay = chapter.CurrentTime.StartOfDay();
+        var startOfDay = chapter.CurrentTime().StartOfDay();
 
         var (events, settings) = await GetChapterAdminRestrictedContent(request,
             x => x.EventRepository.GetByChapterId(request.ChapterId, startOfDay),
@@ -393,7 +394,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             var email = emailDictionary[@event.Id];
             var chapter = chapterDictionary[@event.ChapterId];
 
-            if (@event.Date < chapter.CurrentTime.StartOfDay())
+            if (@event.Date < chapter.CurrentTime().StartOfDay())
             {
                 email.ScheduledUtc = null;
                 _unitOfWork.EventEmailRepository.Update(email);
@@ -532,7 +533,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             ? date + TimeOnly.Parse(time ?? "").ToTimeSpan()
             : null;
 
-        eventEmail.ScheduledUtc = chapter.FromChapterTime(scheduledLocal);
+        eventEmail.ScheduledUtc = chapter.FromLocalTime(scheduledLocal);
 
         if (eventEmail.EventId == default)
         {

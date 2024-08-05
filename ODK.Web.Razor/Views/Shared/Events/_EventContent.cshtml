@@ -1,4 +1,5 @@
-﻿@using ODK.Core.Members
+﻿@using ODK.Core.Extensions
+@using ODK.Core.Members
 @using ODK.Core.Utils
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Razor.Models.Components
@@ -75,7 +76,7 @@
             <div>
                 <strong>@member.FullName</strong>
                 <span>
-                    @Model.Chapter.ToChapterTime(comment.CreatedUtc).ToString("dddd dd MMMM yyyy HH:mm")
+                    @TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, comment.CreatedUtc).ToString("dddd dd MMMM yyyy HH:mm")
                 </span>
                 <span>
                     <a data-bs-toggle="collapse" href="#comment-reply-@comment.Id" role="button" aria-expanded="false" aria-controls="collapseExample">

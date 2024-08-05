@@ -11,7 +11,7 @@
     Layout = "_ChapterLayout";
     Model.Title = "Profile";
 
-    var viewModel = await AccountViewModelService.GetAccountPage(Model.CurrentMemberId, Model.ChapterName);
+    var viewModel = await AccountViewModelService.GetChapterAccountPage(Model.CurrentMemberId, Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -22,7 +22,7 @@
         new MenuItem { Link = $"/{Model.ChapterName}", Text = Model.ChapterName },
         new MenuItem { Text = "Profile" }
     },
-    Content = await Html.PartialAsync("Account/_AccountContent", viewModel)
+    Content = await Html.PartialAsync("Account/_ChapterAccountContent", viewModel)
 })
 
 @section styles

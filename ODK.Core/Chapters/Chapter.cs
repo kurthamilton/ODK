@@ -1,12 +1,12 @@
-﻿namespace ODK.Core.Chapters;
+﻿using ODK.Core.Extensions;
 
-public class Chapter : IDatabaseEntity
+namespace ODK.Core.Chapters;
+
+public class Chapter : IDatabaseEntity, ITimeZoneEntity
 {
     public string BannerImageUrl { get; } = "";
 
     public Guid CountryId { get; set; }
-
-    public DateTime CurrentTime => ToChapterTime(DateTime.UtcNow);
 
     public int DisplayOrder { get; set; }
 
@@ -19,14 +19,6 @@ public class Chapter : IDatabaseEntity
     public string? RedirectUrl { get; set; }
 
     public TimeZoneInfo? TimeZone { get; set; }
-
-    public DateTime TodayUtc => FromChapterTime(CurrentTime.Date);
-
-    public DateTime FromChapterTime(DateTime local) => TimeZone != null
-        ? TimeZoneInfo.ConvertTimeToUtc(local, TimeZone)
-        : local;
-
-    public DateTime? FromChapterTime(DateTime? local) => local != null ? FromChapterTime(local.Value) : null;
 
     public DateTime ToChapterTime(DateTime utc) => TimeZone != null
         ? TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone)

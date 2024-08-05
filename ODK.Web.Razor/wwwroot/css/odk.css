@@ -11855,6 +11855,10 @@ textarea.form-control-lg {
     display: none !important;
   }
 }
+.cropper-hide {
+  display: none !important;
+}
+
 /*Style SlimSelect like Bootstrap 5*/
 .ss-main {
   display: flex;

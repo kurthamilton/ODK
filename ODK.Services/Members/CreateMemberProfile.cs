@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Members;
 
-public class CreateMemberProfile : UpdateMemberProfile
+public class CreateMemberProfile : UpdateMemberChapterProfile
 {
     public string EmailAddress { get; set; } = "";
 

@@ -1,9 +1,13 @@
-﻿@model ODK.Web.Razor.Models.Members.MemberImageViewModel
+﻿@using ODK.Core.Images
+@using ODK.Web.Common.Routes
+@model ODK.Web.Razor.Models.Members.MemberImageViewModel
 @{
-    var imageUrl = $"/{Model.ChapterName}/Members/{Model.Member.Id}/Image";    
+    var imageUrl = Model.HasImage != null 
+        ? Model.Image != null ? ImageHelper.ToDataUrl(Model.Image.ImageData, Model.Image.MimeType) : ""
+        : OdkRoutes.Members.Image(Model.Member.Id, Model.ChapterName);    
 }
 
-<img class="@(Model.IsTop ? "card-img-top" : "card-img")"
+<img class="@(Model.IsTop ? "card-img-top" : "card-img") @(imageUrl == "" ? "d-none" : "")"
      src="@imageUrl"
      alt="Photo of @Model.Member.FullName"
      data-img-naturalsize />

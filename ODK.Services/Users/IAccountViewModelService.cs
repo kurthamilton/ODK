@@ -4,9 +4,11 @@ namespace ODK.Services.Users;
 
 public interface IAccountViewModelService
 {
-    Task<AccountPageViewModel> GetAccountPage(Guid currentMemberId, string chapterName);
+    Task<ChapterAccountViewModel> GetChapterAccountViewModel(Guid currentMemberId, string chapterName);
 
-    Task<AccountViewModel> GetAccountViewModel(Guid currentMemberId, string chapterName);
+    Task<ChapterAccountPageViewModel> GetChapterAccountPage(Guid currentMemberId, string chapterName);
 
     Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName);
+
+    Task<SiteAccountPageViewModel> GetSiteAccountPage(Guid currentMemberId);        
 }

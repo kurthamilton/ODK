@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Members;
 
-public class UpdateMemberProfile
+public class UpdateMemberChapterProfile
 {
     public bool? EmailOptIn { get; set; }
 

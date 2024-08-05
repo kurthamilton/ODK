@@ -38,7 +38,7 @@ public class AccountController : OdkControllerBase
 
     [AllowAnonymous]
     [HttpPost("Account/Join")]
-    public async Task<IActionResult> Join([FromForm] ProfileFormSubmitViewModel viewModel)
+    public async Task<IActionResult> Join([FromForm] PersonalDetailsFormViewModel viewModel)
     {
         var model = new CreateAccountModel
         {
@@ -50,6 +50,46 @@ public class AccountController : OdkControllerBase
         var result = await _memberService.CreateAccount(model);
         PostJoin(result);
         return Redirect($"/Account/Pending");
+    }
+
+    [AllowAnonymous]
+    [HttpPost("{chapterName}/Account/Join")]
+    public async Task<IActionResult> Join(
+        string chapterName,
+        [FromForm] ChapterProfileFormSubmitViewModel profileViewModel,
+        [FromForm] PersonalDetailsFormViewModel personalDetailsViewModel,
+        [FromForm] MemberImageCropInfo cropInfo,
+        [FromForm] IFormFile image)
+    {
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+
+        var imageModel = new UpdateMemberImage
+        {
+            ImageData = await image.ToByteArrayAsync(),
+            MimeType = image.ContentType
+        };
+
+        var model = new CreateMemberProfile
+        {
+            EmailAddress = personalDetailsViewModel.EmailAddress,
+            EmailOptIn = personalDetailsViewModel.EmailOptIn,
+            FirstName = personalDetailsViewModel.FirstName,
+            Image = imageModel,
+            ImageCropInfo = cropInfo,
+            LastName = personalDetailsViewModel.LastName,
+            Properties = profileViewModel.Properties.Select(x => new UpdateMemberProperty
+            {
+                ChapterPropertyId = x.ChapterPropertyId,
+                Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&
+                        !string.IsNullOrEmpty(x.OtherValue)
+                    ? x.OtherValue ?? ""
+                    : x.Value ?? ""
+            })
+        };
+
+        var result = await _memberService.CreateMember(chapter.Id, model);
+        PostJoin(result);
+        return Redirect($"/{chapterName}/Account/Pending");
     }
 
     [AllowAnonymous]
@@ -95,6 +135,14 @@ public class AccountController : OdkControllerBase
         AddFeedback(new FeedbackViewModel("Username or password incorrect", FeedbackType.Error));
 
         return RedirectToReferrer();
+    }
+
+    [HttpPost("Account/Delete")]
+    public async Task<IActionResult> DeleteAccount()
+    {
+        await _memberService.DeleteMember(MemberId);
+        await _loginHandler.Logout(HttpContext);
+        return Redirect("/");
     }
 
     [HttpPost("{chapterName}/Account/Delete")]
@@ -157,15 +205,40 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{ChapterName}/Account/Profile")]
-    public async Task<IActionResult> UpdateProfile(string chapterName, [FromForm] ChapterProfileFormSubmitViewModel viewModel)
+    [HttpPost("Account/Profile")]
+    public async Task<IActionResult> UpdateSiteProfile([FromForm] PersonalDetailsFormViewModel viewModel)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var model = new UpdateMemberProfile
+        var model = new UpdateMemberSiteProfile
         {
             FirstName = viewModel.FirstName,
-            LastName = viewModel.LastName,
-            Properties = viewModel.Properties.Select(x => new UpdateMemberProperty
+            LastName = viewModel.LastName
+        };
+
+        var memberId = User.MemberId();
+
+        var result = await _memberService.UpdateMemberSiteProfile(memberId, model);
+        if (!result.Success)
+        {
+            AddFeedback(new FeedbackViewModel(result));
+            return View();
+        }
+
+        AddFeedback(new FeedbackViewModel("Profile updated", FeedbackType.Success));
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("{ChapterName}/Account/Profile")]
+    public async Task<IActionResult> UpdateChapterProfile(
+        string chapterName, 
+        [FromForm] ChapterProfileFormSubmitViewModel profileViewModel,
+        [FromForm] PersonalDetailsFormViewModel personalDetailsViewModel)
+    {
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var model = new UpdateMemberChapterProfile
+        {
+            FirstName = personalDetailsViewModel.FirstName,
+            LastName = personalDetailsViewModel.LastName,
+            Properties = profileViewModel.Properties.Select(x => new UpdateMemberProperty
             {
                 ChapterPropertyId = x.ChapterPropertyId,
                 Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&
@@ -177,7 +250,7 @@ public class AccountController : OdkControllerBase
 
         var memberId = User.MemberId();
 
-        var result = await _memberService.UpdateMemberProfile(memberId, chapter.Id, model);
+        var result = await _memberService.UpdateMemberChapterProfile(memberId, chapter.Id, model);
         if (!result.Success)
         {
             AddFeedback(new FeedbackViewModel(result));
@@ -193,46 +266,7 @@ public class AccountController : OdkControllerBase
     {
         await _featureService.MarkAsSeen(MemberId, name);
         return Ok();
-    }
-
-    [AllowAnonymous]
-    [HttpPost("{chapterName}/Account/Join")]
-    public async Task<IActionResult> Join(
-        string chapterName, 
-        [FromForm] ChapterProfileFormSubmitViewModel viewModel, 
-        [FromForm] MemberImageCropInfo cropInfo, 
-        [FromForm] IFormFile image)
-    {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-
-        var imageModel = new UpdateMemberImage
-        {
-            ImageData = await image.ToByteArrayAsync(),
-            MimeType = image.ContentType
-        };
-
-        var model = new CreateMemberProfile
-        {
-            EmailAddress = viewModel.EmailAddress,
-            EmailOptIn = viewModel.EmailOptIn,
-            FirstName = viewModel.FirstName,
-            Image = imageModel,
-            ImageCropInfo = cropInfo,
-            LastName = viewModel.LastName,
-            Properties = viewModel.Properties.Select(x => new UpdateMemberProperty
-            {
-                ChapterPropertyId = x.ChapterPropertyId,
-                Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&
-                        !string.IsNullOrEmpty(x.OtherValue)
-                    ? x.OtherValue ?? ""
-                    : x.Value ?? ""
-            })
-        };
-
-        var result = await _memberService.CreateMember(chapter.Id, model);
-        PostJoin(result);
-        return Redirect($"/{chapterName}/Account/Pending");
-    }
+    }    
 
     [HttpPost("{ChapterName}/Account/Password/Change")]
     public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordFormViewModel viewModel)
@@ -266,8 +300,14 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{ChapterName}/Account/Picture/Change")]
+    [HttpPost("Account/Picture/Change")]
     public async Task<IActionResult> UpdatePicture([FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
+    {
+        return await UpdatePicture("", cropInfo, image);
+    }
+
+    [HttpPost("{chapterName}/Account/Picture/Change")]
+    public async Task<IActionResult> UpdatePicture(string chapterName, [FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
     {
         var model = image != null ? new UpdateMemberImage
         {            
@@ -280,8 +320,14 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{ChapterName}/Account/Picture/Rotate")]
+    [HttpPost("Account/Picture/Rotate")]
     public async Task<IActionResult> RotatePicture()
+    {
+        return await RotatePicture("");
+    }
+
+    [HttpPost("{chapterName}/Account/Picture/Rotate")]
+    public async Task<IActionResult> RotatePicture(string chapterName)
     {
         await _memberService.RotateMemberImage(MemberId);
 

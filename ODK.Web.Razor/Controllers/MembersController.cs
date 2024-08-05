@@ -20,6 +20,16 @@ public class MembersController : ControllerBase
     }
 
     [Authorize]
+    [HttpGet("Members/{Id}/Avatar")]
+    public Task<IActionResult> Avatar(Guid id)
+        => HandleVersionedRequest(version => _memberService.GetMemberAvatar(version, id), MemberAvatarResult);
+
+    [Authorize]
+    [HttpGet("Members/{Id}/Image")]
+    public Task<IActionResult> Image(Guid id)
+        => HandleVersionedRequest(version => _memberService.GetMemberImage(version, id), MemberImageResult);
+
+    [Authorize]
     [HttpGet("{Chapter}/Members/{Id}/Avatar")]
     public Task<IActionResult> Avatar(Guid id, string chapter) 
         => HandleVersionedRequest(version => _memberService.GetMemberAvatar(version, id), MemberAvatarResult);

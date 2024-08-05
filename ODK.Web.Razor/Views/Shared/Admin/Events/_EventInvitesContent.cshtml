@@ -1,4 +1,5 @@
 ﻿@using ODK.Core.Events
+@using ODK.Core.Extensions
 @using ODK.Services
 @using ODK.Services.Events
 @using ODK.Web.Common.Extensions
@@ -17,7 +18,7 @@
 @if (invites.SentUtc != null)
 {
     <p>
-        @invites.Sent invites were sent on @Model.Chapter.ToChapterTime(invites.SentUtc.Value).ToString("dddd, MMMM d, yyyy")
+        @invites.Sent invites were sent on @TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, invites.SentUtc.Value).ToString("dddd, MMMM d, yyyy")
     </p>
     @await Html.PartialAsync("Admin/Events/_EventResponses")
     @await Html.PartialAsync("Admin/Events/_EventInviteeUpdate", new EventUpdateViewModel

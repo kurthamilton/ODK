@@ -13,7 +13,7 @@
     Model.Title = "Change email";
 
     var memberId = User.MemberId();
-    var viewModel = await AccountViewModelService.GetAccountViewModel(memberId, Model.ChapterName);
+    var viewModel = await AccountViewModelService.GetChapterAccountViewModel(memberId, Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

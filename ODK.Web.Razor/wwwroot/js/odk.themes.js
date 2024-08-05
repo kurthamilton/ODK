@@ -1,16 +1,23 @@
 ﻿(function () {
-    const root = document.querySelector('[data-theme-root]');
-    const buttonContainer = document.querySelector('[data-theme-selector-container]');
+    const root = document.querySelector('[data-theme-root]');    
 
-    const buttons = buttonContainer ? {
-        light: buttonContainer.querySelector('[data-theme-selector="light"]'),
-        dark: buttonContainer.querySelector('[data-theme-selector="dark"]')
-    } : null;
+    const getButtons = () => {
+        const buttonContainer = document.querySelector('[data-theme-selector-container]');
+        if (!buttonContainer) {
+            return;
+        }
+
+        return {
+            light: buttonContainer.querySelector('[data-theme-selector="light"]'),
+            dark: buttonContainer.querySelector('[data-theme-selector="dark"]')
+        };
+    };
 
     const setTheme = (theme) => {
         root.setAttribute('data-bs-theme', theme);
         localStorage.setItem('odk.theme', theme);
 
+        const buttons = getButtons();
         if (!buttons) {
             return;
         }
@@ -29,13 +36,13 @@
         setTheme('dark');
     }
 
-    if (buttons) {
-        buttons.dark.addEventListener('click', () => {
-            setTheme('dark');
-        });
+    document.addEventListener('click', e => {
+        const target = e.target.closest('[data-theme-selector]');
+        if (!target) {
+            return;
+        }
 
-        buttons.light.addEventListener('click', () => {
-            setTheme('light');
-        });
-    }
+        const theme = target.getAttribute('data-theme-selector');
+        setTheme(theme);
+    });    
 })();

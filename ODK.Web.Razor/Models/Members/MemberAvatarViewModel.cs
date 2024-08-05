@@ -4,11 +4,13 @@ namespace ODK.Web.Razor.Models.Members;
 
 public class MemberAvatarViewModel
 {
-    public required string ChapterName { get; init; }
+    public MemberAvatar? Avatar { get; init; }
 
-    public bool IsTop { get; set; }
+    public required string? ChapterName { get; init; }    
 
-    public int MaxWidth { get; set; }
+    public bool IsTop { get; init; }
 
-    public required Member Member { get; init; }
+    public int MaxWidth { get; init; }    
+
+    public required Member Member { get; init; }    
 }

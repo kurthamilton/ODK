@@ -1,6 +1,7 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
+using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -21,7 +22,7 @@ public class ChapterViewModelService : IChapterViewModelService
     public async Task<ChapterHomePageViewModel> GetHomePage(Guid? currentMemberId, string chapterName)
     {
         var chapter = await GetChapter(chapterName);
-        var today = chapter.TodayUtc;
+        var today = chapter.TodayUtc();
 
         var (currentMember, events, links, texts, instagramPosts, latestMembers) = await _unitOfWork.RunAsync(
             x => currentMemberId != null 

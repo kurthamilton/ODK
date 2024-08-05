@@ -1,5 +1,6 @@
 ﻿using ODK.Core;
 using ODK.Core.Events;
+using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
@@ -139,7 +140,7 @@ public class EventViewModelService : IEventViewModelService
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
         OdkAssertions.Exists(chapter);
 
-        var currentTime = chapter.CurrentTime;
+        var currentTime = chapter.CurrentTime();
         var afterUtc = currentTime.StartOfDay();
 
         var (member, events) = await _unitOfWork.RunAsync(

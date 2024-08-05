@@ -52,9 +52,10 @@
     function bindCropper (context) {
         if (context.cropper) {
             context.cropper.destroy();
+            context.cropper = null;
         }
 
-        if (!context.resize) {
+        if (!context.resize || !context.preview.getAttribute('src')) {
             return;            
         }        
         

@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Countries
+@using ODK.Core.Extensions
 @using ODK.Core.Members
 @using ODK.Services.Chapters
 @using ODK.Services.Countries
@@ -39,7 +40,7 @@
         @if (memberSubscription.ExpiresUtc != null)
         {
             <span>
-                @Model.Chapter.ToChapterTime(memberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")
+                @TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, memberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")
             </span>
         }
         else

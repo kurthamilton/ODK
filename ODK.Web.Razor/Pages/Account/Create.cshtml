@@ -2,14 +2,14 @@
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Account.CreateModel
 @{
-    Layout = "Shared/_HomeLayout";
+    Layout = "_HomeLayout";
     Model.Title = "Create account";
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Title = "Create account",
-    Content = await Html.PartialAsync("Account/_JoinContent")
+    Content = await Html.PartialAsync("Account/_SiteJoinContent")
 })
 
 @section styles

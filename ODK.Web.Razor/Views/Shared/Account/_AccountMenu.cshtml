@@ -1,0 +1,38 @@
+﻿@using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@model AccountMenuViewModel
+@{
+    
+}
+<div>
+    <a href="@OdkRoutes.Account.Subscription(Model.ChapterName)">My subscription</a>
+</div>
+<div>
+    <a href="@OdkRoutes.Account.PasswordChange(Model.ChapterName)">Change password</a>
+</div>
+<div>
+    <a href="@OdkRoutes.Account.EmailAddressChange(Model.ChapterName)">Update email address</a>
+</div>
+@if (Model.ChapterName != null)
+{
+    <div>
+        <a href="@OdkRoutes.Account.EmailPreferences(Model.ChapterName)">Email preferences</a>
+    </div>
+}
+<div>
+    <a href="@OdkRoutes.Account.Delete(Model.ChapterName)">Delete my account</a>
+</div>
+
+<div class="my-3" data-theme-selector-container>
+    <button type="button" class="d-flex align-items-center btn btn-outline-light d-none me-3"
+            data-theme-selector="light">
+        <i class="fa-solid fa-sun me-2"></i>
+        <span>Light mode</span>
+    </button>
+    <button type="button" class="d-flex align-items-center btn btn-outline-dark me-3"
+            data-theme-selector="dark">
+        <i class="fa-solid fa-moon me-2"></i>
+        <span>Dark mode</span>
+    </button>
+</div>

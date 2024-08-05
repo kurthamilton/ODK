@@ -1,0 +1,13 @@
+﻿@using ODK.Services.Users.ViewModels
+
+<div class="row">
+    <div class="col-lg-6">
+        <form method="post" action="/Account/Join" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel())
+
+            <button type="submit" class="btn btn-primary">Sign up</button>
+        </form>
+    </div>
+</div>

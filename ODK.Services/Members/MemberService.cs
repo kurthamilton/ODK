@@ -3,8 +3,8 @@ using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
+using ODK.Core.Extensions;
 using ODK.Core.Members;
-using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -84,6 +84,7 @@ public class MemberService : IMemberService
 
         var member = new Member
         {
+            CreatedUtc = DateTime.UtcNow,
             EmailAddress = model.EmailAddress,
             FirstName = model.FirstName,
             LastName = model.LastName
@@ -138,6 +139,7 @@ public class MemberService : IMemberService
         var member = new Member
         {
             Activated = false,
+            CreatedUtc = DateTime.UtcNow,
             Disabled = false,
             EmailAddress = model.EmailAddress,
             EmailOptIn = model.EmailOptIn ?? false,
@@ -344,7 +346,7 @@ public class MemberService : IMemberService
         {
             { "chapter.name", chapter.Name },
             { "subscription.amount", $"{country.CurrencySymbol}{chapterSubscription.Amount:0.00}" },
-            { "subscription.end", chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy") }
+            { "subscription.end", chapter.ToLocalTime(expiresUtc).ToString("d MMMM yyyy") }
         });
 
         return ServiceResult.Successful();
@@ -514,7 +516,7 @@ public class MemberService : IMemberService
         return ServiceResult.Successful("Picture updated");
     }
 
-    public async Task<ServiceResult> UpdateMemberProfile(Guid id, Guid chapterId, UpdateMemberProfile model)
+    public async Task<ServiceResult> UpdateMemberChapterProfile(Guid id, Guid chapterId, UpdateMemberChapterProfile model)
     {
         var (chapterProperties, member, memberProperties) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
@@ -575,6 +577,19 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
     
+    public async Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model)
+    {
+        var member = await _unitOfWork.MemberRepository.GetById(id).RunAsync();
+
+        member.FirstName = model.FirstName.Trim();
+        member.LastName = model.LastName.Trim();
+
+        _unitOfWork.MemberRepository.Update(member);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     private static IEnumerable<string> GetMissingMemberProfileProperties(CreateMemberProfile profile, IEnumerable<ChapterProperty> chapterProperties,
         IEnumerable<UpdateMemberProperty> memberProperties)
     {
@@ -583,13 +598,13 @@ public class MemberService : IMemberService
             yield return "Email address";
         }
 
-        foreach (string property in GetMissingMemberProfileProperties(profile as UpdateMemberProfile, chapterProperties, memberProperties))
+        foreach (string property in GetMissingMemberProfileProperties(profile as UpdateMemberChapterProfile, chapterProperties, memberProperties))
         {
             yield return property;
         }
     }
 
-    private static IEnumerable<string> GetMissingMemberProfileProperties(UpdateMemberProfile profile, IEnumerable<ChapterProperty> chapterProperties,
+    private static IEnumerable<string> GetMissingMemberProfileProperties(UpdateMemberChapterProfile profile, IEnumerable<ChapterProperty> chapterProperties,
         IEnumerable<UpdateMemberProperty> memberProperties)
     {
         if (string.IsNullOrWhiteSpace(profile.FirstName))
@@ -614,7 +629,7 @@ public class MemberService : IMemberService
         }
     }        
     
-    private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, UpdateMemberProfile profile)
+    private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, UpdateMemberChapterProfile profile)
     {
         IReadOnlyCollection<string> missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
 

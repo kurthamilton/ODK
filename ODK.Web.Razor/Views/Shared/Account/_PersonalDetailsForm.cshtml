@@ -1,0 +1,55 @@
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Platforms
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Extensions
+@model PersonalDetailsFormViewModel
+@inject IPlatformProvider PlatformProvider
+@{
+    var memberId = User.MemberIdOrDefault();
+    var platform = PlatformProvider.GetPlatform();
+}
+
+<div class="form-group mb-3 @(memberId == null ? "required" : null)">
+    @Html.LabelFor(x => x.EmailAddress, new { @class = "form-label" })
+
+    @if (memberId != null)
+    {
+        <div class="form-control-plaintext">
+            @Model.EmailAddress
+        </div>
+    }
+    else
+    {
+        <span class="ms-1 text-muted">You will need access to this email to verify your account</span>
+        @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control", type = "Email" })
+        @Html.ValidationMessageFor(x => x.EmailAddress)
+    }
+</div>
+
+@if (memberId == null && platform == PlatformType.DrunkenKnitwits)
+{
+    <div class="mb-3 form-check">
+        @Html.CheckBoxFor(x => x.EmailOptIn, new { @class = "form-check-input" })
+        @Html.LabelFor(x => x.EmailOptIn, new { @class = "form-check-label" })
+
+        <span>
+            @await Html.PartialAsync("Components/_Tooltip", "We recommend you leave this on. Once you're set up, we'll only send you one email per event.")
+        </span>
+
+        <span class="ms-1 text-muted">Opt in to emails informing you of upcoming events</span>
+    </div>
+}
+
+<div class="row">
+    <div class="form-group mb-3 required col-md-6">
+        @Html.LabelFor(x => x.FirstName, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.FirstName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.FirstName)
+    </div>
+
+    <div class="form-group mb-3 required col-md-6">
+        @Html.LabelFor(x => x.LastName, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.LastName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.LastName)
+    </div>
+</div>
