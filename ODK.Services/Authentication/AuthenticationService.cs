@@ -5,9 +5,10 @@ using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
 using ODK.Core.Members;
-using ODK.Core.Utils;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
+using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 
@@ -16,15 +17,21 @@ namespace ODK.Services.Authentication;
 public class AuthenticationService : IAuthenticationService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IEmailService _emailService;
+    private readonly IChapterUrlService _chapterUrlService;
+    private readonly IEmailService _emailService;    
     private readonly AuthenticationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
-    public AuthenticationService(IEmailService emailService, AuthenticationServiceSettings settings,
-        IAuthorizationService authorizationService, IUnitOfWork unitOfWork)
+    public AuthenticationService(
+        IEmailService emailService, 
+        AuthenticationServiceSettings settings,
+        IAuthorizationService authorizationService, 
+        IUnitOfWork unitOfWork,
+        IChapterUrlService chapterUrlService)
     {
         _authorizationService = authorizationService;
-        _emailService = emailService;
+        _chapterUrlService = chapterUrlService;
+        _emailService = emailService;        
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
@@ -40,7 +47,9 @@ public class AuthenticationService : IAuthenticationService
         }
 
         var (chapter, member, memberPassword) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(token.ChapterId),
+            x => token.ChapterId != null 
+                ? x.ChapterRepository.GetByIdOrDefault(token.ChapterId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Chapter>(),
             x => x.MemberRepository.GetById(token.MemberId),
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
 
@@ -157,9 +166,8 @@ public class AuthenticationService : IAuthenticationService
 
         await _unitOfWork.SaveChangesAsync();
 
-        string url = _settings.PasswordResetUrl.Interpolate(new Dictionary<string, string>
+        string url = _chapterUrlService.GetChapterUrl(chapter, _settings.PasswordResetUrlPath, new Dictionary<string, string>
         {
-            { "chapter.name", chapter.Name },
             { "token", HttpUtility.UrlEncode(token) }
         });
 
@@ -237,23 +245,28 @@ public class AuthenticationService : IAuthenticationService
         return memberPassword.Hash == passwordHash;
     }
 
-    private async Task SendNewMemberEmailsAsync(Chapter chapter, Member member)
+    private async Task SendNewMemberEmailsAsync(Chapter? chapter, Member member)
     {
-        var (chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
-            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
-            x => x.MemberPropertyRepository.GetByMemberId(member.Id, chapter.Id));
-        
-        string eventsUrl = _settings.EventsUrl.Interpolate(new Dictionary<string, string>
+        var eventsUrl = chapter != null ? _chapterUrlService.GetChapterUrl(chapter, _settings.EventsUrlPath, new Dictionary<string, string>
         {
             { "chapter.name", chapter.Name }
-        });
+        }) : "";
 
         await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.NewMember, new Dictionary<string, string>
         {
-            { "chapter.name", chapter.Name },
+            { "chapter.name", chapter?.Name ?? "" },
             { "eventsUrl", eventsUrl },
             { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) }
         });
+
+        if (chapter == null)
+        {
+            return;
+        }
+
+        var (chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+            x => x.MemberPropertyRepository.GetByMemberId(member.Id, chapter.Id));
 
         var newMemberAdminEmailParameters = new Dictionary<string, string>
         {

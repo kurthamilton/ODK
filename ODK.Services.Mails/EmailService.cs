@@ -3,6 +3,7 @@ using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 
 namespace ODK.Services.Emails;
 
@@ -89,12 +90,14 @@ public class EmailService : IEmailService
         await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, bcc: true);
     }
 
-    public async Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, EmailType type, 
+    public async Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, EmailType type, 
         IDictionary<string, string> parameters)
     {
         var (email, chapterEmail) = await _unitOfWork.RunAsync(
             x => x.EmailRepository.GetByType(type),
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
+            x => chapter != null 
+                ? x.ChapterEmailRepository.GetByChapterId(chapter.Id, type)
+                : new DefaultDeferredQuerySingleOrDefault<ChapterEmail>());
 
         email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
 

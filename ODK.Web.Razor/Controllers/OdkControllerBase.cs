@@ -10,11 +10,14 @@ public abstract class OdkControllerBase : Controller
 {
     protected Guid MemberId => User.MemberIdOrDefault() ?? throw new InvalidOperationException();
 
+    protected void AddFeedback(string message, FeedbackType type)
+        => AddFeedback(new FeedbackViewModel(message, type));
+
     protected void AddFeedback(FeedbackViewModel viewModel)
     {
         TempData!.AddFeedback(viewModel);
     }
-    
+
     protected IActionResult DownloadCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data, string fileName)
     {
         var csv = StringUtils.ToCsv(data);        

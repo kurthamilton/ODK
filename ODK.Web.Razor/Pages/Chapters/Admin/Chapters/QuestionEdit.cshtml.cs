@@ -22,16 +22,20 @@ public class QuestionEditModel : AdminPageModel
 
     public async Task<IActionResult> OnGet(Guid id)
     {
-        var serviceRequest = GetAdminServiceRequest();
+        var serviceRequest = await GetAdminServiceRequest();
         Question = await _chapterAdminService.GetChapterQuestion(serviceRequest, id);
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(Guid id, ChapterQuestionFormViewModel viewModel)
     {
-        var serviceRequest = GetAdminServiceRequest();
+        var serviceRequest = await GetAdminServiceRequest();
         var result = await _chapterAdminService.UpdateChapterQuestion(serviceRequest, id,
-            new CreateChapterQuestion(viewModel.Answer, viewModel.Question));
+            new CreateChapterQuestion
+            {
+                Answer = viewModel.Answer ?? "",
+                Name = viewModel.Question ?? ""
+            });
 
         if (!result.Success)
         {

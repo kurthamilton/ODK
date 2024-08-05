@@ -37,6 +37,44 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
+    [HttpPost("Account/Join")]
+    public async Task<IActionResult> Join([FromForm] ProfileFormSubmitViewModel viewModel)
+    {
+        var model = new CreateAccountModel
+        {
+            EmailAddress = viewModel.EmailAddress,            
+            FirstName = viewModel.FirstName,            
+            LastName = viewModel.LastName            
+        };
+
+        var result = await _memberService.CreateAccount(model);
+        PostJoin(result);
+        return Redirect($"/Account/Pending");
+    }
+
+    [AllowAnonymous]
+    [HttpPost("Account/Login")]
+    public async Task<IActionResult> Login([FromForm] LoginViewModel viewModel, string? returnUrl)
+    {
+        var result = await _loginHandler.Login(HttpContext, viewModel.Email ?? "",
+            viewModel.Password ?? "", true);
+
+        if (result.Success && result.Member != null)
+        {
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect("/");
+            }
+
+            return Redirect(returnUrl);
+        }
+
+        AddFeedback(new FeedbackViewModel("Username or password incorrect", FeedbackType.Error));
+
+        return RedirectToReferrer();
+    }
+
+    [AllowAnonymous]
     [HttpPost("{chapterName}/Account/Login")]
     public async Task<IActionResult> Login(string chapterName, [FromForm] LoginViewModel viewModel, string? returnUrl)
     {
@@ -120,7 +158,7 @@ public class AccountController : OdkControllerBase
     }
 
     [HttpPost("{ChapterName}/Account/Profile")]
-    public async Task<IActionResult> UpdateProfile(string chapterName, [FromForm] ProfileFormSubmitViewModel viewModel)
+    public async Task<IActionResult> UpdateProfile(string chapterName, [FromForm] ChapterProfileFormSubmitViewModel viewModel)
     {
         var chapter = await _requestCache.GetChapterAsync(chapterName);
         var model = new UpdateMemberProfile
@@ -161,7 +199,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("{chapterName}/Account/Join")]
     public async Task<IActionResult> Join(
         string chapterName, 
-        [FromForm] ProfileFormSubmitViewModel viewModel, 
+        [FromForm] ChapterProfileFormSubmitViewModel viewModel, 
         [FromForm] MemberImageCropInfo cropInfo, 
         [FromForm] IFormFile image)
     {
@@ -192,18 +230,7 @@ public class AccountController : OdkControllerBase
         };
 
         var result = await _memberService.CreateMember(chapter.Id, model);
-
-        if (result.Success)
-        {
-            string message = "Thank you for signing up. " +
-                             "An email has been sent to your email address containing a link to activate your account.";
-            AddFeedback(new FeedbackViewModel(message, FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        PostJoin(result);
         return Redirect($"/{chapterName}/Account/Pending");
     }
 
@@ -272,5 +299,19 @@ public class AccountController : OdkControllerBase
             : new FeedbackViewModel(result));
 
         return RedirectToReferrer();
+    }
+
+    private void PostJoin(ServiceResult result)
+    {
+        if (result.Success)
+        {
+            string message = "Thank you for signing up. " +
+                             "An email has been sent to your email address containing a link to activate your account.";
+            AddFeedback(message, FeedbackType.Success);
+        }
+        else
+        {
+            AddFeedback(new FeedbackViewModel(result));
+        }
     }
 }

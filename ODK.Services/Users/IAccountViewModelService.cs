@@ -8,5 +8,5 @@ public interface IAccountViewModelService
 
     Task<AccountViewModel> GetAccountViewModel(Guid currentMemberId, string chapterName);
 
-    Task<JoinPageViewModel> GetJoinPage(string chapterName);
+    Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName);
 }

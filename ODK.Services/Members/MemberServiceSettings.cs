@@ -2,7 +2,7 @@
 
 public record MemberServiceSettings
 {
-    public required string ActivateAccountUrl { get; init; }
+    public required string ActivateAccountUrlPath { get; init; }
 
-    public required string ConfirmEmailAddressUpdateUrl { get; init; }    
+    public required string ConfirmEmailAddressUpdateUrlPath { get; init; }    
 }

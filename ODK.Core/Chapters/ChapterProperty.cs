@@ -8,6 +8,8 @@ public class ChapterProperty : IDatabaseEntity, IChapterEntity
 
     public DataType DataType { get; set; }
 
+    public string? DisplayName { get; set; }
+
     public int DisplayOrder { get; set; }
 
     public string? HelpText { get; set; }

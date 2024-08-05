@@ -6,5 +6,6 @@ public enum DataType
     Text = 1,
     LongText = 2,
     DropDown = 3,
-    Url = 4
+    Url = 4,
+    Checkbox = 5
 }

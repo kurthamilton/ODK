@@ -6,8 +6,22 @@
 @{
     var memberId = User.MemberIdOrDefault();
     var imageSrc = memberId != null
-        ? $"/{Model.ChapterName}/Members/{memberId}/Image"
+        ? $"{(Model.ChapterName != null ? $"/{Model.ChapterName}" : null)}/Members/{memberId}/Image"
         : null;
+
+    var htmlAttributes = new Dictionary<string, object>
+    {
+        { "type", "file" },
+        { "accept", "image/*" },
+        { "class", "form-control" },
+        { "data-img-input", "" }        
+    };
+
+    if (memberId == null)
+    {
+        htmlAttributes.Add("data-val", "true");
+        htmlAttributes.Add("data-val-required", "A picture is required");
+    }
 }
 
 <div data-img-container>
@@ -16,9 +30,10 @@
     @Html.HiddenFor(x => x.CropX, new { data_img_crop_x = "" })
     @Html.HiddenFor(x => x.CropY, new { data_img_crop_y = "" })
     
-    <input type="file" name="image" accept="image/*" class="form-control" data-img-input />
+    @Html.TextBoxFor(x => x.Image, htmlAttributes)
+    @Html.ValidationMessageFor(x => x.Image)
 
-    <div class="mt-3">
+    <div class="mt-3 d-none" data-img-preview-container>
         <img src="@imageSrc" data-img-preview data-img-resize />
     </div>            
 </div>

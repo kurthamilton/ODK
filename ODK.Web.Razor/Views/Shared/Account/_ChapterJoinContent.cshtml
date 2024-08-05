@@ -1,0 +1,19 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Chapters
+@using ODK.Services.Users.ViewModels
+@model ChapterJoinPageViewModel
+
+@if (!string.IsNullOrEmpty(Model.Texts?.RegisterText))
+{
+    <p>
+        @Html.Raw(Model.Texts.RegisterText)
+    </p>
+}
+
+<form method="post" action="/@Model.ChapterName/Account/Join" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    
+    @await Html.PartialAsync("Account/_ChapterProfileForm", Model.Profile)
+    
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

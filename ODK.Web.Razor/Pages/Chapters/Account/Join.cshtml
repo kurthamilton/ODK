@@ -9,7 +9,7 @@
     Layout = "_ChapterLayout";
     Model.Title = "Join";
 
-    var viewModel = await AccountViewModelService.GetJoinPage(Model.ChapterName);
+    var viewModel = await AccountViewModelService.GetChapterJoinPage(Model.ChapterName);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -20,7 +20,7 @@
         new MenuItem { Link = $"/{viewModel.ChapterName}", Text = viewModel.ChapterName },
         new MenuItem { Text = "Join" }
     },
-    Content = await Html.PartialAsync("Account/_JoinContent", viewModel)
+    Content = await Html.PartialAsync("Account/_ChapterJoinContent", viewModel)
 })
 
 @section styles

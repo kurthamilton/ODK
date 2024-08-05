@@ -1,12 +1,21 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Members
+@using ODK.Core.Platforms
 @using ODK.Core.Utils
 @using ODK.Services.Caching
+@using ODK.Services.Platforms
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Header
+@inject IPlatformProvider PlatformProvider
 @inject IRequestCache RequestCache
 @{
+    var platform = PlatformProvider.GetPlatform();
+    if (platform != PlatformType.DrunkenKnitwits)
+    {
+        return;
+    }
+
     var memberId = User.MemberIdOrDefault();
     var member = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
 

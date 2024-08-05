@@ -104,14 +104,16 @@ $navbar-dark-separator: rgba(255, 255, 255, .5);
 }
 
 .account-links {
-    right: 0;
-    position: absolute;
-    padding: 1rem;
     cursor: pointer;
 
-    .dropdown-menu {
-        min-width: inherit;
-        text-align: right;
+    &.account-links--right {
+        right: 0;
+        position: absolute;
+        padding: 1rem;
+
+        .dropdown-menu {
+            min-width: inherit;
+        }
     }
 }
 

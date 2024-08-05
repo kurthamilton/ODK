@@ -22,7 +22,7 @@ public class SubscriptionsModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(MembershipSettingsFormViewModel viewModel)
     {
-        var serviceRequest = GetAdminServiceRequest();
+        var serviceRequest = await GetAdminServiceRequest();
         var result = await _chapterAdminService.UpdateChapterMembershipSettings(serviceRequest, 
             new UpdateChapterMembershipSettings
             {

@@ -4,7 +4,7 @@ public class MemberActivationToken
 {
     public string ActivationToken { get; set; } = "";
 
-    public Guid ChapterId { get; set; }
+    public Guid? ChapterId { get; set; }
 
     public Guid MemberId { get; set; }
 }

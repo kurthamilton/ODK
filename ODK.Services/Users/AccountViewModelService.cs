@@ -68,7 +68,7 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
-    public async Task<JoinPageViewModel> GetJoinPage(string chapterName)
+    public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
         OdkAssertions.Exists(chapter);
@@ -86,7 +86,7 @@ public class AccountViewModelService : IAccountViewModelService
                 x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
                 x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
 
-        return new JoinPageViewModel
+        return new ChapterJoinPageViewModel
         {
             ChapterName = chapter.Name,
             Texts = chapterTexts,
@@ -94,7 +94,7 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
-    private ProfileFormViewModel CreateProfileFormViewModel(
+    private ChapterProfileFormViewModel CreateProfileFormViewModel(
         Chapter chapter, 
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<ChapterPropertyOption> chapterPropertyOptions,
@@ -105,7 +105,7 @@ public class AccountViewModelService : IAccountViewModelService
     {
         var memberPropertyDictionary = memberProperties.ToDictionary(x => x.ChapterPropertyId);
 
-        return new ProfileFormViewModel
+        return new ChapterProfileFormViewModel
         {
             ChapterName = chapter.Name,
             ChapterProperties = chapterProperties,
@@ -116,7 +116,7 @@ public class AccountViewModelService : IAccountViewModelService
             EmailOptIn = member?.EmailOptIn ?? true,
             FirstName = member?.FirstName ?? "",
             LastName = member?.LastName ?? "",
-            Properties = chapterProperties.Select(x => new ProfileFormPropertyViewModel
+            Properties = chapterProperties.Select(x => new ChapterProfileFormPropertyViewModel
             {
                 ChapterPropertyId = x.Id,
                 Value = memberPropertyDictionary.TryGetValue(x.Id, out var memberProperty) ? memberProperty.Value : ""

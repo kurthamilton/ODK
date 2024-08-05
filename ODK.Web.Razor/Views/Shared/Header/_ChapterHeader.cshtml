@@ -1,7 +1,9 @@
-﻿@using ODK.Web.Common.Components
+﻿@using ODK.Services.Platforms
+@using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Header
 @model ChapterHeaderViewModel
-@{
+@inject IPlatformProvider PlatformProvider
+@{    
     var isMember = Model.Member?.IsMemberOf(Model.Chapter.Id) == true;
 
     List<MenuItem> menuItems = new();

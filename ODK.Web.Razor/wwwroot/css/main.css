@@ -1,11 +1,4 @@
 ﻿@charset "UTF-8";
-/* josefin-sans-300 - latin */
-@font-face {
-  font-family: "Josefin Sans";
-  font-style: normal;
-  font-weight: 300;
-  src: local("Josefin Sans Light"), local("JosefinSans-Light"), url("../fonts/josefin-sans-v14-latin-300.woff2") format("woff2"), url("../fonts/josefin-sans-v14-latin-300.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-}
 /*!
  * Bootstrap  v5.3.3 (https://getbootstrap.com/)
  * Copyright 2011-2024 The Bootstrap Authors
@@ -81,7 +74,7 @@
   --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
-  --bs-body-font-family: "Josefin Sans", var(--bs-font-sans-serif);
+  --bs-body-font-family: var(--bs-font-sans-serif);
   --bs-body-font-size: 1rem;
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
@@ -5646,7 +5639,7 @@ textarea.form-control-lg {
   z-index: var(--bs-tooltip-zindex);
   display: block;
   margin: var(--bs-tooltip-margin);
-  font-family: "Josefin Sans", var(--bs-font-sans-serif);
+  font-family: var(--bs-font-sans-serif);
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -5756,7 +5749,7 @@ textarea.form-control-lg {
   z-index: var(--bs-popover-zindex);
   display: block;
   max-width: var(--bs-popover-max-width);
-  font-family: "Josefin Sans", var(--bs-font-sans-serif);
+  font-family: var(--bs-font-sans-serif);
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -11883,15 +11876,19 @@ textarea.form-control-lg {
   --odk-bg-light: #403f3f;
 }
 
-@media (min-width: 992px) {
-  html {
-    font-size: 21px;
-  }
+html[data-platform=odk] {
+  --odk-body-font-size-lg: 21px;
 }
+
 .loading {
   opacity: 0.5;
 }
 
+@media (min-width: 992px) {
+  html {
+    font-size: var(--odk-body-font-size-lg);
+  }
+}
 .flip-horizontal {
   transform: scaleX(-1);
 }
@@ -11901,12 +11898,23 @@ textarea.form-control-lg {
   background-color: rgba(0, 0, 0, 0.03);
 }
 
+html[data-platform=odk] {
+  --odk-breadcrumbs-padding-top: 0.75rem;
+}
+
+:root {
+  --odk-breadcrumbs-padding-top: 0.5rem;
+  --odk-breadcrumbs-padding-bottom: 0.5rem;
+  --odk-breadcrumbs-padding-left: 1rem;
+  --odk-breadcrumbs-padding-right: 1rem;
+}
+
 .breadcrumb {
   background-color: var(--odk-bg-light);
-  padding-top: 0.75rem;
-  padding-bottom: 0.5rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-top: var(--odk-breadcrumbs-padding-top);
+  padding-bottom: var(--odk-breadcrumbs-padding-bottom);
+  padding-left: var(--odk-breadcrumbs-padding-left);
+  padding-right: var(--odk-breadcrumbs-padding-right);
 }
 
 .btn-icon {
@@ -11975,6 +11983,10 @@ textarea.form-control-lg {
   background-color: var(--odk-datepicker-bg-hover) !important;
 }
 
+.dropdown-menu-end {
+  text-align: right;
+}
+
 img {
   max-width: 100%;
 }
@@ -11987,6 +11999,10 @@ footer {
   background-color: var(--odk-bg-light);
 }
 
+html[data-platform=odk] {
+  --odk-forms-labels-font-weight: 700;
+}
+
 .form-inline .form-group {
   margin-right: 1rem;
 }
@@ -11995,7 +12011,7 @@ footer {
 }
 
 .form-label {
-  font-weight: 700;
+  font-weight: var(--odk-forms-labels-font-weight);
 }
 
 .form-group.required .form-label:after {
@@ -12127,14 +12143,15 @@ footer {
 }
 
 .account-links {
+  cursor: pointer;
+}
+.account-links.account-links--right {
   right: 0;
   position: absolute;
   padding: 1rem;
-  cursor: pointer;
 }
-.account-links .dropdown-menu {
+.account-links.account-links--right .dropdown-menu {
   min-width: inherit;
-  text-align: right;
 }
 
 .account-links__user {

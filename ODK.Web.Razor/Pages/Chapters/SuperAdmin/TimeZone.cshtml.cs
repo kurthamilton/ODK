@@ -18,7 +18,7 @@ namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin
 
         public async Task<IActionResult> OnPostAsync(TimeZoneFormViewModel viewModel)
         {
-            var serviceRequest = GetAdminServiceRequest();
+            var serviceRequest = await GetAdminServiceRequest();
             var result = await _chapterAdminService.UpdateChapterTimeZone(serviceRequest, viewModel.TimeZone);
             if (result.Success)
             {

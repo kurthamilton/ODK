@@ -27,7 +27,7 @@ public abstract class MemberAdminPageModel : AdminPageModel
             throw new OdkNotFoundException();
         }
 
-        var request = GetAdminServiceRequest();
+        var request = await GetAdminServiceRequest();
         Member = await MemberAdminService.GetMember(request, id);        
     }
 }

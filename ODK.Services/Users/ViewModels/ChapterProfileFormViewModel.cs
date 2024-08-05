@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Users.ViewModels;
 
-public class ProfileFormViewModel : ProfileFormSubmitViewModel
+public class ChapterProfileFormViewModel : ChapterProfileFormSubmitViewModel
 {
     public required string ChapterName { get; init; }
 

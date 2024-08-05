@@ -95,7 +95,7 @@
 <form method="post">
     @Html.AntiForgeryToken()
 
-    @await Html.PartialAsync("Account/_ProfileForm", Model.Profile)
+    @await Html.PartialAsync("Account/_ChapterProfileForm", Model.Profile)
 
     <div class="form-group mb-3">
         <label class="form-label">Date joined</label>

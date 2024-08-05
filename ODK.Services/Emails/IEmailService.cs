@@ -27,7 +27,7 @@ public interface IEmailService
     Task SendEventCommentEmail(Chapter chapter, Member? replyToMember, EventComment comment,
         IDictionary<string, string> parameters);
 
-    Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, EmailType type, 
+    Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, EmailType type, 
         IDictionary<string, string> parameters);
 
     Task<ServiceResult> SendMemberEmail(Chapter chapter, ChapterAdminMember fromAdminMember, Member to, string subject, string body);

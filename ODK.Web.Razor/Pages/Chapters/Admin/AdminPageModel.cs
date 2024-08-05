@@ -22,8 +22,16 @@ public abstract class AdminPageModel : ChapterPageModel2
 
     public Member CurrentMember { get; private set; } = null!;    
 
-    protected AdminServiceRequest GetAdminServiceRequest() 
-        => new AdminServiceRequest(Chapter.Id, CurrentMemberId);
+    protected async Task<AdminServiceRequest> GetAdminServiceRequest()
+    {
+        var chapter = Chapter;
+        if (chapter == null)
+        {
+            Chapter = await _requestCache.GetChapterAsync(ChapterName);
+        }
+
+        return new AdminServiceRequest(Chapter.Id, CurrentMemberId);
+    }
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, 
         PageHandlerExecutionDelegate next)

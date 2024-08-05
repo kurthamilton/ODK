@@ -1,15 +1,17 @@
+@import "odk/_forms";
+
 .form-inline {
   .form-group {
     margin-right: 1rem;
   }
   
   .form-label {
-    margin-right: 0.5rem;
+    margin-right: 0.5rem;	
   }
 }
 
 .form-label {
-	font-weight: 700;
+	font-weight: var(--odk-forms-labels-font-weight);
 }
 
 .form-group.required {

@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Users.ViewModels;
 
-public class ProfileFormPropertyViewModel
+public class ChapterProfileFormPropertyViewModel
 {
     public Guid ChapterPropertyId { get; set; }
 

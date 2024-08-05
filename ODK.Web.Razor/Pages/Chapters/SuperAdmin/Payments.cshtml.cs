@@ -18,7 +18,7 @@ public class PaymentSettingsModel : SuperAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(PaymentSettingsFormViewModel viewModel)
     {
-        var serviceRequest = GetAdminServiceRequest();
+        var serviceRequest = await GetAdminServiceRequest();
         var result = await _chapterAdminService.UpdateChapterPaymentSettings(serviceRequest, 
             new UpdateChapterPaymentSettings
             {

@@ -1,6 +1,22 @@
-﻿@using ODK.Web.Razor.Models.Footer
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Platforms
+@using ODK.Web.Razor.Models.Footer
+@inject IPlatformProvider PlatformProvider
+@{
+    var platform = PlatformProvider.GetPlatform();
+}
 
-@await Html.PartialAsync("Footer/_Footer", new FooterViewModel
+@if (platform == PlatformType.DrunkenKnitwits)
 {
-    Chapter = null
-})
+    @await Html.PartialAsync("Footer/_OdkFooter", new FooterViewModel
+    {
+        Chapter = null
+    })
+}
+else
+{
+    @await Html.PartialAsync("Footer/_Footer", new FooterViewModel
+    {
+        Chapter = null
+    })
+}

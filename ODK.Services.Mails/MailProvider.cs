@@ -4,9 +4,9 @@ using MimeKit;
 using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
-using ODK.Core.Members;
 using ODK.Core.Settings;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Emails.Extensions;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
@@ -83,11 +83,11 @@ public class MailProvider : IMailProvider
         }
     }
 
-    public Task<ServiceResult> SendEmail(Chapter chapter, EmailAddressee to, string subject, string body)    
+    public Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, string subject, string body)    
         => SendEmail(chapter, to, subject, body, null);
 
     public async Task<ServiceResult> SendEmail(
-        Chapter chapter, 
+        Chapter? chapter, 
         EmailAddressee to, 
         string subject, 
         string body, 
@@ -95,11 +95,16 @@ public class MailProvider : IMailProvider
     {
         var (email, chapterEmail, providers, siteSettings, chapterSettings, summary) = await _unitOfWork.RunAsync(
             x => x.EmailRepository.GetByType(EmailType.Layout),
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.Layout),
+            x => chapter != null 
+                ? x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.Layout) 
+                : new DefaultDeferredQuerySingleOrDefault<ChapterEmail>(),
             x => x.EmailProviderRepository.GetAll(),
             x => x.SiteSettingsRepository.Get(),
-            x => x.ChapterEmailSettingsRepository.GetByChapterId(chapter.Id),
+            x => chapter != null 
+                ? x.ChapterEmailSettingsRepository.GetByChapterId(chapter.Id)
+                : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>(),
             x => x.EmailProviderRepository.GetEmailsSentToday());
+        
         body = GetLayoutBody(chapterEmail?.ToEmail() ?? email, chapter, body);
         
         var (provider, _) = GetProvider(providers, summary);
@@ -133,7 +138,9 @@ public class MailProvider : IMailProvider
         message.To.Add(to);
     }
 
-    private void AddEmailFrom(MimeMessage message, EmailProvider provider, 
+    private void AddEmailFrom(
+        MimeMessage message, 
+        EmailProvider provider, 
         SiteSettings siteSettings,
         ChapterEmailSettings? chapterSettings,
         ChapterAdminMember? fromAdminMember)
@@ -157,7 +164,7 @@ public class MailProvider : IMailProvider
     private MimeMessage CreateMessage(
         EmailProvider provider, 
         SiteSettings siteSettings,
-        ChapterEmailSettings chapterSettings,
+        ChapterEmailSettings? chapterSettings,
         ChapterAdminMember? fromAdminMember, 
         string subject, 
         string body)
@@ -176,11 +183,11 @@ public class MailProvider : IMailProvider
         return message;
     }
 
-    private string GetLayoutBody(Email email, Chapter chapter, string body)
+    private string GetLayoutBody(Email email, Chapter? chapter, string body)
     {
         var layout = email.Interpolate(new Dictionary<string, string>
         {
-            { "chapter.name", chapter.Name },
+            { "chapter.name", chapter?.Name ?? "" },
             { "body", body }
         });
 

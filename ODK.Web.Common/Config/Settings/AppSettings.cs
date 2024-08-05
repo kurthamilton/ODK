@@ -1,37 +1,24 @@
-﻿using Microsoft.Extensions.Configuration;
-
-namespace ODK.Web.Common.Config.Settings;
+﻿namespace ODK.Web.Common.Config.Settings;
 
 public class AppSettings
 {
-    public AppSettings(IConfigurationSection configuration)
-    {
-        Auth = configuration.Map<AuthSettings>("Auth");
-        Emails = configuration.Map<EmailsSettings>("Emails");
-        Errors = configuration.Map<ErrorsSettings>("Errors");
-        Members = configuration.Map<MembersSettings>("Members");
-        Paths = configuration.Map<PathSettings>("Paths");
-        Payments = configuration.Map<PaymentsSettings>("Payments");
-        Recaptcha = configuration.Map<RecaptchaSettings>("Recaptcha");
-        ScheduledTasks = configuration.Map<ScheduledTasksSettings>("ScheduledTasks");
-        Urls = configuration.Map<UrlSettings>("Urls");
-    }
-
-    public AuthSettings Auth { get; }
+    public required AuthSettings Auth { get; set; }
     
-    public EmailsSettings Emails { get; }
+    public required EmailsSettings Emails { get; set; }
 
-    public ErrorsSettings Errors { get; }
+    public required ErrorsSettings Errors { get; set; }
 
-    public MembersSettings Members { get; }
+    public required MembersSettings Members { get; set; }
 
-    public PathSettings Paths { get; }
+    public required PathSettings Paths { get; set; }
 
-    public PaymentsSettings Payments { get; }
+    public required PaymentsSettings Payments { get; set; }
 
-    public RecaptchaSettings Recaptcha { get; }
+    public required PlatformSettings[] Platforms { get; set; }
 
-    public ScheduledTasksSettings ScheduledTasks { get; }
+    public required RecaptchaSettings Recaptcha { get; set; }
 
-    public UrlSettings Urls { get; }
+    public required ScheduledTasksSettings ScheduledTasks { get; set; }
+
+    public required UrlSettings Urls { get; set; }
 }

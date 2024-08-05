@@ -2,6 +2,8 @@
 
 public class UpdateChapterProperty
 {
+    public string? DisplayName { get; set; }
+
     public string? HelpText { get; set; }
 
     public bool Hidden { get; set; }

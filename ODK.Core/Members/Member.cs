@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Emails;
-using ODK.Core.Exceptions;
 using ODK.Core.Utils;
 
 namespace ODK.Core.Members;

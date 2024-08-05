@@ -22,7 +22,7 @@ public class LinksModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(ChapterLinksFormViewModel viewModel)
     {
-        var serviceRequest = GetAdminServiceRequest();
+        var serviceRequest = await GetAdminServiceRequest();
         await _chapterAdminService.UpdateChapterLinks(serviceRequest, new UpdateChapterLinks
         {
             Facebook = viewModel.Facebook,

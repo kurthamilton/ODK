@@ -1,0 +1,22 @@
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Platforms
+@inject IPlatformProvider PlatformProvider
+@{
+    var platform = PlatformProvider.GetPlatform();
+    if (platform != PlatformType.Default)
+    {
+        return;
+    }
+}
+
+<nav class="navbar navbar-dark bg-dark text-light">
+    <div class="container d-flex">
+        <div class="me-auto">
+            SITE HEADER
+        </div>
+
+        <div>
+            @await Html.PartialAsync("Header/_SiteAccountMenu")
+        </div>
+    </div>
+</nav>

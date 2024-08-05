@@ -29,6 +29,13 @@
     @Html.ValidationMessageFor(x => x.Label)
 </div>
 
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.DisplayName, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_Tooltip", "How the property is referred to in the validation message")
+    @Html.TextBoxFor(x => x.DisplayName, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.DisplayName)
+</div>
+
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.DataType, new { @class = "form-label" })
     @Html.DropDownListFor(x => x.DataType, dataTypeOptions, new { @class = "form-control" })

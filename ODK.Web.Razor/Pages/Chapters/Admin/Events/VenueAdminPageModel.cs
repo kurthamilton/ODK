@@ -23,7 +23,7 @@ public abstract class VenueAdminPageModel : AdminPageModel
 
         Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id);
 
-        var request = GetAdminServiceRequest();
+        var request = await GetAdminServiceRequest();
         Venue = await VenueAdminService.GetVenue(request, id);
         if (Venue == null)
         {

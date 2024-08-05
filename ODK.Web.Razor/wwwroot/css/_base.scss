@@ -1,10 +1,9 @@
-@include media-breakpoint-up(lg) {
-    html {
-        font-size: 21px;
-    }
-}
-
 .loading {
     opacity: 0.5;
 }
-  
+
+@include media-breakpoint-up(lg) {
+    html {
+        font-size: var(--odk-body-font-size-lg);
+    }
+}

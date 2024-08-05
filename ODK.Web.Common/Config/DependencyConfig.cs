@@ -1,7 +1,10 @@
 ﻿using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using ODK.Core.Platforms;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.EntityFramework;
 using ODK.Services.Authentication;
@@ -21,6 +24,7 @@ using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Payments.PayPal;
 using ODK.Services.Payments.Stripe;
+using ODK.Services.Platforms;
 using ODK.Services.Recaptcha;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
@@ -28,6 +32,8 @@ using ODK.Services.Users;
 using ODK.Services.Venues;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Config.Settings;
+using ODK.Web.Common.Platforms;
+using ODK.Web.Common.Services;
 
 namespace ODK.Web.Common.Config;
 
@@ -38,6 +44,7 @@ public static class DependencyConfig
     {
         ConfigureApi(services);
         ConfigureAuthentication(services, appSettings);
+        ConfigureCore(services);
         ConfigurePayments(services, appSettings);
         ConfigureServiceSettings(services, appSettings);
         ConfigureServices(services, appSettings);
@@ -60,6 +67,11 @@ public static class DependencyConfig
         {
             services.AddSingleton(LoggingConfig.Logger);
         }
+    }
+
+    private static void ConfigureCore(IServiceCollection services)
+    {
+        services.AddScoped<IHttpRequestProvider, HttpRequestProvider>();
     }
 
     private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
@@ -89,6 +101,7 @@ public static class DependencyConfig
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IChapterAdminService, ChapterAdminService>();
         services.AddScoped<IChapterService, ChapterService>();
+        services.AddScoped<IChapterUrlService, ChapterUrlService>();
         services.AddScoped<IChapterViewModelService, ChapterViewModelService>();
         services.AddScoped<ICountryService, CountryService>();
         services.AddScoped<ICsvService, CsvService>();
@@ -123,6 +136,18 @@ public static class DependencyConfig
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IMemberViewModelService, MemberViewModelService>();
         services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IPlatformProvider, PlatformProvider>();
+        services.AddSingleton(new PlatformProviderSettings
+        {
+            DefaultBaseUrls = appSettings.Platforms
+                .Where(x => x.Type == PlatformType.Default.ToString())
+                .Select(x => x.BaseUrl)
+                .ToArray(),
+            DrunkenKnitwitsBaseUrls = appSettings.Platforms
+                .Where(x => x.Type == PlatformType.DrunkenKnitwits.ToString())
+                .Select(x => x.BaseUrl)
+                .ToArray()
+        });
         services.AddScoped<IRecaptchaService, RecaptchaService>();
         services.AddScoped<IRequestCache, RequestCache>();
         services.AddScoped<ISettingsService, SettingsService>();
@@ -138,14 +163,15 @@ public static class DependencyConfig
         RecaptchaSettings recaptcha = appSettings.Recaptcha;
         UrlSettings urls = appSettings.Urls;
 
-        services.AddSingleton(new AuthenticationServiceSettings(
-            eventsUrl: $"{urls.AppBase}{urls.Events}",
-            passwordResetTokenLifetimeMinutes: auth.PasswordResetTokenLifetimeMinutes,
-            passwordResetUrl: $"{urls.AppBase}{urls.PasswordReset}"));
+        services.AddSingleton(new AuthenticationServiceSettings
+        {
+            EventsUrlPath = urls.Event,
+            PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
+            PasswordResetUrlPath = urls.PasswordReset
+        });
         
         services.AddSingleton(new EventAdminServiceSettings
         {
-            BaseUrl = urls.AppBase,
             EventRsvpUrlFormat = urls.EventRsvp,
             EventUrlFormat = urls.Event,
             UnsubscribeUrlFormat = urls.Unsubscribe
@@ -153,20 +179,19 @@ public static class DependencyConfig
 
         services.AddSingleton(new EventServiceSettings
         {
-            BaseUrl = urls.AppBase,
             EventUrlFormat = urls.Event
         });
 
         services.AddSingleton(new MemberServiceSettings
         {
-            ActivateAccountUrl = $"{urls.AppBase}{urls.ActivateAccount}",
-            ConfirmEmailAddressUpdateUrl = $"{urls.AppBase}{urls.ConfirmEmailAddressUpdate}"
+            ActivateAccountUrlPath = urls.ActivateAccount,
+            ConfirmEmailAddressUpdateUrlPath = urls.ConfirmEmailAddressUpdate
         });
 
         services.AddSingleton(new MediaFileProviderSettings
         {
             RootMediaPath = paths.MediaRoot,
-            RootMediaUrl = $"{urls.AppBase}{urls.Media}"
+            RootMediaUrlPath = urls.Media
         });
 
         services.AddSingleton(new RecaptchaServiceSettings

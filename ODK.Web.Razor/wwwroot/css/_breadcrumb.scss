@@ -1,7 +1,16 @@
-﻿.breadcrumb {
+﻿@import "odk/_breadcrumb";
+
+:root {
+    --odk-breadcrumbs-padding-top: 0.5rem;
+    --odk-breadcrumbs-padding-bottom: 0.5rem;
+    --odk-breadcrumbs-padding-left: 1rem;
+    --odk-breadcrumbs-padding-right: 1rem;
+}
+
+.breadcrumb {
     background-color: var(--odk-bg-light);
-    padding-top: .75rem;
-    padding-bottom: 0.5rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-top: var(--odk-breadcrumbs-padding-top);
+    padding-bottom: var(--odk-breadcrumbs-padding-bottom);
+    padding-left: var(--odk-breadcrumbs-padding-left);
+    padding-right: var(--odk-breadcrumbs-padding-right);
 }

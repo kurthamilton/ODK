@@ -6,7 +6,9 @@ namespace ODK.Services.Members;
 public interface IMemberService
 {
     Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
-    
+
+    Task<ServiceResult> CreateAccount(CreateAccountModel model);
+
     Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile model);
 
     Task DeleteMember(Guid memberId);
@@ -27,7 +29,7 @@ public interface IMemberService
 
     Task RotateMemberImage(Guid memberId);
 
-    Task SendActivationEmailAsync(Chapter chapter, Member member, string activationToken);
+    Task SendActivationEmailAsync(Chapter? chapter, Member member, string activationToken);
 
     Task UpdateMemberEmailOptIn(Guid memberId, bool optIn);
 

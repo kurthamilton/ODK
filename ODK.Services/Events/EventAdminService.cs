@@ -6,6 +6,7 @@ using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
+using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 
@@ -13,13 +14,19 @@ namespace ODK.Services.Events;
 
 public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 {
-    private readonly IEmailService _emailService;
+    private readonly IChapterUrlService _chapterUrlService;
+    private readonly IEmailService _emailService;    
     private readonly EventAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
-    public EventAdminService(IUnitOfWork unitOfWork, EventAdminServiceSettings settings, IEmailService emailService)
+    public EventAdminService(
+        IUnitOfWork unitOfWork, 
+        EventAdminServiceSettings settings, 
+        IEmailService emailService,
+        IChapterUrlService chapterUrlService)
         : base(unitOfWork)
     {
+        _chapterUrlService = chapterUrlService;
         _emailService = emailService;
         _settings = settings;
         _unitOfWork = unitOfWork;
@@ -597,7 +604,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            {"chapter.name", chapter.Name},
             {"event.date", @event.Date.ToString("dddd dd MMMM, yyyy")},
             {"event.id", @event.Id.ToString()},
             {"event.location", venue.Name},
@@ -605,9 +611,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             {"event.time", @event.Time ?? ""}
         };
 
-        parameters.Add("event.rsvpurl", (_settings.BaseUrl + _settings.EventRsvpUrlFormat).Interpolate(parameters));
-        parameters.Add("event.url", (_settings.BaseUrl + _settings.EventUrlFormat).Interpolate(parameters));
-        parameters.Add("unsubscribeUrl", (_settings.BaseUrl + _settings.UnsubscribeUrlFormat).Interpolate(parameters));
+        parameters.Add("event.rsvpurl", _chapterUrlService.GetChapterUrl(chapter, _settings.EventRsvpUrlFormat, parameters));
+        parameters.Add("event.url", _chapterUrlService.GetChapterUrl(chapter, _settings.EventUrlFormat, parameters));
+        parameters.Add("unsubscribeUrl", _chapterUrlService.GetChapterUrl(chapter, _settings.UnsubscribeUrlFormat, parameters));
 
         return parameters;
     }

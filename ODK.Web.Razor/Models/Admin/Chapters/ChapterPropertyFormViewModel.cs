@@ -9,6 +9,9 @@ public class ChapterPropertyFormViewModel
     [Required]
     public DataType DataType { get; set; }
 
+    [DisplayName("Display name")]
+    public string? DisplayName { get; set; }
+
     [DisplayName("Help text")]
     public string? HelpText { get; set; }
 

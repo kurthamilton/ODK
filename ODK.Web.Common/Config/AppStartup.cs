@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ODK.Web.Common.Config.Settings;
@@ -11,6 +12,7 @@ public static class AppStartup
     {
         services.AddMemoryCache();
         services.AddControllers().ConfigureJson();
+        services.AddHttpContextAccessor();
 
         services.Configure<IISServerOptions>(options =>
         {
@@ -23,7 +25,6 @@ public static class AppStartup
 
     private static AppSettings GetAppSettings(IConfiguration config)
     {
-        IConfigurationSection appSettingsSection = config.GetSection("AppSettings");
-        return new AppSettings(appSettingsSection);
+        return config.Get<AppSettings>() ?? throw new Exception("Error parsing app settings");
     }
 }

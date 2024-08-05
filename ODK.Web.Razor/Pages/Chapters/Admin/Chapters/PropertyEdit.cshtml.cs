@@ -22,16 +22,17 @@ public class PropertyEditModel : AdminPageModel
 
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
-        var serviceRequest = GetAdminServiceRequest();
+        var serviceRequest = await GetAdminServiceRequest();
         Property = await _chapterAdminService.GetChapterProperty(serviceRequest, id);        
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(Guid id, ChapterPropertyFormViewModel viewModel)
     {
-        var serviceRequest = GetAdminServiceRequest();
+        var serviceRequest = await GetAdminServiceRequest();
         var result = await _chapterAdminService.UpdateChapterProperty(serviceRequest, id, new UpdateChapterProperty
         {
+            DisplayName = viewModel.DisplayName,
             HelpText = viewModel.HelpText,
             Hidden = viewModel.Hidden,
             Label = viewModel.Label,

@@ -8,6 +8,7 @@ using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
+using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Payments;
 
@@ -17,21 +18,24 @@ public class MemberService : IMemberService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
+    private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;
     private readonly IMemberImageService _memberImageService;
-    private readonly IPaymentService _paymentService;
+    private readonly IPaymentService _paymentService;    
     private readonly MemberServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberService(IUnitOfWork unitOfWork, IAuthorizationService authorizationService,
         IEmailService emailService, MemberServiceSettings settings, IPaymentService paymentService,
-        ICacheService cacheService, IMemberImageService memberImageService)
+        ICacheService cacheService, IMemberImageService memberImageService, 
+        IChapterUrlService chapterUrlService)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
+        _chapterUrlService = chapterUrlService;
         _emailService = emailService;
         _memberImageService = memberImageService;
-        _paymentService = paymentService;
+        _paymentService = paymentService;        
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
@@ -68,6 +72,38 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
     
+    public async Task<ServiceResult> CreateAccount(CreateAccountModel model)
+    {
+        var existing = await _unitOfWork.MemberRepository.GetByEmailAddress(model.EmailAddress).RunAsync();
+
+        if (existing != null)
+        {
+            // TODO: send duplicate email
+            return ServiceResult.Successful();
+        }
+
+        var member = new Member
+        {
+            EmailAddress = model.EmailAddress,
+            FirstName = model.FirstName,
+            LastName = model.LastName
+        };
+        _unitOfWork.MemberRepository.Add(member);
+
+        var activationToken = RandomStringGenerator.Generate(64);
+        _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
+        {
+            ActivationToken = activationToken,
+            MemberId = member.Id
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+
+        await SendActivationEmailAsync(null, member, activationToken);
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile model)
     {
         var (chapter, chapterProperties, membershipSettings, existing, siteSettings) = await _unitOfWork.RunAsync(
@@ -347,9 +383,8 @@ public class MemberService : IMemberService
 
         _unitOfWork.MemberEmailAddressUpdateTokenRepository.Add(token);
 
-        var url = _settings.ConfirmEmailAddressUpdateUrl.Interpolate(new Dictionary<string, string>
+        var url = _chapterUrlService.GetChapterUrl(chapter, _settings.ConfirmEmailAddressUpdateUrlPath, new Dictionary<string, string>
         {
-            { "chapter.name", chapter!.Name },
             { "token", HttpUtility.UrlEncode(activationToken) }
         });
 
@@ -400,17 +435,16 @@ public class MemberService : IMemberService
         _cacheService.RemoveVersionedItem<MemberAvatar>(memberId);
     }
 
-    public async Task SendActivationEmailAsync(Chapter chapter, Member member, string activationToken)
+    public async Task SendActivationEmailAsync(Chapter? chapter, Member member, string activationToken)
     {
-        var url = _settings.ActivateAccountUrl.Interpolate(new Dictionary<string, string>
+        var url = _chapterUrlService.GetChapterUrl(chapter, _settings.ActivateAccountUrlPath, new Dictionary<string, string>
         {
-            { "chapter.name", chapter.Name },
             { "token", HttpUtility.UrlEncode(activationToken) }
         });
 
         await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
         {
-            { "chapter.name", chapter.Name },
+            { "chapter.name", chapter?.Name ?? "" },
             { "url", url }
         });
     }

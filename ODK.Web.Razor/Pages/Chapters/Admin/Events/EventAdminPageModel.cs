@@ -23,7 +23,7 @@ public abstract class EventAdminPageModel : AdminPageModel
 
         Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id);
 
-        var request = GetAdminServiceRequest();
+        var request = await GetAdminServiceRequest();
         Event = await EventAdminService.GetEvent(request, id);
         if (Event == null)
         {

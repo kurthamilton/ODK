@@ -16,13 +16,13 @@ public interface IMailProvider
         bool bcc = true);
 
     Task<ServiceResult> SendEmail(
-        Chapter chapter, 
+        Chapter? chapter, 
         EmailAddressee to, 
         string subject, 
         string body);
 
     Task<ServiceResult> SendEmail(
-        Chapter chapter, 
+        Chapter? chapter, 
         EmailAddressee to, 
         string subject, 
         string body, 

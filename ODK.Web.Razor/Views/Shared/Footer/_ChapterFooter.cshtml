@@ -1,3 +1,16 @@
-﻿@model ODK.Web.Razor.Models.Footer.FooterViewModel
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Platforms
+@model ODK.Web.Razor.Models.Footer.FooterViewModel
+@inject IPlatformProvider PlatformProvider
+@{
+    var platform = PlatformProvider.GetPlatform();
+}
 
-@await Html.PartialAsync("Footer/_Footer", Model)
+@if (platform == PlatformType.DrunkenKnitwits)
+{
+    @await Html.PartialAsync("Footer/_OdkFooter", Model)
+}
+else
+{
+    @await Html.PartialAsync("Footer/_Footer", Model)
+}

@@ -24,8 +24,15 @@
             return;
         }
 
-        if (context.preview.getAttribute('src') && !!context.preview.complete) {
-            context.preview.addEventListener('load', () => bindCropper(context));
+        context.previewContainer = context.preview.closest('[data-img-preview-container]');
+
+        context.preview.addEventListener('load', () => {
+            bindCropper(context);
+            context.previewContainer.classList.remove('d-none');
+        });
+
+        if (context.preview.getAttribute('src') && context.preview.complete) {
+            context.previewContainer.classList.remove('d-none');
         }
 
         context.fileUpload.addEventListener('change', e => {

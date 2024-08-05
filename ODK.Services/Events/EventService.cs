@@ -1,11 +1,10 @@
 ﻿using System.Text.RegularExpressions;
-using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
-using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
+using ODK.Services.Chapters;
 using ODK.Services.Emails;
 
 namespace ODK.Services.Events;
@@ -16,6 +15,7 @@ public class EventService : IEventService
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private readonly IAuthorizationService _authorizationService;
+    private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;
     private readonly EventServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
@@ -23,9 +23,11 @@ public class EventService : IEventService
     public EventService(IUnitOfWork unitOfWork,       
         IAuthorizationService authorizationService,
         IEmailService emailService,
-        EventServiceSettings settings)
+        EventServiceSettings settings,
+        IChapterUrlService chapterUrlService)
     {
         _authorizationService = authorizationService;
+        _chapterUrlService = chapterUrlService;
         _emailService = emailService;
         _settings = settings;
         _unitOfWork = unitOfWork;
@@ -83,12 +85,12 @@ public class EventService : IEventService
 
         var parameters = new Dictionary<string, string>
         {
-            { "chapter.name", chapter.Name },
             { "comment.text", eventComment.Text },
             { "event.id", @event.Id.ToString() }
-        }; 
-        
-        parameters.Add("event.url", (_settings.BaseUrl + _settings.EventUrlFormat).Interpolate(parameters));
+        };
+
+        var url = _chapterUrlService.GetChapterUrl(chapter, _settings.EventUrlFormat, parameters);
+        parameters.Add("event.url", url);
 
         await _emailService.SendEventCommentEmail(chapter, parentCommentMember, eventComment, parameters);
 

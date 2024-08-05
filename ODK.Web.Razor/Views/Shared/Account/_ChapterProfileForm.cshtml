@@ -1,0 +1,211 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.DataTypes
+@using ODK.Core.Members
+@using ODK.Services.Caching
+@using ODK.Services.Chapters
+@using ODK.Services.Members
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Account
+@model ChapterProfileFormViewModel
+@{
+    var memberId = User.MemberIdOrDefault();
+
+    var chapterPropertyDictionary = Model.ChapterProperties
+        .ToDictionary(x => x.Id);
+
+    var chapterPropertyOptionDictionary = Model.ChapterPropertyOptions
+        .GroupBy(x => x.ChapterPropertyId)
+        .ToDictionary(x => x.Key, x => x.ToArray());
+}
+
+<div class="form-group mb-3 @(memberId == null ? "required" : null)">
+    @Html.LabelFor(x => x.EmailAddress, new { @class = "form-label" })
+    
+    @if (memberId != null)
+    {
+        <div class="form-control-plaintext">
+            @Model.EmailAddress
+        </div>
+    }
+    else
+    {
+        <span class="ms-1 text-muted">You will need access to this email to verify your account</span>
+        @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control", type = "Email" })
+        @Html.ValidationMessageFor(x => x.EmailAddress)
+    }
+</div>
+
+@if (memberId == null)
+{
+    <div class="mb-3 form-check">
+        @Html.CheckBoxFor(x => x.EmailOptIn, new { @class = "form-check-input" })
+        @Html.LabelFor(x => x.EmailOptIn, new { @class = "form-check-label" })
+        
+        <span>
+            @await Html.PartialAsync("Components/_Tooltip", "We recommend you leave this on. Once you're set up, we'll only send you one email per event.")
+        </span>
+
+        <span class="ms-1 text-muted">Opt in to emails informing you of upcoming events</span>
+    </div>
+}
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.FirstName, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.FirstName, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.FirstName)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.LastName, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.LastName, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.LastName)
+</div>
+
+@for (int i = 0; i < Model.Properties.Count; i++)
+{
+    var property = Model.Properties[i];
+
+    chapterPropertyDictionary.TryGetValue(property.ChapterPropertyId, out var chapterProperty);
+
+    var htmlAttributes = new Dictionary<string, object>();
+    if (chapterProperty?.Required == true)
+    {
+        var label = !string.IsNullOrEmpty(chapterProperty.DisplayName) ? chapterProperty.DisplayName : chapterProperty.Label;
+        htmlAttributes.Add("data-val", "true");
+        htmlAttributes.Add("data-val-required", $"The {label} field is required.");
+    }
+
+    @Html.HiddenFor(x => x.Properties[i].ChapterPropertyId)
+
+    <div class="form-group mb-3 
+            @(chapterProperty?.Required == true ? "required" : null)
+            @(chapterProperty?.DataType == DataType.Checkbox ? "form-check" : null)">
+        
+        @if (chapterProperty?.DataType != DataType.Checkbox)
+        {
+            <label class="form-label" for="@Html.IdFor(x => x.Properties[i].Value)">
+                @Html.Raw(chapterProperty?.Label ?? "")
+            </label>
+        }
+        
+        @if (!string.IsNullOrEmpty(chapterProperty?.HelpText))
+        {
+            <span>
+                @await Html.PartialAsync("Components/_Tooltip", chapterProperty.HelpText)
+            </span>
+        }
+        
+        @if (!string.IsNullOrEmpty(chapterProperty?.Subtitle))
+        {
+            <span class="ms-1 text-muted">@chapterProperty.Subtitle</span>
+        }
+
+        @if (chapterProperty?.DataType == DataType.Checkbox)
+        {
+            htmlAttributes.Add("class", "form-check-input");
+            htmlAttributes.Add("type", "checkbox");
+            @Html.TextBoxFor(x => x.Properties[i].Value, htmlAttributes)
+            <label for="@Html.IdFor(x => x.Properties[i].Value)" class="form-check-label">
+                @Html.Raw(chapterProperty?.Label ?? "")
+            </label>
+        }
+        else if (chapterProperty?.DataType == DataType.DropDown)
+        {
+            chapterPropertyOptionDictionary.TryGetValue(property.ChapterPropertyId, out var options);
+
+            var selectList = options
+                ?.Select(x => new SelectListItem { Text = x.Value })
+                .ToArray() ?? [];
+
+            string? selectedValue = Model.Properties[i].Value;
+            if (!string.IsNullOrEmpty(selectedValue) 
+                && selectList.All(x => x.Text != selectedValue)
+                && selectList.Any(x => x.Text == "Other"))
+            {
+                Model.Properties[i].OtherValue = selectedValue;
+                Model.Properties[i].Value = "Other";
+            }
+
+            var textBoxHtmlAttributes = new Dictionary<string, object>(htmlAttributes);
+            textBoxHtmlAttributes.Add("class", "form-control d-none");
+
+            htmlAttributes.Add("class", "form-select");
+            htmlAttributes.Add("data-select-freetext", $"#{Html.IdFor(x => x.Properties[i].OtherValue)}");
+            htmlAttributes.Add("data-select-freetext-value", "Other");
+
+            @Html.DropDownListFor(x => x.Properties[i].Value, selectList, "Select...", htmlAttributes)
+            @Html.TextBoxFor(x => x.Properties[i].OtherValue, textBoxHtmlAttributes)
+            @Html.ValidationMessageFor(x => x.Properties[i].OtherValue)
+        }
+        else if (chapterProperty?.DataType == DataType.LongText)
+        {
+            htmlAttributes.Add("class", "form-control");
+            htmlAttributes.Add("rows", "3");
+
+            @Html.TextAreaFor(x => x.Properties[i].Value, htmlAttributes)
+        }
+        else if (chapterProperty?.DataType == DataType.Url)
+        {
+            htmlAttributes.Add("class", "form-control");
+
+            if (chapterProperty.Name == "facebook")
+            {
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fab fa-facebook-f"></i>
+                    </span>
+                    @Html.TextBoxFor(x => x.Properties[i].Value, htmlAttributes)
+                </div>
+            }
+            else
+            {
+                @Html.TextBoxFor(x => x.Properties[i].Value, htmlAttributes)
+            }
+        }
+        else
+        {
+            htmlAttributes.Add("class", "form-control");
+
+            @Html.TextBoxFor(x => x.Properties[i].Value, htmlAttributes)
+        }
+
+        @Html.ValidationMessageFor(x => x.Properties[i].Value)
+    </div>
+}
+
+@if (memberId == null)
+{
+    <div class="form-group mb-3 required">
+        <label class="form-label">Picture</label>
+        @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
+        {
+            ChapterName = Model.ChapterName
+        })
+    </div>    
+
+    <div class="mb-3 form-check required">
+        @Html.CheckBoxFor(x => x.ThreeTenets, new { @class = "form-check-input" })
+        <label for="@Html.IdFor(x => x.ThreeTenets)" class="form-check-label">
+            I abide by the <a href="/#tenets" target="_blank">three tenets</a> of Drunken Knithood
+        </label>
+        @Html.ValidationMessageFor(x => x.ThreeTenets)
+    </div>
+
+    <div class="mb-3 form-check required">
+        @Html.CheckBoxFor(x => x.PrivacyPolicy, new { @class = "form-check-input" })
+        <label for="@Html.IdFor(x => x.PrivacyPolicy)" class="form-check-label">
+            I have read the <a href="/Privacy" target="_blank">privacy policy</a>
+        </label>
+        @Html.ValidationMessageFor(x => x.PrivacyPolicy)
+    </div>
+
+    <div class="mb-3 form-check required">
+        @Html.CheckBoxFor(x => x.SubscriptionPolicy, new { @class = "form-check-input" })
+
+        <label for="@Html.IdFor(x => x.SubscriptionPolicy)" class="form-check-label">
+            If I choose to continue attending after my free @Model.TrialPeriodMonths month trial period has expired, I agree to purchase a subscription.
+        </label>
+        @Html.ValidationMessageFor(x => x.SubscriptionPolicy)
+    </div>
+}

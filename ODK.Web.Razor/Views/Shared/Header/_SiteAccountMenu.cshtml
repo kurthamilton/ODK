@@ -1,0 +1,22 @@
+﻿@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="account-links">
+        <div class="dropdown">
+            <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="dropdown-menu dropdown-menu-end">
+                <a class="dropdown-item" href="/Account">My profile</a>
+                <a class="dropdown-item" href="/Groups">My groups</a>
+                <a class="dropdown-item" href="/Account/Logout">Sign Out</a>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="button-container">
+        <a class="btn btn-outline-primary anonymous-link" href="/Account/Login">Sign in</a>
+        <a class="btn btn-primary anonymous-link" href="/Account/Create">Sign up</a>
+    </div>
+}

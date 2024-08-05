@@ -65,6 +65,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             ChapterId = chapterId,
             DataType = model.DataType,
+            DisplayName = model.DisplayName,
             DisplayOrder = displayOrder,
             HelpText = model.HelpText,
             Hidden = model.Hidden,
@@ -568,6 +569,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         OdkAssertions.Exists(property);
         OdkAssertions.BelongsToChapter(property, request.ChapterId);
 
+        property.DisplayName = model.DisplayName;
         property.HelpText = model.HelpText;
         property.Hidden = model.Hidden;
         property.Label = model.Label;
@@ -634,12 +636,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return properties.OrderBy(x => x.DisplayOrder).ToArray();
     }
 
-    public async Task<ServiceResult> UpdateChapterQuestion(AdminServiceRequest request, Guid questionId, CreateChapterQuestion update)
+    public async Task<ServiceResult> UpdateChapterQuestion(AdminServiceRequest request, Guid questionId, CreateChapterQuestion model)
     {
         var question = await GetChapterQuestion(request, questionId);
 
-        question.Answer = update.Answer;
-        question.Name = update.Name;
+        question.Answer = model.Answer;
+        question.Name = model.Name;
 
         var validationResult = ValidateChapterQuestion(question);
         if (!validationResult.Success)

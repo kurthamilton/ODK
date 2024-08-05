@@ -2,7 +2,7 @@
 
 public class MediaFileProviderSettings
 {
-    public string RootMediaPath { get; set; } = ""; 
+    public required string RootMediaPath { get; set; }
 
-    public string RootMediaUrl { get; set; } = "";
+    public required string RootMediaUrlPath { get; set; } 
 }

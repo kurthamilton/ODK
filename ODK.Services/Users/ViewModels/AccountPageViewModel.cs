@@ -11,5 +11,5 @@ public class AccountPageViewModel
 
     public required MemberAvatar? Avatar { get; init; }
 
-    public required ProfileFormViewModel Profile { get; init; }
+    public required ChapterProfileFormViewModel Profile { get; init; }
 }

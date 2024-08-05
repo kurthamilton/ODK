@@ -2,9 +2,7 @@
 
 public class UrlSettings
 {
-    public string ActivateAccount { get; set; } = "";
-    
-    public string AppBase { get; set; } = "";
+    public string ActivateAccount { get; set; } = "";   
 
     public string ConfirmEmailAddressUpdate { get; set; } = "";
 

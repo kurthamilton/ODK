@@ -1,19 +1,9 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services.Chapters
-@using ODK.Services.Users.ViewModels
-@model JoinPageViewModel
+﻿@using ODK.Services.Users.ViewModels
 
-@if (!string.IsNullOrEmpty(Model.Texts?.RegisterText))
-{
-    <p>
-        @Html.Raw(Model.Texts.RegisterText)
-    </p>
-}
-
-<form method="post" action="/@Model.ChapterName/Account/Join" enctype="multipart/form-data">
+<form method="post" action="/Account/Join" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     
-    @await Html.PartialAsync("Account/_ProfileForm", Model.Profile)
-    
-    <button type="submit" class="btn btn-primary">Create</button>
+    @await Html.PartialAsync("Account/_ProfileForm", new ProfileFormSubmitViewModel())
+
+    <button type="submit" class="btn btn-primary">Sign up</button>
 </form>

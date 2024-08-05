@@ -22,7 +22,7 @@ public class MemberModel : MemberAdminPageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id, MemberFormViewModel viewModel)
     {
-        var request = GetAdminServiceRequest();
+        var request = await GetAdminServiceRequest();
         var result = await MemberAdminService.UpdateMemberSubscription(request, id, new UpdateMemberSubscription
         {
             ExpiryDate = viewModel.SubscriptionExpiryDate,

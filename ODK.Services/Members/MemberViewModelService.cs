@@ -1,5 +1,4 @@
 ﻿using ODK.Core;
-using ODK.Core.Chapters;
 using ODK.Data.Core;
 using ODK.Services.Members.ViewModels;
 

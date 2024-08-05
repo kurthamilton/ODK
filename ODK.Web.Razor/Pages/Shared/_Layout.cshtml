@@ -1,12 +1,21 @@
-﻿@using ODK.Web.Razor.Pages.Chapters
-@using Microsoft.AspNetCore.Mvc.TagHelpers
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
 @using ODK.Core.Chapters
+@using ODK.Core.Platforms
 @using ODK.Services.Caching
+@using ODK.Services.Platforms
+@using ODK.Web.Razor.Pages.Chapters
+@inject IPlatformProvider PlatformProvider
 @inject IRequestCache RequestCache
 @{
+    var platform = PlatformProvider.GetPlatform();
     var context = new ChapterPageContext(RequestCache, Context);
     var chapter = await context.GetChapterAsync();
-    var title = "Drunken Knitwits";
+    var title = platform switch
+    {
+        PlatformType.DrunkenKnitwits => "Drunken Knitwits",
+        _ => "SITE NAME"
+    };
+
     if (chapter != null)
     {
         title = $"{chapter.Name} {title}";
@@ -15,12 +24,12 @@
     var pageTitle = ViewData["Title"] as string;
     if (!string.IsNullOrEmpty(pageTitle))
     {
-       title = $"{pageTitle} | {title}";
-    }
+        title = $"{pageTitle} | {title}";
+    }    
 }
 
 <!DOCTYPE html>
-<html lang="en" data-theme-root>
+<html lang="en" data-theme-root data-platform="@(platform == PlatformType.DrunkenKnitwits ? "odk" : null)">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -41,10 +50,21 @@
     <link rel="stylesheet" href="~/lib/aspnet-client-validation/dist/aspnet-validation.css" />
 
     @await RenderSectionAsync("preStyles", required: false)
-    <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
+    
+    @if (platform == PlatformType.DrunkenKnitwits)
+    {
+        <link rel="stylesheet" href="~/css/odk.css" asp-append-version="true" />
+    }
+    else
+    {
+        <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
+    }
+
     @await RenderSectionAsync("styles", required: false)
 </head>
-<body>    
+<body>   
+    @await Html.PartialAsync("Header/_SiteHeader")
+
     @await RenderSectionAsync("header")
 
     @RenderBody()

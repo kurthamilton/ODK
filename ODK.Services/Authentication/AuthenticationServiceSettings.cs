@@ -2,17 +2,9 @@
 
 public class AuthenticationServiceSettings
 {
-    public AuthenticationServiceSettings(string eventsUrl, int passwordResetTokenLifetimeMinutes,
-        string passwordResetUrl)
-    {
-        EventsUrl = eventsUrl;
-        PasswordResetTokenLifetimeMinutes = passwordResetTokenLifetimeMinutes;
-        PasswordResetUrl = passwordResetUrl;
-    }
+    public required string EventsUrlPath { get; init; }
 
-    public string EventsUrl { get; }
+    public required int PasswordResetTokenLifetimeMinutes { get; init; }
 
-    public int PasswordResetTokenLifetimeMinutes { get; }
-
-    public string PasswordResetUrl { get; }
+    public required string PasswordResetUrlPath { get; init; }
 }
