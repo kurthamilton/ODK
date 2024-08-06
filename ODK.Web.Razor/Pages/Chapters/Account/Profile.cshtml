@@ -1,0 +1,43 @@
+﻿@page "/{chapterName}/Account/Profile"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Extensions
+@using ODK.Services.Members
+@using ODK.Services.Users
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Chapters.Account.ProfileModel
+@inject IAccountViewModelService AccountViewModelService
+@{
+    Layout = "_ChapterLayout";
+    Model.Title = "Profile";
+
+    var viewModel = await AccountViewModelService.GetChapterProfilePage(Model.CurrentMemberId, Model.ChapterName);
+    var dateJoined = viewModel.CurrentMember.MemberChapter(viewModel.Chapter.Id).CreatedUtc;
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Account",
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = OdkRoutes.Account.Profile(Model.ChapterName),
+        ChapterName = Model.ChapterName,
+        Content =
+            @<form method="post" action="/@viewModel.Chapter.Name/Account/Profile">
+                @Html.AntiForgeryToken()
+
+                @await Html.PartialAsync("Account/_ChapterProfileForm", viewModel.ChapterProfile)
+
+                <div class="form-group mb-3">
+                    <label class="form-label">Date joined</label>
+                    <div class="form-control-plaintext">
+                        <span>@TimeZoneEntityExtensions.ToLocalTime(viewModel.Chapter, dateJoined).ToString("d MMMM yyyy")</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+    })
+})

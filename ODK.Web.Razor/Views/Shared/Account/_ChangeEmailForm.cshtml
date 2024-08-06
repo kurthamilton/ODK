@@ -1,5 +1,10 @@
 ﻿@model ODK.Web.Razor.Models.Account.ChangeEmailFormViewModel
 
+<div class="form-group mb-3">
+    <label class="form-label">Current email address</label>
+    <div class="form-control-plaintext">@Model.Current</div>
+</div>
+
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Email, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.Email, new { @class = "form-control", type = "Email" })

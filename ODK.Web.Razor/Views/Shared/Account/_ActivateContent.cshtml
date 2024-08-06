@@ -1,6 +1,11 @@
-﻿@using ODK.Web.Razor.Models.Account
+﻿@model ODK.Web.Razor.Models.Account.ActivateFormViewModel
+
 <form method="post">
     @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Account/_ActivateForm", new ActivateFormViewModel())
+    <div class="form-group mb-3 required">
+        @Html.LabelFor(x => x.Password, new { @class = "form-label" })
+        @Html.PasswordFor(x => x.Password, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.Password)
+    </div>
     <button class="btn btn-primary">Activate account</button>
 </form>

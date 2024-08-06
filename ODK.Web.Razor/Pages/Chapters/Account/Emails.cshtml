@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Users
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Account.EmailsModel
@@ -20,16 +21,18 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Email preferences",
-    Breadcrumbs = new []
+    Title = "Account",    
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        new MenuItem { Link = $"/{viewModel.ChapterName}", Text = viewModel.ChapterName },
-        new MenuItem { Link = $"/{viewModel.ChapterName}/Account", Text = "Profile" },
-        new MenuItem { Text = "Email preferences" }
-    },
-    Content = await Html.PartialAsync("Account/_EmailPreferencesContent", new EmailPreferencesContentViewModel
-    {
+        Active = OdkRoutes.Account.EmailPreferences(viewModel.ChapterName),
         ChapterName = viewModel.ChapterName,
-        CurrentMember = viewModel.CurrentMember
+        Content =
+            @<div>
+                @await Html.PartialAsync("Account/_EmailPreferencesContent", new EmailPreferencesContentViewModel
+                {
+                    ChapterName = viewModel.ChapterName,
+                    CurrentMember = viewModel.CurrentMember
+                })
+            </div>
     })
 })

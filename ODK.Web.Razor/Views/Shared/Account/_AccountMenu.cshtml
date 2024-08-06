@@ -1,38 +1,49 @@
 ﻿@using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @model AccountMenuViewModel
-@{
-    
+@{    
+    var menuItems = new MenuItem[]
+    {
+        new MenuItem { Link = OdkRoutes.Account.PersonalDetails(Model.ChapterName), Text = "Personal details" },
+        Model.ChapterName != null
+            ? new MenuItem { Link = OdkRoutes.Account.Profile(Model.ChapterName), Text = "Profile" }
+            : new MenuItem(),
+        new MenuItem { Link = OdkRoutes.Account.Picture(Model.ChapterName), Text = "Picture" },
+        Model.ChapterName != null
+            ? new MenuItem { Link = OdkRoutes.Account.Subscription(Model.ChapterName), Text = "My subscription" }
+            : new MenuItem(),        
+        new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(Model.ChapterName), Text = "Update email address" },
+        new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.ChapterName), Text = "Update password" },
+        Model.ChapterName != null
+            ? new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.ChapterName), Text = "Email preferences" }
+            : new MenuItem(),
+        new MenuItem { Link = OdkRoutes.Account.Delete(Model.ChapterName), Text = "Delete account" }
+    }.Where(x => !string.IsNullOrEmpty(x.Link)).ToArray();
 }
-<div>
-    <a href="@OdkRoutes.Account.Subscription(Model.ChapterName)">My subscription</a>
-</div>
-<div>
-    <a href="@OdkRoutes.Account.PasswordChange(Model.ChapterName)">Change password</a>
-</div>
-<div>
-    <a href="@OdkRoutes.Account.EmailAddressChange(Model.ChapterName)">Update email address</a>
-</div>
-@if (Model.ChapterName != null)
-{
-    <div>
-        <a href="@OdkRoutes.Account.EmailPreferences(Model.ChapterName)">Email preferences</a>
-    </div>
-}
-<div>
-    <a href="@OdkRoutes.Account.Delete(Model.ChapterName)">Delete my account</a>
-</div>
 
-<div class="my-3" data-theme-selector-container>
-    <button type="button" class="d-flex align-items-center btn btn-outline-light d-none me-3"
-            data-theme-selector="light">
-        <i class="fa-solid fa-sun me-2"></i>
-        <span>Light mode</span>
+<ul class="list-group d-none d-md-block">
+    @foreach (var menuItem in menuItems)
+    {
+        <li class="list-group-item @(menuItem.Link == Model.Active ? "active" : "")">
+            <a class="nav-link text-nowrap" href="@menuItem.Link">
+                @menuItem.Text
+            </a>
+        </li>
+    }
+</ul>
+
+<div class="dropdown d-md-none">
+    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        @menuItems.FirstOrDefault(x => x.Link == Model.Active)?.Text
     </button>
-    <button type="button" class="d-flex align-items-center btn btn-outline-dark me-3"
-            data-theme-selector="dark">
-        <i class="fa-solid fa-moon me-2"></i>
-        <span>Dark mode</span>
-    </button>
+    <ul class="dropdown-menu">
+        @foreach (var menuItem in menuItems)
+        {
+            <li>
+                <a class="dropdown-item" href="@menuItem.Link">@menuItem.Text</a>
+            </li>
+        }        
+    </ul>
 </div>

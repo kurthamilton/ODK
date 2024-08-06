@@ -1,16 +1,39 @@
 ﻿(function () {
     const root = document.querySelector('[data-theme-root]');    
 
+    window.addEventListener('load', () => {
+        setButtonVisibility();
+    });
+
     const getButtons = () => {
-        const buttonContainer = document.querySelector('[data-theme-selector-container]');
-        if (!buttonContainer) {
+        const buttons = {
+            light: document.querySelector('[data-theme-selector="light"]'),
+            dark: document.querySelector('[data-theme-selector="dark"]')
+        };
+
+        return buttons.light && buttons.dark
+            ? buttons
+            : null;
+    };
+
+    const getTheme = () => {
+        return localStorage.getItem('odk.theme');
+    };
+
+    const setButtonVisibility = () => {
+        const buttons = getButtons();
+        if (!buttons) {
             return;
         }
 
-        return {
-            light: buttonContainer.querySelector('[data-theme-selector="light"]'),
-            dark: buttonContainer.querySelector('[data-theme-selector="dark"]')
-        };
+        const theme = getTheme();
+        if (theme === 'dark') {
+            buttons.dark.classList.add('d-none');
+            buttons.light.classList.remove('d-none');
+        } else {
+            buttons.dark.classList.remove('d-none');
+            buttons.light.classList.add('d-none');
+        }
     };
 
     const setTheme = (theme) => {
@@ -22,16 +45,10 @@
             return;
         }
 
-        if (theme === 'dark') {
-            buttons.dark.classList.add('d-none');
-            buttons.light.classList.remove('d-none');
-        } else {
-            buttons.dark.classList.remove('d-none');
-            buttons.light.classList.add('d-none');
-        }
+        setButtonVisibility();
     };
 
-    const theme = localStorage.getItem('odk.theme');
+    const theme = getTheme();
     if (theme === 'dark') {
         setTheme('dark');
     }

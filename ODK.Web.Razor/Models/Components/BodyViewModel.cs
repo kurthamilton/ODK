@@ -9,6 +9,8 @@ public class BodyViewModel
 
     public IHtmlContent? Content { get; set; }
 
+    public Func<object?, IHtmlContent>? ContentFunc { get; set; }
+
     public bool HideSubscriptionAlert { get; set; }
 
     public string? Title { get; set; }

@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
-using ODK.Core.Images;
 using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
@@ -145,16 +143,14 @@ public class AccountController : OdkControllerBase
         return Redirect("/");
     }
 
-    [HttpPost("{chapterName}/Account/Delete")]
-    public async Task<IActionResult> DeleteAccount(string chapterName)
+    [HttpPost("Account/Email/Change")]
+    public Task<IActionResult> ChangeEmailRequest([FromForm] ChangeEmailFormViewModel viewModel)
     {
-        await _memberService.DeleteMember(MemberId);
-        await _loginHandler.Logout(HttpContext);
-        return Redirect($"/{chapterName}");
+        throw new NotImplementedException();
     }
 
     [HttpPost("{ChapterName}/Account/Email/Change")]
-    public async Task<IActionResult> RequestEmailChange(string chapterName, [FromForm] ChangeEmailFormViewModel viewModel)
+    public async Task<IActionResult> ChangeEmailRequest(string chapterName, [FromForm] ChangeEmailFormViewModel viewModel)
     {
         var chapter = await _requestCache.GetChapterAsync(chapterName);
 
@@ -176,9 +172,9 @@ public class AccountController : OdkControllerBase
     }
 
     [HttpGet("{chapterName}/Account/Email/Change/Confirm")]
-    public async Task<IActionResult> ConfirmEmailChange(string chapterName, string token)
+    public async Task<IActionResult> ChangeEmailConfirm(string chapterName, string token)
     {
-        ServiceResult result = await _memberService.ConfirmEmailAddressUpdate(MemberId, token);
+        var result = await _memberService.ConfirmEmailAddressUpdate(MemberId, token);
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Email address updated", FeedbackType.Success));
@@ -205,8 +201,8 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("Account/Profile")]
-    public async Task<IActionResult> UpdateSiteProfile([FromForm] PersonalDetailsFormViewModel viewModel)
+    [HttpPost("Account/PersonalDetails")]
+    public async Task<IActionResult> UpdatePersonalDetails([FromForm] PersonalDetailsFormViewModel viewModel)
     {
         var model = new UpdateMemberSiteProfile
         {
@@ -230,14 +226,11 @@ public class AccountController : OdkControllerBase
     [HttpPost("{ChapterName}/Account/Profile")]
     public async Task<IActionResult> UpdateChapterProfile(
         string chapterName, 
-        [FromForm] ChapterProfileFormSubmitViewModel profileViewModel,
-        [FromForm] PersonalDetailsFormViewModel personalDetailsViewModel)
+        [FromForm] ChapterProfileFormSubmitViewModel profileViewModel)
     {
         var chapter = await _requestCache.GetChapterAsync(chapterName);
         var model = new UpdateMemberChapterProfile
         {
-            FirstName = personalDetailsViewModel.FirstName,
-            LastName = personalDetailsViewModel.LastName,
             Properties = profileViewModel.Properties.Select(x => new UpdateMemberProperty
             {
                 ChapterPropertyId = x.ChapterPropertyId,
@@ -268,10 +261,10 @@ public class AccountController : OdkControllerBase
         return Ok();
     }    
 
-    [HttpPost("{ChapterName}/Account/Password/Change")]
+    [HttpPost("Account/Password/Change")]
     public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordFormViewModel viewModel)
     {
-        ServiceResult result = await _authenticationService.ChangePasswordAsync(MemberId, 
+        var result = await _authenticationService.ChangePasswordAsync(MemberId, 
             viewModel.CurrentPassword ?? "", viewModel.NewPassword ?? "");
         AddFeedback(result.Success
             ? new FeedbackViewModel("Password changed", FeedbackType.Success)

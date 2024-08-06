@@ -1,13 +1,12 @@
-﻿@page "/{chapterName}/Account/Delete"
+﻿@page "/Account/Delete"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Web.Common.Components
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.Account.DeleteModel
+@model ODK.Web.Razor.Pages.Account.DeleteModel
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_HomeLayout";
     Model.Title = "Delete account";
 }
 
@@ -16,9 +15,8 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Delete(Model.Chapter.Name),
-        ChapterName = Model.Chapter.Name,
-        Content =
+        Active = "/Account/Delete",
+        Content = 
             @<div>
                 @await Html.PartialAsync("Account/_DeleteAccountContent")
             </div>

@@ -1,0 +1,47 @@
+﻿@page "/Account/Picture"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Members
+@using ODK.Services.Users
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Account.PictureModel
+@inject IAccountViewModelService AccountViewModelService
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Profile";
+
+    var viewModel = await AccountViewModelService.GetSitePicturePage(Model.CurrentMemberId);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Account",
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = OdkRoutes.Account.Picture(null),
+        Content =
+            @<div>
+                @await Html.PartialAsync("Account/_UpdatePictureContent", new UpdatePictureViewModel
+                {
+                    Avatar = viewModel.Avatar,
+                    ChapterName = null,
+                    Image = viewModel.Image,
+                    Member = viewModel.CurrentMember                    
+                })
+            </div>
+    })
+})
+
+@section styles
+{
+    <link rel="stylesheet" href="/lib/cropperjs/cropper.css" />
+}
+
+@section scripts
+{
+    <script src="/lib/cropperjs/cropper.js"></script>
+    <script src="/js/odk.imaging.js"></script>
+}

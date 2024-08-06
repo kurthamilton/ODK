@@ -3,7 +3,7 @@
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
-@model SiteAccountPageViewModel
+@model SitePicturePageViewModel
 @{
     var dateJoined = Model.CurrentMember.CreatedUtc;
 }
@@ -68,18 +68,3 @@
         </form>
     </div>
 })
-
-<form method="post" action="/Account/Profile">
-    @Html.AntiForgeryToken()
-
-    @await Html.PartialAsync("Account/_PersonalDetailsForm", Model.PersonalDetails)
-
-    <div class="form-group mb-3">
-        <label class="form-label">Date joined</label>
-        <div class="form-control-plaintext">
-            <span>@dateJoined.ToString("d MMMM yyyy")</span>
-        </div>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Update</button>
-</form>

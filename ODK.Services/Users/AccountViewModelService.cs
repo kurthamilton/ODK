@@ -14,52 +14,7 @@ public class AccountViewModelService : IAccountViewModelService
     public AccountViewModelService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-    }
-
-    public async Task<ChapterAccountPageViewModel> GetChapterAccountPage(Guid currentMemberId, string chapterName)
-    {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
-        OdkAssertions.Exists(chapter);
-
-        var (
-                chapterProperties,
-                chapterPropertyOptions,
-                member,
-                memberProperties,
-                avatar,
-                image
-            ) = await _unitOfWork.RunAsync(
-                x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
-                x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
-                x => x.MemberRepository.GetById(currentMemberId),
-                x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapter.Id),
-                x => x.MemberAvatarRepository.GetByMemberId(currentMemberId),
-                x => x.MemberImageRepository.GetByMemberId(currentMemberId));
-
-        OdkAssertions.MemberOf(member, chapter.Id);
-
-        return new ChapterAccountPageViewModel
-        {
-            Avatar = avatar,
-            Image = image,
-            Chapter = chapter,
-            CurrentMember = member,
-            ChapterProfile = CreateProfileFormViewModel(
-                chapter,
-                chapterProperties,
-                chapterPropertyOptions,
-                null,
-                null,
-                member,
-                memberProperties),
-            PersonalDetails = new PersonalDetailsFormViewModel
-            {
-                EmailAddress = member.EmailAddress,
-                FirstName = member.FirstName,
-                LastName = member.LastName
-            }
-        };
-    }
+    }    
 
     public async Task<ChapterAccountViewModel> GetChapterAccountViewModel(Guid currentMemberId, string chapterName)
     {
@@ -75,28 +30,7 @@ public class AccountViewModelService : IAccountViewModelService
             ChapterName = chapter.Name,
             CurrentMember = member
         };
-    }
-
-    public async Task<SiteAccountPageViewModel> GetSiteAccountPage(Guid currentMemberId)
-    {
-       var (member, avatar, image) = await _unitOfWork.RunAsync(                            
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberAvatarRepository.GetByMemberId(currentMemberId),
-            x => x.MemberImageRepository.GetByMemberId(currentMemberId));
-
-        return new SiteAccountPageViewModel 
-        { 
-            Avatar = avatar,
-            CurrentMember = member,
-            Image = image,
-            PersonalDetails = new PersonalDetailsFormViewModel
-            {
-                EmailAddress = member.EmailAddress,
-                FirstName = member.FirstName,
-                LastName = member.LastName                
-            }
-        };
-    }    
+    }         
 
     public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName)
     {
@@ -121,6 +55,79 @@ public class AccountViewModelService : IAccountViewModelService
             ChapterName = chapter.Name,
             Texts = chapterTexts,
             Profile = CreateProfileFormViewModel(chapter, chapterProperties, chapterPropertyOptions, membershipSettings, siteSettings, null, []),
+        };
+    }
+
+    public async Task<ChapterPicturePageViewModel> GetChapterPicturePage(Guid currentMemberId, string chapterName)
+    {
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
+        OdkAssertions.Exists(chapter);
+
+        var (
+                member,
+                avatar,
+                image
+            ) = await _unitOfWork.RunAsync(
+                x => x.MemberRepository.GetById(currentMemberId),
+                x => x.MemberAvatarRepository.GetByMemberId(currentMemberId),
+                x => x.MemberImageRepository.GetByMemberId(currentMemberId));
+
+        OdkAssertions.MemberOf(member, chapter.Id);
+
+        return new ChapterPicturePageViewModel
+        {
+            Avatar = avatar,
+            Image = image,
+            Chapter = chapter,
+            CurrentMember = member
+        };
+    }
+
+    public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(Guid currentMemberId, string chapterName)
+    {
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
+        OdkAssertions.Exists(chapter);
+
+        var (
+                chapterProperties,
+                chapterPropertyOptions,
+                member,
+                memberProperties
+            ) = await _unitOfWork.RunAsync(
+                x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+                x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
+                x => x.MemberRepository.GetById(currentMemberId),
+                x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapter.Id));
+
+        OdkAssertions.MemberOf(member, chapter.Id);
+
+        return new ChapterProfilePageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = member,
+            ChapterProfile = CreateProfileFormViewModel(
+                chapter,
+                chapterProperties,
+                chapterPropertyOptions,
+                null,
+                null,
+                member,
+                memberProperties)
+        };
+    }
+
+    public async Task<SitePicturePageViewModel> GetSitePicturePage(Guid currentMemberId)
+    {
+        var (member, avatar, image) = await _unitOfWork.RunAsync(
+             x => x.MemberRepository.GetById(currentMemberId),
+             x => x.MemberAvatarRepository.GetByMemberId(currentMemberId),
+             x => x.MemberImageRepository.GetByMemberId(currentMemberId));
+
+        return new SitePicturePageViewModel
+        {
+            Avatar = avatar,
+            CurrentMember = member,
+            Image = image
         };
     }
 

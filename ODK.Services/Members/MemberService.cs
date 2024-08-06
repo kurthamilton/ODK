@@ -210,6 +210,12 @@ public class MemberService : IMemberService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<Member> GetMember(Guid memberId)
+    {
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
+        return member;
+    }
+
     public async Task<Member> GetMember(Guid memberId, Guid chapterId)
     {
         var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();        
@@ -374,16 +380,14 @@ public class MemberService : IMemberService
             _unitOfWork.MemberEmailAddressUpdateTokenRepository.Delete(existingToken);
         }
 
-        string activationToken = RandomStringGenerator.Generate(64);
+        var activationToken = RandomStringGenerator.Generate(64);
 
-        var token = new MemberEmailAddressUpdateToken
+        _unitOfWork.MemberEmailAddressUpdateTokenRepository.Add(new MemberEmailAddressUpdateToken
         {
             ConfirmationToken = activationToken,
             MemberId = memberId,
             NewEmailAddress = newEmailAddress
-        };
-
-        _unitOfWork.MemberEmailAddressUpdateTokenRepository.Add(token);
+        });
 
         var url = _chapterUrlService.GetChapterUrl(chapter, _settings.ConfirmEmailAddressUpdateUrlPath, new Dictionary<string, string>
         {
@@ -546,9 +550,6 @@ public class MemberService : IMemberService
             member.EmailOptIn = model.EmailOptIn.Value;
         }
 
-        member.FirstName = model.FirstName.Trim();
-        member.LastName = model.LastName.Trim();
-
         foreach (var chapterProperty in chapterProperties)
         {
             var updateProperty = model.Properties
@@ -607,18 +608,9 @@ public class MemberService : IMemberService
     private static IEnumerable<string> GetMissingMemberProfileProperties(UpdateMemberChapterProfile profile, IEnumerable<ChapterProperty> chapterProperties,
         IEnumerable<UpdateMemberProperty> memberProperties)
     {
-        if (string.IsNullOrWhiteSpace(profile.FirstName))
-        {
-            yield return "First name";
-        }
-
-        if (string.IsNullOrWhiteSpace(profile.LastName))
-        {
-            yield return "First name";
-        }
-
-        IDictionary<Guid, string> memberPropertyDictionary = memberProperties.ToDictionary(x => x.ChapterPropertyId, x => x.Value);
-        foreach (ChapterProperty chapterProperty in chapterProperties.Where(x => x.Required))
+        var memberPropertyDictionary = memberProperties
+            .ToDictionary(x => x.ChapterPropertyId, x => x.Value);
+        foreach (var chapterProperty in chapterProperties.Where(x => x.Required))
         {
             memberPropertyDictionary.TryGetValue(chapterProperty.Id, out string? value);
 

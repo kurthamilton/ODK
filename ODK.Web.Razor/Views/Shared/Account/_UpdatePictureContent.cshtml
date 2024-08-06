@@ -1,28 +1,27 @@
-﻿@using ODK.Core.Extensions
-@using ODK.Services.Users.ViewModels
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Common.Routes
+﻿@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
-@model ChapterPicturePageViewModel
+@model UpdatePictureViewModel
 
 <div class="form-group">
     <div class="d-inline-block">
         <div>
             @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
             {
-                ChapterName = Model.Chapter.Name,
-                Member = Model.CurrentMember
+                ChapterName = Model.ChapterName,
+                Member = Model.Member,
+                HasImage = Model.Image != null,
+                Image = Model.Image
             })
         </div>
 
-        <div class="d-flex">
+        <div class="d-flex justify-content-center">
             <button class="btn btn-link" type="button" data-bs-toggle="modal" data-bs-target="#change-picture-modal">
                 Change picture
             </button>
 
-            <form class="d-flex align-items-center" method="post" action="@OdkRoutes.Account.PictureRotate(Model.Chapter.Name)">
+            <form class="d-flex align-items-center" method="post" action="@OdkRoutes.Account.PictureRotate(Model.ChapterName)">
                 <button class="btn-icon" data-bs-toggle="tooltip" data-bs-title="Rotate right">
                     <i class="fas fa-undo flip-horizontal"></i>
                 </button>
@@ -38,10 +37,10 @@
     Size = "modal-lg",
     Body =
     @<div>
-        <form method="post" action="@OdkRoutes.Account.PictureUpload(Model.Chapter.Name)" enctype="multipart/form-data">
+        <form method="post" action="@OdkRoutes.Account.PictureUpload(Model.ChapterName)" enctype="multipart/form-data">
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
             {
-                ChapterName = Model.Chapter.Name,
+                ChapterName = Model.ChapterName,
                 CropHeight = Model.Avatar?.CropHeight,
                 CropWidth = Model.Avatar?.CropWidth,
                 CropX = Model.Avatar?.CropX,

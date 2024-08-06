@@ -1,7 +1,9 @@
 ﻿@page "/{chapterName}/Account/Email/Change"
 @attribute [Authorize]
 @using ODK.Services.Users
+@using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
@@ -18,16 +20,14 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Update email address",
-    Breadcrumbs = new[]
+    Title = "Account",    
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        new MenuItem { Link = $"/{viewModel.ChapterName}", Text = viewModel.ChapterName },
-        new MenuItem { Link = $"/{viewModel.ChapterName}/Account", Text = "Profile" },
-        new MenuItem { Text = "Update email address" }
-    },
-    Content = await Html.PartialAsync("Account/_ChangeEmailContent", new ChangeEmailContentViewModel
-    {
-        ChapterName = viewModel.ChapterName,
-        CurrentMember = viewModel.CurrentMember
+        Active = OdkRoutes.Account.EmailAddressChange(Model.ChapterName),
+        ChapterName = Model.ChapterName,
+        Content = 
+            @<div>
+                @await Html.PartialAsync("Account/_ChangeEmailContent", viewModel)
+            </div>
     })
 })

@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Account/Subscription"
 @attribute [Authorize]
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
@@ -12,14 +13,15 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "My subscription",
-    HideSubscriptionAlert = true,
-    Breadcrumbs = new []
+    Title = "Account",
+    HideSubscriptionAlert = true,    
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Account", Text = "Profile" },
-        new MenuItem { Text = "Subscription" }
-    },
-    Content = await Html.PartialAsync("Account/_SubscriptionContent", 
-        new SubscriptionContentViewModel(Model.Chapter))
+        Active = OdkRoutes.Account.Subscription(Model.Chapter.Name),
+        ChapterName = Model.Chapter.Name,
+        Content = 
+            @<div>
+                @await Html.PartialAsync("Account/_SubscriptionContent", new SubscriptionContentViewModel(Model.Chapter))
+            </div>
+    })
 })

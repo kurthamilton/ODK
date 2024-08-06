@@ -1,36 +1,34 @@
 ﻿@page "/Account"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Services.Users
-@using ODK.Web.Common.Components
+@using ODK.Services.Members
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Account.AccountModel
-@inject IAccountViewModelService AccountViewModelService
+@inject IMemberService MemberService
 @{
     Layout = "_HomeLayout";
     Model.Title = "Profile";
 
-    var viewModel = await AccountViewModelService.GetSiteAccountPage(Model.CurrentMemberId);
+    var member = await MemberService.GetMember(Model.CurrentMemberId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "My profile",
-    Breadcrumbs = new[]
+    Title = "Account",
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        new MenuItem { Link = "/", Text = "Home" },
-        new MenuItem { Text = "Profile" }
-    },
-    Content = await Html.PartialAsync("Account/_SiteAccountContent", viewModel)
+        Active = "/Account",
+        Content = 
+        @<form action="/Account/PersonalDetails" method="post">
+            @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
+            {
+                EmailAddress = member.EmailAddress,
+                FirstName = member.FirstName,
+                LastName = member.LastName
+            })
+            <button class="btn btn-primary">Update</button>
+        </form>
+    })
 })
-
-@section styles
-{
-    <link rel="stylesheet" href="/lib/cropperjs/cropper.css" />
-}
-
-@section scripts
-{
-    <script src="/lib/cropperjs/cropper.js"></script>
-    <script src="/js/odk.imaging.js"></script>
-}
