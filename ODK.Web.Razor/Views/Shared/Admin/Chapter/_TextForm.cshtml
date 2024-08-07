@@ -3,13 +3,13 @@
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.RegisterMessage, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", "The message to display on the register page")
-    @Html.TextAreaFor(x => x.RegisterMessage, new { @class = "form-control", rows = 6 })
+    @Html.TextAreaFor(x => x.RegisterMessage, new { @class = "form-control", rows = 6, data_html_editor="" })
     @Html.ValidationMessageFor(x => x.RegisterMessage)
 </div>
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.WelcomeMessage, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", "The message to display to non-members on the chapter home page")
-    @Html.TextAreaFor(x => x.WelcomeMessage, new { @class = "form-control", rows = 6 })
+    @Html.TextAreaFor(x => x.WelcomeMessage, new { @class = "form-control", rows = 6, data_html_editor="" })
     @Html.ValidationMessageFor(x => x.WelcomeMessage)
 </div>

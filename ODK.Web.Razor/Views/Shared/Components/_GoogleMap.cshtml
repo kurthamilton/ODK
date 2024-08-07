@@ -5,7 +5,7 @@
 @{
     if (string.IsNullOrEmpty(Model.Query) && string.IsNullOrEmpty(Model.QuerySource))
     {
-        // return;
+        return;
     }
 
     var settings = await SettingsService.GetSiteSettings();
@@ -15,8 +15,8 @@
         : "";
 }
 
-<iframe height="450" frameborder="0" style="border:0; width: 100%;" 
-        src="@url" 
+<iframe height="450" frameborder="0" style="border:0; width: 100%;"
+        src="@url"
         data-map-baseurl="@baseUrl"
         data-map-query="@Model.QuerySource"
         allowfullscreen>

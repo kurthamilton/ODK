@@ -71,6 +71,21 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         return settings!;
     }
 
+    public async Task<ServiceResult> UpdateEmailSettings(Guid currentMemberId, string fromEmailAddress, string fromEmailName, string emailTitle)
+    {
+        var settings = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.SiteSettingsRepository.Get());
+
+        settings.DefaultFromEmailAddress = fromEmailAddress;
+        settings.DefaultFromEmailName = fromEmailName;
+        settings.DefaultEmailTitle = emailTitle;
+
+        _unitOfWork.SiteSettingsRepository.Update(settings);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent)
     {
         var settings = await GetSuperAdminRestrictedContent(currentMemberId,

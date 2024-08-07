@@ -5,6 +5,7 @@ using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Settings;
+using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Emails.Extensions;
@@ -28,102 +29,82 @@ public class MailProvider : IMailProvider
         _unitOfWork = unitOfWork;
     }
 
-    public async Task SendBulkEmail(
-        Chapter chapter, 
-        IEnumerable<EmailAddressee> to, 
-        string subject, 
-        string body, 
-        bool bcc = true)
+    public async Task<ServiceResult> SendEmail(SendEmailOptions options)
     {
-        await SendBulkEmail(chapter, to, subject, body, null, bcc);
-    }
-
-    public async Task SendBulkEmail(
-        Chapter chapter, 
-        IEnumerable<EmailAddressee> to, 
-        string subject, 
-        string body, 
-        ChapterAdminMember? fromAdminMember,
-        bool bcc = true)
-    {
-        var (email, chapterEmail, providers, siteSettings, chapterSettings, summary) = await _unitOfWork.RunAsync(
-            x => x.EmailRepository.GetByType(EmailType.Layout),
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.Layout),
+        var (emails, chapterEmails, providers, siteSettings, chapterSettings, summary) = await _unitOfWork.RunAsync(
+            x => x.EmailRepository.GetAll(),
+            x => options.Chapter != null
+                ? x.ChapterEmailRepository.GetByChapterId(options.Chapter.Id)
+                : new DefaultDeferredQueryMultiple<ChapterEmail>(),
             x => x.EmailProviderRepository.GetAll(),
             x => x.SiteSettingsRepository.Get(),
-            x => x.ChapterEmailSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.EmailProviderRepository.GetEmailsSentToday());
-        body = GetLayoutBody(chapterEmail?.ToEmail() ?? email, chapter, body);
-
-        int i = 0;
-        var toList = to.ToList();
-        while (i < toList.Count)
-        {
-            var (provider, remaining) = GetProvider(providers, summary);
-
-            int batchSize = provider.BatchSize ?? (toList.Count - i);
-            if (batchSize > remaining)
-            {
-                batchSize = remaining;
-            }
-
-            var batch = toList.Skip(i).Take(batchSize);
-            var message = CreateMessage(provider, siteSettings, chapterSettings, fromAdminMember, subject, body);
-            if (bcc)
-            {
-                AddBulkEmailBccRecipients(message, message.From.First(), batch);
-            }
-            else
-            {
-                AddBulkEmailRecipients(message, batch);
-            }
-
-            await SendEmail(provider, message);
-            i += batchSize;
-        }
-    }
-
-    public Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, string subject, string body)    
-        => SendEmail(chapter, to, subject, body, null);
-
-    public async Task<ServiceResult> SendEmail(
-        Chapter? chapter, 
-        EmailAddressee to, 
-        string subject, 
-        string body, 
-        ChapterAdminMember? fromAdminMember)
-    {
-        var (email, chapterEmail, providers, siteSettings, chapterSettings, summary) = await _unitOfWork.RunAsync(
-            x => x.EmailRepository.GetByType(EmailType.Layout),
-            x => chapter != null 
-                ? x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.Layout) 
-                : new DefaultDeferredQuerySingleOrDefault<ChapterEmail>(),
-            x => x.EmailProviderRepository.GetAll(),
-            x => x.SiteSettingsRepository.Get(),
-            x => chapter != null 
-                ? x.ChapterEmailSettingsRepository.GetByChapterId(chapter.Id)
+            x => options.Chapter != null
+                ? x.ChapterEmailSettingsRepository.GetByChapterId(options.Chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>(),
             x => x.EmailProviderRepository.GetEmailsSentToday());
-        
-        body = GetLayoutBody(chapterEmail?.ToEmail() ?? email, chapter, body);
-        
+
+        var layoutEmail = chapterEmails.FirstOrDefault(x => x.Type == EmailType.Layout)?.ToEmail() 
+            ?? emails.First(x => x.Type == EmailType.Layout);
+
+        var bodyEmail = options.Type != EmailType.Layout ? 
+            chapterEmails.FirstOrDefault(x => x.Type == options.Type)?.ToEmail() ?? emails.First(x => x.Type == options.Type)
+            : null;
+
+        var parameters = options.Parameters ?? new Dictionary<string, string>();
+        if (options.Chapter != null && !parameters.ContainsKey("chapter.name"))
+        {
+            parameters.Add("chapter.name", options.Chapter.Name);
+        }
+
+        var subject = StringUtils.Interpolate(!string.IsNullOrEmpty(options.Subject)
+            ? options.Subject
+            : bodyEmail?.Subject ?? "", parameters);
+
+        var title = StringUtils.Interpolate(!string.IsNullOrEmpty(chapterSettings?.Title)
+            ? chapterSettings.Title
+            : siteSettings.DefaultEmailTitle, parameters);
+        parameters.Add("title", title);        
+
+        var body = StringUtils.Interpolate(!string.IsNullOrEmpty(options.Body)
+            ? options.Body
+            : bodyEmail?.HtmlContent ?? "", parameters);
+        parameters.Add("body", body);
+
+        var layoutBody = layoutEmail.HtmlContent;
+        body = StringUtils.Interpolate(layoutBody, parameters);
+
         var (provider, _) = GetProvider(providers, summary);
 
-        var message = CreateMessage(provider, siteSettings, chapterSettings, fromAdminMember, subject, body);
-        AddEmailRecipient(message, to.ToMailboxAddress());
+        var message = CreateMessage(
+            provider, 
+            siteSettings, 
+            chapterSettings, 
+            options.FromAdminMember, 
+            subject, 
+            body);
+        
+        if (options.To.Count == 1)
+        {
+            var to = options.To.First().ToMailboxAddress();
+            AddEmailRecipient(message, to);
+        }
+        else
+        {
+            var to = chapterSettings != null
+                ? new MailboxAddress(chapterSettings.FromName, chapterSettings.FromEmailAddress)
+                : new MailboxAddress(siteSettings.DefaultFromEmailName, siteSettings.DefaultFromEmailAddress);
+
+            var bcc = options.To;
+            AddBulkEmailBccRecipients(message, to, bcc);
+        }        
 
         return await SendEmail(provider, message);
     }
 
-    private static void AddBulkEmailRecipients(MimeMessage message, IEnumerable<EmailAddressee> recipients)
-    {
-        foreach (EmailAddressee recipient in recipients)
-        {
-            message.To.Add(recipient.ToMailboxAddress());
-        }
-    }
-
-    private static void AddBulkEmailBccRecipients(MimeMessage message, InternetAddress to, IEnumerable<EmailAddressee> recipients)
+    private static void AddBulkEmailBccRecipients(
+        MimeMessage message, 
+        InternetAddress to, 
+        IEnumerable<EmailAddressee> recipients)
     {
         AddEmailRecipient(message, to);
 
@@ -234,7 +215,7 @@ public class MailProvider : IMailProvider
 
         try
         {
-            using SmtpClient client = new SmtpClient
+            using var client = new SmtpClient
             {
                 ServerCertificateValidationCallback = (s, c, h, e) => true
             };

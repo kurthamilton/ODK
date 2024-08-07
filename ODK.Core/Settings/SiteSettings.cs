@@ -2,6 +2,8 @@
 
 public class SiteSettings : IVersioned, IDatabaseEntity
 {
+    public string DefaultEmailTitle { get; set; } = "";
+
     public string DefaultFromEmailAddress { get; set; } = "";
 
     public string DefaultFromEmailName { get; set; } = "";

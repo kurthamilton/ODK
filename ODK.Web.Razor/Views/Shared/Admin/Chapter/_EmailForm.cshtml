@@ -8,6 +8,6 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Content, new { @class = "form-label" })
-    @Html.TextAreaFor(x => x.Content, new { @class = "form-control", rows = 15 })
+    @Html.TextAreaFor(x => x.Content, new { @class = "form-control", rows = 15, data_html_editor = "true" })
     @Html.ValidationMessageFor(x => x.Content)
 </div>

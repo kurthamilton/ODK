@@ -167,6 +167,11 @@ public class AuthenticationService : IAuthenticationService
             claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Admin));
         }
 
+        if (member.SuperAdmin)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, OdkRoles.SuperAdmin));
+        }
+
         return claims;
     }
     

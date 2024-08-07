@@ -7,4 +7,6 @@ public class ChapterEmailSettings : IChapterEntity
     public string FromEmailAddress { get; set; } = "";
 
     public string FromName { get; set; } = "";
+
+    public string? Title { get; set; }
 }

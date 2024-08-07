@@ -1,5 +1,4 @@
-﻿using System.Web;
-using ODK.Core;
+﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Members;
@@ -143,14 +142,8 @@ public class ChapterService : IChapterService
             Message = message,
             Sent = false
         });
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();        
 
-        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            {"from", fromAddress},
-            {"message", HttpUtility.HtmlEncode(message)}
-        };
-
-        await _emailService.SendContactEmail(chapter, fromAddress, message, parameters);
+        await _emailService.SendContactEmail(chapter, fromAddress, message);
     }
 }

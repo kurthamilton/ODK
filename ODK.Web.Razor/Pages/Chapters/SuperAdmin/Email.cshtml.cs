@@ -40,6 +40,6 @@ public class EmailModel : SuperAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Email updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/SuperAdmin/Emails");
+        return Redirect($"/{ChapterName}/Admin/SuperAdmin/Emails");
     }
 }

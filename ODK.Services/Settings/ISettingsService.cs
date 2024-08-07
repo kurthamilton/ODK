@@ -15,7 +15,9 @@ public interface ISettingsService
 
     Task<SiteSettings> GetSiteSettings();
 
-    Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent);
-
     Task<ServiceResult> UpdateEmailProvider(Guid currentMemberId, Guid emailProviderId, UpdateEmailProvider model);
+
+    Task<ServiceResult> UpdateEmailSettings(Guid currentMemberId, string fromEmailAddress, string fromEmailName, string emailTitle);
+
+    Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent);    
 }

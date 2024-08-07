@@ -1,0 +1,27 @@
+﻿@using ODK.Services.Emails
+@using ODK.Web.Common.Extensions
+@inject IEmailAdminService EmailAdminService
+@{
+    var memberId = User.MemberId();
+    var emails = await EmailAdminService.GetEmails(memberId);
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var email in emails.OrderBy(x => x.Type.ToString()))
+        {
+            <tr>
+                <td>
+                    <a href="/@Model.Name/Admin/SuperAdmin/Emails/@email.Type">
+                        @email.Type
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

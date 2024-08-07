@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using System.Web;
+using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
@@ -25,18 +26,18 @@ public class EmailService : IEmailService
         EmailType type, 
         IDictionary<string, string> parameters)
     {
-        var (chapterEmail, email) = await _unitOfWork.RunAsync(
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type),
-            x => x.EmailRepository.GetByType(type));
+        var options = new SendEmailOptions
+        {
+            Body = "",
+            Chapter = chapter,
+            FromAdminMember = fromAdminMember,
+            Parameters = parameters,
+            Subject = "",
+            To = to.Select(x => x.GetEmailAddressee()).ToArray(),
+            Type = type
+        };
 
-        email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
-
-        await _mailProvider.SendBulkEmail(
-            chapter, 
-            to.Select(x => x.GetEmailAddressee()), 
-            email.Subject, 
-            email.HtmlContent, 
-            fromAdminMember);
+        await _mailProvider.SendEmail(options);
     }
 
     public async Task SendBulkEmail(
@@ -46,40 +47,51 @@ public class EmailService : IEmailService
         string subject,
         string body)
     {
-        await _mailProvider.SendBulkEmail(
-            chapter,
-            to.Select(x => x.GetEmailAddressee()),
-            subject,
-            body,
-            fromAdminMember);
+        var options = new SendEmailOptions
+        {
+            Body = body,
+            Chapter = chapter,
+            FromAdminMember = fromAdminMember,
+            Subject = subject,
+            To = to.Select(x => x.GetEmailAddressee()).ToArray(),
+        };
+
+        await _mailProvider.SendEmail(options);
     }
 
-    public async Task SendContactEmail(Chapter chapter, string from, string message, 
-        IDictionary<string, string> parameters)
+    public async Task SendContactEmail(Chapter chapter, string from, string message)
     {
-        var type = EmailType.ContactRequest;
+        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            {"from", from},
+            {"message", HttpUtility.HtmlEncode(message)}
+        };
 
-        var (chapterAdminMembers, email, chapterEmail) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.EmailRepository.GetByType(type),
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
-
-        email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
+        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
+            .GetByChapterId(chapter.Id)
+            .RunAsync();
 
         var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveContactEmails));
 
-        await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
+        var options = new SendEmailOptions
+        {
+            Body = "",
+            Chapter = chapter,
+            Parameters = parameters,
+            Subject = "",
+            To = to.ToArray(),
+            Type = EmailType.ContactRequest
+        };
+
+        await _mailProvider.SendEmail(options);
     }
 
     public async Task SendEventCommentEmail(Chapter chapter, Member? replyToMember, EventComment comment,
         IDictionary<string, string> parameters)
     {
-        var (email, chapterEmail, chapterAdminMembers) = await _unitOfWork.RunAsync(
-            x => x.EmailRepository.GetByType(EmailType.EventComment),
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, EmailType.EventComment),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id));
-
-        email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
+        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
+            .GetByChapterId(chapter.Id)
+            .RunAsync();
 
         var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveEventCommentEmails));
         if (replyToMember != null)
@@ -87,48 +99,65 @@ public class EmailService : IEmailService
             to = to.Append(new EmailAddressee(replyToMember.EmailAddress, replyToMember.FullName));
         }
 
-        await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, bcc: true);
+        var options = new SendEmailOptions
+        {
+            Body = "",
+            Chapter = chapter,
+            Parameters = parameters,
+            Subject = "",
+            To = to.ToArray(),
+            Type = EmailType.EventComment
+        };
+
+        await _mailProvider.SendEmail(options);
     }
 
     public async Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, EmailType type, 
         IDictionary<string, string> parameters)
-    {
-        var (email, chapterEmail) = await _unitOfWork.RunAsync(
-            x => x.EmailRepository.GetByType(type),
-            x => chapter != null 
-                ? x.ChapterEmailRepository.GetByChapterId(chapter.Id, type)
-                : new DefaultDeferredQuerySingleOrDefault<ChapterEmail>());
+    {        
+        var options = new SendEmailOptions
+        {
+            Body = "",
+            Chapter = chapter,
+            Subject = "",
+            Parameters = parameters,
+            To = [to],
+            Type = type
+        };
 
-        email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
-
-        return await _mailProvider.SendEmail(chapter, to, email.Subject, email.HtmlContent);
+        return await _mailProvider.SendEmail(options);
     }
 
     public async Task<ServiceResult> SendMemberEmail(Chapter chapter, ChapterAdminMember fromAdminMember, Member to, string subject, string body)
     {
-        return await _mailProvider.SendEmail(
-            chapter, 
-            to.GetEmailAddressee(), 
-            subject, 
-            body, 
-            fromAdminMember);
+        var options = new SendEmailOptions
+        {
+            Body = body,
+            Chapter = chapter,
+            FromAdminMember = fromAdminMember,
+            Subject = subject,
+            To = [to.GetEmailAddressee()]
+        };
+        return await _mailProvider.SendEmail(options);
     }
 
     public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, 
         IDictionary<string, string> parameters)
     {
-        var type = EmailType.NewMemberAdmin;
-
-        var (chapterAdminMembers, email, chapterEmail) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.EmailRepository.GetByType(type),
-            x => x.ChapterEmailRepository.GetByChapterId(chapter.Id, type));
-
-        email = GetEmail(chapterEmail?.ToEmail() ?? email, parameters);
+        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
+                .GetByChapterId(chapter.Id)
+                .RunAsync();
 
         var to = GetAddressees(chapterAdminMembers.Where(x => x.SendNewMemberEmails));
         
-        await _mailProvider.SendBulkEmail(chapter, to, email.Subject, email.HtmlContent, false);
+        var options = new SendEmailOptions
+        {
+            Body = "",
+            Chapter = chapter,
+            Subject = "",
+            To = to.ToArray(),
+            Type = EmailType.NewMemberAdmin
+        };
     }
 
     private static IEnumerable<EmailAddressee> GetAddressees(IEnumerable<ChapterAdminMember> adminMembers)

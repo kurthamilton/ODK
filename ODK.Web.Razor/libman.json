@@ -11,10 +11,6 @@
       "destination": "wwwroot/lib/font-awesome/"
     },
     {
-      "library": "ckeditor5@38.1.0",
-      "destination": "wwwroot/lib/ckeditor5/"
-    },
-    {
       "provider": "unpkg",
       "library": "vanillajs-datepicker@1.3.4",
       "destination": "wwwroot/lib/vanillajs-datepicker/"
@@ -40,5 +36,11 @@
       "library": "cropperjs@1.6.2",
       "destination": "wwwroot/lib/cropperjs/"
     }
-  ]
+  ,
+{
+  "provider": "cdnjs",
+  "library": "tinymce@7.2.1",
+  "destination": "wwwroot/lib/tinymce/"
+}
+]
 }

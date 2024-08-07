@@ -11879,6 +11879,18 @@ textarea.form-control-lg {
   font-size: 0.8rem !important;
 }
 
+.tox-tinymce {
+  border-radius: 0 !important;
+}
+
+.tox-editor-header {
+  padding-top: 0 !important;
+}
+
+.tox-promotion {
+  display: none;
+}
+
 :root {
   --odk-bg-light: #e9ecef;
 }

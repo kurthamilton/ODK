@@ -21,8 +21,10 @@ public interface IEmailService
         string subject,
         string body);
 
-    Task SendContactEmail(Chapter chapter, string from, string message, 
-        IDictionary<string, string> parameters);
+    Task SendContactEmail(
+        Chapter chapter, 
+        string fromAddress, 
+        string message);
 
     Task SendEventCommentEmail(Chapter chapter, Member? replyToMember, EventComment comment,
         IDictionary<string, string> parameters);

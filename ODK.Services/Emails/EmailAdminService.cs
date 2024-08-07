@@ -113,8 +113,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     {
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
 
-        var (chapterAdminMembers, chapter, currentMember) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+        var (chapter, currentMember) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(currentMemberId));
 
@@ -122,6 +121,20 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             new Dictionary<string, string>
             {
                 { "chapter.name", chapter.Name },
+                { "member.emailAddress", currentMember.FirstName },
+                { "member.firstName", currentMember.FirstName },
+                { "member.lastName", currentMember.FirstName }
+            });
+    }
+
+    public async Task<ServiceResult> SendTestEmail(Guid currentMemberId, EmailType type)
+    {        
+        var currentMember = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.MemberRepository.GetById(currentMemberId));
+
+        return await _emailService.SendEmail(null, currentMember.GetEmailAddressee(), type,
+            new Dictionary<string, string>
+            {
                 { "member.emailAddress", currentMember.FirstName },
                 { "member.firstName", currentMember.FirstName },
                 { "member.lastName", currentMember.FirstName }

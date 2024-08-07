@@ -71,28 +71,29 @@
                     {
                         Id = modalId,
                         Title = title,
-                        Body = @<div>
-                                    @if (paymentSettings?.Provider == "PayPal")
-                                    {
-                                        <form method="post" action="/@Model.Chapter.Name/Account/Subscription/Purchase">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="subscriptionId" value="@chapterSubscription.Id" />
-                                            @await Html.PartialAsync("Payments/_PayPalForm", new PayPalFormViewModel
-                                            {
-                                                Amount = chapterSubscription.Amount,
-                                                Country = country,
-                                                Description = chapterSubscription.Title,
-                                                Id = chapterSubscription.Id
-                                            })
-                                        </form>
-                                    }
-                                    else if (paymentSettings?.Provider == "Stripe")
-                                    {
-                                        <div class="alert alert-danger">
-                                            Payment provider not supported
-                                        </div>
-                                    }
-                                </div>
+                        Body = 
+                            @<div>
+                                @if (paymentSettings?.Provider == "PayPal")
+                                {
+                                    <form method="post" action="/@Model.Chapter.Name/Account/Subscription/Purchase">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="subscriptionId" value="@chapterSubscription.Id" />
+                                        @await Html.PartialAsync("Payments/_PayPalForm", new PayPalFormViewModel
+                                        {
+                                            Amount = chapterSubscription.Amount,
+                                            Country = country,
+                                            Description = chapterSubscription.Title,
+                                            Id = chapterSubscription.Id
+                                        })
+                                    </form>
+                                }
+                                else if (paymentSettings?.Provider == "Stripe")
+                                {
+                                    <div class="alert alert-danger">
+                                        Payment provider not supported
+                                    </div>
+                                }
+                            </div>
                     })
                 </div>
             </div>

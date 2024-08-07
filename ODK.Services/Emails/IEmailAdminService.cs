@@ -19,6 +19,8 @@ public interface IEmailAdminService
 
     Task<ServiceResult> SendTestEmail(AdminServiceRequest request, EmailType type);
 
+    Task<ServiceResult> SendTestEmail(Guid currentMemberId, EmailType type);
+
     Task<ServiceResult> UpdateChapterEmail(AdminServiceRequest request, EmailType type, UpdateEmail model);
 
     Task<ServiceResult> UpdateChapterEmailSettings(AdminServiceRequest request, UpdateChapterEmailSettings model);
