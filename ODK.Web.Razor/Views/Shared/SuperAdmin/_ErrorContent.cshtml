@@ -45,7 +45,7 @@
 @if (similar.Count > 0)
 {
     <h4>Similar errors (@similar.Count)</h4>
-    <form class="mb-3" method="post" action="/@Model.Chapter.Name/Admin/SuperAdmin/Errors/@Model.Error.Id/DeleteAll">
+    <form class="mb-3" method="post" action="/SuperAdmin/Errors/@Model.Error.Id/DeleteAll">
         @Html.AntiForgeryToken()
         <button class="btn btn-danger">Delete all</button>
     </form>

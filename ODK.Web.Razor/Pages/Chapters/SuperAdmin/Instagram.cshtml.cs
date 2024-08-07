@@ -6,7 +6,7 @@ using ODK.Web.Razor.Models.SuperAdmin;
 
 namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
 
-public class InstagramModel : SuperAdminPageModel
+public class InstagramModel : ChapterSuperAdminPageModel
 {
     private readonly ISettingsService _settingsService;
 

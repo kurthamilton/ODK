@@ -3,15 +3,15 @@
 @using ODK.Services.Features
 @using ODK.Web.Common.Extensions
 @using System.Web
-@model ODK.Core.Chapters.Chapter
 @inject IFeatureService FeatureService
 @{
     var memberId = User.MemberId();
     var features = await FeatureService.GetFeatures(memberId);
 }
 
+<h2>Feature notifications</h2>
 <p>
-    <a class="btn btn-primary" href="/@Model.Name/Admin/SuperAdmin/Features/Create">
+    <a class="btn btn-primary" href="/SuperAdmin/Features/Create">
         Create
     </a>
 </p>
@@ -27,7 +27,7 @@
     {
         <tr>
             <td>
-                <a href="/@Model.Name/Admin/SuperAdmin/Features/@feature.Id">@feature.Name</a>
+                <a href="/SuperAdmin/Features/@feature.Id">@feature.Name</a>
             </td>
             <td>@feature.CreatedUtc.ToString("yyyy-MM-dd")</td>
         </tr>

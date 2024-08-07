@@ -46,6 +46,8 @@ public interface IUnitOfWork
     IMemberSubscriptionRepository MemberSubscriptionRepository { get; }
     IPaymentRepository PaymentRepository { get; }    
     ISiteSettingsRepository SiteSettingsRepository { get; }
+    ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository { get; }
+    ISiteSubscriptionRepository SiteSubscriptionRepository { get; }
     IVenueRepository VenueRepository { get; }
 
     Task<(T1, T2)> RunAsync<T1, T2>(

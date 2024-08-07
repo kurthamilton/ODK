@@ -1,8 +1,8 @@
-﻿@page "/{chapterName}/Admin/SuperAdmin/Features/{id:guid}"
+﻿@page "/SuperAdmin/Features/{id:guid}"
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SuperAdmin
-@model ODK.Web.Razor.Pages.Chapters.SuperAdmin.FeatureModel
+@model FeatureModel
 @{
     Layout = "SuperAdmin/_SuperAdminLayout";
     Model.Title = "Feature | SuperAdmin";
@@ -12,8 +12,8 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/SuperAdmin/Features", Text = "Features" },
+        new MenuItem { Link = "/SuperAdmin/Features", Text = "Features" },
         new MenuItem { Text = Model.Feature.Name }
     },
-    Content = await Html.PartialAsync("SuperAdmin/_FeatureContent", new FeatureContentViewModel(Model.Chapter, Model.Feature))
+    Content = await Html.PartialAsync("SuperAdmin/_FeatureContent", new FeatureContentViewModel(Model.Feature))
 })

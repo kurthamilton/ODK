@@ -1,8 +1,8 @@
-﻿@page "/{chapterName}/Admin/SuperAdmin/Errors/{id:guid}"
+﻿@page "/SuperAdmin/Errors/{id:guid}"
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.SuperAdmin
-@model ODK.Web.Razor.Pages.Chapters.SuperAdmin.ErrorModel
+@model ErrorModel
 @{
     Layout = "SuperAdmin/_SuperAdminLayout";
     Model.Title = "Error | SuperAdmin";
@@ -12,9 +12,9 @@
 {
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/SuperAdmin/Errors", Text = "Error log" },
+        new MenuItem { Link = "/SuperAdmin/Errors", Text = "Error log" },
         new MenuItem { Text = "Error" }
     },
     Content = await Html.PartialAsync("SuperAdmin/_ErrorContent", 
-        new ErrorContentViewModel(Model.Chapter, Model.Error)),
+        new ErrorContentViewModel(Model.Error)),
 })

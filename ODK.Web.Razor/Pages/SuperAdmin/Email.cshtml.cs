@@ -5,13 +5,13 @@ using ODK.Services.Emails;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class EmailModel : SuperAdminPageModel
 {
     private readonly IEmailAdminService _emailAdminService;
 
-    public EmailModel(IRequestCache requestCache, IEmailAdminService emailAdminService) 
+    public EmailModel(IRequestCache requestCache, IEmailAdminService emailAdminService)
         : base(requestCache)
     {
         _emailAdminService = emailAdminService;
@@ -21,7 +21,7 @@ public class EmailModel : SuperAdminPageModel
 
     public async Task<IActionResult> OnGetAsync(EmailType type)
     {
-        Email = await _emailAdminService.GetEmail(CurrentMemberId, type);       
+        Email = await _emailAdminService.GetEmail(CurrentMemberId, type);
         return Page();
     }
 
@@ -40,6 +40,6 @@ public class EmailModel : SuperAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Email updated", FeedbackType.Success));
-        return Redirect($"/{ChapterName}/Admin/SuperAdmin/Emails");
+        return Redirect($"/SuperAdmin/Emails");
     }
 }

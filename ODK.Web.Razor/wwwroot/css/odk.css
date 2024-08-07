@@ -12010,6 +12010,12 @@ html[data-platform=odk] {
   text-align: right;
 }
 
+.dropdown-item--icon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 img {
   max-width: 100%;
 }

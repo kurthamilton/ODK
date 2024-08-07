@@ -4,13 +4,13 @@ using ODK.Services.Features;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class FeatureCreateModel : SuperAdminPageModel
 {
     private readonly IFeatureService _featureService;
 
-    public FeatureCreateModel(IRequestCache requestCache, IFeatureService featureService) 
+    public FeatureCreateModel(IRequestCache requestCache, IFeatureService featureService)
         : base(requestCache)
     {
         _featureService = featureService;
@@ -40,6 +40,6 @@ public class FeatureCreateModel : SuperAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Feature created", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/SuperAdmin/Features");
+        return Redirect("/SuperAdmin/Features");
     }
 }

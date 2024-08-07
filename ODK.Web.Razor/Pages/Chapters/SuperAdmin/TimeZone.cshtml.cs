@@ -6,7 +6,7 @@ using ODK.Web.Razor.Models.SuperAdmin;
 
 namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin
 {
-    public class TimeZoneModel : SuperAdminPageModel
+    public class TimeZoneModel : ChapterSuperAdminPageModel
     {
         private readonly IChapterAdminService _chapterAdminService;
 

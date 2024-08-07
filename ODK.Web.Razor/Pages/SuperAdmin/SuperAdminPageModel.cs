@@ -1,16 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
-using ODK.Web.Razor.Pages.Chapters.Admin;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.SuperAdmin;
 
-public abstract class SuperAdminPageModel : AdminPageModel
+public abstract class SuperAdminPageModel : OdkPageModel
 {
     private readonly IRequestCache _requestCache;
 
-    protected SuperAdminPageModel(IRequestCache requestCache) 
-        : base(requestCache)
+    protected SuperAdminPageModel(IRequestCache requestCache)
     {
         _requestCache = requestCache;
     }

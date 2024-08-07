@@ -1,0 +1,18 @@
+﻿@page "/SuperAdmin/EmailProviders/Create"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model EmailProviderCreateModel
+@{
+    Layout = "SuperAdmin/_SuperAdminLayout";
+    Model.Title = "Create email provider | SuperAdmin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = "/SuperAdmin/EmailProviders", Text = "Email providers" },
+        new MenuItem { Text = "Create" }
+    },
+    Content = await Html.PartialAsync("SuperAdmin/_EmailProviderCreateContent")
+})

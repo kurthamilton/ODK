@@ -4,13 +4,13 @@ using ODK.Services.Settings;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class EmailProviderCreateModel : SuperAdminPageModel
 {
     private readonly ISettingsService _settingsService;
 
-    public EmailProviderCreateModel(IRequestCache requestCache, ISettingsService settingsService) 
+    public EmailProviderCreateModel(IRequestCache requestCache, ISettingsService settingsService)
         : base(requestCache)
     {
         _settingsService = settingsService;
@@ -44,6 +44,6 @@ public class EmailProviderCreateModel : SuperAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Email provider created", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/SuperAdmin/EmailProviders");
+        return Redirect($"/SuperAdmin/EmailProviders");
     }
 }

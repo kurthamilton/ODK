@@ -1,6 +1,6 @@
-﻿@page "/{chapterName}/Admin/SuperAdmin/Features"
+﻿@page "/SuperAdmin/Features"
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.SuperAdmin.FeaturesModel
+@model FeaturesModel
 @{
     Layout = "SuperAdmin/_SuperAdminLayout";
     Model.Title = "Features | SuperAdmin";
@@ -8,5 +8,5 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("SuperAdmin/_FeaturesContent", Model.Chapter)
+    Content = await Html.PartialAsync("SuperAdmin/_FeaturesContent")
 })

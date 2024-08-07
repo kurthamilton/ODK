@@ -1,7 +1,7 @@
-﻿@page "/{chapterName}/Admin/SuperAdmin/EmailProviders/{id:guid}"
+﻿@page "/SuperAdmin/EmailProviders/{id:guid}"
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
-@model ODK.Web.Razor.Pages.Chapters.SuperAdmin.EmailProviderModel
+@model EmailProviderModel
 @{
     Layout = "SuperAdmin/_SuperAdminLayout";
     Model.Title = "Edit email provider | SuperAdmin";
@@ -11,7 +11,7 @@
 {
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/SuperAdmin/Emails", Text = "Emails" },
+        new MenuItem { Link = "/SuperAdmin/Emails", Text = "Emails" },
         new MenuItem { Text = Model.Provider?.SmtpServer ?? "SMTP" }
     },
     Content = await Html.PartialAsync("SuperAdmin/_EmailProviderContent", Model.Provider)

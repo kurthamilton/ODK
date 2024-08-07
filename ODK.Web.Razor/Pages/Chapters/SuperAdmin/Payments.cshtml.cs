@@ -6,7 +6,7 @@ using ODK.Web.Razor.Models.SuperAdmin;
 
 namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
 
-public class PaymentSettingsModel : SuperAdminPageModel
+public class PaymentSettingsModel : ChapterSuperAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 

@@ -7,13 +7,13 @@ using ODK.Services.Settings;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class EmailProviderModel : SuperAdminPageModel
 {
     private readonly ISettingsService _settingsService;
 
-    public EmailProviderModel(IRequestCache requestCache, ISettingsService settingsService) 
+    public EmailProviderModel(IRequestCache requestCache, ISettingsService settingsService)
         : base(requestCache)
     {
         _settingsService = settingsService;
@@ -53,6 +53,6 @@ public class EmailProviderModel : SuperAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Email provider updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/SuperAdmin/EmailProviders");
+        return Redirect("/SuperAdmin/EmailProviders");
     }
 }

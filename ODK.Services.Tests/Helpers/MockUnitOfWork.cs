@@ -58,6 +58,8 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberSubscriptionRepository MemberSubscriptionRepository => Mock.Object.MemberSubscriptionRepository;
     public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;    
     public ISiteSettingsRepository SiteSettingsRepository => Mock.Object.SiteSettingsRepository;
+    public ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository => Mock.Object.SiteSubscriptionPriceRepository;
+    public ISiteSubscriptionRepository SiteSubscriptionRepository => Mock.Object.SiteSubscriptionRepository;
     public IVenueRepository VenueRepository => Mock.Object.VenueRepository;
 
     public async Task<(T1, T2)> RunAsync<T1, T2>(

@@ -50,6 +50,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberSubscriptionRepository> _memberSubscriptionRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;    
     private readonly Lazy<ISiteSettingsRepository> _siteSettingsRepository;
+    private readonly Lazy<ISiteSubscriptionPriceRepository> _siteSubscriptionPriceRepository;
+    private readonly Lazy<ISiteSubscriptionRepository> _siteSubscriptionRepository;
     private readonly Lazy<IVenueRepository> _venueRepository;
 
     public UnitOfWork(OdkContext context)
@@ -96,6 +98,8 @@ public class UnitOfWork : IUnitOfWork
         _memberSubscriptionRepository = new(() => new MemberSubscriptionRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
         _siteSettingsRepository = new(() => new SiteSettingsRepository(_context));
+        _siteSubscriptionPriceRepository = new(() => new SiteSubscriptionPriceRepository(_context));
+        _siteSubscriptionRepository = new(() => new SiteSubscriptionRepository(_context));
         _venueRepository = new(() => new VenueRepository(_context));
     }
 
@@ -139,6 +143,8 @@ public class UnitOfWork : IUnitOfWork
     public IMemberSubscriptionRepository MemberSubscriptionRepository => _memberSubscriptionRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;    
     public ISiteSettingsRepository SiteSettingsRepository => _siteSettingsRepository.Value;
+    public ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository => _siteSubscriptionPriceRepository.Value;
+    public ISiteSubscriptionRepository SiteSubscriptionRepository => _siteSubscriptionRepository.Value;
     public IVenueRepository VenueRepository => _venueRepository.Value;
 
     public async Task<(T1, T2)> RunAsync<T1, T2>(

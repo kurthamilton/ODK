@@ -1,10 +1,10 @@
 using ODK.Services.Caching;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class ErrorsModel : SuperAdminPageModel
 {
-    public ErrorsModel(IRequestCache requestCache) 
+    public ErrorsModel(IRequestCache requestCache)
         : base(requestCache)
     {
     }

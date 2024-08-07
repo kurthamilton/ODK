@@ -26,26 +26,32 @@ public class SuperAdminController : OdkControllerBase
         _settingsService = settingsService;
     }
 
+    [HttpGet("SuperAdmin")]
+    public IActionResult Index()
+    {
+        return Redirect("/SuperAdmin/Emails");
+    }
+
     [HttpGet("{chapterName}/Admin/SuperAdmin")]
     public IActionResult Index(string chapterName)
     {
         return Redirect($"/{chapterName}/Admin/SuperAdmin/Payments");
     }    
 
-    [HttpPost("{chapterName}/Admin/SuperAdmin/Errors/{id:guid}/Delete")]
-    public async Task<IActionResult> DeleteError(string chapterName, Guid id)
+    [HttpPost("SuperAdmin/Errors/{id:guid}/Delete")]
+    public async Task<IActionResult> DeleteError(Guid id)
     {
         await _loggingService.DeleteError(MemberId, id);
 
-        return Redirect($"/{chapterName}/Admin/SuperAdmin/Errors");
+        return Redirect("/SuperAdmin/Errors");
     }
 
-    [HttpPost("{chapterName}/Admin/SuperAdmin/Errors/{id:Guid}/DeleteAll")]
-    public async Task<IActionResult> DeleteAllErrors(string chapterName, Guid id)
+    [HttpPost("SuperAdmin/Errors/{id:Guid}/DeleteAll")]
+    public async Task<IActionResult> DeleteAllErrors(Guid id)
     {
         await _loggingService.DeleteAllErrors(MemberId, id);
 
-        return Redirect($"/{chapterName}/Admin/SuperAdmin/Errors");
+        return Redirect("/SuperAdmin/Errors");
     }
 
     [HttpPost("{chapterName}/Admin/SuperAdmin/Instagram/Scrape")]

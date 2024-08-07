@@ -1,0 +1,16 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Caching
+@using ODK.Web.Common.Components
+@inject IRequestCache RequestCache
+@{
+    Layout = "_HomeLayout";
+}
+
+@await Html.PartialAsync("Header/_AdminSubMenu", new []
+{
+    new MenuItem { Link = $"/SuperAdmin/Emails", Text = "Emails" },       
+    new MenuItem { Link = $"/SuperAdmin/Errors", Text = "Error log" },
+    new MenuItem { Link = $"/SuperAdmin/Features", Text = "Features" }    
+})
+
+@RenderBody()

@@ -7,7 +7,7 @@
 }
 
 <p>
-    <a class="btn btn-primary" href="/@Model.Name/Admin/SuperAdmin/EmailProviders/Create">
+    <a class="btn btn-primary" href="/SuperAdmin/EmailProviders/Create">
         Create
     </a>
 </p>
@@ -23,7 +23,7 @@
         {
             <tr>
                 <td>
-                    <a href="/@Model.Name/Admin/SuperAdmin/EmailProviders/@provider.Id">@provider.SmtpServer</a>
+                    <a href="/SuperAdmin/EmailProviders/@provider.Id">@provider.SmtpServer</a>
                 </td>
                 <td>
                     <form method="post" action="/SuperAdmin/Emails/Providers/@provider.Id/Delete">

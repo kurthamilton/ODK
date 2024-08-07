@@ -1,6 +1,6 @@
-﻿@page "/{chapterName}/Admin/SuperAdmin/Errors"
+﻿@page "/SuperAdmin/Errors"
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Chapters.SuperAdmin.ErrorsModel
+@model ErrorsModel
 @{
     Layout = "SuperAdmin/_SuperAdminLayout";
     Model.Title = "Error log | SuperAdmin";
@@ -8,5 +8,5 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("SuperAdmin/_ErrorsContent", Model.Chapter)
+    Content = await Html.PartialAsync("SuperAdmin/_ErrorsContent")
 })

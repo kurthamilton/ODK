@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
 using ODK.Services.Logging;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class ErrorModel : SuperAdminPageModel
 {

@@ -5,13 +5,13 @@ using ODK.Services.Features;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class FeatureModel : SuperAdminPageModel
 {
     private readonly IFeatureService _featureService;
 
-    public FeatureModel(IRequestCache requestCache, IFeatureService featureService) 
+    public FeatureModel(IRequestCache requestCache, IFeatureService featureService)
         : base(requestCache)
     {
         _featureService = featureService;
