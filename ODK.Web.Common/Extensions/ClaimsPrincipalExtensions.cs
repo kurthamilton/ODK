@@ -7,6 +7,8 @@ namespace ODK.Web.Common.Extensions;
 
 public static class ClaimsPrincipalExtensions
 {
+    public static bool Authenticated(this ClaimsPrincipal user) => user.Identity?.IsAuthenticated == true;
+
     public static Guid MemberId(this ClaimsPrincipal user)
     {
         var memberId = user.MemberIdOrDefault();

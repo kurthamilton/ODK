@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
+using ODK.Services;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 
@@ -12,6 +13,9 @@ public abstract class OdkControllerBase : Controller
 
     protected void AddFeedback(string message, FeedbackType type)
         => AddFeedback(new FeedbackViewModel(message, type));
+
+    protected void AddFeedback(ServiceResult result)
+        => AddFeedback(new FeedbackViewModel(result));
 
     protected void AddFeedback(FeedbackViewModel viewModel)
     {

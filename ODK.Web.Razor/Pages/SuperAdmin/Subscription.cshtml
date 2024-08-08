@@ -1,0 +1,22 @@
+﻿@page "/SuperAdmin/Subscriptions/{id:guid}"
+@using ODK.Services.Subscriptions
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.SuperAdmin.SubscriptionModel
+@inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
+@{
+    Layout = "SuperAdmin/_SuperAdminLayout";
+    Model.Title = "Subscription | SuperAdmin";
+
+    var dto = await SiteSubscriptionAdminService.GetSubscriptionDto(Model.CurrentMemberId, Model.SubscriptionId);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = "/SuperAdmin/Subscriptions", Text = "Subscriptions" },
+        new MenuItem { Text = dto.Subscription.Name }
+    },
+    Content = await Html.PartialAsync("SuperAdmin/_SubscriptionContent", dto)
+})

@@ -8,9 +8,10 @@
 
 @await Html.PartialAsync("Header/_AdminSubMenu", new []
 {
-    new MenuItem { Link = $"/SuperAdmin/Emails", Text = "Emails" },       
-    new MenuItem { Link = $"/SuperAdmin/Errors", Text = "Error log" },
-    new MenuItem { Link = $"/SuperAdmin/Features", Text = "Features" }    
+    new MenuItem { Link = "/SuperAdmin/Emails", Text = "Emails" },       
+    new MenuItem { Link = "/SuperAdmin/Errors", Text = "Error log" },
+    new MenuItem { Link = "/SuperAdmin/Features", Text = "Features" },
+    new MenuItem { Link = "/SuperAdmin/Subscriptions", Text = "Subscriptions" }
 })
 
 @RenderBody()

@@ -1,16 +1,18 @@
-﻿namespace ODK.Core.Subscriptions;
+﻿using ODK.Core.Countries;
+
+namespace ODK.Core.Subscriptions;
 
 public class SiteSubscriptionPrice : IDatabaseEntity
-{
-    public double Amount { get; set; }
+{    
+    public Currency Currency { get; set; } = null!;
 
-    public string CurrencyCode { get; set; } = "";
-
-    public string CurrencySymbol { get; set; } = "";
-
-    public int Months { get; set; }
+    public Guid CurrencyId { get; set; }
 
     public Guid Id { get; set; }
 
+    public double MonthlyAmount { get; set; }
+
     public Guid SiteSubscriptionId { get; set; }
+
+    public double YearlyAmount { get; set; }
 }

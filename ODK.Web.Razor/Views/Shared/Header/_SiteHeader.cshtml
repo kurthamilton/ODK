@@ -9,10 +9,13 @@
     }
 }
 
-<nav class="navbar navbar-dark bg-dark text-light">
+<nav class="navbar navbar-dark bg-dark text-light border-bottom border-light">
     <div class="container d-flex">
+        <div class="me-3">
+            <a href="/">SITE LOGO</a>
+        </div>
         <div class="me-auto">
-            SITE HEADER
+            @await Html.PartialAsync("Header/_SiteMenu")
         </div>
 
         <div>

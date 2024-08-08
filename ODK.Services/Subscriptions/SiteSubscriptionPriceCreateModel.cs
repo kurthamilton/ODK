@@ -1,12 +1,10 @@
 ﻿namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionPriceCreateModel
-{
-    public string CurrencyCode { get; set; } = "";
+{    
+    public Guid CurrencyId { get; set; }
 
-    public string CurrencySymbol { get; set; } = "";
+    public int MonthlyAmount { get; set; }
 
-    public double Amount { get; set; }
-
-    public int Months { get; set; }
+    public int YearlyAmount { get; set; }
 }

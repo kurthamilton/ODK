@@ -1,5 +1,7 @@
 ﻿@using ODK.Services.Authentication
-@if (User.Identity?.IsAuthenticated == true)
+@using ODK.Web.Common.Extensions
+
+@if (User.Authenticated())
 {
     <div class="account-links">
         <div class="dropdown">

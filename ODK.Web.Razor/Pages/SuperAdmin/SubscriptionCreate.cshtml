@@ -1,0 +1,18 @@
+﻿@page "/SuperAdmin/Subscriptions/Create"
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.SuperAdmin.SubscriptionCreateModel
+@{
+    Layout = "SuperAdmin/_SuperAdminLayout";
+    Model.Title = "Create subscription | SuperAdmin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = "/SuperAdmin/Subscriptions", Text = "Subscriptions" },
+        new MenuItem { Text = "Create" }
+    },
+    Content = await Html.PartialAsync("SuperAdmin/_SubscriptionCreateContent")
+})

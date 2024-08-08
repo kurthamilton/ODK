@@ -1,0 +1,61 @@
+﻿@using ODK.Services.Subscriptions
+@using ODK.Web.Common.Extensions
+@inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
+@{
+    var memberId = User.MemberId();
+    var subscriptions = await SiteSubscriptionAdminService.GetAllSubscriptions(memberId);
+}
+
+<h2>Subscriptions</h2>
+<p>
+    <a class="btn btn-primary" href="/SuperAdmin/Subscriptions/Create">
+        Create
+    </a>
+</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Enabled</th>            
+            <th>Group limit</th>
+            <th>Member limit</th>
+            <th>Features</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var subscription in subscriptions)
+        {
+            <tr>
+                <td>
+                    <a href="/SuperAdmin/Subscriptions/@subscription.Id">@subscription.Name</a>
+                </td>
+                <td>
+                    @if (subscription.Enabled)
+                    {
+                        <i class="fa-solid fa-circle-check text-success"></i>
+                    }
+                    else
+                    {
+                        <i class="fa-regular fa-circle-xmark text-danger"></i>
+                    }
+                </td>                                
+                <td>@subscription.GroupLimit</td>
+                <td>@subscription.MemberLimit</td>
+                <td>
+                    @if (subscription.Premium)
+                    {
+                        <i class="fa-solid fa-star text-warning" data-bs-toggle="tooltip" data-bs-title="Premium"></i>
+                    }
+                    @if (subscription.SendMemberEmails)
+                    {
+                        <i class="fas fa-envelope" data-bs-toggle="tooltip" data-bs-title="Send member emails"></i>
+                    }
+                    @if (subscription.MemberSubscriptions)
+                    {
+                        <i class="fa-solid fa-dollar-sign" data-bs-toggle="tooltip" data-bs-title="Member subscriptions"></i>
+                    }
+                </td>                
+            </tr>
+        }
+    </tbody>
+</table>

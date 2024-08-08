@@ -21,6 +21,7 @@ public interface IUnitOfWork
     ICountryRepository CountryRepository { get; }
     IChapterTextsRepository ChapterTextsRepository { get; }
     IContactRequestRepository ContactRequestRepository { get; }
+    ICurrencyRepository CurrencyRepository { get; }
     IEmailProviderRepository EmailProviderRepository { get; }
     IEmailRepository EmailRepository { get; }
     IErrorPropertyRepository ErrorPropertyRepository { get; }

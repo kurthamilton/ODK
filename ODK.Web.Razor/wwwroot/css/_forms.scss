@@ -1,13 +1,15 @@
 @import "odk/_forms";
 
 .form-inline {
-  .form-group {
-    margin-right: 1rem;
-  }
+	display: flex;
+
+	.form-group {
+		margin-right: 1rem;
+	}
   
-  .form-label {
-    margin-right: 0.5rem;	
-  }
+	.form-label {
+		margin-right: 0.5rem;	
+	}
 }
 
 .form-label {

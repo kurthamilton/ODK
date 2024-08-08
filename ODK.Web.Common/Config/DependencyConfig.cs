@@ -153,6 +153,7 @@ public static class DependencyConfig
         services.AddScoped<IRequestCache, RequestCache>();
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<ISiteSubscriptionAdminService, SiteSubscriptionAdminService>();
+        services.AddScoped<ISiteSubscriptionService, SiteSubscriptionService>();
         services.AddScoped<IVenueAdminService, VenueAdminService>();
         services.AddScoped<IVenueService, VenueService>();
     }

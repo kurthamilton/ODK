@@ -1,0 +1,8 @@
+﻿@using ODK.Web.Razor.Models.SuperAdmin
+
+<h2>Create subscription</h2>
+<form action="/SuperAdmin/Subscriptions" method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("SuperAdmin/_SubscriptionForm", new SiteSubscriptionFormViewModel())
+    <button class="btn btn-primary">Create</button>
+</form>

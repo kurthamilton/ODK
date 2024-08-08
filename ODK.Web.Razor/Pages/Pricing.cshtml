@@ -1,0 +1,13 @@
+﻿@page "/Pricing"
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.PricingModel
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Pricing";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Pricing/_PricingContent"),
+    Title = "Pricing"
+})

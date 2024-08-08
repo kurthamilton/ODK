@@ -1,0 +1,24 @@
+﻿@using ODK.Services.Subscriptions
+@inject ISiteSubscriptionService SiteSubscriptionService
+@{
+    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto();
+
+    var subscriptions = dto
+        .Subscriptions
+        .OrderBy(subscription => subscription.Prices.Min(x => x.YearlyAmount))
+        .ToArray();
+}
+
+<div class="d-flex">
+    @foreach (var subscription in subscriptions)
+    {
+        <div>
+            <div>
+                @subscription.Subscription.Name
+            </div>
+            <div>
+                @subscription.Subscription.Description
+            </div>
+        </div>
+    }
+</div>

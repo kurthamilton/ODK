@@ -1,0 +1,25 @@
+﻿@model ODK.Web.Razor.Models.SuperAdmin.SiteSubscriptionPriceFormViewModel
+@{
+    var currencyOptions = Model.CurrencyOptions        
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Code })
+        .OrderBy(x => x.Text)
+        .ToArray();
+}
+
+<div class="form-group mb-3 required">    
+    @Html.LabelFor(x => x.CurrencyId, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.CurrencyId)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.MonthlyAmount, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.MonthlyAmount, new { @class = "form-control", type = "number" })
+    @Html.ValidationMessageFor(x => x.MonthlyAmount)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.YearlyAmount, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.YearlyAmount, new { @class = "form-control", type = "number" })
+    @Html.ValidationMessageFor(x => x.YearlyAmount)
+</div>

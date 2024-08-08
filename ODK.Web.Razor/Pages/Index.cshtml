@@ -4,7 +4,7 @@
 @model IndexModel
 @inject IPlatformProvider PlatformProvider
 @{
-    Layout = "Shared/_HomeLayout.cshtml";
+    Layout = "_HomeLayout";
 
     var platform = PlatformProvider.GetPlatform();
 }
