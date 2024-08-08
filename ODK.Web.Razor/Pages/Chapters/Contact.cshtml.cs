@@ -1,18 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
-using ODK.Services.Chapters;
+using ODK.Services.Contact;
 using ODK.Web.Razor.Models.Contact;
 
 namespace ODK.Web.Razor.Pages.Chapters;
 
 public class ContactModel : ChapterPageModel
 {
-    private readonly IChapterService _chapterService;
+    private readonly IContactService _contactService;
 
-    public ContactModel(IRequestCache requestCache, IChapterService chapterService) 
+    public ContactModel(IRequestCache requestCache, IContactService contactService) 
         : base(requestCache)
     {
-        _chapterService = chapterService;
+        _contactService = contactService;
     }
 
     public bool Sent { get; private set; }
@@ -29,7 +29,7 @@ public class ContactModel : ChapterPageModel
             return Page();
         }
 
-        await _chapterService.SendContactMessage(Chapter,
+        await _contactService.SendChapterContactMessage(Chapter,
             viewModel.EmailAddress ?? "",
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");

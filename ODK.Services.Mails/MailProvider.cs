@@ -37,7 +37,7 @@ public class MailProvider : IMailProvider
                 ? x.ChapterEmailRepository.GetByChapterId(options.Chapter.Id)
                 : new DefaultDeferredQueryMultiple<ChapterEmail>(),
             x => x.EmailProviderRepository.GetAll(),
-            x => x.SiteSettingsRepository.Get(),
+            x => x.SiteEmailSettingsRepository.Get(),
             x => options.Chapter != null
                 ? x.ChapterEmailSettingsRepository.GetByChapterId(options.Chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>(),
@@ -62,7 +62,7 @@ public class MailProvider : IMailProvider
 
         var title = StringUtils.Interpolate(!string.IsNullOrEmpty(chapterSettings?.Title)
             ? chapterSettings.Title
-            : siteSettings.DefaultEmailTitle, parameters);
+            : siteSettings.Title, parameters);
         parameters.Add("title", title);        
 
         var body = StringUtils.Interpolate(!string.IsNullOrEmpty(options.Body)
@@ -92,7 +92,7 @@ public class MailProvider : IMailProvider
         {
             var to = chapterSettings != null
                 ? new MailboxAddress(chapterSettings.FromName, chapterSettings.FromEmailAddress)
-                : new MailboxAddress(siteSettings.DefaultFromEmailName, siteSettings.DefaultFromEmailAddress);
+                : new MailboxAddress(siteSettings.FromName, siteSettings.FromEmailAddress);
 
             var bcc = options.To;
             AddBulkEmailBccRecipients(message, to, bcc);
@@ -122,7 +122,7 @@ public class MailProvider : IMailProvider
     private void AddEmailFrom(
         MimeMessage message, 
         EmailProvider provider, 
-        SiteSettings siteSettings,
+        SiteEmailSettings siteSettings,
         ChapterEmailSettings? chapterSettings,
         ChapterAdminMember? fromAdminMember)
     {
@@ -136,15 +136,19 @@ public class MailProvider : IMailProvider
         }
         else
         {
-            var name = !string.IsNullOrEmpty(chapterSettings?.FromName) ? chapterSettings.FromName : siteSettings.DefaultFromEmailName;
-            var address = !string.IsNullOrEmpty(chapterSettings?.FromEmailAddress) ? chapterSettings.FromEmailAddress : siteSettings.DefaultFromEmailAddress;
+            var name = !string.IsNullOrEmpty(chapterSettings?.FromName) 
+                ? chapterSettings.FromName 
+                : siteSettings.FromName;
+            var address = !string.IsNullOrEmpty(chapterSettings?.FromEmailAddress) 
+                ? chapterSettings.FromEmailAddress 
+                : siteSettings.FromEmailAddress;
             message.From.Add(new MailboxAddress(name, address));
         }
     }
 
     private MimeMessage CreateMessage(
         EmailProvider provider, 
-        SiteSettings siteSettings,
+        SiteEmailSettings siteSettings,
         ChapterEmailSettings? chapterSettings,
         ChapterAdminMember? fromAdminMember, 
         string subject, 

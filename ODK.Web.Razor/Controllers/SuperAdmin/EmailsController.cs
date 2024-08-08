@@ -48,7 +48,11 @@ public class EmailsController : OdkControllerBase
     [HttpPost("SuperAdmin/Emails/Settings")]
     public async Task<IActionResult> UpdateSettings(SiteEmailSettingsViewModel viewModel)
     {
-        await _settingsService.UpdateEmailSettings(MemberId, viewModel.FromEmailAddress, viewModel.FromEmailName, viewModel.Title);
+        await _settingsService.UpdateEmailSettings(MemberId, 
+            viewModel.FromEmailAddress, 
+            viewModel.FromEmailName, 
+            viewModel.Title,
+            viewModel.ContactEmailAddress);
         AddFeedback("Email settings updated", FeedbackType.Success);
         return RedirectToReferrer();
     }

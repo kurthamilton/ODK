@@ -5,6 +5,11 @@ namespace ODK.Web.Razor.Models.SuperAdmin;
 
 public class SiteEmailSettingsViewModel
 {
+    [DisplayName("Contact Address")]
+    [EmailAddress]
+    [Required]
+    public string ContactEmailAddress { get; set; } = "";
+
     [DisplayName("From Address")]
     [EmailAddress]
     [Required]

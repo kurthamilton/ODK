@@ -7,7 +7,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class SiteSettingsRepository : CachingWriteRepositoryBase<SiteSettings, Guid>, ISiteSettingsRepository
 {
-    private static readonly EntityCache<Guid, SiteSettings> _cache = new EntityCache<Guid, SiteSettings>(x => x.Id);
+    private static readonly EntityCache<Guid, SiteSettings> _cache = new DatabaseEntityCache<SiteSettings>();
 
     public SiteSettingsRepository(OdkContext context)
         : base(context, _cache)

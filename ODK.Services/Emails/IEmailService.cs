@@ -22,6 +22,10 @@ public interface IEmailService
         string body);
 
     Task SendContactEmail(
+        string fromAddress,
+        string message);
+
+    Task SendContactEmail(
         Chapter chapter, 
         string fromAddress, 
         string message);

@@ -1,14 +1,16 @@
 ﻿@using ODK.Web.Razor.Models.Contact
-@model ContactContentViewModel
+@model ODK.Web.Razor.Models.Contact.ContactContentViewModel
+@{
+}
 
 <p>
-    If the <a href="/About">About</a> page hasn't answered your questions, 
+    If the <a href="/@Model.ChapterName/About">About</a> page hasn't answered your questions, 
     please don't hesitate to get in touch. We'll get back to you as soon as possible.
 </p>
 
 @if (!Model.Sent)
 {
-    <form action="/Contact" method="post">
+    <form method="post">
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("Contact/_ContactForm", new ContactFormViewModel())
         <button class="btn btn-primary">Send</button>

@@ -67,20 +67,29 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
     public async Task<SiteSettings> GetSiteSettings()
     {
-        var settings = await _unitOfWork.SiteSettingsRepository.Get().RunAsync();
-        return settings!;
+        return await _unitOfWork.SiteSettingsRepository.Get().RunAsync();        
     }
 
-    public async Task<ServiceResult> UpdateEmailSettings(Guid currentMemberId, string fromEmailAddress, string fromEmailName, string emailTitle)
+    public async Task<SiteEmailSettings> GetSiteEmailSettings()
+    {
+        return await _unitOfWork.SiteEmailSettingsRepository.Get().RunAsync();
+    }
+
+    public async Task<ServiceResult> UpdateEmailSettings(Guid currentMemberId, 
+        string fromEmailAddress, 
+        string fromEmailName, 
+        string emailTitle,
+        string contactEmailAddress)
     {
         var settings = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.SiteSettingsRepository.Get());
+            x => x.SiteEmailSettingsRepository.Get());
 
-        settings.DefaultFromEmailAddress = fromEmailAddress;
-        settings.DefaultFromEmailName = fromEmailName;
-        settings.DefaultEmailTitle = emailTitle;
+        settings.ContactEmailAddress = contactEmailAddress;
+        settings.FromEmailAddress = fromEmailAddress;
+        settings.FromName = fromEmailName;
+        settings.Title = emailTitle;
 
-        _unitOfWork.SiteSettingsRepository.Update(settings);
+        _unitOfWork.SiteEmailSettingsRepository.Update(settings);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();

@@ -1,0 +1,26 @@
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Platforms
+@inject IPlatformProvider PlatformProvider
+@{
+    var platform = PlatformProvider.GetPlatform();
+    if (platform != PlatformType.Default)
+    {
+        return;
+    }
+}
+
+<footer>
+    <section class="section--footer">
+        <div class="container">
+            <div>
+                <a href="/">Home</a>
+            </div>
+            <div>
+                <a href="/Privacy">Privacy</a>
+            </div>
+            <div>
+                <a href="/Contact">Contact</a>
+            </div>
+        </div>
+    </section>
+</footer>

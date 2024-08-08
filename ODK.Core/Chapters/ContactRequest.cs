@@ -1,8 +1,8 @@
 ﻿namespace ODK.Core.Chapters;
 
-public class ContactRequest : IDatabaseEntity, IChapterEntity
+public class ContactRequest : IDatabaseEntity
 {
-    public Guid ChapterId { get; set; }
+    public Guid? ChapterId { get; set; }
 
     public DateTime CreatedUtc { get; set; }
 

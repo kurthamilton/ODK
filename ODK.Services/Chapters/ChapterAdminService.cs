@@ -188,7 +188,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var contactRequest = await GetChapterAdminRestrictedContent(request,
             x => x.ContactRequestRepository.GetById(id));
 
-        OdkAssertions.BelongsToChapter(contactRequest, request.ChapterId);
+        OdkAssertions.MeetsCondition(contactRequest, x => x.ChapterId == request.ChapterId);
 
         _unitOfWork.ContactRequestRepository.Delete(contactRequest);
         await _unitOfWork.SaveChangesAsync();

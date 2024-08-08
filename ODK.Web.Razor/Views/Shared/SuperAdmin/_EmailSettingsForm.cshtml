@@ -1,6 +1,12 @@
 ﻿@using ODK.Web.Razor.Models.SuperAdmin
 @model SiteEmailSettingsViewModel
 
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.ContactEmailAddress)
+    @Html.TextBoxFor(x => x.ContactEmailAddress, new { @class = "form-control", type = "email" })
+    @Html.ValidationMessageFor(x => x.ContactEmailAddress)
+</div>
+
 <div class="row mb-3">
     <div class="form-group col-md-6 required">
         @Html.LabelFor(x => x.FromEmailAddress)

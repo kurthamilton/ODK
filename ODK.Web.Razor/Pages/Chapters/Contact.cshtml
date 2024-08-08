@@ -21,8 +21,9 @@
         new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
         new MenuItem { Text = "Contact" }
     },
-    Content = await Html.PartialAsync("Contact/_ContactContent", new ContactContentViewModel(Model.Chapter)
+    Content = await Html.PartialAsync("Contact/_ChapterContactContent", new ContactContentViewModel
     {
+        ChapterName = Model.Chapter.Name,
         Sent = Model.Sent
     })
 })

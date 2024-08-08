@@ -1,32 +1,23 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
-using ODK.Services.Emails;
-using ODK.Services.Exceptions;
-using ODK.Services.Recaptcha;
 
 namespace ODK.Services.Chapters;
 
 public class ChapterService : IChapterService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly ICacheService _cacheService;
-    private readonly IEmailService _emailService;
-    private readonly IRecaptchaService _recaptchaService;
+    private readonly ICacheService _cacheService;    
     private readonly IUnitOfWork _unitOfWork;
     
-    public ChapterService(IUnitOfWork unitOfWork, ICacheService cacheService, IEmailService emailService,
-        IAuthorizationService authorizationService, IRecaptchaService recaptchaService)
+    public ChapterService(IUnitOfWork unitOfWork, ICacheService cacheService, IAuthorizationService authorizationService)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
-        _emailService = emailService;
-        _recaptchaService = recaptchaService;
         _unitOfWork = unitOfWork;
     }
     
@@ -114,36 +105,5 @@ public class ChapterService : IChapterService
     public Task<ChapterTexts> GetChapterTexts(Guid chapterId)
     {
         return _unitOfWork.ChapterTextsRepository.GetByChapterId(chapterId).RunAsync();
-    }
-
-    public async Task SendContactMessage(Chapter chapter, string fromAddress, string message, string recaptchaToken)
-    {
-        if (string.IsNullOrWhiteSpace(fromAddress) || string.IsNullOrWhiteSpace(message))
-        {
-            throw new OdkServiceException("Email address and message must be provided");
-        }
-
-        if (!MailUtils.ValidEmailAddress(fromAddress))
-        {
-            throw new OdkServiceException("Invalid email address format");
-        }
-
-        var recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);
-        if (!_recaptchaService.Success(recaptchaResponse))
-        {
-            message = $"[FLAGGED AS SPAM: {recaptchaResponse.Score} / 1.0] {message}";
-        }
-
-        _unitOfWork.ContactRequestRepository.Add(new ContactRequest
-        {
-            ChapterId = chapter.Id,
-            CreatedUtc = DateTime.UtcNow,
-            FromAddress = fromAddress,
-            Message = message,
-            Sent = false
-        });
-        await _unitOfWork.SaveChangesAsync();        
-
-        await _emailService.SendContactEmail(chapter, fromAddress, message);
-    }
+    }    
 }

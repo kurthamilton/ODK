@@ -16,7 +16,5 @@ public interface IChapterService
 
     Task<ChaptersDto> GetChaptersDto();
 
-    Task<ChapterTexts> GetChapterTexts(Guid chapterId);
-
-    Task SendContactMessage(Chapter chapter, string emailAddress, string message, string recaptchaToken);
+    Task<ChapterTexts> GetChapterTexts(Guid chapterId);    
 }

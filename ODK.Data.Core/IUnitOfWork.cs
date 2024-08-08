@@ -46,6 +46,7 @@ public interface IUnitOfWork
     IMemberRepository MemberRepository { get; }
     IMemberSubscriptionRepository MemberSubscriptionRepository { get; }
     IPaymentRepository PaymentRepository { get; }    
+    ISiteEmailSettingsRepository SiteEmailSettingsRepository { get; }
     ISiteSettingsRepository SiteSettingsRepository { get; }
     ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository { get; }
     ISiteSubscriptionRepository SiteSubscriptionRepository { get; }

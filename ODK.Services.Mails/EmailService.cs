@@ -59,6 +59,32 @@ public class EmailService : IEmailService
         await _mailProvider.SendEmail(options);
     }
 
+    public async Task SendContactEmail(string fromAddress, string message)
+    {
+        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            {"from", fromAddress},
+            {"message", HttpUtility.HtmlEncode(message)}
+        };
+
+        var settings = await _unitOfWork.SiteEmailSettingsRepository
+            .Get()
+            .RunAsync();
+
+        var to = new EmailAddressee(settings.ContactEmailAddress, "");
+
+        var options = new SendEmailOptions
+        {
+            Body = "",
+            Parameters = parameters,
+            Subject = "",
+            To = [to],
+            Type = EmailType.ContactRequest
+        };
+
+        await _mailProvider.SendEmail(options);
+    }
+
     public async Task SendContactEmail(Chapter chapter, string from, string message)
     {
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

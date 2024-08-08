@@ -11,6 +11,7 @@ using ODK.Services.Authentication;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
+using ODK.Services.Contact;
 using ODK.Services.Countries;
 using ODK.Services.Emails;
 using ODK.Services.Events;
@@ -104,6 +105,7 @@ public static class DependencyConfig
         services.AddScoped<IChapterService, ChapterService>();
         services.AddScoped<IChapterUrlService, ChapterUrlService>();
         services.AddScoped<IChapterViewModelService, ChapterViewModelService>();
+        services.AddScoped<IContactService, ContactService>();
         services.AddScoped<ICountryService, CountryService>();
         services.AddScoped<ICsvService, CsvService>();
         services.AddScoped<IEmailAdminService, EmailAdminService>();
