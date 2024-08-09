@@ -15,6 +15,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterEmailSettingsRepository> _chapterEmailSettingsRepository;
     private readonly Lazy<IChapterEventSettingsRepository> _chapterEventSettingsRepository;
     private readonly Lazy<IChapterLinksRepository> _chapterLinksRepository;
+    private readonly Lazy<IChapterLocationRepository> _chapterLocationRepository;
     private readonly Lazy<IChapterMembershipSettingsRepository> _chapterMembershipSettingsRepository;
     private readonly Lazy<IChapterPaymentSettingsRepository> _chapterPaymentSettingsRepository;
     private readonly Lazy<IChapterPropertyOptionRepository> _chapterPropertyOptionRepository;
@@ -44,6 +45,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberEmailAddressUpdateTokenRepository> _memberEmailAddressUpdateTokenRepository;
     private readonly Lazy<IMemberChapterRepository> _memberChapterRepository;
     private readonly Lazy<IMemberImageRepository> _memberImageRepository;
+    private readonly Lazy<IMemberLocationRepository> _memberLocationRepository;
     private readonly Lazy<IMemberPasswordRepository> _memberPasswordRepository;
     private readonly Lazy<IMemberPasswordResetRequestRepository> _memberPasswordResetRequestRepository;
     private readonly Lazy<IMemberPrivacySettingsRepository> _memberPrivacySettingsRepository;
@@ -67,6 +69,7 @@ public class UnitOfWork : IUnitOfWork
         _chapterEmailSettingsRepository = new(() => new ChapterEmailSettingsRepository(_context));
         _chapterEventSettingsRepository = new(() => new ChapterEventSettingsRepository(_context));
         _chapterLinksRepository = new(() => new ChapterLinksRepository(_context));
+        _chapterLocationRepository = new(() => new ChapterLocationRepository(_context));
         _chapterMembershipSettingsRepository = new(() => new ChapterMembershipSettingsRepository(_context));
         _chapterPaymentSettingsRepository = new(() => new ChapterPaymentSettingsRepository(_context));
         _chapterPropertyOptionRepository = new(() => new ChapterPropertyOptionRepository(_context));
@@ -96,6 +99,7 @@ public class UnitOfWork : IUnitOfWork
         _memberChapterRepository = new(() => new MemberChapterRepository(_context));
         _memberEmailAddressUpdateTokenRepository = new(() => new MemberEmailAddressUpdateTokenRepository(_context));
         _memberImageRepository = new(() => new MemberImageRepository(_context));
+        _memberLocationRepository = new(() => new MemberLocationRepository(_context));
         _memberPasswordRepository = new(() => new MemberPasswordRepository(_context));
         _memberPasswordResetRequestRepository = new(() => new MemberPasswordResetRequestRepository(_context));
         _memberPrivacySettingsRepository = new(() => new MemberPrivacySettingsRepository(_context));
@@ -116,6 +120,7 @@ public class UnitOfWork : IUnitOfWork
     public IChapterEmailSettingsRepository ChapterEmailSettingsRepository => _chapterEmailSettingsRepository.Value;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => _chapterEventSettingsRepository.Value;
     public IChapterLinksRepository ChapterLinksRepository => _chapterLinksRepository.Value;
+    public IChapterLocationRepository ChapterLocationRepository => _chapterLocationRepository.Value;
     public IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository => _chapterMembershipSettingsRepository.Value;
     public IChapterPaymentSettingsRepository ChapterPaymentSettingsRepository => _chapterPaymentSettingsRepository.Value;
     public IChapterPropertyOptionRepository ChapterPropertyOptionRepository => _chapterPropertyOptionRepository.Value;
@@ -145,6 +150,7 @@ public class UnitOfWork : IUnitOfWork
     public IMemberChapterRepository MemberChapterRepository => _memberChapterRepository.Value;
     public IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository => _memberEmailAddressUpdateTokenRepository.Value;
     public IMemberImageRepository MemberImageRepository => _memberImageRepository.Value;
+    public IMemberLocationRepository MemberLocationRepository => _memberLocationRepository.Value;
     public IMemberPasswordRepository MemberPasswordRepository => _memberPasswordRepository.Value;
     public IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository => _memberPasswordResetRequestRepository.Value;
     public IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository => _memberPrivacySettingsRepository.Value;

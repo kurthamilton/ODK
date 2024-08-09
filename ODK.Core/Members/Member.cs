@@ -26,10 +26,6 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public string LastName { get; set; } = "";
 
-    public LatLong? Location { get; set; }
-
-    public string? LocationName { get; set; }
-
     public ICollection<MemberChapterPrivacySettings> PrivacySettings { get; set; } = new HashSet<MemberChapterPrivacySettings>();
 
     public bool SuperAdmin { get; set; }

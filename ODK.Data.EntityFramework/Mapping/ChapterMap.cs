@@ -20,10 +20,7 @@ public class ChapterMap : IEntityTypeConfiguration<Chapter>
         builder.Property(x => x.BannerImageUrl).HasColumnName("BannerImageUrl");
 
         builder.Property(x => x.CreatedUtc)
-            .HasConversion<UtcDateTimeConverter>();
-
-        builder.Property(x => x.Location)
-            .HasConversion<NullableLatLongConverter>();
+            .HasConversion<UtcDateTimeConverter>();        
 
         builder.Property(x => x.Platform)
             .HasColumnName("PlatformTypeId")

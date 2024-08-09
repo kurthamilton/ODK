@@ -1,4 +1,5 @@
 ﻿@page "/{chapterName}/Events"
+@using ODK.Core
 @using ODK.Services.Events
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
@@ -9,6 +10,8 @@
     Model.Title = "Events";
 
     var viewModel = await EventViewModelService.GetEventsPage(Model.CurrentMemberIdOrDefault, Model.ChapterName);
+
+    OdkAssertions.MeetsCondition(viewModel.Chapter, x => x.IsOpenForRegistration());
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

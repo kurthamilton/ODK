@@ -313,6 +313,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId));
     }
 
+    public async Task<ChapterLocation?> GetChapterLocation(AdminServiceRequest request)
+    {
+        var chapter = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
+
+        var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(request.ChapterId);
+        return location;
+    }
+
     public async Task<ChapterMembershipSettings?> GetChapterMembershipSettings(AdminServiceRequest request)
     {
         return await GetChapterAdminRestrictedContent(request,
@@ -503,18 +512,34 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var chapter = await GetSuperAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId));
 
+        var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(request.ChapterId);
+
+        if (chapterLocation == null)
+        {
+            chapterLocation = new ChapterLocation();
+        }
+        
         if (location != null && !string.IsNullOrEmpty(name))
         {
-            chapter.Location = location;
-            chapter.LocationName = name;
+            chapterLocation.LatLong = location;
+            chapterLocation.Name = name;
         }        
         else
         {
-            chapter.Location = null;
-            chapter.LocationName = null;
+            chapterLocation.LatLong = null;
+            chapterLocation.Name = null;
         }
 
-        _unitOfWork.ChapterRepository.Update(chapter);
+        if (chapterLocation.ChapterId == default)
+        {
+            chapterLocation.ChapterId = chapter.Id;
+            _unitOfWork.ChapterLocationRepository.Update(chapterLocation);
+        }
+        else
+        {
+            _unitOfWork.ChapterLocationRepository.Update(chapterLocation);
+        }
+        
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();

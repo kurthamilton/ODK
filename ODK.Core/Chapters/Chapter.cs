@@ -19,10 +19,6 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public Guid Id { get; set; }
 
-    public LatLong? Location { get; set; }
-
-    public string? LocationName { get; set; }
-
     public string Name { get; set; } = "";
 
     public Guid? OwnerId { get; set; }
@@ -36,6 +32,8 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
     public string Slug { get; set; } = "";
 
     public TimeZoneInfo? TimeZone { get; set; }
+
+    public bool IsOpenForRegistration() => ApprovedUtc != null && PublishedUtc != null;
 
     public DateTime ToChapterTime(DateTime utc) => TimeZone != null
         ? TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Countries;
 using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
@@ -35,14 +36,20 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("Account/Join")]
-    public async Task<IActionResult> Join([FromForm] PersonalDetailsFormViewModel viewModel)
+    [HttpPost("account/create")]
+    public async Task<IActionResult> Create(
+        [FromForm] PersonalDetailsFormViewModel personalDetails,
+        [FromForm] LocationFormViewModel location)
     {
         var model = new CreateAccountModel
         {
-            EmailAddress = viewModel.EmailAddress,            
-            FirstName = viewModel.FirstName,            
-            LastName = viewModel.LastName            
+            EmailAddress = personalDetails.EmailAddress,            
+            FirstName = personalDetails.FirstName,            
+            LastName = personalDetails.LastName,
+            Location = location.Lat != null && location.Long != null 
+                ? new LatLong(location.Lat.Value, location.Long.Value)
+                : default(LatLong?),
+            LocationName = location.LocationName
         };
 
         var result = await _memberService.CreateAccount(model);
@@ -91,7 +98,7 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("Account/Login")]
+    [HttpPost("account/login")]
     public async Task<IActionResult> Login([FromForm] LoginViewModel viewModel, string? returnUrl)
     {
         var result = await _loginHandler.Login(HttpContext, viewModel.Email ?? "",
@@ -135,7 +142,7 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("Account/Delete")]
+    [HttpPost("account/delete")]
     public async Task<IActionResult> DeleteAccount()
     {
         await _memberService.DeleteMember(MemberId);
@@ -143,7 +150,7 @@ public class AccountController : OdkControllerBase
         return Redirect("/");
     }
 
-    [HttpPost("Account/Email/Change")]
+    [HttpPost("account/email/change")]
     public Task<IActionResult> ChangeEmailRequest([FromForm] ChangeEmailFormViewModel viewModel)
     {
         throw new NotImplementedException();
@@ -201,7 +208,20 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("Account/PersonalDetails")]
+    [HttpPost("account/location")]
+    public async Task<IActionResult> UpdateLocation([FromForm] LocationFormViewModel viewModel)
+    {
+        var location = viewModel.Lat != null && viewModel.Long != null
+            ? new LatLong(viewModel.Lat.Value, viewModel.Long.Value) 
+            : default(LatLong?);
+        await _memberService.UpdateMemberLocation(MemberId, location, viewModel.LocationName);
+
+        AddFeedback("Location updated", FeedbackType.Success);
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("account/personaldetails")]
     public async Task<IActionResult> UpdatePersonalDetails([FromForm] PersonalDetailsFormViewModel viewModel)
     {
         var model = new UpdateMemberSiteProfile
@@ -261,7 +281,7 @@ public class AccountController : OdkControllerBase
         return Ok();
     }    
 
-    [HttpPost("Account/Password/Change")]
+    [HttpPost("account/password/change")]
     public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordFormViewModel viewModel)
     {
         var result = await _authenticationService.ChangePasswordAsync(MemberId, 
@@ -293,7 +313,7 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("Account/Picture/Change")]
+    [HttpPost("account/picture/change")]
     public async Task<IActionResult> UpdatePicture([FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
     {
         return await UpdatePicture("", cropInfo, image);
@@ -313,7 +333,7 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("Account/Picture/Rotate")]
+    [HttpPost("account/picture/rotate")]
     public async Task<IActionResult> RotatePicture()
     {
         return await RotatePicture("");

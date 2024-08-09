@@ -2,7 +2,6 @@
     bindFeaturePopovers();
     bindForms();
     bindImages();
-    bindMaps();
     bindMenuLinks();
     bindPopovers();
     bindTooltips();    
@@ -108,36 +107,7 @@
                 image.onerror = () => loadFallback(image);
             }            
         });
-    }
-
-    function bindMaps() {
-        const $maps = document.querySelectorAll('[data-map-baseurl]');
-        $maps.forEach($map => {
-            const sourceSelector = $map.getAttribute('data-map-query');
-            if (!sourceSelector) {
-                return;
-            }
-
-            const $source = document.querySelector(sourceSelector);
-            if (!$source) {
-                return;
-            }
-
-            const baseUrl = $map.getAttribute('data-map-baseurl');
-
-            function updateUrl() {
-                const query = $source.value;
-                const url = baseUrl.replace('{query}', encodeURIComponent(query));
-                $map.setAttribute('src', url);
-            }
-            
-            $source.addEventListener('change', () => {
-                updateUrl();
-            });
-
-            updateUrl();
-        });
-    }
+    }    
 
     function bindMenuLinks() {
         const currentPath = window.location.pathname.toLocaleLowerCase();

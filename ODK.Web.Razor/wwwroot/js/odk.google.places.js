@@ -27,10 +27,13 @@
                 const location = place.geometry.location;
                 const [lat, long] = [location.lat(), location.lng()];
                 $lat.value = lat;
-                $long.value = long;                
-                $name.value = $input.value;
+                $long.value = long;                                
                 $latlong.value = `${lat},${long}`;
                 $latlong.dispatchEvent(new Event('change'));
+
+                if ($name) {
+                    $name.value = $input.value;
+                }
             });
 
             $input.addEventListener('keydown', e => {

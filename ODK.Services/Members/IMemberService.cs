@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Members;
 
 namespace ODK.Services.Members;
@@ -15,11 +16,13 @@ public interface IMemberService
 
     Task<Member> GetMember(Guid memberId);
 
-    Task<Member> GetMember(Guid memberId, Guid chapterId);    
+    Task<Member> GetMember(Guid memberId, Guid chapterId);
+
+    Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId);
 
-    Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
+    Task<MemberLocation?> GetMemberLocation(Guid memberId);
 
     Task<MemberProfile?> GetMemberProfile(Guid chapterId, Guid currentMemberId, Member member);
 
@@ -35,9 +38,11 @@ public interface IMemberService
 
     Task UpdateMemberEmailOptIn(Guid memberId, bool optIn);
 
-    Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage? model, MemberImageCropInfo cropInfo);
+    Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage? model, MemberImageCropInfo cropInfo);    
 
     Task<ServiceResult> UpdateMemberChapterProfile(Guid id, Guid chapterId, UpdateMemberChapterProfile model);
+
+    Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name);
 
     Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model);
 }

@@ -1,10 +1,13 @@
 ﻿@page "/{chapterName}/Account/Login"
+@using ODK.Core
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Login
 @model ODK.Web.Razor.Pages.Chapters.Account.LoginModel
 @{
     Layout = "_ChapterLayout";
     Model.Title = "Login";
+
+    OdkAssertions.MeetsCondition(Model.Chapter, x => x.IsOpenForRegistration());
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

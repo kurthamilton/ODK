@@ -6,7 +6,7 @@ public abstract class RepositoryBase
     private readonly DbContext _context;
 
     protected RepositoryBase(OdkContext context)
-    {
+    {        
         _context = context;
         _context.SavedChanges += OnContextSavedChanges;
     }    

@@ -64,6 +64,8 @@ public class ChapterViewModelService : IChapterViewModelService
     public async Task<ChapterHomePageViewModel> GetHomePage(Guid? currentMemberId, string chapterName)
     {
         var chapter = await GetChapter(chapterName);
+        OdkAssertions.MeetsCondition(chapter, x => x.IsOpenForRegistration());
+
         var today = chapter.TodayUtc();
 
         var (currentMember, events, links, texts, instagramPosts, latestMembers) = await _unitOfWork.RunAsync(
