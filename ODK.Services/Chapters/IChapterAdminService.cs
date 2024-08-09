@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
 
 namespace ODK.Services.Chapters;
 
@@ -62,6 +63,9 @@ public interface IChapterAdminService
     Task UpdateChapterLinks(AdminServiceRequest request, UpdateChapterLinks model);
 
     Task UpdateChapterEventSettings(AdminServiceRequest request, UpdateChapterEventSettings model);
+
+    Task<ServiceResult> UpdateChapterLocation(AdminServiceRequest request,
+        LatLong? location, string? name);
 
     Task<ServiceResult> UpdateChapterMembershipSettings(AdminServiceRequest request, 
         UpdateChapterMembershipSettings model);

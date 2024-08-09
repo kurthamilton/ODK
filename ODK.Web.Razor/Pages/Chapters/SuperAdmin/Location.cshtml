@@ -1,0 +1,17 @@
+﻿@page "/{chapterName}/Admin/SuperAdmin/Location"
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Chapters.SuperAdmin.LocationModel
+@{
+    Layout = "SuperAdmin/_SuperAdminLayout";
+    Model.Title = "Location | SuperAdmin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Chapters/SuperAdmin/_LocationContent", Model.Chapter)
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/_GoogleLocationScripts")
+}

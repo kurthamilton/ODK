@@ -20,6 +20,6 @@ public class EventMap : IEntityTypeConfiguration<Event>
             .HasColumnName("EventId");
 
         builder.Property(x => x.PublishedUtc)
-            .HasConversion<UtcNullableDateTimeConverter>();
+            .HasConversion<NullableUtcDateTimeConverter>();
     }
 }

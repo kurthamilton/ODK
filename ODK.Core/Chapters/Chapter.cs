@@ -1,4 +1,5 @@
-﻿using ODK.Core.Platforms;
+﻿using ODK.Core.Countries;
+using ODK.Core.Platforms;
 
 namespace ODK.Core.Chapters;
 
@@ -17,6 +18,10 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
     public int? DisplayOrder { get; set; }
 
     public Guid Id { get; set; }
+
+    public LatLong? Location { get; set; }
+
+    public string? LocationName { get; set; }
 
     public string Name { get; set; } = "";
 

@@ -17,6 +17,7 @@ public class OdkContext : DbContext
             .UseSqlServer(_settings.ConnectionString, options =>
             {
                 options.EnableRetryOnFailure();
+                options.UseNetTopologySuite();
             })
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
             .AddInterceptors(new DebugInterceptor());

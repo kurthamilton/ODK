@@ -1,8 +1,12 @@
-﻿namespace ODK.Web.Razor.Models.Components;
+﻿using ODK.Core.Countries;
+
+namespace ODK.Web.Razor.Models.Components;
 
 public class GoogleMapViewModel
 {
-    public string? Query { get; set; }
+    public LatLong? LatLong { get; init; }
 
-    public string? QuerySource { get; set; }
+    public string? Query { get; init; }
+
+    public string? QuerySource { get; init; }
 }

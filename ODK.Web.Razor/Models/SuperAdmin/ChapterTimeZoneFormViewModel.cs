@@ -2,7 +2,7 @@
 
 namespace ODK.Web.Razor.Models.SuperAdmin;
 
-public class TimeZoneFormViewModel
+public class ChapterTimeZoneFormViewModel
 {
     [DisplayName("Time zone")]
     public string? TimeZone { get; set; }

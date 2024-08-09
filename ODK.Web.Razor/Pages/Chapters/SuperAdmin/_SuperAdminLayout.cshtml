@@ -17,8 +17,13 @@
 {
     new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Members", Text = "Members" },
     new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Payments", Text = "Payments" },
-    new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/TimeZone", Text = "Time zone" },
+    new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Location", Text = "Location" },
     new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Instagram", Text = "Instagram" },
 })
 
 @RenderBody()
+
+@section scripts
+{
+    @await RenderSectionAsync("scripts", required: false)
+}

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Emails;
+﻿using ODK.Core.Countries;
+using ODK.Core.Emails;
 using ODK.Core.Utils;
 
 namespace ODK.Core.Members;
@@ -24,6 +25,10 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
     public Guid Id { get; set; }
 
     public string LastName { get; set; } = "";
+
+    public LatLong? Location { get; set; }
+
+    public string? LocationName { get; set; }
 
     public ICollection<MemberChapterPrivacySettings> PrivacySettings { get; set; } = new HashSet<MemberChapterPrivacySettings>();
 

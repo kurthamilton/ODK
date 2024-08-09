@@ -2,9 +2,9 @@
 
 namespace ODK.Data.EntityFramework.Converters;
 
-internal class UtcNullableDateTimeConverter : ValueConverter<DateTime?, DateTime?>
+internal class NullableUtcDateTimeConverter : ValueConverter<DateTime?, DateTime?>
 {
-    public UtcNullableDateTimeConverter()
+    public NullableUtcDateTimeConverter()
         : base(
             x =>  x != null ? x.Value.ToUniversalTime() : null,
             x => x != null ? DateTime.SpecifyKind(x.Value, DateTimeKind.Utc) : null)

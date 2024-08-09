@@ -153,13 +153,16 @@ public class MemberService : IMemberService
         var member = new Member
         {
             Activated = false,
-            CreatedUtc = DateTime.UtcNow,
+            CreatedUtc = now,
             Disabled = false,
             EmailAddress = model.EmailAddress,
             EmailOptIn = model.EmailOptIn ?? false,
             FirstName = model.FirstName,
             LastName = model.LastName,
-            SuperAdmin = false            
+            Location = chapter.Location,
+            LocationName = chapter.LocationName,
+            SuperAdmin = false,
+            TimeZone = chapter.TimeZone
         };
         _unitOfWork.MemberRepository.Add(member);
 

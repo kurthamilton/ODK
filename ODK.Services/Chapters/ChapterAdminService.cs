@@ -1,5 +1,6 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.DataTypes;
 using ODK.Core.Members;
 using ODK.Data.Core;
@@ -494,6 +495,29 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<ServiceResult> UpdateChapterLocation(AdminServiceRequest request,
+        LatLong? location, string? name)
+    {
+        var chapter = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
+
+        if (location != null && !string.IsNullOrEmpty(name))
+        {
+            chapter.Location = location;
+            chapter.LocationName = name;
+        }        
+        else
+        {
+            chapter.Location = null;
+            chapter.LocationName = null;
+        }
+
+        _unitOfWork.ChapterRepository.Update(chapter);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> UpdateChapterMembershipSettings(AdminServiceRequest request, 

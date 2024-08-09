@@ -1,0 +1,9 @@
+﻿@using ODK.Services.Settings
+@inject ISettingsService SettingsService
+@{
+    var settings = await SettingsService.GetSiteSettings();
+    var apiKey = settings.GoogleMapsApiKey;
+}
+
+<script src="/js/odk.google.places.js"></script>
+<script async src="https://maps.googleapis.com/maps/api/js?key=@apiKey&loading=async&libraries=places&callback=initMap"></script>

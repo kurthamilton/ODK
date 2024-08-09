@@ -1,0 +1,10 @@
+﻿@using ODK.Web.Razor.Razor
+@model ODK.Web.Razor.Models.SuperAdmin.ChapterLocationFormViewModel
+
+<div class="form-group mb-3" data-location-container>
+    <label class="form-label">Location</label>
+    <input type="text" class="form-control" placeholder="@Model.Name" data-location />
+    @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
+    @Html.HiddenFor(x => x.Long, new { data_location_long = "" })
+    @Html.HiddenFor(x => x.Name, new { data_location_name = "" })
+</div>

@@ -1,23 +1,35 @@
 ﻿@using ODK.Core.Settings
 @using ODK.Services.Settings
+@using System.Web
 @model ODK.Web.Razor.Models.Components.GoogleMapViewModel
 @inject ISettingsService SettingsService
 @{
-    if (string.IsNullOrEmpty(Model.Query) && string.IsNullOrEmpty(Model.QuerySource))
+    if (string.IsNullOrEmpty(Model.Query) && 
+        string.IsNullOrEmpty(Model.QuerySource) && 
+        Model.LatLong == null)
     {
         return;
     }
 
     var settings = await SettingsService.GetSiteSettings();
-    var baseUrl = $"https://www.google.com/maps/embed/v1/place?key={settings.GoogleMapsApiKey}&q={{query}}";
-    var url = !string.IsNullOrEmpty(Model.Query) 
-        ? baseUrl.Replace("{query}", Model.Query)
-        : "";
+    var url = $"https://www.google.com/maps/embed/v1/place?key={settings.GoogleMapsApiKey}";
+    if (!string.IsNullOrEmpty(Model.Query))
+    {
+        url += $"&q={HttpUtility.UrlEncode(Model.Query)}";
+    }
+    else if (Model.LatLong != null)
+    {
+        url += $"&q={Model.LatLong.Value.Lat},{Model.LatLong.Value.Long}";
+    }
+    else
+    {
+        url = "";
+    }
 }
 
 <iframe height="450" frameborder="0" style="border:0; width: 100%;"
         src="@url"
-        data-map-baseurl="@baseUrl"
+        data-map-baseurl="@url"
         data-map-query="@Model.QuerySource"
         allowfullscreen>
 </iframe>

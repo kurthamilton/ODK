@@ -14,7 +14,7 @@ public class MemberSiteSubscriptionMap : IEntityTypeConfiguration<MemberSiteSubs
         builder.HasKey(x => new { x.MemberId, x.SiteSubscriptionId });
 
         builder.Property(x => x.ExpiresUtc)
-            .HasConversion<UtcNullableDateTimeConverter>();
+            .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.HasOne<Member>()
             .WithOne()
