@@ -35,6 +35,8 @@ public interface IChapterAdminService
 
     Task<ChapterLinks?> GetChapterLinks(AdminServiceRequest request);
 
+    Task<ChapterLocation?> GetChapterLocation(AdminServiceRequest request);
+
     Task<ChapterMembershipSettings?> GetChapterMembershipSettings(AdminServiceRequest request);
 
     Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(AdminServiceRequest request);

@@ -11,6 +11,7 @@ public interface IUnitOfWork
     IChapterEmailSettingsRepository ChapterEmailSettingsRepository { get; }
     IChapterEventSettingsRepository ChapterEventSettingsRepository { get; }
     IChapterLinksRepository ChapterLinksRepository { get; }
+    IChapterLocationRepository ChapterLocationRepository { get; }
     IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository { get; }
     IChapterPaymentSettingsRepository ChapterPaymentSettingsRepository { get; }
     IChapterPropertyOptionRepository ChapterPropertyOptionRepository { get; }
@@ -43,6 +44,7 @@ public interface IUnitOfWork
     IMemberPasswordRepository MemberPasswordRepository { get; }
     IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository { get; }
     IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository { get; }
+    IMemberLocationRepository MemberLocationRepository { get; }
     IMemberPropertyRepository MemberPropertyRepository { get; }
     IMemberRepository MemberRepository { get; }
     IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository { get; }

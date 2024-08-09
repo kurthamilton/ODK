@@ -1,4 +1,5 @@
 ﻿@page "/{chapterName}/Contact"
+@using ODK.Core
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Contact
@@ -9,6 +10,8 @@
 @{
     Layout = "_ChapterLayout";
     Model.Title = "Contact";
+
+    OdkAssertions.MeetsCondition(Model.Chapter, x => x.IsOpenForRegistration());
 
     var settings = await SettingsService.GetSiteSettings();
 }

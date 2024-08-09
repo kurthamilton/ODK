@@ -20,9 +20,6 @@ public class MemberMap : IEntityTypeConfiguration<Member>
         builder.Property(x => x.Id)
             .HasColumnName("MemberId");
 
-        builder.Property(x => x.Location)
-            .HasConversion<NullableLatLongConverter>();
-
         builder.Property(x => x.TimeZone)
             .HasConversion<TimeZoneConverter>();
 

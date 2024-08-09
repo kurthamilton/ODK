@@ -19,9 +19,9 @@
         </div>
     }
     else
-    {
-        <span class="ms-1 text-muted">You will need access to this email to verify your account</span>
+    {        
         @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control", type = "Email" })
+        <div class="ms-1 text-muted">You will need access to this email to verify your account</div>
         @Html.ValidationMessageFor(x => x.EmailAddress)
     }
 </div>

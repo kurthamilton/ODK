@@ -1,4 +1,5 @@
 ﻿@page "/{chapterName}/About"
+@using ODK.Core
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.About
@@ -6,6 +7,8 @@
 @{
     Layout = "_ChapterLayout";
     Model.Title = "About";
+
+    OdkAssertions.MeetsCondition(Model.Chapter, x => x.IsOpenForRegistration());
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

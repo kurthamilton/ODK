@@ -2,18 +2,19 @@
 
 public class AccountRoutes : RoutesBase
 {
-    public string Delete(string? chapterName) => AccountPath(chapterName, "Delete");
-    public string EmailAddressChange(string? chapterName) => AccountPath(chapterName, "Email/Change");
-    public string EmailPreferences(string? chapterName) => AccountPath(chapterName, "Emails");
-    public string Join(string? chapterName) => AccountPath(chapterName, "Join");
-    public string PasswordChange(string? chapterName) => AccountPath(chapterName, "Password/Change");
+    public string Delete(string? chapterName) => AccountPath(chapterName, "delete");
+    public string EmailAddressChange(string? chapterName) => AccountPath(chapterName, "email/change");
+    public string EmailPreferences(string? chapterName) => AccountPath(chapterName, "emails");
+    public string Join(string? chapterName) => AccountPath(chapterName, "join");
+    public string Location(string? chapterName) => AccountPath(chapterName, "location");
+    public string PasswordChange(string? chapterName) => AccountPath(chapterName, "password/change");
     public string PersonalDetails(string? chapterName) => AccountPath(chapterName, "");
-    public string Picture(string? chapterName) => AccountPath(chapterName, "Picture");
-    public string PictureRotate(string? chapterName) => AccountPath(chapterName, "Picture/Rotate");
-    public string PictureUpload(string? chapterName) => AccountPath(chapterName, "Picture/Change");
-    public string Profile(string chapterName) => AccountPath(chapterName, "Profile");
-    public string Subscription(string? chapterName) => AccountPath(chapterName, "Subscription");
+    public string Picture(string? chapterName) => AccountPath(chapterName, "picture");
+    public string PictureRotate(string? chapterName) => AccountPath(chapterName, "picture/rotate");
+    public string PictureUpload(string? chapterName) => AccountPath(chapterName, "picture/change");
+    public string Profile(string chapterName) => AccountPath(chapterName, "profile");
+    public string Subscription(string? chapterName) => AccountPath(chapterName, "subscription");
 
     private string AccountPath(string? chapterName, string path)
-        => GetRoute(chapterName, "Account" + (path != "" ? $"/{path}" : ""));
+        => GetRoute(chapterName, "account" + (path != "" ? $"/{path}" : ""));
 }

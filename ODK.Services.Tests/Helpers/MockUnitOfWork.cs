@@ -23,6 +23,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IChapterEmailSettingsRepository ChapterEmailSettingsRepository => Mock.Object.ChapterEmailSettingsRepository;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => Mock.Object.ChapterEventSettingsRepository;
     public IChapterLinksRepository ChapterLinksRepository => Mock.Object.ChapterLinksRepository;
+    public IChapterLocationRepository ChapterLocationRepository => Mock.Object.ChapterLocationRepository;
     public IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository => Mock.Object.ChapterMembershipSettingsRepository;
     public IChapterPaymentSettingsRepository ChapterPaymentSettingsRepository => Mock.Object.ChapterPaymentSettingsRepository;
     public IChapterPropertyOptionRepository ChapterPropertyOptionRepository => Mock.Object.ChapterPropertyOptionRepository;
@@ -52,6 +53,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberChapterRepository MemberChapterRepository => Mock.Object.MemberChapterRepository;
     public IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository => Mock.Object.MemberEmailAddressUpdateTokenRepository;
     public IMemberImageRepository MemberImageRepository => Mock.Object.MemberImageRepository;
+    public IMemberLocationRepository MemberLocationRepository => Mock.Object.MemberLocationRepository;
     public IMemberPasswordRepository MemberPasswordRepository => Mock.Object.MemberPasswordRepository;
     public IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository => Mock.Object.MemberPasswordResetRequestRepository;
     public IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository => Mock.Object.MemberChapterPrivacySettingsRepository;

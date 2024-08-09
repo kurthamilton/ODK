@@ -13,6 +13,11 @@
 
     var settings = await SettingsService.GetSiteSettings();
     var baseUrl = $"https://www.google.com/maps/embed/v1/place?key={settings.GoogleMapsApiKey}&q={{query}}";
+    if (Model.Zoom >= 0)
+    {
+        baseUrl += $"&zoom={Model.Zoom}";
+    }
+
     var url = "";
     if (!string.IsNullOrEmpty(Model.Query))
     {

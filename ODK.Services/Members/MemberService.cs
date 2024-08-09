@@ -1,6 +1,7 @@
 ﻿using System.Web;
 using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
 using ODK.Core.Extensions;
@@ -93,9 +94,16 @@ public class MemberService : IMemberService
             CreatedUtc = DateTime.UtcNow,
             EmailAddress = model.EmailAddress,
             FirstName = model.FirstName,
-            LastName = model.LastName
+            LastName = model.LastName            
         };
         _unitOfWork.MemberRepository.Add(member);
+
+        _unitOfWork.MemberLocationRepository.Add(new MemberLocation
+        {
+            MemberId = member.Id,
+            LatLong = model.Location,
+            Name = model.LocationName
+        });
 
         _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
         {
@@ -128,6 +136,8 @@ public class MemberService : IMemberService
             x => x.SiteSettingsRepository.Get(),
             x => x.SiteSubscriptionRepository.GetDefault(platform));
 
+        var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapterId);
+
         var validationResult = ValidateMemberProfile(chapterProperties, model);
         if (!validationResult.Success)
         {
@@ -158,19 +168,24 @@ public class MemberService : IMemberService
             EmailAddress = model.EmailAddress,
             EmailOptIn = model.EmailOptIn ?? false,
             FirstName = model.FirstName,
-            LastName = model.LastName,
-            Location = chapter.Location,
-            LocationName = chapter.LocationName,
+            LastName = model.LastName,            
             SuperAdmin = false,
             TimeZone = chapter.TimeZone
         };
-        _unitOfWork.MemberRepository.Add(member);
-
+        
         member.Chapters.Add(new MemberChapter
         {
             CreatedUtc = now,
             MemberId = member.Id,
             ChapterId = chapterId
+        });
+
+        _unitOfWork.MemberRepository.Add(member);
+
+        _unitOfWork.MemberLocationRepository.Add(new MemberLocation
+        {
+            LatLong = chapterLocation?.LatLong,
+            Name = chapterLocation?.Name
         });
 
         _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
@@ -283,6 +298,11 @@ public class MemberService : IMemberService
 
         var version = BitConverter.ToInt64(image.Version);
         return new VersionedServiceResult<MemberAvatar>(version, image);
+    }
+
+    public async Task<MemberLocation?> GetMemberLocation(Guid memberId)
+    {
+        return await _unitOfWork.MemberLocationRepository.GetByMemberId(memberId);
     }
 
     public async Task<MemberProfile?> GetMemberProfile(Guid chapterId, Guid currentMemberId, Member member)
@@ -600,6 +620,41 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
     
+    public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name)
+    {
+        var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(id);
+
+        if (memberLocation == null)
+        {
+            memberLocation = new MemberLocation();
+        }
+
+        if (location != null && !string.IsNullOrEmpty(name))
+        {
+            memberLocation.LatLong = location;
+            memberLocation.Name = name;
+        }
+        else
+        {
+            memberLocation.LatLong = null;
+            memberLocation.Name = null;
+        }
+
+        if (memberLocation.MemberId == default)
+        {
+            memberLocation.MemberId = id;
+            _unitOfWork.MemberLocationRepository.Add(memberLocation);
+        }
+        else
+        {
+            _unitOfWork.MemberLocationRepository.Update(memberLocation);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model)
     {
         var member = await _unitOfWork.MemberRepository.GetById(id).RunAsync();

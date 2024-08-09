@@ -7,6 +7,7 @@
     var menuItems = new MenuItem[]
     {
         new MenuItem { Link = OdkRoutes.Account.PersonalDetails(Model.ChapterName), Text = "Personal details" },
+        new MenuItem { Link = OdkRoutes.Account.Location(Model.ChapterName), Text = "Location" },
         Model.ChapterName != null
             ? new MenuItem { Link = OdkRoutes.Account.Profile(Model.ChapterName), Text = "Profile" }
             : new MenuItem(),
@@ -26,7 +27,7 @@
 <ul class="list-group d-none d-md-block">
     @foreach (var menuItem in menuItems)
     {
-        <li class="list-group-item @(menuItem.Link == Model.Active ? "active" : "")">
+        <li class="list-group-item @(string.Equals(menuItem.Link, Model.Active, StringComparison.InvariantCultureIgnoreCase) ? "active" : "")">
             <a class="nav-link text-nowrap" href="@menuItem.Link">
                 @menuItem.Text
             </a>

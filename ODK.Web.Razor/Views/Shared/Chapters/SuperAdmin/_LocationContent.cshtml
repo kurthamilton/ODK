@@ -1,8 +1,14 @@
 ﻿@using ODK.Core.Chapters
+@using ODK.Services
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SuperAdmin
 @model ODK.Core.Chapters.Chapter
+@inject IChapterAdminService ChapterAdminService
 @{
+    var request = new AdminServiceRequest(Model.Id, User.MemberId());
+    var location = await ChapterAdminService.GetChapterLocation(request);
 }
 
 <section class="section--admin">
@@ -25,19 +31,19 @@
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("Chapters/SuperAdmin/_LocationForm", new ChapterLocationFormViewModel
         {
-            Lat = Model.Location?.Lat,
-            Long = Model.Location?.Long,
-            Name = Model.LocationName
+            Lat = location?.LatLong?.Lat,
+            Long = location?.LatLong?.Long,
+            Name = location?.Name
         })
         <button class="btn btn-primary">Update</button>
     </form>
 
-    @if (Model.Location != null)
+    @if (location?.LatLong != null)
     {
         <div class="mt-3">
             @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
             {
-                LatLong = Model.Location,
+                LatLong = location.LatLong.Value,
                 QuerySource = "#map-latlong"
             })
         </div>

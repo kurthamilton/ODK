@@ -1,4 +1,5 @@
-﻿@page "/Account/Create"
+﻿@page "/account/create"
+@using ODK.Services.Users.ViewModels
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Account.CreateModel
 @{
@@ -9,7 +10,17 @@
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Title = "Create account",
-    Content = await Html.PartialAsync("Account/_SiteJoinContent")
+    ContentFunc = 
+        @<div class="row">
+            <div class="col-lg-6">
+                <form method="post" action="/account/create" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel())
+                    @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel())
+                    <button type="submit" class="btn btn-primary">Sign up</button>
+                </form>
+            </div>
+        </div>
 })
 
 @section styles
@@ -21,4 +32,6 @@
 {
     <script src="/lib/cropperjs/cropper.js"></script>
     <script src="/js/odk.imaging.js"></script>
+
+    @await Html.PartialAsync("Components/_GoogleLocationScripts")
 }

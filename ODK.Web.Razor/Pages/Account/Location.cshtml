@@ -1,0 +1,43 @@
+﻿@page "/account/location"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Members
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Account.LocationModel
+@inject IMemberService MemberService
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Location";
+
+    var memberId = User.MemberId();
+    var location = await MemberService.GetMemberLocation(memberId);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Location",
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = OdkRoutes.Account.Location(null),
+        Content = 
+            @<form action="/account/location" method="post">
+                @Html.AntiForgeryToken()
+                @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel
+                {
+                    Lat = location?.LatLong?.Lat,
+                    Long = location?.LatLong?.Long,
+                    LocationName = location?.Name ?? ""
+                })
+                <button class="btn btn-primary">Update</button>
+            </form>
+    })
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/_GoogleLocationScripts")
+}
