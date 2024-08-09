@@ -1,4 +1,6 @@
-﻿namespace ODK.Core.Subscriptions;
+﻿using ODK.Core.Platforms;
+
+namespace ODK.Core.Subscriptions;
 
 public class SiteSubscription : IDatabaseEntity
 {
@@ -17,6 +19,8 @@ public class SiteSubscription : IDatabaseEntity
     public bool MemberSubscriptions { get; set; }
 
     public string Name { get; set; } = "";
+
+    public PlatformType? Platform { get; set; }
 
     public bool Premium { get; set; }
 

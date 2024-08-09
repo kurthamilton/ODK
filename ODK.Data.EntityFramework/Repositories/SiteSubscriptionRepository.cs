@@ -1,4 +1,5 @@
-﻿using ODK.Core.Subscriptions;
+﻿using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -12,14 +13,15 @@ public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscripti
     {
     }
 
-    public IDeferredQueryMultiple<SiteSubscription> GetAll() => Set()
+    public IDeferredQueryMultiple<SiteSubscription> GetAll(PlatformType platform) => Set()
+        .Where(x => x.Platform == platform)
         .DeferredMultiple();
 
-    public IDeferredQueryMultiple<SiteSubscription> GetAllEnabled() => Set()
-        .Where(x => x.Enabled)
+    public IDeferredQueryMultiple<SiteSubscription> GetAllEnabled(PlatformType platform) => Set()
+        .Where(x => x.Platform == platform && x.Enabled)
         .DeferredMultiple();
 
-    public IDeferredQuerySingle<SiteSubscription> GetDefault() => Set()
-        .Where(x => x.Enabled && x.Default)
+    public IDeferredQuerySingle<SiteSubscription> GetDefault(PlatformType platform) => Set()
+        .Where(x => x.Platform == platform && x.Enabled && x.Default)
         .DeferredSingle();
 }

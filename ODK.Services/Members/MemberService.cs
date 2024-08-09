@@ -11,6 +11,7 @@ using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Payments;
+using ODK.Services.Platforms;
 
 namespace ODK.Services.Members;
 
@@ -22,13 +23,14 @@ public class MemberService : IMemberService
     private readonly IEmailService _emailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IPaymentService _paymentService;    
+    private readonly IPlatformProvider _platformProvider;
     private readonly MemberServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberService(IUnitOfWork unitOfWork, IAuthorizationService authorizationService,
         IEmailService emailService, MemberServiceSettings settings, IPaymentService paymentService,
         ICacheService cacheService, IMemberImageService memberImageService, 
-        IChapterUrlService chapterUrlService)
+        IChapterUrlService chapterUrlService, IPlatformProvider platformProvider)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
@@ -36,6 +38,7 @@ public class MemberService : IMemberService
         _emailService = emailService;
         _memberImageService = memberImageService;
         _paymentService = paymentService;        
+        _platformProvider = platformProvider;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
@@ -74,9 +77,10 @@ public class MemberService : IMemberService
     
     public async Task<ServiceResult> CreateAccount(CreateAccountModel model)
     {
+        var platform = _platformProvider.GetPlatform();
         var (existing, siteSubscription) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
-            x => x.SiteSubscriptionRepository.GetDefault());
+            x => x.SiteSubscriptionRepository.GetDefault(platform));
 
         if (existing != null)
         {
@@ -115,13 +119,14 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile model)
     {
+        var platform = _platformProvider.GetPlatform();
         var (chapter, chapterProperties, membershipSettings, existing, siteSettings, siteSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSettingsRepository.Get(),
-            x => x.SiteSubscriptionRepository.GetDefault());
+            x => x.SiteSubscriptionRepository.GetDefault(platform));
 
         var validationResult = ValidateMemberProfile(chapterProperties, model);
         if (!validationResult.Success)

@@ -1,16 +1,21 @@
 ﻿using ODK.Core;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
+using ODK.Services.Platforms;
 
 namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscriptionAdminService
 {
+    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public SiteSubscriptionAdminService(IUnitOfWork unitOfWork) 
+    public SiteSubscriptionAdminService(
+        IUnitOfWork unitOfWork,
+        IPlatformProvider platformProvider) 
         : base(unitOfWork)
     {
+        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
@@ -19,6 +24,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         var existing = await GetAllSubscriptions(currentMemberId);
 
         var subscription = new SiteSubscription();
+        subscription.Platform = _platformProvider.GetPlatform();
         UpdateSiteSubscription(model, subscription);
 
         _unitOfWork.SiteSubscriptionRepository.Add(subscription);
@@ -66,8 +72,9 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
     public async Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(Guid currentMemberId)
     {
+        var platform = _platformProvider.GetPlatform();
         return await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.SiteSubscriptionRepository.GetAll());
+            x => x.SiteSubscriptionRepository.GetAll(platform));
     }
 
     public async Task<SiteSubscriptionDto> GetSubscriptionDto(Guid currentMemberId, Guid siteSubscriptionId)
@@ -107,6 +114,6 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         subscription.MemberSubscriptions = model.MemberSubscriptions;
         subscription.Name = model.Name;
         subscription.Premium = model.Premium;
-        subscription.SendMemberEmails = model.SendMemberEmails;
+        subscription.SendMemberEmails = model.SendMemberEmails;        
     }
 }

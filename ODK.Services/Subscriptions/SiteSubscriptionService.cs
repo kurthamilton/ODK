@@ -4,23 +4,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ODK.Data.Core;
+using ODK.Services.Platforms;
 
 namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionService : ISiteSubscriptionService
 {
+    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public SiteSubscriptionService(IUnitOfWork unitOfWork)
+    public SiteSubscriptionService(IUnitOfWork unitOfWork, IPlatformProvider platformProvider)
     { 
+        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<SiteSubscriptionsDto> GetSiteSubscriptionsDto()
     {
+        var platform = _platformProvider.GetPlatform();
         var (subscriptions, prices) = await _unitOfWork.RunAsync(
-            x => x.SiteSubscriptionRepository.GetAllEnabled(),
-            x => x.SiteSubscriptionPriceRepository.GetAllEnabled());
+            x => x.SiteSubscriptionRepository.GetAllEnabled(platform),
+            x => x.SiteSubscriptionPriceRepository.GetAllEnabled(platform));
 
         var currencies = prices
             .GroupBy(x => x.CurrencyId)

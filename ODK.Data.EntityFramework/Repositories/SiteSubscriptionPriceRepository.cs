@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -13,11 +14,12 @@ public class SiteSubscriptionPriceRepository : ReadWriteRepositoryBase<SiteSubsc
     {
     }
 
-    public IDeferredQueryMultiple<SiteSubscriptionPrice> GetAllEnabled()
+    public IDeferredQueryMultiple<SiteSubscriptionPrice> GetAllEnabled(PlatformType platform)
     {
         var query = 
             from price in Set()
-            from subscription in Set<SiteSubscription>().Where(x => x.Enabled)
+            from subscription in Set<SiteSubscription>()
+                .Where(x => x.Platform == platform && x.Enabled)
             where price.SiteSubscriptionId == subscription.Id
             select price;
         return query.DeferredMultiple();
