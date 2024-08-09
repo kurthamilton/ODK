@@ -179,7 +179,9 @@ public class EventViewModelService : IEventViewModelService
         var responseLookup = responses
             .ToDictionary(x => x.EventId, x => x.Type);
 
-        var venueLookup = venues.ToDictionary(x => x.Id);
+        var venueLookup = venues
+            .GroupBy(x => x.Id)
+            .ToDictionary(x => x.Key, x => x.First());
 
         var viewModels = new List<EventResponseViewModel>();
         foreach (var @event in events.Where(x => x.PublishedUtc != null))
