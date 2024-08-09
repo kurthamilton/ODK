@@ -17,6 +17,6 @@ public class SiteSubscriptionMap : IEntityTypeConfiguration<SiteSubscription>
 
         builder.Property(x => x.Platform)
             .HasColumnName("PlatformTypeId")
-            .HasConversion<int?>();
+            .HasConversion<int>();
     }
 }

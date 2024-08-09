@@ -20,7 +20,7 @@ public class SiteSubscription : IDatabaseEntity
 
     public string Name { get; set; } = "";
 
-    public PlatformType? Platform { get; set; }
+    public PlatformType Platform { get; set; }
 
     public bool Premium { get; set; }
 
