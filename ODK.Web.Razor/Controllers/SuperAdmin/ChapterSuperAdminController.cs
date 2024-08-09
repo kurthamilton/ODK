@@ -4,6 +4,7 @@ using ODK.Core.Countries;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
+using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Controllers.Admin;
 using ODK.Web.Razor.Models.SuperAdmin;
 
@@ -33,6 +34,23 @@ public class ChapterSuperAdminController : AdminControllerBase
         var request = await GetAdminServiceRequest(chapterName);
         await _chapterAdminService.UpdateChapterLocation(request, location, viewModel.Name);
 
+        AddFeedback("Location updated", FeedbackType.Success);
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("/{chapterName}/Admin/SuperAdmin/TimeZone")]
+    public async Task<IActionResult> UpdateTimeZone(string chapterName, ChapterTimeZoneFormViewModel viewModel)
+    {
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _chapterAdminService.UpdateChapterTimeZone(serviceRequest, viewModel.TimeZone);
+        if (result.Success)
+        {
+            AddFeedback("Time zone updated", FeedbackType.Success);
+            return RedirectToReferrer();
+        }
+
+        AddFeedback(result);
         return RedirectToReferrer();
     }
 }

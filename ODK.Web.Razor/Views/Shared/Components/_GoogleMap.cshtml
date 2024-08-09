@@ -12,24 +12,21 @@
     }
 
     var settings = await SettingsService.GetSiteSettings();
-    var url = $"https://www.google.com/maps/embed/v1/place?key={settings.GoogleMapsApiKey}";
+    var baseUrl = $"https://www.google.com/maps/embed/v1/place?key={settings.GoogleMapsApiKey}&q={{query}}";
+    var url = "";
     if (!string.IsNullOrEmpty(Model.Query))
     {
-        url += $"&q={HttpUtility.UrlEncode(Model.Query)}";
+        url = baseUrl.Replace("{query}", HttpUtility.UrlEncode(Model.Query));
     }
     else if (Model.LatLong != null)
     {
-        url += $"&q={Model.LatLong.Value.Lat},{Model.LatLong.Value.Long}";
-    }
-    else
-    {
-        url = "";
+        url = baseUrl.Replace("{query}", $"{Model.LatLong.Value.Lat},{Model.LatLong.Value.Long}");
     }
 }
 
 <iframe height="450" frameborder="0" style="border:0; width: 100%;"
         src="@url"
-        data-map-baseurl="@url"
+        data-map-baseurl="@baseUrl"
         data-map-query="@Model.QuerySource"
         allowfullscreen>
 </iframe>

@@ -13,6 +13,7 @@
             const $container = $input.closest('[data-location-container]');
             const $lat = $container.querySelector('[data-location-lat]');
             const $long = $container.querySelector('[data-location-long]');
+            const $latlong = $container.querySelector('[data-location-latlong]');
             const $name = $container.querySelector('[data-location-name]');
 
             const options = {
@@ -26,8 +27,10 @@
                 const location = place.geometry.location;
                 const [lat, long] = [location.lat(), location.lng()];
                 $lat.value = lat;
-                $long.value = long;
+                $long.value = long;                
                 $name.value = $input.value;
+                $latlong.value = `${lat},${long}`;
+                $latlong.dispatchEvent(new Event('change'));
             });
 
             $input.addEventListener('keydown', e => {
