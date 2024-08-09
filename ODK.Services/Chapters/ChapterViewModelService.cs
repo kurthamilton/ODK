@@ -1,22 +1,64 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
+using ODK.Core.Exceptions;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Chapters.ViewModels;
+using ODK.Services.Platforms;
 
 namespace ODK.Services.Chapters;
 
 public class ChapterViewModelService : IChapterViewModelService
 {
+    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public ChapterViewModelService(IUnitOfWork unitOfWork)
+    public ChapterViewModelService(IUnitOfWork unitOfWork,
+        IPlatformProvider platformProvider)
     {
+        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<ChapterCreateViewModel> GetChapterCreate(Guid currentMemberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+        if (platform != PlatformType.Default)
+        {
+            throw new OdkNotFoundException();
+        }
+
+        var (current, memberSubscription, countries) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetByOwnerId(currentMemberId),
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId),
+            x => x.CountryRepository.GetAll());
+
+        return new ChapterCreateViewModel
+        {
+            ChapterCount = current.Count,
+            ChapterLimit = memberSubscription.SiteSubscription.GroupLimit,
+            Countries = countries
+        };
+    }
+
+    public async Task<GroupHomePageViewModel> GetGroupHomePage(Guid? currentMemberId, string slug)
+    {
+        var (currentMember, chapter) = await _unitOfWork.RunAsync(
+            x => currentMemberId != null 
+                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => x.ChapterRepository.GetBySlug(slug));
+
+        return new GroupHomePageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = currentMember
+        };
     }
 
     public async Task<ChapterHomePageViewModel> GetHomePage(Guid? currentMemberId, string chapterName)
@@ -59,6 +101,43 @@ public class ChapterViewModelService : IChapterViewModelService
             Links = links,
             MemberEventResponses = responses,
             Texts = texts
+        };
+    }
+
+    public async Task<MemberChaptersViewModel> GetMemberChapters(Guid memberId)
+    {
+        var (chapters, adminMembers) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetByMemberId(memberId),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(memberId));
+
+        var adminMemberDictionary = adminMembers
+            .ToDictionary(x => x.ChapterId);
+
+        var admin = new List<Chapter>();
+        var member = new List<Chapter>();
+        var owned = new List<Chapter>();
+
+        foreach (var chapter in chapters)
+        {
+            if (chapter.OwnerId == memberId)
+            {
+                owned.Add(chapter);
+            }
+            else if (adminMemberDictionary.ContainsKey(chapter.Id))
+            {
+                admin.Add(chapter);
+            }
+            else
+            {
+                member.Add(chapter);
+            }
+        }
+
+        return new MemberChaptersViewModel
+        {
+            Admin = admin,
+            Member = member,
+            Owned = owned
         };
     }
 

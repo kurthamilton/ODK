@@ -8,7 +8,7 @@
 
 <div class="form-group mb-3 required">    
     @Html.LabelFor(x => x.CurrencyId, new { @class = "form-label" })
-    @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-control" })
+    @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-select" })
     @Html.ValidationMessageFor(x => x.CurrencyId)
 </div>
 

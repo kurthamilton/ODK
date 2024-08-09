@@ -1,12 +1,15 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Data.Core;
+using ODK.Services.Platforms;
 
 namespace ODK.Services.Caching;
 
 public class RequestCache : IRequestCache
 {
+    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly IDictionary<string, Chapter> _chapters;
@@ -14,8 +17,9 @@ public class RequestCache : IRequestCache
     private readonly IDictionary<Guid, Member> _members;
     private readonly IDictionary<Guid, MemberSubscription?> _memberSubscriptions;
 
-    public RequestCache(IUnitOfWork unitOfWork)
+    public RequestCache(IUnitOfWork unitOfWork, IPlatformProvider platformProvider)
     {
+        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
 
         _chapters = new Dictionary<string, Chapter>(StringComparer.InvariantCultureIgnoreCase);
@@ -48,6 +52,15 @@ public class RequestCache : IRequestCache
         var chapters = await _unitOfWork.ChapterRepository
             .GetAll()
             .RunAsync();
+
+        var platform = _platformProvider.GetPlatform();
+        if (platform != PlatformType.Default)
+        {
+            chapters = chapters
+                .Where(x => x.Platform == platform)
+                .ToArray();
+        }
+
         foreach (var chapter in chapters)
         {
             _chapters[chapter.Name] = chapter;

@@ -37,6 +37,7 @@ public interface IUnitOfWork
     IInstagramPostRepository InstagramPostRepository { get; }
     IMemberActivationTokenRepository MemberActivationTokenRepository { get; }
     IMemberAvatarRepository MemberAvatarRepository { get; }
+    IMemberChapterRepository MemberChapterRepository { get; }
     IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository { get; }
     IMemberImageRepository MemberImageRepository { get; }
     IMemberPasswordRepository MemberPasswordRepository { get; }
@@ -44,6 +45,7 @@ public interface IUnitOfWork
     IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository { get; }
     IMemberPropertyRepository MemberPropertyRepository { get; }
     IMemberRepository MemberRepository { get; }
+    IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository { get; }
     IMemberSubscriptionRepository MemberSubscriptionRepository { get; }
     IPaymentRepository PaymentRepository { get; }    
     ISiteEmailSettingsRepository SiteEmailSettingsRepository { get; }

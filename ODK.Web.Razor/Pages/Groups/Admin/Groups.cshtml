@@ -1,0 +1,65 @@
+﻿@page "/my/groups"
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
+@attribute [Authorize]
+@model GroupsModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "My groups";
+
+    var viewModel = await ChapterViewModelService.GetMemberChapters(Model.CurrentMemberId);    
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "My groups",
+    ContentFunc = 
+        @<div>
+            @if (viewModel.Owned.Any())
+            {
+                <section>
+                    @await Html.PartialAsync("Chapters/_ChapterTiles", new ChapterTilesViewModel
+                    {
+                        Title = "Groups you own",
+                        Chapters = viewModel.Owned.Select(x => new ChapterTileViewModel
+                        {
+                            Chapter = x,
+                            IsOwner = true
+                        }).ToArray()
+                    })
+                </section>
+            }
+
+            @if (viewModel.Admin.Any())
+            {
+                <section>
+                    @await Html.PartialAsync("Chapters/_ChapterTiles", new ChapterTilesViewModel
+                    {
+                        Title = "Groups you manage",
+                        Chapters = viewModel.Admin.Select(x => new ChapterTileViewModel
+                        {
+                            Chapter = x,
+                            IsAdmin = true
+                        }).ToArray()
+                    })
+                </section>
+            }
+
+            @if (viewModel.Admin.Any())
+            {
+                <section>
+                    @await Html.PartialAsync("Chapters/_ChapterTiles", new ChapterTilesViewModel
+                    {
+                        Title = "Groups you are a member of",
+                        Chapters = viewModel.Member.Select(x => new ChapterTileViewModel
+                        {
+                            Chapter = x
+                        }).ToArray()
+                    })
+                </section>
+            }
+        </div>    
+})

@@ -1,19 +1,24 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Services.SocialMedia;
 
 namespace ODK.Web.Razor.Controllers;
 
-[Route("[controller]")]
 [ApiController]
 public class InstagramController : Controller
 {
-    [AllowAnonymous]
-    [HttpPost("Webhooks/Apify")]
-    public async Task<IActionResult> ApifyWebhook()
-    {
-        using var sr = new StreamReader(Request.Body);
-        var json = await sr.ReadToEndAsync();
+    private readonly IInstagramService _instagramService;
 
-        return new StatusCodeResult(200);
+    public InstagramController(IInstagramService instagramService)
+    {
+        _instagramService = instagramService;
+    }
+
+    [AllowAnonymous]
+    [HttpGet("{chapterName}/Instagram/Images/{id:guid}")]
+    public async Task<IActionResult> GetInstagramImage(string chapterName, Guid id)
+    {
+        var image = await _instagramService.GetInstagramImage(id);
+        return File(image.ImageData, image.MimeType);
     }
 }

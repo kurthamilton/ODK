@@ -2,7 +2,7 @@
 
 public enum PlatformType
 {
-    None,
-    Default,
-    DrunkenKnitwits
+    None = 0,
+    Default = 1,
+    DrunkenKnitwits = 2
 }

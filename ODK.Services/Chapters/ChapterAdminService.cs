@@ -259,6 +259,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<Chapter> GetChapter(AdminServiceRequest request)
+    {
+        return await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
+    }
+
     public async Task<ChapterAdminMember> GetChapterAdminMember(AdminServiceRequest request, Guid memberId)
     {
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);

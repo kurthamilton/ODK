@@ -22,6 +22,8 @@ public interface IChapterAdminService
 
     Task<ServiceResult> DeleteChapterSubscription(AdminServiceRequest request, Guid id);
 
+    Task<Chapter> GetChapter(AdminServiceRequest request);
+
     Task<ChapterAdminMember> GetChapterAdminMember(AdminServiceRequest request, Guid memberId);
 
     Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(AdminServiceRequest request);

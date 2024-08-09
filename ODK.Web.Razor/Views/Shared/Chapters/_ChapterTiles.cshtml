@@ -1,0 +1,19 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Web.Razor.Models.Chapters
+@model ChapterTilesViewModel
+@{
+    if (Model.Chapters.Count == 0)
+    {
+        return;
+    }
+}
+
+<div class="mb-3">
+    <h5>@Model.Title</h5>
+    <div class="d-flex mt-3">
+        @foreach (var chapter in Model.Chapters.OrderBy(x => x.Chapter.Name))
+        {
+            @await Html.PartialAsync("Chapters/_ChapterTile", chapter)
+        }
+    </div>
+</div>

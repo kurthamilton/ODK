@@ -1,11 +1,7 @@
-﻿@model ODK.Web.Razor.Models.SuperAdmin.TimeZoneFormViewModel
-@{
-    var timeZoneOptions = TimeZoneInfo
-        .GetSystemTimeZones()
-        .Select(x => new SelectListItem { Value = x.Id, Text = x.DisplayName });
-}
+﻿@using ODK.Web.Razor.Razor
+@model ODK.Web.Razor.Models.SuperAdmin.TimeZoneFormViewModel
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.TimeZone, new { @class = "form-label" })
-    @Html.DropDownListFor(x => x.TimeZone, timeZoneOptions, "", new { @class = "form-control" })
+    @Html.OdkTimeZoneDropDownFor(x => x.TimeZone, "", new { @class = "form-select" })
 </div>

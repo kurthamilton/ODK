@@ -3,16 +3,18 @@
 namespace ODK.Services.Chapters;
 
 public interface IChapterService
-{    
-    Task<ChapterLinks?> GetChapterLinks(Guid chapterId);
+{
+    Task<ServiceResult<Chapter?>> CreateChapter(Guid currentMemberId, ChapterCreateModel model);
 
-    Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);        
+    Task<ChapterLinks?> GetChapterLinks(Guid chapterId);
 
     Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid? currentMemberId, Guid chapterId);
 
     Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Chapter chapter);
 
-    Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);
+    Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);                
+
+    Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);    
 
     Task<ChaptersDto> GetChaptersDto();
 

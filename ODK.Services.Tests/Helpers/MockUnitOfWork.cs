@@ -49,6 +49,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IInstagramPostRepository InstagramPostRepository => Mock.Object.InstagramPostRepository;
     public IMemberActivationTokenRepository MemberActivationTokenRepository => Mock.Object.MemberActivationTokenRepository;
     public IMemberAvatarRepository MemberAvatarRepository => Mock.Object.MemberAvatarRepository;
+    public IMemberChapterRepository MemberChapterRepository => Mock.Object.MemberChapterRepository;
     public IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository => Mock.Object.MemberEmailAddressUpdateTokenRepository;
     public IMemberImageRepository MemberImageRepository => Mock.Object.MemberImageRepository;
     public IMemberPasswordRepository MemberPasswordRepository => Mock.Object.MemberPasswordRepository;
@@ -56,6 +57,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository => Mock.Object.MemberChapterPrivacySettingsRepository;
     public IMemberPropertyRepository MemberPropertyRepository => Mock.Object.MemberPropertyRepository;
     public IMemberRepository MemberRepository => Mock.Object.MemberRepository;
+    public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => Mock.Object.MemberSiteSubscriptionRepository;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => Mock.Object.MemberSubscriptionRepository;
     public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;    
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => Mock.Object.SiteEmailSettingsRepository;

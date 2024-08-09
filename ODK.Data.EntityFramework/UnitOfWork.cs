@@ -42,12 +42,14 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberActivationTokenRepository> _memberActivationTokenRepository;
     private readonly Lazy<IMemberAvatarRepository> _memberAvatarRepository;
     private readonly Lazy<IMemberEmailAddressUpdateTokenRepository> _memberEmailAddressUpdateTokenRepository;
+    private readonly Lazy<IMemberChapterRepository> _memberChapterRepository;
     private readonly Lazy<IMemberImageRepository> _memberImageRepository;
     private readonly Lazy<IMemberPasswordRepository> _memberPasswordRepository;
     private readonly Lazy<IMemberPasswordResetRequestRepository> _memberPasswordResetRequestRepository;
     private readonly Lazy<IMemberPrivacySettingsRepository> _memberPrivacySettingsRepository;
     private readonly Lazy<IMemberPropertyRepository> _memberPropertyRepository;
     private readonly Lazy<IMemberRepository> _memberRepository;
+    private readonly Lazy<IMemberSiteSubscriptionRepository> _memberSiteSubscriptionRepository;
     private readonly Lazy<IMemberSubscriptionRepository> _memberSubscriptionRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;    
     private readonly Lazy<ISiteEmailSettingsRepository> _siteEmailSettingsRepository;
@@ -91,6 +93,7 @@ public class UnitOfWork : IUnitOfWork
         _instagramPostRepository = new(() => new InstagramPostRepository(_context));
         _memberActivationTokenRepository = new(() => new MemberActivationTokenRepository(_context));
         _memberAvatarRepository = new(() => new MemberAvatarRepository(_context));
+        _memberChapterRepository = new(() => new MemberChapterRepository(_context));
         _memberEmailAddressUpdateTokenRepository = new(() => new MemberEmailAddressUpdateTokenRepository(_context));
         _memberImageRepository = new(() => new MemberImageRepository(_context));
         _memberPasswordRepository = new(() => new MemberPasswordRepository(_context));
@@ -98,6 +101,7 @@ public class UnitOfWork : IUnitOfWork
         _memberPrivacySettingsRepository = new(() => new MemberPrivacySettingsRepository(_context));
         _memberPropertyRepository = new(() => new MemberPropertyRepository(_context));
         _memberRepository = new(() => new MemberRepository(_context));
+        _memberSiteSubscriptionRepository = new(() => new MemberSiteSubscriptionRepository(_context));
         _memberSubscriptionRepository = new(() => new MemberSubscriptionRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
         _siteEmailSettingsRepository = new(() => new SiteEmailSettingsRepository(_context));
@@ -138,6 +142,7 @@ public class UnitOfWork : IUnitOfWork
     public IInstagramPostRepository InstagramPostRepository => _instagramPostRepository.Value;
     public IMemberActivationTokenRepository MemberActivationTokenRepository => _memberActivationTokenRepository.Value;
     public IMemberAvatarRepository MemberAvatarRepository => _memberAvatarRepository.Value;
+    public IMemberChapterRepository MemberChapterRepository => _memberChapterRepository.Value;
     public IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository => _memberEmailAddressUpdateTokenRepository.Value;
     public IMemberImageRepository MemberImageRepository => _memberImageRepository.Value;
     public IMemberPasswordRepository MemberPasswordRepository => _memberPasswordRepository.Value;
@@ -145,6 +150,7 @@ public class UnitOfWork : IUnitOfWork
     public IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository => _memberPrivacySettingsRepository.Value;
     public IMemberPropertyRepository MemberPropertyRepository => _memberPropertyRepository.Value;
     public IMemberRepository MemberRepository => _memberRepository.Value;
+    public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => _memberSiteSubscriptionRepository.Value;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => _memberSubscriptionRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => _siteEmailSettingsRepository.Value;

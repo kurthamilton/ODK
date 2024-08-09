@@ -38,7 +38,7 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.DataType, new { @class = "form-label" })
-    @Html.DropDownListFor(x => x.DataType, dataTypeOptions, new { @class = "form-control" })
+    @Html.DropDownListFor(x => x.DataType, dataTypeOptions, new { @class = "form-select" })
     @Html.ValidationMessageFor(x => x.DataType)
 </div>
 

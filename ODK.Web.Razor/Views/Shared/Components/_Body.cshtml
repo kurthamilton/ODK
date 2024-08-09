@@ -25,7 +25,12 @@
                 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel(Model.Breadcrumbs))
             }
             
-            @await Html.PartialAsync("Feedback/_Feedback")
+            @await Html.PartialAsync("Feedback/_Feedback")           
+
+            @if (BodyContent != null)
+            {
+                @BodyContent
+            }
 
             @if (Model.Content != null)
             {

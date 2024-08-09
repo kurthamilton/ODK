@@ -74,7 +74,9 @@ public class MemberService : IMemberService
     
     public async Task<ServiceResult> CreateAccount(CreateAccountModel model)
     {
-        var existing = await _unitOfWork.MemberRepository.GetByEmailAddress(model.EmailAddress).RunAsync();
+        var (existing, siteSubscription) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
+            x => x.SiteSubscriptionRepository.GetDefault());
 
         if (existing != null)
         {
@@ -90,6 +92,12 @@ public class MemberService : IMemberService
             LastName = model.LastName
         };
         _unitOfWork.MemberRepository.Add(member);
+
+        _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
+        {
+            MemberId = member.Id,
+            SiteSubscriptionId = siteSubscription.Id
+        });
 
         var activationToken = RandomStringGenerator.Generate(64);
         _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
@@ -107,12 +115,13 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile model)
     {
-        var (chapter, chapterProperties, membershipSettings, existing, siteSettings) = await _unitOfWork.RunAsync(
+        var (chapter, chapterProperties, membershipSettings, existing, siteSettings, siteSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
-            x => x.SiteSettingsRepository.Get());
+            x => x.SiteSettingsRepository.Get(),
+            x => x.SiteSubscriptionRepository.GetDefault());
 
         var validationResult = ValidateMemberProfile(chapterProperties, model);
         if (!validationResult.Success)
@@ -156,14 +165,19 @@ public class MemberService : IMemberService
             ChapterId = chapterId
         });
 
-        var subscription = new MemberSubscription
+        _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
+        {
+            MemberId = member.Id,
+            SiteSubscriptionId = siteSubscription.Id
+        });
+
+        _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
         {
             ChapterId = chapterId,
             ExpiresUtc = now.AddMonths(membershipSettings?.TrialPeriodMonths ?? siteSettings.DefaultTrialPeriodMonths),
             MemberId = member.Id,
             Type = SubscriptionType.Trial
-        };
-        _unitOfWork.MemberSubscriptionRepository.Add(subscription);
+        });
 
         image.MemberId = member.Id;
         _unitOfWork.MemberImageRepository.Add(image);

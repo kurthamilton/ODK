@@ -1,14 +1,20 @@
-﻿using ODK.Core.Extensions;
+﻿using ODK.Core.Platforms;
 
 namespace ODK.Core.Chapters;
 
 public class Chapter : IDatabaseEntity, ITimeZoneEntity
 {
-    public string BannerImageUrl { get; } = "";
+    public DateTime? ApprovedUtc { get; set; }
+
+    public string? BannerImageUrl { get; }
 
     public Guid CountryId { get; set; }
 
-    public int DisplayOrder { get; set; }
+    public DateTime CreatedUtc { get; set; }
+
+    public string? Description { get; set; }
+
+    public int? DisplayOrder { get; set; }
 
     public Guid Id { get; set; }
 
@@ -16,7 +22,13 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public Guid? OwnerId { get; set; }
 
+    public PlatformType Platform { get; set; }
+
+    public DateTime? PublishedUtc { get; set; }
+
     public string? RedirectUrl { get; set; }
+
+    public string Slug { get; set; } = "";
 
     public TimeZoneInfo? TimeZone { get; set; }
 

@@ -18,4 +18,8 @@ public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscripti
     public IDeferredQueryMultiple<SiteSubscription> GetAllEnabled() => Set()
         .Where(x => x.Enabled)
         .DeferredMultiple();
+
+    public IDeferredQuerySingle<SiteSubscription> GetDefault() => Set()
+        .Where(x => x.Enabled && x.Default)
+        .DeferredSingle();
 }

@@ -9,12 +9,12 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.DefaultDayOfWeek, new { @class = "form-label" })
-    @Html.DropDownListFor(x => x.DefaultDayOfWeek, dayOfWeekOptions, " ", new { @class = "form-control" })
+    @Html.DropDownListFor(x => x.DefaultDayOfWeek, dayOfWeekOptions, " ", new { @class = "form-select" })
 </div>
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.DefaultScheduledEmailDayOfWeek, new { @class = "form-label" })
-    @Html.DropDownListFor(x => x.DefaultScheduledEmailDayOfWeek, dayOfWeekOptions, " ", new { @class = "form-control" })
+    @Html.DropDownListFor(x => x.DefaultScheduledEmailDayOfWeek, dayOfWeekOptions, " ", new { @class = "form-select" })
 </div>
 
 <div class="form-group mb-3">

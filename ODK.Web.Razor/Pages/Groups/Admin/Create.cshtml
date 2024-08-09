@@ -1,0 +1,46 @@
+﻿@page "/my/groups/new"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
+@model CreateModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Create group";
+
+    var viewModel = await ChapterViewModelService.GetChapterCreate(Model.CurrentMemberId);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    ContentFunc = 
+        @<div>
+            @if (viewModel.ChapterCount == viewModel.ChapterLimit)
+            {
+                <div class="alert alert-danger">
+                    You cannot create another group as you have reached your group limit of @viewModel.ChapterLimit.
+                </div>
+                return;
+            }
+            else if (viewModel.ChapterCount > 0 && viewModel.ChapterLimit != null)
+            {
+                <div class="alert alert-warning">
+                    TODO: warning
+                </div>
+            }
+
+            <form method="post">
+                @Html.AntiForgeryToken()
+
+                @await Html.PartialAsync("Chapters/_ChapterCreateForm", new CreateChapterFormViewModel
+                {
+                    Countries = viewModel.Countries
+                })
+
+                <button class="btn btn-primary">Create</button>
+            </form>
+        </div>,
+    Title = "Create group"
+})

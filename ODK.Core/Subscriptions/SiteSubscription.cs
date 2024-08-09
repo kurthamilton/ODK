@@ -2,6 +2,8 @@
 
 public class SiteSubscription : IDatabaseEntity
 {
+    public bool Default { get; set; }
+
     public string Description { get; set; } = "";
 
     public bool Enabled { get; set; }

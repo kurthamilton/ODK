@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using ODK.Services;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 
@@ -16,13 +17,11 @@ public abstract class OdkPageModel : PageModel
         set => ViewData["Title"] = value;
     }
 
-    protected void AddFeedback(FeedbackViewModel viewModel)
-    {
-        TempData!.AddFeedback(viewModel);
-    }
+    protected void AddFeedback(FeedbackViewModel viewModel) => TempData!.AddFeedback(viewModel);
 
     protected void AddFeedback(string message, FeedbackType type = FeedbackType.Success)
-    {
-        AddFeedback(new FeedbackViewModel(message, type));
-    }
+        => AddFeedback(new FeedbackViewModel(message, type));
+
+    protected void AddFeedback(ServiceResult result) 
+        => AddFeedback(new FeedbackViewModel(result));
 }
