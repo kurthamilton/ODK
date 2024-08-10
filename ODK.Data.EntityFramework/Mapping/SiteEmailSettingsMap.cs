@@ -11,5 +11,9 @@ public class SiteEmailSettingsMap : IEntityTypeConfiguration<SiteEmailSettings>
         builder.ToTable("SiteEmailSettings");
 
         builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Platform)
+            .HasColumnName("PlatformTypeId")
+            .HasConversion<int>();
     }
 }

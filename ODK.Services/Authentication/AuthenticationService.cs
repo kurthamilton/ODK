@@ -279,6 +279,18 @@ public class AuthenticationService : IAuthenticationService
         if (!member.Activated)
         {
             var activationToken = await _unitOfWork.MemberActivationTokenRepository.GetByMemberId(member.Id).RunAsync();
+            if (activationToken == null)
+            {
+                activationToken = new MemberActivationToken
+                {
+                    ActivationToken = RandomStringGenerator.Generate(64),
+                    ChapterId = chapter?.Id,
+                    MemberId = member.Id
+                };
+                _unitOfWork.MemberActivationTokenRepository.Add(activationToken);
+                await _unitOfWork.SaveChangesAsync();
+            }
+
             await _memberEmailService.SendActivationEmail(chapter, member, activationToken.ActivationToken);
             return ServiceResult.Successful();
         }

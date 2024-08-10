@@ -8,7 +8,6 @@ public interface IUnitOfWork
 {
     IChapterAdminMemberRepository ChapterAdminMemberRepository { get; }    
     IChapterEmailRepository ChapterEmailRepository { get; }
-    IChapterEmailSettingsRepository ChapterEmailSettingsRepository { get; }
     IChapterEventSettingsRepository ChapterEventSettingsRepository { get; }
     IChapterLinksRepository ChapterLinksRepository { get; }
     IChapterLocationRepository ChapterLocationRepository { get; }

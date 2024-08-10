@@ -36,7 +36,8 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
         .Where(x => x.Name == name)
         .DeferredSingleOrDefault(
             () => _cache.Find(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase)),
-            _cache.Set);
+            _cache.Set,
+            _cache.SetAll);
 
     public IDeferredQueryMultiple<Chapter> GetByOwnerId(Guid ownerId) => Set()
         .Where(x => x.OwnerId == ownerId)
@@ -46,5 +47,6 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
         .Where(x => x.Slug == slug)
         .DeferredSingleOrDefault(
             () => _cache.Find(x => string.Equals(x.Slug, slug, StringComparison.InvariantCultureIgnoreCase)),
-            _cache.Set);
+            _cache.Set,
+            _cache.SetAll);
 }

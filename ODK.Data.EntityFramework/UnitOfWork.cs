@@ -12,7 +12,6 @@ public class UnitOfWork : IUnitOfWork
 
     private readonly Lazy<IChapterAdminMemberRepository> _chapterAdminMemberRepository;
     private readonly Lazy<IChapterEmailRepository> _chapterEmailRepository;
-    private readonly Lazy<IChapterEmailSettingsRepository> _chapterEmailSettingsRepository;
     private readonly Lazy<IChapterEventSettingsRepository> _chapterEventSettingsRepository;
     private readonly Lazy<IChapterLinksRepository> _chapterLinksRepository;
     private readonly Lazy<IChapterLocationRepository> _chapterLocationRepository;
@@ -66,7 +65,6 @@ public class UnitOfWork : IUnitOfWork
 
         _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));        
         _chapterEmailRepository = new(() => new ChapterEmailRepository(_context));
-        _chapterEmailSettingsRepository = new(() => new ChapterEmailSettingsRepository(_context));
         _chapterEventSettingsRepository = new(() => new ChapterEventSettingsRepository(_context));
         _chapterLinksRepository = new(() => new ChapterLinksRepository(_context));
         _chapterLocationRepository = new(() => new ChapterLocationRepository(_context));
@@ -117,7 +115,6 @@ public class UnitOfWork : IUnitOfWork
 
     public IChapterAdminMemberRepository ChapterAdminMemberRepository => _chapterAdminMemberRepository.Value;
     public IChapterEmailRepository ChapterEmailRepository => _chapterEmailRepository.Value;
-    public IChapterEmailSettingsRepository ChapterEmailSettingsRepository => _chapterEmailSettingsRepository.Value;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => _chapterEventSettingsRepository.Value;
     public IChapterLinksRepository ChapterLinksRepository => _chapterLinksRepository.Value;
     public IChapterLocationRepository ChapterLocationRepository => _chapterLocationRepository.Value;

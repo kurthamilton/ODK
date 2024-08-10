@@ -4,7 +4,6 @@ using MimeKit;
 using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
-using ODK.Core.Settings;
 using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -12,35 +11,40 @@ using ODK.Services.Emails.Extensions;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Mails;
+using ODK.Services.Platforms;
 
 namespace ODK.Services.Emails;
 
 public class MailProvider : IMailProvider
 {    
     private readonly ILoggingService _loggingService;
+    private readonly IPlatformProvider _platformProvider;
     private readonly MailProviderSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
-    public MailProvider(IUnitOfWork unitOfWork, ILoggingService loggingService, 
-        MailProviderSettings settings)
+    public MailProvider(
+        IUnitOfWork unitOfWork, 
+        ILoggingService loggingService, 
+        MailProviderSettings settings,
+        IPlatformProvider platformProvider)
     {
         _loggingService = loggingService;
+        _platformProvider = platformProvider;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<ServiceResult> SendEmail(SendEmailOptions options)
     {
-        var (emails, chapterEmails, providers, siteSettings, chapterSettings, summary) = await _unitOfWork.RunAsync(
+        var platform = _platformProvider.GetPlatform();
+
+        var (emails, chapterEmails, providers, siteSettings, summary) = await _unitOfWork.RunAsync(
             x => x.EmailRepository.GetAll(),
             x => options.Chapter != null
                 ? x.ChapterEmailRepository.GetByChapterId(options.Chapter.Id)
                 : new DefaultDeferredQueryMultiple<ChapterEmail>(),
             x => x.EmailProviderRepository.GetAll(),
-            x => x.SiteEmailSettingsRepository.Get(),
-            x => options.Chapter != null
-                ? x.ChapterEmailSettingsRepository.GetByChapterId(options.Chapter.Id)
-                : new DefaultDeferredQuerySingleOrDefault<ChapterEmailSettings>(),
+            x => x.SiteEmailSettingsRepository.Get(platform),
             x => x.EmailProviderRepository.GetEmailsSentToday());
 
         var layoutEmail = chapterEmails.FirstOrDefault(x => x.Type == EmailType.Layout)?.ToEmail() 
@@ -51,19 +55,17 @@ public class MailProvider : IMailProvider
             : null;
 
         var parameters = options.Parameters ?? new Dictionary<string, string>();
-        if (options.Chapter != null && !parameters.ContainsKey("chapter.name"))
+        if (!parameters.ContainsKey("chapter.name"))
         {
-            parameters.Add("chapter.name", options.Chapter.Name);
+            parameters.Add("chapter.name", options.Chapter?.Name ?? "");
         }
+
+        var title = StringUtils.Interpolate(siteSettings.Title, parameters);
+        parameters.Add("title", title);
 
         var subject = StringUtils.Interpolate(!string.IsNullOrEmpty(options.Subject)
             ? options.Subject
-            : bodyEmail?.Subject ?? "", parameters);
-
-        var title = StringUtils.Interpolate(!string.IsNullOrEmpty(chapterSettings?.Title)
-            ? chapterSettings.Title
-            : siteSettings.Title, parameters);
-        parameters.Add("title", title);        
+            : bodyEmail?.Subject ?? "", parameters);              
 
         var body = StringUtils.Interpolate(!string.IsNullOrEmpty(options.Body)
             ? options.Body
@@ -78,10 +80,9 @@ public class MailProvider : IMailProvider
         var message = CreateMessage(
             provider, 
             siteSettings, 
-            chapterSettings, 
             options.FromAdminMember, 
             subject, 
-            body);
+            body, parameters);
         
         if (options.To.Count == 1)
         {
@@ -90,9 +91,7 @@ public class MailProvider : IMailProvider
         }
         else
         {
-            var to = chapterSettings != null
-                ? new MailboxAddress(chapterSettings.FromName, chapterSettings.FromEmailAddress)
-                : new MailboxAddress(siteSettings.FromName, siteSettings.FromEmailAddress);
+            var to = new MailboxAddress(siteSettings.FromName, siteSettings.FromEmailAddress);
 
             var bcc = options.To;
             AddBulkEmailBccRecipients(message, to, bcc);
@@ -123,8 +122,8 @@ public class MailProvider : IMailProvider
         MimeMessage message, 
         EmailProvider provider, 
         SiteEmailSettings siteSettings,
-        ChapterEmailSettings? chapterSettings,
-        ChapterAdminMember? fromAdminMember)
+        ChapterAdminMember? fromAdminMember,
+        IDictionary<string, string> parameters)
     {
         if (fromAdminMember != null)
         {
@@ -136,12 +135,8 @@ public class MailProvider : IMailProvider
         }
         else
         {
-            var name = !string.IsNullOrEmpty(chapterSettings?.FromName) 
-                ? chapterSettings.FromName 
-                : siteSettings.FromName;
-            var address = !string.IsNullOrEmpty(chapterSettings?.FromEmailAddress) 
-                ? chapterSettings.FromEmailAddress 
-                : siteSettings.FromEmailAddress;
+            var name = StringUtils.Interpolate(siteSettings.FromName, parameters);
+            var address = siteSettings.FromEmailAddress;
             message.From.Add(new MailboxAddress(name, address));
         }
     }
@@ -149,10 +144,10 @@ public class MailProvider : IMailProvider
     private MimeMessage CreateMessage(
         EmailProvider provider, 
         SiteEmailSettings siteSettings,
-        ChapterEmailSettings? chapterSettings,
         ChapterAdminMember? fromAdminMember, 
         string subject, 
-        string body)
+        string body,
+        IDictionary<string, string> parameters)
     {
         var message = new MimeMessage
         {
@@ -163,7 +158,7 @@ public class MailProvider : IMailProvider
             Subject = subject
         };
 
-        AddEmailFrom(message, provider, siteSettings, chapterSettings, fromAdminMember);
+        AddEmailFrom(message, provider, siteSettings, fromAdminMember, parameters);
 
         return message;
     }

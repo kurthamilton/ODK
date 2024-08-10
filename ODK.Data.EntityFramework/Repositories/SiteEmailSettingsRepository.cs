@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Emails;
+using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Caching;
@@ -16,8 +17,9 @@ public class SiteEmailSettingsRepository : CachingReadWriteRepositoryBase<SiteEm
     {
     }
 
-    public IDeferredQuerySingle<SiteEmailSettings> Get() => Set()
+    public IDeferredQuerySingle<SiteEmailSettings> Get(PlatformType platform) => Set()
         .DeferredSingle(
-            () => _cache.GetAll()?.FirstOrDefault(),
-            x => _cache.SetAll([x]));
+            () => _cache.GetAll()?.FirstOrDefault(x => x.Platform == platform),
+            _cache.Set,
+            _cache.SetAll);
 }

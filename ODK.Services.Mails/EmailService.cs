@@ -4,18 +4,23 @@ using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Data.Core;
-using ODK.Data.Core.Deferred;
+using ODK.Services.Platforms;
 
 namespace ODK.Services.Emails;
 
 public class EmailService : IEmailService
 {
     private readonly IMailProvider _mailProvider;
+    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public EmailService(IUnitOfWork unitOfWork, IMailProvider mailProvider)
+    public EmailService(
+        IUnitOfWork unitOfWork, 
+        IMailProvider mailProvider,
+        IPlatformProvider platformProvider)
     {
         _mailProvider = mailProvider;
+        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
@@ -67,8 +72,10 @@ public class EmailService : IEmailService
             {"message", HttpUtility.HtmlEncode(message)}
         };
 
+        var platform = _platformProvider.GetPlatform();
+
         var settings = await _unitOfWork.SiteEmailSettingsRepository
-            .Get()
+            .Get(platform)
             .RunAsync();
 
         var to = new EmailAddressee(settings.ContactEmailAddress, "");
@@ -138,30 +145,21 @@ public class EmailService : IEmailService
         await _mailProvider.SendEmail(options);
     }
     
-    public async Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, EmailType type, 
+    public Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, EmailType type, 
+        IDictionary<string, string> parameters) 
+        => SendEmail(chapter, [to], type, parameters);
+
+    public async Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, EmailType type,
         IDictionary<string, string> parameters)
-    {        
+    {
         var options = new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
             Subject = "",
             Parameters = parameters,
-            To = [to],
+            To = to.ToArray(),
             Type = type
-        };
-
-        return await _mailProvider.SendEmail(options);
-    }
-
-    public async Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, string subject, string body)
-    {
-        var options = new SendEmailOptions
-        {
-            Body = body,
-            Chapter = chapter,
-            Subject = subject,
-            To = [to]
         };
 
         return await _mailProvider.SendEmail(options);

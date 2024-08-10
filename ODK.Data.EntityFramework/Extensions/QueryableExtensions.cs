@@ -36,9 +36,10 @@ internal static class QueryableExtensions
     internal static IDeferredQuerySingle<T> DeferredSingle<T>(
         this IQueryable<T> query,
         Func<T?> getFromCache,
-        Action<T> updateCache) 
+        Action<T> updateCache,
+        Action<IEnumerable<T>>? prefillCache = null) 
         where T : class
-        => new DeferredQuerySingle<T>(query, getFromCache, updateCache);
+        => new DeferredQuerySingle<T>(query, getFromCache, updateCache, prefillCache);
 
     internal static IDeferredQuerySingleOrDefault<T> DeferredSingleOrDefault<T>(this IQueryable<T> query) where T : class
         => new DeferredQuerySingleOrDefault<T>(query);
@@ -46,7 +47,8 @@ internal static class QueryableExtensions
     internal static IDeferredQuerySingleOrDefault<T> DeferredSingleOrDefault<T>(
         this IQueryable<T> query,
         Func<T?> getFromCache,
-        Action<T> updateCache) 
+        Action<T> updateCache,
+        Action<IEnumerable<T>>? prefillCache = null) 
         where T : class
         => new DeferredQuerySingleOrDefault<T>(query, getFromCache, updateCache);
 

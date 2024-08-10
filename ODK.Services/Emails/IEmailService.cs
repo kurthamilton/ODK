@@ -21,14 +21,9 @@ public interface IEmailService
         string subject,
         string body);
 
-    Task SendContactEmail(
-        string fromAddress,
-        string message);
+    Task SendContactEmail(string fromAddress, string message);
 
-    Task SendContactEmail(
-        Chapter chapter, 
-        string fromAddress, 
-        string message);
+    Task SendContactEmail(Chapter chapter, string fromAddress, string message);
 
     Task SendEventCommentEmail(Chapter chapter, Member? replyToMember, EventComment comment,
         IDictionary<string, string> parameters);
@@ -36,7 +31,8 @@ public interface IEmailService
     Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, EmailType type, 
         IDictionary<string, string> parameters);
 
-    Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, string subject, string body);
+    Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, EmailType type,
+        IDictionary<string, string> parameters);
 
     Task<ServiceResult> SendMemberEmail(Chapter chapter, ChapterAdminMember fromAdminMember, Member to, string subject, string body);
 

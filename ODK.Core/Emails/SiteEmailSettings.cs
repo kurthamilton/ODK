@@ -1,4 +1,6 @@
-﻿namespace ODK.Core.Emails;
+﻿using ODK.Core.Platforms;
+
+namespace ODK.Core.Emails;
 
 public class SiteEmailSettings : IDatabaseEntity
 {
@@ -9,6 +11,8 @@ public class SiteEmailSettings : IDatabaseEntity
     public string FromName { get; set; } = "";
 
     public Guid Id { get; set; }
+
+    public PlatformType Platform { get; set; }
 
     public string Title { get; set; } = "";
 }

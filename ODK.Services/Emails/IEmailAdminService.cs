@@ -1,5 +1,4 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Emails;
+﻿using ODK.Core.Emails;
 
 namespace ODK.Services.Emails;
 
@@ -11,8 +10,6 @@ public interface IEmailAdminService
 
     Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(AdminServiceRequest request);
 
-    Task<ChapterEmailSettings?> GetChapterEmailSettings(AdminServiceRequest request);
-
     Task<Email> GetEmail(Guid currentMemberId, EmailType type);
     
     Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId);
@@ -22,8 +19,6 @@ public interface IEmailAdminService
     Task<ServiceResult> SendTestEmail(Guid currentMemberId, EmailType type);
 
     Task<ServiceResult> UpdateChapterEmail(AdminServiceRequest request, EmailType type, UpdateEmail model);
-
-    Task<ServiceResult> UpdateChapterEmailSettings(AdminServiceRequest request, UpdateChapterEmailSettings model);
 
     Task<ServiceResult> UpdateEmail(Guid currentMemberId, EmailType type, UpdateEmail model);
 }

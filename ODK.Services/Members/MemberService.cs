@@ -185,6 +185,7 @@ public class MemberService : IMemberService
 
         _unitOfWork.MemberLocationRepository.Add(new MemberLocation
         {
+            MemberId = member.Id,
             LatLong = chapterLocation?.LatLong,
             Name = chapterLocation?.Name
         });
@@ -231,7 +232,7 @@ public class MemberService : IMemberService
 
         try
         {
-            await _memberEmailService.SendActivationEmail(null, member, activationToken);
+            await _memberEmailService.SendActivationEmail(chapter, member, activationToken);
 
             return ServiceResult.Successful();
         }        
