@@ -34,8 +34,6 @@ public interface IMemberService
 
     Task RotateMemberImage(Guid memberId);
 
-    Task SendActivationEmailAsync(Chapter? chapter, Member member, string activationToken);
-
     Task UpdateMemberEmailOptIn(Guid memberId, bool optIn);
 
     Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage? model, MemberImageCropInfo cropInfo);    

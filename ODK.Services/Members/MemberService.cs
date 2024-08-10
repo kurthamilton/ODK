@@ -22,25 +22,25 @@ public class MemberService : IMemberService
     private readonly ICacheService _cacheService;
     private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;
+    private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IPaymentService _paymentService;    
     private readonly IPlatformProvider _platformProvider;
-    private readonly MemberServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberService(IUnitOfWork unitOfWork, IAuthorizationService authorizationService,
-        IEmailService emailService, MemberServiceSettings settings, IPaymentService paymentService,
-        ICacheService cacheService, IMemberImageService memberImageService, 
-        IChapterUrlService chapterUrlService, IPlatformProvider platformProvider)
+        IEmailService emailService, IPaymentService paymentService, ICacheService cacheService, 
+        IMemberImageService memberImageService, IChapterUrlService chapterUrlService, 
+        IPlatformProvider platformProvider, IMemberEmailService memberEmailService)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
         _chapterUrlService = chapterUrlService;
         _emailService = emailService;
+        _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _paymentService = paymentService;        
         _platformProvider = platformProvider;
-        _settings = settings;
         _unitOfWork = unitOfWork;
     }
 
@@ -85,7 +85,7 @@ public class MemberService : IMemberService
 
         if (existing != null)
         {
-            // TODO: send duplicate email
+            await SendDuplicateMemberEmail(null, existing);
             return ServiceResult.Successful();
         }
 
@@ -120,7 +120,7 @@ public class MemberService : IMemberService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await SendActivationEmailAsync(null, member, activationToken);
+        await _memberEmailService.SendActivationEmail(null, member, activationToken);
 
         return ServiceResult.Successful();
     }
@@ -155,7 +155,8 @@ public class MemberService : IMemberService
 
         if (existing != null)
         {
-            return ServiceResult.Failure("Email address already in use");
+            await SendDuplicateMemberEmail(chapter, existing);
+            return ServiceResult.Successful();
         }
 
         var now = DateTime.UtcNow;
@@ -230,7 +231,7 @@ public class MemberService : IMemberService
 
         try
         {
-            await SendActivationEmailAsync(chapter, member, activationToken);
+            await _memberEmailService.SendActivationEmail(null, member, activationToken);
 
             return ServiceResult.Successful();
         }        
@@ -431,17 +432,7 @@ public class MemberService : IMemberService
             NewEmailAddress = newEmailAddress
         });
 
-        var url = _chapterUrlService.GetChapterUrl(chapter, _settings.ConfirmEmailAddressUpdateUrlPath, new Dictionary<string, string>
-        {
-            { "token", HttpUtility.UrlEncode(activationToken) }
-        });
-
-        await _emailService.SendEmail(chapter, new EmailAddressee(newEmailAddress, member.FullName), EmailType.EmailAddressUpdate, 
-            new Dictionary<string, string>
-            {
-                { "chapter.name", chapter.Name },
-                { "url", url }
-            });
+        await _memberEmailService.SendAddressUpdateEmail(chapter, member, newEmailAddress, activationToken);
 
         return ServiceResult.Successful();
     }
@@ -481,21 +472,7 @@ public class MemberService : IMemberService
 
         _cacheService.RemoveVersionedItem<MemberImage>(memberId);
         _cacheService.RemoveVersionedItem<MemberAvatar>(memberId);
-    }
-
-    public async Task SendActivationEmailAsync(Chapter? chapter, Member member, string activationToken)
-    {
-        var url = _chapterUrlService.GetChapterUrl(chapter, _settings.ActivateAccountUrlPath, new Dictionary<string, string>
-        {
-            { "token", HttpUtility.UrlEncode(activationToken) }
-        });
-
-        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
-        {
-            { "chapter.name", chapter?.Name ?? "" },
-            { "url", url }
-        });
-    }
+    }    
 
     public async Task UpdateMemberEmailOptIn(Guid memberId, bool optIn)
     {
@@ -698,6 +675,14 @@ public class MemberService : IMemberService
         }
     }        
     
+    private async Task SendDuplicateMemberEmail(Chapter? chapter, Member member)
+    {
+        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.DuplicateEmail, new Dictionary<string, string>
+        {
+            { "chapter.name", chapter?.Name ?? "" }
+        });
+    }
+
     private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, UpdateMemberChapterProfile profile)
     {
         IReadOnlyCollection<string> missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();

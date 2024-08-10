@@ -16,6 +16,8 @@ public interface IAuthenticationService
     Task<Member?> GetMemberAsync(string username, string password);
     
     Task<ServiceResult> RequestPasswordResetAsync(Guid chapterId, string emailAddress);
+    
+    Task<ServiceResult> RequestPasswordResetAsync(string emailAddress);
 
     Task<ServiceResult> ResetPasswordAsync(string token, string password);
 }

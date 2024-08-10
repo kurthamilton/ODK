@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Mail;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Web;
 using ODK.Core;
@@ -11,6 +13,7 @@ using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
+using ODK.Services.Members;
 
 namespace ODK.Services.Authentication;
 
@@ -18,7 +21,8 @@ public class AuthenticationService : IAuthenticationService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IChapterUrlService _chapterUrlService;
-    private readonly IEmailService _emailService;    
+    private readonly IEmailService _emailService;
+    private readonly IMemberEmailService _memberEmailService;
     private readonly AuthenticationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -27,11 +31,13 @@ public class AuthenticationService : IAuthenticationService
         AuthenticationServiceSettings settings,
         IAuthorizationService authorizationService, 
         IUnitOfWork unitOfWork,
-        IChapterUrlService chapterUrlService)
+        IChapterUrlService chapterUrlService,
+        IMemberEmailService memberEmailService)
     {
         _authorizationService = authorizationService;
         _chapterUrlService = chapterUrlService;
-        _emailService = emailService;        
+        _emailService = emailService;      
+        _memberEmailService = memberEmailService;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
@@ -177,50 +183,16 @@ public class AuthenticationService : IAuthenticationService
     
     public async Task<ServiceResult> RequestPasswordResetAsync(Guid chapterId, string emailAddress)
     {
-        if (!MailUtils.ValidEmailAddress(emailAddress))
-        {
-            return ServiceResult.Failure("Invalid email address format");
-        }
-
-        var member = await _unitOfWork.MemberRepository
-            .GetByEmailAddress(emailAddress)
-            .RunAsync();
-        if (member == null || !member.IsCurrent())
-        {
-            // return fake success to avoid leaking valid email addresses
-            return ServiceResult.Successful();
-        }
-
-        var created = DateTime.UtcNow;
-        var expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
-        var token = RandomStringGenerator.Generate(64);
-        
         var chapter = await _unitOfWork.ChapterRepository
             .GetById(chapterId)
             .RunAsync();
 
-        _unitOfWork.MemberPasswordResetRequestRepository.Add(new MemberPasswordResetRequest
-        {
-            CreatedUtc = created,
-            ExpiresUtc = expires,
-            MemberId = member.Id,
-            Token = token
-        });
+        return await RequestPasswordResetAsync(chapter, emailAddress);
+    }
 
-        await _unitOfWork.SaveChangesAsync();
-
-        string url = _chapterUrlService.GetChapterUrl(chapter, _settings.PasswordResetUrlPath, new Dictionary<string, string>
-        {
-            { "token", HttpUtility.UrlEncode(token) }
-        });
-
-        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.PasswordReset, new Dictionary<string, string>
-        {
-            { "chapter.name", chapter.Name },
-            { "url", url }
-        });
-
-        return ServiceResult.Successful();
+    public async Task<ServiceResult> RequestPasswordResetAsync(string emailAddress)
+    {
+        return await RequestPasswordResetAsync(null, emailAddress);
     }
 
     public async Task<ServiceResult> ResetPasswordAsync(string token, string password)
@@ -286,6 +258,57 @@ public class AuthenticationService : IAuthenticationService
 
         string passwordHash = PasswordHasher.ComputeHash(password, memberPassword.Salt);
         return memberPassword.Hash == passwordHash;
+    }
+
+    private async Task<ServiceResult> RequestPasswordResetAsync(Chapter? chapter, string emailAddress)
+    {
+        if (!MailUtils.ValidEmailAddress(emailAddress))
+        {
+            return ServiceResult.Failure("Invalid email address format");
+        }
+
+        var member = await _unitOfWork.MemberRepository
+            .GetByEmailAddress(emailAddress)
+            .RunAsync();
+        if (member == null || member.Disabled)
+        {
+            // return fake success to avoid leaking valid email addresses
+            return ServiceResult.Successful();
+        }
+
+        if (!member.Activated)
+        {
+            var activationToken = await _unitOfWork.MemberActivationTokenRepository.GetByMemberId(member.Id).RunAsync();
+            await _memberEmailService.SendActivationEmail(chapter, member, activationToken.ActivationToken);
+            return ServiceResult.Successful();
+        }
+
+        var created = DateTime.UtcNow;
+        var expires = created.AddMinutes(_settings.PasswordResetTokenLifetimeMinutes);
+        var token = RandomStringGenerator.Generate(64);
+
+        _unitOfWork.MemberPasswordResetRequestRepository.Add(new MemberPasswordResetRequest
+        {
+            CreatedUtc = created,
+            ExpiresUtc = expires,
+            MemberId = member.Id,
+            Token = token
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+
+        string url = _chapterUrlService.GetChapterUrl(chapter, _settings.PasswordResetUrlPath, new Dictionary<string, string>
+        {
+            { "token", HttpUtility.UrlEncode(token) }
+        });
+
+        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.PasswordReset, new Dictionary<string, string>
+        {
+            { "chapter.name", chapter?.Name ?? "" },
+            { "url", url }
+        });
+
+        return ServiceResult.Successful();
     }
 
     private async Task SendNewMemberEmailsAsync(Chapter? chapter, Member member)

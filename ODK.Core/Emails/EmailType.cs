@@ -12,5 +12,6 @@ public enum EmailType
     EmailAddressUpdate = 7,
     Layout = 8,
     SubscriptionConfirmation = 9,
-    EventComment = 10
+    EventComment = 10,
+    DuplicateEmail = 11
 }

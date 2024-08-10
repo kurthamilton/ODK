@@ -137,7 +137,7 @@ public class EmailService : IEmailService
 
         await _mailProvider.SendEmail(options);
     }
-
+    
     public async Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, EmailType type, 
         IDictionary<string, string> parameters)
     {        
@@ -149,6 +149,19 @@ public class EmailService : IEmailService
             Parameters = parameters,
             To = [to],
             Type = type
+        };
+
+        return await _mailProvider.SendEmail(options);
+    }
+
+    public async Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, string subject, string body)
+    {
+        var options = new SendEmailOptions
+        {
+            Body = body,
+            Chapter = chapter,
+            Subject = subject,
+            To = [to]
         };
 
         return await _mailProvider.SendEmail(options);

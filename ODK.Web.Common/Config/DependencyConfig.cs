@@ -130,6 +130,7 @@ public static class DependencyConfig
         {
             MemberAvatarSize = appSettings.Members.AvatarSize
         });
+        services.AddScoped<IMemberEmailService, MemberEmailService>();
         services.AddScoped<IMemberImageService, MemberImageService>();
         services.AddSingleton(new MemberImageServiceSettings
         {
@@ -185,18 +186,18 @@ public static class DependencyConfig
         services.AddSingleton(new EventServiceSettings
         {
             EventUrlFormat = urls.Event
-        });
-
-        services.AddSingleton(new MemberServiceSettings
-        {
-            ActivateAccountUrlPath = urls.ActivateAccount,
-            ConfirmEmailAddressUpdateUrlPath = urls.ConfirmEmailAddressUpdate
-        });
+        });        
 
         services.AddSingleton(new MediaFileProviderSettings
         {
             RootMediaPath = paths.MediaRoot,
             RootMediaUrlPath = urls.Media
+        });
+
+        services.AddSingleton(new MemberEmailServiceSettings
+        {
+            ActivateAccountUrlPath = urls.ActivateAccount,
+            ConfirmEmailAddressUpdateUrlPath = urls.ConfirmEmailAddressUpdate
         });
 
         services.AddSingleton(new RecaptchaServiceSettings

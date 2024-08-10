@@ -13,6 +13,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
     private readonly IEmailService _emailService;
+    private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
     private readonly MemberAdminServiceSettings _settings;
@@ -21,12 +22,13 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     public MemberAdminService(IUnitOfWork unitOfWork, IMemberService memberService, 
         ICacheService cacheService, IAuthorizationService authorizationService,
         MemberAdminServiceSettings settings, IMemberImageService memberImageService,
-        IEmailService emailService)
+        IEmailService emailService, IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
         _emailService = emailService;
+        _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _memberService = memberService;
         _settings = settings;
@@ -157,7 +159,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         AssertMemberIsInChapter(member, request);
         OdkAssertions.Exists(memberActivationToken);
         
-        await _memberService.SendActivationEmailAsync(chapter, member, memberActivationToken.ActivationToken);
+        await _memberEmailService.SendActivationEmail(chapter, member, memberActivationToken.ActivationToken);
     }
 
     public async Task<ServiceResult> SendBulkEmail(AdminServiceRequest request, MemberFilter filter, string subject, string body)

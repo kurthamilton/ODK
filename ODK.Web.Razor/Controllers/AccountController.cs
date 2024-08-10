@@ -294,6 +294,25 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
+    [HttpPost("/account/password/forgotten")]
+    public async Task<IActionResult> ForgottenPassword([FromForm] ForgottenPasswordFormViewModel viewModel)
+    {
+        var result = await _authenticationService.RequestPasswordResetAsync(viewModel.EmailAddress ?? "");
+        if (result.Success)
+        {
+            string message = "An email containing password reset instructions has been sent to that email address " +
+                             "if it is associated with an account";
+            AddFeedback(message, FeedbackType.Success);
+        }
+        else
+        {
+            AddFeedback(result);
+        }
+
+        return RedirectToReferrer();
+    }
+
+    [AllowAnonymous]
     [HttpPost("/{ChapterName}/Account/Password/Forgotten")]
     public async Task<IActionResult> ForgottenPassword(string chapterName, [FromForm] ForgottenPasswordFormViewModel viewModel)
     {
