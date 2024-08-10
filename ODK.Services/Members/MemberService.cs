@@ -409,33 +409,15 @@ public class MemberService : IMemberService
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
 
-        if (member.EmailAddress.Equals(newEmailAddress, StringComparison.OrdinalIgnoreCase))
-        {
-            return ServiceResult.Successful("New email address matches old email address");
-        }
+        return await RequestMemberEmailAddressUpdate(chapter, member, newEmailAddress, existingToken);
+    }
 
-        if (!MailUtils.ValidEmailAddress(newEmailAddress))
-        {
-            return ServiceResult.Failure("Invalid email address format");
-        }
-
-        if (existingToken != null)
-        {
-            _unitOfWork.MemberEmailAddressUpdateTokenRepository.Delete(existingToken);
-        }
-
-        var activationToken = RandomStringGenerator.Generate(64);
-
-        _unitOfWork.MemberEmailAddressUpdateTokenRepository.Add(new MemberEmailAddressUpdateToken
-        {
-            ConfirmationToken = activationToken,
-            MemberId = memberId,
-            NewEmailAddress = newEmailAddress
-        });
-
-        await _memberEmailService.SendAddressUpdateEmail(chapter, member, newEmailAddress, activationToken);
-
-        return ServiceResult.Successful();
+    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress)
+    {
+        var (member, existingToken) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
+        return await RequestMemberEmailAddressUpdate(null, member, newEmailAddress, existingToken);
     }
 
     public async Task RotateMemberImage(Guid memberId)
@@ -676,6 +658,41 @@ public class MemberService : IMemberService
         }
     }        
     
+    private async Task<ServiceResult> RequestMemberEmailAddressUpdate(
+        Chapter? chapter, 
+        Member member, 
+        string newEmailAddress, 
+        MemberEmailAddressUpdateToken? existingToken)
+    {
+        if (member.EmailAddress.Equals(newEmailAddress, StringComparison.OrdinalIgnoreCase))
+        {
+            return ServiceResult.Successful("New email address matches old email address");
+        }
+
+        if (!MailUtils.ValidEmailAddress(newEmailAddress))
+        {
+            return ServiceResult.Failure("Invalid email address format");
+        }
+
+        if (existingToken != null)
+        {
+            _unitOfWork.MemberEmailAddressUpdateTokenRepository.Delete(existingToken);
+        }
+
+        var activationToken = RandomStringGenerator.Generate(64);
+
+        _unitOfWork.MemberEmailAddressUpdateTokenRepository.Add(new MemberEmailAddressUpdateToken
+        {
+            ConfirmationToken = activationToken,
+            MemberId = member.Id,
+            NewEmailAddress = newEmailAddress
+        });
+
+        await _memberEmailService.SendAddressUpdateEmail(chapter, member, newEmailAddress, activationToken);
+
+        return ServiceResult.Successful();
+    }
+
     private async Task SendDuplicateMemberEmail(Chapter? chapter, Member member)
     {
         await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.DuplicateEmail, new Dictionary<string, string>

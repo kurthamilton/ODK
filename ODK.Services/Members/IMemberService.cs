@@ -32,6 +32,8 @@ public interface IMemberService
 
     Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, Guid chapterId, string newEmailAddress);
 
+    Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress);
+
     Task RotateMemberImage(Guid memberId);
 
     Task UpdateMemberEmailOptIn(Guid memberId, bool optIn);

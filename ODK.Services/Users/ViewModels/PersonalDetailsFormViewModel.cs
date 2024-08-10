@@ -5,6 +5,8 @@ namespace ODK.Services.Users.ViewModels;
 
 public class PersonalDetailsFormViewModel
 {
+    public string? ChapterName { get; set; }
+
     [DisplayName("Email address")]
     public string EmailAddress { get; set; } = "";
 

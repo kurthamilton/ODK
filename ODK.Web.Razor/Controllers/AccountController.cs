@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Services;
 using ODK.Services.Authentication;
@@ -151,9 +152,23 @@ public class AccountController : OdkControllerBase
     }
 
     [HttpPost("account/email/change")]
-    public Task<IActionResult> ChangeEmailRequest([FromForm] ChangeEmailFormViewModel viewModel)
+    public async Task<IActionResult> ChangeEmailRequest([FromForm] ChangeEmailFormViewModel viewModel)
     {
-        throw new NotImplementedException();
+        var result = await _memberService.RequestMemberEmailAddressUpdate(MemberId, viewModel.Email ?? "");
+        if (result.Success)
+        {
+            string message = !string.IsNullOrEmpty(result.Message)
+                ? result.Message
+                : "An email has been sent to the email address you provided. " +
+                  "Please complete your update by following the link in the email.";
+            AddFeedback(message, FeedbackType.Success);
+        }
+        else
+        {
+            AddFeedback(result);
+        }
+
+        return RedirectToReferrer();
     }
 
     [HttpPost("{ChapterName}/Account/Email/Change")]
@@ -176,6 +191,22 @@ public class AccountController : OdkControllerBase
         }
 
         return RedirectToReferrer();
+    }
+
+    [HttpGet("account/email/change/confirm")]
+    public async Task<IActionResult> ChangeEmailConfirm(string token)
+    {
+        var result = await _memberService.ConfirmEmailAddressUpdate(MemberId, token);
+        if (result.Success)
+        {
+            AddFeedback("Email address updated", FeedbackType.Success);
+        }
+        else
+        {
+            AddFeedback(result);
+        }
+
+        return Redirect("/account");
     }
 
     [HttpGet("{chapterName}/Account/Email/Change/Confirm")]

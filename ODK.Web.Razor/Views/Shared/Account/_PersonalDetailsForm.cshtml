@@ -2,6 +2,7 @@
 @using ODK.Services.Platforms
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @model PersonalDetailsFormViewModel
 @inject IPlatformProvider PlatformProvider
 @{
@@ -16,6 +17,7 @@
     {
         <div class="form-control-plaintext">
             @Model.EmailAddress
+            <a href="@OdkRoutes.Account.EmailAddressChange(Model.ChapterName)">Change</a>
         </div>
     }
     else

@@ -28,6 +28,7 @@
             @<form action="/Account/PersonalDetails" method="post">
                 @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
                 {
+                    ChapterName = Model.ChapterName,
                     EmailAddress = member.EmailAddress,
                     FirstName = member.FirstName,
                     LastName = member.LastName
