@@ -25,6 +25,53 @@ public class ChapterViewModelService : IChapterViewModelService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<GroupsViewModel> FindGroups(LatLong location, string locationName)
+    {
+        var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
+        var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetAll();
+
+        var chapterLocationDictionary = chapterLocations
+            .ToDictionary(x => x.ChapterId);
+
+        var groups = new List<ChapterWithDistanceViewModel>();
+        foreach (var chapter in chapters)
+        {
+            if (!chapter.IsOpenForRegistration())
+            {
+                continue;
+            }
+
+            if (!chapterLocationDictionary.TryGetValue(chapter.Id, out var chapterLocation))
+            {
+                continue;
+            }
+
+            var distance = chapterLocation.LatLong.DistanceFrom(location);
+            groups.Add(new ChapterWithDistanceViewModel
+            {
+                Chapter = chapter,
+                Distance = distance,
+                Location = chapterLocation
+            });
+        }
+
+        return new GroupsViewModel
+        {
+            Location = location,
+            LocationName = locationName,
+            Groups = groups
+                .OrderBy(x => x.Distance)
+                .ToArray()
+        };
+    }
+
+    public async Task<GroupsViewModel> FindGroups(Guid currentMemberId)
+    {
+        var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(currentMemberId);
+        return await FindGroups(memberLocation.LatLong, memberLocation.Name);
+    }
+
+
     public async Task<ChapterCreateViewModel> GetChapterCreate(Guid currentMemberId)
     {
         var platform = _platformProvider.GetPlatform();
@@ -63,45 +110,7 @@ public class ChapterViewModelService : IChapterViewModelService
             CurrentMember = currentMember
         };
     }
-
-    public async Task<GroupsViewModel> GetGroups(LatLong location)
-    {
-        var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
-        var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetAll();
-
-        var chapterLocationDictionary = chapterLocations
-            .ToDictionary(x => x.ChapterId);
-        
-        var groups = new List<ChapterWithDistanceViewModel>();
-        foreach (var chapter in chapters)
-        {
-            if (!chapter.IsOpenForRegistration())
-            {
-                continue;
-            }
-
-            if (!chapterLocationDictionary.TryGetValue(chapter.Id, out var chapterLocation))
-            {
-                continue;
-            }
-
-            var distance = chapterLocation.LatLong.DistanceFrom(location);
-            groups.Add(new ChapterWithDistanceViewModel
-            {
-                Chapter = chapter,
-                Distance = distance,
-                Location = chapterLocation
-            });
-        }
-
-        return new GroupsViewModel
-        {
-            Groups = groups
-                .OrderBy(x => x.Distance)
-                .ToArray()
-        };
-    }
-
+    
     public async Task<ChapterHomePageViewModel> GetHomePage(Guid? currentMemberId, string chapterName)
     {        
         var chapter = await GetChapter(chapterName);

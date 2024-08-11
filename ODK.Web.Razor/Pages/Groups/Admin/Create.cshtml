@@ -3,6 +3,8 @@
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Members
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
@@ -17,6 +19,11 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.MemberGroups.Index(), Text = "My groups" },
+        new MenuItem { Text = "Create" }
+    },
     ContentFunc = 
         @<div>
             @if (viewModel.ChapterCount == viewModel.ChapterLimit)

@@ -9,4 +9,6 @@ public class MemberChaptersViewModel
     public required IReadOnlyCollection<Chapter> Member { get; set; }
 
     public required IReadOnlyCollection<Chapter> Owned { get; set; }
+
+    public int Total => Admin.Count + Member.Count + Owned.Count;
 }

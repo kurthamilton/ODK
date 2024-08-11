@@ -1,11 +1,13 @@
 ﻿@page "/groups"
 @using ODK.Core.Countries
 @using ODK.Services.Chapters
+@using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Groups.IndexModel
 @inject IChapterViewModelService ChapterViewModelService
+@inject IMemberService MemberService
 @{
     Layout = "_HomeLayout";
     Model.Title = "Groups";
@@ -15,7 +17,9 @@
         : default(LatLong?);
 
     var viewModel = location != null
-        ? await ChapterViewModelService.GetGroups(location.Value)
+        ? await ChapterViewModelService.FindGroups(location.Value, Model.LocationName ?? "")
+        : Model.CurrentMemberIdOrDefault != null
+        ? await ChapterViewModelService.FindGroups(Model.CurrentMemberIdOrDefault.Value)
         : null;
 }
 
@@ -31,9 +35,9 @@
                             @await Html.PartialAsync("Components/_LocationPicker", new LocationFormViewModel
                             {
                                 InlineButton = true,
-                                Lat = location?.Lat,
-                                Long = location?.Long,
-                                Name = Model.LocationName ?? ""
+                                Lat = viewModel?.Location.Lat,
+                                Long = viewModel?.Location.Long,
+                                Name = viewModel?.LocationName ?? ""
                             })
                         </div>
                     </form>

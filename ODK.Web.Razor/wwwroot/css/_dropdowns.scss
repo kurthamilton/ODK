@@ -6,4 +6,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    .icon {
+        display: flex;
+        justify-content: center;
+        width: 20px;
+    }
 }

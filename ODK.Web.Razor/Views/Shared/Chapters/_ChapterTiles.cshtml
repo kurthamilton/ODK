@@ -8,12 +8,9 @@
     }
 }
 
-<div class="mb-3">
-    <h5>@Model.Title</h5>
-    <div class="d-flex mt-3">
-        @foreach (var chapter in Model.Chapters.OrderBy(x => x.Chapter.Name))
-        {
-            @await Html.PartialAsync("Chapters/_ChapterTile", chapter)
-        }
-    </div>
+<div class="d-flex">
+    @foreach (var chapter in Model.Chapters.OrderBy(x => x.Chapter.Name))
+    {
+        @await Html.PartialAsync("Chapters/_ChapterTile", chapter)
+    }
 </div>

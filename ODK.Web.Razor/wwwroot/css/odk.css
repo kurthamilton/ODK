@@ -12035,6 +12035,11 @@ html[data-platform=odk] {
   justify-content: space-between;
   align-items: center;
 }
+.dropdown-item--icon .icon {
+  display: flex;
+  justify-content: center;
+  width: 20px;
+}
 
 img {
   max-width: 100%;
