@@ -7,6 +7,8 @@ public class ChapterTextsFormViewModel
 {
     public Guid ChapterId { get; set; }
 
+    public string? Description { get; set; }
+
     [Required]
     [DisplayName("Register message")]
     public string? RegisterMessage { get; set; }

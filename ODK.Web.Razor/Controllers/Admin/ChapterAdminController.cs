@@ -129,14 +129,12 @@ public class ChapterAdminController : AdminControllerBase
         var serviceRequest = await GetAdminServiceRequest(chapterName);
         var result = await _chapterAdminService.UpdateChapterTexts(serviceRequest, new UpdateChapterTexts
         {
+            Description = viewModel.Description,
             RegisterText = viewModel.RegisterMessage,
             WelcomeText = viewModel.WelcomeMessage
         });
 
-        if (!result.Success)
-        {
-            AddFeedback(result);
-        }
+        AddFeedback(result, "Texts updated");
 
         return RedirectToReferrer();
     }

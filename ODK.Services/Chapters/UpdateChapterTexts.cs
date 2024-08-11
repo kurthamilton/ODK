@@ -2,7 +2,9 @@
 
 public class UpdateChapterTexts
 {
-    public string? RegisterText { get; set; }
+    public required string? Description { get; init; }
 
-    public string? WelcomeText { get; set; }
+    public required string? RegisterText { get; init; }
+
+    public required string? WelcomeText { get; init; }
 }

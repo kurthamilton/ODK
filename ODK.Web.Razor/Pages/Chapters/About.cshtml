@@ -19,5 +19,5 @@
         new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
         new MenuItem { Text = "About" }
     },
-    Content = await Html.PartialAsync("About/_AboutContent", new AboutContentViewModel(Model.Chapter))
+    Content = await Html.PartialAsync("Chapters/_AboutContent", new AboutContentViewModel(Model.Chapter))
 })

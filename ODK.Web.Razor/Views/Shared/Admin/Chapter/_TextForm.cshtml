@@ -1,5 +1,12 @@
 ﻿@model ODK.Web.Razor.Models.Admin.Chapters.ChapterTextsFormViewModel
 
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Description, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_Tooltip", "The text to display on the about page")
+    @Html.TextAreaFor(x => x.Description, new { @class = "form-control", rows = 6 })
+    @Html.ValidationMessageFor(x => x.Description)
+</div>
+
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.RegisterMessage, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", "The message to display on the register page")

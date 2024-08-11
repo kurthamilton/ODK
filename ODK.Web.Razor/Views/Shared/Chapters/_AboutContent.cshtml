@@ -6,12 +6,24 @@
     IReadOnlyCollection<ChapterQuestion> questions = await ChapterService.GetChapterQuestions(Model.Chapter.Id);
 }
 
+@if (!string.IsNullOrEmpty(Model.Chapter.Description))
+{
+    var paragraphs = Model.Chapter.Description.Split(Environment.NewLine);
+    
+    <section class="mb-4">
+        @foreach (var paragraph in paragraphs)
+        {
+            <p>@paragraph</p>
+        }
+    </section>
+}
+
 <h3>Frequently asked questions</h3>
 
 <div class="accordion" id="questions-accordion">
     @for (int i = 0; i < questions.Count; i++)
     {
-        ChapterQuestion question = questions.ElementAt(i);
+        var question = questions.ElementAt(i);
 
         <div class="accordion-item">
             <h2 class="accordion-header">

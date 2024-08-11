@@ -891,7 +891,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapterId = request.ChapterId;
 
-        var texts = await GetChapterAdminRestrictedContent(request,
+        var (chapter, texts) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterTextsRepository.GetByChapterId(chapterId));
 
         if (string.IsNullOrWhiteSpace(model.RegisterText) ||
@@ -904,6 +905,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         texts.WelcomeText = model.WelcomeText;
 
         _unitOfWork.ChapterTextsRepository.Update(texts);
+
+        if (chapter.Description != model.Description)
+        {
+            chapter.Description = model.Description;
+            _unitOfWork.ChapterRepository.Update(chapter);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         _cacheService.RemoveVersionedItem<ChapterTexts>(chapterId);

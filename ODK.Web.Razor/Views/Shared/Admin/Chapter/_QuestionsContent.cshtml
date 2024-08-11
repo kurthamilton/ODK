@@ -26,7 +26,7 @@
     </tr>
     </thead>
     <tbody>
-        @foreach (ChapterQuestion question in questions.OrderBy(x => x.DisplayOrder))
+        @foreach (var question in questions.OrderBy(x => x.DisplayOrder))
         {
             <tr>
                 <td>
