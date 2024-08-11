@@ -78,9 +78,10 @@ public class MemberService : IMemberService
     public async Task<ServiceResult> CreateAccount(CreateAccountModel model)
     {
         var platform = _platformProvider.GetPlatform();
-        var (existing, siteSubscription) = await _unitOfWork.RunAsync(
+        var (existing, siteSubscription, distanceUnits) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
-            x => x.SiteSubscriptionRepository.GetDefault(platform));
+            x => x.SiteSubscriptionRepository.GetDefault(platform),
+            x => x.DistanceUnitRepository.GetAll());
 
         if (existing != null)
         {
@@ -112,7 +113,17 @@ public class MemberService : IMemberService
                 LatLong = model.Location.Value,
                 Name = model.LocationName
             });
-        }        
+        }
+
+        var distanceUnit = distanceUnits
+            .OrderBy(x => x.Order)
+            .First();
+        _unitOfWork.MemberPreferencesRepository.Add(new MemberPreferences
+        {
+            DistanceUnit = distanceUnit,
+            DistanceUnitId = distanceUnit.Id,
+            MemberId = member.Id
+        });
 
         _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
         {
@@ -317,6 +328,11 @@ public class MemberService : IMemberService
     public async Task<MemberLocation?> GetMemberLocation(Guid memberId)
     {
         return await _unitOfWork.MemberLocationRepository.GetByMemberId(memberId);
+    }
+
+    public async Task<MemberPreferences?> GetMemberPreferences(Guid memberId)
+    {
+        return await _unitOfWork.MemberPreferencesRepository.GetByMemberId(memberId).RunAsync();
     }
 
     public async Task<MemberProfile?> GetMemberProfile(Guid chapterId, Guid currentMemberId, Member member)
@@ -592,9 +608,13 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
     
-    public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name)
+    public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId)
     {
         var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(id);
+
+        var (distanceUnits, memberPreferences) = await _unitOfWork.RunAsync(
+            x => x.DistanceUnitRepository.GetAll(),
+            x => x.MemberPreferencesRepository.GetByMemberId(id));
 
         if (location != null && !string.IsNullOrEmpty(name))
         {
@@ -628,8 +648,66 @@ public class MemberService : IMemberService
             _unitOfWork.MemberLocationRepository.Update(memberLocation);
         }
 
+        if (memberPreferences?.DistanceUnitId != distanceUnitId)
+        {
+            var distanceUnit = distanceUnits.FirstOrDefault(x => x.Id == distanceUnitId);
+
+            if (memberPreferences == null)
+            {
+                memberPreferences = new MemberPreferences();
+            }
+
+            memberPreferences.DistanceUnit = distanceUnit;
+            memberPreferences.DistanceUnitId = distanceUnitId;
+
+            if (memberPreferences.MemberId == default)
+            {
+                memberPreferences.MemberId = id;
+                _unitOfWork.MemberPreferencesRepository.Add(memberPreferences);
+            }
+            else
+            {
+                _unitOfWork.MemberPreferencesRepository.Update(memberPreferences);
+            }
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateMemberPreferences(Guid id, Guid? distanceUnitId)
+    {
+        var (member, memberPreferences, distanceUnits) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(id),
+            x => x.MemberPreferencesRepository.GetByMemberId(id),
+            x => x.DistanceUnitRepository.GetAll());
+
+        var distanceUnit = distanceUnits.FirstOrDefault(x => x.Id == distanceUnitId);
+        if (distanceUnitId != null && distanceUnit == null)
+        {
+            return ServiceResult.Failure("Invalid distance");
+        }
+
+        if (memberPreferences == null)
+        {
+            memberPreferences = new MemberPreferences();
+        }
+
+        memberPreferences.DistanceUnit = distanceUnit;
+        memberPreferences.DistanceUnitId = distanceUnitId;
+
+        if (memberPreferences.MemberId == default)
+        {
+            memberPreferences.MemberId = member.Id;
+            _unitOfWork.MemberPreferencesRepository.Add(memberPreferences);
+        }
+        else
+        {
+            _unitOfWork.MemberPreferencesRepository.Update(memberPreferences);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
         return ServiceResult.Successful();
     }
 

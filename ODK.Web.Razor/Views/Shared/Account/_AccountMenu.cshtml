@@ -7,7 +7,9 @@
     var menuItems = new MenuItem[]
     {
         new MenuItem { Link = OdkRoutes.Account.PersonalDetails(Model.ChapterName), Text = "Personal details" },
-        new MenuItem { Link = OdkRoutes.Account.Location(Model.ChapterName), Text = "Location" },
+        Model.ChapterName == null 
+            ? new MenuItem { Link = OdkRoutes.Account.Location(), Text = "Location" }
+            : new MenuItem(),
         Model.ChapterName != null
             ? new MenuItem { Link = OdkRoutes.Account.Profile(Model.ChapterName), Text = "Profile" }
             : new MenuItem(),

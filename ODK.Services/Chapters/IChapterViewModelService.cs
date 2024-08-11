@@ -5,9 +5,9 @@ namespace ODK.Services.Chapters;
 
 public interface IChapterViewModelService
 {
-    Task<GroupsViewModel> FindGroups(LatLong location, string locationName);
+    Task<GroupsViewModel> FindGroups(ILocation location, Distance radius);
 
-    Task<GroupsViewModel> FindGroups(Guid currentMemberId);
+    Task<GroupsViewModel> FindGroups(Guid currentMemberId, Distance radius);
 
     Task<ChapterCreateViewModel> GetChapterCreate(Guid currentMemberId);
 

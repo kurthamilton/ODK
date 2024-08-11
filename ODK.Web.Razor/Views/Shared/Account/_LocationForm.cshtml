@@ -2,10 +2,18 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Razor
 @model LocationFormViewModel
-@{    
+@{
     var latLong = Model.Lat != null && Model.Long != null
         ? $"{Model.Lat},{Model.Long}"
         : null;
+
+    var distanceUnitOptions = Model.DistanceUnitOptions
+        .Select(x => new SelectListItem
+        {
+            Value = x.Id.ToString(),
+            Text = x.Name
+        })
+        .ToArray();
 }
 
 <div class="form-group mb-3 required">
@@ -32,3 +40,12 @@
         Zoom = GoogleMapViewModel.ZoomLevelCity
     })
 </div>
+
+@if (distanceUnitOptions.Length > 0)
+{
+    <div class="form-group mb-3">
+        @Html.LabelFor(x => x.DistanceUnit, new { @class = "form-label" })
+        @Html.DropDownListFor(x => x.DistanceUnit, distanceUnitOptions, "", new { @class = "form-select" })
+        @Html.ValidationMessageFor(x => x.DistanceUnit)
+    </div>
+}

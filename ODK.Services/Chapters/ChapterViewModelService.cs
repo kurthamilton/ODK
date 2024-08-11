@@ -25,7 +25,7 @@ public class ChapterViewModelService : IChapterViewModelService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<GroupsViewModel> FindGroups(LatLong location, string locationName)
+    public async Task<GroupsViewModel> FindGroups(ILocation location, Distance radius)
     {
         var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
         var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetAll();
@@ -46,7 +46,12 @@ public class ChapterViewModelService : IChapterViewModelService
                 continue;
             }
 
-            var distance = chapterLocation.LatLong.DistanceFrom(location);
+            var distance = chapterLocation.LatLong.DistanceFrom(location.LatLong, radius.Unit);
+            if (distance > radius.Value)
+            {
+                continue;
+            }
+
             groups.Add(new ChapterWithDistanceViewModel
             {
                 Chapter = chapter,
@@ -57,18 +62,18 @@ public class ChapterViewModelService : IChapterViewModelService
 
         return new GroupsViewModel
         {
+            Distance = radius,
             Location = location,
-            LocationName = locationName,
             Groups = groups
                 .OrderBy(x => x.Distance)
                 .ToArray()
         };
     }
 
-    public async Task<GroupsViewModel> FindGroups(Guid currentMemberId)
+    public async Task<GroupsViewModel> FindGroups(Guid currentMemberId, Distance radius)
     {
         var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(currentMemberId);
-        return await FindGroups(memberLocation.LatLong, memberLocation.Name);
+        return await FindGroups(memberLocation, radius);
     }
 
 

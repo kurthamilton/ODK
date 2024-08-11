@@ -2,19 +2,24 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Members
+@using ODK.Services.Countries
 @using ODK.Services.Members
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Account.LocationModel
+@inject ICountryService CountryService
 @inject IMemberService MemberService
 @{
     Layout = "_HomeLayout";
     Model.Title = "Location";
 
     var memberId = User.MemberId();
+
+    var distanceUnitOptions = await CountryService.GetDistanceUnits();
     var member = await MemberService.GetMember(memberId);
+    var memberPreferences = await MemberService.GetMemberPreferences(memberId);
     var location = await MemberService.GetMemberLocation(memberId);
 }
 
@@ -23,12 +28,14 @@
     Title = "Location",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Location(null),
+        Active = OdkRoutes.Account.Location(),
         Content = 
             @<form action="/account/location" method="post">
                 @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel
                 {
+                    DistanceUnit = memberPreferences?.DistanceUnit?.Id,
+                    DistanceUnitOptions = distanceUnitOptions,
                     Lat = location?.LatLong.Lat,
                     Long = location?.LatLong.Long,
                     Name = location?.Name ?? "",

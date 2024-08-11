@@ -28,6 +28,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IContactRequestRepository> _contactRequestRepository;
     private readonly Lazy<ICountryRepository> _countryRepository;
     private readonly Lazy<ICurrencyRepository> _currencyRepository;
+    private readonly Lazy<IDistanceUnitRepository> _distanceUnitRepository;
     private readonly Lazy<IEmailProviderRepository> _emailProviderRepository;
     private readonly Lazy<IEmailRepository> _emailRepository;
     private readonly Lazy<IErrorPropertyRepository> _errorPropertyRepository;
@@ -49,6 +50,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberLocationRepository> _memberLocationRepository;
     private readonly Lazy<IMemberPasswordRepository> _memberPasswordRepository;
     private readonly Lazy<IMemberPasswordResetRequestRepository> _memberPasswordResetRequestRepository;
+    private readonly Lazy<IMemberPreferencesRepository> _memberPreferencesRepository;
     private readonly Lazy<IMemberPrivacySettingsRepository> _memberPrivacySettingsRepository;
     private readonly Lazy<IMemberPropertyRepository> _memberPropertyRepository;
     private readonly Lazy<IMemberRepository> _memberRepository;
@@ -82,6 +84,7 @@ public class UnitOfWork : IUnitOfWork
         _contactRequestRepository = new(() => new ContactRequestRepository(_context));
         _countryRepository = new(() => new CountryRepository(_context));
         _currencyRepository = new(() => new CurrencyRepository(_context));
+        _distanceUnitRepository = new(() => new DistanceUnitRepository(_context));
         _emailProviderRepository = new(() => new EmailProviderRepository(_context));
         _emailRepository = new(() => new EmailRepository(_context));
         _errorPropertyRepository = new(() => new ErrorPropertyRepository(_context));
@@ -103,6 +106,7 @@ public class UnitOfWork : IUnitOfWork
         _memberLocationRepository = new(() => new MemberLocationRepository(_context));
         _memberPasswordRepository = new(() => new MemberPasswordRepository(_context));
         _memberPasswordResetRequestRepository = new(() => new MemberPasswordResetRequestRepository(_context));
+        _memberPreferencesRepository = new(() => new MemberPreferencesRepository(_context));
         _memberPrivacySettingsRepository = new(() => new MemberPrivacySettingsRepository(_context));
         _memberPropertyRepository = new(() => new MemberPropertyRepository(_context));
         _memberRepository = new(() => new MemberRepository(_context));
@@ -132,6 +136,7 @@ public class UnitOfWork : IUnitOfWork
     public IContactRequestRepository ContactRequestRepository => _contactRequestRepository.Value;
     public ICountryRepository CountryRepository => _countryRepository.Value;
     public ICurrencyRepository CurrencyRepository => _currencyRepository.Value;
+    public IDistanceUnitRepository DistanceUnitRepository => _distanceUnitRepository.Value;
     public IEmailProviderRepository EmailProviderRepository => _emailProviderRepository.Value;
     public IEmailRepository EmailRepository => _emailRepository.Value;
     public IErrorPropertyRepository ErrorPropertyRepository => _errorPropertyRepository.Value;
@@ -153,7 +158,8 @@ public class UnitOfWork : IUnitOfWork
     public IMemberLocationRepository MemberLocationRepository => _memberLocationRepository.Value;
     public IMemberPasswordRepository MemberPasswordRepository => _memberPasswordRepository.Value;
     public IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository => _memberPasswordResetRequestRepository.Value;
-    public IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository => _memberPrivacySettingsRepository.Value;
+    public IMemberPreferencesRepository MemberPreferencesRepository => _memberPreferencesRepository.Value;
+    public IMemberPrivacySettingsRepository MemberPrivacySettingsRepository => _memberPrivacySettingsRepository.Value;
     public IMemberPropertyRepository MemberPropertyRepository => _memberPropertyRepository.Value;
     public IMemberRepository MemberRepository => _memberRepository.Value;
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => _memberSiteSubscriptionRepository.Value;

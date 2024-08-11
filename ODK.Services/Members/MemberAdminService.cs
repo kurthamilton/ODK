@@ -213,11 +213,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         {
             privacySettings.ChapterId = chapterId;
             privacySettings.MemberId = member.Id;
-            _unitOfWork.MemberChapterPrivacySettingsRepository.Add(privacySettings);
+            _unitOfWork.MemberPrivacySettingsRepository.Add(privacySettings);
         }
         else
         {
-            _unitOfWork.MemberChapterPrivacySettingsRepository.Update(privacySettings);
+            _unitOfWork.MemberPrivacySettingsRepository.Update(privacySettings);
         }
 
         await _unitOfWork.SaveChangesAsync();

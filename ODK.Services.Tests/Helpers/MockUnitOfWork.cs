@@ -34,6 +34,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IChapterTextsRepository ChapterTextsRepository => Mock.Object.ChapterTextsRepository;
     public IContactRequestRepository ContactRequestRepository => Mock.Object.ContactRequestRepository;
     public ICurrencyRepository CurrencyRepository => Mock.Object.CurrencyRepository;
+    public IDistanceUnitRepository DistanceUnitRepository => Mock.Object.DistanceUnitRepository;
     public IEmailProviderRepository EmailProviderRepository => Mock.Object.EmailProviderRepository;
     public IEmailRepository EmailRepository => Mock.Object.EmailRepository;
     public IErrorPropertyRepository ErrorPropertyRepository => Mock.Object.ErrorPropertyRepository;
@@ -55,7 +56,8 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberLocationRepository MemberLocationRepository => Mock.Object.MemberLocationRepository;
     public IMemberPasswordRepository MemberPasswordRepository => Mock.Object.MemberPasswordRepository;
     public IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository => Mock.Object.MemberPasswordResetRequestRepository;
-    public IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository => Mock.Object.MemberChapterPrivacySettingsRepository;
+    public IMemberPreferencesRepository MemberPreferencesRepository => Mock.Object.MemberPreferencesRepository;
+    public IMemberPrivacySettingsRepository MemberPrivacySettingsRepository => Mock.Object.MemberPrivacySettingsRepository;
     public IMemberPropertyRepository MemberPropertyRepository => Mock.Object.MemberPropertyRepository;
     public IMemberRepository MemberRepository => Mock.Object.MemberRepository;
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => Mock.Object.MemberSiteSubscriptionRepository;

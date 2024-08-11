@@ -16,7 +16,7 @@ public struct LatLong
 
     public double Long { get; set; }
 
-    public double DistanceFrom(LatLong other)
+    public double DistanceFrom(LatLong other, DistanceUnit unit)
     {
         var (lat1, lon1) = (Lat, Long);
         var (lat2, lon2) = (other.Lat, other.Long);
@@ -40,6 +40,8 @@ public struct LatLong
             Math.Pow(Math.Sin(dLon / 2), 2);
         var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
         var d = R * c; // in metres
-        return d;
+        return d / unit.Metres;
     }
+
+    public override string ToString() => $"{Lat},{Long}";
 }

@@ -22,6 +22,7 @@ public interface IUnitOfWork
     IChapterTextsRepository ChapterTextsRepository { get; }
     IContactRequestRepository ContactRequestRepository { get; }
     ICurrencyRepository CurrencyRepository { get; }
+    IDistanceUnitRepository DistanceUnitRepository { get; }
     IEmailProviderRepository EmailProviderRepository { get; }
     IEmailRepository EmailRepository { get; }
     IErrorPropertyRepository ErrorPropertyRepository { get; }
@@ -40,10 +41,11 @@ public interface IUnitOfWork
     IMemberChapterRepository MemberChapterRepository { get; }
     IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository { get; }
     IMemberImageRepository MemberImageRepository { get; }
-    IMemberPasswordRepository MemberPasswordRepository { get; }
-    IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository { get; }
-    IMemberPrivacySettingsRepository MemberChapterPrivacySettingsRepository { get; }
     IMemberLocationRepository MemberLocationRepository { get; }
+    IMemberPasswordRepository MemberPasswordRepository { get; }
+    IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository { get; }    
+    IMemberPreferencesRepository MemberPreferencesRepository { get; }
+    IMemberPrivacySettingsRepository MemberPrivacySettingsRepository { get; }
     IMemberPropertyRepository MemberPropertyRepository { get; }
     IMemberRepository MemberRepository { get; }
     IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository { get; }

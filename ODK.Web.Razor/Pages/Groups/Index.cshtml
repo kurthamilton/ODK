@@ -1,25 +1,56 @@
 ﻿@page "/groups"
 @using ODK.Core.Countries
+@using ODK.Core.Threading
 @using ODK.Services.Chapters
+@using ODK.Services.Countries
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Groups.IndexModel
 @inject IChapterViewModelService ChapterViewModelService
+@inject ICountryService CountryService
 @inject IMemberService MemberService
 @{
     Layout = "_HomeLayout";
     Model.Title = "Groups";
 
-    var location = Model.Lat != null && Model.Long != null
+    var memberId = Model.CurrentMemberIdOrDefault;
+
+    var distanceUnits = await CountryService.GetDistanceUnits()
+        .Then(units => units.OrderBy(x => x.Order).ToArray());    
+    var distanceUnit = distanceUnits
+        .FirstOrDefault(x => string.Equals(x.Abbreviation, Model.DistanceUnit, StringComparison.InvariantCultureIgnoreCase));
+
+    if (distanceUnit == null && memberId != null)
+    {
+        var memberPreferences = await MemberService.GetMemberPreferences(memberId.Value);
+        distanceUnit = 
+            distanceUnits.FirstOrDefault(x => x.Id == memberPreferences?.DistanceUnitId)
+            ?? distanceUnit;
+    }
+
+    if (distanceUnit == null)
+    {
+        distanceUnit = distanceUnits.First();
+    }
+
+    var distance = new Distance
+    {
+        Unit = distanceUnit,
+        Value = Model.Distance > 0 ? Model.Distance.Value : 30
+    };
+
+    var latLong = Model.Lat != null && Model.Long != null
         ? new LatLong(Model.Lat.Value, Model.Long.Value)
         : default(LatLong?);
-
+    var location = latLong != null
+        ? new Location { LatLong = latLong.Value, Name = Model.LocationName ?? "" }
+        : null;
     var viewModel = location != null
-        ? await ChapterViewModelService.FindGroups(location.Value, Model.LocationName ?? "")
+        ? await ChapterViewModelService.FindGroups(location, distance)
         : Model.CurrentMemberIdOrDefault != null
-        ? await ChapterViewModelService.FindGroups(Model.CurrentMemberIdOrDefault.Value)
+        ? await ChapterViewModelService.FindGroups(Model.CurrentMemberIdOrDefault.Value, distance)
         : null;
 }
 
@@ -32,26 +63,51 @@
                 <div>
                     <form method="get">
                         <div class="form-group mb-3" data-location-container>
-                            @await Html.PartialAsync("Components/_LocationPicker", new LocationFormViewModel
-                            {
-                                InlineButton = true,
-                                Lat = viewModel?.Location.Lat,
-                                Long = viewModel?.Location.Long,
-                                Name = viewModel?.LocationName ?? ""
-                            })
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="fa-solid fa-location-dot" data-bs-toggle="tooltip" data-bs-title="Location"></i>
+                                </span>
+                                <input type="text" name="n" value="@viewModel?.Location.Name" class="form-control" data-location />
+                            </div>
+
+                            <input type="hidden" value="@viewModel?.Location?.LatLong.Lat" data-location-lat />
+                            <input type="hidden" value="@viewModel?.Location?.LatLong.Long" data-location-long />
+                            <input type="hidden" value="@viewModel?.Location?.LatLong.ToString()" data-location-latlong name="l" />
+                        </div>
+                        <div class="form-group mb-3">
+                            <div class="d-flex form-inline">
+                                <input type="number" value="@distance.Value" name="d" class="form-control form-control-sm" />
+                                <select name="u" class="form-select form-select-sm">
+                                    @foreach (var option in distanceUnits)
+                                    {
+                                        <option selected="@(option.Id == distanceUnit.Id ? "" : null)">
+                                            @option.Abbreviation
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-outline-secondary btn-sm">Update</button>
                         </div>
                     </form>
                 </div>
                 <div class="ps-md-5 pt-5 pt-md-0 flex-grow-1">
-                @if (viewModel != null)
-                {
-                    <div class="d-flex flex-column gap-3">
-                        @foreach (var group in viewModel.Groups)
+                    @if (viewModel != null && viewModel.Groups.Count > 0)
                     {
-                        @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var group in viewModel.Groups)
+                        {
+                            @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                        }
+                        </div>
                     }
-                    </div>
-                }
+                    else
+                    {
+                        <p>
+                            No matching results. <a href="@OdkRoutes2.MemberGroups.Create()">Create a group</a>
+                        </p>
+                    }
                 </div>
             </div>                        
         </div>

@@ -12059,6 +12059,9 @@ html[data-platform=odk] {
 .form-inline .form-label {
   margin-right: 0.5rem;
 }
+.form-inline .form-select {
+  width: auto;
+}
 
 .form-label {
   font-weight: var(--odk-forms-labels-font-weight);

@@ -23,6 +23,8 @@ public interface IMemberService
 
     Task<MemberLocation?> GetMemberLocation(Guid memberId);
 
+    Task<MemberPreferences?> GetMemberPreferences(Guid memberId);
+
     Task<MemberProfile?> GetMemberProfile(Guid chapterId, Guid currentMemberId, Member member);
 
     Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId);
@@ -41,7 +43,9 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberChapterProfile(Guid id, Guid chapterId, UpdateMemberChapterProfile model);
 
-    Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name);
+    Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);
+
+    Task<ServiceResult> UpdateMemberPreferences(Guid id, Guid? distanceUnitId);
 
     Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model);
 }

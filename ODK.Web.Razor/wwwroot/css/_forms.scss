@@ -10,6 +10,11 @@
 	.form-label {
 		margin-right: 0.5rem;	
 	}
+
+	.form-select {
+		// turn off bootstrap's 100% width
+		width: auto;
+	}
 }
 
 .form-label {

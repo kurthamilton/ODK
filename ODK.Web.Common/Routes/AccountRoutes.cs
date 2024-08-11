@@ -6,7 +6,7 @@ public class AccountRoutes : RoutesBase
     public string EmailAddressChange(string? chapterName) => AccountPath(chapterName, "email/change");
     public string EmailPreferences(string? chapterName) => AccountPath(chapterName, "emails");
     public string Join(string? chapterName) => AccountPath(chapterName, "join");
-    public string Location(string? chapterName) => AccountPath(chapterName, "location");
+    public string Location() => AccountPath(null, "location");
     public string PasswordChange(string? chapterName) => AccountPath(chapterName, "password/change");
     public string PersonalDetails(string? chapterName) => AccountPath(chapterName, "");
     public string Picture(string? chapterName) => AccountPath(chapterName, "picture");
