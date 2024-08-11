@@ -24,7 +24,9 @@
     if (!string.IsNullOrEmpty(pageTitle))
     {
         title = $"{pageTitle} | {title}";
-    }    
+    }
+
+    var description = ViewData["Description"] as string;
 }
 
 <!DOCTYPE html>
@@ -33,6 +35,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@title</title>    
+    @if (!string.IsNullOrEmpty(description))
+    {
+        <meta  name="description" content="@description" />
+    }
 
     <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">

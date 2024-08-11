@@ -1,14 +1,35 @@
 ﻿@page "/{chapterName}"
+@using ODK.Core.Platforms
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.ChapterModel
 @inject IChapterViewModelService ChapterViewModelService
+@inject IPlatformProvider PlatformProvider
 @{
     Layout = "_ChapterLayout";
 
     var memberId = User.MemberIdOrDefault();
     var viewModel = await ChapterViewModelService.GetHomePage(memberId, Model.ChapterName);
+
+    var platform = PlatformProvider.GetPlatform();
+
+    var description = viewModel.Chapter.Name;
+    if (platform == PlatformType.DrunkenKnitwits)
+    {
+        description += " Drunken Knitwits";
+    }
+
+    if (!string.IsNullOrEmpty(viewModel.Chapter.Description))
+    {
+        description += ". " + viewModel.Chapter.Description;
+    }
+    else if (platform == PlatformType.DrunkenKnitwits)
+    {
+        description += ". We are the Drunken Knitwits, and we are knit-aholics. Sip by sip and stitch by stitch, we continue to pursue drunken, hand-cramping knit-thood, whereby all Knitwits have the holy grail of drunken knitting to show off to our friends: a hand-crafted item whose place, time, and method of construction cannot entirely be recalled";
+    }
+
+    Model.Description = description;
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel

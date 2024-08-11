@@ -3,10 +3,12 @@
 @using ODK.Web.Razor.Models.Header
 @model ChapterHeaderViewModel
 @inject IPlatformProvider PlatformProvider
-@{    
+@{
+    var platform = PlatformProvider.GetPlatform();
+
     var isMember = Model.Member?.IsMemberOf(Model.Chapter.Id) == true;
 
-    List<MenuItem> menuItems = new();
+    var menuItems = new List<MenuItem>();
 
     menuItems.Add(new MenuItem { Text = "Events", Link = $"/{Model.Chapter.Name}/Events" });
 
@@ -21,19 +23,20 @@
 
 @await Html.PartialAsync("Header/_Header", new HeaderViewModel
 {
-   ImageLink = $"/{Model.Chapter.Name}",
-   ImageUrl = Model.Chapter.BannerImageUrl,
-   Navbar = new NavbarViewModel
-   {
-       Breakpoint = "md",
-       Chapter = Model.Chapter,
-       Color = "dark",
-       Compact = false,
-       CssClass = null,
-       Member = Model.Member,
-       MenuItems = new []
-       {
-           menuItems.ToArray()
-       }
-   }
+    ImageAltText = $"{platform.ChapterDisplayName(Model.Chapter)} Header Image",
+    ImageLink = $"/{Model.Chapter.Name}",
+    ImageUrl = Model.Chapter.BannerImageUrl,
+    Navbar = new NavbarViewModel
+    {
+        Breakpoint = "md",
+        Chapter = Model.Chapter,
+        Color = "dark",
+        Compact = false,
+        CssClass = null,
+        Member = Model.Member,
+        MenuItems = new []
+        {
+            menuItems.ToArray()
+        }
+    }
 })

@@ -11,6 +11,12 @@ public abstract class OdkPageModel : PageModel
 
     public Guid? CurrentMemberIdOrDefault => User.MemberIdOrDefault();
 
+    public string? Description
+    {
+        get => ViewData["Description"] as string;
+        set => ViewData["Description"] = value;
+    }
+
     public string? Title
     {
         get => ViewData["Title"] as string;
