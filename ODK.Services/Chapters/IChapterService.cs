@@ -14,7 +14,9 @@ public interface IChapterService
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);                
 
-    Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);    
+    Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);
+
+    Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId);
 
     Task<ChaptersDto> GetChaptersDto();
 

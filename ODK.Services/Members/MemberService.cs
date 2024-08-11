@@ -264,11 +264,30 @@ public class MemberService : IMemberService
         }
     }
 
-    public async Task DeleteMember(Guid memberId)
+    public async Task<ServiceResult> DeleteMember(Guid memberId)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
+        var (member, chapters) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterRepository.GetByOwnerId(memberId));
+
+        var activeChapters = chapters
+            .Where(x => x.IsOpenForRegistration())
+            .ToArray();
+        if (activeChapters.Length > 0)
+        {
+            return ServiceResult.Failure("Group owners cannot delete their account");
+        }
+
+        foreach (var chapter in chapters)
+        {
+            chapter.OwnerId = null;
+            _unitOfWork.ChapterRepository.Update(chapter);
+        }
+
         _unitOfWork.MemberRepository.Delete(member);
         await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
     }
 
     public async Task<Member> GetMember(Guid memberId)

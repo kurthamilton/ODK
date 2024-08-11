@@ -211,6 +211,11 @@ public class ChapterService : IChapterService
             .ToArray();
     }    
 
+    public async Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId)
+    {
+        return await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).RunAsync();
+    }
+
     public async Task<ChaptersDto> GetChaptersDto()
     {
         var (chapters, countries) = await _unitOfWork.RunAsync(

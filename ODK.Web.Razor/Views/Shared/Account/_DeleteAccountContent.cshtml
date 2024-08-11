@@ -1,9 +1,34 @@
-﻿<p>
-    If you delete your account we will delete all of your data, including any subscriptions you currently have.
-</p>
+﻿@using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
+@inject IChapterService ChapterService
+@{
+    var memberId = User.MemberId();
+    var chapters = await ChapterService.GetChaptersByOwnerId(memberId);
+    chapters = chapters.Where(x => x.IsOpenForRegistration()).ToArray();
+}
 
-<form method="post" action="/Account/Delete">
-    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete your account?');">
-        Delete my account
-    </button>
-</form>
+@if (chapters.Count > 0)
+{
+    <div class="alert alert-danger">
+        You cannot delete your account since you still own the following groups
+    </div>
+
+    <ul class="list-group">
+        @foreach (var chapter in chapters)
+        {
+            <li class="list-group-item">@chapter.Name</li>
+        }        
+    </ul>
+}
+else
+{
+    <p>
+        If you delete your account we will delete all of your data, including any subscriptions you currently have.
+    </p>
+
+    <form method="post" action="/Account/Delete">
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete your account?');">
+            Delete my account
+        </button>
+    </form>
+}

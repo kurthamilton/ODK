@@ -146,7 +146,14 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/delete")]
     public async Task<IActionResult> DeleteAccount()
     {
-        await _memberService.DeleteMember(MemberId);
+        var result = await _memberService.DeleteMember(MemberId);
+        AddFeedback(result, "Account deleted");
+
+        if (!result.Success)
+        {            
+            return RedirectToReferrer();
+        }
+
         await _loginHandler.Logout(HttpContext);
         return Redirect("/");
     }

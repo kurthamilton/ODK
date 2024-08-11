@@ -11,7 +11,7 @@ public interface IMemberService
 
     Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile model);
 
-    Task DeleteMember(Guid memberId);
+    Task<ServiceResult> DeleteMember(Guid memberId);
 
     Task<Member> GetMember(Guid memberId);
 
