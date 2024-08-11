@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ODK.Core.Platforms;
 using ODK.Data.Core;
-using ODK.Services.Platforms;
 
 namespace ODK.Services.Subscriptions;
 

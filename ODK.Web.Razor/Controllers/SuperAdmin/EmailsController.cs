@@ -25,15 +25,7 @@ public class EmailsController : OdkControllerBase
     public async Task<IActionResult> SendTestEmail(string chapterName, EmailType type)
     {
         var result = await _emailAdminService.SendTestEmail(MemberId, type);
-        if (result.Success)
-        {
-            AddFeedback(new FeedbackViewModel("Test email sent", FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        AddFeedback(result, "Test email sent");
         return RedirectToReferrer();
     }
 
@@ -41,7 +33,7 @@ public class EmailsController : OdkControllerBase
     public async Task<IActionResult> DeleteEmailProvider(Guid id)
     {
         await _settingsService.DeleteEmailProvider(MemberId, id);
-        AddFeedback(new FeedbackViewModel("Email provider deleted", FeedbackType.Success));
+        AddFeedback("Email provider deleted", FeedbackType.Success);
         return RedirectToReferrer();
     }
 

@@ -31,7 +31,7 @@ public class EventAdminController : AdminControllerBase
     {
         var request = await GetAdminServiceRequest(chapterName);
         await _eventAdminService.DeleteEvent(request, id);
-        AddFeedback(new FeedbackViewModel("Event deleted", FeedbackType.Success));
+        AddFeedback("Event deleted", FeedbackType.Success);
         return Redirect($"/{chapterName}/Admin/Events");
     }
 
@@ -42,7 +42,7 @@ public class EventAdminController : AdminControllerBase
         var result = await _eventAdminService.SendEventInvites(request, id);
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
         }
 
         return RedirectToReferrer();
@@ -54,7 +54,7 @@ public class EventAdminController : AdminControllerBase
         var request = await GetAdminServiceRequest(chapterName);
         await _eventAdminService.SendEventInviteeEmail(request, id, 
             model.ResponseTypes, model.Subject ?? "", model.Body ?? "");
-        AddFeedback(new FeedbackViewModel("Update sent", FeedbackType.Success));
+        AddFeedback("Update sent", FeedbackType.Success);
 
         return RedirectToReferrer();
     }
@@ -64,15 +64,7 @@ public class EventAdminController : AdminControllerBase
     {
         var request = await GetAdminServiceRequest(chapterName);
         var result = await _eventAdminService.SendEventInvites(request, id, true);
-        if (result.Success)
-        {
-            AddFeedback(new FeedbackViewModel("Invites sent", FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        AddFeedback(result, "Invites sent");
         return RedirectToReferrer();
     }
 
@@ -81,7 +73,7 @@ public class EventAdminController : AdminControllerBase
     {
         var request = await GetAdminServiceRequest(chapterName);
         await _eventAdminService.PublishEvent(request, id);
-        AddFeedback(new FeedbackViewModel("Event published", FeedbackType.Success));
+        AddFeedback("Event published", FeedbackType.Success);
         return RedirectToReferrer();
     }
 
@@ -94,15 +86,7 @@ public class EventAdminController : AdminControllerBase
             id,
             viewModel.ScheduledEmailDate,
             viewModel.ScheduledEmailTime);
-        if (result.Success)
-        {
-            AddFeedback(new FeedbackViewModel("Scheduled email date updated", FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        AddFeedback(result, "Scheduled email date updated");
         return RedirectToReferrer();
     }
 }

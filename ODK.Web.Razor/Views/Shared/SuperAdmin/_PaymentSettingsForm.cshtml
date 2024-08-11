@@ -4,9 +4,23 @@
     {
         new SelectListItem { Text = "PayPal" }
     };
+
+    var currencyOptions = Model.CurrencyOptions
+        .Select(x => new SelectListItem
+        {
+            Value = x.Id.ToString(),
+            Text = x.Code
+        })
+        .ToArray();
 }
 
-<div class="form-group mb-3">
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.CurrencyId, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.CurrencyId)
+</div>
+
+<div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Provider, new { @class = "form-label" })
     @Html.DropDownListFor(x => x.Provider, providerOptions, new { @class = "form-select" })
 </div>

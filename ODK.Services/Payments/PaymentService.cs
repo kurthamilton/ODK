@@ -17,22 +17,20 @@ public class PaymentService : IPaymentService
 
     public async Task<ServiceResult> MakePayment(Guid chapterId, Member member, double amount, string cardToken, string reference)
     {
-        var (paymentSettings, chapter) = await _unitOfWork.RunAsync(
+        var (settings, chapter) = await _unitOfWork.RunAsync(
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterRepository.GetById(chapterId));
 
-        var country = await _unitOfWork.CountryRepository.GetById(chapter.CountryId).RunAsync();
-
-        if (paymentSettings == null || paymentSettings.Provider == null)
+        if (settings == null || settings.Provider == null)
         {
             return ServiceResult.Failure("Payment settings not found");
         }
 
-        var providerType = Enum.Parse<PaymentProviderType>(paymentSettings.Provider, true);
+        var providerType = Enum.Parse<PaymentProviderType>(settings.Provider, true);
         
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(providerType);
 
-        var paymentResult = await paymentProvider.MakePayment(paymentSettings, country.CurrencyCode, amount, cardToken, reference,
+        var paymentResult = await paymentProvider.MakePayment(settings, settings.Currency.Code, amount, cardToken, reference,
             member.FullName);
         if (!paymentResult.Success)
         {
@@ -42,7 +40,7 @@ public class PaymentService : IPaymentService
         _unitOfWork.PaymentRepository.Add(new Payment
         {
             Amount = amount,
-            CurrencyCode = country.CurrencyCode,
+            CurrencyCode = settings.Currency.Code,
             MemberId = member.Id,
             PaidUtc = DateTime.UtcNow,
             Reference = reference

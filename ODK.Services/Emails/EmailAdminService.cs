@@ -9,7 +9,9 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     private readonly IEmailService _emailService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public EmailAdminService(IUnitOfWork unitOfWork, IEmailService emailService)
+    public EmailAdminService(
+        IUnitOfWork unitOfWork, 
+        IEmailService emailService)
         : base(unitOfWork)
     {
         _emailService = emailService;
@@ -110,10 +112,9 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(currentMemberId));
 
-        return await _emailService.SendEmail(chapter, currentMember.GetEmailAddressee(), type, 
+        return await _emailService.SendEmail(chapter, currentMember.ToEmailAddressee(), type, 
             new Dictionary<string, string>
             {
-                { "chapter.name", chapter.Name },
                 { "member.emailAddress", currentMember.FirstName },
                 { "member.firstName", currentMember.FirstName },
                 { "member.lastName", currentMember.FirstName }
@@ -125,7 +126,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         var currentMember = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.MemberRepository.GetById(currentMemberId));
 
-        return await _emailService.SendEmail(null, currentMember.GetEmailAddressee(), type,
+        return await _emailService.SendEmail(null, currentMember.ToEmailAddressee(), type,
             new Dictionary<string, string>
             {
                 { "member.emailAddress", currentMember.FirstName },

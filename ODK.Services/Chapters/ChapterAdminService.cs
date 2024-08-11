@@ -3,8 +3,12 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.DataTypes;
 using ODK.Core.Members;
+using ODK.Core.Utils;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Caching;
+using ODK.Services.Chapters.ViewModels;
+using ODK.Services.Emails;
 
 namespace ODK.Services.Chapters;
 
@@ -12,14 +16,22 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 {
     private readonly ICacheService _cacheService;
     private readonly IChapterService _chapterService;
+    private readonly IEmailService _emailService;
+    private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public ChapterAdminService(IUnitOfWork unitOfWork, ICacheService cacheService,
-        IChapterService chapterService)
+    public ChapterAdminService(
+        IUnitOfWork unitOfWork, 
+        ICacheService cacheService,
+        IChapterService chapterService,
+        IEmailService emailService,
+        IHttpRequestProvider httpRequestProvider)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
         _chapterService = chapterService;
+        _emailService = emailService;
+        _httpRequestProvider = httpRequestProvider;
         _unitOfWork = unitOfWork;
     }
     
@@ -48,6 +60,42 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterAdminMemberRepository.Add(adminMember);
         await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> ApproveChapter(AdminServiceRequest request)
+    {
+        var (chapter, members) = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetAllByChapterId(request.ChapterId));
+
+        var owner = members.FirstOrDefault(x => x.Id == chapter.OwnerId);
+        OdkAssertions.Exists(owner);
+
+        if (chapter.ApprovedUtc != null)
+        {
+            return ServiceResult.Successful();
+        }
+
+        chapter.ApprovedUtc = DateTime.UtcNow;
+
+        _unitOfWork.ChapterRepository.Update(chapter);
+        await _unitOfWork.SaveChangesAsync();
+
+        var baseUrl = UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl);
+        var body =
+            "<p>Thank you for starting the group '{chapter.name}'. It has now been approved and you are ready to go!</p>" +
+            "<p><a href=\"{url}\">{url}</a></p>" +
+            "<p>{url}</p>";
+
+        await _emailService.SendMemberEmail(chapter, null, owner.ToEmailAddressee(),
+            "{title} - Your group has been approved",
+            body,
+            new Dictionary<string, string>
+            {
+                { "url", baseUrl }
+            });
 
         return ServiceResult.Successful();
     }
@@ -149,6 +197,17 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
     
+    public async Task<ServiceResult> DeleteChapter(AdminServiceRequest request)
+    {
+        var chapter = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
+
+        _unitOfWork.ChapterRepository.Delete(chapter);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> DeleteChapterAdminMember(AdminServiceRequest request,
         Guid memberId)
     {
@@ -335,12 +394,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var chapter = await _unitOfWork.ChapterRepository.GetById(chapterId).RunAsync();
 
-        var (chapterAdminMembers, currentMember, memberSubscription, chapterSubscriptions, country, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, memberSubscription, chapterSubscriptions, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
-            x => x.CountryRepository.GetById(chapter.CountryId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
@@ -349,7 +407,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return new ChapterMemberSubscriptionsDto
         {
             ChapterSubscriptions = chapterSubscriptions,
-            Country = country,
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = memberSubscription,
             PaymentSettings = paymentSettings
@@ -408,6 +465,37 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         return await GetChapterAdminRestrictedContent(request,
             x => x.ChapterTextsRepository.GetByChapterId(request.ChapterId));
+    }
+
+    public async Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId)
+    {
+        var chapters = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.ChapterRepository.GetAll());
+
+        return new SuperAdminChaptersViewModel
+        {
+            PendingApproval = chapters
+                .Where(x => x.ApprovedUtc == null)
+                .OrderBy(x => x.CreatedUtc)
+                .ToArray()
+        };
+    }
+
+    public async Task<ServiceResult> PublishChapter(AdminServiceRequest request)
+    {
+        var chapter = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
+
+        if (!chapter.CanBePublished())
+        {
+            return ServiceResult.Failure("This group cannot be published");
+        }
+
+        chapter.PublishedUtc = DateTime.UtcNow;
+        _unitOfWork.ChapterRepository.Update(chapter);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
     }
 
     public async Task SetOwner(AdminServiceRequest request, Guid memberId)
@@ -514,26 +602,32 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(request.ChapterId);
 
-        if (chapterLocation == null)
-        {
-            chapterLocation = new ChapterLocation();
-        }
-        
         if (location != null && !string.IsNullOrEmpty(name))
         {
-            chapterLocation.LatLong = location;
+            if (chapterLocation == null)
+            {
+                chapterLocation = new ChapterLocation();
+            }            
+
+            chapterLocation.LatLong = location.Value;
             chapterLocation.Name = name;
         }        
         else
         {
-            chapterLocation.LatLong = null;
-            chapterLocation.Name = null;
+            if (chapterLocation == null)
+            {
+                return ServiceResult.Successful();
+            }
+
+            _unitOfWork.ChapterLocationRepository.Delete(chapterLocation);
+            await _unitOfWork.SaveChangesAsync();
+            return ServiceResult.Successful();
         }
 
         if (chapterLocation.ChapterId == default)
         {
             chapterLocation.ChapterId = chapter.Id;
-            _unitOfWork.ChapterLocationRepository.Update(chapterLocation);
+            _unitOfWork.ChapterLocationRepository.Add(chapterLocation);
         }
         else
         {
@@ -590,6 +684,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var settings = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
 
+        if (model.CurrencyId == null)
+        {
+            return ServiceResult.Failure("Currency required");
+        }
+
         if (settings == null)
         {
             settings = new();
@@ -597,6 +696,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         settings.ApiPublicKey = model.ApiPublicKey;
         settings.ApiSecretKey = model.ApiSecretKey;
+        settings.CurrencyId = model.CurrencyId.Value;
         settings.Provider = model.Provider;
 
         if (settings.ChapterId == default)

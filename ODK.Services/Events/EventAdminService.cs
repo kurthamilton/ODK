@@ -348,7 +348,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         if (test)
         {            
-            await _emailService.SendEmail(chapter, currentMember.GetEmailAddressee(), EmailType.EventInvite, parameters);
+            await _emailService.SendEmail(chapter, currentMember.ToEmailAddressee(), EmailType.EventInvite, parameters);
             return ServiceResult.Successful();
         }
 

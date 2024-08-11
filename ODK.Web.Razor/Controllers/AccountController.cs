@@ -50,7 +50,7 @@ public class AccountController : OdkControllerBase
             Location = location.Lat != null && location.Long != null 
                 ? new LatLong(location.Lat.Value, location.Long.Value)
                 : default(LatLong?),
-            LocationName = location.LocationName
+            LocationName = location.Name
         };
 
         var result = await _memberService.CreateAccount(model);
@@ -115,7 +115,7 @@ public class AccountController : OdkControllerBase
             return Redirect(returnUrl);
         }
 
-        AddFeedback(new FeedbackViewModel("Username or password incorrect", FeedbackType.Error));
+        AddFeedback("Username or password incorrect", FeedbackType.Error);
 
         return RedirectToReferrer();
     }
@@ -138,7 +138,7 @@ public class AccountController : OdkControllerBase
             return Redirect(returnUrl);
         }
 
-        AddFeedback(new FeedbackViewModel("Username or password incorrect", FeedbackType.Error));
+        AddFeedback("Username or password incorrect", FeedbackType.Error);
 
         return RedirectToReferrer();
     }
@@ -155,18 +155,10 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> ChangeEmailRequest([FromForm] ChangeEmailFormViewModel viewModel)
     {
         var result = await _memberService.RequestMemberEmailAddressUpdate(MemberId, viewModel.Email ?? "");
-        if (result.Success)
-        {
-            string message = !string.IsNullOrEmpty(result.Message)
-                ? result.Message
-                : "An email has been sent to the email address you provided. " +
-                  "Please complete your update by following the link in the email.";
-            AddFeedback(message, FeedbackType.Success);
-        }
-        else
-        {
-            AddFeedback(result);
-        }
+        var successMessage =
+            "An email has been sent to the email address you provided. " +
+            "Please complete your update by following the link in the email.";
+        AddFeedback(result, successMessage);
 
         return RedirectToReferrer();
     }
@@ -177,19 +169,10 @@ public class AccountController : OdkControllerBase
         var chapter = await _requestCache.GetChapterAsync(chapterName);
 
         var result = await _memberService.RequestMemberEmailAddressUpdate(MemberId, chapter.Id, viewModel.Email ?? "");
-        if (result.Success)
-        {
-            string message = !string.IsNullOrEmpty(result.Message)
-                ? result.Message
-                : "An email has been sent to the email address you provided. " +
-                  "Please complete your update by following the link in the email.";
-            AddFeedback(new FeedbackViewModel(message, FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        var successMessage =
+            "An email has been sent to the email address you provided. " +
+            "Please complete your update by following the link in the email.";
+        AddFeedback(result, successMessage);
         return RedirectToReferrer();
     }
 
@@ -197,15 +180,7 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> ChangeEmailConfirm(string token)
     {
         var result = await _memberService.ConfirmEmailAddressUpdate(MemberId, token);
-        if (result.Success)
-        {
-            AddFeedback("Email address updated", FeedbackType.Success);
-        }
-        else
-        {
-            AddFeedback(result);
-        }
-
+        AddFeedback(result, "Email address updated");
         return Redirect("/account");
     }
 
@@ -213,15 +188,7 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> ChangeEmailConfirm(string chapterName, string token)
     {
         var result = await _memberService.ConfirmEmailAddressUpdate(MemberId, token);
-        if (result.Success)
-        {
-            AddFeedback(new FeedbackViewModel("Email address updated", FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        AddFeedback(result, "Email address updated");
         return Redirect($"/{chapterName}/Account");
     }
 
@@ -245,7 +212,7 @@ public class AccountController : OdkControllerBase
         var location = viewModel.Lat != null && viewModel.Long != null
             ? new LatLong(viewModel.Lat.Value, viewModel.Long.Value) 
             : default(LatLong?);
-        await _memberService.UpdateMemberLocation(MemberId, location, viewModel.LocationName);
+        await _memberService.UpdateMemberLocation(MemberId, location, viewModel.Name);
 
         AddFeedback("Location updated", FeedbackType.Success);
 
@@ -264,14 +231,11 @@ public class AccountController : OdkControllerBase
         var memberId = User.MemberId();
 
         var result = await _memberService.UpdateMemberSiteProfile(memberId, model);
-        if (!result.Success)
-        {
-            AddFeedback(new FeedbackViewModel(result));
-            return View();
-        }
+        AddFeedback(result, "Profile updated");
 
-        AddFeedback(new FeedbackViewModel("Profile updated", FeedbackType.Success));
-        return RedirectToReferrer();
+        return result.Success
+            ? RedirectToReferrer()
+            : View();        
     }
 
     [HttpPost("{ChapterName}/Account/Profile")]
@@ -295,14 +259,8 @@ public class AccountController : OdkControllerBase
         var memberId = User.MemberId();
 
         var result = await _memberService.UpdateMemberChapterProfile(memberId, chapter.Id, model);
-        if (!result.Success)
-        {
-            AddFeedback(new FeedbackViewModel(result));
-            return View();
-        }
-
-        AddFeedback(new FeedbackViewModel("Profile updated", FeedbackType.Success));
-        return RedirectToReferrer();
+        AddFeedback(result, "Profile updated");        
+        return result.Success ? RedirectToReferrer() : View();        
     }
 
     [HttpPost("Account/FeatureTips/{name}/Hide")]
@@ -317,10 +275,7 @@ public class AccountController : OdkControllerBase
     {
         var result = await _authenticationService.ChangePasswordAsync(MemberId, 
             viewModel.CurrentPassword ?? "", viewModel.NewPassword ?? "");
-        AddFeedback(result.Success
-            ? new FeedbackViewModel("Password changed", FeedbackType.Success)
-            : new FeedbackViewModel(result));
-
+        AddFeedback(result, "Password changed");
         return RedirectToReferrer();
     }
 
@@ -329,17 +284,10 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> ForgottenPassword([FromForm] ForgottenPasswordFormViewModel viewModel)
     {
         var result = await _authenticationService.RequestPasswordResetAsync(viewModel.EmailAddress ?? "");
-        if (result.Success)
-        {
-            string message = "An email containing password reset instructions has been sent to that email address " +
-                             "if it is associated with an account";
-            AddFeedback(message, FeedbackType.Success);
-        }
-        else
-        {
-            AddFeedback(result);
-        }
-
+        string successMessage = 
+            "An email containing password reset instructions has been sent to that email address " +
+            "if it is associated with an account";
+        AddFeedback(result, successMessage);
         return RedirectToReferrer();
     }
 
@@ -349,17 +297,10 @@ public class AccountController : OdkControllerBase
     {
         var chapter = await _requestCache.GetChapterAsync(chapterName);
         var result = await _authenticationService.RequestPasswordResetAsync(chapter.Id, viewModel.EmailAddress ?? "");
-        if (result.Success)
-        {
-            string message = "An email containing password reset instructions has been sent to that email address " +
-                             "if it is associated with an account";
-            AddFeedback(new FeedbackViewModel(message, FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        var successMessage = 
+            "An email containing password reset instructions has been sent to that email address " +
+            "if it is associated with an account";
+        AddFeedback(result, successMessage);
         return RedirectToReferrer();
     }
 
@@ -379,7 +320,7 @@ public class AccountController : OdkControllerBase
         } : null;
 
         var result = await _memberService.UpdateMemberImage(MemberId, model, cropInfo);
-        AddFeedback(new FeedbackViewModel(result));
+        AddFeedback(result);
         return RedirectToReferrer();
     }
 
@@ -401,26 +342,16 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> PurchaseSubscription(string chapterName, [FromForm] PurchaseSubscriptionRequest request)
     {
         var chapter = await _requestCache.GetChapterAsync(chapterName);
-
         var result = await _memberService.PurchaseSubscription(MemberId, chapter.Id, request.SubscriptionId, request.Token);
-        AddFeedback(result.Success
-            ? new FeedbackViewModel("Purchase complete. Thank you for subscribing.", FeedbackType.Success)
-            : new FeedbackViewModel(result));
-
+        AddFeedback(result, "Purchase complete. Thank you for subscribing.");
         return RedirectToReferrer();
     }
 
     private void PostJoin(ServiceResult result)
     {
-        if (result.Success)
-        {
-            string message = "Thank you for signing up. " +
-                             "An email has been sent to your email address containing a link to activate your account.";
-            AddFeedback(message, FeedbackType.Success);
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
+        string successMessage = 
+            "Thank you for signing up. " +
+            "An email has been sent to your email address containing a link to activate your account.";
+        AddFeedback(result, successMessage);
     }
 }

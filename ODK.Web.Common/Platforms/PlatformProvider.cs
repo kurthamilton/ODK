@@ -2,12 +2,13 @@
 using System.Linq;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
-using ODK.Services.Platforms;
 
 namespace ODK.Web.Common.Platforms;
 
 public class PlatformProvider : IPlatformProvider
 {
+    private static PlatformType? _platform;
+
     private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly PlatformProviderSettings _settings;
 
@@ -31,13 +32,22 @@ public class PlatformProvider : IPlatformProvider
 
     public PlatformType GetPlatform()
     {
+        if (_platform != null)
+        {
+            return _platform.Value;
+        }
+
         var url = _httpRequestProvider.RequestUrl;
 
         if (_settings.DrunkenKnitwitsBaseUrls.Any(x => url.StartsWith(x, StringComparison.InvariantCultureIgnoreCase)))
         {
-            return PlatformType.DrunkenKnitwits;
+            _platform = PlatformType.DrunkenKnitwits;
+        }
+        else
+        {
+            _platform = PlatformType.Default;
         }
 
-        return PlatformType.Default;
+        return _platform.Value;
     }
 }

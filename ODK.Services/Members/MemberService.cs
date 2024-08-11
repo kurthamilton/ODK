@@ -6,13 +6,13 @@ using ODK.Core.Cryptography;
 using ODK.Core.Emails;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Payments;
-using ODK.Services.Platforms;
 
 namespace ODK.Services.Members;
 
@@ -98,12 +98,15 @@ public class MemberService : IMemberService
         };
         _unitOfWork.MemberRepository.Add(member);
 
-        _unitOfWork.MemberLocationRepository.Add(new MemberLocation
+        if (model.Location != null)
         {
-            MemberId = member.Id,
-            LatLong = model.Location,
-            Name = model.LocationName
-        });
+            _unitOfWork.MemberLocationRepository.Add(new MemberLocation
+            {
+                MemberId = member.Id,
+                LatLong = model.Location.Value,
+                Name = model.LocationName
+            });
+        }        
 
         _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
         {
@@ -183,12 +186,15 @@ public class MemberService : IMemberService
 
         _unitOfWork.MemberRepository.Add(member);
 
-        _unitOfWork.MemberLocationRepository.Add(new MemberLocation
+        if (chapterLocation != null)
         {
-            MemberId = member.Id,
-            LatLong = chapterLocation?.LatLong,
-            Name = chapterLocation?.Name
-        });
+            _unitOfWork.MemberLocationRepository.Add(new MemberLocation
+            {
+                MemberId = member.Id,
+                LatLong = chapterLocation.LatLong,
+                Name = chapterLocation.Name
+            });
+        }        
 
         _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
         {
@@ -389,13 +395,13 @@ public class MemberService : IMemberService
 
         await _unitOfWork.SaveChangesAsync();
 
-        var chapter = await _unitOfWork.ChapterRepository.GetById(chapterSubscription.ChapterId).RunAsync();
-        var country = await _unitOfWork.CountryRepository.GetById(chapter.CountryId).RunAsync();
+        var (chapter, chapterPaymentSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterSubscription.ChapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId));
         
-        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.SubscriptionConfirmation, new Dictionary<string, string>
+        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.SubscriptionConfirmation, new Dictionary<string, string>
         {
-            { "chapter.name", chapter.Name },
-            { "subscription.amount", $"{country.CurrencySymbol}{chapterSubscription.Amount:0.00}" },
+            { "subscription.amount", $"{chapterPaymentSettings.Currency.Symbol}{chapterSubscription.Amount:0.00}" },
             { "subscription.end", chapter.ToLocalTime(expiresUtc).ToString("d MMMM yyyy") }
         });
 
@@ -584,20 +590,26 @@ public class MemberService : IMemberService
     {
         var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(id);
 
-        if (memberLocation == null)
-        {
-            memberLocation = new MemberLocation();
-        }
-
         if (location != null && !string.IsNullOrEmpty(name))
         {
-            memberLocation.LatLong = location;
+            if (memberLocation == null)
+            {
+                memberLocation = new MemberLocation();
+            }
+
+            memberLocation.LatLong = location.Value;
             memberLocation.Name = name;
         }
         else
         {
-            memberLocation.LatLong = null;
-            memberLocation.Name = null;
+            if (memberLocation == null)
+            {
+                return ServiceResult.Successful();
+            }
+
+            _unitOfWork.MemberLocationRepository.Delete(memberLocation);
+            await _unitOfWork.SaveChangesAsync();
+            return ServiceResult.Successful();
         }
 
         if (memberLocation.MemberId == default)
@@ -695,10 +707,11 @@ public class MemberService : IMemberService
 
     private async Task SendDuplicateMemberEmail(Chapter? chapter, Member member)
     {
-        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.DuplicateEmail, new Dictionary<string, string>
-        {
-            { "chapter.name", chapter?.Name ?? "" }
-        });
+        await _emailService.SendEmail(
+            chapter, 
+            member.ToEmailAddressee(), 
+            EmailType.DuplicateEmail, 
+            new Dictionary<string, string>());
     }
 
     private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, UpdateMemberChapterProfile profile)

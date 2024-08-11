@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace ODK.Services.Users.ViewModels;
+namespace ODK.Web.Razor.Models.Account;
 
 public class LocationFormViewModel
 {
@@ -11,5 +11,7 @@ public class LocationFormViewModel
 
     [DisplayName("Location")]
     [Required]
-    public string LocationName { get; set; } = "";
+    public string Name { get; set; } = "";
+
+    public bool InlineButton { get; set; }
 }

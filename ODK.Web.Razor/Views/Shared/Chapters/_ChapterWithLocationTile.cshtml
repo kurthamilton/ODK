@@ -1,0 +1,20 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@model ChapterWithDistanceViewModel
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex">
+            <div class="me-auto">
+                <a href="@OdkRoutes2.Groups.Group(Model.Chapter.Slug)">@Model.Chapter.Name</a>
+            </div>
+            <div class="small">
+                <i class="fa-solid fa-location-dot"></i>
+                @Model.Location.Name
+            </div>
+        </div>
+    </div>    
+    <div class="card-body">        
+        <p class="card-text">@Model.Chapter.Description</p>
+    </div>    
+</div>

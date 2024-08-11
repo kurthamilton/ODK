@@ -15,6 +15,6 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Admin2/_ChapterEditContent", chapter),
+    Content = await Html.PartialAsync("Groups/_ChapterEditContent", chapter),
     Title = chapter.Name
 })

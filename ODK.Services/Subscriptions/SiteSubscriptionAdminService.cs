@@ -1,7 +1,7 @@
 ﻿using ODK.Core;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
-using ODK.Services.Platforms;
 
 namespace ODK.Services.Subscriptions;
 

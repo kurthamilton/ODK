@@ -1,21 +1,25 @@
-﻿using System.Web;
-using ODK.Core;
+﻿using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
+using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Utils;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
-using ODK.Services.Chapters.ViewModels;
-using ODK.Services.Platforms;
+using ODK.Services.Emails;
 
 namespace ODK.Services.Chapters;
 
 public class ChapterService : IChapterService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly ICacheService _cacheService;    
+    private readonly ICacheService _cacheService;
+    private readonly IEmailService _emailService;
+    private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
     
@@ -23,10 +27,14 @@ public class ChapterService : IChapterService
         IUnitOfWork unitOfWork, 
         ICacheService cacheService, 
         IAuthorizationService authorizationService,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        IEmailService emailService,
+        IHttpRequestProvider httpRequestProvider)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
+        _emailService = emailService;
+        _httpRequestProvider = httpRequestProvider;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }        
@@ -34,11 +42,13 @@ public class ChapterService : IChapterService
     public async Task<ServiceResult<Chapter?>> CreateChapter(Guid currentMemberId, ChapterCreateModel model)
     {
         var now = DateTime.UtcNow;
+        var platform = _platformProvider.GetPlatform();
 
-        var (memberSubscription, existing, countries) = await _unitOfWork.RunAsync(
+        var (memberSubscription, existing, countries, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId),
             x => x.ChapterRepository.GetAll(),
-            x => x.CountryRepository.GetAll());
+            x => x.CountryRepository.GetAll(),
+            x => x.SiteEmailSettingsRepository.Get(platform));
 
         var memberChapters = existing
             .Where(x => x.OwnerId == currentMemberId)
@@ -60,9 +70,7 @@ public class ChapterService : IChapterService
         if (existing.Any(x => string.Equals(x.Name, model.Name, StringComparison.InvariantCultureIgnoreCase)))
         {
             return ServiceResult<Chapter?>.Failure($"The name '{model.Name}' is taken");
-        }
-
-        var platform = _platformProvider.GetPlatform();
+        }        
 
         TimeZoneInfo? timeZone = null;
         if (model.TimeZoneId != null)
@@ -71,12 +79,6 @@ public class ChapterService : IChapterService
             {
                 return ServiceResult<Chapter?>.Failure("Invalid time zone");
             }
-        }
-
-        var country = countries.FirstOrDefault(x => x.Id == model.CountryId);
-        if (country == null)
-        {
-            return ServiceResult<Chapter?>.Failure("Invalid country");
         }
 
         var originalSlug = model.Name
@@ -92,7 +94,6 @@ public class ChapterService : IChapterService
 
         var chapter = new Chapter
         {
-            CountryId = country.Id,
             CreatedUtc = now,
             Description = model.Description,
             Name = model.Name,
@@ -103,6 +104,13 @@ public class ChapterService : IChapterService
         };
 
         _unitOfWork.ChapterRepository.Add(chapter);
+
+        _unitOfWork.ChapterLocationRepository.Add(new ChapterLocation
+        {
+            ChapterId = chapter.Id,
+            LatLong = model.Location,
+            Name = model.LocationName
+        });
 
         _unitOfWork.ChapterAdminMemberRepository.Add(new ChapterAdminMember
         {
@@ -122,6 +130,18 @@ public class ChapterService : IChapterService
         });
 
         await _unitOfWork.SaveChangesAsync();
+
+        await _emailService.SendMemberEmail(chapter, null, new EmailAddressee(siteEmailSettings.ContactEmailAddress, ""),
+            "{title} - New group",
+            "<p>A group has just been created</p>" +
+            "<p>Name: {chapter.name}</p>" +
+            "<p>{chapter.description}</p>" +
+            "<p>{url}/superadmin/groups</p>",
+            new Dictionary<string, string>
+            {
+                { "chapter.description", chapter.Description },
+                { "url", UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl) }
+            });
 
         return ServiceResult<Chapter?>.Successful(chapter);
     }
@@ -166,11 +186,10 @@ public class ChapterService : IChapterService
     {
         var chapterId = chapter.Id;
 
-        var (currentMember, memberSubscription, chapterSubscriptions, country, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
+        var (currentMember, memberSubscription, chapterSubscriptions, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
-            x => x.CountryRepository.GetById(chapter.CountryId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
@@ -179,7 +198,6 @@ public class ChapterService : IChapterService
         return new ChapterMemberSubscriptionsDto
         {
             ChapterSubscriptions = chapterSubscriptions,
-            Country = country,
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = memberSubscription,
             PaymentSettings = paymentSettings

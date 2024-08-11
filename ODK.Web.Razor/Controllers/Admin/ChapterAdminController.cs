@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
+using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
@@ -23,6 +24,15 @@ public class ChapterAdminController : AdminControllerBase
         _emailAdminService = emailAdminService;
     }
 
+    [HttpPost("/my/groups/{id:guid}/publish")]
+    public async Task<IActionResult> Publish(Guid id)
+    {
+        var request = new AdminServiceRequest(id, MemberId);
+        var result = await _chapterAdminService.PublishChapter(request);
+        AddFeedback(result, "Group published");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("/{chapterName}/Admin/Chapter/ContactRequests/{id}/Delete")]
     public async Task<IActionResult> DeleteContactRequest(string chapterName, Guid id)
     {
@@ -30,7 +40,7 @@ public class ChapterAdminController : AdminControllerBase
         var result = await _chapterAdminService.DeleteChapterContactRequest(serviceRequest, id);
         if (result.Success)
         {
-            AddFeedback(new FeedbackViewModel("Contact request deleted", FeedbackType.Success));
+            AddFeedback("Contact request deleted", FeedbackType.Success);
         }
 
         return RedirectToReferrer();
@@ -41,16 +51,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         var serviceRequest = await GetAdminServiceRequest(chapterName);
         var result = await _emailAdminService.DeleteChapterEmail(serviceRequest, type);
-
-        if (result.Success)
-        {
-            AddFeedback(new FeedbackViewModel("Default email restored", FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        AddFeedback(result, "Default email restored");
         return RedirectToReferrer();
     }
 
@@ -59,16 +60,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         var serviceRequest = await GetAdminServiceRequest(chapterName);
         var result = await _emailAdminService.SendTestEmail(serviceRequest, type);
-
-        if (result.Success)
-        {
-            AddFeedback(new FeedbackViewModel("Test email sent", FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        AddFeedback(result, "Test email sent");
         return RedirectToReferrer();
     }
 
@@ -85,7 +77,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         var serviceRequest = await GetAdminServiceRequest(chapterName);
         await _chapterAdminService.DeleteChapterProperty(serviceRequest, id);
-        AddFeedback(new FeedbackViewModel("Property deleted", FeedbackType.Success));
+        AddFeedback("Property deleted", FeedbackType.Success);
         return RedirectToReferrer();
     }
 
@@ -110,7 +102,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         var serviceRequest = await GetAdminServiceRequest(chapterName);
         await _chapterAdminService.DeleteChapterQuestion(serviceRequest, id);
-        AddFeedback(new FeedbackViewModel("Question deleted", FeedbackType.Success));
+        AddFeedback("Question deleted", FeedbackType.Success);
         return RedirectToReferrer();
     }
 
@@ -143,7 +135,7 @@ public class ChapterAdminController : AdminControllerBase
 
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
         }
 
         return RedirectToReferrer();

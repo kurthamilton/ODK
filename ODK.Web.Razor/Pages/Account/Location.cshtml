@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Members
-@using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
@@ -28,9 +27,9 @@
                 @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel
                 {
-                    Lat = location?.LatLong?.Lat,
-                    Long = location?.LatLong?.Long,
-                    LocationName = location?.Name ?? ""
+                    Lat = location?.LatLong.Lat,
+                    Long = location?.LatLong.Long,
+                    Name = location?.Name ?? ""
                 })
                 <button class="btn btn-primary">Update</button>
             </form>

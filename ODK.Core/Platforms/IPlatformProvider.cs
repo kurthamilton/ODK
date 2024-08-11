@@ -1,6 +1,4 @@
-﻿using ODK.Core.Platforms;
-
-namespace ODK.Services.Platforms;
+﻿namespace ODK.Core.Platforms;
 
 public interface IPlatformProvider
 {

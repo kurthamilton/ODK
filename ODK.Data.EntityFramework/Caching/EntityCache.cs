@@ -5,14 +5,16 @@ namespace ODK.Data.EntityFramework.Caching;
 public class EntityCache<TKey, T> where TKey : notnull
 {
     private readonly ConcurrentDictionary<TKey, T> _cache = new ConcurrentDictionary<TKey, T>();
+    private readonly Func<T, bool>? _filter;
     private readonly Func<T, TKey> _keyFunc;
     private readonly IDictionary<Guid, HashSet<TKey>> _pendingRemoves = new Dictionary<Guid, HashSet<TKey>>();
     private readonly IDictionary<Guid, HashSet<T>> _pendingUpdates = new Dictionary<Guid, HashSet<T>>();
     
     private bool _allRecords = false;
 
-    public EntityCache(Func<T, TKey> keyFunc)
+    public EntityCache(Func<T, TKey> keyFunc, Func<T, bool>? filter = null)
     {
+        _filter = filter;
         _keyFunc = keyFunc;
     }    
 

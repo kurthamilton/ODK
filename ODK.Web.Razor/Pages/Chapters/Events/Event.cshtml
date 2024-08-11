@@ -17,6 +17,8 @@
         Model.EventId);
 
     Model.Title = viewModel.Event.GetDisplayName();
+
+    var chapterName = viewModel.Chapter.Name;
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
@@ -24,8 +26,8 @@
     Title = viewModel.Event.GetDisplayName(),
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{viewModel.Chapter.Name}", Text = viewModel.Chapter.Name },
-        new MenuItem { Link = $"/{viewModel.Chapter.Name}/Events", Text = "Events" },
+        new MenuItem { Link = $"/{chapterName}", Text = chapterName },
+        new MenuItem { Link = $"/{chapterName}/Events", Text = "Events" },
         new MenuItem { Text = viewModel.Event.GetDisplayName() }
     },
     Content = await Html.PartialAsync("Events/_EventContent", viewModel),

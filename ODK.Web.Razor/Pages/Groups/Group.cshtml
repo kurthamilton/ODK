@@ -7,6 +7,8 @@
     Layout = "_HomeLayout";
 
     var viewModel = await ChapterViewModelService.GetGroupHomePage(Model.CurrentMemberIdOrDefault, Model.Slug);
+
+    Model.Title = viewModel.Chapter.Name;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

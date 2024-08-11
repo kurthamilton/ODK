@@ -34,9 +34,8 @@
             <form method="post">
                 @Html.AntiForgeryToken()
 
-                @await Html.PartialAsync("Chapters/_ChapterCreateForm", new CreateChapterFormViewModel
+                @await Html.PartialAsync("Groups/_ChapterCreateForm", new CreateChapterFormViewModel
                 {
-                    Countries = viewModel.Countries
                 })
 
                 <button class="btn btn-primary">Create</button>
@@ -44,3 +43,8 @@
         </div>,
     Title = "Create group"
 })
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/_GoogleLocationScripts")
+}

@@ -1,13 +1,13 @@
 ﻿@model ODK.Web.Razor.Models.PayPalFormViewModel
 
 <div data-paypal-container="@Model.Id"
-     data-paypal-currencycode="@Model.Country.CurrencyCode"
+     data-paypal-currencycode="@Model.Currency.Code"
      data-paypal-amount="@Model.Amount">
     <p>
         @Html.Raw(Model.Description)
     </p>
     <p>
-        <span>@Model.Country.CurrencySymbol@Model.Amount.ToString("0.00")</span>
+        <span>@Model.Currency.Symbol@Model.Amount.ToString("0.00")</span>
     </p>    
     <input data-paypal-token type="hidden" name="token" />
 </div>

@@ -169,21 +169,15 @@ public abstract class OdkAdminServiceBase
     }
 
     protected async Task<T1> GetSuperAdminRestrictedContent<T1>(Guid currentMemberId,
-        Func<IUnitOfWork, IDeferredQuery<T1>> query)
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1)
     {
         var (currentMember, result1) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
-            query);
+            query1);
 
         AssertMemberIsSuperAdmin(currentMember);
 
         return result1;
-    }
-
-    protected async Task<T1> GetSuperAdminRestrictedContent<T1>(AdminServiceRequest request,
-        Func<IUnitOfWork, IDeferredQuery<T1>> query)
-    {
-        return await GetSuperAdminRestrictedContent<T1>(request.CurrentMemberId, query);
     }
 
     protected async Task<(T1, T2)> GetSuperAdminRestrictedContent<T1, T2>(Guid currentMemberId,
@@ -199,6 +193,15 @@ public abstract class OdkAdminServiceBase
 
         return (result1, result2);
     }
+
+    protected async Task<T1> GetSuperAdminRestrictedContent<T1>(AdminServiceRequest request,
+        Func<IUnitOfWork, IDeferredQuery<T1>> query)
+        => await GetSuperAdminRestrictedContent(request.CurrentMemberId, query);
+
+    protected async Task<(T1, T2)> GetSuperAdminRestrictedContent<T1, T2>(AdminServiceRequest request,
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2)
+        => await GetSuperAdminRestrictedContent(request.CurrentMemberId, query1, query2);
 
     protected async Task<(T1, T2, T3)> GetSuperAdminRestrictedContent<T1, T2, T3>(Guid currentMemberId,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1,

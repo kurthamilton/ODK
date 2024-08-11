@@ -9,7 +9,7 @@ public class SubscriptionFormViewModel
     [Required]
     public double? Amount { get; set; }
 
-    public Guid CountryId { get; set; }
+    public Guid ChapterId { get; set; }
 
     [Required]
     public string Description { get; set; } = "";

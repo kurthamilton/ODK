@@ -4,11 +4,11 @@ namespace ODK.Web.Razor.Models;
 
 public class PayPalFormViewModel
 {
-    public required double Amount { get; set; }
+    public required double Amount { get; init; }
 
-    public required Country Country { get; set; }
+    public required Currency Currency { get; init; }
 
-    public required string Description { get; set; }
+    public required string Description { get; init; }
 
-    public required Guid Id { get; set; }
+    public required Guid Id { get; init; }
 }

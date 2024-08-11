@@ -1,9 +1,11 @@
-﻿using MailKit.Net.Smtp;
+﻿using System.Web;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -11,7 +13,6 @@ using ODK.Services.Emails.Extensions;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Services.Mails;
-using ODK.Services.Platforms;
 
 namespace ODK.Services.Emails;
 
@@ -57,20 +58,23 @@ public class MailProvider : IMailProvider
         var parameters = options.Parameters ?? new Dictionary<string, string>();
         if (!parameters.ContainsKey("chapter.name"))
         {
-            parameters.Add("chapter.name", options.Chapter?.Name ?? "");
+            parameters["chapter.name"] = options.Chapter?.Name ?? "";
         }
 
-        var title = StringUtils.Interpolate(siteSettings.Title, parameters);
-        parameters.Add("title", title);
+        var title = StringUtils.Interpolate(siteSettings.Title, parameters,
+            HttpUtility.HtmlEncode);
+        parameters["title"] = title;
 
         var subject = StringUtils.Interpolate(!string.IsNullOrEmpty(options.Subject)
             ? options.Subject
-            : bodyEmail?.Subject ?? "", parameters);              
+            : bodyEmail?.Subject ?? "", parameters,
+            HttpUtility.HtmlEncode);              
 
         var body = StringUtils.Interpolate(!string.IsNullOrEmpty(options.Body)
             ? options.Body
-            : bodyEmail?.HtmlContent ?? "", parameters);
-        parameters.Add("body", body);
+            : bodyEmail?.HtmlContent ?? "", parameters,
+            HttpUtility.HtmlEncode);
+        parameters["body"] = body;
 
         var layoutBody = layoutEmail.HtmlContent;
         body = StringUtils.Interpolate(layoutBody, parameters);
@@ -161,17 +165,6 @@ public class MailProvider : IMailProvider
         AddEmailFrom(message, provider, siteSettings, fromAdminMember, parameters);
 
         return message;
-    }
-
-    private string GetLayoutBody(Email email, Chapter? chapter, string body)
-    {
-        var layout = email.Interpolate(new Dictionary<string, string>
-        {
-            { "chapter.name", chapter?.Name ?? "" },
-            { "body", body }
-        });
-
-        return layout.HtmlContent;
     }
 
     private (EmailProvider Provider, int Remaining) GetProvider(

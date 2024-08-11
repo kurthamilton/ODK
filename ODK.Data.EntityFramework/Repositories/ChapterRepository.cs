@@ -1,9 +1,11 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Caching;
 using ODK.Data.EntityFramework.Extensions;
+using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
@@ -11,9 +13,12 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
 {
     private static readonly EntityCache<Guid, Chapter> _cache = new DatabaseEntityCache<Chapter>();
 
-    public ChapterRepository(OdkContext context)
+    private readonly PlatformType _platform;
+
+    public ChapterRepository(OdkContext context, IPlatformProvider platformProvider)
         : base(context, _cache)
     {
+        _platform = platformProvider.GetPlatform();
     }
 
     public IDeferredQueryMultiple<Chapter> GetAll() => Set()
@@ -35,7 +40,10 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
     public IDeferredQuerySingleOrDefault<Chapter> GetByName(string name) => Set()
         .Where(x => x.Name == name)
         .DeferredSingleOrDefault(
-            () => _cache.Find(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase)),
+            () => _cache.Find(x => string.Equals(
+                x.Name,
+                name,
+                StringComparison.InvariantCultureIgnoreCase)),
             _cache.Set,
             _cache.SetAll);
 
@@ -49,4 +57,8 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
             () => _cache.Find(x => string.Equals(x.Slug, slug, StringComparison.InvariantCultureIgnoreCase)),
             _cache.Set,
             _cache.SetAll);
+
+    protected override IQueryable<Chapter> Set() => base.Set()        
+        .ConditionalWhere(x => x.Platform == _platform, _platform != PlatformType.Default)
+        .ToPlatformChapters(_platform);
 }

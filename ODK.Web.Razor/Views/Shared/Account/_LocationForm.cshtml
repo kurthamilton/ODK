@@ -1,21 +1,20 @@
-﻿@using ODK.Services.Users.ViewModels
+﻿@using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model LocationFormViewModel
-@{
+@{    
     var latLong = Model.Lat != null && Model.Long != null
         ? $"{Model.Lat},{Model.Long}"
         : null;
 }
 
 <div class="form-group mb-3 required" data-location-container>
-    @Html.LabelFor(x => x.LocationName, new { @class = "form-label" })    
-    @Html.TextBoxFor(x => x.LocationName, new { @class = "form-control", data_location = "" })
+    @Html.LabelFor(x => x.Name, new { @class = "form-label" })    
+    
+    @await Html.PartialAsync("Components/_LocationPicker", Model)    
     <div class="ms-1 text-muted">
         We use this to help you find local groups. It is not seen by other members. It does not need to be an exact address.
     </div>
-    @Html.ValidationMessageFor(x => x.LocationName)
-    @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
-    @Html.HiddenFor(x => x.Long, new { data_location_long = "" })
+    @Html.ValidationMessageFor(x => x.Name)
     <input type="hidden" id="map-latlong" data-location-latlong value="@latLong" />
 </div>
 

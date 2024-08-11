@@ -28,8 +28,11 @@
                 const [lat, long] = [location.lat(), location.lng()];
                 $lat.value = lat;
                 $long.value = long;                                
-                $latlong.value = `${lat},${long}`;
-                $latlong.dispatchEvent(new Event('change'));
+
+                if ($latlong) {
+                    $latlong.value = `${lat},${long}`;
+                    $latlong.dispatchEvent(new Event('change'));
+                }                
 
                 if ($name) {
                     $name.value = $input.value;

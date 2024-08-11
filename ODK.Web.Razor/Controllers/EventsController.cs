@@ -23,7 +23,7 @@ public class EventsController : OdkControllerBase
         var result = await _eventService.AddComment(MemberId, id, viewModel.Text ?? "", viewModel.Parent);
         if (!result.Success)
         {
-            AddFeedback(new FeedbackViewModel(result));
+            AddFeedback(result);
         }
         
         return RedirectToReferrer();

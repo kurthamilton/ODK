@@ -1,5 +1,4 @@
-﻿using ODK.Core.Countries;
-using ODK.Core.Platforms;
+﻿using ODK.Core.Platforms;
 
 namespace ODK.Core.Chapters;
 
@@ -7,9 +6,9 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 {
     public DateTime? ApprovedUtc { get; set; }
 
-    public string? BannerImageUrl { get; }
+    public string? BannerImageUrl { get; set; }
 
-    public Guid CountryId { get; set; }
+    public Guid? CountryId { get; set; }
 
     public DateTime CreatedUtc { get; set; }
 
@@ -32,6 +31,8 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
     public string Slug { get; set; } = "";
 
     public TimeZoneInfo? TimeZone { get; set; }
+
+    public bool CanBePublished() => ApprovedUtc != null && PublishedUtc == null;
 
     public bool IsOpenForRegistration() => ApprovedUtc != null && PublishedUtc != null;
 

@@ -24,6 +24,7 @@ public class PaymentSettingsModel : ChapterSuperAdminPageModel
             {
                 ApiPublicKey = viewModel.PublicKey,
                 ApiSecretKey = viewModel.SecretKey,
+                CurrencyId = viewModel.CurrencyId,
                 Provider = viewModel.Provider
             });
 

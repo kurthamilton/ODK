@@ -1,0 +1,24 @@
+﻿@using ODK.Core.Chapters
+@model Chapter
+
+@if (Model.ApprovedUtc == null)
+{
+    <div class="alert alert-danger">
+        This group is still pending approval. You can continue to make changes but you won't be able to publish it until after approval.
+    </div>
+}
+else if (Model.PublishedUtc == null)
+{
+    <div class="alert alert-danger">
+        This group is not published
+    </div>
+}
+
+@if (Model.CanBePublished())
+{
+    <section class="section--admin">
+        <form action="/my/groups/@Model.Id/publish" method="post">
+            <button class="btn btn-success">Publish</button>
+        </form>
+    </section>
+}

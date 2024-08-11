@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Chapters;
 
@@ -7,11 +8,15 @@ public interface IChapterAdminService
 {
     Task<ServiceResult> AddChapterAdminMember(AdminServiceRequest request, Guid memberId);
 
+    Task<ServiceResult> ApproveChapter(AdminServiceRequest request);
+
     Task<ServiceResult> CreateChapterProperty(AdminServiceRequest request, CreateChapterProperty model);
 
     Task<ServiceResult> CreateChapterQuestion(AdminServiceRequest request, CreateChapterQuestion model);
 
     Task<ServiceResult> CreateChapterSubscription(AdminServiceRequest request, CreateChapterSubscription model);
+
+    Task<ServiceResult> DeleteChapter(AdminServiceRequest request);
 
     Task<ServiceResult> DeleteChapterAdminMember(AdminServiceRequest request, Guid memberId);
 
@@ -55,7 +60,11 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(AdminServiceRequest request);
 
-    Task<ChapterTexts?> GetChapterTexts(AdminServiceRequest request);
+    Task<ChapterTexts?> GetChapterTexts(AdminServiceRequest request);    
+
+    Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);
+
+    Task<ServiceResult> PublishChapter(AdminServiceRequest request);
 
     Task SetOwner(AdminServiceRequest request, Guid memberId);
 

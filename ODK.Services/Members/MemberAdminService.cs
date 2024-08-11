@@ -187,7 +187,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.ChapterAdminMemberRepository.GetByMemberId(request.CurrentMemberId, request.ChapterId),
             x => x.MemberRepository.GetById(memberId));
 
-        return await _emailService.SendMemberEmail(chapter, chapterAdminMember, member, subject, body);
+        return await _emailService.SendMemberEmail(chapter, chapterAdminMember, member.ToEmailAddressee(), subject, body);
     }
 
     public async Task SetMemberVisibility(AdminServiceRequest request, Guid memberId, bool visible)

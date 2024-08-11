@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Platforms;
 using ODK.Core.Utils;
-using ODK.Services.Platforms;
 
 namespace ODK.Services.Chapters;
 

@@ -6,7 +6,7 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
     {
-        CountryId = Model.CountryId,
+        ChapterId = Model.Id,
         Type = SubscriptionType.Full    
     })
     <button class="btn btn-primary">Create</button>

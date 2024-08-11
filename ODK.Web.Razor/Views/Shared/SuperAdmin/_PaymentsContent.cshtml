@@ -1,14 +1,17 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Payments
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.SuperAdmin
 @model ODK.Core.Chapters.Chapter
 @inject IChapterAdminService ChapterAdminService
+@inject ICurrencyService CurrencyService
 @{
     var memberId = User.MemberId();
     var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
     var paymentSettings = await ChapterAdminService.GetChapterPaymentSettings(serviceRequest);
+    var currencies = await CurrencyService.GetCurrencies();
 }
 
 <h2>Payment settings</h2>
@@ -17,6 +20,8 @@
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
     {
+        CurrencyOptions = currencies,
+        CurrencyId = paymentSettings?.CurrencyId,
         Provider = paymentSettings?.Provider,
         PublicKey = paymentSettings?.ApiPublicKey,
         SecretKey = paymentSettings?.ApiSecretKey

@@ -3,7 +3,6 @@
 @using ODK.Core.Extensions
 @using ODK.Core.Members
 @using ODK.Services.Chapters
-@using ODK.Services.Countries
 @using ODK.Services.Members
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models
@@ -14,8 +13,8 @@
     var memberId = User.MemberId();
     var dto = await ChapterService.GetChapterMemberSubscriptionsDto(memberId, Model.Chapter);
     
-    var (memberSubscription, chapterSubscriptions, country, paymentSettings) = 
-        (dto.MemberSubscription, dto.ChapterSubscriptions, dto.Country, dto.PaymentSettings);
+    var (memberSubscription, chapterSubscriptions, paymentSettings, currency) = 
+        (dto.MemberSubscription, dto.ChapterSubscriptions, dto.PaymentSettings, dto.PaymentSettings.Currency);
     
     if (memberSubscription == null)
     {
@@ -65,7 +64,7 @@
                 </div>
                 <div>
                     <button class="btn btn-primary mr-1" data-bs-toggle="modal" data-bs-target="#@modalId">Purchase</button>
-                    <span>@country.CurrencySymbol@chapterSubscription.Amount.ToString("0.00")</span>
+                    <span>@currency.Symbol@chapterSubscription.Amount.ToString("0.00")</span>
                     
                     @await Html.PartialAsync("Components/_Modal", new ModalViewModel
                     {
@@ -81,7 +80,7 @@
                                         @await Html.PartialAsync("Payments/_PayPalForm", new PayPalFormViewModel
                                         {
                                             Amount = chapterSubscription.Amount,
-                                            Country = country,
+                                            Currency = currency,
                                             Description = chapterSubscription.Title,
                                             Id = chapterSubscription.Id
                                         })
@@ -103,6 +102,6 @@
 
 @if (paymentSettings?.Provider == "PayPal")
 {
-    <script src="https://www.paypal.com/sdk/js?client-id=@paymentSettings.ApiPublicKey&currency=@country.CurrencyCode"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=@paymentSettings.ApiPublicKey&currency=@currency.Code"></script>
     <script src="/js/odk.paypal.js"></script>
 }

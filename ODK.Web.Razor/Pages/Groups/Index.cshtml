@@ -1,0 +1,59 @@
+﻿@page "/groups"
+@using ODK.Core.Countries
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Groups.IndexModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Groups";
+
+    var location = Model.Lat != null && Model.Long != null
+        ? new LatLong(Model.Lat.Value, Model.Long.Value)
+        : default(LatLong?);
+
+    var viewModel = location != null
+        ? await ChapterViewModelService.GetGroups(location.Value)
+        : null;
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Groups",
+    ContentFunc =
+        @<div>
+            <div class="d-md-flex">
+                <div>
+                    <form method="get">
+                        <div class="form-group mb-3" data-location-container>
+                            @await Html.PartialAsync("Components/_LocationPicker", new LocationFormViewModel
+                            {
+                                InlineButton = true,
+                                Lat = location?.Lat,
+                                Long = location?.Long,
+                                Name = Model.LocationName ?? ""
+                            })
+                        </div>
+                    </form>
+                </div>
+                <div class="ps-md-5 pt-5 pt-md-0 flex-grow-1">
+                @if (viewModel != null)
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var group in viewModel.Groups)
+                    {
+                        @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                    }
+                    </div>
+                }
+                </div>
+            </div>                        
+        </div>
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/_GoogleLocationScripts")
+}

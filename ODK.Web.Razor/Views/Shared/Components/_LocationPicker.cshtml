@@ -1,0 +1,17 @@
+﻿@using ODK.Web.Razor.Models.Account
+@model LocationFormViewModel
+
+<div class="input-group">
+    <span class="input-group-text">
+        <i class="fa-solid fa-location-dot" data-bs-toggle="tooltip" data-bs-title="Location"></i>
+    </span>
+    @Html.TextBoxFor(x => x.Name, new { @class = "form-control", data_location = "" })
+    
+    @if (Model.InlineButton)
+    {
+        <button class="btn btn-outline-secondary">Go</button>
+    }    
+</div>
+
+@Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
+@Html.HiddenFor(x => x.Long, new { data_location_long = "" })

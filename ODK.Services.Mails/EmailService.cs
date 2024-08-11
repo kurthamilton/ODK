@@ -3,8 +3,8 @@ using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Data.Core;
-using ODK.Services.Platforms;
 
 namespace ODK.Services.Emails;
 
@@ -38,7 +38,7 @@ public class EmailService : IEmailService
             FromAdminMember = fromAdminMember,
             Parameters = parameters,
             Subject = "",
-            To = to.Select(x => x.GetEmailAddressee()).ToArray(),
+            To = to.Select(x => x.ToEmailAddressee()).ToArray(),
             Type = type
         };
 
@@ -58,7 +58,7 @@ public class EmailService : IEmailService
             Chapter = chapter,
             FromAdminMember = fromAdminMember,
             Subject = subject,
-            To = to.Select(x => x.GetEmailAddressee()).ToArray(),
+            To = to.Select(x => x.ToEmailAddressee()).ToArray(),
         };
 
         await _mailProvider.SendEmail(options);
@@ -165,7 +165,23 @@ public class EmailService : IEmailService
         return await _mailProvider.SendEmail(options);
     }
 
-    public async Task<ServiceResult> SendMemberEmail(Chapter chapter, ChapterAdminMember fromAdminMember, Member to, string subject, string body)
+    public async Task<ServiceResult> SendMemberEmail(
+        Chapter? chapter, 
+        ChapterAdminMember? fromAdminMember,
+        EmailAddressee to, 
+        string subject, 
+        string body)
+    {
+        return await SendMemberEmail(chapter, fromAdminMember, to, subject, body, new Dictionary<string, string>());
+    }
+
+    public async Task<ServiceResult> SendMemberEmail(
+        Chapter? chapter, 
+        ChapterAdminMember? fromAdminMember,
+        EmailAddressee to, 
+        string subject, 
+        string body,
+        IDictionary<string, string> parameters)
     {
         var options = new SendEmailOptions
         {
@@ -173,7 +189,8 @@ public class EmailService : IEmailService
             Chapter = chapter,
             FromAdminMember = fromAdminMember,
             Subject = subject,
-            To = [to.GetEmailAddressee()]
+            To = [to],
+            Parameters = parameters
         };
         return await _mailProvider.SendEmail(options);
     }

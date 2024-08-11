@@ -1,7 +1,7 @@
 ﻿using ODK.Core.Emails;
+using ODK.Core.Platforms;
 using ODK.Core.Settings;
 using ODK.Data.Core;
-using ODK.Services.Platforms;
 
 namespace ODK.Services.Settings;
 

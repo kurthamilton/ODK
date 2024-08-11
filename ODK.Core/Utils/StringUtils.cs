@@ -13,15 +13,22 @@ public static class StringUtils
         return AlphaNumericRegex.Replace(text, "");
     }
 
-    public static string Interpolate(this string text, IDictionary<string, string> values)
+    public static string Interpolate(this string text, IDictionary<string, string> values,
+        Func<string, string>? process = null)
     {
-        StringBuilder sb = new StringBuilder(text);
+        var sb = new StringBuilder(text);
 
-        IEnumerable<string> tokens = text.Tokens();
+        var tokens = text.Tokens();
 
         foreach (string token in tokens.Where(values.ContainsKey))
         {
-            sb.Replace($"{{{token}}}", values[token] ?? "");
+            var value = values[token] ?? "";
+            if (process != null)
+            {
+                value = process(value);
+            }
+
+            sb.Replace($"{{{token}}}", value);
         }
 
         return sb.ToString();

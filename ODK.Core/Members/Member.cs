@@ -56,7 +56,7 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
         return name;
     }
 
-    public EmailAddressee GetEmailAddressee() => new EmailAddressee(EmailAddress, FullName);    
+    public EmailAddressee ToEmailAddressee() => new EmailAddressee(EmailAddress, FullName);    
 
     public MemberChapter MemberChapter(Guid chapterId) => Chapters.First(x => x.ChapterId == chapterId);
 

@@ -1,5 +1,6 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Events;
 using ODK.Core.Exceptions;
 using ODK.Core.Extensions;
@@ -9,7 +10,6 @@ using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Chapters.ViewModels;
-using ODK.Services.Platforms;
 
 namespace ODK.Services.Chapters;
 
@@ -33,16 +33,14 @@ public class ChapterViewModelService : IChapterViewModelService
             throw new OdkNotFoundException();
         }
 
-        var (current, memberSubscription, countries) = await _unitOfWork.RunAsync(
+        var (current, memberSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByOwnerId(currentMemberId),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId),
-            x => x.CountryRepository.GetAll());
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId));
 
         return new ChapterCreateViewModel
         {
             ChapterCount = current.Count,
-            ChapterLimit = memberSubscription.SiteSubscription.GroupLimit,
-            Countries = countries
+            ChapterLimit = memberSubscription.SiteSubscription.GroupLimit
         };
     }
 
@@ -61,8 +59,46 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<ChapterHomePageViewModel> GetHomePage(Guid? currentMemberId, string chapterName)
+    public async Task<GroupsViewModel> GetGroups(LatLong location)
     {
+        var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
+        var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetAll();
+
+        var chapterLocationDictionary = chapterLocations
+            .ToDictionary(x => x.ChapterId);
+        
+        var groups = new List<ChapterWithDistanceViewModel>();
+        foreach (var chapter in chapters)
+        {
+            if (!chapter.IsOpenForRegistration())
+            {
+                continue;
+            }
+
+            if (!chapterLocationDictionary.TryGetValue(chapter.Id, out var chapterLocation))
+            {
+                continue;
+            }
+
+            var distance = chapterLocation.LatLong.DistanceFrom(location);
+            groups.Add(new ChapterWithDistanceViewModel
+            {
+                Chapter = chapter,
+                Distance = distance,
+                Location = chapterLocation
+            });
+        }
+
+        return new GroupsViewModel
+        {
+            Groups = groups
+                .OrderBy(x => x.Distance)
+                .ToArray()
+        };
+    }
+
+    public async Task<ChapterHomePageViewModel> GetHomePage(Guid? currentMemberId, string chapterName)
+    {        
         var chapter = await GetChapter(chapterName);
         OdkAssertions.MeetsCondition(chapter, x => x.IsOpenForRegistration());
 

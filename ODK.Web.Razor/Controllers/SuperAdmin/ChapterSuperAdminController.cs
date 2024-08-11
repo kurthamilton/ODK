@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
+using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
@@ -19,6 +20,24 @@ public class ChapterSuperAdminController : AdminControllerBase
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;
+    }
+
+    [HttpPost("/superadmin/groups/{id:guid}/approve")]
+    public async Task<IActionResult> Approve(Guid id)
+    {
+        var request = new AdminServiceRequest(id, MemberId);
+        var result = await _chapterAdminService.ApproveChapter(request);
+        AddFeedback(result, "Group approved");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("/superadmin/groups/{id:guid}/delete")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var request = new AdminServiceRequest(id, MemberId);
+        var result = await _chapterAdminService.DeleteChapter(request);
+        AddFeedback(result, "Chapter deleted");
+        return RedirectToReferrer();
     }
 
     [HttpPost("/{chapterName}/Admin/SuperAdmin/Location")]

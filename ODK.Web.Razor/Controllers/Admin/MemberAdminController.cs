@@ -29,9 +29,7 @@ public class MemberAdminController : AdminControllerBase
     {
         var request = await GetAdminServiceRequest(chapterName);
         await _memberAdminService.DeleteMember(request, id);
-
-        AddFeedback(new FeedbackViewModel("Member deleted", FeedbackType.Success));
-
+        AddFeedback("Member deleted", FeedbackType.Success);
         return Redirect($"/{chapterName}/Admin/Members");
     }
 
@@ -48,7 +46,7 @@ public class MemberAdminController : AdminControllerBase
     {
         var request = await GetAdminServiceRequest(chapterName);
         await _memberAdminService.SendActivationEmail(request, id);
-        AddFeedback(new FeedbackViewModel("Email sent", FeedbackType.Success));
+        AddFeedback("Email sent", FeedbackType.Success);
         return RedirectToReferrer();
     }
 
@@ -57,16 +55,7 @@ public class MemberAdminController : AdminControllerBase
     {
         var request = await GetAdminServiceRequest(chapterName);
         var result = await _memberAdminService.SendMemberEmail(request, id, viewModel.Subject, viewModel.Body);
-
-        if (result.Success)
-        {
-            AddFeedback(new FeedbackViewModel("Email sent", FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        AddFeedback(result, "Email sent");
         return RedirectToReferrer();
     }
 
@@ -75,9 +64,7 @@ public class MemberAdminController : AdminControllerBase
     {
         var request = await GetAdminServiceRequest(chapterName); 
         await _memberAdminService.SetMemberVisibility(request, id, visible);
-
-        AddFeedback(new FeedbackViewModel("Member updated", FeedbackType.Success));
-
+        AddFeedback("Member updated", FeedbackType.Success);
         return RedirectToReferrer();
     }
 
@@ -87,15 +74,7 @@ public class MemberAdminController : AdminControllerBase
     {
         var serviceRequest = await GetAdminServiceRequest(chapterName);
         var result = await _chapterAdminService.AddChapterAdminMember(serviceRequest, viewModel.MemberId!.Value);
-        if (result.Success)
-        {
-            AddFeedback(new FeedbackViewModel("Admin member added", FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        AddFeedback(result, "Admin member added");
         return RedirectToReferrer();
     }
 
@@ -104,15 +83,7 @@ public class MemberAdminController : AdminControllerBase
     {
         var serviceRequest = await GetAdminServiceRequest(chapterName);
         var result = await _chapterAdminService.DeleteChapterAdminMember(serviceRequest, id);
-        if (result.Success)
-        {
-            AddFeedback(new FeedbackViewModel("Admin member removed", FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        AddFeedback(result, "Admin member removed");
         return RedirectToReferrer();
     }
 
@@ -137,7 +108,7 @@ public class MemberAdminController : AdminControllerBase
         };
 
         var result = await _memberAdminService.SendBulkEmail(request, filter, viewModel.Subject, viewModel.Body);
-        AddFeedback(new FeedbackViewModel(result));
+        AddFeedback(result);
         return RedirectToReferrer();
     }
 
@@ -146,15 +117,7 @@ public class MemberAdminController : AdminControllerBase
     {
         var serviceRequest = await GetAdminServiceRequest(chapterName);
         var result = await _chapterAdminService.DeleteChapterSubscription(serviceRequest, id);
-        if (result.Success)
-        {
-            AddFeedback(new FeedbackViewModel("Subscription deleted", FeedbackType.Success));
-        }
-        else
-        {
-            AddFeedback(new FeedbackViewModel(result));
-        }
-
+        AddFeedback(result, "Subscription deleted");
         return RedirectToReferrer();
     }
 }

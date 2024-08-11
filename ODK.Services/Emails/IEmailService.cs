@@ -34,7 +34,10 @@ public interface IEmailService
     Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, EmailType type,
         IDictionary<string, string> parameters);
 
-    Task<ServiceResult> SendMemberEmail(Chapter chapter, ChapterAdminMember fromAdminMember, Member to, string subject, string body);
+    Task<ServiceResult> SendMemberEmail(Chapter? chapter, ChapterAdminMember? fromAdminMember, EmailAddressee to, string subject, string body);
+
+    Task<ServiceResult> SendMemberEmail(Chapter? chapter, ChapterAdminMember? fromAdminMember, EmailAddressee to, string subject, string body,
+        IDictionary<string, string> parameters);
 
     Task SendNewMemberAdminEmail(Chapter chapter, Member member, 
         IDictionary<string, string> parameters);

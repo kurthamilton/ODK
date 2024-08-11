@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Net.Mail;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Web;
 using ODK.Core;
@@ -314,9 +312,8 @@ public class AuthenticationService : IAuthenticationService
             { "token", HttpUtility.UrlEncode(token) }
         });
 
-        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.PasswordReset, new Dictionary<string, string>
+        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.PasswordReset, new Dictionary<string, string>
         {
-            { "chapter.name", chapter?.Name ?? "" },
             { "url", url }
         });
 
@@ -324,15 +321,13 @@ public class AuthenticationService : IAuthenticationService
     }
 
     private async Task SendNewMemberEmailsAsync(Chapter? chapter, Member member)
-    {
-        var eventsUrl = chapter != null ? _chapterUrlService.GetChapterUrl(chapter, _settings.EventsUrlPath, new Dictionary<string, string>
-        {
-            { "chapter.name", chapter.Name }
-        }) : "";
+    {        
+        var eventsUrl = chapter != null 
+            ? _chapterUrlService.GetChapterUrl(chapter, _settings.EventsUrlPath, new Dictionary<string, string>()) 
+            : "";
 
-        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.NewMember, new Dictionary<string, string>
+        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.NewMember, new Dictionary<string, string>
         {
-            { "chapter.name", chapter?.Name ?? "" },
             { "eventsUrl", eventsUrl },
             { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) }
         });
@@ -348,7 +343,6 @@ public class AuthenticationService : IAuthenticationService
 
         var newMemberAdminEmailParameters = new Dictionary<string, string>
         {
-            { "chapter.name", chapter.Name },
             { "member.emailAddress", HttpUtility.HtmlEncode(member.EmailAddress) },
             { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) },
             { "member.lastName", HttpUtility.HtmlEncode(member.LastName) }

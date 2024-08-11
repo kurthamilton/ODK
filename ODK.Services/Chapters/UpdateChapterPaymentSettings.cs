@@ -2,9 +2,11 @@
 
 public class UpdateChapterPaymentSettings
 {
-    public required string? ApiPublicKey { get; set; }
+    public required string? ApiPublicKey { get; init; }
 
-    public required string? ApiSecretKey { get; set; }
+    public required string? ApiSecretKey { get; init; }
 
-    public required string? Provider { get; set; }
+    public required Guid? CurrencyId { get; init; }
+
+    public required string? Provider { get; init; }
 }

@@ -11,5 +11,9 @@ public class ChapterPaymentSettingsMap : IEntityTypeConfiguration<ChapterPayment
         builder.ToTable("ChapterPaymentSettings");
 
         builder.HasKey(x => x.ChapterId);
+
+        builder.HasOne(x => x.Currency)
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId);
     }
 }

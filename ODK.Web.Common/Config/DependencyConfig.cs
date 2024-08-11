@@ -25,7 +25,6 @@ using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Payments.PayPal;
 using ODK.Services.Payments.Stripe;
-using ODK.Services.Platforms;
 using ODK.Services.Recaptcha;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
@@ -108,6 +107,7 @@ public static class DependencyConfig
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<ICountryService, CountryService>();
         services.AddScoped<ICsvService, CsvService>();
+        services.AddScoped<ICurrencyService, CurrencyService>();
         services.AddScoped<IEmailAdminService, EmailAdminService>();
         services.AddScoped<IEventAdminService, EventAdminService>();
         services.AddScoped<IEventService, EventService>();

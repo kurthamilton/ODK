@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Caching;
@@ -19,4 +20,7 @@ public class ChapterPaymentSettingsRepository : CachingWriteRepositoryBase<Chapt
         .DeferredSingleOrDefault(
             () => _cache.Get(chapterId),
             _cache.Set);
+
+    protected override IQueryable<ChapterPaymentSettings> Set() => base.Set()
+        .Include(x => x.Currency);
 }

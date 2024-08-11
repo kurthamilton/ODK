@@ -15,7 +15,8 @@
 
     var chapterDictionary = Model
         .Chapters
-        .GroupBy(x => countryContinentDictionary[x.CountryId])
+        .Where(x => x.CountryId != null)
+        .GroupBy(x => countryContinentDictionary[x.CountryId!.Value])
         .ToDictionary(x => x.Key, x => x.OrderBy(y => y.Name).ToArray());
 }
 

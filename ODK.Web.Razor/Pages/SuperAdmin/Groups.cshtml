@@ -1,0 +1,18 @@
+﻿@page "/superadmin/groups"
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.SuperAdmin.GroupsModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "SuperAdmin/_SuperAdminLayout";
+    Model.Title = "Groups | SuperAdmin";
+
+    var memberId = User.MemberId();
+    var viewModel = await ChapterAdminService.GetSuperAdminChaptersViewModel(memberId);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("SuperAdmin/_ChaptersContent", viewModel)
+})

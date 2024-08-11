@@ -12,7 +12,7 @@
     var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
     var dto = await ChapterAdminService.GetChapterMemberSubscriptionsDto(serviceRequest);
 
-    var (subscriptions, country, membershipSettings) = (dto.ChapterSubscriptions, dto.Country, dto.MembershipSettings);
+    var (subscriptions, currency, membershipSettings) = (dto.ChapterSubscriptions, dto.PaymentSettings.Currency, dto.MembershipSettings);
 }
 
 <h2>Subscriptions</h2>
@@ -39,7 +39,7 @@
                 <a href="/@Model.Name/Admin/Members/Subscriptions/@subscription.Id">@subscription.Name</a>
             </td>
             <td>
-                @country.CurrencySymbol@subscription.Amount
+                @currency.Symbol@subscription.Amount
             </td>
             <td>@subscription.Months</td>
             <td>

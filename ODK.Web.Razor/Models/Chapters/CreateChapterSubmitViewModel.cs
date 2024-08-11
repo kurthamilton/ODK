@@ -1,22 +1,22 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using ODK.Web.Razor.Models.Account;
 
 namespace ODK.Web.Razor.Models.Chapters;
 
 public class CreateChapterSubmitViewModel
 {
-    [DisplayName("Country")]
-    [Required]
-    public Guid? CountryId { get; set; }
-
     [Required]
     [MaxLength(1024)]
     public string? Description { get; set; }
+
+    public LocationFormViewModel Location { get; set; } = new();
 
     [Required]
     [MaxLength(100)]
     public string? Name { get; set; }
 
-    [DisplayName("Timezone")]
+    [Required]
+    [DisplayName("Time zone")]
     public string? TimeZoneId { get; set; }
 }

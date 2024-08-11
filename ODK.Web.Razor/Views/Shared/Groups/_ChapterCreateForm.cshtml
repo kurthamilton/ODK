@@ -1,17 +1,6 @@
 ﻿@using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Razor
 @model CreateChapterFormViewModel
-@{
-    var countryOptions = Model
-        .Countries
-        .OrderBy(x => x.Name)
-        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
-        .ToArray();
-
-    var timeZoneOptions = TimeZoneInfo
-        .GetSystemTimeZones()
-        .Select(x => new SelectListItem { Value = x.Id, Text = x.DisplayName });
-}
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Name, new { @class = "form-label" })
@@ -25,13 +14,20 @@
     @Html.ValidationMessageFor(x => x.Description)
 </div>
 
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.CountryId, new { @class = "form-label" })
-    @Html.DropDownListFor(x => x.CountryId, countryOptions, "", new { @class = "form-select" })
-    @Html.ValidationMessageFor(x => x.CountryId)
+<div class="form-group mb-3 required" data-location-container>
+    @Html.LabelFor(x => x.Location.Name, new { @class = "form-label" })
+    <div class="input-group">
+        <span class="input-group-text">
+            <i class="fa-solid fa-location-dot" data-bs-toggle="tooltip" data-bs-title="Location"></i>
+        </span>
+        @Html.TextBoxFor(x => x.Location.Name, new { @class = "form-control", data_location = "" })
+    </div>
+    @Html.ValidationMessageFor(x => x.Location.Name)
+    @Html.HiddenFor(x => x.Location.Lat, new { data_location_lat = "" })
+    @Html.HiddenFor(x => x.Location.Long, new { data_location_long = "" })
 </div>
 
-<div class="form-group mb-3">
+<div class="form-group mb-3 required">
     @Html.LabelFor(x => x.TimeZoneId, new { @class = "form-label" })
     @Html.OdkTimeZoneDropDownFor(x => x.TimeZoneId, "", new { @class = "form-select" })
     @Html.ValidationMessageFor(x => x.TimeZoneId)

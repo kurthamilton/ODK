@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
+﻿using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Members;
@@ -30,15 +24,14 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendActivationEmail(Chapter? chapter, Member member, string token)
-    {
+    {        
         var url = _chapterUrlService.GetChapterUrl(chapter, _settings.ActivateAccountUrlPath, new Dictionary<string, string>
         {
             { "token", HttpUtility.UrlEncode(token) }
         });
 
-        await _emailService.SendEmail(chapter, member.GetEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
+        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
         {
-            { "chapter.name", chapter?.Name ?? "" },
             { "url", url }
         });
     }
@@ -53,7 +46,6 @@ public class MemberEmailService : IMemberEmailService
         await _emailService.SendEmail(chapter, new EmailAddressee(newEmailAddress, member.FullName), EmailType.EmailAddressUpdate,
             new Dictionary<string, string>
             {
-                { "chapter.name", chapter?.Name ?? "" },
                 { "url", url }
             });
     }
