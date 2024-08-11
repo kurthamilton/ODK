@@ -45,7 +45,16 @@
 {
     <div class="form-group mb-3">
         @Html.LabelFor(x => x.DistanceUnit, new { @class = "form-label" })
-        @Html.DropDownListFor(x => x.DistanceUnit, distanceUnitOptions, "", new { @class = "form-select" })
+        @if (Model.DistanceUnit != null)
+        {
+            @*Do not allow the removal of distance unit once set*@
+            @Html.DropDownListFor(x => x.DistanceUnit, distanceUnitOptions, new { @class = "form-select" })
+        }
+        else
+        {
+            @Html.DropDownListFor(x => x.DistanceUnit, distanceUnitOptions, "", new { @class = "form-select" })
+        }
+        
         @Html.ValidationMessageFor(x => x.DistanceUnit)
     </div>
 }

@@ -120,7 +120,6 @@ public class MemberService : IMemberService
             .First();
         _unitOfWork.MemberPreferencesRepository.Add(new MemberPreferences
         {
-            DistanceUnit = distanceUnit,
             DistanceUnitId = distanceUnit.Id,
             MemberId = member.Id
         });
