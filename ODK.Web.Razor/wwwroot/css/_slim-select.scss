@@ -1,6 +1,10 @@
 ﻿/*Style SlimSelect like Bootstrap 5*/
 .ss-main {
-    display: flex;
+    display: flex;    
+
+    .ss-arrow {
+        display: none;
+    }
 }
 
 .ss-placeholder {
@@ -8,6 +12,30 @@
     line-height: 1.5 !important;
 }
 
+.ss-content {
+    overflow-y: auto;
+
+    &.form-select {
+        // remove bootstrap caret
+        background-image: none;
+    }
+
+    /*search*/
+    .ss-search {
+        input {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+    }
+    /*options*/
+    .ss-list {
+        .ss-option {
+            color: var(--bs-body-color);
+        }
+    }
+}
+
+/*multiselect*/
 .ss-value {
     background-color: var(--bs-secondary) !important;
 }

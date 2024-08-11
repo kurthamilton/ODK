@@ -11863,12 +11863,32 @@ textarea.form-control-lg {
 .ss-main {
   display: flex;
 }
+.ss-main .ss-arrow {
+  display: none;
+}
 
 .ss-placeholder {
   padding: 0 !important;
   line-height: 1.5 !important;
 }
 
+.ss-content {
+  overflow-y: auto;
+  /*search*/
+  /*options*/
+}
+.ss-content.form-select {
+  background-image: none;
+}
+.ss-content .ss-search input {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+.ss-content .ss-list .ss-option {
+  color: var(--bs-body-color);
+}
+
+/*multiselect*/
 .ss-value {
   background-color: var(--bs-secondary) !important;
 }

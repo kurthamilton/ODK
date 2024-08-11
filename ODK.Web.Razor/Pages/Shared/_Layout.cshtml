@@ -47,6 +47,7 @@
 
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/aspnet-client-validation/dist/aspnet-validation.css" />
+    <link rel="stylesheet" href="~/lib/slim-select/slimselect.css" />
 
     @await RenderSectionAsync("preStyles", required: false)
     
@@ -75,10 +76,12 @@
     <script src="~/lib/bootstrap/js/bootstrap.bundle.js"></script>
     <script src="~/lib/vanillajs-datepicker/dist/js/datepicker-full.js"></script>
     <script src="~/lib/aspnet-client-validation/dist/aspnet-validation.js"></script>
+    <script src="~/lib/slim-select/slimselect.js"></script>
     <script src="~/js/site.js"></script>
     <script src="~/js/odk.maps.js"></script>
     <script src="~/js/odk.forms.js"></script>
     <script src="~/js/odk.lists.js"></script>
+    <script src="~/js/odk.selects.js"></script>
     @await RenderSectionAsync("scripts", required: false)
 </body>
 </html>

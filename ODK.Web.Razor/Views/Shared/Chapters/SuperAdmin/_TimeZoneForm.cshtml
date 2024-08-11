@@ -3,5 +3,5 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.TimeZone, new { @class = "form-label" })
-    @Html.OdkTimeZoneDropDownFor(x => x.TimeZone, "", new { @class = "form-select" })
+    @Html.OdkTimeZoneDropDownFor(x => x.TimeZone, "", new { @class = "form-select", data_searchable = "" })
 </div>
