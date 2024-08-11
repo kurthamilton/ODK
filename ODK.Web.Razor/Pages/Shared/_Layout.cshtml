@@ -45,19 +45,19 @@
     <script src="~/js/odk.global.js"></script>
     <script src="~/js/odk.themes.js"></script>
 
-    <link rel="stylesheet" href="~/lib/font-awesome/css/all.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/aspnet-client-validation/dist/aspnet-validation.css" />
-    <link rel="stylesheet" href="~/lib/slim-select/slimselect.css" />
+    <link rel="stylesheet" href="~/lib/slim-select/slimselect.min.css" />
 
     @await RenderSectionAsync("preStyles", required: false)
     
     @if (platform == PlatformType.DrunkenKnitwits)
     {
-        <link rel="stylesheet" href="~/css/odk.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/odk.min.css" asp-append-version="true" />
     }
     else
     {
-        <link rel="stylesheet" href="~/css/main.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/main.min.css" asp-append-version="true" />
     }
 
     @await RenderSectionAsync("styles", required: false)
@@ -73,10 +73,10 @@
     
     @await Html.PartialAsync("Feedback/_Notifications")
 
-    <script src="~/lib/bootstrap/js/bootstrap.bundle.js"></script>
-    <script src="~/lib/vanillajs-datepicker/dist/js/datepicker-full.js"></script>
-    <script src="~/lib/aspnet-client-validation/dist/aspnet-validation.js"></script>
-    <script src="~/lib/slim-select/slimselect.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/vanillajs-datepicker/dist/js/datepicker-full.min.js"></script>
+    <script src="~/lib/aspnet-client-validation/dist/aspnet-validation.min.js"></script>
+    <script src="~/lib/slim-select/slimselect.min.js"></script>
     <script src="~/js/site.js"></script>
     <script src="~/js/odk.maps.js"></script>
     <script src="~/js/odk.forms.js"></script>
