@@ -681,13 +681,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapterId = request.ChapterId;
 
-        var settings = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
-
         if (model.CurrencyId == null)
         {
             return ServiceResult.Failure("Currency required");
         }
+
+        var (settings, currency) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.CurrencyRepository.GetById(model.CurrencyId.Value));
 
         if (settings == null)
         {
@@ -696,6 +697,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         settings.ApiPublicKey = model.ApiPublicKey;
         settings.ApiSecretKey = model.ApiSecretKey;
+        settings.Currency = currency;
         settings.CurrencyId = model.CurrencyId.Value;
         settings.Provider = model.Provider;
 
