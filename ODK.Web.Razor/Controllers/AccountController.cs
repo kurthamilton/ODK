@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Services;
 using ODK.Services.Authentication;
@@ -50,7 +49,8 @@ public class AccountController : OdkControllerBase
             Location = location.Lat != null && location.Long != null 
                 ? new LatLong(location.Lat.Value, location.Long.Value)
                 : default(LatLong?),
-            LocationName = location.Name
+            LocationName = location.Name,
+            TimeZoneId = location.TimeZoneId
         };
 
         var result = await _memberService.CreateAccount(model);

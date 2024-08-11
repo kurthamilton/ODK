@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using ODK.Core.Events;
+﻿using ODK.Core.Events;
 using ODK.Core.Venues;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;

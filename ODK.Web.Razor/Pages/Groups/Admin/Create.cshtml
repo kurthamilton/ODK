@@ -1,7 +1,9 @@
 ﻿@page "/my/groups/new"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Members
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @model CreateModel
@@ -36,6 +38,13 @@
 
                 @await Html.PartialAsync("Groups/_ChapterCreateForm", new CreateChapterFormViewModel
                 {
+                    Location = new LocationFormViewModel
+                    {
+                        Lat = viewModel.MemberLocation?.LatLong.Lat,
+                        Long = viewModel.MemberLocation?.LatLong.Long,
+                        Name = viewModel.MemberLocation?.Name ?? "",
+                        TimeZoneId = viewModel.Member.TimeZone?.Id ?? Member.DefaultTimeZoneId  
+                    }
                 })
 
                 <button class="btn btn-primary">Create</button>

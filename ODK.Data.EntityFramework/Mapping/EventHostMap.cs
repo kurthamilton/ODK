@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 using ODK.Core.Events;
-using ODK.Data.EntityFramework.Converters;
-using ODK.Core.Chapters;
-using ODK.Core.Members;
 
 namespace ODK.Data.EntityFramework.Mapping;
 

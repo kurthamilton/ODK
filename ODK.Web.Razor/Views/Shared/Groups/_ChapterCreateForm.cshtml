@@ -28,7 +28,7 @@
 </div>
 
 <div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.TimeZoneId, new { @class = "form-label" })
-    @Html.OdkTimeZoneDropDownFor(x => x.TimeZoneId, "", new { @class = "form-select" })
-    @Html.ValidationMessageFor(x => x.TimeZoneId)
+    @Html.LabelFor(x => x.Location.TimeZoneId, new { @class = "form-label" })
+    @Html.OdkTimeZoneDropDownFor(x => x.Location.TimeZoneId, new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.Location.TimeZoneId)
 </div>

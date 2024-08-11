@@ -4,5 +4,5 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IMemberLocationRepository : IWriteRepository<MemberLocation>
 {
-    Task<MemberLocation?> GetByMemberId(Guid memberId);
+    Task<MemberLocation> GetByMemberId(Guid memberId);
 }

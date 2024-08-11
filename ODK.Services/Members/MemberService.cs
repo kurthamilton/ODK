@@ -1,5 +1,4 @@
-﻿using System.Web;
-using ODK.Core;
+﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
@@ -89,12 +88,19 @@ public class MemberService : IMemberService
             return ServiceResult.Successful();
         }
 
+        TimeZoneInfo? timeZone = null;
+        if (!TimeZoneInfo.TryFindSystemTimeZoneById(model.TimeZoneId, out timeZone))
+        {
+            return ServiceResult<Chapter?>.Failure("Invalid time zone");
+        }
+
         var member = new Member
         {
             CreatedUtc = DateTime.UtcNow,
             EmailAddress = model.EmailAddress,
             FirstName = model.FirstName,
-            LastName = model.LastName            
+            LastName = model.LastName,
+            TimeZone = timeZone
         };
         _unitOfWork.MemberRepository.Add(member);
 

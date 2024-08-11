@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core;
 using ODK.Core.Members;
 using ODK.Data.Core.Repositories;
 
@@ -16,7 +12,12 @@ public class MemberLocationRepository : WriteRepositoryBase<MemberLocation>, IMe
     {
     }
 
-    public Task<MemberLocation?> GetByMemberId(Guid memberId) => Set()
-        .Where(x => x.MemberId == memberId)
-        .FirstOrDefaultAsync();
+    public async Task<MemberLocation> GetByMemberId(Guid memberId)
+    {
+        var memberLocation = await Set()
+            .Where(x => x.MemberId == memberId)
+            .FirstOrDefaultAsync();
+        OdkAssertions.Exists(memberLocation);
+        return memberLocation;
+    }
 }

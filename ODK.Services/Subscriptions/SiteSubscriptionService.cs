@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ODK.Core.Platforms;
+﻿using ODK.Core.Platforms;
 using ODK.Data.Core;
 
 namespace ODK.Services.Subscriptions;

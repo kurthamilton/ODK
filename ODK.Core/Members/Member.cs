@@ -1,11 +1,12 @@
-﻿using ODK.Core.Countries;
-using ODK.Core.Emails;
+﻿using ODK.Core.Emails;
 using ODK.Core.Utils;
 
 namespace ODK.Core.Members;
 
 public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 {
+    public const string DefaultTimeZoneId = "GMT Standard Time";
+
     public bool Activated { get; set; }
 
     public ICollection<MemberChapter> Chapters { get; set; } = new List<MemberChapter>();

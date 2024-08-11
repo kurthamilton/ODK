@@ -39,7 +39,7 @@ namespace ODK.Web.Razor.Pages.Groups.Admin
                 Location = new LatLong(viewModel.Location.Lat.Value, viewModel.Location.Long.Value),
                 LocationName = viewModel.Location.Name,
                 Name = viewModel.Name ?? "",
-                TimeZoneId = viewModel.TimeZoneId
+                TimeZoneId = viewModel.Location.TimeZoneId
             });
 
             if (!result.Success)

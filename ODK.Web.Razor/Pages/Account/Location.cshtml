@@ -1,6 +1,7 @@
 ﻿@page "/account/location"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Members
 @using ODK.Services.Members
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
@@ -13,6 +14,7 @@
     Model.Title = "Location";
 
     var memberId = User.MemberId();
+    var member = await MemberService.GetMember(memberId);
     var location = await MemberService.GetMemberLocation(memberId);
 }
 
@@ -29,7 +31,8 @@
                 {
                     Lat = location?.LatLong.Lat,
                     Long = location?.LatLong.Long,
-                    Name = location?.Name ?? ""
+                    Name = location?.Name ?? "",
+                    TimeZoneId = member.TimeZone?.Id ?? Member.DefaultTimeZoneId
                 })
                 <button class="btn btn-primary">Update</button>
             </form>

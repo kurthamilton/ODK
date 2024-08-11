@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using ODK.Web.Razor.Models.Account;
 
 namespace ODK.Web.Razor.Models.Chapters;
@@ -15,8 +14,4 @@ public class CreateChapterSubmitViewModel
     [Required]
     [MaxLength(100)]
     public string? Name { get; set; }
-
-    [Required]
-    [DisplayName("Time zone")]
-    public string? TimeZoneId { get; set; }
 }

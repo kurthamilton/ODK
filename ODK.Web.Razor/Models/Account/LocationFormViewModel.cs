@@ -14,4 +14,8 @@ public class LocationFormViewModel
     public string Name { get; set; } = "";
 
     public bool InlineButton { get; set; }
+
+    [DisplayName("Time zone")]
+    [Required]
+    public string TimeZoneId { get; set; } = "";
 }

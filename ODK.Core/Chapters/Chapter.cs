@@ -4,6 +4,8 @@ namespace ODK.Core.Chapters;
 
 public class Chapter : IDatabaseEntity, ITimeZoneEntity
 {
+    public const string DefaultTimeZoneId = "GMT Standard Time";
+
     public DateTime? ApprovedUtc { get; set; }
 
     public string? BannerImageUrl { get; set; }

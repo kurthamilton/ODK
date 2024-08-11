@@ -13,4 +13,6 @@ public class CreateAccountModel
     public required LatLong? Location { get; set; }
 
     public required string LocationName { get; set; }
+
+    public required string TimeZoneId { get; set; }
 }

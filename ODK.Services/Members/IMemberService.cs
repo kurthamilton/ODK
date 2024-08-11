@@ -1,5 +1,4 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Countries;
+﻿using ODK.Core.Countries;
 using ODK.Core.Members;
 
 namespace ODK.Services.Members;
