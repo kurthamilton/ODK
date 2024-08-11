@@ -1,16 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.SocialMedia;
+using ODK.Services.Imaging;
 using ODK.Services.SocialMedia;
 
 namespace ODK.Web.Razor.Controllers;
 
 [ApiController]
-public class InstagramController : Controller
+public class InstagramController : OdkControllerBase
 {
+    private readonly IImageService _imageService;
     private readonly IInstagramService _instagramService;
 
-    public InstagramController(IInstagramService instagramService)
+    public InstagramController(
+        IInstagramService instagramService,
+        IImageService imageService)
     {
+        _imageService = imageService;
         _instagramService = instagramService;
     }
 
@@ -18,7 +24,19 @@ public class InstagramController : Controller
     [HttpGet("{chapterName}/Instagram/Images/{id:guid}")]
     public async Task<IActionResult> GetInstagramImage(string chapterName, Guid id)
     {
-        var image = await _instagramService.GetInstagramImage(id);
-        return File(image.ImageData, image.MimeType);
+        return await HandleVersionedRequest(
+            version => _instagramService.GetInstagramImage(version, id), 
+            InstagramImageResult);
+    }
+
+    private IActionResult InstagramImageResult(InstagramImage? image)
+    {
+        if (image == null)
+        {
+            return NoContent();
+        }
+
+        var data = _imageService.Reduce(image.ImageData, 150, 150);
+        return File(data, image.MimeType);
     }
 }

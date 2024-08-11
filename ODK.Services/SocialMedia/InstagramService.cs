@@ -2,17 +2,27 @@
 using ODK.Core.Chapters;
 using ODK.Core.SocialMedia;
 using ODK.Data.Core;
+using ODK.Services.Caching;
+using ODK.Services.Imaging;
 using ODK.Services.Logging;
 
 namespace ODK.Services.SocialMedia;
 
 public class InstagramService : IInstagramService
-{    
+{
+    private readonly ICacheService _cacheService;
+    private readonly IImageService _imageService;
     private readonly ILoggingService _loggingService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public InstagramService(IUnitOfWork unitOfWork, ILoggingService loggingService)
+    public InstagramService(
+        IUnitOfWork unitOfWork, 
+        ILoggingService loggingService, 
+        ICacheService cacheService,
+        IImageService imageService)
     {
+        _cacheService = cacheService;
+        _imageService = imageService;
         _loggingService = loggingService;
         _unitOfWork = unitOfWork;
     }
@@ -32,9 +42,26 @@ public class InstagramService : IInstagramService
             .ToArray();
     }
 
-    public Task<InstagramImage> GetInstagramImage(Guid instagramPostId)
+    public async Task<VersionedServiceResult<InstagramImage>> GetInstagramImage(long? currentVersion, Guid instagramPostId)
     {
-        return _unitOfWork.InstagramImageRepository.GetByPostId(instagramPostId).RunAsync();
+        var result = await _cacheService.GetOrSetVersionedItem(
+            async () =>
+            {
+                var result = await _unitOfWork.InstagramImageRepository.GetByPostId(instagramPostId).RunAsync();
+                return result;
+            },
+            instagramPostId,
+            currentVersion);
+
+        if (currentVersion == result.Version)
+        {
+            return result;
+        }
+
+        var image = result.Value;
+        return image != null
+            ? new VersionedServiceResult<InstagramImage>(BitConverter.ToInt64(image.Version), image)
+            : new VersionedServiceResult<InstagramImage>(0, null);
     }
 
     public async Task<InstagramPostsDto> GetInstagramPosts(Guid chapterId, int pageSize)
@@ -164,26 +191,26 @@ public class InstagramService : IInstagramService
                 return null;
             }
 
-            using (HttpClient client = new HttpClient())
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+
+            var response = await client.GetAsync(thumbnailUrl);
+            if (!response.IsSuccessStatusCode)
             {
-                client.DefaultRequestHeaders.Add("User-Agent", userAgent);
-
-                HttpResponseMessage response = await client.GetAsync(thumbnailUrl);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                byte[] imageData = await response.Content.ReadAsByteArrayAsync();
-                var mimeType = response.Content.Headers.ContentType?.MediaType;
-
-                return new InstagramImage
-                {
-                    ImageData = imageData,
-                    InstagramPostId = post.Id,
-                    MimeType = mimeType ?? ""
-                };
+                return null;
             }
+
+            var imageData = await response.Content.ReadAsByteArrayAsync();
+            var mimeType = response.Content.Headers.ContentType?.MediaType;
+
+            imageData = _imageService.Reduce(imageData, 250, 250);
+
+            return new InstagramImage
+            {
+                ImageData = imageData,
+                InstagramPostId = post.Id,
+                MimeType = mimeType ?? ""
+            };
         }
         catch
         {

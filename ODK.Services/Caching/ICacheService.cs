@@ -10,7 +10,7 @@ public interface ICacheService
     
     Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T?>> getter, object key, 
         long? currentVersion) where T : class, IVersioned;
-    
+
     void RemoveVersionedCollection<T>(object? key = null);
 
     void RemoveVersionedItem<T>(object instanceKey);
