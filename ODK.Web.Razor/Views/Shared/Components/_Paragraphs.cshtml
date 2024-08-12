@@ -1,0 +1,16 @@
+﻿@model string?
+@{
+    if (Model == null)
+    {
+        return;
+    }
+
+    var paragraphs = Model.Split(Environment.NewLine);
+}
+
+<div class="paragraphs">
+    @foreach (var paragraph in paragraphs)
+    {
+        <p>@paragraph</p>
+    }
+</div>

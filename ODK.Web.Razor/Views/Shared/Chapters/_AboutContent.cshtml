@@ -7,14 +7,9 @@
 }
 
 @if (!string.IsNullOrEmpty(Model.Chapter.Description))
-{
-    var paragraphs = Model.Chapter.Description.Split(Environment.NewLine);
-    
+{        
     <section class="mb-4">
-        @foreach (var paragraph in paragraphs)
-        {
-            <p>@paragraph</p>
-        }
+        @await Html.PartialAsync("Components/_Paragraphs", Model.Chapter.Description)
     </section>
 }
 

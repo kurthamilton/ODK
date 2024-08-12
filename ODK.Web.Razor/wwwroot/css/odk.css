@@ -11941,6 +11941,18 @@ html[data-platform=odk] {
   background-color: rgba(0, 0, 0, 0.03);
 }
 
+.accordion--transition-0 {
+  --bs-accordion-transition: none;
+}
+.accordion--transition-0 .collapsing {
+  transition: none;
+}
+
+.page-alerts .page-alert {
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
 html[data-platform=odk] {
   --odk-breadcrumbs-padding-top: 0.75rem;
 }
@@ -12202,6 +12214,14 @@ html[data-platform=odk] {
   padding-right: 0.5rem;
 }
 
+.navbar--group .nav-item:first-child .nav-link {
+  padding-left: 0;
+}
+.navbar--group .nav-item .nav-link:hover {
+  color: var(--bs-primary);
+  background-color: transparent;
+}
+
 .account-links {
   cursor: pointer;
 }
@@ -12270,6 +12290,10 @@ html[data-platform=odk] {
   left: 0;
   right: 0;
   margin: auto;
+}
+
+.paragraphs p:last-child {
+  margin-bottom: 0;
 }
 
 .section--main {
@@ -12400,10 +12424,6 @@ th.sortable.sort-desc:after {
 .table thead th {
   border-top: 1px solid var(--bs-table-border-color);
   border-bottom: 2px solid var(--bs-table-border-color);
-}
-
-.subscription-alerts .alert {
-  margin-bottom: 0;
 }
 
 .event-response-option {

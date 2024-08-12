@@ -73,7 +73,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var owner = members.FirstOrDefault(x => x.Id == chapter.OwnerId);
         OdkAssertions.Exists(owner);
 
-        if (chapter.ApprovedUtc != null)
+        if (chapter.Approved())
         {
             return ServiceResult.Successful();
         }
@@ -475,7 +475,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return new SuperAdminChaptersViewModel
         {
             PendingApproval = chapters
-                .Where(x => x.ApprovedUtc == null)
+                .Where(x => !x.Approved())
                 .OrderBy(x => x.CreatedUtc)
                 .ToArray()
         };
@@ -563,6 +563,20 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<ServiceResult> UpdateChapterDescription(AdminServiceRequest request, string description)
+    {
+        var chapter = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
+
+        // TODO: allow whitelist HTML?
+        chapter.Description = description;
+
+        _unitOfWork.ChapterRepository.Update(chapter);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
     }
 
     public async Task UpdateChapterEventSettings(AdminServiceRequest request, UpdateChapterEventSettings model)

@@ -1,7 +1,21 @@
-﻿@model string
+﻿@using ODK.Web.Razor.Models.Components
+@model PageTitleViewModel
+@{
+    if (string.IsNullOrEmpty(Model.Title) && Model.Content == null)
+    {
+        return;
+    }
+}
 
 <section class="section--header">
     <div class="container">
-        <h1>@Model</h1>
+        @if (Model.Content != null)
+        {
+            @Model.Content
+        }
+        else
+        {
+            <h1>@Model.Title</h1>
+        }
     </div>
 </section>

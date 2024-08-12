@@ -1,11 +1,10 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
 
 namespace ODK.Services.Chapters.ViewModels;
 
-public class GroupHomePageViewModel
+public class GroupHomePageViewModel : GroupPageViewModelBase
 {
-    public required Chapter Chapter { get; init; }
+    public required ChapterLocation? ChapterLocation { get; init; }
 
-    public required Member? CurrentMember { get; init; }
+    public required int MemberCount { get; init; }
 }

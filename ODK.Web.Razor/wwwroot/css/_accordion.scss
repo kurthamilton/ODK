@@ -2,3 +2,10 @@
 .accordion-button {
     background-color: rgba(0,0,0,.03);
 }
+
+.accordion--transition-0 {
+    --bs-accordion-transition: none;
+    .collapsing {
+        transition: none;
+    }
+}

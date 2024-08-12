@@ -13,5 +13,9 @@ public class BodyViewModel
 
     public bool HideSubscriptionAlert { get; set; }
 
+    public IHtmlContent? Menu { get; set; }
+
     public string? Title { get; set; }
+
+    public IHtmlContent? TitleContent { get; set; }
 }

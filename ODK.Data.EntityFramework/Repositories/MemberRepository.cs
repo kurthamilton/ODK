@@ -34,6 +34,12 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         .Where(x => memberIds.Contains(x.Id))
         .DeferredMultiple();
 
+    public IDeferredQuery<int> GetCountByChapterId(Guid chapterId) => Set()
+        .Current(Set<MemberSubscription>(), chapterId)
+        .Visible(chapterId)
+        .InChapter(chapterId)
+        .DeferredCount();
+
     public IDeferredQueryMultiple<Member> GetLatestByChapterId(Guid chapterId, int pageSize)
     {
         var query =

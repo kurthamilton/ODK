@@ -63,6 +63,24 @@ public static class DateUtils
 
     public static DateTime StartOfDay(this DateTime date) => date - date.TimeOfDay;
 
+    public static string ToFriendlyString(this DateTime dateUtc, TimeZoneInfo? timeZone)
+    {
+        var localDate = timeZone != null 
+            ? TimeZoneInfo.ConvertTimeFromUtc(dateUtc, timeZone)
+            : dateUtc;
+
+        var includeYear = dateUtc.Year != DateTime.UtcNow.Year;
+        
+        var format = "ddd, MMM d";
+
+        if (includeYear)
+        {
+            format += ", yyyy";
+        }
+
+        return localDate.ToString(format);
+    }
+
     public static DateTime ToUtc(this DateTime local, TimeZoneInfo timeZone) 
         => TimeZoneInfo.ConvertTimeToUtc(local.SpecifyKind(DateTimeKind.Unspecified), timeZone);
 }

@@ -7,7 +7,6 @@
 @using ODK.Web.Razor.Pages.Chapters
 @inject IAuthorizationService AuthorizationService
 @inject IRequestCache RequestCache
-
 @{
     var memberId = User.MemberIdOrDefault();
     if (memberId == null)
@@ -46,18 +45,16 @@
     var action = memberSubscription.Type == SubscriptionType.Trial ? "Purchase membership" : "Renew";
 }
 
-<div class="container subscription-alerts">
-    @if (status == SubscriptionStatus.Expired || status == SubscriptionStatus.Disabled)
-    {
-        <div class="mt-3 alert alert-danger">
-            Your @type has expired <a href="/@chapter.Name/Account/Subscription">@action</a>
-        </div>
-    }
-    else if (status == SubscriptionStatus.Expiring && memberSubscription.ExpiresUtc != null)
-    {
-        var expiresOn = TimeZoneEntityExtensions.ToLocalTime(chapter, memberSubscription.ExpiresUtc.Value).ToString("d MMMM");
-        <div class="mt-3 alert alert-warning">
-            Your @type expires @expiresOn <a href="/@chapter.Name/Account/Subscription">@action</a>
-        </div>
-    }
-</div>
+@if (status == SubscriptionStatus.Expired || status == SubscriptionStatus.Disabled)
+{
+    <div class="page-alert alert alert-danger">
+        Your @type has expired <a href="/@chapter.Name/Account/Subscription">@action</a>
+    </div>
+}
+else if (status == SubscriptionStatus.Expiring && memberSubscription.ExpiresUtc != null)
+{
+    var expiresOn = TimeZoneEntityExtensions.ToLocalTime(chapter, memberSubscription.ExpiresUtc.Value).ToString("d MMMM");
+    <div class="page-alert alert alert-warning">
+        Your @type expires @expiresOn <a href="/@chapter.Name/Account/Subscription">@action</a>
+    </div>
+}

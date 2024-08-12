@@ -13,6 +13,7 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Chapters/_GroupContent", viewModel),
+    Content = await Html.PartialAsync("Groups/_GroupContent", viewModel),
+    Menu = await Html.PartialAsync("Groups/_GroupMenu", viewModel),
     Title = viewModel.Chapter.Name
 })

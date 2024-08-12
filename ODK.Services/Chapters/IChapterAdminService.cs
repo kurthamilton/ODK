@@ -71,9 +71,11 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterAdminMember(AdminServiceRequest request, Guid memberId, 
         UpdateChapterAdminMember model);
 
-    Task UpdateChapterLinks(AdminServiceRequest request, UpdateChapterLinks model);
+    Task<ServiceResult> UpdateChapterDescription(AdminServiceRequest request, string description);
 
     Task UpdateChapterEventSettings(AdminServiceRequest request, UpdateChapterEventSettings model);
+
+    Task UpdateChapterLinks(AdminServiceRequest request, UpdateChapterLinks model);    
 
     Task<ServiceResult> UpdateChapterLocation(AdminServiceRequest request,
         LatLong? location, string? name);

@@ -1,13 +1,15 @@
-﻿using Microsoft.AspNetCore.Html;
+﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace ODK.Web.Razor.Razor;
+namespace ODK.Web.Common.Extensions;
 
 public static class HtmlExtensions
 {
-    public static IHtmlContent OdkCheckBoxFor<TModel>(this IHtmlHelper<TModel> htmlHelper, 
+    public static IHtmlContent OdkCheckBoxFor<TModel>(this IHtmlHelper<TModel> htmlHelper,
         Expression<Func<TModel, bool>> expression, object htmlAttributes)
     {
         var htmlAttributeDictionary = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);

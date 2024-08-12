@@ -1,0 +1,53 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model EditableTextViewModel
+
+@if (string.IsNullOrEmpty(Model.Text) && !Model.IsAdmin)
+{
+    return;
+}
+
+<section>
+    @if (!string.IsNullOrEmpty(Model.Title))
+    {
+        <h3>@Model.Title</h3>
+    }    
+
+    @if (!Model.IsAdmin)
+    {
+        @await Html.PartialAsync("Components/_Paragraphs", Model.Text)
+    }
+    else
+    {
+        var editId = $"{Model.Id}-edit";
+        var parentId = $"{Model.Id}-container";
+
+        <div class="accordion accordion-flush accordion--transition-0" id="@parentId">
+            <div class="accordion-item border-0">
+                <div id="@Model.Id" class="accordion-collapse collapse show" data-bs-parent="#@parentId">
+                    @await Html.PartialAsync("Components/_Paragraphs", Model.Text)
+                    <button class="btn btn-link p-0" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#@editId" aria-expanded="false" aria-controls="@editId">
+                        <i class="fa-regular fa-pen-to-square"></i>
+                        Edit
+                    </button>
+                </div>
+            </div>
+
+            <div class="accordion-item border-0">
+                <div id="@editId" class="accordion-collapse collapse" data-bs-parent="#@parentId">
+                    <form action="@Model.Action" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="form-group mb-3">
+                            <textarea class="form-control" name="@Model.Name">@Model.Text</textarea>
+                        </div>
+                        <button class="btn btn-primary">Update</button>
+                        <button class="btn btn-outline-secondary" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#@Model.Id" aria-expanded="true" aria-controls="@Model.Id">
+                            Cancel
+                        </button>
+                    </form>
+                </div>
+            </div>            
+        </div>
+    }   
+</section>

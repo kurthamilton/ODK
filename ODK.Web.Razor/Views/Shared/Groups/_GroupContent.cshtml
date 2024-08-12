@@ -1,0 +1,36 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Components
+@model GroupHomePageViewModel
+@{
+}
+
+<div class="row">
+    <div class="col-md-8">
+        @await Html.PartialAsync("Components/_EditableTextArea", new EditableTextViewModel
+        {
+            Action = $"/admin/groups/{Model.Chapter.Id}/description",
+            Id = "group-description",
+            IsAdmin = Model.IsAdmin,
+            Name = "description",
+            Text = Model.Chapter.Description,
+            Title = "About us"
+        })
+    </div>    
+    <div class="col-md-4">
+        @if (Model.ChapterLocation != null)
+        {
+            <div>
+                @await Html.PartialAsync("Components/_Location", Model.ChapterLocation.Name)
+            </div>
+        }
+
+        <div>
+            Joined @Model.Chapter.CreatedUtc.ToFriendlyString(Model.CurrentMember?.TimeZone ?? Model.Chapter.TimeZone)
+        </div>
+        <div>
+            <i class="fa-solid fa-users"></i>
+            @Model.MemberCount @StringUtils.Pluralise(Model.MemberCount, "member")
+        </div>
+    </div>
+</div>

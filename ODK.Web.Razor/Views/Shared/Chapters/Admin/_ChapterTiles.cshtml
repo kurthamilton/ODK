@@ -11,6 +11,6 @@
 <div class="d-flex">
     @foreach (var chapter in Model.Chapters.OrderBy(x => x.Chapter.Name))
     {
-        @await Html.PartialAsync("Chapters/_ChapterTile", chapter)
+        @await Html.PartialAsync("Chapters/Admin/_ChapterTile", chapter)
     }
 </div>

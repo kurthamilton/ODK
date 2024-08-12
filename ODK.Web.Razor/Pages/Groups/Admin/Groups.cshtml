@@ -24,7 +24,7 @@
                 
                 @if (viewModel.Owned.Count > 0)
                 {
-                    @await Html.PartialAsync("Chapters/_ChapterTiles", new ChapterTilesViewModel
+                    @await Html.PartialAsync("Chapters/Admin/_ChapterTiles", new ChapterTilesViewModel
                     {
                         Chapters = viewModel.Owned.Select(x => new ChapterTileViewModel
                         {
@@ -46,7 +46,7 @@
             {
                 <section class="section--admin">
                     <h5>Manager</h5>
-                    @await Html.PartialAsync("Chapters/_ChapterTiles", new ChapterTilesViewModel
+                    @await Html.PartialAsync("Chapters/Admin/_ChapterTiles", new ChapterTilesViewModel
                     {
                         Chapters = viewModel.Admin.Select(x => new ChapterTileViewModel
                         {
@@ -61,7 +61,7 @@
                 <h5>Member</h5>
                 @if (viewModel.Member.Count > 0)
                 {
-                    @await Html.PartialAsync("Chapters/_ChapterTiles", new ChapterTilesViewModel
+                    @await Html.PartialAsync("Chapters/Admin/_ChapterTiles", new ChapterTilesViewModel
                     {
                         Chapters = viewModel.Member.Select(x => new ChapterTileViewModel
                         {

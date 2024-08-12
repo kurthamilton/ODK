@@ -34,9 +34,13 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
 
     public TimeZoneInfo? TimeZone { get; set; }
 
-    public bool CanBePublished() => ApprovedUtc != null && PublishedUtc == null;
+    public bool Approved() => ApprovedUtc != null;
 
-    public bool IsOpenForRegistration() => ApprovedUtc != null && PublishedUtc != null;
+    public bool CanBePublished() => Approved() && !Published();
+
+    public bool IsOpenForRegistration() => Approved() && Published();
+
+    public bool Published() => PublishedUtc != null;
 
     public DateTime ToChapterTime(DateTime utc) => TimeZone != null
         ? TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone)

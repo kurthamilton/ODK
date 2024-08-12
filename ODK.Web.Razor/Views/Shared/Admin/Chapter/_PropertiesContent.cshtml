@@ -37,19 +37,21 @@
                 <a href="/@Model.Name/Admin/Chapter/Properties/@property.Id">@property.Label</a>
             </td>
             <td>@property.Name</td>
-            <td class="d-flex">
-                <form method="post" action="/@Model.Name/Admin/Chapter/Properties/@property.Id/MoveUp">
-                    @Html.AntiForgeryToken()
-                    <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
-                        <i class="fas fa-arrow-circle-up"></i>
-                    </button>
-                </form>
-                <form method="post" action="/@Model.Name/Admin/Chapter/Properties/@property.Id/MoveDown">
-                    @Html.AntiForgeryToken()
-                    <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
-                        <i class="fas fa-arrow-circle-down"></i>
-                    </button>
-                </form>
+            <td>
+                <div class="d-flex">
+                    <form method="post" action="/@Model.Name/Admin/Chapter/Properties/@property.Id/MoveUp">
+                        @Html.AntiForgeryToken()
+                        <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
+                            <i class="fas fa-arrow-circle-up"></i>
+                        </button>
+                    </form>
+                    <form method="post" action="/@Model.Name/Admin/Chapter/Properties/@property.Id/MoveDown">
+                        @Html.AntiForgeryToken()
+                        <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
+                            <i class="fas fa-arrow-circle-down"></i>
+                        </button>
+                    </form>
+                </div>                
             </td>
             <td>
                 <form method="post" action="/@Model.Name/Admin/Chapter/Properties/@property.Id/Delete">

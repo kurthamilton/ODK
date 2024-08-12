@@ -1,0 +1,44 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Header
+@model GroupPageViewModelBase
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var menuItems = new List<MenuItem>
+    {
+        new MenuItem { Text = "About", Link = OdkRoutes2.Groups.Group(Model.Chapter) },
+        new MenuItem { Text = "Events", Link = OdkRoutes2.Groups.Events(Model.Chapter) },
+        new MenuItem { Text = "Members", Link = OdkRoutes2.Groups.Members(Model.Chapter) }
+    };
+
+    var id = "nav-group";
+}
+
+<nav class="navbar navbar-dark navbar-expand-sm navbar--group border-bottom border-light">
+    <div class="position-relative container">
+        <div class="d-flex">
+            <button class="navbar-toggler"
+                    type="button" data-bs-toggle="collapse" data-bs-target="#@id"
+                    aria-controls="@id" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+
+        <div class="collapse navbar-collapse" id="@id">
+            <ul class="navbar-nav">
+                @foreach (var menuItem in menuItems)
+                {
+                    var active = HttpContextAccessor.ForPath(menuItem.Link ?? "");
+
+                    <li class="nav-item @(menuItem.Hidden ? "invisible" : null) ">
+                        <a class="nav-link @(active ? "active" : null)" href="@menuItem.Link">
+                            @menuItem.Text
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>

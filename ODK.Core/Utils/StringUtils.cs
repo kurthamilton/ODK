@@ -34,6 +34,13 @@ public static class StringUtils
         return sb.ToString();
     }
 
+    public static string Pluralise(int count, string single, string? plural = null)
+    {
+        return count == 1
+            ? single
+            : (!string.IsNullOrEmpty(plural) ? plural : $"{single}s");
+    }
+
     public static string ToCsv(IReadOnlyCollection<IReadOnlyCollection<string>> data)
     {
         var csv = new StringBuilder();

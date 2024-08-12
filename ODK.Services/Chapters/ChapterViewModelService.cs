@@ -103,16 +103,27 @@ public class ChapterViewModelService : IChapterViewModelService
 
     public async Task<GroupHomePageViewModel> GetGroupHomePage(Guid? currentMemberId, string slug)
     {
-        var (currentMember, chapter) = await _unitOfWork.RunAsync(
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        OdkAssertions.Exists(chapter);
+
+        var (currentMember, adminMembers, memberCount) = await _unitOfWork.RunAsync(
             x => currentMemberId != null 
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
-            x => x.ChapterRepository.GetBySlug(slug));
+            x => currentMemberId != null 
+                ? x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId.Value)
+                : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),
+            x => x.MemberRepository.GetCountByChapterId(chapter.Id));
+
+        var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
 
         return new GroupHomePageViewModel
         {
             Chapter = chapter,
-            CurrentMember = currentMember
+            ChapterLocation = location,
+            CurrentMember = currentMember,
+            IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
+            MemberCount = memberCount
         };
     }
     

@@ -1,0 +1,29 @@
+﻿@using ODK.Core.Platforms
+@using ODK.Core.Utils
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@inject IChapterService ChapterService
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var memberId = User.MemberIdOrDefault();
+
+    var isMyGroupsPath = HttpContextAccessor.ForPath(OdkRoutes2.MemberGroups.Index());
+
+    var ownedChapters = memberId != null && !isMyGroupsPath
+        ? await ChapterService.GetChaptersByOwnerId(memberId.Value)
+        : [];
+
+    // do not show pending publication alert on the group page itself
+    var chaptersPendingPublication = ownedChapters
+        .Where(x => x.CanBePublished() && !HttpContextAccessor.ForPath(OdkRoutes2.MemberGroups.Group(x.Id)))
+        .ToArray();
+}
+
+@if (chaptersPendingPublication.Length > 0)
+{    
+    <div class="page-alert alert alert-warning">
+        You have @chaptersPendingPublication.Length @StringUtils.Pluralise(chaptersPendingPublication.Length, "chapter") waiting to be published.
+        <a href="@OdkRoutes2.MemberGroups.Index()">My groups</a>
+    </div>
+}

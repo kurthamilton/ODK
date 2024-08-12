@@ -8,15 +8,25 @@
 @model ODK.Web.Razor.Models.Components.BodyViewModel
 
 <main>
-    @if (!string.IsNullOrEmpty(Model.Title))
+    @await Html.PartialAsync("Components/_PageTitle", new PageTitleViewModel
     {
-        @await Html.PartialAsync("Components/_PageTitle", Model.Title)
+        Content = Model.TitleContent,
+        Title = Model.Title
+    })
+
+    @if (Model.Menu != null)
+    {
+        @Model.Menu
     }
 
-    @if (!Model.HideSubscriptionAlert)
-    {
-        @await Html.PartialAsync("Members/_SubscriptionAlert")
-    }
+    <div class="container page-alerts">
+        @if (!Model.HideSubscriptionAlert)
+        {
+            @await Html.PartialAsync("Members/_SubscriptionAlert")
+        }
+
+        @await Html.PartialAsync("Site/_SiteAlerts")
+    </div>
 
     <section class="section--main">
         <div class="container">

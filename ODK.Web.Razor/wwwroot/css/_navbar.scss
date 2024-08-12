@@ -103,6 +103,23 @@ $navbar-dark-separator: rgba(255, 255, 255, .5);
     }
 }
 
+.navbar--group {
+    .nav-item {
+        &:first-child {
+            .nav-link {
+                padding-left: 0;
+            }
+        }
+
+        .nav-link {
+            &:hover {
+                color: var(--bs-primary);
+                background-color: transparent;
+            }
+        }
+    }
+}
+
 .account-links {
     cursor: pointer;
 
