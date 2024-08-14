@@ -11934,13 +11934,6 @@ html[data-platform=odk] {
   background-color: rgba(0, 0, 0, 0.03);
 }
 
-.accordion--transition-0 {
-  --bs-accordion-transition: none;
-}
-.accordion--transition-0 .collapsing {
-  transition: none;
-}
-
 .page-alerts .page-alert {
   margin-top: 1rem;
   margin-bottom: 0;
@@ -12287,6 +12280,10 @@ html[data-platform=odk] {
 
 .paragraphs p:last-child {
   margin-bottom: 0;
+}
+
+.section {
+  margin-top: 2rem;
 }
 
 .section--main {

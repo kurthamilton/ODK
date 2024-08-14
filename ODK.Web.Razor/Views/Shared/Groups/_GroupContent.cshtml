@@ -1,5 +1,5 @@
-﻿@using ODK.Core.Utils
-@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @model GroupHomePageViewModel
 @{
@@ -16,21 +16,21 @@
             Text = Model.Chapter.Description,
             Title = "About us"
         })
+
+        @if (Model.Questions.Count > 0 || Model.IsAdmin)
+        {
+            <section class="section">
+                <h3>Frequently asked questions</h3>
+                @await Html.PartialAsync("Chapters/_Questions", new ChapterQuestionsViewModel
+                {
+                    Chapter = Model.Chapter,
+                    IsAdmin = Model.IsAdmin,
+                    Questions = Model.Questions
+                })
+            </section>
+        }
     </div>    
     <div class="col-md-4">
-        @if (Model.ChapterLocation != null)
-        {
-            <div>
-                @await Html.PartialAsync("Components/_Location", Model.ChapterLocation.Name)
-            </div>
-        }
-
-        <div>
-            Joined @Model.Chapter.CreatedUtc.ToFriendlyString(Model.CurrentMember?.TimeZone ?? Model.Chapter.TimeZone)
-        </div>
-        <div>
-            <i class="fa-solid fa-users"></i>
-            @Model.MemberCount @StringUtils.Pluralise(Model.MemberCount, "member")
-        </div>
+        @await Html.PartialAsync("Groups/_GroupContentSidebar", Model)
     </div>
 </div>

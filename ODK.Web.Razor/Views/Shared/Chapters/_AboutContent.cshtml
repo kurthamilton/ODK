@@ -1,9 +1,9 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services.Chapters
+﻿@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Chapters
 @model ODK.Web.Razor.Models.About.AboutContentViewModel
 @inject IChapterService ChapterService
 @{
-    IReadOnlyCollection<ChapterQuestion> questions = await ChapterService.GetChapterQuestions(Model.Chapter.Id);
+    var questions = await ChapterService.GetChapterQuestions(Model.Chapter.Id);
 }
 
 @if (!string.IsNullOrEmpty(Model.Chapter.Description))
@@ -15,25 +15,11 @@
 
 <h3>Frequently asked questions</h3>
 
-<div class="accordion" id="questions-accordion">
-    @for (int i = 0; i < questions.Count; i++)
-    {
-        var question = questions.ElementAt(i);
-
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button @(i > 0 ? "collapsed" : null)" type="button" data-bs-toggle="collapse" data-bs-target="#question-@i">
-                    @question.Name
-                </button>
-            </h2>
-            <div id="question-@i" class="accordion-collapse collapse @(i == 0 ? "show" : null)" data-bs-parent="#questions-accordion">
-                <div class="accordion-body">
-                    @Html.Raw(question.Answer)
-                </div>
-            </div>
-        </div>
-    }
-</div>
+@await Html.PartialAsync("Chapters/_Questions", new ChapterQuestionsViewModel
+{
+    Chapter = Model.Chapter,
+    Questions = questions
+})
 
 <p class="mt-3">
     Still have questions? Feel free to <a href="/@Model.Chapter.Name/Contact">get in touch</a> before joining.

@@ -106,14 +106,17 @@ public class ChapterViewModelService : IChapterViewModelService
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
         OdkAssertions.Exists(chapter);
 
-        var (currentMember, adminMembers, memberCount) = await _unitOfWork.RunAsync(
+        var (currentMember, adminMembers, memberCount, instagramPosts, links, questions) = await _unitOfWork.RunAsync(
             x => currentMemberId != null 
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => currentMemberId != null 
                 ? x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId.Value)
                 : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),
-            x => x.MemberRepository.GetCountByChapterId(chapter.Id));
+            x => x.MemberRepository.GetCountByChapterId(chapter.Id),
+            x => x.InstagramPostRepository.GetByChapterId(chapter.Id, 8),
+            x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterQuestionRepository.GetByChapterId(chapter.Id));
 
         var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
 
@@ -122,8 +125,11 @@ public class ChapterViewModelService : IChapterViewModelService
             Chapter = chapter,
             ChapterLocation = location,
             CurrentMember = currentMember,
+            InstagramPosts = instagramPosts,
             IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
-            MemberCount = memberCount
+            Links = links,
+            MemberCount = memberCount,
+            Questions = questions.OrderBy(x => x.DisplayOrder).ToArray()
         };
     }
     

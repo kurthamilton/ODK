@@ -1,0 +1,49 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.SocialMedia
+@model GroupHomePageViewModel
+
+@if (Model.ChapterLocation != null)
+{
+    <div class="text-end">
+        @await Html.PartialAsync("Components/_Location", Model.ChapterLocation.Name)
+    </div>
+}
+
+<div class="text-end">
+    Joined @Model.Chapter.CreatedUtc.ToFriendlyString(Model.CurrentMember?.TimeZone ?? Model.Chapter.TimeZone)
+</div>
+<div class="text-end">
+    <i class="fa-solid fa-users"></i>
+    @Model.MemberCount @StringUtils.Pluralise(Model.MemberCount, "member")
+</div>
+
+@if (Model.InstagramPosts.Count > 0 || Model.IsAdmin)
+{
+    <section class="section">
+        <h5>Latest from Instagram</h5>
+        <div class="row g-0">
+            @foreach (var post in Model.InstagramPosts)
+            {
+                <div class="col-3 col-md-3">
+                    @await Html.PartialAsync("Components/_InstagramPost", 
+                        new InstagramPostViewModel
+                        {
+                            Caption = post.Caption, 
+                            Chapter = Model.Chapter, 
+                            ExternalId = post.ExternalId,
+                            InstagramPostId = post.Id
+                        })
+                </div>
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(Model.Links?.InstagramName))
+        {
+            <div class="d-flex align-content-center justify-content-end">
+                <div>
+                    @await Html.PartialAsync("Components/_InstagramLink", Model.Links.InstagramName)
+                </div>
+            </div>
+        }
+    </section>
+}

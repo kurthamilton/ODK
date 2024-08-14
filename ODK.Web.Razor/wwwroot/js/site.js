@@ -1,10 +1,37 @@
 ﻿(function () {
+    bindCollapseToggle();
     bindFeaturePopovers();
     bindForms();
     bindImages();
     bindMenuLinks();
     bindPopovers();
     bindTooltips();    
+
+    function bindCollapseToggle() {
+        const hiddenClass = 'd-none';
+        const $triggers = document.querySelectorAll('[data-collapse-toggle-show]');
+        $triggers.forEach($trigger => {
+            const showSelector = $trigger.getAttribute('data-collapse-toggle-show');
+            const hideSelector = $trigger.getAttribute('data-collapse-toggle-hide');
+            const $show = document.querySelector(showSelector);
+            const $hide = document.querySelector(hideSelector);
+            if (!$show || !$hide) {
+                return;
+            }
+
+            const $hideTrigger = document.querySelector(`[data-collapse-toggle-hide="${showSelector}"]`);
+
+            $trigger.setAttribute('aria-controls', showSelector);
+            $trigger.setAttribute('aria-expanded', !$show.classList.contains(hiddenClass))
+
+            $trigger.addEventListener('click', e => {                
+                $show.classList.remove(hiddenClass);
+                $hide.classList.add(hiddenClass);
+                $trigger.setAttribute('aria-expanded', 'true');
+                $hideTrigger.setAttribute('aria-expanded', 'false');
+            });
+        });
+    }
 
     function bindFeaturePopovers() {
         document.addEventListener('click', e => {

@@ -53,10 +53,7 @@ else
         {
             <div class="d-flex align-content-center">
                 <div>
-                    <i class="fab fa-instagram mr-1"></i>
-                    <a href="https://www.instagram.com/@Model.Links.InstagramName" target="_blank">
-                        @Model.Links.InstagramName
-                    </a>
+                    @await Html.PartialAsync("Components/_InstagramLink", Model.Links.InstagramName)
                 </div>
             </div>
         }        

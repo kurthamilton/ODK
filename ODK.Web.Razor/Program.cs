@@ -24,6 +24,36 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 AppStartup.ConfigureServices(builder.Configuration, builder.Services);
+builder.Services.AddWebOptimizer(pipeline =>
+{
+    pipeline.AddCssBundle(
+        "/css/odk.bundle.lib.css",
+        "lib/font-awesome/css/all.css",
+        "lib/aspnet-client-validation/dist/aspnet-validation.css",
+        "lib/slim-select/slimselect.css");
+    pipeline.AddJavaScriptBundle(
+        "/js/odk.bundle.js",
+        "lib/bootstrap/js/bootstrap.bundle.js",
+        "lib/vanillajs-datepicker/dist/js/datepicker-full.js",
+        "lib/aspnet-client-validation/dist/aspnet-validation.js",
+        "lib/slim-select/slimselect.js",
+        "js/site.js",
+        "js/odk.maps.js",
+        "js/odk.forms.js",
+        "js/odk.lists.js",
+        "js/odk.selects.js",
+        "js/odk.html-editor.js");
+    pipeline.AddJavaScriptBundle(
+        "/js/odk.bundle.head.js",
+        "js/odk.global.js",
+        "js/odk.themes.js");
+    
+    if (!builder.Environment.IsDevelopment())
+    {
+        pipeline.MinifyCssFiles();
+        pipeline.MinifyJsFiles();
+    }
+});
 
 var app = builder.Build();
 
@@ -38,6 +68,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseWebOptimizer();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

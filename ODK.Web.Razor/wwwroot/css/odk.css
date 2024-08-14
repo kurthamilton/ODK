@@ -12296,6 +12296,10 @@ html[data-platform=odk] {
   margin-bottom: 0;
 }
 
+.section {
+  margin-top: 2rem;
+}
+
 .section--main {
   padding-top: 30px;
   padding-bottom: 90px;

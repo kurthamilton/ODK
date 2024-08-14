@@ -24,6 +24,66 @@ public class ChapterAdminController : AdminControllerBase
         _emailAdminService = emailAdminService;
     }
 
+    [HttpPost("/groups/{chapterId:guid}/questions")]
+    public async Task<IActionResult> CreateQuestion(Guid chapterId,
+        [FromForm] string? name, [FromForm] string? answer)
+    {
+        var request = new AdminServiceRequest(chapterId, MemberId);
+        var model = new CreateChapterQuestion
+        {
+            Answer = answer ?? "",
+            Name = name ?? ""
+        };
+        var result = await _chapterAdminService.CreateChapterQuestion(request, model);
+        AddFeedback(result, "Question created");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("/groups/{chapterId:guid}/questions/{questionId:guid}")]
+    public async Task<IActionResult> UpdateQuestion(Guid chapterId, Guid questionId, 
+        [FromForm] string? name, [FromForm] string? answer)
+    {
+        var request = new AdminServiceRequest(chapterId, MemberId);
+        var model = new CreateChapterQuestion
+        {
+            Answer = answer ?? "",
+            Name = name ?? ""
+        };
+        var result = await _chapterAdminService.UpdateChapterQuestion(request, 
+            questionId, model);
+        AddFeedback(result, "Question updated");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("/groups/{chapterId:guid}/questions/{questionId:guid}/delete")]
+    public async Task<IActionResult> DeleteQuestion(Guid chapterId, Guid questionId)
+    {
+        var request = new AdminServiceRequest(chapterId, MemberId);
+        await _chapterAdminService.DeleteChapterQuestion(request, questionId);
+        AddFeedback("Question deleted", FeedbackType.Success);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("/groups/{chapterId:guid}/questions/{questionId:guid}/move/down")]
+    public async Task<IActionResult> MoveQuestionDown(Guid chapterId, Guid questionId)
+    {
+        var request = new AdminServiceRequest(chapterId, MemberId);
+        await _chapterAdminService.UpdateChapterQuestionDisplayOrder(request,
+            questionId, 1);
+        AddFeedback("Question order updated", FeedbackType.Success);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("/groups/{chapterId:guid}/questions/{questionId:guid}/move/up")]
+    public async Task<IActionResult> MoveQuestionUp(Guid chapterId, Guid questionId)
+    {
+        var request = new AdminServiceRequest(chapterId, MemberId);
+        await _chapterAdminService.UpdateChapterQuestionDisplayOrder(request,
+            questionId, -1);
+        AddFeedback("Question order updated", FeedbackType.Success);
+        return RedirectToReferrer();
+    }
+
     [HttpPost("/my/groups/{id:guid}/publish")]
     public async Task<IActionResult> Publish(Guid id)
     {

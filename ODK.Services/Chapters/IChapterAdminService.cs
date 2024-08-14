@@ -94,7 +94,7 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterQuestion(AdminServiceRequest request, 
         Guid questionId, CreateChapterQuestion model);
-
+    
     Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(AdminServiceRequest request,
         Guid questionId, int moveBy);
 
