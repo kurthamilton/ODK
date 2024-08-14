@@ -171,7 +171,7 @@ public static class DependencyConfig
 
         services.AddSingleton(new AuthenticationServiceSettings
         {
-            EventsUrlPath = urls.Event,
+            EventsUrlPath = urls.Events,
             PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
             PasswordResetUrlPath = urls.PasswordReset
         });

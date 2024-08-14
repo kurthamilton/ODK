@@ -1,21 +1,46 @@
-﻿@using ODK.Web.Razor.Models.Members
+﻿@using ODK.Services
+@using ODK.Services.Members
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Members
 @model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
-
-<div class="d-inline-block">
-    <div class="d-flex align-items-end justify-content-start">
-        @await Html.PartialAsync("Members/_MemberAvatar", new MemberImageViewModel
+@inject IMemberAdminService MemberAdminService
+@{
+    var request = new AdminServiceRequest(Model.Chapter.Id, User.MemberId());
+    var memberAvatar = await MemberAdminService.GetMemberAvatar(request, Model.Member.Id);
+    var memberImage = await MemberAdminService.GetMemberImage(request, Model.Member.Id);
+}
+<section class="section--admin">
+    <h3>Picture</h3>
+    @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
+    {
+        ChapterName = Model.Chapter.Name,
+        Member = Model.Member
+    })
+</section>
+<section class="section--admin">
+    <h3>Avatar</h3>
+    @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
+    {
+        ChapterName = Model.Chapter.Name,
+        Member = Model.Member
+    })
+</section>
+<section class="section--admin">
+    <h3>Fix</h3>
+    <form action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/Picture" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
         {
             ChapterName = Model.Chapter.Name,
-            Member = Model.Member
+            CropHeight = memberAvatar?.CropHeight,
+            CropWidth = memberAvatar?.CropWidth,
+            CropX = memberAvatar?.CropX,
+            CropY = memberAvatar?.CropY,
+            MemberImage = memberImage
         })
-    </div>
-</div>
-<div>
-    <form method="post" action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/Picture/Rotate">
-        <button data-bs-toggle="tooltip" data-bs-title="Rotate right" class="btn-icon">
-            <i class="fas fa-undo flip-horizontal"></i>
-        </button>
+        <button class="btn btn-primary">Update</button>
     </form>
-</div>
+</section>

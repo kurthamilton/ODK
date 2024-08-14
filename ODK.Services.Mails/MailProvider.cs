@@ -61,6 +61,17 @@ public class MailProvider : IMailProvider
             parameters["chapter.name"] = options.Chapter?.Name ?? "";
         }
 
+        if (!parameters.ContainsKey("platform.baseurl"))
+        {
+            var platformBaseUrl = _platformProvider.GetBaseUrl();
+            if (platform == PlatformType.DrunkenKnitwits && options.Chapter != null)
+            {
+                platformBaseUrl += $"/{options.Chapter.Name}";
+            }
+
+            parameters["platform.baseurl"] = platformBaseUrl;
+        }
+
         var title = StringUtils.Interpolate(siteSettings.Title, parameters,
             HttpUtility.HtmlEncode);
         parameters["title"] = title;

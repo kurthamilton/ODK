@@ -2,6 +2,7 @@
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Members;
+using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 
@@ -31,6 +32,22 @@ public class MemberAdminController : AdminControllerBase
         await _memberAdminService.DeleteMember(request, id);
         AddFeedback("Member deleted", FeedbackType.Success);
         return Redirect($"/{chapterName}/Admin/Members");
+    }
+
+    [HttpPost("{chapterName}/Admin/Members/{id:guid}/Picture")]
+    public async Task<IActionResult> UpdatePicture(string chapterName, Guid id,
+        [FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
+    {
+        var request = await GetAdminServiceRequest(chapterName);
+        var model = image != null ? new UpdateMemberImage
+        {
+            ImageData = await image.ToByteArrayAsync(),
+            MimeType = image.ContentType
+        } : null;
+
+        var result = await _memberAdminService.UpdateMemberImage(request, id, model, cropInfo);
+        AddFeedback(result);
+        return RedirectToReferrer();
     }
 
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/Picture/Rotate")]

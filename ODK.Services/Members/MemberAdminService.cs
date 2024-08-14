@@ -53,6 +53,17 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return member;
     }
     
+    public async Task<MemberAvatar?> GetMemberAvatar(AdminServiceRequest request, Guid memberId)
+    {
+        var (member, memberAvatar) = await GetChapterAdminRestrictedContent(request,
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberAvatarRepository.GetByMemberId(memberId));
+
+        OdkAssertions.MemberOf(member, request.ChapterId);
+
+        return memberAvatar;
+    }
+
     public async Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(AdminServiceRequest request)
     {
         var (members, subscriptions) = await GetChapterAdminRestrictedContent(request,
@@ -98,6 +109,17 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
 
         return csv;
+    }
+
+    public async Task<MemberImage?> GetMemberImage(AdminServiceRequest request, Guid memberId)
+    {
+        var (member, memberImage) = await GetChapterAdminRestrictedContent(request,
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberImageRepository.GetByMemberId(memberId));
+
+        OdkAssertions.MemberOf(member, request.ChapterId);
+
+        return memberImage;
     }
 
     public Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request) => GetMembers(request,
@@ -221,6 +243,60 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
 
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<ServiceResult> UpdateMemberImage(AdminServiceRequest request, Guid id, 
+        UpdateMemberImage? model, MemberImageCropInfo cropInfo)
+    {
+        var (member, image, avatar) = await GetChapterAdminRestrictedContent(request,
+            x => x.MemberRepository.GetById(id),
+            x => x.MemberImageRepository.GetByMemberId(id),
+            x => x.MemberAvatarRepository.GetByMemberId(id));
+
+        OdkAssertions.MemberOf(member, request.ChapterId);
+
+        if (image == null)
+        {
+            image = new MemberImage();
+        }
+
+        if (avatar == null)
+        {
+            avatar = new MemberAvatar();
+        }
+
+        var result = _memberImageService.ProcessMemberImage(image, avatar, model, cropInfo);
+        if (!result.Success)
+        {
+            return result;
+        }
+
+        if (image.MemberId == Guid.Empty)
+        {
+            image.MemberId = member.Id;
+            _unitOfWork.MemberImageRepository.Add(image);
+        }
+        else
+        {
+            _unitOfWork.MemberImageRepository.Update(image);
+        }
+
+        if (avatar.MemberId == Guid.Empty)
+        {
+            avatar.MemberId = member.Id;
+            _unitOfWork.MemberAvatarRepository.Add(avatar);
+        }
+        else
+        {
+            _unitOfWork.MemberAvatarRepository.Update(avatar);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        _cacheService.RemoveVersionedItem<MemberImage>(id);
+        _cacheService.RemoveVersionedItem<MemberAvatar>(id);
+
+        return ServiceResult.Successful("Picture updated");
     }
 
     public async Task<ServiceResult> UpdateMemberSubscription(AdminServiceRequest request, Guid memberId,

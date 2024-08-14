@@ -121,7 +121,9 @@ public class ImageService : IImageService
 
         double ratio = chooseRatio(widthRatio, heightRatio);
 
-        return new Size((int)Math.Floor(current.Width * ratio), (int)Math.Floor(current.Height * ratio));
+        return new Size(
+            width: (int)Math.Floor(current.Width * ratio), 
+            height: (int)Math.Floor(current.Height * ratio));
     }
 
     private static byte[] ImageToBytes(Image image, IImageFormat format)
@@ -141,7 +143,7 @@ public class ImageService : IImageService
 
     private static void RescaleImage(Image image, int maxWidth, int maxHeight)
     {
-        Size rescaled = GetRescaledSize(image.Size, new Size(maxWidth, maxHeight), Math.Min);
+        var rescaled = GetRescaledSize(image.Size, new Size(maxWidth, maxHeight), Math.Min);
         image.Mutate(context =>
         {
             context

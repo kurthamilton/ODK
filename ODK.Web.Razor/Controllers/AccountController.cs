@@ -318,7 +318,8 @@ public class AccountController : OdkControllerBase
     }
 
     [HttpPost("{chapterName}/Account/Picture/Change")]
-    public async Task<IActionResult> UpdatePicture(string chapterName, [FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
+    public async Task<IActionResult> UpdatePicture(string chapterName, 
+        [FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
     {
         var model = image != null ? new UpdateMemberImage
         {            

@@ -8,7 +8,11 @@ public interface IMemberAdminService
 
     Task<Member> GetMember(AdminServiceRequest request, Guid memberId);
 
+    Task<MemberAvatar?> GetMemberAvatar(AdminServiceRequest request, Guid memberId);
+
     Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(AdminServiceRequest request);
+
+    Task<MemberImage?> GetMemberImage(AdminServiceRequest request, Guid memberId);
 
     Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request);
 
@@ -27,6 +31,9 @@ public interface IMemberAdminService
     Task<ServiceResult> SendMemberEmail(AdminServiceRequest request, Guid memberId, string subject, string body);
 
     Task SetMemberVisibility(AdminServiceRequest request, Guid memberId, bool visible);
+
+    Task<ServiceResult> UpdateMemberImage(AdminServiceRequest request, Guid id,
+        UpdateMemberImage? model, MemberImageCropInfo cropInfo);
 
     Task<ServiceResult> UpdateMemberSubscription(AdminServiceRequest request, Guid memberId, 
         UpdateMemberSubscription subscription);
