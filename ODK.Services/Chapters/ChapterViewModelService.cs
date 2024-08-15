@@ -103,6 +103,8 @@ public class ChapterViewModelService : IChapterViewModelService
 
     public async Task<GroupHomePageViewModel> GetGroupHomePage(Guid? currentMemberId, string slug)
     {
+        var platform = _platformProvider.GetPlatform();
+
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
         OdkAssertions.Exists(chapter);
 
@@ -146,6 +148,7 @@ public class ChapterViewModelService : IChapterViewModelService
             IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
             Links = links,
             MemberCount = memberCount,
+            Platform = platform,
             Questions = questions.OrderBy(x => x.DisplayOrder).ToArray(),
             RecentEvents = recentEvents
                 .OrderByDescending(x => x.Date)

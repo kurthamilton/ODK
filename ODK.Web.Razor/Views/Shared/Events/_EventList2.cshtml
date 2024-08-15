@@ -10,8 +10,9 @@
     {
         @await Html.PartialAsync("Events/_ListEvent2", new ListEventViewModel
         {
-            ChapterName = Model.ChapterName,
+            Chapter = Model.Chapter,
             Event = @event,
+            Platform = Model.Platform,
             TimeZone = Model.TimeZone
         })
     }

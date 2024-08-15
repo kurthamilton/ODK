@@ -27,11 +27,12 @@
                 <h3>Upcoming events</h3>
                 @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
                 {
-                    ChapterName = Model.Chapter.Name,
+                    Chapter = Model.Chapter,
                     Events = Model.UpcomingEvents
                         .Select(x => new EventResponseViewModel(
                             x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
                         .ToArray(),
+                    Platform = Model.Platform,
                     TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
                 })
             </section>
@@ -43,11 +44,12 @@
                 <h3>Recent events</h3>
                 @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
                 {
-                    ChapterName = Model.Chapter.Name,
+                    Chapter = Model.Chapter,
                     Events = Model.RecentEvents
                         .Select(x => new EventResponseViewModel(
                             x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
                         .ToArray(),
+                    Platform = Model.Platform,
                     TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
                 })
             </section>

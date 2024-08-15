@@ -17,8 +17,9 @@
 {
     @await Html.PartialAsync("Events/_EventList", new EventListViewModel
     {
-        ChapterName = Model.Chapter.Name,
+        Chapter = Model.Chapter,
         Events = Model.Events,
+        Platform = Model.Platform,
         TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
     })
 }

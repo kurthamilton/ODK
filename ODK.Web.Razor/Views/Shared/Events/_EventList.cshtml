@@ -9,8 +9,9 @@
     <div class="list-item">
         @await Html.PartialAsync("Events/_ListEvent", new ListEventViewModel
         {
-            ChapterName = Model.ChapterName,
+            Chapter = Model.Chapter,
             Event = @event,
+            Platform = Model.Platform,
             TimeZone = Model.TimeZone
         })
     </div>
