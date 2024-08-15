@@ -131,7 +131,7 @@ public class EventService : IEventService
             var invited = invitedEventIds.Contains(@event.Id);
             responseLookup.TryGetValue(@event.Id, out EventResponseType responseType);
             var viewModel = new EventResponseViewModel(@event, venueLookup[@event.VenueId], 
-                responseType, invited, @event.IsPublic);
+                responseType, invited);
             viewModels.Add(viewModel);
         }
 

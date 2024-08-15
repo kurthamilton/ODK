@@ -6,13 +6,12 @@ namespace ODK.Services.Events;
 public class EventResponseViewModel
 {
     public EventResponseViewModel(Event @event, Venue venue, EventResponseType response,
-        bool invited, bool @public)
+        bool invited)
     {
         Date = @event.Date;
         EventId = @event.Id;
         EventName = @event.GetDisplayName();
         Invited = invited;
-        Public = @public;
         Response = response;
         VenueId = venue.Id;
         VenueName = venue.Name;

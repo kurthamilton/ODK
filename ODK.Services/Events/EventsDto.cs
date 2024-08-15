@@ -2,6 +2,7 @@
 using ODK.Core.Venues;
 
 namespace ODK.Services.Events;
+
 public class EventsDto
 {
     public required IReadOnlyCollection<Event> Events { get; set; }

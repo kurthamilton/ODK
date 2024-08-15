@@ -2,6 +2,7 @@
 using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -14,13 +15,16 @@ namespace ODK.Services.Events;
 public class EventViewModelService : IEventViewModelService
 {
     private readonly IAuthorizationService _authorizationService;
+    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventViewModelService(
         IUnitOfWork unitOfWork, 
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        IPlatformProvider platformProvider)
     {
         _authorizationService = authorizationService;
+        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
@@ -137,6 +141,8 @@ public class EventViewModelService : IEventViewModelService
 
     public async Task<EventsPageViewModel> GetEventsPage(Guid? currentMemberId, string chapterName)
     {
+        var platform = _platformProvider.GetPlatform();
+
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
         OdkAssertions.Exists(chapter);
 
@@ -189,7 +195,7 @@ public class EventViewModelService : IEventViewModelService
             var invited = invitedEventIds.Contains(@event.Id);
             responseLookup.TryGetValue(@event.Id, out EventResponseType responseType);
             var viewModel = new EventResponseViewModel(@event, venueLookup[@event.VenueId],
-                responseType, invited, @event.IsPublic);
+                responseType, invited);
             viewModels.Add(viewModel);
         }
 
@@ -197,7 +203,8 @@ public class EventViewModelService : IEventViewModelService
         {
             Chapter = chapter,
             CurrentMember = member,
-            Events = viewModels
+            Events = viewModels,
+            Platform = platform
         };
     }
 }

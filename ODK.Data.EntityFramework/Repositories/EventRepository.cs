@@ -39,4 +39,11 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
         .ConditionalWhere(x => x.Date >= after, after != null)
         .OrderByDescending(x => x.Date)
         .DeferredMultiple();
+
+    public IDeferredQueryMultiple<Event> GetRecentEventsByChapterId(Guid chapterId, int pageSize) => Set()
+        .Where(x => x.ChapterId == chapterId)
+        .Where(x => x.Date < DateTime.UtcNow)
+        .OrderByDescending(x => x.Date)
+        .Take(pageSize)
+        .DeferredMultiple();
 }

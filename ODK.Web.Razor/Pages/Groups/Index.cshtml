@@ -97,9 +97,9 @@
                     {
                         <div class="d-flex flex-column gap-3">
                             @foreach (var group in viewModel.Groups)
-                        {
-                            @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
-                        }
+                            {
+                                @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                            }
                         </div>
                     }
                     else

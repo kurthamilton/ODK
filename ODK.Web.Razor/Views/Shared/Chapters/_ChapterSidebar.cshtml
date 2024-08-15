@@ -30,11 +30,13 @@
                             @(@event.GetDisplayName())
                         </a>
                     </h6>
-                    <div class="d-inline-block d-md-block">@(@event.Date.EventDate())</div>
-                    <span class="d-md-none">&nbsp;|&nbsp;</span>
+                    <div class="d-inline-block d-md-block">@(@event.Date.EventDate())</div>                    
                     @if (venue != null)
                     {
-                        <div class="d-inline-block d-md-block">@venue.Name</div>
+                        <span class="d-md-none">&nbsp;|&nbsp;</span>
+                        <div class="d-inline-block d-md-block">
+                            @await Html.PartialAsync("Components/_Location", venue.Name)
+                        </div>
                     }                    
                 </div>
             }

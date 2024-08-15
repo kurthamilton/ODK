@@ -4,15 +4,16 @@
 @{
     var events = Model.Events.OrderBy(x => x.Date);
 }
-@foreach (var @event in events)
-{
-    <div class="list-item">
-        @await Html.PartialAsync("Events/_ListEvent", new ListEventViewModel
+
+<div class="d-flex flex-column gap-3">
+    @foreach (var @event in events)
+    {
+        @await Html.PartialAsync("Events/_ListEvent2", new ListEventViewModel
         {
             Chapter = Model.Chapter,
             Event = @event,
             Platform = Model.Platform,
             TimeZone = Model.TimeZone
         })
-    </div>
-}
+    }
+</div>

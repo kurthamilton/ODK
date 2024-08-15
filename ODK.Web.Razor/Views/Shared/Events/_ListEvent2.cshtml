@@ -1,0 +1,26 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Events
+@model ListEventViewModel
+
+<div class="card card--event">
+    <div class="card-header">
+        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+        {
+            ReadOnly = true,
+            ResponseType = Model.Event.Response
+        })
+    
+        <a href="@OdkRoutes.Events.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" class="@(Model.Event.Response > 0 ? "ms-1" : null)">
+            @Model.Event.EventName
+        </a>
+    </div>
+    <div class="card-body">
+        <div>
+            @Model.Event.Date.ToFriendlyString(Model.TimeZone)
+        </div>
+        <div>
+            @await Html.PartialAsync("Components/_Location", Model.Event.VenueName)
+        </div>
+    </div>        
+</div>

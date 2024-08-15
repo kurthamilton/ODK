@@ -1,4 +1,5 @@
 ﻿@using ODK.Core.Utils
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Events
 @model ListEventViewModel
 
@@ -9,7 +10,7 @@
         ResponseType = Model.Event.Response
     })
     
-    <a href="/@Model.ChapterName/Events/@Model.Event.EventId" class="@(Model.Event.Response > 0 ? "ms-1" : null)">
+    <a href="@OdkRoutes.Events.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" class="@(Model.Event.Response > 0 ? "ms-1" : null)">
         @Model.Event.EventName
     </a>
 </h4>

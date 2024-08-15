@@ -1,4 +1,5 @@
-﻿@using ODK.Services.Events
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Events
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
@@ -16,8 +17,10 @@
 {
     @await Html.PartialAsync("Events/_EventList", new EventListViewModel
     {
-        ChapterName = Model.Chapter.Name,
-        Events = Model.Events
+        Chapter = Model.Chapter,
+        Events = Model.Events,
+        Platform = Model.Platform,
+        TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
     })
 }
 else

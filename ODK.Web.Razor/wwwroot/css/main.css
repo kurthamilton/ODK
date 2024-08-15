@@ -11934,6 +11934,13 @@ html[data-platform=odk] {
   background-color: rgba(0, 0, 0, 0.03);
 }
 
+.accordion--transition-0 {
+  --bs-accordion-transition: none;
+}
+.accordion--transition-0 .collapsing {
+  transition: none;
+}
+
 .page-alerts .page-alert {
   margin-top: 1rem;
   margin-bottom: 0;
@@ -12347,8 +12354,7 @@ html[data-platform=odk] {
 }
 
 .social-media-image-tile {
-  padding: 5px;
-  margin: 5px;
+  margin-bottom: 1rem;
   display: flex;
   justify-content: center;
 }

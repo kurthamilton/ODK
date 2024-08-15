@@ -12361,8 +12361,7 @@ html[data-platform=odk] {
 }
 
 .social-media-image-tile {
-  padding: 5px;
-  margin: 5px;
+  margin-bottom: 1rem;
   display: flex;
   justify-content: center;
 }
