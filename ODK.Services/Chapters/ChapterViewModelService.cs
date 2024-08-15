@@ -196,7 +196,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var (venues, responses) = await _unitOfWork.RunAsync(
             x => eventIds.Any() 
-                ? x.VenueRepository.GetByChapterId(chapter.Id, eventIds) 
+                ? x.VenueRepository.GetByEventIds(eventIds)
                 : new DefaultDeferredQueryMultiple<Venue>(),
             x => eventIds.Any() && currentMemberId != null 
                 ? x.EventResponseRepository.GetByMemberId(currentMemberId.Value, eventIds) 
