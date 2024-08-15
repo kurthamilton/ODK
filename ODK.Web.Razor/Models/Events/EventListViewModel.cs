@@ -7,4 +7,6 @@ public class EventListViewModel
     public required string ChapterName { get; init; }
 
     public required IReadOnlyCollection<EventResponseViewModel> Events { get; init; }
+
+    public required TimeZoneInfo TimeZone { get; init; }
 }

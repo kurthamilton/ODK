@@ -1,6 +1,10 @@
-﻿@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Events
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Services.Events
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Events
 @model GroupHomePageViewModel
 @{
 }
@@ -16,6 +20,38 @@
             Text = Model.Chapter.Description,
             Title = "About us"
         })
+
+        @if (Model.UpcomingEvents.Count > 0)
+        {
+            <section class="section">
+                <h3>Upcoming events</h3>
+                @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
+                {
+                    ChapterName = Model.Chapter.Name,
+                    Events = Model.UpcomingEvents
+                        .Select(x => new EventResponseViewModel(
+                            x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
+                        .ToArray(),
+                    TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+                })
+            </section>
+        }
+
+        @if (Model.RecentEvents.Count > 0)
+        {
+            <section class="section">
+                <h3>Recent events</h3>
+                @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
+                {
+                    ChapterName = Model.Chapter.Name,
+                    Events = Model.RecentEvents
+                        .Select(x => new EventResponseViewModel(
+                            x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
+                        .ToArray(),
+                    TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+                })
+            </section>
+        }
 
         @if (Model.Questions.Count > 0 || Model.IsAdmin)
         {

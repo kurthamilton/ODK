@@ -11,4 +11,5 @@ public interface IEventRepository : IReadWriteRepository<Event>
     IDeferredQueryMultiple<Event> GetByIds(IEnumerable<Guid> ids);
     IDeferredQueryMultiple<Event> GetByVenueId(Guid venueId);    
     IDeferredQueryMultiple<Event> GetPublicEventsByChapterId(Guid chapterId, DateTime? after);
+    IDeferredQueryMultiple<Event> GetRecentEventsByChapterId(Guid chapterId, int pageSize);
 }

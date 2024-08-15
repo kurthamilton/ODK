@@ -9,7 +9,7 @@
     }
 
     <button type="@(Model.ReadOnly ? "button" : "submit")"
-            class="btn-icon 
+            class="btn-icon                    
                    event-response-option event-response-option--@Model.ResponseType.ToString()?.ToLowerInvariant() 
                    @((Model.Active || Model.ReadOnly) ? "active" : null)">
         <i class="fas icon--event-response @Model.IconClass @(Model.ReadOnly ? "icon--event-response--sm" : null)"

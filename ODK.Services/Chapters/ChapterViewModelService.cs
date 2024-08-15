@@ -106,7 +106,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
         OdkAssertions.Exists(chapter);
 
-        var (currentMember, adminMembers, memberCount, instagramPosts, links, questions) = await _unitOfWork.RunAsync(
+        var (currentMember, adminMembers, memberCount, instagramPosts, links, questions, upcomingEvents, recentEvents) = await _unitOfWork.RunAsync(
             x => currentMemberId != null 
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
@@ -116,9 +116,26 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.MemberRepository.GetCountByChapterId(chapter.Id),
             x => x.InstagramPostRepository.GetByChapterId(chapter.Id, 8),
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterQuestionRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterQuestionRepository.GetByChapterId(chapter.Id),
+            x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),
+            x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 3));
 
         var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
+
+        var eventIds = upcomingEvents
+            .Concat(recentEvents)
+            .Select(x => x.Id)
+            .Distinct()
+            .ToArray();
+
+        var (venues, responses) = await _unitOfWork.RunAsync(
+            x => x.VenueRepository.GetByEventIds(eventIds),
+            x => currentMember?.IsMemberOf(chapter.Id) == true
+                ? x.EventResponseRepository.GetByMemberId(currentMember.Id, eventIds)
+                : new DefaultDeferredQueryMultiple<EventResponse>());
+
+        var venueDictionary = venues.ToDictionary(x => x.Id);
+        var responseDictionary = responses.ToDictionary(x => x.EventId);
 
         return new GroupHomePageViewModel
         {
@@ -129,7 +146,25 @@ public class ChapterViewModelService : IChapterViewModelService
             IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
             Links = links,
             MemberCount = memberCount,
-            Questions = questions.OrderBy(x => x.DisplayOrder).ToArray()
+            Questions = questions.OrderBy(x => x.DisplayOrder).ToArray(),
+            RecentEvents = recentEvents
+                .OrderByDescending(x => x.Date)
+                .Select(x => new GroupHomePageEventViewModel
+                {
+                    Event = x,
+                    Response = responseDictionary.ContainsKey(x.Id) ? responseDictionary[x.Id] : null,
+                    Venue = venueDictionary[x.VenueId]
+                })
+                .ToArray(),
+            UpcomingEvents = upcomingEvents
+                .OrderBy(x => x.Date)
+                .Select(x => new GroupHomePageEventViewModel
+                {
+                    Event = x,
+                    Response = responseDictionary.ContainsKey(x.Id) ? responseDictionary[x.Id] : null,
+                    Venue = venueDictionary[x.VenueId]
+                })
+                .ToArray()
         };
     }
     
