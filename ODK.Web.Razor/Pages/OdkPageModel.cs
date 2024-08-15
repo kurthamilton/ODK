@@ -30,4 +30,17 @@ public abstract class OdkPageModel : PageModel
 
     protected void AddFeedback(ServiceResult result) 
         => AddFeedback(new FeedbackViewModel(result));
+
+    protected void AddFeedback(ServiceResult result, string successMessage)
+    {
+        if (result.Success)
+        {
+            var message = !string.IsNullOrEmpty(result.Message) ? result.Message : successMessage;
+            AddFeedback(message, FeedbackType.Success);
+        }
+        else
+        {
+            AddFeedback(result);
+        }
+    }
 }

@@ -2,18 +2,14 @@
 @using ODK.Web.Common.Extensions
 @model ODK.Web.Razor.Models.Admin.Chapters.ChapterPropertyFormViewModel
 @{
-    IEnumerable<SelectListItem> dataTypeOptions = Enum.GetValues<DataType>()
+    var dataTypeOptions = Enum.GetValues<DataType>()
         .Where(x => x != DataType.None)
         .Select(x => new SelectListItem { Value = ((int)x).ToString(), Text = x.ToString() });
 }
 
 <div class="mb-3 form-check">
-    @Html.OdkCheckBoxFor(x => x.Hidden, new { @class = "form-check-input" })
-    @Html.LabelFor(x => x.Hidden, new { @class = "form-check-label" })
-        
-    <span>
-        @await Html.PartialAsync("Components/_Tooltip", "Hides this property from signup and profile forms")
-    </span>
+    @Html.OdkCheckBoxFor(x => x.ApplicationOnly, new { @class = "form-check-input" })
+    @Html.LabelFor(x => x.ApplicationOnly, new { @class = "form-check-label" })
 </div>
 
 <div class="form-group mb-3 required">

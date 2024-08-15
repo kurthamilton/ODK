@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
+using ODK.Core.DataTypes;
 using ODK.Core.Emails;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
@@ -750,13 +751,16 @@ public class MemberService : IMemberService
             yield return "Email address";
         }
 
-        foreach (string property in GetMissingMemberProfileProperties(profile as UpdateMemberChapterProfile, chapterProperties, memberProperties))
+        var missingProperties = GetMissingMemberProfileProperties(profile as UpdateMemberChapterProfile, chapterProperties, memberProperties);
+        foreach (string property in missingProperties)
         {
             yield return property;
         }
     }
 
-    private static IEnumerable<string> GetMissingMemberProfileProperties(UpdateMemberChapterProfile profile, IEnumerable<ChapterProperty> chapterProperties,
+    private static IEnumerable<string> GetMissingMemberProfileProperties(
+        UpdateMemberChapterProfile profile, 
+        IEnumerable<ChapterProperty> chapterProperties,
         IEnumerable<UpdateMemberProperty> memberProperties)
     {
         var memberPropertyDictionary = memberProperties
@@ -765,10 +769,21 @@ public class MemberService : IMemberService
         {
             memberPropertyDictionary.TryGetValue(chapterProperty.Id, out string? value);
 
-            if (string.IsNullOrWhiteSpace(value))
+            if (chapterProperty.DataType == DataType.Checkbox)
             {
-                yield return chapterProperty.Label;
+                if (string.Equals(value, "true", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }                
             }
+            else if (!string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            yield return !string.IsNullOrEmpty(chapterProperty.DisplayName)
+                    ? chapterProperty.DisplayName
+                    : chapterProperty.Label;
         }
     }        
     
@@ -818,9 +833,8 @@ public class MemberService : IMemberService
 
     private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, UpdateMemberChapterProfile profile)
     {
-        IReadOnlyCollection<string> missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
-
-        if (missingProperties.Count > 0)
+        var missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
+        if (missingProperties.Length > 0)
         {
             return ServiceResult.Failure($"The following properties are required: {string.Join(", ", missingProperties)}");
         }
@@ -830,9 +844,8 @@ public class MemberService : IMemberService
 
     private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, CreateMemberProfile profile)
     {
-        IReadOnlyCollection<string> missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
-
-        if (missingProperties.Count > 0)
+        var missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
+        if (missingProperties.Length > 0)
         {
             return ServiceResult.Failure($"The following properties are required: {string.Join(", ", missingProperties)}");
         }

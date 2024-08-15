@@ -106,18 +106,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var chapterId = request.ChapterId;
 
         var existing = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterPropertyRepository.GetByChapterId(chapterId, all: true));
+            x => x.ChapterPropertyRepository.GetByChapterId(chapterId));
 
         var displayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
 
         var property = new ChapterProperty
         {
+            ApplicationOnly = model.ApplicationOnly,
             ChapterId = chapterId,
             DataType = model.DataType,
             DisplayName = model.DisplayName,
             DisplayOrder = displayOrder,
             HelpText = model.HelpText,
-            Hidden = model.Hidden,
             Label = model.Label,
             Name = model.Name.ToLowerInvariant(),
             Required = model.Required,
@@ -259,7 +259,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task DeleteChapterProperty(AdminServiceRequest request, Guid id)
     {        
         var properties = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId, true));
+            x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId));
 
         var property = properties.FirstOrDefault(x => x.Id == id);
         OdkAssertions.Exists(property);
@@ -740,9 +740,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         OdkAssertions.Exists(property);
         OdkAssertions.BelongsToChapter(property, request.ChapterId);
 
+        property.ApplicationOnly = model.ApplicationOnly;
         property.DisplayName = model.DisplayName;
         property.HelpText = model.HelpText;
-        property.Hidden = model.Hidden;
         property.Label = model.Label;
         property.Name = model.Name.ToLowerInvariant();
         property.Required = model.Required;

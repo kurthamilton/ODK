@@ -202,7 +202,7 @@ public class EmailService : IEmailService
                 .GetByChapterId(chapter.Id)
                 .RunAsync();
 
-        var to = GetAddressees(chapterAdminMembers.Where(x => x.SendNewMemberEmails));
+        var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveNewMemberEmails));
         
         var options = new SendEmailOptions
         {
@@ -210,8 +210,10 @@ public class EmailService : IEmailService
             Chapter = chapter,
             Subject = "",
             To = to.ToArray(),
-            Type = EmailType.NewMemberAdmin
+            Type = EmailType.NewMemberAdmin,
+            Parameters = parameters
         };
+        await _mailProvider.SendEmail(options);
     }
 
     private static IEnumerable<EmailAddressee> GetAddressees(IEnumerable<ChapterAdminMember> adminMembers)

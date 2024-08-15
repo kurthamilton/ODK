@@ -6,6 +6,9 @@ namespace ODK.Web.Razor.Models.Admin.Chapters;
 
 public class ChapterPropertyFormViewModel
 {
+    [DisplayName("Application form only")]
+    public bool ApplicationOnly { get; set; }
+
     [Required]
     public DataType DataType { get; set; }
 
@@ -14,8 +17,6 @@ public class ChapterPropertyFormViewModel
 
     [DisplayName("Help text")]
     public string? HelpText { get; set; }
-
-    public bool Hidden { get; set; }
 
     [Required]
     public string Label { get; set; } = "";

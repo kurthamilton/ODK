@@ -4,5 +4,5 @@ using ODK.Data.Core.Deferred;
 namespace ODK.Data.Core.Repositories;
 public interface IChapterPropertyRepository : IReadWriteRepository<ChapterProperty>
 {
-    IDeferredQueryMultiple<ChapterProperty> GetByChapterId(Guid chapterId, bool all = false);
+    IDeferredQueryMultiple<ChapterProperty> GetByChapterId(Guid chapterId);
 }

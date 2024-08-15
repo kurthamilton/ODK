@@ -14,7 +14,7 @@ public class ChapterProperty : IDatabaseEntity, IChapterEntity
 
     public string? HelpText { get; set; }
 
-    public bool Hidden { get; set; }
+    public bool ApplicationOnly { get; set; }
 
     public Guid Id { get; set; }
 

@@ -8,10 +8,4 @@ public class ChapterProfileFormSubmitViewModel : ProfileFormSubmitViewModel
 
     [Required]
     public bool PrivacyPolicy { get; set; }
-
-    [Required]
-    public bool SubscriptionPolicy { get; set; }
-
-    [Required]
-    public bool ThreeTenets { get; set; }
 }

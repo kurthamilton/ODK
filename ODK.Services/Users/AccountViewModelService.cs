@@ -54,7 +54,14 @@ public class AccountViewModelService : IAccountViewModelService
         return new ChapterJoinPageViewModel
         {
             ChapterName = chapter.Name,
-            Profile = CreateProfileFormViewModel(chapter, chapterProperties, chapterPropertyOptions, membershipSettings, siteSettings, null, []),
+            Profile = CreateProfileFormViewModel(
+                chapter, 
+                chapterProperties, 
+                chapterPropertyOptions, 
+                membershipSettings, 
+                siteSettings, 
+                null, 
+                []),
             Texts = chapterTexts
         };
     }
@@ -101,6 +108,11 @@ public class AccountViewModelService : IAccountViewModelService
                 x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapter.Id));
 
         OdkAssertions.MemberOf(member, chapter.Id);
+
+        chapterProperties = chapterProperties
+            .Where(x => !x.ApplicationOnly)
+            .OrderBy(x => x.DisplayOrder)
+            .ToArray();
 
         return new ChapterProfilePageViewModel
         {

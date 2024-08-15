@@ -6,7 +6,7 @@ public class UpdateChapterProperty
 
     public string? HelpText { get; set; }
 
-    public bool Hidden { get; set; }
+    public bool ApplicationOnly { get; set; }
 
     public string Label { get; set; } = "";
 

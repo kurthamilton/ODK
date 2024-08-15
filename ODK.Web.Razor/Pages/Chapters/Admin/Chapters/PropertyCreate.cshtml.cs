@@ -25,10 +25,10 @@ public class PropertyCreateModel : AdminPageModel
         var serviceRequest = await GetAdminServiceRequest();
         var result = await _chapterAdminService.CreateChapterProperty(serviceRequest, new CreateChapterProperty
         {
+            ApplicationOnly = viewModel.ApplicationOnly,
             DataType = viewModel.DataType,
             DisplayName = viewModel.DisplayName,
             HelpText = viewModel.HelpText,
-            Hidden = viewModel.Hidden,
             Label = viewModel.Label,
             Name = viewModel.Name,
             Required = viewModel.Required,

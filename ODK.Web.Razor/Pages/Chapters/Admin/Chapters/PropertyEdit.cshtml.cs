@@ -32,9 +32,9 @@ public class PropertyEditModel : AdminPageModel
         var serviceRequest = await GetAdminServiceRequest();
         var result = await _chapterAdminService.UpdateChapterProperty(serviceRequest, id, new UpdateChapterProperty
         {
+            ApplicationOnly = viewModel.ApplicationOnly,
             DisplayName = viewModel.DisplayName,
             HelpText = viewModel.HelpText,
-            Hidden = viewModel.Hidden,
             Label = viewModel.Label,
             Name = viewModel.Name,
             Required = viewModel.Required,

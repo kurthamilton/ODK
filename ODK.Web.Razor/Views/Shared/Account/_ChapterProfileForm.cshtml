@@ -17,18 +17,44 @@
     var chapterPropertyOptionDictionary = Model.ChapterPropertyOptions
         .GroupBy(x => x.ChapterPropertyId)
         .ToDictionary(x => x.Key, x => x.ToArray());
+
+    var applicationCheckboxesRendered = false;
+    var imageUploadRendered = false;
 }
 
 @for (int i = 0; i < Model.Properties.Count; i++)
 {
     var property = Model.Properties[i];
-
     chapterPropertyDictionary.TryGetValue(property.ChapterPropertyId, out var chapterProperty);
+    if (chapterProperty == null)
+    {
+        continue;
+    }
+
+    if (memberId == null && 
+        !applicationCheckboxesRendered && 
+        chapterProperty.ApplicationOnly && 
+        chapterProperty.DataType == DataType.Checkbox)
+    {
+        @*Hack to show the picture upload before the confirmation checkboxes*@
+        <div class="form-group mb-3 required">
+            <label class="form-label">Picture</label>
+            @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
+            {
+                ChapterName = Model.ChapterName
+            })
+        </div>
+
+        applicationCheckboxesRendered = true;
+        imageUploadRendered = true;
+    }
 
     var htmlAttributes = new Dictionary<string, object>();
-    if (chapterProperty?.Required == true)
+    if (chapterProperty.Required == true)
     {
-        var label = !string.IsNullOrEmpty(chapterProperty.DisplayName) ? chapterProperty.DisplayName : chapterProperty.Label;
+        var label = !string.IsNullOrEmpty(chapterProperty.DisplayName) 
+            ? chapterProperty.DisplayName 
+            : chapterProperty.Label;
         htmlAttributes.Add("data-val", "true");
         htmlAttributes.Add("data-val-required", $"The {label} field is required.");
     }
@@ -36,43 +62,51 @@
     @Html.HiddenFor(x => x.Properties[i].ChapterPropertyId)
 
     <div class="form-group mb-3 
-            @(chapterProperty?.Required == true ? "required" : null)
-            @(chapterProperty?.DataType == DataType.Checkbox ? "form-check" : null)">
+            @(chapterProperty.Required == true ? "required" : null)
+            @(chapterProperty.DataType == DataType.Checkbox ? "form-check" : null)">
         
-        @if (chapterProperty?.DataType != DataType.Checkbox)
+        @if (chapterProperty.DataType != DataType.Checkbox)
         {
             <label class="form-label" for="@Html.IdFor(x => x.Properties[i].Value)">
-                @Html.Raw(chapterProperty?.Label ?? "")
+                @Html.Raw(chapterProperty.Label ?? "")
             </label>
         }
         
-        @if (!string.IsNullOrEmpty(chapterProperty?.HelpText))
+        @if (!string.IsNullOrEmpty(chapterProperty.HelpText))
         {
             <span>
                 @await Html.PartialAsync("Components/_Tooltip", chapterProperty.HelpText)
             </span>
         }
         
-        @if (!string.IsNullOrEmpty(chapterProperty?.Subtitle))
+        @if (!string.IsNullOrEmpty(chapterProperty.Subtitle))
         {
             <span class="ms-1 text-muted">@chapterProperty.Subtitle</span>
         }
 
-        @if (chapterProperty?.DataType == DataType.Checkbox)
-        {
-            htmlAttributes.Add("class", "form-check-input");
-            htmlAttributes.Add("type", "checkbox");
-            @Html.TextBoxFor(x => x.Properties[i].Value, htmlAttributes)
+        @if (chapterProperty.DataType == DataType.Checkbox)
+        {            
+            <input 
+                id="@Html.IdFor(x => x.Properties[i].Value)"
+                name="@Html.NameFor(x => x.Properties[i].Value)"
+                value="true"
+                class="form-check-input"
+                type="checkbox"
+                value="true"
+                data-val="true"
+                data-val-required="@(chapterProperty.Required ? $"The {chapterProperty.DisplayName} field is required." : null)" />
+            
             <label for="@Html.IdFor(x => x.Properties[i].Value)" class="form-check-label">
-                @Html.Raw(chapterProperty?.Label ?? "")
+                @Html.Raw(chapterProperty.Label ?? "")
             </label>
         }
-        else if (chapterProperty?.DataType == DataType.DropDown)
+        else if (chapterProperty.DataType == DataType.DropDown)
         {
             chapterPropertyOptionDictionary.TryGetValue(property.ChapterPropertyId, out var options);
 
             var selectList = options
-                ?.Select(x => new SelectListItem { Text = x.Value })
+                ?.OrderBy(x => x.DisplayOrder)
+                .Select(x => new SelectListItem { Text = x.Value })
                 .ToArray() ?? [];
 
             string? selectedValue = Model.Properties[i].Value;
@@ -95,14 +129,14 @@
             @Html.TextBoxFor(x => x.Properties[i].OtherValue, textBoxHtmlAttributes)
             @Html.ValidationMessageFor(x => x.Properties[i].OtherValue)
         }
-        else if (chapterProperty?.DataType == DataType.LongText)
+        else if (chapterProperty.DataType == DataType.LongText)
         {
             htmlAttributes.Add("class", "form-control");
             htmlAttributes.Add("rows", "3");
 
             @Html.TextAreaFor(x => x.Properties[i].Value, htmlAttributes)
         }
-        else if (chapterProperty?.DataType == DataType.Url)
+        else if (chapterProperty.DataType == DataType.Url)
         {
             htmlAttributes.Add("class", "form-control");
 
@@ -133,36 +167,29 @@
 
 @if (memberId == null)
 {
-    <div class="form-group mb-3 required">
-        <label class="form-label">Picture</label>
-        @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
-        {
-            ChapterName = Model.ChapterName
-        })
-    </div>    
+    if (!imageUploadRendered)
+    {
+        <div class="form-group mb-3 required">
+            <label class="form-label">Picture</label>
+            @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
+            {
+                ChapterName = Model.ChapterName
+            })
+        </div>
+    }
 
     <div class="mb-3 form-check required">
-        @Html.CheckBoxFor(x => x.ThreeTenets, new { @class = "form-check-input" })
-        <label for="@Html.IdFor(x => x.ThreeTenets)" class="form-check-label">
-            I abide by the <a href="/#tenets" target="_blank">three tenets</a> of Drunken Knithood
-        </label>
-        @Html.ValidationMessageFor(x => x.ThreeTenets)
-    </div>
+        <input id="@Html.IdFor(x => x.PrivacyPolicy)"
+               name="@Html.NameFor(x => x.PrivacyPolicy)"
+               class="form-check-input"
+               type="checkbox"
+               value="true"
+               data-val="true"
+               data-val-required="The Privacy field is required." />
 
-    <div class="mb-3 form-check required">
-        @Html.CheckBoxFor(x => x.PrivacyPolicy, new { @class = "form-check-input" })
         <label for="@Html.IdFor(x => x.PrivacyPolicy)" class="form-check-label">
             I have read the <a href="/Privacy" target="_blank">privacy policy</a>
         </label>
         @Html.ValidationMessageFor(x => x.PrivacyPolicy)
-    </div>
-
-    <div class="mb-3 form-check required">
-        @Html.CheckBoxFor(x => x.SubscriptionPolicy, new { @class = "form-check-input" })
-
-        <label for="@Html.IdFor(x => x.SubscriptionPolicy)" class="form-check-label">
-            If I choose to continue attending after my free @Model.TrialPeriodMonths month trial period has expired, I agree to purchase a subscription.
-        </label>
-        @Html.ValidationMessageFor(x => x.SubscriptionPolicy)
     </div>
 }
