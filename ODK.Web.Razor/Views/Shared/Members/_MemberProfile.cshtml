@@ -28,6 +28,11 @@
             continue;
         }
 
+        if (chapterProperty.ApplicationOnly)
+        {
+            continue;
+        }
+
         <div class="form-group mb-3">
             <label class="form-label">@chapterProperty.Label</label>
             <div class="form-control-plaintext">
