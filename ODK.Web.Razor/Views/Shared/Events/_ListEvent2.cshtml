@@ -5,15 +5,25 @@
 
 <div class="card card--event">
     <div class="card-header">
-        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
-        {
-            ReadOnly = true,
-            ResponseType = Model.Event.Response
-        })
+        <div class="d-flex">
+            <div class="me-auto">
+                @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                {
+                    ReadOnly = true,
+                    ResponseType = Model.Event.Response
+                })
     
-        <a href="@OdkRoutes.Events.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" class="@(Model.Event.Response > 0 ? "ms-1" : null)">
-            @Model.Event.EventName
-        </a>
+                <a href="@OdkRoutes.Events.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" class="@(Model.Event.Response > 0 ? "ms-1" : null)">
+                    @Model.Event.EventName
+                </a>
+            </div>
+            @if (Model.Event.Ticketed)
+            {
+                <div>
+                    <i class="fa-solid fa-ticket" data-bs-toggle="tooltip" data-bs-title="Ticketed"></i>
+                </div>
+            }
+        </div>
     </div>
     <div class="card-body">
         <div>

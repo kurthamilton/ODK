@@ -4,10 +4,7 @@ namespace ODK.Web.Razor.Models.Account;
 
 public class SubscriptionContentViewModel
 {
-    public SubscriptionContentViewModel(Chapter chapter)
-    {
-        Chapter = chapter;
-    }
+    public required Chapter Chapter { get; init; }
 
-    public Chapter Chapter { get; }
+    public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
 }

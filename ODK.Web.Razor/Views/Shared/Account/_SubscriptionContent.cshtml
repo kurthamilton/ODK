@@ -7,6 +7,7 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
 @model ODK.Web.Razor.Models.Account.SubscriptionContentViewModel
 @inject IChapterService ChapterService
 @{
@@ -64,44 +65,29 @@
                 </div>
                 <div>
                     <button class="btn btn-primary mr-1" data-bs-toggle="modal" data-bs-target="#@modalId">Purchase</button>
-                    <span>@currency.Symbol@chapterSubscription.Amount.ToString("0.00")</span>
+                    <span>@currency.ToAmountString(chapterSubscription.Amount)</span>
                     
-                    @await Html.PartialAsync("Components/_Modal", new ModalViewModel
+                    @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                     {
+                        Action = $"/{Model.Chapter.Name}/Account/Subscription/Purchase",
+                        ChapterPaymentSettings = Model.ChapterPaymentSettings,
+                        FormContentFunc =
+                            @<input type="hidden" name="subscriptionId" value="@chapterSubscription.Id" />,
                         Id = modalId,
-                        Title = title,
-                        Body = 
-                            @<div>
-                                @if (paymentSettings?.Provider == "PayPal")
-                                {
-                                    <form method="post" action="/@Model.Chapter.Name/Account/Subscription/Purchase">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="subscriptionId" value="@chapterSubscription.Id" />
-                                        @await Html.PartialAsync("Payments/_PayPalForm", new PayPalFormViewModel
-                                        {
-                                            Amount = chapterSubscription.Amount,
-                                            Currency = currency,
-                                            Description = chapterSubscription.Title,
-                                            Id = chapterSubscription.Id
-                                        })
-                                    </form>
-                                }
-                                else if (paymentSettings?.Provider == "Stripe")
-                                {
-                                    <div class="alert alert-danger">
-                                        Payment provider not supported
-                                    </div>
-                                }
-                            </div>
+                        PaymentForm = new PaymentFormViewModel
+                        {
+                            Amount = (decimal)chapterSubscription.Amount,
+                            Currency = currency,
+                            Description = chapterSubscription.Title,
+                            Id = chapterSubscription.Id.ToString()
+                        },
+                        Title = title
                     })
+
                 </div>
             </div>
         </div>
     </div>
 }
 
-@if (paymentSettings?.Provider == "PayPal")
-{
-    <script src="https://www.paypal.com/sdk/js?client-id=@paymentSettings.ApiPublicKey&currency=@currency.Code"></script>
-    <script src="/js/odk.paypal.js"></script>
-}
+@await Html.PartialAsync("Components/_PaymentScripts", paymentSettings)

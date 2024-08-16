@@ -13,6 +13,7 @@ public class EventResponseViewModel
         EventName = @event.GetDisplayName();
         Invited = invited;
         Response = response;
+        Ticketed = @event.Ticketed;
         VenueId = venue.Id;
         VenueName = venue.Name;
     }
@@ -28,6 +29,8 @@ public class EventResponseViewModel
     public bool Public { get; }
 
     public EventResponseType Response { get; }
+
+    public bool Ticketed { get; }
 
     public Guid VenueId { get; }
 

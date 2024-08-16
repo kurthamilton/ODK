@@ -1,4 +1,5 @@
-﻿using ODK.Core.Events;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Events;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -46,4 +47,7 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
         .OrderByDescending(x => x.Date)
         .Take(pageSize)
         .DeferredMultiple();
+
+    protected override IQueryable<Event> Set() => base.Set()
+        .Include(x => x.TicketSettings);
 }

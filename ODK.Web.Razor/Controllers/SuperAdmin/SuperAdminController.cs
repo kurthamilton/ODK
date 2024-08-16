@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
+using ODK.Services.Features;
 using ODK.Services.Logging;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
@@ -13,6 +14,7 @@ namespace ODK.Web.Razor.Controllers.SuperAdmin;
 public class SuperAdminController : OdkControllerBase
 {
     private readonly IEmailAdminService _emailAdminService;
+    private readonly IFeatureService _featureService;
     private readonly IInstagramService _instagramService;
     private readonly ILoggingService _loggingService;
     private readonly IRequestCache _requestCache;
@@ -22,9 +24,11 @@ public class SuperAdminController : OdkControllerBase
     public SuperAdminController(IEmailAdminService emailAdminService,
         ILoggingService loggingService, IInstagramService instagramService,
         IRequestCache requestCache, ISettingsService settingsService,
-        ISiteSubscriptionAdminService siteSubscriptionAdminService)
+        ISiteSubscriptionAdminService siteSubscriptionAdminService,
+        IFeatureService featureService)
     {
         _emailAdminService = emailAdminService;
+        _featureService = featureService;
         _instagramService = instagramService;
         _loggingService = loggingService;
         _requestCache = requestCache;
@@ -52,6 +56,13 @@ public class SuperAdminController : OdkControllerBase
         await _loggingService.DeleteAllErrors(MemberId, id);
 
         return Redirect("/SuperAdmin/Errors");
+    }
+
+    [HttpPost("SuperAdmin/Features/{id:guid}/Delete")]
+    public async Task<IActionResult> DeleteFeature(Guid id)
+    {
+        await _featureService.DeleteFeature(MemberId, id);
+        return Redirect("/SuperAdmin/Features");
     }
 
     [HttpPost("SuperAdmin/Subscriptions")]

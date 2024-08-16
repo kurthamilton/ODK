@@ -32,13 +32,12 @@ builder.Services.AddWebOptimizer(pipeline =>
         "lib/aspnet-client-validation/dist/aspnet-validation.css",
         "lib/slim-select/slimselect.css");
     pipeline.AddJavaScriptBundle(
-        "/js/odk.bundle.js",
+        route: "/js/odk.bundle.js",        
         "lib/bootstrap/js/bootstrap.bundle.js",
         "lib/vanillajs-datepicker/dist/js/datepicker-full.js",
         "lib/aspnet-client-validation/dist/aspnet-validation.js",
         "lib/slim-select/slimselect.js",
         "js/site.js",
-        "js/odk.maps.js",
         "js/odk.forms.js",
         "js/odk.selects.js",
         "js/odk.html-editor.js");
@@ -49,8 +48,8 @@ builder.Services.AddWebOptimizer(pipeline =>
     
     if (!builder.Environment.IsDevelopment())
     {
-        pipeline.MinifyCssFiles();
-        pipeline.MinifyJsFiles();
+        // pipeline.MinifyCssFiles();
+        // pipeline.MinifyJsFiles();
     }
 });
 

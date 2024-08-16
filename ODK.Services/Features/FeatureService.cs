@@ -29,6 +29,15 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
         return ServiceResult.Successful();
     }
 
+    public async Task DeleteFeature(Guid currentMemberId, Guid featureId)
+    {
+        var feature = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.FeatureRepository.GetById(featureId));
+
+        _unitOfWork.FeatureRepository.Delete(feature);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task<Feature> GetFeature(Guid currentMemberId, Guid featureId)
     {
         var (currentMember, feature) = await _unitOfWork.RunAsync(

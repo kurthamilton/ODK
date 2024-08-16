@@ -6,6 +6,7 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
+using ODK.Services.Payments;
 
 namespace ODK.Services.Events;
 
@@ -17,6 +18,7 @@ public class EventService : IEventService
     private readonly IAuthorizationService _authorizationService;
     private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;
+    private readonly IPaymentService _paymentService;
     private readonly EventServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -24,11 +26,13 @@ public class EventService : IEventService
         IAuthorizationService authorizationService,
         IEmailService emailService,
         EventServiceSettings settings,
-        IChapterUrlService chapterUrlService)
+        IChapterUrlService chapterUrlService,
+        IPaymentService paymentService)
     {
         _authorizationService = authorizationService;
         _chapterUrlService = chapterUrlService;
         _emailService = emailService;
+        _paymentService = paymentService;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
@@ -137,7 +141,144 @@ public class EventService : IEventService
 
         return viewModels;
     }
-    
+
+    public async Task<ServiceResult> PayDeposit(Guid currentMemberId, Guid eventId, string cardToken)
+    {
+        var (member, @event, ticketPurchase) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId));
+
+        if (@event.TicketSettings == null)
+        {
+            return ServiceResult.Failure("This event is not ticketed");
+        }
+
+        if (ticketPurchase?.DepositPurchasedUtc != null)
+        {
+            return ServiceResult.Failure("You have already paid a deposit for this event");
+        }
+
+        if (@event.TicketSettings.Deposit == null)
+        {
+            return ServiceResult.Failure("This event does not have deposits");
+        }
+
+        var validationResult = await MemberCanAttendEvent(member, @event);
+        if (!validationResult.Success)
+        {
+            return validationResult;
+        }
+
+        var paymentResult = await _paymentService.MakePayment(@event.ChapterId, member, @event.TicketSettings.Deposit.Value, cardToken, @event.Name);
+        if (!paymentResult.Success)
+        {
+            return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
+        }
+
+        _unitOfWork.EventResponseRepository.Add(new EventResponse
+        {
+            EventId = eventId,
+            MemberId = member.Id,
+            Type = EventResponseType.Yes
+        });
+
+        _unitOfWork.EventTicketPurchaseRepository.Add(new EventTicketPurchase
+        {
+            DepositPaid = @event.TicketSettings.Deposit,
+            DepositPurchasedUtc = DateTime.UtcNow,
+            EventId = eventId,
+            MemberId = member.Id,
+            TotalPaid = @event.TicketSettings.Deposit.Value
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> PayTicketRemainder(Guid currentMemberId, Guid eventId, string cardToken)
+    {
+        var (member, @event, ticketPurchase) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId));
+
+        if (@event.TicketSettings == null)
+        {
+            return ServiceResult.Failure("This event is not ticketed");
+        }
+
+        if (ticketPurchase == null || ticketPurchase.DepositPaid == null)
+        {
+            return ServiceResult.Failure("You have not paid a deposit for this event");
+        }
+
+        var amount = @event.TicketSettings.Cost - ticketPurchase.DepositPaid.Value;
+        var paymentResult = await _paymentService.MakePayment(@event.ChapterId, member, amount, cardToken, @event.Name);
+        if (!paymentResult.Success)
+        {
+            return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
+        }
+
+        ticketPurchase.PurchasedUtc = DateTime.UtcNow;
+        ticketPurchase.TotalPaid += amount;
+
+        _unitOfWork.EventTicketPurchaseRepository.Update(ticketPurchase);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> PurchaseTicket(Guid currentMemberId, Guid eventId, string cardToken)
+    {
+        var (member, @event, ticketPurchase) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId));
+
+        if (@event.TicketSettings == null)
+        {
+            return ServiceResult.Failure("This event is not ticketed");
+        }
+
+        if (ticketPurchase?.PurchasedUtc != null)
+        {
+            return ServiceResult.Failure("You have already purchased a ticket for this event");
+        }
+
+        var validationResult = await MemberCanAttendEvent(member, @event);
+        if (!validationResult.Success)
+        {
+            return validationResult;
+        }
+
+        var paymentResult = await _paymentService.MakePayment(@event.ChapterId, member, @event.TicketSettings.Cost, cardToken, @event.Name);
+        if (!paymentResult.Success)
+        {
+            return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
+        }
+
+        _unitOfWork.EventResponseRepository.Add(new EventResponse
+        {
+            EventId = eventId,
+            MemberId = member.Id,
+            Type = EventResponseType.Yes
+        });
+
+        _unitOfWork.EventTicketPurchaseRepository.Add(new EventTicketPurchase
+        {
+            EventId = eventId,
+            MemberId = member.Id,
+            PurchasedUtc = DateTime.UtcNow,
+            TotalPaid = @event.TicketSettings.Cost
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UpdateMemberResponse(Guid memberId, Guid eventId,
         EventResponseType responseType)
     {
@@ -147,20 +288,16 @@ public class EventService : IEventService
             x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(memberId, eventId));
-        if (@event.Date < DateTime.Today)
+        
+        if (@event.TicketSettings != null)
         {
-            return ServiceResult.Failure("Past events cannot be responded to");
+            return ServiceResult.Failure("Ticketed events cannot be responded to");
         }
 
-        if (!@event.IsAuthorized(member))
+        var validationResult = await MemberCanAttendEvent(member, @event);
+        if (!validationResult.Success)
         {
-            return ServiceResult.Failure("You are not permitted to respond to this event");
-        }
-
-        var active = await _authorizationService.MembershipIsActiveAsync(member.Id, @event.ChapterId);
-        if (!active)
-        {
-            return ServiceResult.Failure("You are not permitted to respond to this event");
+            return validationResult;
         }
 
         if (response == null)
@@ -174,8 +311,15 @@ public class EventService : IEventService
         }
         else
         {
-            response.Type = responseType;
-            _unitOfWork.EventResponseRepository.Update(response);
+            if (response.Type == responseType)
+            {
+                _unitOfWork.EventResponseRepository.Delete(response);
+            }
+            else
+            {
+                response.Type = responseType;
+                _unitOfWork.EventResponseRepository.Update(response);
+            }            
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -218,5 +362,26 @@ public class EventService : IEventService
             Comments = comments,
             Members = members
         };
+    }
+
+    private async Task<ServiceResult> MemberCanAttendEvent(Member member, Event @event)
+    {
+        if (@event.Date < DateTime.Today)
+        {
+            return ServiceResult.Failure("Past events cannot be responded to");
+        }
+
+        if (!@event.IsAuthorized(member))
+        {
+            return ServiceResult.Failure("You are not permitted to attend this event");
+        }
+
+        var active = await _authorizationService.MembershipIsActiveAsync(member.Id, @event.ChapterId);
+        if (!active)
+        {
+            return ServiceResult.Failure("You are not permitted to attend this event");
+        }
+
+        return ServiceResult.Successful();
     }
 }

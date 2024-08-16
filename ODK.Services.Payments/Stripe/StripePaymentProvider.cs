@@ -7,7 +7,7 @@ public class StripePaymentProvider : IStripePaymentProvider
 {
     public bool HasExternalGateway => true;
 
-    public async Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
+    public async Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, decimal amount,
         string cardToken, string description, string memberName)
     {
         StripeClient client = new StripeClient(paymentSettings.ApiSecretKey);
@@ -40,7 +40,7 @@ public class StripePaymentProvider : IStripePaymentProvider
         return ServiceResult.Successful();
     }
 
-    public Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount,
+    public Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, decimal amount,
         string cardToken)
     {
         throw new NotImplementedException();

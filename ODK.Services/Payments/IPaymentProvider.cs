@@ -6,8 +6,8 @@ public interface IPaymentProvider
 {
     bool HasExternalGateway { get; }
 
-    Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken,
+    Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, decimal amount, string cardToken,
         string description, string memberName);
 
-    Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken);
+    Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, decimal amount, string cardToken);
 }

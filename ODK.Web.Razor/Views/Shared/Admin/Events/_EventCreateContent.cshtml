@@ -9,11 +9,11 @@
 @inject IEventAdminService EventAdminService
 @{
     var memberId = User.MemberId();
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var settings = await ChapterAdminService.GetChapterEventSettings(serviceRequest);
     var request = new AdminServiceRequest(Model.Id, memberId);
+    var settings = await ChapterAdminService.GetChapterEventSettings(request);
     var nextEventDate = await EventAdminService.GetNextAvailableEventDate(request);
-    var chapterAdminMembers = await ChapterAdminService.GetChapterAdminMembers(serviceRequest);
+    var chapterAdminMembers = await ChapterAdminService.GetChapterAdminMembers(request);
+    var chapterPaymentSettings = await ChapterAdminService.GetChapterPaymentSettings(request);
 
     if (nextEventDate == null)
     {
@@ -37,6 +37,7 @@
     @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
     {
         ChapterId = Model.Id,
+        CurrencySymbol = chapterPaymentSettings?.Currency.Symbol,
         Date = nextEventDate.Value,
         Description = settings?.DefaultDescription,
         HostOptions = hostOptions

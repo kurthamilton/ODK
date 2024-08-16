@@ -33,13 +33,15 @@ public interface IUnitOfWork
     IEventInviteRepository EventInviteRepository { get; }
     IEventRepository EventRepository { get; }
     IEventResponseRepository EventResponseRepository { get; }
+    IEventTicketPurchaseRepository EventTicketPurchaseRepository { get; }
+    IEventTicketSettingsRepository EventTicketSettingsRepository { get; }
     IFeatureRepository FeatureRepository { get; }
     IInstagramImageRepository InstagramImageRepository { get; }
     IInstagramPostRepository InstagramPostRepository { get; }
     IMemberActivationTokenRepository MemberActivationTokenRepository { get; }
     IMemberAvatarRepository MemberAvatarRepository { get; }
     IMemberChapterRepository MemberChapterRepository { get; }
-    IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository { get; }
+    IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository { get; }    
     IMemberImageRepository MemberImageRepository { get; }
     IMemberLocationRepository MemberLocationRepository { get; }
     IMemberPasswordRepository MemberPasswordRepository { get; }
@@ -52,6 +54,7 @@ public interface IUnitOfWork
     IMemberSubscriptionRepository MemberSubscriptionRepository { get; }
     IPaymentRepository PaymentRepository { get; }    
     ISiteEmailSettingsRepository SiteEmailSettingsRepository { get; }
+    ISitePaymentSettingsRepository SitePaymentSettingsRepository { get; }
     ISiteSettingsRepository SiteSettingsRepository { get; }
     ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository { get; }
     ISiteSubscriptionRepository SiteSubscriptionRepository { get; }
@@ -116,6 +119,18 @@ public interface IUnitOfWork
         Func<IUnitOfWork, IDeferredQuery<T7>> query7,
         Func<IUnitOfWork, IDeferredQuery<T8>> query8,
         Func<IUnitOfWork, IDeferredQuery<T9>> query9);
+
+    Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6,
+        Func<IUnitOfWork, IDeferredQuery<T7>> query7,
+        Func<IUnitOfWork, IDeferredQuery<T8>> query8,
+        Func<IUnitOfWork, IDeferredQuery<T9>> query9,
+        Func<IUnitOfWork, IDeferredQuery<T10>> query10);
 
     Task SaveChangesAsync();
 }

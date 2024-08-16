@@ -17,4 +17,14 @@
 <h5>
     @Model.Event.Date.EventDate(true)
 </h5>
-<div>@Model.Event.VenueName</div>
+<div class="d-flex gap-2">
+    <div>
+        @await Html.PartialAsync("Components/_Location", Model.Event.VenueName)
+    </div>
+    @if (Model.Event.Ticketed)
+    {
+        <div>
+            <i class="fa-solid fa-ticket" data-bs-toggle="tooltip" data-bs-title="Ticketed"></i>
+        </div>        
+    }    
+</div>

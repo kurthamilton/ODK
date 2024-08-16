@@ -21,5 +21,9 @@ public class EventMap : IEntityTypeConfiguration<Event>
 
         builder.Property(x => x.PublishedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
+
+        builder.HasOne(x => x.TicketSettings)
+            .WithOne()
+            .HasForeignKey<EventTicketSettings>(x => x.EventId);
     }
 }

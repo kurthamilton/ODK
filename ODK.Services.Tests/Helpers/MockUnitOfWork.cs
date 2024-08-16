@@ -45,6 +45,8 @@ internal class MockUnitOfWork : IUnitOfWork
     public IEventInviteRepository EventInviteRepository => Mock.Object.EventInviteRepository;
     public IEventRepository EventRepository => Mock.Object.EventRepository;
     public IEventResponseRepository EventResponseRepository => Mock.Object.EventResponseRepository;
+    public IEventTicketPurchaseRepository EventTicketPurchaseRepository => Mock.Object.EventTicketPurchaseRepository;
+    public IEventTicketSettingsRepository EventTicketSettingsRepository => Mock.Object.EventTicketSettingsRepository;
     public IFeatureRepository FeatureRepository => Mock.Object.FeatureRepository;
     public IInstagramImageRepository InstagramImageRepository => Mock.Object.InstagramImageRepository;
     public IInstagramPostRepository InstagramPostRepository => Mock.Object.InstagramPostRepository;
@@ -64,6 +66,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberSubscriptionRepository MemberSubscriptionRepository => Mock.Object.MemberSubscriptionRepository;
     public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;    
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => Mock.Object.SiteEmailSettingsRepository;
+    public ISitePaymentSettingsRepository SitePaymentSettingsRepository => Mock.Object.SitePaymentSettingsRepository;
     public ISiteSettingsRepository SiteSettingsRepository => Mock.Object.SiteSettingsRepository;
     public ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository => Mock.Object.SiteSubscriptionPriceRepository;
     public ISiteSubscriptionRepository SiteSubscriptionRepository => Mock.Object.SiteSubscriptionRepository;
@@ -246,6 +249,42 @@ internal class MockUnitOfWork : IUnitOfWork
             await q7.RunAsync(),
             await q8.RunAsync(),
             await q9.RunAsync());
+    }
+
+    public async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6,
+        Func<IUnitOfWork, IDeferredQuery<T7>> query7,
+        Func<IUnitOfWork, IDeferredQuery<T8>> query8,
+        Func<IUnitOfWork, IDeferredQuery<T9>> query9,
+        Func<IUnitOfWork, IDeferredQuery<T10>> query10)
+    {
+        var q1 = query1(this);
+        var q2 = query2(this);
+        var q3 = query3(this);
+        var q4 = query4(this);
+        var q5 = query5(this);
+        var q6 = query6(this);
+        var q7 = query7(this);
+        var q8 = query8(this);
+        var q9 = query9(this);
+        var q10 = query10(this);
+
+        return (
+            await q1.RunAsync(),
+            await q2.RunAsync(),
+            await q3.RunAsync(),
+            await q4.RunAsync(),
+            await q5.RunAsync(),
+            await q6.RunAsync(),
+            await q7.RunAsync(),
+            await q8.RunAsync(),
+            await q9.RunAsync(),
+            await q10.RunAsync());
     }
 
     public Task SaveChangesAsync() => Mock.Object.SaveChangesAsync();

@@ -33,3 +33,11 @@
     Content = await Html.PartialAsync("Events/_EventContent", viewModel),
     SidebarContent = await Html.PartialAsync("Events/_EventSidebar", viewModel)
 })
+
+@section scripts
+{
+    @if (viewModel.Event.TicketSettings != null && viewModel.ChapterPaymentSettings != null)
+    {
+        @await Html.PartialAsync("Components/_PaymentScripts", viewModel.ChapterPaymentSettings)
+    }
+}

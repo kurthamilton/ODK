@@ -1,0 +1,148 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Events
+@using ODK.Web.Razor.Models.Payments
+@model EventTicketPurchaseViewModel
+@{
+    var ticketPurchase = Model.TicketPurchases
+        .FirstOrDefault(x => x.MemberId == Model.CurrentMemberId);
+    var ticketsLeft = Model.TicketsLeft;
+}
+
+@if (Model.Event.TicketSettings == null)
+{
+    return;
+}
+
+@if (Model.ChapterPaymentSettings == null)
+{
+    <p>Error getting payment settings</p>
+    return;
+}
+
+<div class="card sidebar-card">
+    <div class="card-header">Tickets</div>
+    <div class="card-body card-body-sm">
+        @if (ticketPurchase?.PurchasedUtc != null)
+        {
+            <p>You have bought a ticket for this event</p>
+        }
+        else if (ticketPurchase?.DepositPaid != null)
+        {
+            var modalId = "complete-purchase-modal";
+            var remaining = Model.Event.TicketSettings.Cost - ticketPurchase.DepositPaid.Value;
+
+            <h5>Complete purchase</h5>
+            <div>
+                Deposit paid: @Model.ChapterPaymentSettings.Currency.ToAmountString(ticketPurchase.DepositPaid.Value)
+            </div>
+            <div>
+                Amount remaining: @Model.ChapterPaymentSettings.Currency.ToAmountString(remaining)
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary mr-1"
+                        data-bs-toggle="modal" data-bs-target="#@modalId">
+                    Purchase
+                </button>                
+            </div>
+
+            @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
+            {
+                Action = $"/{Model.Chapter.Name}/Events/{Model.Event.Id}/Tickets/Complete",
+                ChapterPaymentSettings = Model.ChapterPaymentSettings,
+                Id = modalId,
+                PaymentForm = new PaymentFormViewModel
+                {
+                    Amount = remaining,
+                    Currency = Model.ChapterPaymentSettings.Currency,
+                    Description = "",
+                    Id = "complete-purchase"
+                },
+                Title = $"{Model.Event.Name} - Complete ticket purchase"
+            })
+        }
+        else if (ticketsLeft <= 0)
+        {
+            <p>There are no more tickets available for this event</p>
+        }
+        else if (Model.Event.TicketSettings.Deposit != null)
+        {
+            var modalId = "deposit-purchase-modal";
+
+            <h5>Pay deposit</h5>
+            @if (ticketsLeft != null)
+            {
+                <div>
+                    Tickets left: @ticketsLeft / @Model.Event.AttendeeLimit
+                </div>
+            }
+            
+            <div>
+                Ticket cost: @Model.ChapterPaymentSettings.Currency.ToAmountString(Model.Event.TicketSettings.Cost)
+            </div>
+
+            <div>
+                Deposit: @Model.ChapterPaymentSettings.Currency.ToAmountString(Model.Event.TicketSettings.Deposit.Value)
+            </div>
+
+            <div class="mt-3">
+                <button class="btn btn-primary mr-1"
+                        data-bs-toggle="modal" data-bs-target="#@modalId">
+                    Pay deposit
+                </button>
+            </div>
+
+            @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
+            {
+                Action = $"/{Model.Chapter.Name}/Events/{Model.Event.Id}/Tickets/Deposit",
+                ChapterPaymentSettings = Model.ChapterPaymentSettings,
+                Id = modalId,
+                PaymentForm = new PaymentFormViewModel
+                {
+                    Amount = Model.Event.TicketSettings.Deposit.Value,
+                    Currency = Model.ChapterPaymentSettings.Currency,
+                    Description = $"{Model.Event.Name} deposit",
+                    Id = "deposit-purchase"
+                },
+                Title = "Pay deposit"
+            })
+        }
+        else
+        {
+            var modalId = "ticket-purchase-modal";
+
+            <h5>Purchase ticket</h5>
+            @if (ticketsLeft != null)
+            {
+                <div>
+                    Tickets left: @ticketsLeft / @Model.Event.AttendeeLimit
+                </div>
+            }
+
+            <div>
+                Cost: @Model.ChapterPaymentSettings.Currency.ToAmountString(Model.Event.TicketSettings.Cost)
+            </div>
+
+            <div>
+                <button class="btn btn-primary mr-1"
+                        data-bs-toggle="modal" data-bs-target="#@modalId">
+                    Purchase
+                </button>                
+            </div>
+
+            @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
+           {
+               Action = $"/{Model.Chapter.Name}/Events/{Model.Event.Id}/Tickets/Purchase",
+               ChapterPaymentSettings = Model.ChapterPaymentSettings,
+               Id = modalId,
+               PaymentForm = new PaymentFormViewModel
+               {
+                   Amount = Model.Event.TicketSettings.Cost,
+                   Currency = Model.ChapterPaymentSettings.Currency,
+                   Description = "",
+                   Id = "ticket-purchase"
+               },
+               Title = $"{Model.Event.Name} - Purchase ticket"
+           })
+        }
+    </div>
+</div>

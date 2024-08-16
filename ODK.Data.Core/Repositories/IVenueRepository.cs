@@ -14,6 +14,4 @@ public interface IVenueRepository : IReadWriteRepository<Venue>
     IDeferredQueryMultiple<Venue> GetByEventIds(IEnumerable<Guid> eventIds);
 
     IDeferredQuerySingleOrDefault<Venue> GetByName(Guid chapterId, string name);
-
-    IDeferredQuerySingleOrDefault<Venue> GetPublicVenue(Guid id);
 }

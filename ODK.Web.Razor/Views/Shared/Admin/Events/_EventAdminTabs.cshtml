@@ -10,4 +10,11 @@
     <li class="nav-item">
         <a class="nav-link" data-menu-link href="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees">Attendees</a>
     </li>
+
+    @if (Model.Event.Ticketed)
+    {
+        <li class="nav-item">
+            <a class="nav-link" data-menu-link href="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Tickets">Tickets</a>
+        </li>
+    }
 </ul>

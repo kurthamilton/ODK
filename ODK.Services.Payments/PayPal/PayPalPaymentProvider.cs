@@ -14,7 +14,7 @@ public class PayPalPaymentProvider : IPayPalPaymentProvider
 
     public bool HasExternalGateway => false;
 
-    public async Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, 
+    public async Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, decimal amount, 
         string cardToken, string description, string memberName)
     {
         var client = GetClient(paymentSettings);
@@ -48,7 +48,7 @@ public class PayPalPaymentProvider : IPayPalPaymentProvider
         return ServiceResult.Successful();
     }
 
-    public Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, double amount, string cardToken)
+    public Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, decimal amount, string cardToken)
     {
         throw new NotImplementedException();
     }

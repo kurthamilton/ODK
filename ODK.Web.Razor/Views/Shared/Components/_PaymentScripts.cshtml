@@ -1,0 +1,10 @@
+﻿@using ODK.Core.Chapters
+@model ChapterPaymentSettings
+
+@if (Model?.Provider == "PayPal")
+{
+    var currency = Model.Currency.Code;
+    var clientId = Model.ApiPublicKey;
+    <script src="https://www.paypal.com/sdk/js?client-id=@clientId&currency=@currency"></script>
+    <script src="/js/odk.paypal.js"></script>
+}

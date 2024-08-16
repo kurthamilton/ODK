@@ -411,7 +411,7 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Payment not made: you are not a member of this subscription's chapter");
         }
         
-        var paymentResult = await _paymentService.MakePayment(chapterSubscription.ChapterId, member, chapterSubscription.Amount, cardToken, 
+        var paymentResult = await _paymentService.MakePayment(chapterSubscription.ChapterId, member, (decimal)chapterSubscription.Amount, cardToken, 
             chapterSubscription.Title);
         if (!paymentResult.Success)
         {
@@ -442,7 +442,7 @@ public class MemberService : IMemberService
         
         await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.SubscriptionConfirmation, new Dictionary<string, string>
         {
-            { "subscription.amount", $"{chapterPaymentSettings.Currency.Symbol}{chapterSubscription.Amount:0.00}" },
+            { "subscription.amount", chapterPaymentSettings.Currency.ToAmountString(chapterSubscription.Amount) },
             { "subscription.end", chapter.ToLocalTime(expiresUtc).ToString("d MMMM yyyy") }
         });
 

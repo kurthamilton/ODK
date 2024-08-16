@@ -42,7 +42,9 @@ public class EventViewModelService : IEventViewModelService
             memberSubscription, 
             hosts, 
             comments,
-            responses) = await _unitOfWork.RunAsync(
+            responses,
+            ticketPurchases,
+            chapterPaymentSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -54,7 +56,9 @@ public class EventViewModelService : IEventViewModelService
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
             x => x.EventHostRepository.GetByEventId(eventId),
             x => x.EventCommentRepository.GetByEventId(eventId),
-            x => x.EventResponseRepository.GetByEventId(eventId));
+            x => x.EventResponseRepository.GetByEventId(eventId),
+            x => x.EventTicketPurchaseRepository.GetByEventId(eventId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id));
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -123,6 +127,7 @@ public class EventViewModelService : IEventViewModelService
         {
             CanRespond = canRespond,
             Chapter = chapter,
+            ChapterPaymentSettings = chapterPaymentSettings,
             Comments = new EventCommentsDto
             {
                 Comments = comments,
@@ -135,6 +140,7 @@ public class EventViewModelService : IEventViewModelService
             MemberResponse = currentMemberId != null 
                 ? responses.FirstOrDefault(x => x.MemberId == currentMemberId.Value)?.Type
                 : null,
+            TicketPurchases = ticketPurchases,
             Venue = venue
         };
     }

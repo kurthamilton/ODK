@@ -23,10 +23,13 @@ public class VenueRepository : ReadWriteRepositoryBase<Venue>, IVenueRepository
 
     public IDeferredQuerySingle<Venue> GetByEventId(Guid eventId)
     {
+        var venueIdQuery =
+            from @event in Set<Event>().Where(x => x.Id == eventId)
+            select @event.VenueId;
+
         var query =
             from venue in Set()
-            from @event in Set<Event>().Where(x => x.Id == eventId)
-            where @event.VenueId == venue.Id
+            where venueIdQuery.Contains(venue.Id)
             select venue;
 
         return query.DeferredSingle();
@@ -34,10 +37,13 @@ public class VenueRepository : ReadWriteRepositoryBase<Venue>, IVenueRepository
 
     public IDeferredQueryMultiple<Venue> GetByEventIds(IEnumerable<Guid> eventIds)
     {
+        var venueIdQuery =
+            from @event in Set<Event>().Where(x => eventIds.Contains(x.Id))
+            select @event.VenueId;
+
         var query =
             from venue in Set()
-            from @event in Set<Event>().Where(x => eventIds.Contains(x.Id))
-            where @event.VenueId == venue.Id
+            where venueIdQuery.Contains(venue.Id)
             select venue;
 
         return query.DeferredMultiple();
@@ -47,18 +53,4 @@ public class VenueRepository : ReadWriteRepositoryBase<Venue>, IVenueRepository
     public IDeferredQuerySingleOrDefault<Venue> GetByName(Guid chapterId, string name) => Set()
         .Where(x => x.ChapterId == chapterId && x.Name == name)
         .DeferredSingleOrDefault();
-
-    public IDeferredQuerySingleOrDefault<Venue> GetPublicVenue(Guid id)
-    {
-        var query =
-            from venue in Set()
-            from @event in Set<Event>()
-            where @event.VenueId == venue.Id
-                && venue.Id == id
-                && @event.IsPublic
-            select venue;
-        return query.DeferredSingleOrDefault();
-
-
-    }
 }

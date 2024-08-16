@@ -11,6 +11,8 @@ public class EventPageViewModel
 
     public required Chapter Chapter { get; init; }
 
+    public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
+
     public required Member? CurrentMember { get; init; }
 
     public required EventCommentsDto Comments { get; init; }
@@ -22,6 +24,25 @@ public class EventPageViewModel
     public required EventResponseType? MemberResponse { get; init; }
 
     public required IReadOnlyDictionary<EventResponseType, IReadOnlyCollection<Member>> MembersByResponse { get; init; }
+
+    public IReadOnlyCollection<EventResponseType> ResponseTypes { get; } = [EventResponseType.Yes, EventResponseType.Maybe, EventResponseType.No];
+
+    public int? SpacesLeft
+    {
+        get
+        {
+            if (Event.AttendeeLimit == null)
+            {
+                return null;
+            }
+
+            return MembersByResponse.TryGetValue(EventResponseType.Yes, out var attendees)
+                ? Event.AttendeeLimit.Value - attendees.Count 
+                : Event.AttendeeLimit.Value;
+        }
+    }
+
+    public required IReadOnlyCollection<EventTicketPurchase> TicketPurchases { get; init; }
 
     public required Venue Venue { get; init; }
 }

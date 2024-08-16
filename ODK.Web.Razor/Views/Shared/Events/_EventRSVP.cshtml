@@ -1,0 +1,37 @@
+﻿@using ODK.Core.Events
+@using ODK.Services.Events.ViewModels
+@using ODK.Web.Razor.Models.Events
+@model EventPageViewModel
+@{
+    Model.MembersByResponse.TryGetValue(EventResponseType.Yes, out var attendees);
+
+    var spacesLeft = Model.SpacesLeft;
+}
+
+<div class="card sidebar-card">
+    <div class="card-header">RSVP</div>
+    <div class="card-body card-body-sm">
+        @if (spacesLeft != null)
+        {            
+            <div>
+                Spaces left: @spacesLeft / @Model.Event.AttendeeLimit
+            </div>
+        }
+
+        @if (spacesLeft > 0 || Model.MemberResponse == EventResponseType.Yes)
+        {
+            <div class="d-flex justify-content-around mt-3">
+                @foreach (var responseType in Model.ResponseTypes)
+                {
+                    <form action="/@Model.Chapter.Name/Events/@Model.Event.Id/RSVP" method="post">
+                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                        {
+                            Active = Model.MemberResponse == responseType,
+                            ResponseType = responseType
+                        })
+                    </form>
+                }
+            </div>   
+        }        
+    </div>
+</div>

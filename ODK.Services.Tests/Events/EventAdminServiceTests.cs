@@ -74,8 +74,16 @@ public static class EventAdminServiceTests
         // Act
         await service.CreateEvent(request, new CreateEvent
         {
+            AttendeeLimit = null,
             Date = eventDate,            
+            Description = null,
+            Hosts = new List<Guid>(),
+            ImageUrl = null,
+            IsPublic = false,
             Name = "Name",
+            TicketCost = null,
+            TicketDepositCost = null,
+            Time = null,
             VenueId = VenueId           
         }, false);
 

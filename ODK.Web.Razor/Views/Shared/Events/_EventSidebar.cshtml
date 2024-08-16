@@ -5,12 +5,11 @@
 @using ODK.Services.Events
 @using ODK.Services.Events.ViewModels
 @using ODK.Services.Members
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Events
 @using ODK.Web.Razor.Models.Members
+@using ODK.Web.Razor.Models.Payments
 @model EventPageViewModel
-@{
-    var responseTypes = new[] { EventResponseType.Yes, EventResponseType.Maybe, EventResponseType.No };
-}
 
 <div class="sidebar">
     @if (Model.Hosts.Count > 0)
@@ -40,25 +39,27 @@
         </div>
     }
 
-    <div class="card sidebar-card">
-        <div class="card-header">RSVP</div>
-        <div class="card-body card-body-sm">
-            <div class="d-flex justify-content-around">
-                @foreach (var responseType in responseTypes)
-                {
-                    <form action="/@Model.Chapter.Name/Events/@Model.Event.Id/RSVP" method="post">
-                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
-                        {
-                            Active = Model.MemberResponse == responseType,
-                            ResponseType = responseType
-                        })
-                    </form>
-                }
-            </div>
-        </div>
-    </div>
+    @if (Model.CurrentMember?.IsMemberOf(Model.Chapter.Id) == true)
+    {
+        if (Model.Event.TicketSettings != null)
+        {
+            @await Html.PartialAsync("Events/_EventTicketPurchase", new EventTicketPurchaseViewModel
+            {
+                Chapter = Model.Chapter,
+                ChapterPaymentSettings = Model.ChapterPaymentSettings,
+                CurrentMemberId = Model.CurrentMember.Id,
+                Event = Model.Event,
+                TicketPurchases = Model.TicketPurchases,
+                TicketsLeft = Model.SpacesLeft
+            })            
+        }
+        else
+        {
+            @await Html.PartialAsync("Events/_EventRSVP")
+        }    
+    }   
     
-    @foreach (var responseType in responseTypes)
+    @foreach (var responseType in Model.ResponseTypes)
     {
         @if (Model.MembersByResponse.TryGetValue(responseType, out var members))
         {

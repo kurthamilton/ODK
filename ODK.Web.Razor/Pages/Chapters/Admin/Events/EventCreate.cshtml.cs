@@ -26,12 +26,15 @@ public class EventCreateModel : AdminPageModel
         var request = await GetAdminServiceRequest();
         var result = await _eventAdminService.CreateEvent(request, new CreateEvent
         {
+            AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,
             Description = viewModel.Description,
             Hosts = viewModel.Hosts,
             ImageUrl = viewModel.ImageUrl,
             IsPublic = viewModel.Public,
             Name = viewModel.Name,
+            TicketCost = viewModel.TicketCost,
+            TicketDepositCost = viewModel.TicketDepositCost,
             Time = viewModel.Time,
             VenueId = viewModel.Venue
         }, viewModel.Draft);

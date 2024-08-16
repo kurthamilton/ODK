@@ -5,6 +5,8 @@ public interface IFeatureService
 {
     Task<ServiceResult> AddFeature(Guid currentMemberId, UpdateFeature model);
 
+    Task DeleteFeature(Guid currentMemberId, Guid featureId);
+
     Task<Feature> GetFeature(Guid currentMemberId, Guid featureId);
 
     Task<IReadOnlyCollection<Feature>> GetFeatures(Guid currentMemberId);

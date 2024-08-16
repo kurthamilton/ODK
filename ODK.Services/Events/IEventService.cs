@@ -9,6 +9,12 @@ public interface IEventService
 
     Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member, Guid chapterId, 
         DateTime? afterUtc);
-    
+
+    Task<ServiceResult> PayDeposit(Guid currentMemberId, Guid eventId, string cardToken);
+
+    Task<ServiceResult> PayTicketRemainder(Guid currentMemberId, Guid eventId, string cardToken);
+
+    Task<ServiceResult> PurchaseTicket(Guid currentMemberId, Guid eventId, string cardToken);
+
     Task<ServiceResult> UpdateMemberResponse(Guid currentMemberId, Guid eventId, EventResponseType responseType);
 }

@@ -37,17 +37,19 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
 
-        var (chapter, chapterAdminMembers, currentMember, venue, settings) = await _unitOfWork.RunAsync(
+        var (chapter, chapterAdminMembers, currentMember, venue, settings, chapterPaymentSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetById(model.VenueId),
-            x => x.ChapterEventSettingsRepository.GetByChapterId(chapterId));
+            x => x.ChapterEventSettingsRepository.GetByChapterId(chapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
 
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
         
         var @event = new Event
         {
+            AttendeeLimit = model.AttendeeLimit,
             ChapterId = chapterId,
             CreatedBy = currentMember.FullName,
             CreatedUtc = DateTime.UtcNow,
@@ -57,11 +59,16 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             IsPublic = model.IsPublic,
             Name = model.Name,
             PublishedUtc = !draft ? DateTime.UtcNow : null,
+            TicketSettings = model.TicketCost != null ? new EventTicketSettings
+            {
+                Cost = Math.Round(model.TicketCost.Value, 2),
+                Deposit = model.TicketDepositCost != null ? Math.Round(model.TicketDepositCost.Value, 2) : null,
+            } : null,
             Time = model.Time,
             VenueId = model.VenueId
         };
 
-        var validationResult = ValidateEvent(@event, venue);
+        var validationResult = ValidateEvent(@event, venue, chapterPaymentSettings);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -217,6 +224,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return events;
     }
     
+    public async Task<IReadOnlyCollection<EventTicketPurchase>> GetEventTicketPurchases(AdminServiceRequest request, Guid eventId)
+    {
+        var (@event, ticketPurchases) = await GetChapterAdminRestrictedContent(request,
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventTicketPurchaseRepository.GetByEventId(eventId));
+
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
+
+        return ticketPurchases;
+    }
+
     public async Task<DateTime?> GetNextAvailableEventDate(AdminServiceRequest request)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetById(request.ChapterId).RunAsync();
@@ -426,15 +444,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> UpdateEvent(AdminServiceRequest request, Guid id, CreateEvent model)
     {
-        var (chapterAdminMembers, currentMember, @event, hosts, venue) = await GetChapterAdminRestrictedContent(request,
+        var (chapterAdminMembers, currentMember, @event, hosts, venue, chapterPaymentSettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.EventRepository.GetById(id),
             x => x.EventHostRepository.GetByEventId(id),
-            x => x.VenueRepository.GetById(model.VenueId));
+            x => x.VenueRepository.GetById(model.VenueId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
+        @event.AttendeeLimit = model.AttendeeLimit;
         @event.Date = model.Date;
         @event.Description = model.Description;
         @event.ImageUrl = model.ImageUrl;
@@ -443,15 +463,33 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.Time = model.Time;
         @event.VenueId = model.VenueId;        
 
-        var validationResult = ValidateEvent(@event, venue);
+        if (model.TicketCost != null)
+        {
+            @event.TicketSettings ??= new EventTicketSettings();
+            @event.TicketSettings.Cost = Math.Round(model.TicketCost.Value, 2);
+            @event.TicketSettings.Deposit = model.TicketDepositCost != null ? Math.Round(model.TicketDepositCost.Value, 2) : null;
+        }
+
+        var validationResult = ValidateEvent(@event, venue, chapterPaymentSettings);
         if (!validationResult.Success)
         {
             return validationResult;
-        }
+        }                
 
         UpdateEventHosts(@event, model.Hosts, hosts, chapterAdminMembers);
 
         _unitOfWork.EventRepository.Update(@event);
+
+        var ticketSettings = @event.TicketSettings;
+        if (ticketSettings != null)
+        {
+            if (model.TicketCost == null)
+            {
+                @event.TicketSettings = null;
+                _unitOfWork.EventTicketSettingsRepository.Delete(ticketSettings);
+            }                       
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -568,24 +606,60 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
     }
 
-    private static ServiceResult ValidateEvent(Event @event, Venue venue)
+    private static ServiceResult ValidateEvent(
+        Event @event, 
+        Venue venue, 
+        ChapterPaymentSettings? chapterPaymentSettings)
     {
+        var messages = new List<string>();
+
         if (string.IsNullOrWhiteSpace(@event.Name))
         {
-            return ServiceResult.Failure("Name is required");
+            messages.Add("Name is required");
+        }
+
+        if (@event.AttendeeLimit < 1)
+        {
+            messages.Add("Attendee limit cannot be less than 1");
         }
 
         if (@event.Date == DateTime.MinValue)
         {
-            return ServiceResult.Failure("Date is required");
+            messages.Add("Date is required");
         }
 
         if (venue.ChapterId != @event.ChapterId)
         {
-            return ServiceResult.Failure("Venue not found");
+            messages.Add("Venue not found");
         }
-        
-        return ServiceResult.Successful();
+
+        var ticketSettings = @event.TicketSettings;
+        if (ticketSettings != null)
+        {                       
+            if (ticketSettings.Cost <= 0)
+            {
+                messages.Add("Ticket cost must be greater than 0");
+            }
+
+            if (ticketSettings.Deposit <= 0)
+            {
+                messages.Add("Ticket deposit must be greater than 0");
+            }
+
+            if (ticketSettings.Cost < ticketSettings.Deposit)
+            {
+                messages.Add("Ticket cost cannot be less than the deposit");
+            }
+
+            if (chapterPaymentSettings == null)
+            {
+                messages.Add("Cannot setup tickets before payment settings have been set up");
+            }
+        }
+
+        return messages.Count == 0 
+            ? ServiceResult.Successful()
+            : ServiceResult.Failure(messages.First());
     }        
 
     private void AssertEventCanBeDeleted(EventEmail? eventEmail, IReadOnlyCollection<EventResponse> responses)

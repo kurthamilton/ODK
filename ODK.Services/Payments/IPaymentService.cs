@@ -4,5 +4,5 @@ namespace ODK.Services.Payments;
 
 public interface IPaymentService
 {
-    Task<ServiceResult> MakePayment(Guid chapterId, Member member, double amount, string cardToken, string reference);
+    Task<ServiceResult> MakePayment(Guid chapterId, Member member, decimal amount, string cardToken, string reference);
 }

@@ -1,14 +1,20 @@
 ﻿@page "/{chapterName}/Account/Subscription"
 @attribute [Authorize]
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
 @using Microsoft.AspNetCore.Authorization
 @model ODK.Web.Razor.Pages.Chapters.Account.SubscriptionModel
+@inject IChapterService ChapterService
 @{
     Layout = "_ChapterLayout";
     Model.Title = "Subscription";
+
+    var memberId = User.MemberId();
+    var chapterPaymentSettings = await ChapterService.GetChapterPaymentSettings(memberId, Model.Chapter.Id);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -21,7 +27,11 @@
         ChapterName = Model.Chapter.Name,
         Content = 
             @<div>
-                @await Html.PartialAsync("Account/_SubscriptionContent", new SubscriptionContentViewModel(Model.Chapter))
+                @await Html.PartialAsync("Account/_SubscriptionContent", new SubscriptionContentViewModel
+                {
+                    Chapter = Model.Chapter,
+                    ChapterPaymentSettings = chapterPaymentSettings
+                })
             </div>
     })
 })

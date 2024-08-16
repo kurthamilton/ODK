@@ -4,6 +4,8 @@ namespace ODK.Core.Events;
 
 public class Event : IDatabaseEntity, IChapterEntity
 {
+    public int? AttendeeLimit { get; set; }
+
     public bool CanComment => !IsPublic;
 
     public Guid ChapterId { get; set; }
@@ -27,6 +29,10 @@ public class Event : IDatabaseEntity, IChapterEntity
     public string Name { get; set; } = "";
 
     public DateTime? PublishedUtc { get; set; }
+
+    public bool Ticketed => TicketSettings?.Cost > 0;
+
+    public EventTicketSettings? TicketSettings { get; set; }
 
     public string? Time { get; set; }
 

@@ -39,6 +39,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IEventInviteRepository> _eventInviteRepository;
     private readonly Lazy<IEventRepository> _eventRepository;
     private readonly Lazy<IEventResponseRepository> _eventResponseRepository;
+    private readonly Lazy<IEventTicketPurchaseRepository> _eventTicketPurchaseRepository;
+    private readonly Lazy<IEventTicketSettingsRepository> _eventTicketSettingsRepository;
     private readonly Lazy<IFeatureRepository> _featureRepository;
     private readonly Lazy<IInstagramImageRepository> _instagramImageRepository;
     private readonly Lazy<IInstagramPostRepository> _instagramPostRepository;
@@ -58,6 +60,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberSubscriptionRepository> _memberSubscriptionRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;    
     private readonly Lazy<ISiteEmailSettingsRepository> _siteEmailSettingsRepository;
+    private readonly Lazy<ISitePaymentSettingsRepository> _sitePaymentSettingsRepository;
     private readonly Lazy<ISiteSettingsRepository> _siteSettingsRepository;
     private readonly Lazy<ISiteSubscriptionPriceRepository> _siteSubscriptionPriceRepository;
     private readonly Lazy<ISiteSubscriptionRepository> _siteSubscriptionRepository;
@@ -95,6 +98,8 @@ public class UnitOfWork : IUnitOfWork
         _eventInviteRepository = new(() => new EventInviteRepository(_context));
         _eventRepository = new(() => new EventRepository(_context));
         _eventResponseRepository = new(() => new EventResponseRepository(_context));
+        _eventTicketPurchaseRepository = new(() => new EventTicketPurchaseRepository(_context));
+        _eventTicketSettingsRepository = new(() => new EventTicketSettingsRepository(_context));
         _featureRepository = new(() => new FeatureRepository(_context));
         _instagramImageRepository = new(() => new InstagramImageRepository(_context));
         _instagramPostRepository = new(() => new InstagramPostRepository(_context));
@@ -114,6 +119,7 @@ public class UnitOfWork : IUnitOfWork
         _memberSubscriptionRepository = new(() => new MemberSubscriptionRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
         _siteEmailSettingsRepository = new(() => new SiteEmailSettingsRepository(_context));
+        _sitePaymentSettingsRepository = new(() => new SitePaymentSettingsRepository(_context));
         _siteSettingsRepository = new(() => new SiteSettingsRepository(_context));
         _siteSubscriptionPriceRepository = new(() => new SiteSubscriptionPriceRepository(_context));
         _siteSubscriptionRepository = new(() => new SiteSubscriptionRepository(_context));
@@ -147,6 +153,8 @@ public class UnitOfWork : IUnitOfWork
     public IEventInviteRepository EventInviteRepository => _eventInviteRepository.Value;
     public IEventRepository EventRepository => _eventRepository.Value;
     public IEventResponseRepository EventResponseRepository => _eventResponseRepository.Value;
+    public IEventTicketPurchaseRepository EventTicketPurchaseRepository => _eventTicketPurchaseRepository.Value;
+    public IEventTicketSettingsRepository EventTicketSettingsRepository => _eventTicketSettingsRepository.Value;
     public IFeatureRepository FeatureRepository => _featureRepository.Value;
     public IInstagramImageRepository InstagramImageRepository => _instagramImageRepository.Value;
     public IInstagramPostRepository InstagramPostRepository => _instagramPostRepository.Value;
@@ -166,6 +174,7 @@ public class UnitOfWork : IUnitOfWork
     public IMemberSubscriptionRepository MemberSubscriptionRepository => _memberSubscriptionRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => _siteEmailSettingsRepository.Value;
+    public ISitePaymentSettingsRepository SitePaymentSettingsRepository => _sitePaymentSettingsRepository.Value;
     public ISiteSettingsRepository SiteSettingsRepository => _siteSettingsRepository.Value;
     public ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository => _siteSubscriptionPriceRepository.Value;
     public ISiteSubscriptionRepository SiteSubscriptionRepository => _siteSubscriptionRepository.Value;
@@ -348,6 +357,42 @@ public class UnitOfWork : IUnitOfWork
             await q7.RunAsync(),
             await q8.RunAsync(),
             await q9.RunAsync());
+    }
+
+    public async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6,
+        Func<IUnitOfWork, IDeferredQuery<T7>> query7,
+        Func<IUnitOfWork, IDeferredQuery<T8>> query8,
+        Func<IUnitOfWork, IDeferredQuery<T9>> query9,
+        Func<IUnitOfWork, IDeferredQuery<T10>> query10)
+    {
+        var q1 = query1(this);
+        var q2 = query2(this);
+        var q3 = query3(this);
+        var q4 = query4(this);
+        var q5 = query5(this);
+        var q6 = query6(this);
+        var q7 = query7(this);
+        var q8 = query8(this);
+        var q9 = query9(this);
+        var q10 = query10(this);
+
+        return (
+            await q1.RunAsync(),
+            await q2.RunAsync(),
+            await q3.RunAsync(),
+            await q4.RunAsync(),
+            await q5.RunAsync(),
+            await q6.RunAsync(),
+            await q7.RunAsync(),
+            await q8.RunAsync(),
+            await q9.RunAsync(),
+            await q10.RunAsync());
     }
 
     public Task SaveChangesAsync() => _context.SaveChangesAsync();

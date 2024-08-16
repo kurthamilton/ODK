@@ -16,7 +16,6 @@
         const $container = $map.closest('[data-map-container]') || $map;
 
         function updateUrl() {
-            console.log('updating map url');
             const query = $source.value;
             const url = query
                 ? baseUrl.replace('{query}', encodeURIComponent(query))

@@ -8,6 +8,7 @@
 @using ODK.Web.Razor.Models.Admin.Events
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventModel
 @inject IChapterAdminService ChapterAdminService
+@inject IChapterService ChapterService
 @inject IEventAdminService EventAdminService
 @{
     Layout = "Admin/Events/_EventAdminLayout";
@@ -18,6 +19,7 @@
     var chapterAdminMembers = await ChapterAdminService.GetChapterAdminMembers(serviceRequest);
     var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
     var hosts = await EventAdminService.GetEventHosts(request, Model.Event.Id);
+    var chapterPaymentSettings = await ChapterAdminService.GetChapterPaymentSettings(request);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -28,5 +30,5 @@
         new MenuItem { Text = Model.Event.GetDisplayName() }
     },
     Content = await Html.PartialAsync("Admin/Events/_EventContent", 
-        new EventViewModel(Model.Chapter, Model.CurrentMember, Model.Event, chapterAdminMembers, hosts))
+        new EventEditViewModel(Model.Chapter, Model.CurrentMember, Model.Event, chapterPaymentSettings?.Currency, chapterAdminMembers, hosts))
 })

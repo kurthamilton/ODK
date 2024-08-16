@@ -35,7 +35,18 @@
                     {
                         <span class="d-md-none">&nbsp;|&nbsp;</span>
                         <div class="d-inline-block d-md-block">
-                            @await Html.PartialAsync("Components/_Location", venue.Name)
+                            <div class="d-flex">
+                                <div class="me-auto">
+                                    @await Html.PartialAsync("Components/_Location", venue.Name)
+                                </div>
+                                @if (@event.Ticketed)
+                                {
+                                    <span class="d-md-none">&nbsp;|&nbsp;</span>
+                                    <div>
+                                        <i class="fa-solid fa-ticket" data-bs-toggle="tooltip" data-bs-title="Ticketed"></i>
+                                    </div>
+                                }
+                            </div>
                         </div>
                     }                    
                 </div>

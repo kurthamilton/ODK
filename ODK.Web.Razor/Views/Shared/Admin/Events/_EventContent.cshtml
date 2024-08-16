@@ -1,6 +1,6 @@
 ﻿@using ODK.Core.Members
 @using ODK.Web.Razor.Models.Admin.Events
-@model ODK.Web.Razor.Models.Admin.Events.EventViewModel
+@model ODK.Web.Razor.Models.Admin.Events.EventEditViewModel
 @{
     var hostOptions = Model.ChapterAdminMembers
         ?.Select(x => new SelectListItem
@@ -31,7 +31,9 @@
     @Html.AntiForgeryToken()    
     @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
     {
+        AttendeeLimit = Model.Event.AttendeeLimit,
         ChapterId = Model.Chapter.Id,
+        CurrencySymbol = Model.Currency?.Symbol,
         Date = Model.Event.Date,
         Description = Model.Event.Description,
         Hosts = Model.Hosts?.Select(x => x.MemberId).ToList() ?? [],
@@ -39,6 +41,8 @@
         ImageUrl = Model.Event.ImageUrl,
         Name = Model.Event.Name,
         Public = Model.Event.IsPublic,
+        TicketCost = Model.Event.TicketSettings?.Cost,
+        TicketDepositCost = Model.Event.TicketSettings?.Deposit,
         Time = Model.Event.Time,
         Venue = Model.Event.VenueId
     })

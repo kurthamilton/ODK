@@ -14,5 +14,5 @@ public class ChapterPaymentSettings : IChapterEntity
 
     public Guid CurrencyId { get; set; }
 
-    public string? Provider { get; set; }
+    public string? Provider { get; set; }    
 }

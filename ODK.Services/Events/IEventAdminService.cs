@@ -22,11 +22,13 @@ public interface IEventAdminService
 
     Task<EventResponsesDto> GetEventResponsesDto(AdminServiceRequest request, Guid eventId);
 
-    Task<IReadOnlyCollection<Event>> GetEvents(AdminServiceRequest request, int page, int pageSize);
+    Task<IReadOnlyCollection<Event>> GetEvents(AdminServiceRequest request, int page, int pageSize);    
 
     Task<EventsDto> GetEventsDto(AdminServiceRequest request, int page, int pageSize);
 
     Task<IReadOnlyCollection<Event>> GetEventsByVenue(AdminServiceRequest request, Guid venueId);
+
+    Task<IReadOnlyCollection<EventTicketPurchase>> GetEventTicketPurchases(AdminServiceRequest request, Guid eventId);
 
     Task<DateTime?> GetNextAvailableEventDate(AdminServiceRequest request);
 
