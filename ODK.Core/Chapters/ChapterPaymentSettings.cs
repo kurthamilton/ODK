@@ -1,8 +1,9 @@
 ﻿using ODK.Core.Countries;
+using ODK.Core.Payments;
 
 namespace ODK.Core.Chapters;
 
-public class ChapterPaymentSettings : IChapterEntity
+public class ChapterPaymentSettings : IChapterEntity, IPaymentSettings
 {
     public string? ApiPublicKey { get; set; }
 
@@ -14,5 +15,10 @@ public class ChapterPaymentSettings : IChapterEntity
 
     public Guid CurrencyId { get; set; }
 
-    public string? Provider { get; set; }    
+    public bool HasApiKey => 
+        !string.IsNullOrEmpty(ApiPublicKey) && 
+        !string.IsNullOrEmpty(ApiSecretKey) &&
+        Provider != null;
+
+    public PaymentProviderType? Provider { get; set; }   
 }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using ODK.Core.Countries;
+using ODK.Core.Payments;
 
 namespace ODK.Web.Razor.Models.SuperAdmin;
 
@@ -12,7 +13,7 @@ public class PaymentSettingsFormViewModel
     [DisplayName("Currency")]
     public Guid? CurrencyId { get; set; }
 
-    public string? Provider { get; set; }
+    public PaymentProviderType? Provider { get; set; }
 
     [Required]
     [DisplayName("Public key")]

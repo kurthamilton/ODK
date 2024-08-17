@@ -1,9 +1,8 @@
-namespace ODK.Web.Razor.Pages.Groups
+namespace ODK.Web.Razor.Pages.Groups;
+
+public class GroupModel : OdkGroupPageModel
 {
-    public class GroupModel : OdkGroupPageModel
+    public void OnGet()
     {
-        public void OnGet()
-        {
-        }
     }
 }

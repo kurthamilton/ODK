@@ -41,17 +41,23 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
             x => x.CurrencyRepository.GetById(model.CurrencyId));
 
-        if (existing.Any(x => x.CurrencyId == model.CurrencyId))
+        if (existing.Any(x => x.CurrencyId == model.CurrencyId && x.Frequency == model.Frequency))
         {
             return ServiceResult.Failure($"Subscription already has a price for currency '{currency.Code}'");
         }
 
+        if (model.Frequency == SiteSubscriptionFrequency.None || !Enum.IsDefined(model.Frequency))
+        {
+            return ServiceResult.Failure("Invalid frequency");
+        }
+
         _unitOfWork.SiteSubscriptionPriceRepository.Add(new SiteSubscriptionPrice
         {
+            Amount = model.Amount,
             CurrencyId = model.CurrencyId,
-            SiteSubscriptionId = siteSubscriptionId,
-            MonthlyAmount = model.MonthlyAmount,
-            YearlyAmount = model.YearlyAmount
+            ExternalId = model.ExternalId,
+            Frequency = model.Frequency,
+            SiteSubscriptionId = siteSubscriptionId            
         });
 
         await _unitOfWork.SaveChangesAsync();

@@ -112,13 +112,15 @@ public class SuperAdminController : OdkControllerBase
     }
 
     [HttpPost("SuperAdmin/Subscriptions/{id:guid}/Prices")]
-    public async Task<IActionResult> AddSiteSubscriptionPrice(Guid id, SiteSubscriptionPriceFormViewModel viewModel)
+    public async Task<IActionResult> AddSiteSubscriptionPrice(Guid id, 
+        SiteSubscriptionPriceFormViewModel viewModel)
     {
         var result = await _siteSubscriptionAdminService.AddSiteSubscriptionPrice(MemberId, id, new SiteSubscriptionPriceCreateModel
         {
+            Amount = viewModel.Amount ?? default,
             CurrencyId = viewModel.CurrencyId ?? default,
-            MonthlyAmount = viewModel.MonthlyAmount ?? default,
-            YearlyAmount = viewModel.YearlyAmount ?? default
+            ExternalId = viewModel.ExternalId,
+            Frequency = viewModel.Frequency ?? default
         });
 
         if (result.Success)

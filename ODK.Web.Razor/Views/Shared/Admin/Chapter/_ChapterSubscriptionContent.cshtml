@@ -1,0 +1,57 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Utils
+@using ODK.Services.Chapters
+@using ODK.Services.Members
+@using ODK.Services.Subscriptions
+@using ODK.Web.Common.Extensions
+@model Chapter
+@inject IMemberService MemberService
+@inject ISiteSubscriptionService SiteSubscriptionService
+@{
+    var memberId = User.MemberId();
+    if (Model.OwnerId != memberId)
+    {
+        return;
+    }
+
+    var subscription = await SiteSubscriptionService.GetMemberSiteSubscription(memberId);
+    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto(memberId, Model.Id);
+}
+
+<h3>Current subscription</h3>
+@if (subscription != null)
+{
+    <p>
+        @subscription.SiteSubscription.Name
+    </p>
+    <p>
+        Expires: @(subscription.ExpiresUtc != null ? subscription.ExpiresUtc.Value.ToFriendlyString(Model.TimeZone) : "-")
+    </p>
+}
+else
+{
+    <p>None</p>
+}
+
+<h3>Buy subscription</h3>
+@if (dto.Currency != null)
+{
+    @await Html.PartialAsync("Pricing/_PricingContent", dto)
+}
+else
+{
+    var currencyOptions = dto.Currencies
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Code })
+        .OrderBy(x => x.Text)
+        .ToArray();
+    
+    <form action="/@Model.Name/Admin/Chapter/Currency" method="post">
+        @Html.AntiForgeryToken()
+        <div class="form-group mb-3">
+            @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
+            @Html.DropDownList("currencyId", currencyOptions, "", new { @class = "form-select" })
+        </div>
+        
+        <button class="btn btn-primary">Update</button>
+    </form>
+}

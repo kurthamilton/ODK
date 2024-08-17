@@ -15,6 +15,43 @@ public class PaymentService : IPaymentService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<ServiceResult> MakeAutomatedPayment(
+        IPaymentSettings sourcePaymentSettings,
+        IPaymentSettings destinationPaymentSettings,
+        decimal amount, 
+        string reference)
+    {
+        if (!sourcePaymentSettings.HasApiKey || 
+            !destinationPaymentSettings.HasApiKey || 
+            sourcePaymentSettings.Provider == null ||
+            destinationPaymentSettings.Provider == null)
+        {
+            return ServiceResult.Failure("Payment settings not set up");
+        }
+
+        if (sourcePaymentSettings.Provider != destinationPaymentSettings.Provider)
+        {
+            return ServiceResult.Failure("Provider mismatch");
+        }
+
+        var sourceProviderType = sourcePaymentSettings.Provider;
+        var provider = _paymentProviderFactory.GetPaymentProvider(sourceProviderType.Value);
+
+        var orderId = await provider.CreateOrder(
+            sourcePaymentSettings,
+            Guid.NewGuid(),
+            destinationPaymentSettings.Currency.Code, 
+            amount, 
+            reference);
+
+        if (string.IsNullOrEmpty(orderId))
+        {
+            return ServiceResult.Failure("Error creating order");
+        }
+
+        return ServiceResult.Failure("Not set up");
+    }
+
     public async Task<ServiceResult> MakePayment(Guid chapterId, Member member, decimal amount, string cardToken, string reference)
     {
         var (settings, chapter) = await _unitOfWork.RunAsync(
@@ -26,9 +63,7 @@ public class PaymentService : IPaymentService
             return ServiceResult.Failure("Payment settings not found");
         }
 
-        var providerType = Enum.Parse<PaymentProviderType>(settings.Provider, true);
-        
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(providerType);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(settings.Provider.Value);
 
         var paymentResult = await paymentProvider.MakePayment(settings, settings.Currency.Code, amount, cardToken, reference,
             member.FullName);

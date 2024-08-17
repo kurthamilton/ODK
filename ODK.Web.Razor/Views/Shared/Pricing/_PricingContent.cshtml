@@ -1,24 +1,52 @@
-﻿@using ODK.Services.Subscriptions
-@inject ISiteSubscriptionService SiteSubscriptionService
+﻿@using ODK.Core.Subscriptions
+@using ODK.Services.Subscriptions
+@using ODK.Web.Razor.Models.Pricing
+@model SiteSubscriptionsDto
 @{
-    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto();
-
-    var subscriptions = dto
+    var subscriptions = Model
         .Subscriptions
-        .OrderBy(subscription => subscription.Prices.Min(x => x.YearlyAmount))
+        .OrderBy(subscription => subscription.Prices.Min(x => x.Amount))
         .ToArray();
+
+    var currency = Model.Currency ?? Model.Currencies.FirstOrDefault();
+    if (currency == null || Model.PaymentProvider == null)
+    {
+        return;
+    }
 }
 
 <div class="d-flex">
-    @foreach (var subscription in subscriptions)
+    @foreach (var subscriptionDto in subscriptions)
     {
-        <div>
-            <div>
-                @subscription.Subscription.Name
-            </div>
-            <div>
-                @subscription.Subscription.Description
-            </div>
+        var subscription = subscriptionDto.Subscription;
+        var prices = subscriptionDto.Prices.Where(x => x.CurrencyId == currency.Id);
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">@subscription.Name</h5>
+                <div class="card-text">
+                    @Html.Raw(subscription.Description)
+                    <div class="d-flex gap-3">
+                        @foreach (var price in prices.OrderBy(x => x.Amount))
+                        {
+                            if (string.IsNullOrEmpty(price.ExternalId))
+                            {
+                                continue;
+                            }
+
+                            @await Html.PartialAsync("Pricing/_SubscriptionPrice", new SiteSubscriptionPriceViewModel
+                            {
+                                Amount = price.Amount,
+                                Chapter = Model.Chapter,
+                                Currency = currency,
+                                Frequency = price.Frequency,
+                                ExternalId = price.ExternalId,
+                                Provider = Model.PaymentProvider.Value
+                            })   
+                        }                        
+                    </div>
+                </div>
+            </div>            
         </div>
     }
 </div>

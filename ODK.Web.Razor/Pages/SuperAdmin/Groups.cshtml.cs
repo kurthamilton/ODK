@@ -1,12 +1,11 @@
 using ODK.Services.Caching;
 
-namespace ODK.Web.Razor.Pages.SuperAdmin
+namespace ODK.Web.Razor.Pages.SuperAdmin;
+
+public class GroupsModel : SuperAdminPageModel
 {
-    public class GroupsModel : SuperAdminPageModel
+    public GroupsModel(IRequestCache requestCache) 
+        : base(requestCache)
     {
-        public GroupsModel(IRequestCache requestCache) 
-            : base(requestCache)
-        {
-        }
     }
 }

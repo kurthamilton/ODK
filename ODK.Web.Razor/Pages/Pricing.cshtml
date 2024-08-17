@@ -1,13 +1,17 @@
 ﻿@page "/Pricing"
+@using ODK.Services.Subscriptions
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.PricingModel
+@inject ISiteSubscriptionService SiteSubscriptionService
 @{
     Layout = "_HomeLayout";
     Model.Title = "Pricing";
+
+    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto(Model.CurrentMemberIdOrDefault, null);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Pricing/_PricingContent"),
+    Content = await Html.PartialAsync("Pricing/_PricingContent", dto),
     Title = "Pricing"
 })

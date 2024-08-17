@@ -1,0 +1,19 @@
+﻿@using ODK.Core.Payments
+@using ODK.Web.Razor.Models.Payments
+@model PaymentSubscriptionFormViewModel
+
+@if (Model.Provider == PaymentProviderType.PayPal)
+{
+    <div data-paypal-container="paypal-subscription-@Model.ExternalId"
+         data-paypal-currencycode="@Model.CurrencyCode"
+         data-paypal-type="subscription">
+    </div>
+    <script src="https://www.paypal.com/sdk/js?client-id=Aafqy4G71ZCNXHpMEmJnlizTupnKhnXTCNrlCEz9stdMlMULuV8JGMemiwpFpW7ZekuEaY6NKABJ7OBt&vault=true&intent=subscription"></script>
+    <script>
+        
+    </script>
+}
+else
+{
+    <p>Payment provider not set up</p>
+}

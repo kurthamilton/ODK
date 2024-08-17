@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Payments;
 using Stripe;
 
 namespace ODK.Services.Payments.Stripe;
@@ -6,6 +7,12 @@ namespace ODK.Services.Payments.Stripe;
 public class StripePaymentProvider : IStripePaymentProvider
 {
     public bool HasExternalGateway => true;
+
+    public Task<string?> CreateOrder(IPaymentSettings paymentSettings, Guid id, 
+        string currencyCode, decimal amount, string description)
+    {
+        throw new NotImplementedException();
+    }
 
     public async Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, decimal amount,
         string cardToken, string description, string memberName)

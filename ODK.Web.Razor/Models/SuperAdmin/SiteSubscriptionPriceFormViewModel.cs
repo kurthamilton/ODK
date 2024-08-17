@@ -1,22 +1,25 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using ODK.Core.Countries;
+using ODK.Core.Subscriptions;
 
 namespace ODK.Web.Razor.Models.SuperAdmin;
 
 public class SiteSubscriptionPriceFormViewModel
 {
+    [Required]
+    public int? Amount { get; set; }
+
     public List<Currency> CurrencyOptions { get; set; } = new();
 
     [DisplayName("Currency")]
     [Required]
     public Guid? CurrencyId { get; set; }
 
-    [DisplayName("Monthly")]
+    [DisplayName("External Id")]
     [Required]
-    public int? MonthlyAmount { get; set; }
+    public string? ExternalId { get; set; }
 
-    [DisplayName("Yearly")]
     [Required]
-    public int? YearlyAmount { get; set; }
+    public SiteSubscriptionFrequency? Frequency { get; set; }
 }

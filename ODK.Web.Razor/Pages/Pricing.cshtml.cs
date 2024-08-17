@@ -1,9 +1,8 @@
-namespace ODK.Web.Razor.Pages
+namespace ODK.Web.Razor.Pages;
+
+public class PricingModel : OdkPageModel
 {
-    public class PricingModel : OdkPageModel
+    public void OnGet()
     {
-        public void OnGet()
-        {
-        }
     }
 }

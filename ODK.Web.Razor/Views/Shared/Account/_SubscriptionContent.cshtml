@@ -90,4 +90,10 @@
     </div>
 }
 
-@await Html.PartialAsync("Components/_PaymentScripts", paymentSettings)
+@await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+{
+    ApiPublicKey = paymentSettings.ApiPublicKey ?? "",
+    CurrencyCode = "",
+    IsSubscription = true,
+    Provider = paymentSettings.Provider ?? default
+})

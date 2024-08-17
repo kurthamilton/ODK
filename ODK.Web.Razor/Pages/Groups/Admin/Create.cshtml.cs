@@ -5,54 +5,53 @@ using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Chapters;
 
-namespace ODK.Web.Razor.Pages.Groups.Admin
+namespace ODK.Web.Razor.Pages.Groups.Admin;
+
+public class CreateModel : OdkPageModel
 {
-    public class CreateModel : OdkPageModel
+    private readonly IChapterService _chapterService;
+
+    public CreateModel(IChapterService chapterService)
     {
-        private readonly IChapterService _chapterService;
+        _chapterService = chapterService;
+    }
 
-        public CreateModel(IChapterService chapterService)
+    public void OnGet()
+    {
+    }
+
+    public async Task<IActionResult> OnPostAsync([FromForm] CreateChapterSubmitViewModel viewModel)
+    {
+        if (!ModelState.IsValid)
         {
-            _chapterService = chapterService;
+            return Page();
         }
 
-        public void OnGet()
+        if (viewModel.Location.Lat == null || viewModel.Location.Long == null)
         {
+            AddFeedback("Location not set", FeedbackType.Error);
+            return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync([FromForm] CreateChapterSubmitViewModel viewModel)
+        var result = await _chapterService.CreateChapter(CurrentMemberId, new ChapterCreateModel
         {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
+            Description = viewModel.Description ?? "",
+            Location = new LatLong(viewModel.Location.Lat.Value, viewModel.Location.Long.Value),
+            LocationName = viewModel.Location.Name,
+            Name = viewModel.Name ?? "",
+            TimeZoneId = viewModel.Location.TimeZoneId
+        });
 
-            if (viewModel.Location.Lat == null || viewModel.Location.Long == null)
-            {
-                AddFeedback("Location not set", FeedbackType.Error);
-                return Page();
-            }
-
-            var result = await _chapterService.CreateChapter(CurrentMemberId, new ChapterCreateModel
-            {
-                Description = viewModel.Description ?? "",
-                Location = new LatLong(viewModel.Location.Lat.Value, viewModel.Location.Long.Value),
-                LocationName = viewModel.Location.Name,
-                Name = viewModel.Name ?? "",
-                TimeZoneId = viewModel.Location.TimeZoneId
-            });
-
-            if (!result.Success)
-            {
-                AddFeedback(result);
-                return Page();
-            }
-
-            AddFeedback("Group created. Once approved you will be able to publish and start accepting group members.", FeedbackType.Success);
-
-            return result.Value != null
-                ? Redirect(OdkRoutes2.MemberGroups.Group(result.Value.Id))
-                : Redirect(OdkRoutes2.MemberGroups.Index());
+        if (!result.Success)
+        {
+            AddFeedback(result);
+            return Page();
         }
+
+        AddFeedback("Group created. Once approved you will be able to publish and start accepting group members.", FeedbackType.Success);
+
+        return result.Value != null
+            ? Redirect(OdkRoutes2.MemberGroups.Group(result.Value.Id))
+            : Redirect(OdkRoutes2.MemberGroups.Index());
     }
 }

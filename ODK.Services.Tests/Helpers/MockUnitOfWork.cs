@@ -58,6 +58,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberLocationRepository MemberLocationRepository => Mock.Object.MemberLocationRepository;
     public IMemberPasswordRepository MemberPasswordRepository => Mock.Object.MemberPasswordRepository;
     public IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository => Mock.Object.MemberPasswordResetRequestRepository;
+    public IMemberPaymentSettingsRepository MemberPaymentSettingsRepository => Mock.Object.MemberPaymentSettingsRepository;
     public IMemberPreferencesRepository MemberPreferencesRepository => Mock.Object.MemberPreferencesRepository;
     public IMemberPrivacySettingsRepository MemberPrivacySettingsRepository => Mock.Object.MemberPrivacySettingsRepository;
     public IMemberPropertyRepository MemberPropertyRepository => Mock.Object.MemberPropertyRepository;

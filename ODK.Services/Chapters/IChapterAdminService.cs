@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Core.Subscriptions;
 using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Chapters;
@@ -71,6 +72,8 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterAdminMember(AdminServiceRequest request, Guid memberId, 
         UpdateChapterAdminMember model);
 
+    Task<ServiceResult> UpdateChapterCurrency(AdminServiceRequest request, Guid currencyId);
+
     Task<ServiceResult> UpdateChapterDescription(AdminServiceRequest request, string description);
 
     Task UpdateChapterEventSettings(AdminServiceRequest request, UpdateChapterEventSettings model);
@@ -97,6 +100,9 @@ public interface IChapterAdminService
     
     Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(AdminServiceRequest request,
         Guid questionId, int moveBy);
+
+    Task<ServiceResult> UpdateChapterSiteSubscription(AdminServiceRequest request, 
+        Guid siteSubscriptionId, SiteSubscriptionFrequency frequency);
 
     Task<ServiceResult> UpdateChapterSubscription(AdminServiceRequest request, 
         Guid subscriptionId, CreateChapterSubscription model);

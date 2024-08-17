@@ -1,0 +1,27 @@
+﻿@using ODK.Core.Subscriptions
+@using ODK.Web.Razor.Models.Payments
+@using ODK.Web.Razor.Models.Pricing
+@model SiteSubscriptionPriceViewModel
+@{
+    var title = Model.Frequency switch
+    {
+        SiteSubscriptionFrequency.Monthly => "Monthly",
+        SiteSubscriptionFrequency.Yearly => "Annual",
+        _ => ""
+    };
+}
+<div>
+    <div>
+        <strong>@title</strong>
+    </div>
+    <div>
+        @Model.Currency.ToAmountString(Model.Amount)
+    </div>
+    
+    @await Html.PartialAsync("Payments/_PaymentSubscriptionForm", new PaymentSubscriptionFormViewModel
+    {
+        CurrencyCode = Model.Currency.Code,
+        ExternalId = Model.ExternalId,
+        Provider = Model.Provider
+    })
+</div>
