@@ -3,16 +3,20 @@
 namespace ODK.Core.Subscriptions;
 
 public class SiteSubscriptionPrice : IDatabaseEntity
-{    
+{
+    public decimal Amount { get; set; }
+
     public Currency Currency { get; set; } = null!;
 
     public Guid CurrencyId { get; set; }
+    
+    public string? ExternalId { get; set; }
+
+    public SiteSubscriptionFrequency Frequency { get; set; }
 
     public Guid Id { get; set; }
 
-    public double MonthlyAmount { get; set; }
+    public bool IsPaid => Amount > 0 && !string.IsNullOrEmpty(ExternalId);
 
-    public Guid SiteSubscriptionId { get; set; }
-
-    public double YearlyAmount { get; set; }
+    public Guid SiteSubscriptionId { get; set; }    
 }

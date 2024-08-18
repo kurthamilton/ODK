@@ -2,6 +2,7 @@
 using ODK.Services.Events;
 using ODK.Services.Exceptions;
 using ODK.Services.SocialMedia;
+using ODK.Services.Subscriptions;
 using ODK.Web.Common.Config.Settings;
 
 namespace ODK.Web.Razor.Controllers;
@@ -13,15 +14,18 @@ public class ScheduledTasksController : Controller
     private readonly IEventAdminService _eventAdminService;
     private readonly IInstagramService _instagramService;
     private readonly ScheduledTasksSettings _settings;
+    private readonly ISiteSubscriptionService _siteSubscriptionService;
 
     public ScheduledTasksController(
         IEventAdminService eventAdminService,
         IInstagramService instagramService,
-        AppSettings settings)
+        AppSettings settings,
+        ISiteSubscriptionService siteSubscriptionService)
     {
         _eventAdminService = eventAdminService;
         _instagramService = instagramService;
         _settings = settings.ScheduledTasks;
+        _siteSubscriptionService = siteSubscriptionService;
     }
 
     [HttpPost("emails")]
@@ -47,6 +51,21 @@ public class ScheduledTasksController : Controller
         try
         {
             await _instagramService.ScrapeLatestInstagramPosts();
+        }
+        catch
+        {
+            // do nothing
+        }
+    }
+
+    [HttpPost("subscriptions/expired/sync")]
+    public async Task SyncExpiredSubscriptions()
+    {
+        AssertAuthorised();
+
+        try
+        {
+            await _siteSubscriptionService.SyncExpiredSubscriptions();
         }
         catch
         {

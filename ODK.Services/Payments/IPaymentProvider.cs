@@ -1,13 +1,25 @@
-﻿using ODK.Core.Chapters;
-
-namespace ODK.Services.Payments;
+﻿namespace ODK.Services.Payments;
 
 public interface IPaymentProvider
 {
     bool HasExternalGateway { get; }
 
-    Task<ServiceResult> MakePayment(ChapterPaymentSettings paymentSettings, string currencyCode, decimal amount, string cardToken,
+    Task<ServiceResult> ActivateSubscriptionPlan(string externalId);
+
+    Task<bool> CancelSubscription(string externalId);
+
+    Task<string?> CreateProduct(string name);
+
+    Task<string?> CreateSubscriptionPlan(ExternalSubscriptionPlan subscriptionPlan);
+
+    Task<ServiceResult> DeactivateSubscriptionPlan(string externalId);
+
+    Task<ExternalSubscription?> GetSubscription(string externalId);
+
+    Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);
+
+    Task<ServiceResult> MakePayment(string currencyCode, decimal amount, string cardToken, 
         string description, string memberName);
 
-    Task<ServiceResult> VerifyPayment(ChapterPaymentSettings paymentSettings, string currencyCode, decimal amount, string cardToken);
+    Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken);
 }

@@ -3,12 +3,14 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.DataTypes;
 using ODK.Core.Members;
+using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Emails;
+using ODK.Services.Subscriptions;
 
 namespace ODK.Services.Chapters;
 
@@ -18,6 +20,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IChapterService _chapterService;
     private readonly IEmailService _emailService;
     private readonly IHttpRequestProvider _httpRequestProvider;
+    private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterAdminService(
@@ -25,13 +28,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         ICacheService cacheService,
         IChapterService chapterService,
         IEmailService emailService,
-        IHttpRequestProvider httpRequestProvider)
+        IHttpRequestProvider httpRequestProvider,
+        ISiteSubscriptionService siteSubscriptionService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
         _chapterService = chapterService;
         _emailService = emailService;
         _httpRequestProvider = httpRequestProvider;
+        _siteSubscriptionService = siteSubscriptionService;
         _unitOfWork = unitOfWork;
     }
     
@@ -565,6 +570,39 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<ServiceResult> UpdateChapterCurrency(AdminServiceRequest request, Guid currencyId)
+    {
+        var (chapterPaymentSettings, currencies) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.CurrencyRepository.GetAll());
+
+        if (!currencies.Any(x => x.Id == currencyId))
+        {
+            return ServiceResult.Failure("Currency not found");
+        }
+
+        if (chapterPaymentSettings == null)
+        {
+            chapterPaymentSettings = new ChapterPaymentSettings();
+        }
+
+        chapterPaymentSettings.CurrencyId = currencyId;
+
+        if (chapterPaymentSettings.ChapterId == default)
+        {
+            chapterPaymentSettings.ChapterId = request.ChapterId;
+            _unitOfWork.ChapterPaymentSettingsRepository.Add(chapterPaymentSettings);
+        }
+        else
+        {
+            _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UpdateChapterDescription(AdminServiceRequest request, string description)
     {
         var chapter = await GetChapterAdminRestrictedContent(request,
@@ -871,6 +909,27 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _cacheService.RemoveVersionedCollection<ChapterQuestion>(question.ChapterId);
 
         return questions.OrderBy(x => x.DisplayOrder).ToArray();
+    }
+
+    public async Task<ServiceResult> UpdateChapterSiteSubscription(AdminServiceRequest request,
+        Guid siteSubscriptionId, SiteSubscriptionFrequency frequency)
+    {
+        var (chapter, chapterPaymentSettings, siteSubscription) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId));
+
+        if (chapter.OwnerId == null)
+        {
+            return ServiceResult.Failure("Chapter owner not set");
+        }
+
+        if (chapterPaymentSettings == null || !chapterPaymentSettings.HasApiKey)
+        {
+            return ServiceResult.Failure("Chapter payment settings not set");
+        }
+
+        throw new NotImplementedException();
     }
 
     public async Task<ServiceResult> UpdateChapterSubscription(AdminServiceRequest request, 

@@ -15,6 +15,8 @@ public interface ISiteSubscriptionAdminService
 
     Task<SiteSubscriptionDto> GetSubscriptionDto(Guid currentMemberId, Guid siteSubscriptionId);
 
+    Task MakeDefault(Guid currentMemberId, Guid siteSubscriptionId);
+
     Task<ServiceResult> UpdateSiteSubscription(Guid currentMemberId, Guid siteSubscriptionId, 
         SiteSubscriptionCreateModel model);
 }

@@ -1,4 +1,6 @@
-﻿@model ODK.Web.Razor.Models.SuperAdmin.SiteSubscriptionPriceFormViewModel
+﻿@using ODK.Core.Subscriptions
+@using ODK.Web.Common.Extensions;
+@model ODK.Web.Razor.Models.SuperAdmin.SiteSubscriptionPriceFormViewModel
 @{
     var currencyOptions = Model.CurrencyOptions        
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Code })
@@ -13,13 +15,13 @@
 </div>
 
 <div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.MonthlyAmount, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.MonthlyAmount, new { @class = "form-control", type = "number" })
-    @Html.ValidationMessageFor(x => x.MonthlyAmount)
+    @Html.LabelFor(x => x.Frequency, new { @class = "form-label" })
+    @Html.OdkEnumDropDownFor(x => x.Frequency, "", new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.Frequency)
 </div>
 
 <div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.YearlyAmount, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.YearlyAmount, new { @class = "form-control", type = "number" })
-    @Html.ValidationMessageFor(x => x.YearlyAmount)
+    @Html.LabelFor(x => x.Amount, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Amount, new { @class = "form-control", type = "number" })
+    @Html.ValidationMessageFor(x => x.Amount)
 </div>

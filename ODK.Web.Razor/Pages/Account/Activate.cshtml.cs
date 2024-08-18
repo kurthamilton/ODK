@@ -3,32 +3,31 @@ using ODK.Services.Authentication;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Account;
 
-namespace ODK.Web.Razor.Pages.Account
+namespace ODK.Web.Razor.Pages.Account;
+
+public class ActivateModel : OdkPageModel
 {
-    public class ActivateModel : OdkPageModel
+    private readonly IAuthenticationService _authenticationService;
+
+    public ActivateModel(IAuthenticationService authenticationService) 
     {
-        private readonly IAuthenticationService _authenticationService;
+        _authenticationService = authenticationService;
+    }
 
-        public ActivateModel(IAuthenticationService authenticationService) 
+    public void OnGet()
+    {
+    }
+
+    public async Task<IActionResult> OnPostAsync(string token, ActivateFormViewModel viewModel)
+    {
+        var result = await _authenticationService.ActivateAccountAsync(token, viewModel.Password);
+        if (!result.Success)
         {
-            _authenticationService = authenticationService;
+            AddFeedback(new FeedbackViewModel(result));
+            return Page();
         }
 
-        public void OnGet()
-        {
-        }
-
-        public async Task<IActionResult> OnPostAsync(string token, ActivateFormViewModel viewModel)
-        {
-            var result = await _authenticationService.ActivateAccountAsync(token, viewModel.Password);
-            if (!result.Success)
-            {
-                AddFeedback(new FeedbackViewModel(result));
-                return Page();
-            }
-
-            AddFeedback("Your account has been activated. You can now login.", FeedbackType.Success);
-            return Redirect($"/Account/Login");
-        }
+        AddFeedback("Your account has been activated. You can now login.", FeedbackType.Success);
+        return Redirect($"/Account/Login");
     }
 }

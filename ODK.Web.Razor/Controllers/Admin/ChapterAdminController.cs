@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
+using ODK.Core.Subscriptions;
 using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
+using ODK.Web.Razor.Models.Pricing;
 
 namespace ODK.Web.Razor.Controllers.Admin;
 
@@ -106,6 +108,15 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("/{chapterName}/Admin/Chapter/Currency")]
+    public async Task<IActionResult> UpdateCurrency(string chapterName, [FromForm] Guid currencyId)
+    {
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _chapterAdminService.UpdateChapterCurrency(serviceRequest, currencyId);
+        AddFeedback(result, "Currency updated");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("/{chapterName}/Admin/Chapter/Emails/{type}/RestoreDefault")]
     public async Task<IActionResult> RestoreDefaultEmail(string chapterName, EmailType type)
     {
@@ -179,6 +190,16 @@ public class ChapterAdminController : AdminControllerBase
     {
         var serviceRequest = await GetAdminServiceRequest(chapterName);
         await _chapterAdminService.UpdateChapterQuestionDisplayOrder(serviceRequest, id, -1);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("/{chapterName}/Admin/Chapter/Subscriptions/{id:guid}/Automatic")]
+    public async Task<IActionResult> SetUpAutomaticSubscription(string chapterName, Guid id, 
+        [FromForm] SiteSubscriptionFrequency frequency)
+    {
+        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var result = await _chapterAdminService.UpdateChapterSiteSubscription(serviceRequest, id, frequency);
+        AddFeedback(result, "Automatic subscription set up");
         return RedirectToReferrer();
     }
 

@@ -1,0 +1,22 @@
+﻿@using ODK.Core.Payments
+@using ODK.Web.Razor.Models.Payments
+@model PaymentScriptsViewModel
+
+@if (Model?.Provider == PaymentProviderType.PayPal)
+{
+    var currency = Model.CurrencyCode;
+    var clientId = Model.ApiPublicKey;
+
+    var scriptUrl = $"https://www.paypal.com/sdk/js?client-id={clientId}";
+    if (Model.IsSubscription)
+    {
+        scriptUrl += $"&vault=true&intent=subscription";        
+    }
+    else
+    {
+        scriptUrl += $"&currency={currency}";
+    }
+    
+    <script src="@scriptUrl"></script>
+    <script src="/js/odk.paypal.js"></script>
+}

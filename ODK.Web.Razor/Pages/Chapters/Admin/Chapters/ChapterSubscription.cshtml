@@ -1,0 +1,39 @@
+﻿@page "/{chapterName}/Admin/Chapter/Subscription"
+@using ODK.Services.Members
+@using ODK.Services.Subscriptions
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
+@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.ChapterSubscriptionModel
+@inject IMemberService MemberService
+@inject ISiteSubscriptionService SiteSubscriptionService
+@{
+    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Model.Title = "Subscription | Admin";
+
+    var memberId = User.MemberId();
+    var subscription = await SiteSubscriptionService.GetMemberSiteSubscription(memberId);
+    var siteSubscriptions = await SiteSubscriptionService.GetSiteSubscriptionsDto(memberId, Model.Chapter.Id);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", new ChapterSubscriptionViewModel
+    {
+        Chapter = Model.Chapter,
+        Current = subscription,
+        SiteSubscriptions = siteSubscriptions
+    })
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+    {
+        ApiPublicKey = siteSubscriptions.PaymentSettings?.ApiPublicKey ?? "",
+        CurrencyCode = "",
+        IsSubscription = true,
+        Provider = siteSubscriptions.PaymentSettings?.Provider ?? default
+    })
+}

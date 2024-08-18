@@ -37,20 +37,11 @@
             
             @await Html.PartialAsync("Feedback/_Feedback")           
 
-            @if (BodyContent != null)
-            {
-                @BodyContent
-            }
+            @BodyContent            
 
-            @if (Model.Content != null)
-            {
-                @Model.Content
-            }
+            @Model.Content
 
-            @if (Model.ContentFunc != null)
-            {
-                @Model.ContentFunc(null)
-            }
+            @Model.ContentFunc?.Invoke(null)
         </div>
     </section>
 </main>

@@ -17,6 +17,18 @@ public static class HtmlExtensions
         return htmlHelper.CheckBoxFor(expression, htmlAttributeDictionary);
     }
 
+    public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, TEnum?>> expression, object htmlAttributes) where TEnum : struct, Enum
+    {
+        return htmlHelper.EnumDropDownFor(expression, null, htmlAttributes);
+    }
+
+    public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, TEnum?>> expression, string optionLabel, object htmlAttributes) where TEnum : struct, Enum
+    {
+        return htmlHelper.EnumDropDownFor(expression, optionLabel, htmlAttributes);
+    }
+
     public static IHtmlContent OdkTimeZoneDropDownFor<TModel>(this IHtmlHelper<TModel> htmlHelper,
         Expression<Func<TModel, string?>> expression, object htmlAttributes)
     {
@@ -29,14 +41,27 @@ public static class HtmlExtensions
         return htmlHelper.TimeZoneDropDownFor(expression, optionLabel, htmlAttributes);
     }
 
+    private static IHtmlContent EnumDropDownFor<TModel, TEnum>(this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, TEnum?>> expression, string? optionLabel, object htmlAttributes) 
+        where TEnum : struct, Enum
+    {
+        var options = Enum
+            .GetValues<TEnum>()
+            .Select(x => new SelectListItem { Value = ((int)(object)x).ToString(), Text = x.ToString() })
+            .Where(x => x.Value != "0");
+        return optionLabel != null
+            ? htmlHelper.DropDownListFor(expression, options, optionLabel, htmlAttributes)
+            : htmlHelper.DropDownListFor(expression, options, htmlAttributes);
+    }
+
     private static IHtmlContent TimeZoneDropDownFor<TModel>(this IHtmlHelper<TModel> htmlHelper,
         Expression<Func<TModel, string?>> expression, string? optionLabel, object htmlAttributes)
     {
-        var timeZoneOptions = TimeZoneInfo
+        var options = TimeZoneInfo
             .GetSystemTimeZones()
             .Select(x => new SelectListItem { Value = x.Id, Text = x.DisplayName });
         return optionLabel != null
-            ? htmlHelper.DropDownListFor(expression, timeZoneOptions, optionLabel, htmlAttributes)
-            : htmlHelper.DropDownListFor(expression, timeZoneOptions, htmlAttributes);
+            ? htmlHelper.DropDownListFor(expression, options, optionLabel, htmlAttributes)
+            : htmlHelper.DropDownListFor(expression, options, htmlAttributes);
     }
 }

@@ -15,6 +15,9 @@ public class SiteSubscriptionPriceMap : IEntityTypeConfiguration<SiteSubscriptio
         builder.Property(x => x.Id)
             .HasColumnName("SiteSubscriptionPriceId");
 
+        builder.Property(x => x.Frequency)
+            .HasConversion<int>();
+
         builder.HasOne(x => x.Currency)
             .WithMany()
             .HasForeignKey(x => x.CurrencyId);

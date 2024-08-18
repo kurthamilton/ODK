@@ -15,6 +15,51 @@ public class PaymentService : IPaymentService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<ServiceResult> ActivateSubscriptionPlan(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.ActivateSubscriptionPlan(externalId);
+    }
+
+    public async Task<ServiceResult> CancelSubscription(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var result = await provider.CancelSubscription(externalId);
+        return result
+            ? ServiceResult.Successful()
+            : ServiceResult.Failure("Error canceling subscription");
+    }
+
+    public async Task<string?> CreateProduct(IPaymentSettings settings, string name)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.CreateProduct(name);
+    }
+
+    public async Task<string?> CreateSubscriptionPlan(IPaymentSettings settings, ExternalSubscriptionPlan subscriptionPlan)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.CreateSubscriptionPlan(subscriptionPlan);
+    }
+
+    public async Task<ServiceResult> DeactivateSubscriptionPlan(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.DeactivateSubscriptionPlan(externalId);
+    }
+
+    public async Task<ExternalSubscription?> GetSubscription(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.GetSubscription(externalId);
+    }
+
+    public async Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.GetSubscriptionPlan(externalId);
+    }
+
     public async Task<ServiceResult> MakePayment(Guid chapterId, Member member, decimal amount, string cardToken, string reference)
     {
         var (settings, chapter) = await _unitOfWork.RunAsync(
@@ -26,11 +71,9 @@ public class PaymentService : IPaymentService
             return ServiceResult.Failure("Payment settings not found");
         }
 
-        var providerType = Enum.Parse<PaymentProviderType>(settings.Provider, true);
-        
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(providerType);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(settings);
 
-        var paymentResult = await paymentProvider.MakePayment(settings, settings.Currency.Code, amount, cardToken, reference,
+        var paymentResult = await paymentProvider.MakePayment(settings.Currency.Code, amount, cardToken, reference,
             member.FullName);
         if (!paymentResult.Success)
         {

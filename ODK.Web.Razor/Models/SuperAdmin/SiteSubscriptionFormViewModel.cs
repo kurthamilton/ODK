@@ -8,7 +8,10 @@ public class SiteSubscriptionFormViewModel
     [Required]
     public string Description { get; set; } = "";
 
-    public bool Enabled { get; set; }
+    public bool Enabled { get; set; }    
+
+    [DisplayName("Fallback")]
+    public Guid? FallbackSiteSubscriptionId { get; set; }
 
     [DisplayName("Group limit")]
     public int? GroupLimit { get; set; }
@@ -26,4 +29,6 @@ public class SiteSubscriptionFormViewModel
 
     [DisplayName("Send member emails")]
     public bool SendMemberEmails { get; set; }
+
+    public Guid? SiteSubscriptionId { get; set; }
 }

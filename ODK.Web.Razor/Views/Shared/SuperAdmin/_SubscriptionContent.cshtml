@@ -14,12 +14,14 @@
         {
             Description = Model.Subscription.Description,
             Enabled = Model.Subscription.Enabled,
+            FallbackSiteSubscriptionId = Model.Subscription.FallbackSiteSubscriptionId,
             GroupLimit = Model.Subscription.GroupLimit,
             MemberLimit = Model.Subscription.MemberLimit,
             MemberSubscriptions = Model.Subscription.MemberSubscriptions,
             Name = Model.Subscription.Name,
             Premium = Model.Subscription.Premium,
-            SendMemberEmails = Model.Subscription.SendMemberEmails
+            SendMemberEmails = Model.Subscription.SendMemberEmails,
+            SiteSubscriptionId = Model.Subscription.Id
         })
         <button class="btn btn-primary">Update</button>
     </form>
@@ -31,20 +33,22 @@
         <thead>
             <tr>
                 <th>Currency</th>
-                <th>Monthly</th>
-                <th>Yearly</th>
+                <th>Frequency</th>
+                <th>Amount</th>
+                <th>External Id</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var price in Model.Prices.OrderBy(x => x.MonthlyAmount))
+            @foreach (var price in Model.Prices.OrderBy(x => x.Amount))
             {
                 var currency = currencyDictionary[price.CurrencyId];
 
                 <tr>
                     <td>@currency.Code</td>
-                    <td>@currency.Symbol@price.MonthlyAmount</td>
-                    <td>@currency.Symbol@price.YearlyAmount</td>
+                    <td>@price.Frequency.ToString()</td>
+                    <td>@currency.ToAmountString(price.Amount)</td>
+                    <td>@price.ExternalId</td>
                     <td>
                         <form action="/SuperAdmin/Subscriptions/@Model.Subscription.Id/Prices/@price.Id/Delete" method="post">
                             @Html.AntiForgeryToken()

@@ -1,4 +1,6 @@
-﻿namespace ODK.Services.Chapters;
+﻿using ODK.Core.Payments;
+
+namespace ODK.Services.Chapters;
 
 public class UpdateChapterPaymentSettings
 {
@@ -8,5 +10,5 @@ public class UpdateChapterPaymentSettings
 
     public required Guid? CurrencyId { get; init; }
 
-    public required string? Provider { get; init; }
+    public required PaymentProviderType? Provider { get; init; }
 }

@@ -1,9 +1,8 @@
-namespace ODK.Web.Razor.Pages.Account
+namespace ODK.Web.Razor.Pages.Account;
+
+public class PictureModel : OdkPageModel
 {
-    public class PictureModel : OdkPageModel
+    public void OnGet()
     {
-        public void OnGet()
-        {
-        }
     }
 }

@@ -6,6 +6,7 @@ using ODK.Services.Authentication;
 using ODK.Services.Caching;
 using ODK.Services.Features;
 using ODK.Services.Members;
+using ODK.Services.Subscriptions;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Extensions;
@@ -24,15 +25,22 @@ public class AccountController : OdkControllerBase
     private readonly ILoginHandler _loginHandler;
     private readonly IMemberService _memberService;
     private readonly IRequestCache _requestCache;
+    private readonly ISiteSubscriptionService _siteSubscriptionService;
 
-    public AccountController(IMemberService memberService, ILoginHandler loginHandler, IRequestCache requestCache,
-        IAuthenticationService authenticationService, IFeatureService featureService)
+    public AccountController(
+        IMemberService memberService, 
+        ILoginHandler loginHandler, 
+        IRequestCache requestCache,
+        IAuthenticationService authenticationService, 
+        IFeatureService featureService,
+        ISiteSubscriptionService siteSubscriptionService)
     {
         _authenticationService = authenticationService;
         _featureService = featureService;
         _loginHandler = loginHandler;
         _memberService = memberService;
         _requestCache = requestCache;
+        _siteSubscriptionService = siteSubscriptionService;
     }
 
     [AllowAnonymous]
@@ -274,15 +282,8 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/picture/change")]
     public async Task<IActionResult> UpdatePicture([FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
     {
-        return await UpdatePicture("", cropInfo, image);
-    }
-
-    [HttpPost("{chapterName}/Account/Picture/Change")]
-    public async Task<IActionResult> UpdatePicture(string chapterName, 
-        [FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
-    {
         var model = image != null ? new UpdateMemberImage
-        {            
+        {
             ImageData = await image.ToByteArrayAsync(),
             MimeType = image.ContentType
         } : null;
@@ -295,22 +296,28 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/picture/rotate")]
     public async Task<IActionResult> RotatePicture()
     {
-        return await RotatePicture("");
-    }
-
-    [HttpPost("{chapterName}/Account/Picture/Rotate")]
-    public async Task<IActionResult> RotatePicture(string chapterName)
-    {
         await _memberService.RotateMemberImage(MemberId);
 
         return RedirectToReferrer();
     }
-    
-    [HttpPost("{ChapterName}/Account/Subscription/Purchase")]
-    public async Task<IActionResult> PurchaseSubscription(string chapterName, [FromForm] PurchaseSubscriptionRequest request)
+
+    [HttpPost("account/subscription/confirm")]
+    public async Task<IActionResult> ConfirmSiteSubscription(
+        [FromForm] Guid siteSubscriptionPriceId,
+        [FromForm] string externalId)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var result = await _memberService.PurchaseSubscription(MemberId, chapter.Id, request.SubscriptionId, request.Token);
+        var result = await _siteSubscriptionService.ConfirmMemberSiteSubscription(
+            MemberId, 
+            siteSubscriptionPriceId, 
+            externalId);
+        AddFeedback(result, "Subscription updated");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("Chapters/{id:guid}/Account/Subscription/Purchase")]
+    public async Task<IActionResult> PurchaseSubscription(Guid id, [FromForm] PurchaseSubscriptionRequest request)
+    {
+        var result = await _memberService.PurchaseSubscription(MemberId, id, request.SubscriptionId, request.Token);
         AddFeedback(result, "Purchase complete. Thank you for subscribing.");
         return RedirectToReferrer();
     }

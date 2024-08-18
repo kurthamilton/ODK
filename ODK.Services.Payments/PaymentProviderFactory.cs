@@ -1,31 +1,35 @@
 ﻿using ODK.Core.Payments;
 using ODK.Services.Payments.PayPal;
-using ODK.Services.Payments.Stripe;
 
 namespace ODK.Services.Payments;
 
 public class PaymentProviderFactory : IPaymentProviderFactory
 {
-    private readonly IPayPalPaymentProvider _payPalPaymentProvider;
-    private readonly IStripePaymentProvider _stripePaymentProvider;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly PayPalPaymentProviderSettings _payPalSettings;
 
-    public PaymentProviderFactory(IStripePaymentProvider stripePaymentProvider,
-        IPayPalPaymentProvider payPalPaymentProvider)
+    public PaymentProviderFactory(
+        IHttpClientFactory httpClientFactory,
+        PayPalPaymentProviderSettings payPalSettings)
     {
-        _payPalPaymentProvider = payPalPaymentProvider;
-        _stripePaymentProvider = stripePaymentProvider;
+        _httpClientFactory = httpClientFactory;
+        _payPalSettings = payPalSettings;
     }
 
-    public IPaymentProvider GetPaymentProvider(PaymentProviderType type)
+    public IPaymentProvider GetPaymentProvider(IPaymentSettings settings)
     {
-        switch (type)
+        switch (settings.Provider)
         {
             case PaymentProviderType.PayPal:
-                return _payPalPaymentProvider;
-            case PaymentProviderType.Stripe:
-                return _stripePaymentProvider;
+                return new PayPalPaymentProvider(
+                    _payPalSettings,
+                    _httpClientFactory,
+                    settings
+                    );
+            //case PaymentProviderType.Stripe:
+            //    return new StripePaymentProvider();
             default:
-                throw new ArgumentException($"Payment provider type {type} not supported", nameof(type));
+                throw new InvalidOperationException($"Payment provider type {settings.Provider} not supported");
         }
     }
 }

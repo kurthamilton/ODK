@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ODK.Services.Payments.PayPal.Client;
+namespace ODK.Services.Payments.PayPal.Client.Models;
 
 public class AuthenticationJsonModel
 {

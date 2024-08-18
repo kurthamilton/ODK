@@ -24,7 +24,6 @@ using ODK.Services.Media;
 using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Payments.PayPal;
-using ODK.Services.Payments.Stripe;
 using ODK.Services.Recaptcha;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
@@ -89,9 +88,7 @@ public static class DependencyConfig
         PaymentsSettings payments = appSettings.Payments;
 
         services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
-        services.AddScoped<IPayPalPaymentProvider, PayPalPaymentProvider>();
         services.AddSingleton(new PayPalPaymentProviderSettings(payments.PayPalApiBaseUrl));
-        services.AddScoped<IStripePaymentProvider, StripePaymentProvider>();
     }
 
     private static void ConfigureServices(this IServiceCollection services, AppSettings appSettings)

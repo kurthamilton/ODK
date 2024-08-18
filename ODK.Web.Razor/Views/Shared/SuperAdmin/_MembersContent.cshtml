@@ -33,7 +33,7 @@
                     else
                     {
                         <form action="/@Model.Name/Admin/Chapter/Owner" method="post">
-                            @Html.Hidden("memberId", adminMember.Id)
+                            @Html.Hidden("memberId", adminMember.MemberId)
                             <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
                                 <i class="fa-regular fa-star text-warning"></i>
                             </button>

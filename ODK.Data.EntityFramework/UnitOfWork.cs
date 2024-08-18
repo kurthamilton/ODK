@@ -52,6 +52,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberLocationRepository> _memberLocationRepository;
     private readonly Lazy<IMemberPasswordRepository> _memberPasswordRepository;
     private readonly Lazy<IMemberPasswordResetRequestRepository> _memberPasswordResetRequestRepository;
+    private readonly Lazy<IMemberPaymentSettingsRepository> _memberPaymentSettingsRepository;
     private readonly Lazy<IMemberPreferencesRepository> _memberPreferencesRepository;
     private readonly Lazy<IMemberPrivacySettingsRepository> _memberPrivacySettingsRepository;
     private readonly Lazy<IMemberPropertyRepository> _memberPropertyRepository;
@@ -111,6 +112,7 @@ public class UnitOfWork : IUnitOfWork
         _memberLocationRepository = new(() => new MemberLocationRepository(_context));
         _memberPasswordRepository = new(() => new MemberPasswordRepository(_context));
         _memberPasswordResetRequestRepository = new(() => new MemberPasswordResetRequestRepository(_context));
+        _memberPaymentSettingsRepository = new(() => new MemberPaymentSettingsRepository(_context));
         _memberPreferencesRepository = new(() => new MemberPreferencesRepository(_context));
         _memberPrivacySettingsRepository = new(() => new MemberPrivacySettingsRepository(_context));
         _memberPropertyRepository = new(() => new MemberPropertyRepository(_context));
@@ -166,6 +168,7 @@ public class UnitOfWork : IUnitOfWork
     public IMemberLocationRepository MemberLocationRepository => _memberLocationRepository.Value;
     public IMemberPasswordRepository MemberPasswordRepository => _memberPasswordRepository.Value;
     public IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository => _memberPasswordResetRequestRepository.Value;
+    public IMemberPaymentSettingsRepository MemberPaymentSettingsRepository => _memberPaymentSettingsRepository.Value;
     public IMemberPreferencesRepository MemberPreferencesRepository => _memberPreferencesRepository.Value;
     public IMemberPrivacySettingsRepository MemberPrivacySettingsRepository => _memberPrivacySettingsRepository.Value;
     public IMemberPropertyRepository MemberPropertyRepository => _memberPropertyRepository.Value;

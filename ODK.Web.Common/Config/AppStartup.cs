@@ -13,6 +13,7 @@ public static class AppStartup
         services.AddMemoryCache();
         services.AddControllers().ConfigureJson();
         services.AddHttpContextAccessor();
+        services.AddHttpClient();
 
         services.Configure<IISServerOptions>(options =>
         {

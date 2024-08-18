@@ -1,9 +1,8 @@
-namespace ODK.Web.Razor.Pages
+namespace ODK.Web.Razor.Pages;
+
+public class ContactModel : OdkPageModel
 {
-    public class ContactModel : OdkPageModel
+    public void OnGet()
     {
-        public void OnGet()
-        {
-        }
     }
 }

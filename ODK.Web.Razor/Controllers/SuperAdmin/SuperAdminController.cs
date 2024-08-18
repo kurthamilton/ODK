@@ -65,7 +65,7 @@ public class SuperAdminController : OdkControllerBase
         return Redirect("/SuperAdmin/Features");
     }
 
-    [HttpPost("SuperAdmin/Subscriptions")]
+    [HttpPost("superadmin/subscriptions")]
     public async Task<IActionResult> CreateSubscription(SiteSubscriptionFormViewModel viewModel)
     {
         var result = await _siteSubscriptionAdminService.AddSiteSubscription(MemberId, new SiteSubscriptionCreateModel
@@ -73,6 +73,7 @@ public class SuperAdminController : OdkControllerBase
             Description = viewModel.Description,
             Name = viewModel.Name,
             Enabled = viewModel.Enabled,
+            FallbackSiteSubscriptionId = viewModel.FallbackSiteSubscriptionId,
             GroupLimit = viewModel.GroupLimit,
             MemberLimit = viewModel.MemberLimit,
             MemberSubscriptions = viewModel.MemberSubscriptions,
@@ -88,7 +89,7 @@ public class SuperAdminController : OdkControllerBase
         return Redirect("/SuperAdmin/Subscriptions");
     }
 
-    [HttpPost("SuperAdmin/Subscriptions/{id:guid}")]
+    [HttpPost("superadmin/subscriptions/{id:guid}")]
     public async Task<IActionResult> UpdateSubscription(Guid id, SiteSubscriptionFormViewModel viewModel)
     {
         var result = await _siteSubscriptionAdminService.UpdateSiteSubscription(MemberId, id, new SiteSubscriptionCreateModel
@@ -96,6 +97,7 @@ public class SuperAdminController : OdkControllerBase
             Description = viewModel.Description,
             Name = viewModel.Name,
             Enabled = viewModel.Enabled,
+            FallbackSiteSubscriptionId = viewModel.FallbackSiteSubscriptionId,
             GroupLimit = viewModel.GroupLimit,
             MemberLimit = viewModel.MemberLimit,
             MemberSubscriptions = viewModel.MemberSubscriptions,
@@ -111,14 +113,23 @@ public class SuperAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("SuperAdmin/Subscriptions/{id:guid}/Prices")]
-    public async Task<IActionResult> AddSiteSubscriptionPrice(Guid id, SiteSubscriptionPriceFormViewModel viewModel)
+    [HttpPost("superadmin/subscriptions/{id:guid}/default")]
+    public async Task<IActionResult> MakeDefault(Guid id)
+    {
+        await _siteSubscriptionAdminService.MakeDefault(MemberId, id);
+        AddFeedback("Default subscription updated", FeedbackType.Success);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("superadmin/subscriptions/{id:guid}/prices")]
+    public async Task<IActionResult> AddSiteSubscriptionPrice(Guid id, 
+        SiteSubscriptionPriceFormViewModel viewModel)
     {
         var result = await _siteSubscriptionAdminService.AddSiteSubscriptionPrice(MemberId, id, new SiteSubscriptionPriceCreateModel
         {
+            Amount = viewModel.Amount ?? default,
             CurrencyId = viewModel.CurrencyId ?? default,
-            MonthlyAmount = viewModel.MonthlyAmount ?? default,
-            YearlyAmount = viewModel.YearlyAmount ?? default
+            Frequency = viewModel.Frequency ?? default
         });
 
         if (result.Success)
