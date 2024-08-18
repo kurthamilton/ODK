@@ -5,12 +5,14 @@ using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
+using ODK.Services.Emails;
 using ODK.Services.Payments;
 
 namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionService : ISiteSubscriptionService
 {
+    private readonly IEmailService _emailService;
     private readonly IPaymentService _paymentService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -18,22 +20,81 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     public SiteSubscriptionService(
         IUnitOfWork unitOfWork, 
         IPlatformProvider platformProvider,
-        IPaymentService paymentService)
+        IPaymentService paymentService,
+        IEmailService emailService)
     { 
+        _emailService = emailService;
         _paymentService = paymentService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<ServiceResult> ConfirmMemberSiteSubscription(
+        Guid memberId, 
+        Guid siteSubscriptionPriceId, 
+        string externalId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (paymentSettings, memberSubscription, siteSubscriptionPrice) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.Get(),
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform),
+            x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId));
+
+        var externalSubscription = await _paymentService.GetSubscription(paymentSettings, externalId);
+
+        if (externalSubscription == null || 
+            externalSubscription.ExternalSubscriptionPlanId != siteSubscriptionPrice.ExternalId)
+        {
+            return ServiceResult.Failure("Error confirming subscription");
+        }        
+
+        if (memberSubscription == null)
+        {
+            memberSubscription = new MemberSiteSubscription();
+        }        
+        
+        memberSubscription.ExternalId = externalSubscription.ExternalId;
+        memberSubscription.ExpiresUtc = externalSubscription.NextBillingDate;
+
+        if (memberSubscription.SiteSubscriptionId != siteSubscriptionPrice.SiteSubscriptionId)
+        {
+            var siteSubscription = await _unitOfWork.SiteSubscriptionRepository
+                .GetById(siteSubscriptionPrice.SiteSubscriptionId)
+                .RunAsync();
+            memberSubscription.SiteSubscription = siteSubscription;
+            memberSubscription.SiteSubscriptionId = siteSubscription.Id;
+            memberSubscription.SiteSubscriptionPrice = siteSubscriptionPrice;
+            memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
+        }
+
+        if (memberSubscription.MemberId == default)
+        {
+            memberSubscription.MemberId = memberId;
+            _unitOfWork.MemberSiteSubscriptionRepository.Add(memberSubscription);
+        }
+        else
+        {
+            _unitOfWork.MemberSiteSubscriptionRepository.Update(memberSubscription);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<MemberSiteSubscription?> GetMemberSiteSubscription(Guid memberId)
     {
-        return await _unitOfWork.MemberSiteSubscriptionRepository.GetByMemberId(memberId).RunAsync();
+        var platform = _platformProvider.GetPlatform();
+        return await _unitOfWork.MemberSiteSubscriptionRepository
+            .GetByMemberId(memberId, platform)
+            .RunAsync();
     }
 
     public async Task<SiteSubscriptionsDto> GetSiteSubscriptionsDto(Guid? memberId, Guid? chapterId)
     {
         var platform = _platformProvider.GetPlatform();
-        var (chapter, subscriptions, prices, memberPaymentSettings, chapterPaymentSettings) = await _unitOfWork.RunAsync(
+        var (chapter, subscriptions, prices, memberPaymentSettings, chapterPaymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
             x => chapterId != null
                 ? x.ChapterRepository.GetByIdOrDefault(chapterId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Chapter>(),
@@ -44,7 +105,10 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 : new DefaultDeferredQuerySingleOrDefault<MemberPaymentSettings>(),
             x => chapterId != null 
                 ? x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<ChapterPaymentSettings>());        
+                : new DefaultDeferredQuerySingleOrDefault<ChapterPaymentSettings>(),
+            x => memberId != null
+                ? x.MemberSiteSubscriptionRepository.GetByMemberId(memberId.Value, platform)
+                : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscription>());        
 
         var currency = chapterPaymentSettings?.Currency ?? memberPaymentSettings?.Currency;
 
@@ -55,7 +119,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             .ToArray();
 
         var priceDictionary = prices
-            .Where(x => currency == null || x.CurrencyId == currency.Id)
+            .Where(x => currency == null || x.CurrencyId == currency.Id || x.Amount == 0)
             .GroupBy(x => x.SiteSubscriptionId)
             .ToDictionary(x => x.Key, x => x.ToArray());        
 
@@ -64,26 +128,71 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             Chapter = chapter,
             Currencies = currencies,            
             Currency = currency,
-            PaymentProvider = chapterPaymentSettings?.Provider ?? memberPaymentSettings?.Provider,
+            CurrentMemberSubscription = memberSubscription,
+            PaymentSettings = (IPaymentSettings?)chapterPaymentSettings ?? memberPaymentSettings,
             Subscriptions = subscriptions
-                .Where(x => priceDictionary.ContainsKey(x.Id))
                 .Select(x => new SiteSubscriptionDto
                 {
                     Currencies = [],
-                    Prices = priceDictionary[x.Id],
+                    Prices = priceDictionary.ContainsKey(x.Id) ? priceDictionary[x.Id] : [],
                     Subscription = x
                 })
                 .ToArray()
         };
     }
 
+    public async Task SyncExpiredSubscriptions()
+    {
+        var (paymentSettings, subscriptions) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.Get(),
+            x => x.MemberSiteSubscriptionRepository.GetExpired());
+
+        var updated = new List<MemberSiteSubscription>();
+
+        foreach (var subscription in subscriptions)
+        {
+            if (string.IsNullOrEmpty(subscription.ExternalId))
+            {
+                continue;
+            }
+
+            var externalSubscription = await _paymentService.GetSubscription(paymentSettings, subscription.ExternalId);
+            if (externalSubscription?.NextBillingDate > DateTime.UtcNow)
+            {                
+                subscription.ExpiresUtc = externalSubscription.NextBillingDate.Value;
+                updated.Add(subscription);
+            }
+            else
+            {
+                var member = await _unitOfWork.MemberRepository.GetById(subscription.MemberId).RunAsync();
+                var subject = "{title} - Subscription Expired";
+                var body = 
+                    "<p>Your subscription has now expired</p>";
+
+                await _emailService.SendMemberEmail(null, null, member.ToEmailAddressee(), subject, body);
+            }
+        }
+
+        if (updated.Count > 0)
+        {
+            foreach (var subscription in updated)
+            {
+                _unitOfWork.MemberSiteSubscriptionRepository.Update(subscription);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }        
+    }
+
     public async Task<ServiceResult> UpdateMemberSiteSubscription(Guid memberId, Guid siteSubscriptionId,
         SiteSubscriptionFrequency frequency)
     {
+        var platform = _platformProvider.GetPlatform();
+
         var (memberPaymentSettings, siteSubscription, memberSubscription) = await _unitOfWork.RunAsync(
                 x => x.MemberPaymentSettingsRepository.GetByMemberId(memberId),
                 x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
-                x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId));
+                x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform));
 
         IPaymentSettings? paymentSettings = memberPaymentSettings;
 

@@ -10,13 +10,19 @@ public class Currency : IDatabaseEntity
 
     public string Symbol { get; set; } = "";
 
-    public string ToAmountString(decimal amount)
+    public static string ToValueString(decimal amount)
     {
         var intAmount = (int)amount;
         return intAmount == amount
-            ? $"{Symbol}{intAmount}"
-            : $"{Symbol}{amount:0.00}";
+            ? intAmount.ToString()
+            : amount.ToString("0.00");
     }
 
-    public string ToAmountString(double amount) => ToAmountString((decimal)amount);
+    public string ToAmountString(decimal amount)
+    {
+        var valueString = ToValueString(amount);
+        return $"{Symbol}{valueString}";
+    }
+
+    public string ToAmountString(double amount) => ToAmountString((decimal)amount);    
 }

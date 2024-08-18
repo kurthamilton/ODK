@@ -247,6 +247,24 @@ public abstract class OdkAdminServiceBase
         return (result1, result2, result3);
     }
 
+    protected async Task<(T1, T2, T3, T4)> GetSuperAdminRestrictedContent<T1, T2, T3, T4>(Guid currentMemberId,
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4)
+    {
+        var (currentMember, result1, result2, result3, result4) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            query1,
+            query2,
+            query3,
+            query4);
+
+        AssertMemberIsSuperAdmin(currentMember);
+
+        return (result1, result2, result3, result4);
+    }
+
     protected bool MemberIsChapterAdmin(Member member, Guid chapterId, 
         IReadOnlyCollection<ChapterAdminMember> chapterAdminMembers)
     {

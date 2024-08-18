@@ -88,7 +88,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var (current, member, memberSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByOwnerId(currentMemberId),
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId));
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform));
 
         var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(currentMemberId);
 

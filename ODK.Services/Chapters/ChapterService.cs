@@ -44,7 +44,7 @@ public class ChapterService : IChapterService
         var platform = _platformProvider.GetPlatform();
 
         var (memberSubscription, existing, countries, siteEmailSettings) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId),
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform),
             x => x.ChapterRepository.GetAll(),
             x => x.CountryRepository.GetAll(),
             x => x.SiteEmailSettingsRepository.Get(platform));
@@ -53,7 +53,8 @@ public class ChapterService : IChapterService
             .Where(x => x.OwnerId == currentMemberId)
             .ToArray();
 
-        if (memberSubscription.SiteSubscription.GroupLimit != null && memberChapters.Length >= memberSubscription.SiteSubscription.GroupLimit)
+        if (memberSubscription.SiteSubscription.GroupLimit != null && 
+            memberChapters.Length >= memberSubscription.SiteSubscription.GroupLimit)
         {
             return ServiceResult<Chapter?>.Failure("You cannot create any more groups");
         }

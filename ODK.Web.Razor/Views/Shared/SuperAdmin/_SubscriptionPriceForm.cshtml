@@ -25,9 +25,3 @@
     @Html.TextBoxFor(x => x.Amount, new { @class = "form-control", type = "number" })
     @Html.ValidationMessageFor(x => x.Amount)
 </div>
-
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.ExternalId, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.ExternalId, new { @class = "form-control" })
-    @Html.ValidationMessageFor(x => x.ExternalId)
-</div>

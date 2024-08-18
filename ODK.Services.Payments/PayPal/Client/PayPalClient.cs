@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
+using ODK.Services.Payments.PayPal.Client.Models;
 
 namespace ODK.Services.Payments.PayPal.Client;
 
@@ -23,7 +24,27 @@ public class PayPalClient
         _httpClientFactory = httpClientFactory;
     }
 
-    private AuthenticationJsonModel? Authentication { get; set; }
+    private AuthenticationJsonModel? Authentication { get; set; }    
+
+    public async Task<bool> ActivateSubscriptionPlan(string externalId)
+    {
+        var url = GetUrl($"/v1/billing/plans/{externalId}/activate");
+
+        using var client = await GetAuthenticatedHttpClient();
+        var payload = GetStringContent("");
+        var response = await client.PostAsync(url, payload);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> CancelSubscription(string externalId)
+    {
+        var url = GetUrl($"/v1/billing/subscriptions/{externalId}/cancel");
+
+        using var client = await GetAuthenticatedHttpClient();
+        var payload = GetStringContent("");
+        var response = await client.PostAsync(url, payload);
+        return response.IsSuccessStatusCode;
+    }
 
     public async Task<OrderCaptureJsonModel?> CaptureOrderPayment(string orderId)
     {
@@ -36,30 +57,54 @@ public class PayPalClient
         return await MapJsonResponse<OrderCaptureJsonModel>(response);
     }
 
-    public async Task<CreateOrderResponseJsonModel?> CreateOrderAsync(Guid id, string currencyCode, decimal amount)
+    public async Task<ProductResponseJsonModel?> CreateProduct(
+        ProductJsonModel model)
     {
-        var url = GetUrl("/v2/checkout/orders");
-
-        var payload = GetJsonContent(new CreateOrderJsonModel
-        {
-            Intent = "CAPTURE",
-            PurchaseUnits =
-            [
-                new PurchaseUnitJsonModel
-                {
-                    Amount = new MoneyJsonModel
-                    {
-                        CurrencyCode = currencyCode,
-                        Value = amount
-                    },
-                    ReferenceId = id.ToString()
-                }
-            ]
-        });
+        var url = GetUrl("/v1/catalogs/products");
 
         using var client = await GetAuthenticatedHttpClient();
-        var response = await client.PostAsync(url, payload);        
-        return await MapJsonResponse<CreateOrderResponseJsonModel>(response);
+        var payload = GetJsonContent(model);
+        var response = await client.PostAsync(url, payload);
+        return await MapJsonResponse<ProductResponseJsonModel>(response);
+    }
+
+    public async Task<SubscriptionPlanResponseJsonModel?> CreateSubscriptionPlan(
+        SubscriptionPlanJsonModel model)
+    {
+        var url = GetUrl("/v1/billing/plans");
+
+        using var client = await GetAuthenticatedHttpClient();
+        var payload = GetJsonContent(model);
+        var response = await client.PostAsync(url, payload);
+        return await MapJsonResponse<SubscriptionPlanResponseJsonModel>(response);
+    }    
+
+    public async Task<bool> DeactivateSubscriptionPlan(string externalId)
+    {
+        var url = GetUrl($"/v1/billing/plans/{externalId}/deactivate");
+
+        using var client = await GetAuthenticatedHttpClient();
+        var payload = GetStringContent("");
+        var response = await client.PostAsync(url, payload);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<SubscriptionJsonModel?> GetSubscription(string externalId)
+    {
+        var url = GetUrl($"/v1/billing/subscriptions/{externalId}");
+
+        using var client = await GetAuthenticatedHttpClient();
+        var response = await client.GetAsync(url);
+        return await MapJsonResponse<SubscriptionJsonModel>(response);
+    }
+
+    public async Task<SubscriptionPlanJsonModel?> GetSubscriptionPlan(string externalId)
+    {
+        var url = GetUrl($"/v1/billing/plans/{externalId}");
+
+        using var client = await GetAuthenticatedHttpClient();
+        var response = await client.GetAsync(url);
+        return await MapJsonResponse<SubscriptionPlanJsonModel>(response);
     }
 
     public async Task<OrderJsonModel?> GetOrder(string orderId)

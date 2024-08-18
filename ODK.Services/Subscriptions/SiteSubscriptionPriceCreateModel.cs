@@ -8,7 +8,5 @@ public class SiteSubscriptionPriceCreateModel
 
     public Guid CurrencyId { get; set; }
 
-    public string? ExternalId { get; set; }
-
     public SiteSubscriptionFrequency Frequency { get; set; }
 }

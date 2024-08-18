@@ -14,7 +14,9 @@ public class SiteSubscriptionPrice : IDatabaseEntity
 
     public SiteSubscriptionFrequency Frequency { get; set; }
 
-    public Guid Id { get; set; }    
+    public Guid Id { get; set; }
+
+    public bool IsPaid => Amount > 0 && !string.IsNullOrEmpty(ExternalId);
 
     public Guid SiteSubscriptionId { get; set; }    
 }

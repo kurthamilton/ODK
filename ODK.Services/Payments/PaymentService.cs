@@ -15,41 +15,49 @@ public class PaymentService : IPaymentService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> MakeAutomatedPayment(
-        IPaymentSettings sourcePaymentSettings,
-        IPaymentSettings destinationPaymentSettings,
-        decimal amount, 
-        string reference)
+    public async Task<ServiceResult> ActivateSubscriptionPlan(IPaymentSettings settings, string externalId)
     {
-        if (!sourcePaymentSettings.HasApiKey || 
-            !destinationPaymentSettings.HasApiKey || 
-            sourcePaymentSettings.Provider == null ||
-            destinationPaymentSettings.Provider == null)
-        {
-            return ServiceResult.Failure("Payment settings not set up");
-        }
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.ActivateSubscriptionPlan(externalId);
+    }
 
-        if (sourcePaymentSettings.Provider != destinationPaymentSettings.Provider)
-        {
-            return ServiceResult.Failure("Provider mismatch");
-        }
+    public async Task<ServiceResult> CancelSubscription(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var result = await provider.CancelSubscription(externalId);
+        return result
+            ? ServiceResult.Successful()
+            : ServiceResult.Failure("Error canceling subscription");
+    }
 
-        var sourceProviderType = sourcePaymentSettings.Provider;
-        var provider = _paymentProviderFactory.GetPaymentProvider(sourceProviderType.Value);
+    public async Task<string?> CreateProduct(IPaymentSettings settings, string name)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.CreateProduct(name);
+    }
 
-        var orderId = await provider.CreateOrder(
-            sourcePaymentSettings,
-            Guid.NewGuid(),
-            destinationPaymentSettings.Currency.Code, 
-            amount, 
-            reference);
+    public async Task<string?> CreateSubscriptionPlan(IPaymentSettings settings, ExternalSubscriptionPlan subscriptionPlan)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.CreateSubscriptionPlan(subscriptionPlan);
+    }
 
-        if (string.IsNullOrEmpty(orderId))
-        {
-            return ServiceResult.Failure("Error creating order");
-        }
+    public async Task<ServiceResult> DeactivateSubscriptionPlan(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.DeactivateSubscriptionPlan(externalId);
+    }
 
-        return ServiceResult.Failure("Not set up");
+    public async Task<ExternalSubscription?> GetSubscription(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.GetSubscription(externalId);
+    }
+
+    public async Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.GetSubscriptionPlan(externalId);
     }
 
     public async Task<ServiceResult> MakePayment(Guid chapterId, Member member, decimal amount, string cardToken, string reference)
@@ -63,9 +71,9 @@ public class PaymentService : IPaymentService
             return ServiceResult.Failure("Payment settings not found");
         }
 
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(settings.Provider.Value);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(settings);
 
-        var paymentResult = await paymentProvider.MakePayment(settings, settings.Currency.Code, amount, cardToken, reference,
+        var paymentResult = await paymentProvider.MakePayment(settings.Currency.Code, amount, cardToken, reference,
             member.FullName);
         if (!paymentResult.Success)
         {

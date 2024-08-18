@@ -25,3 +25,8 @@
 })
 
 @RenderBody()
+
+@section scripts
+{
+    @await RenderSectionAsync("scripts", required: false)
+}

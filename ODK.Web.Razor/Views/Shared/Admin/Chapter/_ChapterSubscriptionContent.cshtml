@@ -4,48 +4,53 @@
 @using ODK.Services.Members
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Extensions
-@model Chapter
-@inject IMemberService MemberService
-@inject ISiteSubscriptionService SiteSubscriptionService
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Payments
+@model ChapterSubscriptionViewModel
 @{
     var memberId = User.MemberId();
-    if (Model.OwnerId != memberId)
+    if (Model.Chapter.OwnerId != memberId)
     {
         return;
     }
 
-    var subscription = await SiteSubscriptionService.GetMemberSiteSubscription(memberId);
-    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto(memberId, Model.Id);
+    var subscription = Model.Current;
 }
 
-<h3>Current subscription</h3>
-@if (subscription != null)
+<section class="section mt-0 mb-3">
+    <h3>Current subscription</h3>
+    @if (subscription != null)
+    {
+        var nextPaymentDate = subscription.ExpiresUtc != null
+        ? subscription.ExpiresUtc.Value.ToFriendlyString(Model.Chapter.TimeZone)
+        : "-";
+        <p>
+            @subscription.SiteSubscription.Name
+        </p>
+        <div class="form-group">
+            <label for="next-payment-date" class="form-label">Next payment date</label>
+            <input id="next-payment-date" type="text" readonly class="form-control-plaintext" value="@nextPaymentDate">
+        </div>
+    }
+    else
+    {
+        <p>None</p>
+    }
+</section>
+
+<h3>Change subscription</h3>
+@if (Model.SiteSubscriptions.Currency != null)
 {
-    <p>
-        @subscription.SiteSubscription.Name
-    </p>
-    <p>
-        Expires: @(subscription.ExpiresUtc != null ? subscription.ExpiresUtc.Value.ToFriendlyString(Model.TimeZone) : "-")
-    </p>
+    @await Html.PartialAsync("Pricing/_PricingContent", Model.SiteSubscriptions)
 }
 else
 {
-    <p>None</p>
-}
-
-<h3>Buy subscription</h3>
-@if (dto.Currency != null)
-{
-    @await Html.PartialAsync("Pricing/_PricingContent", dto)
-}
-else
-{
-    var currencyOptions = dto.Currencies
+    var currencyOptions = Model.SiteSubscriptions.Currencies
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Code })
         .OrderBy(x => x.Text)
         .ToArray();
     
-    <form action="/@Model.Name/Admin/Chapter/Currency" method="post">
+    <form action="/@Model.Chapter.Name/Admin/Chapter/Currency" method="post">
         @Html.AntiForgeryToken()
         <div class="form-group mb-3">
             @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })

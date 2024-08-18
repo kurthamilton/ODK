@@ -7,6 +7,7 @@ using ODK.Core.Emails;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -157,7 +158,7 @@ public class MemberService : IMemberService
             x => x.SiteSubscriptionRepository.GetDefault(platform));
 
         var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapterId);
-
+        
         var validationResult = ValidateMemberProfile(chapterProperties, model);
         if (!validationResult.Success)
         {
@@ -211,7 +212,7 @@ public class MemberService : IMemberService
                 LatLong = chapterLocation.LatLong,
                 Name = chapterLocation.Name
             });
-        }        
+        }
 
         _unitOfWork.MemberSiteSubscriptionRepository.Add(new MemberSiteSubscription
         {

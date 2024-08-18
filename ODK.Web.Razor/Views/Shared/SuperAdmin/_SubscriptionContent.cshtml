@@ -14,12 +14,14 @@
         {
             Description = Model.Subscription.Description,
             Enabled = Model.Subscription.Enabled,
+            FallbackSiteSubscriptionId = Model.Subscription.FallbackSiteSubscriptionId,
             GroupLimit = Model.Subscription.GroupLimit,
             MemberLimit = Model.Subscription.MemberLimit,
             MemberSubscriptions = Model.Subscription.MemberSubscriptions,
             Name = Model.Subscription.Name,
             Premium = Model.Subscription.Premium,
-            SendMemberEmails = Model.Subscription.SendMemberEmails
+            SendMemberEmails = Model.Subscription.SendMemberEmails,
+            SiteSubscriptionId = Model.Subscription.Id
         })
         <button class="btn btn-primary">Update</button>
     </form>

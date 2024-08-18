@@ -6,6 +6,8 @@ public class SiteSubscriptionCreateModel
 
     public bool Enabled { get; set; }
 
+    public Guid? FallbackSiteSubscriptionId { get; set; }
+
     public int? GroupLimit { get; set; }
 
     public int? MemberLimit { get; set; }

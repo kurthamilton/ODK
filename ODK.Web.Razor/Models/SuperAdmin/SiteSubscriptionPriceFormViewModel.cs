@@ -16,10 +16,6 @@ public class SiteSubscriptionPriceFormViewModel
     [Required]
     public Guid? CurrencyId { get; set; }
 
-    [DisplayName("External Id")]
-    [Required]
-    public string? ExternalId { get; set; }
-
     [Required]
     public SiteSubscriptionFrequency? Frequency { get; set; }
 }

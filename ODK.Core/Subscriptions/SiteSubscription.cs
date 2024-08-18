@@ -10,6 +10,10 @@ public class SiteSubscription : IDatabaseEntity
 
     public bool Enabled { get; set; }
 
+    public string? ExternalProductId { get; set; }
+
+    public Guid? FallbackSiteSubscriptionId { get; set; }
+
     public int? GroupLimit { get; set; }
 
     public Guid Id { get; set; }

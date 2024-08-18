@@ -18,4 +18,8 @@ public class SiteSubscriptionPriceViewModel
     public required SiteSubscriptionFrequency Frequency { get; init; }    
 
     public required PaymentProviderType Provider { get; init; }
+
+    public required SiteSubscription SiteSubscription { get; init; }
+
+    public required Guid SiteSubscriptionPriceId { get; init; }
 }

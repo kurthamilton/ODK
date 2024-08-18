@@ -52,7 +52,7 @@
     Size = "modal-lg",
     Body =
     @<div>
-        <form method="post" action="/Account/Picture/Change" enctype="multipart/form-data">
+        <form method="post" action="/account/picture/change" enctype="multipart/form-data">
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
             {
                 ChapterName = null,

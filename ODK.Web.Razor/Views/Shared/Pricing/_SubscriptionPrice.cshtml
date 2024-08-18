@@ -1,27 +1,50 @@
 ﻿@using ODK.Core.Subscriptions
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
 @using ODK.Web.Razor.Models.Pricing
 @model SiteSubscriptionPriceViewModel
 @{
-    var title = Model.Frequency switch
+    var periodUnit = Model.Frequency switch
     {
-        SiteSubscriptionFrequency.Monthly => "Monthly",
-        SiteSubscriptionFrequency.Yearly => "Annual",
+        SiteSubscriptionFrequency.Monthly => "month",
+        SiteSubscriptionFrequency.Yearly => "year",
         _ => ""
     };
+
+    var modalId = $"subscription-price-{Model.SiteSubscriptionPriceId}";
 }
-<div>
-    <div>
-        <strong>@title</strong>
-    </div>
-    <div>
-        @Model.Currency.ToAmountString(Model.Amount)
-    </div>
-    
-    @await Html.PartialAsync("Payments/_PaymentSubscriptionForm", new PaymentSubscriptionFormViewModel
-    {
-        CurrencyCode = Model.Currency.Code,
-        ExternalId = Model.ExternalId,
-        Provider = Model.Provider
-    })
-</div>
+
+<div class="d-flex gap-2 align-items-center">
+    <button class="btn btn-primary" type="button"
+        data-bs-toggle="modal" data-bs-target="#@modalId">
+        Buy
+    </button>
+    <span>
+        @Model.Currency.ToAmountString(Model.Amount)/@periodUnit
+    </span>
+</div>    
+
+@await Html.PartialAsync("Components/_Modal", new ModalViewModel
+{
+    Body = 
+        @<div>
+            <p>
+                @Model.SiteSubscription.Name
+            </p>
+            <p>
+                @Model.Currency.ToAmountString(Model.Amount)/@periodUnit
+            </p>
+            <form action="/account/subscription/confirm" method="post">
+                @Html.AntiForgeryToken()
+                @await Html.PartialAsync("Payments/_PaymentSubscriptionForm", new PaymentSubscriptionFormViewModel
+                {
+                    CurrencyCode = Model.Currency.Code,
+                    ExternalId = Model.ExternalId,
+                    Provider = Model.Provider,
+                    SiteSubscriptionPriceId = Model.SiteSubscriptionPriceId
+                })
+            </form>
+        </div>,
+    Id = modalId,
+    Title = "Buy Subscription"
+})
