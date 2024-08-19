@@ -2,13 +2,15 @@
 
 public class UpdateChapterEventSettings
 {
-    public required DayOfWeek? DefaultDayOfWeek { get; set; }
+    public required DayOfWeek? DefaultDayOfWeek { get; init; }
 
-    public required string? DefaultDescription { get; set; }
+    public required string? DefaultDescription { get; init; }
 
-    public required DayOfWeek? DefaultScheduledEmailDayOfWeek { get; set; }
+    public required DayOfWeek? DefaultScheduledEmailDayOfWeek { get; init; }
 
-    public required string? DefaultScheduledEmailTimeOfDay { get; set; }
+    public required TimeSpan? DefaultScheduledEmailTimeOfDay { get; init; }
 
-    public required bool DisableComments { get; set; }
+    public required TimeSpan? DefaultStartTime { get; init; }
+
+    public required bool DisableComments { get; init; }
 }

@@ -15,11 +15,6 @@
     var chapterAdminMembers = await ChapterAdminService.GetChapterAdminMembers(request);
     var chapterPaymentSettings = await ChapterAdminService.GetChapterPaymentSettings(request);
 
-    if (nextEventDate == null)
-    {
-        nextEventDate = DateTime.Today;
-    }
-
     var hostOptions = chapterAdminMembers
         .Select(x => new SelectListItem
         {
@@ -37,8 +32,9 @@
     @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
     {
         ChapterId = Model.Id,
+        ChapterName = Model.Name,
         CurrencySymbol = chapterPaymentSettings?.Currency.Symbol,
-        Date = nextEventDate.Value,
+        Date = nextEventDate,
         Description = settings?.DefaultDescription,
         HostOptions = hostOptions
     })

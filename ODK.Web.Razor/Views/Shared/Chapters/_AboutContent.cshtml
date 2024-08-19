@@ -18,7 +18,8 @@
 @await Html.PartialAsync("Chapters/_Questions", new ChapterQuestionsViewModel
 {
     Chapter = Model.Chapter,
-    Questions = questions
+    Questions = questions,
+    IsAdmin = false    
 })
 
 <p class="mt-3">

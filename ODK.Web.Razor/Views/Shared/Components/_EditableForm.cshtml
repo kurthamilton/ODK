@@ -1,11 +1,6 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model EditableFormViewModel
 
-@if (!Model.IsAdmin)
-{
-    return;
-}
-
 <section class="@Model.Class">
     @if (!string.IsNullOrEmpty(Model.Title))
     {

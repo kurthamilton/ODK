@@ -45,7 +45,7 @@ public static class EventAdminServiceTests
         {
             ChapterId = chapter.Id,
             DefaultScheduledEmailDayOfWeek = DayOfWeek.Monday,
-            DefaultScheduledEmailTimeOfDay = "12:00"
+            DefaultScheduledEmailTimeOfDay = new TimeSpan(12, 0, 0)
         };
 
         var chapterEventSettingsRepository = CreateMockChapterEventSettingsRepository(chapterEventSettings);

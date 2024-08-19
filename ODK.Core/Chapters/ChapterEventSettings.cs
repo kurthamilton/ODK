@@ -1,4 +1,5 @@
 ﻿namespace ODK.Core.Chapters;
+
 public class ChapterEventSettings : IChapterEntity
 {
     public Guid ChapterId { get; set; }
@@ -9,17 +10,13 @@ public class ChapterEventSettings : IChapterEntity
 
     public DayOfWeek? DefaultScheduledEmailDayOfWeek { get; set; }
     
-    public string? DefaultScheduledEmailTimeOfDay { get; set; }    
+    public TimeSpan? DefaultScheduledEmailTimeOfDay { get; set; }    
+
+    public TimeSpan? DefaultStartTime { get; set; }
 
     public bool DisableComments { get; set; }
 
-    public DateTime? GetScheduledDateTime(DateTime? date)
-    {
-        if (!TimeOnly.TryParse(DefaultScheduledEmailTimeOfDay, out var time))
-        {
-            return null;
-        }
-
-        return date + time.ToTimeSpan();
-    }
+    public DateTime? GetScheduledDateTime(DateTime? date) => date != null && DefaultScheduledEmailTimeOfDay != null 
+        ? date + DefaultScheduledEmailTimeOfDay.Value
+        : null;
 }

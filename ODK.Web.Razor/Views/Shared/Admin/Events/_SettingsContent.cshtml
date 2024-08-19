@@ -23,7 +23,8 @@
         DefaultDayOfWeek = settings?.DefaultDayOfWeek,
         DefaultDescription = settings?.DefaultDescription,
         DefaultScheduledEmailDayOfWeek = settings?.DefaultScheduledEmailDayOfWeek,
-        DefaultScheduledEmailTimeOfDay = settings?.DefaultScheduledEmailTimeOfDay,
+        DefaultScheduledEmailTimeOfDay = TimeSpanUtils.ToString(settings?.DefaultScheduledEmailTimeOfDay),
+        DefaultStartTime = TimeSpanUtils.ToString(settings?.DefaultStartTime),
         DisableComments = settings?.DisableComments ?? false
     })
     <button class="btn btn-primary">Update</button>

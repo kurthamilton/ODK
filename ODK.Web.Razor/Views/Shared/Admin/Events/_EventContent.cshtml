@@ -33,8 +33,9 @@
     {
         AttendeeLimit = Model.Event.AttendeeLimit,
         ChapterId = Model.Chapter.Id,
+        ChapterName = Model.Chapter.Name,
         CurrencySymbol = Model.Currency?.Symbol,
-        Date = Model.Event.Date,
+        Date = Model.Event.ToLocalTime(Model.Chapter.TimeZone),
         Description = Model.Event.Description,
         Hosts = Model.Hosts?.Select(x => x.MemberId).ToList() ?? [],
         HostOptions = hostOptions,

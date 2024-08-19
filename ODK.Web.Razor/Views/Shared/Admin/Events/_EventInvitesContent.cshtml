@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Events
 @using ODK.Core.Extensions
+@using ODK.Core.Utils
 @using ODK.Services
 @using ODK.Services.Events
 @using ODK.Web.Common.Extensions
@@ -55,6 +56,6 @@
         Chapter = Model.Chapter,
         EventId = Model.Event.Id,
         ScheduledEmailDate = Model.Chapter.ToChapterTime(invites.ScheduledUtc)?.Date,
-        ScheduledEmailTime = Model.Chapter.ToChapterTime(invites.ScheduledUtc)?.TimeOfDay.ToString(@"hh\:mm")
+        ScheduledEmailTime = TimeSpanUtils.ToString(Model.Chapter.ToChapterTime(invites.ScheduledUtc)?.TimeOfDay)
     })
 </div>

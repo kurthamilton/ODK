@@ -12,6 +12,8 @@ public class EventFormViewModel
 
     public Guid ChapterId { get; set; }
 
+    public string ChapterName { get; set; } = "";
+
     public string? CurrencySymbol { get; set; }
 
     public DateTime Date { get; set; }
