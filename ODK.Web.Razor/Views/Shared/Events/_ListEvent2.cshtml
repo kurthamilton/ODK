@@ -31,7 +31,7 @@
     </div>
     <div class="card-body">
         <div>
-            <span>@localTime.ToFriendlyDateString(Model.TimeZone)</span>
+            <span>@localTime.ToFriendlyDateString(null)</span>
             @if (localTime.TimeOfDay.TotalSeconds > 0)
             {
                 <span>@TimeSpanUtils.ToString(localTime.TimeOfDay)</span>

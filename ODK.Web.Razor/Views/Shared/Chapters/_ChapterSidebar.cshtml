@@ -18,6 +18,8 @@
                 responseDictionary.TryGetValue(@event.Id, out var response);
                 venueDictionary.TryGetValue(@event.VenueId, out var venue);
 
+                var localTime = @event.ToLocalTime(Model.Chapter.TimeZone);
+
                 <div class="card-body card-body-sm">
                     <h6 class="card-title">
                         @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
@@ -30,7 +32,18 @@
                             @(@event.GetDisplayName())
                         </a>
                     </h6>
-                    <div class="d-inline-block d-md-block">@(@event.Date.EventDate())</div>                    
+                    <div class="d-inline-block d-md-block">
+                        <span>@localTime.ToFriendlyDateString(null)</span>
+                        @if (localTime.TimeOfDay.TotalSeconds > 0)
+                        {
+                            <span>@TimeSpanUtils.ToString(localTime.TimeOfDay)</span>
+                            @if (@event.EndTime != null)
+                            {
+                                <span>-</span>
+                                <span>@TimeSpanUtils.ToString(@event.EndTime)</span>
+                            }
+                        }
+                    </div>                    
                     @if (venue != null)
                     {
                         <span class="d-md-none">&nbsp;|&nbsp;</span>

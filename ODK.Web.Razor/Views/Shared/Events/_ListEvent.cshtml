@@ -20,7 +20,7 @@
     </a>
 </h4>
 <h5>
-    <span>@localTime.ToFriendlyDateString(Model.Chapter.TimeZone)</span>
+    <span>@localTime.ToFriendlyDateString(null)</span>
     @if (localTime.TimeOfDay.TotalSeconds > 0)
     {
         <span>@TimeSpanUtils.ToString(localTime.TimeOfDay)</span>
