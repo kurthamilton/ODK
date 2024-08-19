@@ -1,13 +1,103 @@
 ﻿:root {
     --odk-datepicker-bg: var(--bs-body-bg);
     --odk-datepicker-bg-hover: #{darken($body-bg, 10%)};
+    --odk-datepicker-color: var(--bs-body-color);
+    --odk-datepicker-color-muted: #7a7a7a;
 }
 
 [data-bs-theme="dark"] {
     --odk-datepicker-bg: var(--bs-body-bg);
     --odk-datepicker-bg-hover: #{lighten($body-bg-dark, 10%)};
+    --odk-datepicker-color: var(--bs-body-color);
+    --odk-datepicker-color-muted: #7a7a7a;
 }
 
+/*flatpickr*/
+.flatpickr-calendar {
+    background-color: var(--odk-datepicker-bg);
+
+    .flatpickr-day, 
+    .flatpickr-months .flatpickr-month, 
+    span.flatpickr-weekday, 
+    input {
+        color: var(--odk-datepicker-color);
+    }
+}
+
+.flatpickr-months .flatpickr-next-month svg,
+.flatpickr-months .flatpickr-prev-month svg {
+    stroke: var(--odk-datepicker-color);
+}
+
+.flatpickr-day,
+.flatpickr-day.nextMonthDay,
+.flatpickr-day.prevMonthDay {
+    &:hover {
+        background-color: var(--odk-datepicker-bg-hover);
+    }
+}
+
+.flatpickr-day.nextMonthDay,
+.flatpickr-day.prevMonthDay {
+    color: var(--odk-datepicker-color-muted);
+}
+
+.flatpickr-months {
+    display: flex;
+    align-items: center;
+
+    .flatpickr-month {
+        flex-grow: 1;
+    }
+
+    .flatpickr-monthDropdown-months,
+    .numInputWrapper,
+    .flatpickr-prev-month, 
+    .flatpickr-next-month {
+        &:hover {
+            background-color: var(--odk-datepicker-bg-hover);
+        }
+    }
+
+
+    .flatpickr-current-month {
+        position: initial;
+        width: 100%;
+        display: flex;
+        justify-content: space-evenly;
+
+        .numInputWrapper {
+            display: flex;
+
+            .arrowUp,
+            .arrowDown {
+                &:after {
+                    // border-color: var(--odk-datepicker-color-muted);
+                }
+            }
+        }
+    }
+
+    .flatpickr-prev-month,
+    .flatpickr-next-month {
+        position: initial;
+        height: auto;
+    }
+}
+
+.flatpickr-time {
+    input,
+    .flatpickr-am-pm {
+        color: var(--odk-datepicker-color);
+
+        &:hover,
+        &:focus {
+            background-color: var(--odk-datepicker-bg-hover);
+        }
+    }
+}
+
+/*vanillajs-datepicker*/
 .datepicker {
     border: 1px solid var(--bs-border-color);
 }
@@ -16,7 +106,7 @@
 .datepicker-cell.focused:not(.selected),
 .datepicker-header .datepicker-controls .button {
     background-color: var(--odk-datepicker-bg);
-    color: var(--bs-body-color);
+    color: var(--odk-datepicker-color);
 }
 
 .datepicker-cell:not(.selected),

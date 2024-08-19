@@ -7,6 +7,11 @@
         .ToArray();
 }
 
+<div class="mb-3 form-check">
+    @Html.CheckBoxFor(x => x.DisableComments, new { @class = "form-check-input" })
+    @Html.LabelFor(x => x.DisableComments, new { @class = "form-check-label" })
+</div>
+
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.DefaultDayOfWeek, new { @class = "form-label" })
     @Html.DropDownListFor(x => x.DefaultDayOfWeek, dayOfWeekOptions, " ", new { @class = "form-select" })
@@ -25,11 +30,6 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.DefaultDescription, new { @class = "form-label" })
-    @Html.TextAreaFor(x => x.DefaultDescription, new { @class = "form-control", rows = 8 })
+    @Html.TextAreaFor(x => x.DefaultDescription, new { @class = "form-control", rows = 8, data_html_editor = "" })
     @Html.ValidationMessageFor(x => x.DefaultDescription)
-</div>
-
-<div class="mb-3 form-check">
-    @Html.CheckBoxFor(x => x.DisableComments, new { @class = "form-check-input" })
-    @Html.LabelFor(x => x.DisableComments, new { @class = "form-check-label" })
 </div>

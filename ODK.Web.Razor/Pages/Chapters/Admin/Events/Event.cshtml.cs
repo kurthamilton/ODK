@@ -29,6 +29,7 @@ public class EventModel : EventAdminPageModel
             ImageUrl = viewModel.ImageUrl,
             IsPublic = viewModel.Public,
             Name = viewModel.Name,
+            RsvpDeadline = viewModel.RsvpDeadline,
             TicketCost = viewModel.TicketCost,
             TicketDepositCost = viewModel.TicketDepositCost,
             Time = viewModel.Time,

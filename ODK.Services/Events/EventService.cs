@@ -300,6 +300,14 @@ public class EventService : IEventService
             return validationResult;
         }
 
+        if (@event.RsvpDeadlineUtc < DateTime.UtcNow)
+        {
+            if (response?.Type != EventResponseType.Yes)
+            {
+                return ServiceResult.Failure("The RSVP deadline has passed");
+            }
+        }
+
         if (response == null)
         {
             _unitOfWork.EventResponseRepository.Add(new EventResponse
