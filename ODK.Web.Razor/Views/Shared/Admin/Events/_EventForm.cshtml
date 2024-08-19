@@ -40,6 +40,17 @@
 </div>
 
 <div class="form-group mb-3">
+    @Html.LabelFor(x => x.RsvpDeadline, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.RsvpDeadline, format: "{0:dd/MM/yyyy HH:mm}", new 
+    { 
+        @class = "form-control", 
+        data_datepicker = "", 
+        data_datepicker_time = ""
+    })
+    @Html.ValidationMessageFor(x => x.RsvpDeadline)
+</div>
+
+<div class="form-group mb-3">
     @Html.LabelFor(x => x.Time, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.Time, new { @class = "form-control" })
 </div>

@@ -41,6 +41,7 @@
         ImageUrl = Model.Event.ImageUrl,
         Name = Model.Event.Name,
         Public = Model.Event.IsPublic,
+        RsvpDeadline = Model.Event.RsvpDeadlineUtc != null ? Model.Chapter.ToChapterTime(Model.Event.RsvpDeadlineUtc.Value) : null,
         TicketCost = Model.Event.TicketSettings?.Cost,
         TicketDepositCost = Model.Event.TicketSettings?.Deposit,
         Time = Model.Event.Time,

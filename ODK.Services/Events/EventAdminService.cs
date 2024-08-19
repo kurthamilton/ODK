@@ -59,6 +59,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             IsPublic = model.IsPublic,
             Name = model.Name,
             PublishedUtc = !draft ? DateTime.UtcNow : null,
+            RsvpDeadlineUtc = model.RsvpDeadline != null ? chapter.FromLocalTime(model.RsvpDeadline.Value) : null,
             TicketSettings = model.TicketCost != null ? new EventTicketSettings
             {
                 Cost = Math.Round(model.TicketCost.Value, 2),
@@ -444,7 +445,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> UpdateEvent(AdminServiceRequest request, Guid id, CreateEvent model)
     {
-        var (chapterAdminMembers, currentMember, @event, hosts, venue, chapterPaymentSettings) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, chapterAdminMembers, currentMember, @event, hosts, venue, chapterPaymentSettings) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.EventRepository.GetById(id),
@@ -460,6 +462,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.ImageUrl = model.ImageUrl;
         @event.IsPublic = model.IsPublic;
         @event.Name = model.Name;
+        @event.RsvpDeadlineUtc = model.RsvpDeadline != null ? chapter.FromLocalTime(model.RsvpDeadline.Value) : null;
         @event.Time = model.Time;
         @event.VenueId = model.VenueId;        
 
@@ -626,6 +629,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         if (@event.Date == DateTime.MinValue)
         {
             messages.Add("Date is required");
+        }
+
+        if (@event.RsvpDeadlineUtc >= @event.Date)
+        {
+            messages.Add("RSVP Deadline must be before event date");
         }
 
         if (venue.ChapterId != @event.ChapterId)

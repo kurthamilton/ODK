@@ -9,9 +9,16 @@
     }
 
     function bindDatePickers() {
-        document.querySelectorAll('input[data-datepicker]').forEach(input => {
-            const datepicker = new Datepicker(input, {
-                format: 'dd/mm/yyyy'
+        const $dateInputs = document.querySelectorAll('input[data-datepicker]');
+        $dateInputs.forEach($input => {
+            const enableTime = $input.hasAttribute('data-datepicker-time');
+            const format = enableTime
+                ? 'd/m/Y H:i'
+                : 'd/m/Y';
+            flatpickr($input, {
+                dateFormat: format,
+                enableTime,
+                time_24hr: true
             }); 
         });
     }

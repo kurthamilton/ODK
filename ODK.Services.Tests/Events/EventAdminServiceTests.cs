@@ -81,6 +81,7 @@ public static class EventAdminServiceTests
             ImageUrl = null,
             IsPublic = false,
             Name = "Name",
+            RsvpDeadline = null,
             TicketCost = null,
             TicketDepositCost = null,
             Time = null,

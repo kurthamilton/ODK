@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\lib\" />
+    <Folder Include="wwwroot\lib\vanillajs-datepicker\" />
   </ItemGroup>
 
   <ItemGroup>
