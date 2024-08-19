@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\lib\vanillajs-datepicker\**" />
+    <Content Remove="wwwroot\lib\vanillajs-datepicker\**" />
+    <EmbeddedResource Remove="wwwroot\lib\vanillajs-datepicker\**" />
+    <None Remove="wwwroot\lib\vanillajs-datepicker\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="compilerconfig.json" />
   </ItemGroup>
 
@@ -19,7 +26,6 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\lib\" />
-    <Folder Include="wwwroot\lib\vanillajs-datepicker\" />
   </ItemGroup>
 
   <ItemGroup>
