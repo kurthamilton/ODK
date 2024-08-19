@@ -50,6 +50,13 @@
 </div>
 
 <div class="form-group mb-3">
+    @Html.LabelFor(x => x.EndTime)
+    @await Html.PartialAsync("Components/_Tooltip", "24 hour clock, HH:MM")
+    @Html.TextBoxFor(x => x.EndTime, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.EndTime)
+</div>
+
+<div class="form-group mb-3">
     @Html.LabelFor(x => x.RsvpDeadline, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.RsvpDeadline, format: "{0:dd/MM/yyyy HH:mm}", new 
     { 

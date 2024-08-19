@@ -1,4 +1,5 @@
 ﻿@using ODK.Core.Members
+@using ODK.Core.Utils
 @using ODK.Web.Razor.Models.Admin.Events
 @model ODK.Web.Razor.Models.Admin.Events.EventEditViewModel
 @{
@@ -37,6 +38,7 @@
         CurrencySymbol = Model.Currency?.Symbol,
         Date = Model.Event.ToLocalTime(Model.Chapter.TimeZone),
         Description = Model.Event.Description,
+        EndTime = TimeSpanUtils.ToString(Model.Event.EndTime),
         Hosts = Model.Hosts?.Select(x => x.MemberId).ToList() ?? [],
         HostOptions = hostOptions,
         ImageUrl = Model.Event.ImageUrl,

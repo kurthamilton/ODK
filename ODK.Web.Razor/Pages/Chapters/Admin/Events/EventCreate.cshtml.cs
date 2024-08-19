@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Utils;
 using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Events;
@@ -29,6 +30,7 @@ public class EventCreateModel : AdminPageModel
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,
             Description = viewModel.Description,
+            EndTime = TimeSpanUtils.FromString(viewModel.EndTime),
             Hosts = viewModel.Hosts,
             ImageUrl = viewModel.ImageUrl,
             IsPublic = viewModel.Public,

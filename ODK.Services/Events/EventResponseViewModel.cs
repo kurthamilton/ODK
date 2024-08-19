@@ -9,16 +9,20 @@ public class EventResponseViewModel
         bool invited)
     {
         Date = @event.Date;
+        EndTime = @event.EndTime;
         EventId = @event.Id;
         EventName = @event.GetDisplayName();
         Invited = invited;
         Response = response;
         Ticketed = @event.Ticketed;
+        Time = @event.Time;
         VenueId = venue.Id;
         VenueName = venue.Name;
     }
 
     public DateTime Date { get; }
+
+    public TimeSpan? EndTime { get; }
 
     public Guid EventId { get; }
 
@@ -31,6 +35,8 @@ public class EventResponseViewModel
     public EventResponseType Response { get; }
 
     public bool Ticketed { get; }
+
+    public string? Time { get; }
 
     public Guid VenueId { get; }
 

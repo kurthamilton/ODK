@@ -20,6 +20,8 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public string? Description { get; set; }
 
+    public TimeSpan? EndTime { get; set; }
+
     public Guid Id { get; set; }
 
     public string? ImageUrl { get; set; }

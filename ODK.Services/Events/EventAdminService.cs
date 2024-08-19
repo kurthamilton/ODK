@@ -56,6 +56,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             CreatedUtc = DateTime.UtcNow,
             Date = date,
             Description = model.Description,
+            EndTime = model.EndTime,
             ImageUrl = model.ImageUrl,
             IsPublic = model.IsPublic,
             Name = model.Name,
@@ -478,6 +479,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.AttendeeLimit = model.AttendeeLimit;
         @event.Date = date;
         @event.Description = model.Description;
+        @event.EndTime = model.EndTime;
         @event.ImageUrl = model.ImageUrl;
         @event.IsPublic = model.IsPublic;
         @event.Name = model.Name;
