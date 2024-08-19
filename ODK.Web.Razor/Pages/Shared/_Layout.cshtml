@@ -48,8 +48,8 @@
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">        
     
-    <script src="~/js/odk.bundle.head.js" asp-append-version="true"></script>
-    <link rel="stylesheet" href="~/css/odk.bundle.lib.css" asp-append-version="true" />
+    <script src="~/js/odk.bundle.head.js"></script>
+    <link rel="stylesheet" href="/css/odk.bundle.lib.css" />
 
     @await RenderSectionAsync("preStyles", required: false)
     
@@ -76,7 +76,7 @@
     @await Html.PartialAsync("Feedback/_Notifications")
 
     <script src="~/lib/tinymce/tinymce.min.js" asp-append-version="true"></script>
-    <script src="~/js/odk.bundle.js" asp-append-version="true"></script>
+    <script src="~/js/odk.bundle.js"></script>
     @await RenderSectionAsync("scripts", required: false)
 </body>
 </html>
