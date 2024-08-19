@@ -22,7 +22,7 @@
     @if (subscription != null)
     {
         var nextPaymentDate = subscription.ExpiresUtc != null
-        ? subscription.ExpiresUtc.Value.ToFriendlyString(Model.Chapter.TimeZone)
+        ? subscription.ExpiresUtc.Value.ToFriendlyDateString(Model.Chapter.TimeZone)
         : "-";
         <p>
             @subscription.SiteSubscription.Name

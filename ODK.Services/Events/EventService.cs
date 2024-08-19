@@ -300,7 +300,7 @@ public class EventService : IEventService
             return validationResult;
         }
 
-        if (@event.RsvpDeadlineUtc < DateTime.UtcNow)
+        if (@event.RsvpDeadlinePassed)
         {
             if (response?.Type != EventResponseType.Yes)
             {

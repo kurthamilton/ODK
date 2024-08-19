@@ -30,6 +30,8 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public DateTime? PublishedUtc { get; set; }
 
+    public bool RsvpDeadlinePassed => RsvpDeadlineUtc < DateTime.UtcNow;
+
     public DateTime? RsvpDeadlineUtc { get; set; }
 
     public bool Ticketed => TicketSettings?.Cost > 0;

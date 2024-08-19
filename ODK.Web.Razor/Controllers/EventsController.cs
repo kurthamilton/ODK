@@ -34,8 +34,12 @@ public class EventsController : OdkControllerBase
     {
         if (Enum.TryParse<EventResponseType>(responseType, true, out var type))
         {
-            await _eventService.UpdateMemberResponse(MemberId, id, type);
-        }        
+            var result = await _eventService.UpdateMemberResponse(MemberId, id, type);
+            if (!result.Success)
+            {
+                AddFeedback(result);
+            }
+        }
 
         return RedirectToReferrer();
     }

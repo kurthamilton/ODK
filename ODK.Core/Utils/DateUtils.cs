@@ -63,7 +63,7 @@ public static class DateUtils
 
     public static DateTime StartOfDay(this DateTime date) => date - date.TimeOfDay;
 
-    public static string ToFriendlyString(this DateTime dateUtc, TimeZoneInfo? timeZone)
+    public static string ToFriendlyDateString(this DateTime dateUtc, TimeZoneInfo? timeZone)
     {
         var localDate = timeZone != null 
             ? TimeZoneInfo.ConvertTimeFromUtc(dateUtc, timeZone)
@@ -77,6 +77,26 @@ public static class DateUtils
         {
             format += ", yyyy";
         }
+
+        return localDate.ToString(format);
+    }
+
+    public static string ToFriendlyDateTimeString(this DateTime dateUtc, TimeZoneInfo? timeZone)
+    {
+        var localDate = timeZone != null
+            ? TimeZoneInfo.ConvertTimeFromUtc(dateUtc, timeZone)
+            : dateUtc;
+
+        var includeYear = dateUtc.Year != DateTime.UtcNow.Year;
+
+        var format = "ddd, MMM d";
+
+        if (includeYear)
+        {
+            format += ", yyyy";
+        }
+
+        format += " HH:mm";
 
         return localDate.ToString(format);
     }

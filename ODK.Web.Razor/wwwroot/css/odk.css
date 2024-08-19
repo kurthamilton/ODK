@@ -11954,6 +11954,14 @@ html[data-platform=odk] {
 }
 
 html[data-platform=odk] {
+  --odk-badges-padding-top: 0.5rem;
+}
+
+.badge {
+  padding-top: var(--odk-badges-padding-top);
+}
+
+html[data-platform=odk] {
   --odk-breadcrumbs-padding-top: 0.75rem;
 }
 

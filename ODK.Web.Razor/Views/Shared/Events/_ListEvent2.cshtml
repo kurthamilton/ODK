@@ -27,7 +27,7 @@
     </div>
     <div class="card-body">
         <div>
-            @Model.Event.Date.ToFriendlyString(Model.TimeZone)
+            @Model.Event.Date.ToFriendlyDateString(Model.TimeZone)
         </div>
         <div>
             @await Html.PartialAsync("Components/_Location", Model.Event.VenueName)
