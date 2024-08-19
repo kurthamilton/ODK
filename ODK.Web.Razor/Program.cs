@@ -35,7 +35,6 @@ builder.Services.AddWebOptimizer(pipeline =>
     pipeline.AddJavaScriptBundle(
         route: "/js/odk.bundle.js",        
         "lib/bootstrap/js/bootstrap.bundle.js",
-        // "lib/vanillajs-datepicker/dist/js/datepicker-full.js",
         "lib/flatpickr/dist/flatpickr.js",
         "lib/aspnet-client-validation/dist/aspnet-validation.js",
         "lib/slim-select/slimselect.js",

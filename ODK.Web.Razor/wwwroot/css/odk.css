@@ -12098,24 +12098,6 @@ html[data-platform=odk] {
   background-color: var(--odk-datepicker-bg-hover);
 }
 
-/*vanillajs-datepicker*/
-.datepicker {
-  border: 1px solid var(--bs-border-color);
-}
-
-.datepicker-picker,
-.datepicker-cell.focused:not(.selected),
-.datepicker-header .datepicker-controls .button {
-  background-color: var(--odk-datepicker-bg);
-  color: var(--odk-datepicker-color);
-}
-
-.datepicker-cell:not(.selected):hover,
-.datepicker-cell.focused:not(.selected):hover,
-.datepicker-header .datepicker-controls .button:hover {
-  background-color: var(--odk-datepicker-bg-hover) !important;
-}
-
 .dropdown-menu-end {
   text-align: right;
 }

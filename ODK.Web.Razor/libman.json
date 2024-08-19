@@ -12,11 +12,6 @@
     },
     {
       "provider": "unpkg",
-      "library": "vanillajs-datepicker@1.3.4",
-      "destination": "wwwroot/lib/vanillajs-datepicker/"
-    },
-    {
-      "provider": "unpkg",
       "library": "aspnet-client-validation@0.10.1",
       "destination": "wwwroot/lib/aspnet-client-validation/",
       "files": [
