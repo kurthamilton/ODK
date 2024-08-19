@@ -1,0 +1,10 @@
+﻿@using ODK.Services.Settings
+@inject ISettingsService SettingsService
+@{
+    var settings = await SettingsService.GetSiteSettings();
+    var key = settings.RecaptchaSiteKey;
+}
+
+<div data-recaptcha-sitekey="@key"></div>
+<script src="https://www.google.com/recaptcha/api.js?render=@key"></script>
+<script src="~/js/odk.recaptcha.js" asp-append-version="true"></script>

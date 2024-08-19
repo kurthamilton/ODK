@@ -35,8 +35,6 @@
 
 @section scripts
 {
-    <script src="/lib/cropperjs/cropper.min.js"></script>
-    <script src="/js/odk.imaging.js"></script>
-
+    @await Html.PartialAsync("Components/_ImagingScripts")
     @await Html.PartialAsync("Components/_GoogleLocationScripts")
 }

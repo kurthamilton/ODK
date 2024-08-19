@@ -25,11 +25,10 @@
 
 @section styles
 {
-    <link rel="stylesheet" href="/lib/cropperjs/cropper.min.css" />
+    @await Html.PartialAsync("Components/_ImagingStyles")
 }
 
 @section scripts 
 {
-    <script src="/lib/cropperjs/cropper.min.js"></script>
-    <script src="/js/odk.imaging.js"></script>
+    @await Html.PartialAsync("Components/_ImagingScripts")
 }

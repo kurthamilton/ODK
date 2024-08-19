@@ -16,7 +16,7 @@
     {
         scriptUrl += $"&currency={currency}";
     }
-    
+
     <script src="@scriptUrl"></script>
-    <script src="/js/odk.paypal.js"></script>
+    <script src="~/js/odk.paypal.js" asp-append-version="true"></script>
 }

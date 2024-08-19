@@ -3,17 +3,13 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Contact
-@using ODK.Services.Settings
 @using ODK.Core.Settings
 @model ODK.Web.Razor.Pages.Chapters.ContactModel
-@inject ISettingsService SettingsService
 @{
     Layout = "_ChapterLayout";
     Model.Title = "Contact";
 
     OdkAssertions.MeetsCondition(Model.Chapter, x => x.IsOpenForRegistration());
-
-    var settings = await SettingsService.GetSiteSettings();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -33,7 +29,5 @@
 
 @section scripts
 {
-    <div data-recaptcha-sitekey="@settings.RecaptchaSiteKey"></div>
-    <script src="https://www.google.com/recaptcha/api.js?render=@settings.RecaptchaSiteKey"></script>
-    <script src="~/js/odk.recaptcha.js"></script>
+    @await Html.PartialAsync("Components/_RecaptchaScripts")
 }

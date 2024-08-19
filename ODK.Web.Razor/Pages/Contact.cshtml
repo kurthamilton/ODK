@@ -1,14 +1,10 @@
 ﻿@page "/Contact"
-@using ODK.Services.Settings
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Contact
 @model ODK.Web.Razor.Pages.ContactModel
-@inject ISettingsService SettingsService
 @{
     Layout = "_HomeLayout";
-    Model.Title = "Contact";
-
-    var settings = await SettingsService.GetSiteSettings();
+    Model.Title = "Contact";    
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -19,7 +15,5 @@
 
 @section scripts
 {
-    <div data-recaptcha-sitekey="@settings.RecaptchaSiteKey"></div>
-    <script src="https://www.google.com/recaptcha/api.js?render=@settings.RecaptchaSiteKey"></script>
-    <script src="~/js/odk.recaptcha.js"></script>
+    @await Html.PartialAsync("Components/_RecaptchaScripts")
 }
