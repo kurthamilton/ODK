@@ -18,6 +18,11 @@
         menuItems.Add(new MenuItem { Text = "FAQ", Link = OdkRoutes2.Groups.Questions(Model.Chapter) });
     }
 
+    if (Model.IsMember)
+    {
+        menuItems.Add(new MenuItem { Text = "My profile", Link = OdkRoutes2.Groups.Profile(Model.Chapter) });
+    }
+
     var id = "nav-group";
 }
 
