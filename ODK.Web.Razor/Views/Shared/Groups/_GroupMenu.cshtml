@@ -13,6 +13,11 @@
         new MenuItem { Text = "Members", Link = OdkRoutes2.Groups.Members(Model.Chapter) }
     };
 
+    if (Model.HasQuestions || Model.IsAdmin)
+    {
+        menuItems.Add(new MenuItem { Text = "FAQ", Link = OdkRoutes2.Groups.Questions(Model.Chapter) });
+    }
+
     var id = "nav-group";
 }
 
@@ -26,7 +31,7 @@
             </button>
         </div>
 
-        <div class="collapse navbar-collapse" id="@id">
+        <div class="collapse navbar-collapse me-auto" id="@id">
             <ul class="navbar-nav">
                 @foreach (var menuItem in menuItems)
                 {
@@ -40,5 +45,10 @@
                 }
             </ul>
         </div>
+
+        @if (!Model.IsMember)
+        {
+            <a href="@OdkRoutes2.Groups.Join(Model.Chapter)" class="btn btn-success">Join</a>
+        }
     </div>
 </nav>

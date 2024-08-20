@@ -11,7 +11,11 @@ public interface IChapterViewModelService
 
     Task<ChapterCreateViewModel> GetChapterCreate(Guid currentMemberId);
 
-    Task<GroupHomePageViewModel> GetGroupHomePage(Guid? currentMemberId, string slug);    
+    Task<GroupHomePageViewModel> GetGroupHomePage(Guid? currentMemberId, string slug);
+
+    Task<GroupJoinPageViewModel> GetGroupJoinPage(Guid? currentMemberId, string slug);
+
+    Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(Guid? currentMemberId, string slug);
 
     Task<ChapterHomePageViewModel> GetHomePage(Guid? currentMemberId, string chapterName);
 
