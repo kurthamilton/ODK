@@ -1,7 +1,11 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Events
+@using ODK.Core.Utils
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Events
 @model ListEventViewModel
+@{
+    var localTime = Event.ToLocalTime(Model.Event.Date, Model.Chapter.TimeZone);
+}
 
 <div class="card card--event">
     <div class="card-header">
@@ -27,7 +31,16 @@
     </div>
     <div class="card-body">
         <div>
-            @Model.Event.Date.ToFriendlyDateString(Model.TimeZone)
+            <span>@localTime.ToFriendlyDateString(null)</span>
+            @if (localTime.TimeOfDay.TotalSeconds > 0)
+            {
+                <span>@TimeSpanUtils.ToString(localTime.TimeOfDay)</span>
+                @if (Model.Event.EndTime != null)
+                {
+                    <span>-</span>
+                    <span>@TimeSpanUtils.ToString(Model.Event.EndTime)</span>
+                }
+            }
         </div>
         <div>
             @await Html.PartialAsync("Components/_Location", Model.Event.VenueName)

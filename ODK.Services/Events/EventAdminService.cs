@@ -46,15 +46,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
 
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
-        
+
+        var date = Event.FromLocalTime(model.Date, chapter.TimeZone);
         var @event = new Event
         {
             AttendeeLimit = model.AttendeeLimit,
             ChapterId = chapterId,
             CreatedBy = currentMember.FullName,
             CreatedUtc = DateTime.UtcNow,
-            Date = model.Date.SpecifyKind(DateTimeKind.Utc),
+            Date = date,
             Description = model.Description,
+            EndTime = model.EndTime,
             ImageUrl = model.ImageUrl,
             IsPublic = model.IsPublic,
             Name = model.Name,
@@ -236,22 +238,30 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return ticketPurchases;
     }
 
-    public async Task<DateTime?> GetNextAvailableEventDate(AdminServiceRequest request)
+    public async Task<DateTime> GetNextAvailableEventDate(AdminServiceRequest request)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetById(request.ChapterId).RunAsync();
 
         var startOfDay = chapter.CurrentTime().StartOfDay();
+        var startOfDayUtc = chapter.FromLocalTime(startOfDay);
 
         var (events, settings) = await GetChapterAdminRestrictedContent(request,
-            x => x.EventRepository.GetByChapterId(request.ChapterId, startOfDay),
+            x => x.EventRepository.GetByChapterId(request.ChapterId, startOfDayUtc),
             x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId));
 
         if (settings.DefaultDayOfWeek == null)
         {
-            return null;
+            return settings.DefaultStartTime != null 
+                ? startOfDay + settings.DefaultStartTime.Value
+                : startOfDay;
         }
 
         var nextEventDate = startOfDay.Next(settings.DefaultDayOfWeek.Value);
+        if (settings.DefaultStartTime != null)
+        {
+            nextEventDate += settings.DefaultStartTime.Value;
+        }
+
         if (events.Count == 0)
         {
             return nextEventDate;
@@ -456,9 +466,20 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
+        var date = model.Date;
+        if (date.TimeOfDay.TotalSeconds > 0)
+        {
+            date = chapter.FromLocalTime(date);
+        }
+        else
+        {
+            date = date.SpecifyKind(DateTimeKind.Utc);
+        }
+
         @event.AttendeeLimit = model.AttendeeLimit;
-        @event.Date = model.Date;
+        @event.Date = date;
         @event.Description = model.Description;
+        @event.EndTime = model.EndTime;
         @event.ImageUrl = model.ImageUrl;
         @event.IsPublic = model.IsPublic;
         @event.Name = model.Name;
@@ -529,7 +550,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     }
 
     public async Task<ServiceResult> UpdateScheduledEmail(AdminServiceRequest request, Guid eventId, DateTime? date,
-        string? time)
+        TimeSpan? time)
     {
         var (chapter, chapterAdminMembers, currentMember, @event, eventEmail) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -540,41 +561,34 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
-        if (eventEmail == null && date == null && string.IsNullOrEmpty(time))
+        if (eventEmail == null)
         {
             return ServiceResult.Successful();
         }
 
-        if (!string.IsNullOrEmpty(time) && !TimeOnly.TryParse(time, out var parsedTime))
-        {
-            return ServiceResult.Failure("Invalid time");
-        }
-
-        if (date == null != string.IsNullOrEmpty(time))
-        {
-            return ServiceResult.Failure("Missing date or time");
-        }
+        //TODO: delete scheduled email if blank?
 
         if (eventEmail == null)
         {
             eventEmail = new EventEmail();
-        }
+        }                
 
-        if (date < DateTime.Now)
-        {
-            return ServiceResult.Failure("Scheduled date cannot be in the past");
-        }
+        var scheduledLocal = date != null && time != null
+            ? date + time
+            : null;
 
-        if (date > @event.Date)
+        var scheduledUtc = chapter.FromLocalTime(scheduledLocal);
+        if (scheduledUtc > @event.Date)
         {
             return ServiceResult.Failure("Scheduled date cannot be after event");
         }
 
-        var scheduledLocal = date != null
-            ? date + TimeOnly.Parse(time ?? "").ToTimeSpan()
-            : null;
+        if (scheduledUtc < DateTime.UtcNow)
+        {
+            return ServiceResult.Failure("Scheduled date cannot be in the past");
+        }
 
-        eventEmail.ScheduledUtc = chapter.FromLocalTime(scheduledLocal);
+        eventEmail.ScheduledUtc = scheduledUtc;
 
         if (eventEmail.EventId == default)
         {
@@ -720,8 +734,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     private void ScheduleEventEmail(Event @event, Chapter chapter, ChapterEventSettings? settings)
     {
-        if (settings?.DefaultScheduledEmailDayOfWeek == null ||
-            string.IsNullOrEmpty(settings.DefaultScheduledEmailTimeOfDay))
+        if (settings?.DefaultScheduledEmailDayOfWeek == null)
         {
             return;
         }

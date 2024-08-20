@@ -629,8 +629,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         settings.DefaultDayOfWeek = model.DefaultDayOfWeek;
         settings.DefaultDescription = model.DefaultDescription;
+        settings.DefaultEndTime = model.DefaultEndTime;
         settings.DefaultScheduledEmailDayOfWeek = model.DefaultScheduledEmailDayOfWeek;
         settings.DefaultScheduledEmailTimeOfDay = model.DefaultScheduledEmailTimeOfDay;
+        settings.DefaultStartTime = model.DefaultStartTime;
         settings.DisableComments = model.DisableComments;
 
         if (settings.ChapterId == default)

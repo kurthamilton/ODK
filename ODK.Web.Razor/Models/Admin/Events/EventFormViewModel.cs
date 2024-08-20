@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using ODK.Web.Common.Validation;
 
 namespace ODK.Web.Razor.Models.Admin.Events;
 
@@ -12,6 +13,8 @@ public class EventFormViewModel
 
     public Guid ChapterId { get; set; }
 
+    public string ChapterName { get; set; } = "";
+
     public string? CurrencySymbol { get; set; }
 
     public DateTime Date { get; set; }
@@ -19,6 +22,10 @@ public class EventFormViewModel
     public string? Description { get; set; } = "";
 
     public bool Draft { get; set; }
+
+    [DisplayName("End time")]
+    [TimeOfDay]
+    public string? EndTime { get; set; }
 
     public IReadOnlyCollection<SelectListItem> HostOptions { get; set; } = [];
 

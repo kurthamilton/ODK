@@ -1,4 +1,6 @@
-﻿using ODK.Core.Members;
+﻿using System;
+using ODK.Core.Members;
+using ODK.Core.Utils;
 
 namespace ODK.Core.Events;
 
@@ -17,6 +19,8 @@ public class Event : IDatabaseEntity, IChapterEntity
     public DateTime Date { get; set; }
 
     public string? Description { get; set; }
+
+    public TimeSpan? EndTime { get; set; }
 
     public Guid Id { get; set; }
 
@@ -42,7 +46,31 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public Guid VenueId { get; set; }
 
-    public string GetDisplayName() => (!IsPublished ? "[DRAFT] " : "") + Name;
+    public static DateTime FromLocalTime(DateTime local, TimeZoneInfo? timeZone)
+    {
+        if (local.TimeOfDay.TotalSeconds == 0)
+        {
+            return local;
+        }
+
+        return timeZone != null
+            ? TimeZoneInfo.ConvertTimeToUtc(local, timeZone)
+            : local.SpecifyKind(DateTimeKind.Utc);
+    }
+
+    public static DateTime ToLocalTime(DateTime utc, TimeZoneInfo? timeZone)
+    {
+        if (utc.TimeOfDay.TotalSeconds == 0)
+        {
+            return utc;
+        }
+
+        return timeZone != null
+            ? TimeZoneInfo.ConvertTimeFromUtc(utc, timeZone)
+            : utc;
+    }
+
+    public string GetDisplayName() => (!IsPublished ? "[DRAFT] " : "") + Name;    
 
     public bool IsAuthorized(Member? member)
     {
@@ -54,4 +82,6 @@ public class Event : IDatabaseEntity, IChapterEntity
         return member?.IsCurrent() == true && 
             member?.IsMemberOf(ChapterId) == true;
     }
+
+    public DateTime ToLocalTime(TimeZoneInfo? timeZone) => ToLocalTime(Date, timeZone);
 }

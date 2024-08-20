@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Utils;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
@@ -27,8 +28,10 @@ public class SettingsModel : AdminPageModel
         {
             DefaultDayOfWeek = viewModel.DefaultDayOfWeek,
             DefaultDescription = viewModel.DefaultDescription,
+            DefaultEndTime = TimeSpanUtils.FromString(viewModel.DefaultEndTime),
             DefaultScheduledEmailDayOfWeek = viewModel.DefaultScheduledEmailDayOfWeek,
-            DefaultScheduledEmailTimeOfDay = viewModel.DefaultScheduledEmailTimeOfDay,
+            DefaultScheduledEmailTimeOfDay = TimeSpanUtils.FromString(viewModel.DefaultScheduledEmailTimeOfDay),
+            DefaultStartTime = TimeSpanUtils.FromString(viewModel.DefaultStartTime),
             DisableComments = viewModel.DisableComments
         });
 

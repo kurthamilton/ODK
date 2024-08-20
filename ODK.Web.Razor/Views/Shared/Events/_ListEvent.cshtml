@@ -1,7 +1,11 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Events
+@using ODK.Core.Utils
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Events
 @model ListEventViewModel
+@{
+    var localTime = Event.ToLocalTime(Model.Event.Date, Model.Chapter.TimeZone);
+}
 
 <h4 class="d-flex align-items-center">  
     @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
@@ -10,12 +14,26 @@
         ResponseType = Model.Event.Response
     })
     
-    <a href="@OdkRoutes.Events.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" class="@(Model.Event.Response > 0 ? "ms-1" : null)">
+    <a href="@OdkRoutes.Events.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" 
+       class="@(Model.Event.Response > 0 ? "ms-1" : null)">
         @Model.Event.EventName
     </a>
 </h4>
 <h5>
-    @Model.Event.Date.EventDate(true)
+    <span>@localTime.ToFriendlyDateString(null)</span>
+    @if (localTime.TimeOfDay.TotalSeconds > 0)
+    {
+        <span>@TimeSpanUtils.ToString(localTime.TimeOfDay)</span>
+        @if (Model.Event.EndTime != null)
+        {
+            <span>-</span>
+            <span>@TimeSpanUtils.ToString(Model.Event.EndTime)</span>
+        }
+    }
+    else if (!string.IsNullOrEmpty(Model.Event.Time))
+    {
+        <span>@Model.Event.Time</span>
+    }
 </h5>
 <div class="d-flex gap-2">
     <div>

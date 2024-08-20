@@ -17,6 +17,22 @@
     @Html.DropDownListFor(x => x.DefaultDayOfWeek, dayOfWeekOptions, " ", new { @class = "form-select" })
 </div>
 
+<div class="row">
+    <div class="col-sm-6 form-group mb-3">
+        @Html.LabelFor(x => x.DefaultStartTime, new { @class = "form-label" })
+        @await Html.PartialAsync("Components/_Tooltip", "Default event start time when creating new events (24 hour clock, HH:MM)")
+        @Html.TextBoxFor(x => x.DefaultStartTime, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.DefaultStartTime)
+    </div>
+
+    <div class="col-sm-6 form-group mb-3">
+        @Html.LabelFor(x => x.DefaultEndTime, new { @class = "form-label" })
+        @await Html.PartialAsync("Components/_Tooltip", "Default event end time when creating new events (24 hour clock, HH:MM)")
+        @Html.TextBoxFor(x => x.DefaultEndTime, new { @class = "form-control" })
+        @Html.ValidationMessageFor(x => x.DefaultEndTime)
+    </div>    
+</div>
+
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.DefaultScheduledEmailDayOfWeek, new { @class = "form-label" })
     @Html.DropDownListFor(x => x.DefaultScheduledEmailDayOfWeek, dayOfWeekOptions, " ", new { @class = "form-select" })
@@ -24,6 +40,7 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.DefaultScheduledEmailTimeOfDay, new { @class = "form-label" })
+    @await Html.PartialAsync("Components/_Tooltip", "Default scheduled email time when creating new events (24 hour clock, HH:MM)")
     @Html.TextBoxFor(x => x.DefaultScheduledEmailTimeOfDay, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.DefaultScheduledEmailTimeOfDay)
 </div>

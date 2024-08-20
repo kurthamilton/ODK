@@ -30,7 +30,7 @@ public interface IEventAdminService
 
     Task<IReadOnlyCollection<EventTicketPurchase>> GetEventTicketPurchases(AdminServiceRequest request, Guid eventId);
 
-    Task<DateTime?> GetNextAvailableEventDate(AdminServiceRequest request);
+    Task<DateTime> GetNextAvailableEventDate(AdminServiceRequest request);
 
     Task PublishEvent(AdminServiceRequest request, Guid eventId);
 
@@ -46,5 +46,5 @@ public interface IEventAdminService
     Task<EventResponse> UpdateMemberResponse(AdminServiceRequest request, Guid eventId, Guid memberId, 
         EventResponseType responseType);
 
-    Task<ServiceResult> UpdateScheduledEmail(AdminServiceRequest request, Guid eventId, DateTime? date, string? time);
+    Task<ServiceResult> UpdateScheduledEmail(AdminServiceRequest request, Guid eventId, DateTime? date, TimeSpan? time);
 }

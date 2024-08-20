@@ -5,6 +5,9 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model EventPageViewModel
+@{
+    var localTime = Model.Event.ToLocalTime(Model.Chapter.TimeZone);
+}
 
 @await Html.PartialAsync("Components/_AdminBar", new AdminBarViewModel
 {
@@ -27,8 +30,20 @@
 })
 
 <h2>@Model.Venue.Name</h2>
-<h4>@Model.Event.Date.EventDate(true)</h4>
-@if (!string.IsNullOrEmpty(Model.Event.Time))
+<h4>@localTime.ToFriendlyDateString(null)</h4>
+
+@if (localTime.TimeOfDay.TotalSeconds > 0)
+{
+    <h5>
+        <span>@localTime.ToString("HH:mm")</span>
+        @if (Model.Event.EndTime != null)
+        {
+            <span>-</span>
+            <span>@TimeSpanUtils.ToString(Model.Event.EndTime)</span>
+        }
+    </h5>
+}
+else if (!string.IsNullOrEmpty(Model.Event.Time))
 {
     <h5>@Model.Event.Time</h5>
 }

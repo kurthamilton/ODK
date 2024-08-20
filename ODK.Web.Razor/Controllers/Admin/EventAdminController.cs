@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
+using ODK.Core.Utils;
 using ODK.Services.Caching;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
@@ -85,7 +86,7 @@ public class EventAdminController : AdminControllerBase
             request,
             id,
             viewModel.ScheduledEmailDate,
-            viewModel.ScheduledEmailTime);
+            TimeSpanUtils.FromString(viewModel.ScheduledEmailTime));
         AddFeedback(result, "Scheduled email date updated");
         return RedirectToReferrer();
     }

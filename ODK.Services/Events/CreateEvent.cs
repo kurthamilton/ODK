@@ -8,6 +8,8 @@ public class CreateEvent
 
     public required string? Description { get; init; }
 
+    public required TimeSpan? EndTime { get; init; }
+
     public required List<Guid> Hosts { get; init; } = new();
 
     public required string? ImageUrl { get; init; }
