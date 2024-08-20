@@ -42,7 +42,7 @@
     {
         <tr>
             <td><a href="/@Model.Name/Admin/Events/Venues/@venue.Id">@venue.Name</a></td>
-            <td>@venue.Address</td>
+            <td>@venue.MapQuery</td>
             <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>
             <td>
                 @if (lastEvents.TryGetValue(venue.Id, out DateTime lastEventDate))
