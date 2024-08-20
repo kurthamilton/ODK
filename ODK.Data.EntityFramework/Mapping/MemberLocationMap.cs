@@ -14,7 +14,7 @@ public class MemberLocationMap : IEntityTypeConfiguration<MemberLocation>
         builder.HasKey(x => x.MemberId);
 
         builder.Property(x => x.LatLong)
-            .HasConversion<NullableLatLongConverter>();
+            .HasConversion<LatLongConverter>();
 
         builder.HasOne<Member>()
             .WithOne()

@@ -9,9 +9,14 @@ public class VenueFormViewModel
     
     public string? Address { get; set; }
 
+    public double? Lat { get; set; }
+
+    [Required]
+    [DisplayName("Location")]
+    public string? LocationName { get; set; }
+
+    public double? Long { get; set; }
+
     [Required]
     public string? Name { get; set; }
-
-    [DisplayName("Map search")]
-    public string? MapQuery { get; set; }
 }

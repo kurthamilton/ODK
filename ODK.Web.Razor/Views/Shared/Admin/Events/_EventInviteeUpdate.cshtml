@@ -17,7 +17,7 @@
             new SelectListItem { Value = EventResponseType.No.ToString(), Text = "Declined" },
             new SelectListItem { Value = EventResponseType.None.ToString(), Text = "No response" },
             new SelectListItem { Value = EventResponseType.NotInvited.ToString(), Text = "Not invited" }
-        })        
+        }, new { @class = "form-select" })        
         @Html.ValidationMessageFor(x => x.ResponseTypes)
     </div>
 

@@ -13,7 +13,11 @@ public abstract class VenueAdminPageModel : AdminPageModel
         VenueAdminService = venueAdminService;
     }
 
-    public Venue Venue { get; private set; } = null!;
+    public VenueLocation? Location { get; private set; }
+
+    public Venue Venue { get; private set; } = null!;    
+
+    public Guid VenueId => Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id) ? id : Guid.Empty;
 
     protected IVenueAdminService VenueAdminService { get; }
 
@@ -21,14 +25,14 @@ public abstract class VenueAdminPageModel : AdminPageModel
     {
         await base.OnPageHandlerExecutionAsync(context, next);
 
-        Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id);
-
         var request = await GetAdminServiceRequest();
-        Venue = await VenueAdminService.GetVenue(request, id);
+        Venue = await VenueAdminService.GetVenue(request, VenueId);
         if (Venue == null)
         {
             Response.Redirect($"{Request.RouteValues["chapterName"]}/Admin/Events/Venues");
             return;
-        }        
+        }
+
+        Location = await VenueAdminService.GetVenueLocation(request, Venue);        
     }
 }

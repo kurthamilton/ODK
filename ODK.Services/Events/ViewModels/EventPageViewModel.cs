@@ -44,5 +44,5 @@ public class EventPageViewModel
 
     public required IReadOnlyCollection<EventTicketPurchase> TicketPurchases { get; init; }
 
-    public required Venue Venue { get; init; }
+    public required Venue Venue { get; init; }    
 }

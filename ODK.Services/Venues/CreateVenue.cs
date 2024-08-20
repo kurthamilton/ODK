@@ -1,10 +1,16 @@
-﻿namespace ODK.Services.Venues;
+﻿using ODK.Core.Countries;
+
+namespace ODK.Services.Venues;
 
 public class CreateVenue
 {
-    public string? Address { get; set; }
+    public required string? Address { get; set; }
 
-    public string? MapQuery { get; set; }
+    public bool HasLocation => Location != null && !string.IsNullOrEmpty(LocationName);
 
-    public string Name { get; set; } = "";
+    public required LatLong? Location { get; set; }
+
+    public required string? LocationName { get; set; }
+
+    public required string Name { get; set; } = "";
 }

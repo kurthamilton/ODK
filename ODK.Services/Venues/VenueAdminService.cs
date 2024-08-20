@@ -1,4 +1,5 @@
 ﻿using ODK.Core;
+using ODK.Core.Countries;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Services.Caching;
@@ -29,17 +30,27 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         {
             Address = model.Address,
             ChapterId = chapterId,
-            MapQuery = model.MapQuery,
+            MapQuery = model.LocationName,
             Name = model.Name            
         };
 
-        var validationResult = ValidateVenue(venue, existing);
+        var location = new VenueLocation
+        {
+            LatLong = model.Location ?? new LatLong(),
+            Name = model.LocationName ?? ""
+        };
+
+        var validationResult = ValidateVenue(venue, existing, location);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
         _unitOfWork.VenueRepository.Add(venue);
+
+        location.VenueId = venue.Id;
+        _unitOfWork.VenueLocationRepository.Add(location);
+
         await _unitOfWork.SaveChangesAsync();
 
         _cacheService.RemoveVersionedCollection<Venue>(request.ChapterId);
@@ -52,6 +63,11 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         var venue = await GetChapterAdminRestrictedContent(request,
             x => x.VenueRepository.GetById(venueId));
         return OdkAssertions.BelongsToChapter(venue, request.ChapterId);
+    }
+
+    public async Task<VenueLocation?> GetVenueLocation(AdminServiceRequest request, Venue venue)
+    {
+        return await _unitOfWork.VenueLocationRepository.GetByVenueId(venue.Id);
     }
 
     public async Task<IReadOnlyCollection<Venue>> GetVenues(AdminServiceRequest request)
@@ -79,19 +95,40 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             x => x.VenueRepository.GetById(id),
             x => x.VenueRepository.GetByName(request.ChapterId, model.Name));
 
+        var location = await _unitOfWork.VenueLocationRepository.GetByVenueId(id);
+
         OdkAssertions.BelongsToChapter(venue, request.ChapterId);
 
-        venue.Address = model.Address;
-        venue.MapQuery = model.MapQuery;
-        venue.Name = model.Name;
-        
-        var validationResult = ValidateVenue(venue, existing);
+        venue.Address = model.Address;        
+        venue.MapQuery = model.LocationName;
+        venue.Name = model.Name;                
+
+        if (location == null)
+        {
+            location = new VenueLocation();
+        }
+
+        location.Name = model.LocationName ?? "";
+        location.LatLong = model.Location ?? new LatLong();
+
+        var validationResult = ValidateVenue(venue, existing, location);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
         _unitOfWork.VenueRepository.Update(venue);
+
+        if (location.VenueId == default)
+        {
+            location.VenueId = venue.Id;
+            _unitOfWork.VenueLocationRepository.Add(location);
+        }
+        else
+        {
+            _unitOfWork.VenueLocationRepository.Update(location);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         _cacheService.RemoveVersionedItem<Venue>(id);
@@ -100,7 +137,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         return ServiceResult.Successful();
     }
     
-    private ServiceResult ValidateVenue(Venue venue, Venue? existing)
+    private ServiceResult ValidateVenue(Venue venue, Venue? existing, VenueLocation location)
     {
         if (string.IsNullOrWhiteSpace(venue.Name))
         {
@@ -110,6 +147,11 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         if (existing != null && existing.Id != venue.Id)
         {
             return ServiceResult.Failure("Venue with that name already exists");
+        }
+
+        if (string.IsNullOrEmpty(location.Name) || location.LatLong.IsDefault)
+        {
+            return ServiceResult.Failure("Location not set");
         }
 
         return ServiceResult.Successful();

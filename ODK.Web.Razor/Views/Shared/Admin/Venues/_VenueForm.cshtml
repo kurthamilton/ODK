@@ -1,4 +1,5 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Core.Countries
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Models.Admin.Venues.VenueFormViewModel
 
 <div class="form-group mb-3 required">
@@ -13,16 +14,17 @@
     @Html.TextBoxFor(x => x.Address, new { @class = "form-control" })
 </div>
 
-<div class="form-group mb-3">
-    @Html.LabelFor(x => x.MapQuery, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_Tooltip", 
-               "The search term used if displaying a map. Be as specific as possible")
-    @Html.TextBoxFor(x => x.MapQuery, new { @class = "form-control" })
+<div class="form-group mb-3 required" data-location-container>
+    @Html.LabelFor(x => x.LocationName, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.LocationName, new { @class = "form-control", data_location = "" })
+    @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
+    @Html.HiddenFor(x => x.Long, new { data_location_long = "" })    
 </div>
 
 <div class="mb-3">
     @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
     {
-        QuerySource = "#" + Html.IdFor(x => x.MapQuery)
+        LatLong = LatLong.FromCoords(Model.Lat, Model.Long),
+        QuerySource = "#" + Html.IdFor(x => x.LocationName)        
     })
 </div>

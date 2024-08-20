@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Countries;
 using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Venues;
@@ -27,7 +28,8 @@ public class VenueCreateModel : AdminPageModel
         var result = await _venueAdminService.CreateVenue(request, new CreateVenue
         {
             Address = viewModel.Address,
-            MapQuery = viewModel.MapQuery,
+            Location = LatLong.FromCoords(viewModel.Lat, viewModel.Long),
+            LocationName = viewModel.LocationName,
             Name = viewModel.Name ?? ""
         });
 

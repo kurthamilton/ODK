@@ -135,7 +135,7 @@ public class EventViewModelService : IEventViewModelService
             },
             CurrentMember = member,
             Event = @event,
-            Hosts = hosts.Select(x => x.Member).ToArray(),            
+            Hosts = hosts.Select(x => x.Member).ToArray(),
             MembersByResponse = responseDictionary,
             MemberResponse = currentMemberId != null 
                 ? responses.FirstOrDefault(x => x.MemberId == currentMemberId.Value)?.Type

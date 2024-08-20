@@ -10,7 +10,9 @@
     {
         Address = Model.Venue.Address,
         ChapterId = Model.Chapter.Id,
-        MapQuery = Model.Venue.MapQuery,
+        Lat = Model.Location?.LatLong.Lat,
+        LocationName = Model.Location?.Name ?? Model.Venue.MapQuery,
+        Long = Model.Location?.LatLong.Long,
         Name = Model.Venue.Name
     })
     

@@ -8,6 +8,8 @@ public interface IVenueAdminService
 
     Task<Venue> GetVenue(AdminServiceRequest request, Guid venueId);
 
+    Task<VenueLocation?> GetVenueLocation(AdminServiceRequest request, Venue venue);
+
     Task<IReadOnlyCollection<Venue>> GetVenues(AdminServiceRequest request);
 
     Task<VenuesDto> GetVenuesDto(AdminServiceRequest request);

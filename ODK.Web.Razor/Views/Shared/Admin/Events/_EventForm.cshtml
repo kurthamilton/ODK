@@ -29,7 +29,7 @@
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Venue, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", "Select an existing venue or create a new venue first on the venues page")    
-    @Html.DropDownListFor(x => x.Venue, venueOptions, "", new { @class = "form-select" })
+    @Html.DropDownListFor(x => x.Venue, venueOptions, "", new { @class = "form-select", data_searchable = "" })
     @Html.ValidationMessageFor(x => x.Venue)
 </div>
 
@@ -94,7 +94,7 @@
         {
             Name = "Events.Hosts"
         })
-    @Html.ListBoxFor(x => x.Hosts, Model.HostOptions, new { @class = "form-control" })
+    @Html.ListBoxFor(x => x.Hosts, Model.HostOptions, new { @class = "form-select" })
 </div>
 
 <div class="form-group mb-3">

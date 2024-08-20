@@ -12,9 +12,15 @@ public struct LatLong
         Long = @long;
     }
 
+    public bool IsDefault => Lat == 0 && Long == 0;
+
     public double Lat { get; set; }
 
     public double Long { get; set; }
+
+    public static LatLong? FromCoords(double? lat, double? @long) => lat != null && @long != null
+        ? new LatLong(lat.Value, @long.Value)
+        : null;
 
     public double DistanceFrom(LatLong other, DistanceUnit unit)
     {

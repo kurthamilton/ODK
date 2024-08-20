@@ -59,6 +59,7 @@ public interface IUnitOfWork
     ISiteSettingsRepository SiteSettingsRepository { get; }
     ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository { get; }
     ISiteSubscriptionRepository SiteSubscriptionRepository { get; }
+    IVenueLocationRepository VenueLocationRepository { get; }
     IVenueRepository VenueRepository { get; }
 
     Task<(T1, T2)> RunAsync<T1, T2>(

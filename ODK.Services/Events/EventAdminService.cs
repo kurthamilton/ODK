@@ -249,40 +249,36 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetByChapterId(request.ChapterId, startOfDayUtc),
             x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId));
 
+        var startTime = settings.DefaultStartTime ?? TimeSpan.Zero;
+
         if (settings.DefaultDayOfWeek == null)
         {
-            return settings.DefaultStartTime != null 
-                ? startOfDay + settings.DefaultStartTime.Value
-                : startOfDay;
+            return startOfDay + startTime;
         }
-
-        var nextEventDate = startOfDay.Next(settings.DefaultDayOfWeek.Value);
-        if (settings.DefaultStartTime != null)
-        {
-            nextEventDate += settings.DefaultStartTime.Value;
-        }
+        
+        var nextEventDate = startOfDay.Next(settings.DefaultDayOfWeek.Value);        
 
         if (events.Count == 0)
         {
-            return nextEventDate;
+            return nextEventDate + startTime;
         }
 
-        var eventDates = events
-            .Select(x => x.Date)
+        var eventDatesLocal = events
+            .Select(x => chapter.ToChapterTime(x.Date).Date)
             .ToArray();
-        var lastEventDate = eventDates.Max();
+        var lastEventDate = eventDatesLocal.Max();
 
         while (nextEventDate < lastEventDate)
         {
-            if (!eventDates.Contains(nextEventDate))
+            if (!eventDatesLocal.Contains(nextEventDate))
             {
-                return nextEventDate;
+                return nextEventDate + startTime;
             }
 
             nextEventDate = nextEventDate.AddDays(7);
         }
 
-        return nextEventDate;
+        return nextEventDate + startTime;
     }
 
     public async Task PublishEvent(AdminServiceRequest request, Guid eventId)

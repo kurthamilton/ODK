@@ -14,7 +14,7 @@ public class ChapterLocationMap : IEntityTypeConfiguration<ChapterLocation>
         builder.HasKey(x => x.ChapterId);
 
         builder.Property(x => x.LatLong)
-            .HasConversion<NullableLatLongConverter>();
+            .HasConversion<LatLongConverter>();
 
         builder.HasOne<Chapter>()
             .WithOne()
