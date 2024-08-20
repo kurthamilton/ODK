@@ -77,6 +77,7 @@ public static class EventAdminServiceTests
             AttendeeLimit = null,
             Date = eventDate,            
             Description = null,
+            EndTime = null,
             Hosts = new List<Guid>(),
             ImageUrl = null,
             IsPublic = false,
@@ -121,6 +122,16 @@ public static class EventAdminServiceTests
         mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
             .Returns((Guid chapterId) => new MockDeferredQuerySingleOrDefault<ChapterEventSettings>(
                 settings?.ChapterId == chapterId ? settings : null));
+
+        return mock.Object;
+    }
+
+    private static IChapterPaymentSettingsRepository CreateMockChapterPaymentSettingsRepository()
+    {
+        var mock = new Mock<IChapterPaymentSettingsRepository>();
+
+        mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
+            .Returns(new MockDeferredQuerySingleOrDefault<ChapterPaymentSettings>(null));
 
         return mock.Object;
     }
@@ -201,6 +212,9 @@ public static class EventAdminServiceTests
 
         mock.Setup(x => x.ChapterEventSettingsRepository)
             .Returns(chapterEventSettingsRepository ?? CreateMockChapterEventSettingsRepository());
+
+        mock.Setup(x => x.ChapterPaymentSettingsRepository)
+            .Returns(CreateMockChapterPaymentSettingsRepository());
 
         mock.Setup(x => x.ChapterRepository)
             .Returns(chapterRepository ?? CreateMockChapterRepository(CreateChapter()));
