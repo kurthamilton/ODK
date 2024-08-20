@@ -152,7 +152,7 @@
             $rows.forEach($row => {
                 const $cell = $row.querySelectorAll('td')[i];
                 const $value = $cell.querySelector('[data-sort-value]');
-                const value = $value ? $value.getAttribute('data-sort-value') : $cell.innerHTML;
+                const value = $value ? $value.getAttribute('data-sort-value') : $cell.innerHTML;                
                 sorted.push({ $row: $row, value: value.toString().toLocaleLowerCase().trim() });
             });
 

@@ -38,10 +38,12 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (Venue venue in venues.OrderBy(x => x.Name))
+    @foreach (var venue in venues.OrderBy(x => x.Name))
     {
         <tr>
-            <td><a href="/@Model.Name/Admin/Events/Venues/@venue.Id">@venue.Name</a></td>
+            <td>
+                <a data-sort-value="@venue.Name" href="/@Model.Name/Admin/Events/Venues/@venue.Id">@venue.Name</a>
+            </td>
             <td>@venue.MapQuery</td>
             <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>
             <td>
