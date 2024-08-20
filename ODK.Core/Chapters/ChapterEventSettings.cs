@@ -8,6 +8,8 @@ public class ChapterEventSettings : IChapterEntity
 
     public string? DefaultDescription { get; set; }
 
+    public TimeSpan? DefaultEndTime { get; set; }
+
     public DayOfWeek? DefaultScheduledEmailDayOfWeek { get; set; }
     
     public TimeSpan? DefaultScheduledEmailTimeOfDay { get; set; }    

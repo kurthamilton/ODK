@@ -12,6 +12,10 @@ public class EventSettingsFormViewModel
     [DisplayName("Default description")]
     public string? DefaultDescription { get; set; }
 
+    [DisplayName("End time")]
+    [TimeOfDay]
+    public string? DefaultEndTime { get; set; }
+
     [DisplayName("Scheduled email day of week")]    
     public DayOfWeek? DefaultScheduledEmailDayOfWeek { get; set; }
     

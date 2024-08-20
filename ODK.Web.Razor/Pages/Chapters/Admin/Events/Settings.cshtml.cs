@@ -28,6 +28,7 @@ public class SettingsModel : AdminPageModel
         {
             DefaultDayOfWeek = viewModel.DefaultDayOfWeek,
             DefaultDescription = viewModel.DefaultDescription,
+            DefaultEndTime = TimeSpanUtils.FromString(viewModel.DefaultEndTime),
             DefaultScheduledEmailDayOfWeek = viewModel.DefaultScheduledEmailDayOfWeek,
             DefaultScheduledEmailTimeOfDay = TimeSpanUtils.FromString(viewModel.DefaultScheduledEmailTimeOfDay),
             DefaultStartTime = TimeSpanUtils.FromString(viewModel.DefaultStartTime),

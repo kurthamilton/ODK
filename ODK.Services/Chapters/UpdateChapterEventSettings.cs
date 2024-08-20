@@ -6,6 +6,8 @@ public class UpdateChapterEventSettings
 
     public required string? DefaultDescription { get; init; }
 
+    public required TimeSpan? DefaultEndTime { get; init; }
+
     public required DayOfWeek? DefaultScheduledEmailDayOfWeek { get; init; }
 
     public required TimeSpan? DefaultScheduledEmailTimeOfDay { get; init; }
