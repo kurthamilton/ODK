@@ -79,8 +79,8 @@ public class Event : IDatabaseEntity, IChapterEntity
             return true;
         }
 
-        return member?.IsCurrent() == true && 
-            member?.IsMemberOf(ChapterId) == true;
+        return member?.SuperAdmin == true || 
+            (member?.IsCurrent() == true && member?.IsMemberOf(ChapterId) == true);
     }
 
     public DateTime ToLocalTime(TimeZoneInfo? timeZone) => ToLocalTime(Date, timeZone);
