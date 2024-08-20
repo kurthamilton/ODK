@@ -36,7 +36,13 @@
                         <span>@localTime.ToFriendlyDateString(null)</span>
                         @if (localTime.TimeOfDay.TotalSeconds > 0)
                         {
+                            @if (@event.EndTime == null)
+                            {
+                                <span>From</span>
+                            }
+
                             <span>@TimeSpanUtils.ToString(localTime.TimeOfDay)</span>
+
                             @if (@event.EndTime != null)
                             {
                                 <span>-</span>

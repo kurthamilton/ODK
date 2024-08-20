@@ -35,7 +35,13 @@
 @if (localTime.TimeOfDay.TotalSeconds > 0)
 {
     <h5>
+        @if (Model.Event.EndTime == null)
+        {
+            <span>From</span>
+        }
+
         <span>@localTime.ToString("HH:mm")</span>
+
         @if (Model.Event.EndTime != null)
         {
             <span>-</span>
