@@ -9,7 +9,7 @@ using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapterRepository, IDisposable
+public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapterRepository
 {
     private static readonly EntityCache<Guid, Chapter> _cache = new DatabaseEntityCache<Chapter>();
 
@@ -58,7 +58,34 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
             _cache.Set,
             _cache.SetAll);
 
-    protected override IQueryable<Chapter> Set() => base.Set()        
+    public override void Update(Chapter entity)
+    {
+        if (_platform == PlatformType.DrunkenKnitwits &&
+            entity.Platform == PlatformType.DrunkenKnitwits)
+        {
+            entity.Name += " Drunken Knitwits";
+        }
+
+        var cached = _cache.Find(x => x.Id == entity.Id);
+
+        base.Update(entity);
+    }
+
+    protected override void PreCommit(IEnumerable<Chapter> pending)
+    {
+        base.PreCommit(pending);
+
+        foreach (var chapter in pending)
+        {
+            if (_platform == PlatformType.DrunkenKnitwits &&
+                chapter.Platform == PlatformType.DrunkenKnitwits)
+            {
+                chapter.Name = chapter.Name.Replace(" Drunken Knitwits", "");
+            }
+        }
+    }
+
+    protected override IQueryable<Chapter> Set() => base.Set()
         .ConditionalWhere(x => x.Platform == _platform, _platform != PlatformType.Default)
-        .ToPlatformChapters(_platform);
+        .ToPlatformChapters(_platform);    
 }

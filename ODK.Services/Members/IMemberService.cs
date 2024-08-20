@@ -9,7 +9,7 @@ public interface IMemberService
 
     Task<ServiceResult> CreateAccount(CreateAccountModel model);
 
-    Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile model);
+    Task<ServiceResult> CreateChapterAccount(Guid chapterId, CreateMemberProfile model);
 
     Task<ServiceResult> DeleteMember(Guid memberId);
 
@@ -28,6 +28,8 @@ public interface IMemberService
     Task<MemberProfile?> GetMemberProfile(Guid chapterId, Guid currentMemberId, Member member);
 
     Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId);
+
+    Task<ServiceResult> JoinChapter(Guid currentMemberId, Guid chapterId, IEnumerable<UpdateMemberProperty> memberProperties);
 
     Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId, string cardToken);
 

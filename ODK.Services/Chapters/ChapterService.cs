@@ -146,6 +146,12 @@ public class ChapterService : IChapterService
         return ServiceResult<Chapter?>.Successful(chapter);
     }
 
+    public async Task<Chapter> GetChapterBySlug(string slug)
+    {
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        return OdkAssertions.Exists(chapter);
+    }
+
     public async Task<ChapterLinks?> GetChapterLinks(Guid chapterId)
     {
         return await _unitOfWork.ChapterLinksRepository.GetByChapterId(chapterId).RunAsync();
@@ -236,10 +242,5 @@ public class ChapterService : IChapterService
             Chapters = chapters,
             Countries = countries
         };
-    }
-
-    public Task<ChapterTexts> GetChapterTexts(Guid chapterId)
-    {
-        return _unitOfWork.ChapterTextsRepository.GetByChapterId(chapterId).RunAsync();
-    }    
+    } 
 }

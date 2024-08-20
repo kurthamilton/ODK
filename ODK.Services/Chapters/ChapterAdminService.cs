@@ -20,6 +20,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IChapterService _chapterService;
     private readonly IEmailService _emailService;
     private readonly IHttpRequestProvider _httpRequestProvider;
+    private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -29,13 +30,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IChapterService chapterService,
         IEmailService emailService,
         IHttpRequestProvider httpRequestProvider,
-        ISiteSubscriptionService siteSubscriptionService)
+        ISiteSubscriptionService siteSubscriptionService,
+        IHtmlSanitizer htmlSanitizer)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
         _chapterService = chapterService;
         _emailService = emailService;
         _httpRequestProvider = httpRequestProvider;
+        _htmlSanitizer = htmlSanitizer;
         _siteSubscriptionService = siteSubscriptionService;
         _unitOfWork = unitOfWork;
     }
@@ -913,6 +916,33 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return questions.OrderBy(x => x.DisplayOrder).ToArray();
     }
 
+    public async Task<ServiceResult> UpdateChapterRegisterText(AdminServiceRequest request, string text)
+    {
+        var texts = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterTextsRepository.GetByChapterId(request.ChapterId));
+
+        if (texts == null)
+        {
+            texts = new ChapterTexts();
+        }
+
+        texts.RegisterText = _htmlSanitizer.Encode(text);
+
+        if (texts.ChapterId == default)
+        {
+            texts.ChapterId = request.ChapterId;
+            _unitOfWork.ChapterTextsRepository.Add(texts);
+        }
+        else
+        {
+            _unitOfWork.ChapterTextsRepository.Update(texts);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UpdateChapterSiteSubscription(AdminServiceRequest request,
         Guid siteSubscriptionId, SiteSubscriptionFrequency frequency)
     {
@@ -976,10 +1006,23 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Some required fields are missing");
         }
 
-        texts.RegisterText = model.RegisterText;
-        texts.WelcomeText = model.WelcomeText;
+        if (texts == null)
+        {
+            texts = new ChapterTexts();
+        }
 
-        _unitOfWork.ChapterTextsRepository.Update(texts);
+        texts.RegisterText = _htmlSanitizer.Encode(model.RegisterText);
+        texts.WelcomeText = _htmlSanitizer.Encode(model.WelcomeText);
+
+        if (texts.ChapterId == default)
+        {
+            texts.ChapterId = chapter.Id;
+            _unitOfWork.ChapterTextsRepository.Add(texts);
+        }
+        else
+        {
+            _unitOfWork.ChapterTextsRepository.Update(texts);
+        }
 
         if (chapter.Description != model.Description)
         {
@@ -1008,6 +1051,33 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         chapter.TimeZone = timeZone;
 
         _unitOfWork.ChapterRepository.Update(chapter);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateChapterWelcomeText(AdminServiceRequest request, string text)
+    {
+        var texts = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterTextsRepository.GetByChapterId(request.ChapterId));
+
+        if (texts == null)
+        {
+            texts = new ChapterTexts();
+        }
+
+        texts.WelcomeText = _htmlSanitizer.Encode(text);
+
+        if (texts.ChapterId == default)
+        {
+            texts.ChapterId = request.ChapterId;
+            _unitOfWork.ChapterTextsRepository.Add(texts);
+        }
+        else
+        {
+            _unitOfWork.ChapterTextsRepository.Update(texts);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();

@@ -20,6 +20,17 @@
 
     var applicationCheckboxesRendered = false;
     var imageUploadRendered = false;
+
+    if (Model.Properties.Count == 0)
+    {
+        Model.Properties = Model.ChapterProperties
+            .OrderBy(x => x.DisplayOrder)
+            .Select(x => new ChapterProfileFormPropertyViewModel
+            {
+                ChapterPropertyId = x.Id
+            })
+            .ToList();
+    }
 }
 
 @for (int i = 0; i < Model.Properties.Count; i++)

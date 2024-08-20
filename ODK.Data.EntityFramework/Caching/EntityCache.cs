@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using ODK.Core;
 
 namespace ODK.Data.EntityFramework.Caching;
 
@@ -12,9 +13,11 @@ public class EntityCache<TKey, T> where TKey : notnull
     
     private bool _allRecords = false;
 
-    public EntityCache(Func<T, TKey> keyFunc, Func<T, bool>? filter = null)
+    public EntityCache(
+        Func<T, TKey> keyFunc, 
+        Func<T, bool>? filterFunc = null)
     {
-        _filter = filter;
+        _filter = filterFunc;
         _keyFunc = keyFunc;
     }    
 
@@ -42,17 +45,27 @@ public class EntityCache<TKey, T> where TKey : notnull
 
     public void EndSession(Guid key) => _pendingUpdates.Remove(key);
 
-    public T? Find(Func<T, bool> predicate) => _cache.Values.FirstOrDefault(predicate);
+    public T? Find(Func<T, bool> predicate)
+    {
+        var value = _cache.Values.FirstOrDefault(predicate);
+        return value != null
+            ? Process(value)
+            : default;
+    }
 
     public Guid GenerateSessionKey() => Guid.NewGuid();
 
-    public T? Get(TKey key)
-    {
-        _cache.TryGetValue(key, out var value);
-        return value;
-    }
+    public T? Get(TKey key) => _cache.TryGetValue(key, out var value)
+        ? Process(value)
+        : default;
 
-    public IReadOnlyCollection<T>? GetAll() => _allRecords ? _cache.Values.ToArray() : null;
+    public IReadOnlyCollection<T>? GetAll() => _allRecords 
+        ? _cache.Values.Select(Process).ToArray() 
+        : null;
+
+    public IEnumerable<T> GetPending(Guid key) => _pendingUpdates.ContainsKey(key)
+        ? _pendingUpdates[key]
+        : [];
 
     public void Remove(TKey key) => _cache.Remove(key, out var _);
 
@@ -95,5 +108,9 @@ public class EntityCache<TKey, T> where TKey : notnull
         {
             Set(item);
         }
-    }    
+    }   
+    
+    private T Process(T value) => value is ICloneable<T> cloneable
+        ? cloneable.Clone()
+        : value;
 }

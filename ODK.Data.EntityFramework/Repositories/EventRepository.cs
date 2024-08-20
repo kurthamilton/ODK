@@ -42,8 +42,7 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
         .DeferredMultiple();
 
     public IDeferredQueryMultiple<Event> GetRecentEventsByChapterId(Guid chapterId, int pageSize) => Set()
-        .Where(x => x.ChapterId == chapterId)
-        .Where(x => x.Date < DateTime.UtcNow)
+        .Where(x => x.ChapterId == chapterId && x.Date < DateTime.UtcNow && x.PublishedUtc != null)
         .OrderByDescending(x => x.Date)
         .Take(pageSize)
         .DeferredMultiple();

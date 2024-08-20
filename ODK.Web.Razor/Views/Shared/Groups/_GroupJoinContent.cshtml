@@ -3,6 +3,22 @@
 @using ODK.Web.Razor.Models.Components
 @model GroupJoinPageViewModel
 
+@if (Model.IsMember && !Model.IsAdmin)
+{
+    <p>
+        You are already a member of this group.
+    </p>
+    return;
+}
+
+@if (!Model.RegistrationOpen)
+{
+    <div class="alert alert-danger">
+        This group is currently not receiving any new members
+    </div>
+    return;
+}
+
 @if (!string.IsNullOrEmpty(Model.Texts?.RegisterText) || Model.IsAdmin)
 {
     <section class="section">
@@ -11,7 +27,7 @@
             Action = $"/admin/groups/{Model.Chapter.Id}/texts/register",
             Id = "group-texts-register",
             IsAdmin = Model.IsAdmin,
-            Name = "texts-register",
+            Name = "text",
             Text = Model.Texts?.RegisterText,
             Title = "Join us"
         })
@@ -19,15 +35,16 @@
 }
 
 <section class="section">
-    @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
-    {
-        ChapterName = "",
-        ChapterProperties = Model.Properties,
-        ChapterPropertyOptions = Model.PropertyOptions,
-        Properties = Model.Properties.Select(x => new ChapterProfileFormPropertyViewModel
+    <form method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
         {
-            ChapterPropertyId = x.Id
-        }).ToList(),
-        TrialPeriodMonths = 0
-    })
+            ChapterName = "",
+            ChapterProperties = Model.Properties,
+            ChapterPropertyOptions = Model.PropertyOptions
+        })
+        <button class="btn btn-primary" type="submit">
+            Submit
+        </button>
+    </form>
 </section>

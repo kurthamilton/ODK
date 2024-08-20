@@ -39,17 +39,13 @@ public class AccountViewModelService : IAccountViewModelService
         OdkAssertions.MeetsCondition(chapter, x => x.IsOpenForRegistration());
 
         var (
-                siteSettings,
                 chapterProperties,
                 chapterPropertyOptions,
-                chapterTexts,
-                membershipSettings
+                chapterTexts
             ) = await _unitOfWork.RunAsync(
-                x => x.SiteSettingsRepository.Get(),
                 x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
                 x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
-                x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
-                x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
+                x => x.ChapterTextsRepository.GetByChapterId(chapter.Id));
 
         return new ChapterJoinPageViewModel
         {
@@ -58,8 +54,6 @@ public class AccountViewModelService : IAccountViewModelService
                 chapter, 
                 chapterProperties, 
                 chapterPropertyOptions, 
-                membershipSettings, 
-                siteSettings, 
                 null, 
                 []),
             Texts = chapterTexts
@@ -122,8 +116,6 @@ public class AccountViewModelService : IAccountViewModelService
                 chapter,
                 chapterProperties,
                 chapterPropertyOptions,
-                null,
-                null,
                 member,
                 memberProperties)
         };
@@ -148,8 +140,6 @@ public class AccountViewModelService : IAccountViewModelService
         Chapter chapter, 
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<ChapterPropertyOption> chapterPropertyOptions,
-        ChapterMembershipSettings? membershipSettings,
-        SiteSettings? siteSettings,
         Member? member,
         IReadOnlyCollection<MemberProperty> memberProperties)
     {
@@ -160,7 +150,6 @@ public class AccountViewModelService : IAccountViewModelService
             ChapterName = chapter.Name,
             ChapterProperties = chapterProperties,
             ChapterPropertyOptions = chapterPropertyOptions,            
-            TrialPeriodMonths = membershipSettings?.TrialPeriodMonths ?? siteSettings?.DefaultTrialPeriodMonths ?? 0,
             Properties = chapterProperties.Select(x => new ChapterProfileFormPropertyViewModel
             {
                 ChapterPropertyId = x.Id,

@@ -22,4 +22,10 @@ public class MemberSiteSubscription : IDatabaseEntity
     public SiteSubscriptionPrice? SiteSubscriptionPrice { get; set; }
 
     public Guid? SiteSubscriptionPriceId { get; set; }
+
+    public bool IsExpired()
+    {
+        // TODO: implement
+        return false;
+    }
 }

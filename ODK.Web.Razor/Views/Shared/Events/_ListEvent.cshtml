@@ -14,7 +14,7 @@
         ResponseType = Model.Event.Response
     })
     
-    <a href="@OdkRoutes.Events.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" 
+    <a href="@OdkRoutes.Chapters.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" 
        class="@(Model.Event.Response > 0 ? "ms-1" : null)">
         @Model.Event.EventName
     </a>

@@ -18,6 +18,10 @@ public class MemberSiteSubscriptionRepository : WriteRepositoryBase<MemberSiteSu
         .Where(x => x.MemberId == memberId && x.SiteSubscription.Platform == platform)
         .DeferredSingleOrDefault();
 
+    public IDeferredQueryMultiple<MemberSiteSubscription> GetByMemberId(Guid memberId) => Set()
+        .Where(x => x.MemberId == memberId)
+        .DeferredMultiple();
+
     public IDeferredQueryMultiple<MemberSiteSubscription> GetExpired() => Set()
         .Where(x => x.ExpiresUtc <= DateTime.UtcNow)
         .DeferredMultiple();

@@ -2,7 +2,7 @@
 
 namespace ODK.Core.Chapters;
 
-public class Chapter : IDatabaseEntity, ITimeZoneEntity
+public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
 {
     public const string DefaultTimeZoneId = "GMT Standard Time";
 
@@ -37,6 +37,24 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity
     public bool Approved() => ApprovedUtc != null;
 
     public bool CanBePublished() => Approved() && !Published();
+
+    public Chapter Clone() => new Chapter
+    {
+        ApprovedUtc = ApprovedUtc,
+        BannerImageUrl = BannerImageUrl,
+        CountryId = CountryId,
+        Description = Description,
+        CreatedUtc = CreatedUtc,
+        DisplayOrder = DisplayOrder,
+        Id = Id,
+        Platform = Platform,
+        PublishedUtc = PublishedUtc,
+        Name = Name,
+        OwnerId = OwnerId,
+        RedirectUrl = RedirectUrl,
+        Slug = Slug,
+        TimeZone = TimeZone
+    };
 
     public bool IsOpenForRegistration() => Approved() && Published();
 

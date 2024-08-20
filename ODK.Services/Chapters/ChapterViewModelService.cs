@@ -125,6 +125,10 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
 
+        upcomingEvents = upcomingEvents
+            .Where(x => x.IsPublished)
+            .ToArray();
+
         var eventIds = upcomingEvents
             .Concat(recentEvents)
             .Select(x => x.Id)
@@ -181,7 +185,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
         OdkAssertions.Exists(chapter);
 
-        var (currentMember, adminMembers, hasQuestions, properties, propertyOptions, texts) = await _unitOfWork.RunAsync(
+        var (currentMember, adminMembers, hasQuestions, properties, propertyOptions, texts, membershipSettings) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
@@ -191,7 +195,8 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
 
         return new GroupJoinPageViewModel
         {
@@ -200,9 +205,11 @@ public class ChapterViewModelService : IChapterViewModelService
             HasQuestions = hasQuestions,
             IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
+            MembershipSettings = membershipSettings,
             Platform = platform,
             Properties = properties,
             PropertyOptions = propertyOptions,
+            RegistrationOpen = chapter.IsOpenForRegistration(),
             Texts = texts
         };
     }
