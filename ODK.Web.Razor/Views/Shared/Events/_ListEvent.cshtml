@@ -21,20 +21,9 @@
 </h4>
 <h5>
     <span>@localTime.ToFriendlyDateString(null)</span>
-    @if (localTime.TimeOfDay.TotalSeconds > 0)
+    @if (Model.Event.Date.TimeOfDay.TotalSeconds > 0)
     {
-        @if (Model.Event.EndTime == null)
-        {
-            <span>From</span>
-        }
-
-        <span>@TimeSpanUtils.ToString(localTime.TimeOfDay)</span>
-
-        @if (Model.Event.EndTime != null)
-        {
-            <span>-</span>
-            <span>@TimeSpanUtils.ToString(Model.Event.EndTime)</span>
-        }
+        <span>@Event.ToLocalTimeString(Model.Event.Date, Model.Event.EndTime, Model.Chapter.TimeZone)</span>
     }
     else if (!string.IsNullOrEmpty(Model.Event.Time))
     {

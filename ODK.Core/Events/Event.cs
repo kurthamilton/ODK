@@ -70,6 +70,20 @@ public class Event : IDatabaseEntity, IChapterEntity
             : utc;
     }
 
+    public static string ToLocalTimeString(DateTime utc, TimeSpan? endTime, TimeZoneInfo? timeZone)
+    {
+        if (utc.TimeOfDay.TotalSeconds == 0)
+        {
+            return "";
+        }
+
+        var localTime = ToLocalTime(utc, timeZone);
+        var time = TimeSpanUtils.ToString(localTime.TimeOfDay);
+        return endTime != null
+            ? $"{time} - {TimeSpanUtils.ToString(endTime)}"
+            : $"From {time}";
+    }
+
     public string GetDisplayName() => (!IsPublished ? "[DRAFT] " : "") + Name;    
 
     public bool IsAuthorized(Member? member)
@@ -84,4 +98,6 @@ public class Event : IDatabaseEntity, IChapterEntity
     }
 
     public DateTime ToLocalTime(TimeZoneInfo? timeZone) => ToLocalTime(Date, timeZone);
+
+    public string ToLocalTimeString(TimeZoneInfo? timeZone) => ToLocalTimeString(Date, EndTime, timeZone);
 }

@@ -34,21 +34,7 @@
                     </h6>
                     <div class="d-inline-block d-md-block">
                         <span>@localTime.ToFriendlyDateString(null)</span>
-                        @if (localTime.TimeOfDay.TotalSeconds > 0)
-                        {
-                            @if (@event.EndTime == null)
-                            {
-                                <span>From</span>
-                            }
-
-                            <span>@TimeSpanUtils.ToString(localTime.TimeOfDay)</span>
-
-                            @if (@event.EndTime != null)
-                            {
-                                <span>-</span>
-                                <span>@TimeSpanUtils.ToString(@event.EndTime)</span>
-                            }
-                        }
+                        <span>@(@event.ToLocalTimeString(Model.Chapter.TimeZone))</span>                        
                     </div>                    
                     @if (venue != null)
                     {

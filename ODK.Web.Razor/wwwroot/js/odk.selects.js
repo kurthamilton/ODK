@@ -20,7 +20,7 @@
             select: $select,
             settings: {
                 // TODO: position deselect
-                allowDeselect: allowDeselect
+                allowDeselect: false
             }
         });
     });

@@ -695,13 +695,15 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     private IDictionary<string, string> GetEventEmailParameters(Chapter chapter, Event @event, Venue venue)
     {
+        var time = @event.ToLocalTimeString(chapter.TimeZone);
+
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {"event.date", @event.Date.ToString("dddd dd MMMM, yyyy")},
             {"event.id", @event.Id.ToString()},
             {"event.location", venue.Name},
             {"event.name", @event.Name},
-            {"event.time", @event.Time ?? ""}
+            {"event.time", time}
         };
 
         parameters.Add("event.rsvpurl", _chapterUrlService.GetChapterUrl(chapter, _settings.EventRsvpUrlFormat, parameters));
