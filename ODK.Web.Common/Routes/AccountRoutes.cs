@@ -17,5 +17,5 @@ public class AccountRoutes : RoutesBase
     public string Subscription(string? chapterName) => AccountPath(chapterName, "/subscription");
 
     private string AccountPath(string? chapterName, string path)
-        => GetRoute(chapterName, "account" + path);
+        => GetRoute(chapterName, "/account" + path);
 }

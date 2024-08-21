@@ -93,7 +93,7 @@
 @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
 {
     ApiPublicKey = paymentSettings.ApiPublicKey ?? "",
-    CurrencyCode = "",
-    IsSubscription = true,
+    CurrencyCode = paymentSettings.Currency.Code,
+    IsSubscription = false,
     Provider = paymentSettings.Provider ?? default
 })

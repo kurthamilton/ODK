@@ -7,3 +7,4 @@ appsettings.*.json
 /ODK.Web.Razor/wwwroot/lib
 *.pubxml
 app_data
+/ODK.Web.Razor/Views/Shared/Groups/_GroupProfileMenu.cshtml

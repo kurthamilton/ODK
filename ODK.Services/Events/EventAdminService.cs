@@ -612,10 +612,10 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     private static void AssertEventEmailsCanBeSent(Event @event)
     {
-        ServiceResult result = ValidateEventEmailCanBeSent(@event);
+        var result = ValidateEventEmailCanBeSent(@event);
         if (!result.Success)
         {
-            throw new OdkServiceException(result.Message);
+            throw new OdkServiceException(result.Message ?? "");
         }
     }
 
