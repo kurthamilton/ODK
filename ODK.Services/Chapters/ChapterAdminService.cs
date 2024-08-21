@@ -608,13 +608,26 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> UpdateChapterDescription(AdminServiceRequest request, string description)
     {
-        var chapter = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(request.ChapterId));
+        var texts = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterTextsRepository.GetByChapterId(request.ChapterId));
 
-        // TODO: allow whitelist HTML?
-        chapter.Description = description;
+        if (texts == null)
+        {
+            texts = new ChapterTexts();
+        }
 
-        _unitOfWork.ChapterRepository.Update(chapter);
+        texts.Description = _htmlSanitizer.Encode(description);
+
+        if (texts.ChapterId == default)
+        {
+            texts.ChapterId = request.ChapterId;
+            _unitOfWork.ChapterTextsRepository.Add(texts);
+        }
+        else
+        {
+            _unitOfWork.ChapterTextsRepository.Update(texts);
+        }
+        
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -996,8 +1009,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapterId = request.ChapterId;
 
-        var (chapter, texts) = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(request.ChapterId),
+        var texts = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterTextsRepository.GetByChapterId(chapterId));
 
         if (string.IsNullOrWhiteSpace(model.RegisterText) ||
@@ -1011,23 +1023,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             texts = new ChapterTexts();
         }
 
+        texts.Description = model.Description != null ? _htmlSanitizer.Encode(model.Description) : null;
         texts.RegisterText = _htmlSanitizer.Encode(model.RegisterText);
         texts.WelcomeText = _htmlSanitizer.Encode(model.WelcomeText);
 
         if (texts.ChapterId == default)
         {
-            texts.ChapterId = chapter.Id;
+            texts.ChapterId = request.ChapterId;
             _unitOfWork.ChapterTextsRepository.Add(texts);
         }
         else
         {
             _unitOfWork.ChapterTextsRepository.Update(texts);
-        }
-
-        if (chapter.Description != model.Description)
-        {
-            chapter.Description = model.Description;
-            _unitOfWork.ChapterRepository.Update(chapter);
         }
 
         await _unitOfWork.SaveChangesAsync();

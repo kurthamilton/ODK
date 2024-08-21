@@ -1,4 +1,5 @@
-﻿using ODK.Core;
+﻿using System.Text.RegularExpressions;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Events;
@@ -30,10 +31,13 @@ public class ChapterViewModelService : IChapterViewModelService
         var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
         var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetAll();
 
+        var chapterDictionary = chapters
+            .ToDictionary(x => x.Id);
         var chapterLocationDictionary = chapterLocations
             .ToDictionary(x => x.ChapterId);
 
-        var groups = new List<ChapterWithDistanceViewModel>();
+        var chapterDistances = new Dictionary<Guid, double>();
+
         foreach (var chapter in chapters)
         {
             if (!chapter.IsOpenForRegistration())
@@ -52,11 +56,29 @@ public class ChapterViewModelService : IChapterViewModelService
                 continue;
             }
 
+            chapterDistances.Add(chapter.Id, distance);
+        }
+
+        var chapterIds = chapterDistances.Keys.ToArray();
+
+        var texts = chapterIds.Length > 0
+            ? await _unitOfWork.ChapterTextsRepository.GetByChapterIds(chapterIds).RunAsync()
+            : [];
+
+        var textsDictionary = texts
+            .ToDictionary(x => x.ChapterId);
+
+        var groups = new List<ChapterWithDistanceViewModel>();
+        foreach (var chapterId in chapterIds)
+        {
+            textsDictionary.TryGetValue(chapterId, out var chapterTexts);
+
             groups.Add(new ChapterWithDistanceViewModel
             {
-                Chapter = chapter,
-                Distance = distance,
-                Location = chapterLocation
+                Chapter = chapterDictionary[chapterId],
+                Distance = chapterDistances[chapterId],
+                Location = chapterLocationDictionary[chapterId],
+                Texts = chapterTexts
             });
         }
 
@@ -293,7 +315,17 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterRepository.GetByMemberId(memberId),
             x => x.ChapterAdminMemberRepository.GetByMemberId(memberId));
 
+        var chapterIds = chapters
+            .Select(x => x.Id)
+            .ToArray();
+
+        var texts = chapterIds.Length > 0
+            ? await _unitOfWork.ChapterTextsRepository.GetByChapterIds(chapterIds).RunAsync()
+            : [];
+
         var adminMemberDictionary = adminMembers
+            .ToDictionary(x => x.ChapterId);
+        var textsDictionary = texts
             .ToDictionary(x => x.ChapterId);
 
         var admin = new List<Chapter>();
@@ -320,7 +352,8 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             Admin = admin,
             Member = member,
-            Owned = owned
+            Owned = owned,
+            Texts = texts
         };
     }
 

@@ -18,7 +18,7 @@
                 Id = "group-description",
                 IsAdmin = Model.IsAdmin,
                 Name = "description",
-                Text = Model.Chapter.Description,
+                Text = Model.Texts?.Description,
                 Title = "About us"
             })
         }        
@@ -35,9 +35,13 @@
                     Text = Model.Texts?.WelcomeText,
                     Title = "Join us"
                 })
-                <a href="@OdkRoutes2.Groups.Join(Model.Chapter)" class="btn btn-success">
-                    Join
-                </a>
+
+                @if (!Model.IsMember)
+                {
+                    <a href="@OdkRoutes2.Groups.Join(Model.Chapter)" class="btn btn-success">
+                        Join
+                    </a>
+                }                
             </section>
         }
 

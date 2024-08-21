@@ -5,11 +5,11 @@ namespace ODK.Web.Common.Routes;
 public class MemberRoutes : RoutesBase
 {
     public string Avatar(Guid memberId, string? chapterName = null) =>
-        MemberPath(chapterName, $"{memberId}/Avatar");
+        MemberPath(chapterName, $"/{memberId}/avatar");
 
     public string Image(Guid memberId, string? chapterName = null) =>
-        MemberPath(chapterName, $"{memberId}/Image");
+        MemberPath(chapterName, $"/{memberId}/image");
 
     private string MemberPath(string? chapterName, string path) 
-        => GetRoute(chapterName, $"Members/{path}");
+        => GetRoute(chapterName, $"/members/{path}");
 }

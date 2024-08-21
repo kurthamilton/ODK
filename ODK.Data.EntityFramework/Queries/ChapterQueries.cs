@@ -21,7 +21,6 @@ internal static class ChapterQueries
                 Id = x.Id,
                 CountryId = x.CountryId,
                 CreatedUtc = x.CreatedUtc,
-                Description = x.Description,
                 DisplayOrder = x.DisplayOrder,
                 Name = x.Name.Replace(" Drunken Knitwits", ""),
                 OwnerId = x.OwnerId,

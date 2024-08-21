@@ -12,9 +12,7 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
 
     public Guid? CountryId { get; set; }
 
-    public DateTime CreatedUtc { get; set; }
-
-    public string? Description { get; set; }
+    public DateTime CreatedUtc { get; set; }    
 
     public int? DisplayOrder { get; set; }
 
@@ -43,7 +41,6 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
         ApprovedUtc = ApprovedUtc,
         BannerImageUrl = BannerImageUrl,
         CountryId = CountryId,
-        Description = Description,
         CreatedUtc = CreatedUtc,
         DisplayOrder = DisplayOrder,
         Id = Id,

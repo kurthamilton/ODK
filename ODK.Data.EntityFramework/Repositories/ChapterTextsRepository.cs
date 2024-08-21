@@ -14,4 +14,8 @@ public class ChapterTextsRepository : WriteRepositoryBase<ChapterTexts>, IChapte
     public IDeferredQuerySingleOrDefault<ChapterTexts> GetByChapterId(Guid chapterId) => Set()
         .Where(x => x.ChapterId == chapterId)
         .DeferredSingleOrDefault();
+
+    public IDeferredQueryMultiple<ChapterTexts> GetByChapterIds(IEnumerable<Guid> chapterIds) => Set()
+        .Where(x => chapterIds.Contains(x.ChapterId))
+        .DeferredMultiple();
 }

@@ -6,10 +6,10 @@
     var questions = await ChapterService.GetChapterQuestions(Model.Chapter.Id);
 }
 
-@if (!string.IsNullOrEmpty(Model.Chapter.Description))
+@if (!string.IsNullOrEmpty(Model.Texts?.Description))
 {        
     <section class="mb-4">
-        @await Html.PartialAsync("Components/_Paragraphs", Model.Chapter.Description)
+        @await Html.PartialAsync("Components/_Paragraphs", Model.Texts?.Description)
     </section>
 }
 

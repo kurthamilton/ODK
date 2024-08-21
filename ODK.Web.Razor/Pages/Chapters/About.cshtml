@@ -1,14 +1,18 @@
 ﻿@page "/{chapterName}/About"
 @using ODK.Core
+@using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.About
 @model ODK.Web.Razor.Pages.Chapters.AboutModel
+@inject IChapterService ChapterService
 @{
     Layout = "_ChapterLayout";
     Model.Title = "About";
 
     OdkAssertions.MeetsCondition(Model.Chapter, x => x.IsOpenForRegistration());
+
+    var texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -19,5 +23,9 @@
         new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
         new MenuItem { Text = "About" }
     },
-    Content = await Html.PartialAsync("Chapters/_AboutContent", new AboutContentViewModel(Model.Chapter))
+    Content = await Html.PartialAsync("Chapters/_AboutContent", new AboutContentViewModel
+    {
+        Chapter = Model.Chapter,
+        Texts = texts
+    })
 })

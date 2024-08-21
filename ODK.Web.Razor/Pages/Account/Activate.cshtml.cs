@@ -28,6 +28,6 @@ public class ActivateModel : OdkPageModel
         }
 
         AddFeedback("Your account has been activated. You can now login.", FeedbackType.Success);
-        return Redirect($"/Account/Login");
+        return Redirect("/account/login");
     }
 }

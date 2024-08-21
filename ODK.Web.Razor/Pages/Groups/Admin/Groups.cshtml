@@ -11,7 +11,8 @@
     Layout = "_HomeLayout";
     Model.Title = "My groups";
 
-    var viewModel = await ChapterViewModelService.GetMemberChapters(Model.CurrentMemberId);    
+    var viewModel = await ChapterViewModelService.GetMemberChapters(Model.CurrentMemberId);
+    var textsDictionary = viewModel.Texts.ToDictionary(x => x.ChapterId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -29,7 +30,8 @@
                         Chapters = viewModel.Owned.Select(x => new ChapterTileViewModel
                         {
                             Chapter = x,
-                            IsOwner = true
+                            IsOwner = true,
+                            Texts = textsDictionary.ContainsKey(x.Id) ? textsDictionary[x.Id] : null
                         }).ToArray()
                     })
                 }     
@@ -51,7 +53,8 @@
                         Chapters = viewModel.Admin.Select(x => new ChapterTileViewModel
                         {
                             Chapter = x,
-                            IsAdmin = true
+                            IsAdmin = true,
+                            Texts = textsDictionary.ContainsKey(x.Id) ? textsDictionary[x.Id] : null
                         }).ToArray()
                     })
                 </section>
@@ -65,7 +68,8 @@
                     {
                         Chapters = viewModel.Member.Select(x => new ChapterTileViewModel
                         {
-                            Chapter = x
+                            Chapter = x,
+                            Texts = textsDictionary.ContainsKey(x.Id) ? textsDictionary[x.Id] : null
                         }).ToArray()
                     })
                 }

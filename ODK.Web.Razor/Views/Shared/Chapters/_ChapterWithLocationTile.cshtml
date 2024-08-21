@@ -14,6 +14,9 @@
         </div>
     </div>    
     <div class="card-body">        
-        <p class="card-text">@Model.Chapter.Description</p>
+        @if (!string.IsNullOrEmpty(Model.Texts?.Description))
+        {
+            <p class="card-text">@Model.Texts?.Description</p>
+        }        
     </div>    
 </div>

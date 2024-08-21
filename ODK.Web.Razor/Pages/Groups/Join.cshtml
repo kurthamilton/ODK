@@ -1,4 +1,6 @@
 ﻿@page "/groups/{slug}/join"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Groups.JoinModel

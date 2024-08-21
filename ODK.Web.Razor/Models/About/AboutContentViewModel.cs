@@ -4,10 +4,7 @@ namespace ODK.Web.Razor.Models.About;
 
 public class AboutContentViewModel
 {
-    public AboutContentViewModel(Chapter chapter)
-    {
-        Chapter = chapter;
-    }
+    public required Chapter Chapter { get; init; }
 
-    public Chapter Chapter { get; }
+    public required ChapterTexts? Texts { get; init; }
 }

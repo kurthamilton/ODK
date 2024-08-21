@@ -21,4 +21,6 @@ public interface IChapterService
     Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId);
 
     Task<ChaptersDto> GetChaptersDto();
+
+    Task<ChapterTexts?> GetChapterTexts(Guid chapterId);
 }

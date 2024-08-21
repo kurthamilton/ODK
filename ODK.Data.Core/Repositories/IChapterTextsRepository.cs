@@ -5,4 +5,6 @@ namespace ODK.Data.Core.Repositories;
 public interface IChapterTextsRepository : IWriteRepository<ChapterTexts>
 {
     IDeferredQuerySingleOrDefault<ChapterTexts> GetByChapterId(Guid chapterId);
+
+    IDeferredQueryMultiple<ChapterTexts> GetByChapterIds(IEnumerable<Guid> chapterIds);
 }
