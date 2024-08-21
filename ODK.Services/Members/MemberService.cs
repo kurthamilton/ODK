@@ -7,8 +7,8 @@ using ODK.Core.Emails;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Core.Subscriptions;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
@@ -146,7 +146,7 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> CreateMember(Guid chapterId, CreateMemberProfile model)
+    public async Task<ServiceResult> CreateChapterAccount(Guid chapterId, CreateMemberProfile model)
     {
         var platform = _platformProvider.GetPlatform();
         var (chapter, chapterProperties, membershipSettings, existing, siteSettings, siteSubscription) = await _unitOfWork.RunAsync(
@@ -193,16 +193,16 @@ public class MemberService : IMemberService
             LastName = model.LastName,            
             SuperAdmin = false,
             TimeZone = chapter.TimeZone
-        };
-        
-        member.Chapters.Add(new MemberChapter
-        {
-            CreatedUtc = now,
-            MemberId = member.Id,
-            ChapterId = chapterId
-        });
+        };                
 
         _unitOfWork.MemberRepository.Add(member);
+
+        var memberProperties = model
+            .Properties
+            .Select(x => x.ToMemberProperty(member.Id))
+            .ToArray();
+
+        AddMemberToChapter(now, member, chapter, memberProperties, membershipSettings);
 
         if (chapterLocation != null)
         {
@@ -218,31 +218,13 @@ public class MemberService : IMemberService
         {
             MemberId = member.Id,
             SiteSubscriptionId = siteSubscription.Id
-        });
-
-        _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
-        {
-            ChapterId = chapterId,
-            ExpiresUtc = now.AddMonths(membershipSettings?.TrialPeriodMonths ?? siteSettings.DefaultTrialPeriodMonths),
-            MemberId = member.Id,
-            Type = SubscriptionType.Trial
-        });
+        });        
 
         image.MemberId = member.Id;
         _unitOfWork.MemberImageRepository.Add(image);
 
         avatar.MemberId = member.Id;
-        _unitOfWork.MemberAvatarRepository.Add(avatar);
-
-        foreach (var property in model.Properties)
-        {
-            _unitOfWork.MemberPropertyRepository.Add(new MemberProperty
-            {
-                ChapterPropertyId = property.ChapterPropertyId,
-                MemberId = member.Id,
-                Value = property.Value
-            });
-        }
+        _unitOfWork.MemberAvatarRepository.Add(avatar);        
 
         var activationToken = RandomStringGenerator.Generate(64);
         _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
@@ -393,6 +375,53 @@ public class MemberService : IMemberService
         return members
             .Where(x => x.Visible(chapterId))
             .ToArray();
+    }
+
+    public async Task<ServiceResult> JoinChapter(Guid currentMemberId, Guid chapterId, IEnumerable<UpdateMemberProperty> properties)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, currentMember) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.MemberRepository.GetById(currentMemberId));
+
+        if (currentMember.IsMemberOf(chapter.Id))
+        {
+            return ServiceResult.Failure("You are already a member of this group");
+        }        
+
+        var (ownerSubscriptions, members, chapterProperties, chapterPropertyOptions, membershipSettings) = await _unitOfWork.RunAsync(
+            x => chapter.OwnerId != null 
+                ? x.MemberSiteSubscriptionRepository.GetByMemberId(chapter.OwnerId.Value)
+                : new DefaultDeferredQueryMultiple<MemberSiteSubscription>(),
+            x => x.MemberRepository.GetCountByChapterId(chapter.Id),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
+
+        var registrationResult = ChapterIsOpenForRegistration(platform, members, ownerSubscriptions);
+        if (!registrationResult.Success)
+        {
+            return registrationResult;
+        }
+
+        var validationResult = ValidateMemberProperties(chapterProperties, properties);
+        if (!validationResult.Success)
+        {
+            return validationResult;
+        }
+
+        var memberProperties = properties
+            .Select(x => x.ToMemberProperty(currentMember.Id))
+            .ToArray();
+
+        AddMemberToChapter(DateTime.UtcNow, currentMember, chapter, memberProperties, membershipSettings);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        await _emailService.SendNewMemberAdminEmail(chapter, currentMember, chapterProperties, memberProperties);
+
+        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId,
@@ -744,6 +773,24 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
+    private static ServiceResult ChapterIsOpenForRegistration(
+        PlatformType platform, 
+        int members, 
+        IReadOnlyCollection<MemberSiteSubscription> ownerSusbcriptions)
+    {
+        ownerSusbcriptions = ownerSusbcriptions
+            .Where(x => !x.IsExpired() && (platform == PlatformType.Default || x.SiteSubscription.Platform == platform))
+            .ToArray();
+
+        if (ownerSusbcriptions
+            .Any(x => x.SiteSubscription.MemberLimit == null || members < x.SiteSubscription.MemberLimit.Value))
+        {
+            return ServiceResult.Successful();
+        }
+
+        return ServiceResult.Failure("This group is not able to welcome any new members");
+    }
+
     private static IEnumerable<string> GetMissingMemberProfileProperties(CreateMemberProfile profile, IEnumerable<ChapterProperty> chapterProperties,
         IEnumerable<UpdateMemberProperty> memberProperties)
     {
@@ -752,7 +799,7 @@ public class MemberService : IMemberService
             yield return "Email address";
         }
 
-        var missingProperties = GetMissingMemberProfileProperties(profile as UpdateMemberChapterProfile, chapterProperties, memberProperties);
+        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, memberProperties);
         foreach (string property in missingProperties)
         {
             yield return property;
@@ -760,7 +807,6 @@ public class MemberService : IMemberService
     }
 
     private static IEnumerable<string> GetMissingMemberProfileProperties(
-        UpdateMemberChapterProfile profile, 
         IEnumerable<ChapterProperty> chapterProperties,
         IEnumerable<UpdateMemberProperty> memberProperties)
     {
@@ -788,6 +834,31 @@ public class MemberService : IMemberService
         }
     }        
     
+    private void AddMemberToChapter(
+        DateTime now, 
+        Member member, 
+        Chapter chapter, 
+        IEnumerable<MemberProperty> memberProperties, 
+        ChapterMembershipSettings? membershipSettings)
+    {
+        _unitOfWork.MemberChapterRepository.Add(new MemberChapter
+        {
+            CreatedUtc = now,
+            MemberId = member.Id,
+            ChapterId = chapter.Id
+        });
+
+        _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
+        {
+            ChapterId = chapter.Id,
+            ExpiresUtc = membershipSettings?.TrialPeriodMonths > 0 ? now.AddMonths(membershipSettings.TrialPeriodMonths) : null,
+            MemberId = member.Id,
+            Type = membershipSettings?.TrialPeriodMonths > 0 ? SubscriptionType.Trial : SubscriptionType.Full
+        });
+
+        _unitOfWork.MemberPropertyRepository.AddMany(memberProperties);
+    }
+
     private async Task<ServiceResult> RequestMemberEmailAddressUpdate(
         Chapter? chapter, 
         Member member, 
@@ -834,7 +905,7 @@ public class MemberService : IMemberService
 
     private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, UpdateMemberChapterProfile profile)
     {
-        var missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
+        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, profile.Properties).ToArray();
         if (missingProperties.Length > 0)
         {
             return ServiceResult.Failure($"The following properties are required: {string.Join(", ", missingProperties)}");
@@ -843,17 +914,29 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, CreateMemberProfile profile)
+    private ServiceResult ValidateMemberProfile(
+        IReadOnlyCollection<ChapterProperty> chapterProperties, 
+        CreateMemberProfile profile)
     {
-        var missingProperties = GetMissingMemberProfileProperties(profile, chapterProperties, profile.Properties).ToArray();
-        if (missingProperties.Length > 0)
-        {
-            return ServiceResult.Failure($"The following properties are required: {string.Join(", ", missingProperties)}");
-        }
+        var propertyResult = ValidateMemberProperties(chapterProperties, profile.Properties);
 
         if (!MailUtils.ValidEmailAddress(profile.EmailAddress))
         {
             return ServiceResult.Failure("Invalid email address format");
+        }
+
+        return ServiceResult.Successful();
+    }
+
+    private ServiceResult ValidateMemberProperties(
+        IReadOnlyCollection<ChapterProperty> chapterProperties, 
+        IEnumerable<UpdateMemberProperty> memberProperties)
+    {
+        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, memberProperties)
+            .ToArray();
+        if (missingProperties.Length > 0)
+        {
+            return ServiceResult.Failure($"The following properties are required: {string.Join(", ", missingProperties)}");
         }
 
         return ServiceResult.Successful();

@@ -10,9 +10,11 @@ public abstract class GroupPageViewModelBase
 
     public required Member? CurrentMember { get; init; }
 
+    public required bool HasQuestions { get; init; }
+
     public required bool IsAdmin { get; init; }
 
-    public required PlatformType Platform { get; init; }
+    public required bool IsMember { get; init; }
 
-    public bool PublicView { get; init; }
+    public required PlatformType Platform { get; init; }
 }

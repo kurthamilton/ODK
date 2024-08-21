@@ -21,15 +21,25 @@ public class ServiceResult
 {
     protected ServiceResult(bool success, string message = "")
     {
-        Message = message;
+        Messages = message != null ? [message] : [];
         Success = success;
     }
 
-    public string Message { get; }
+    protected ServiceResult(IEnumerable<string> messages)
+    {
+        Messages = messages.ToArray();
+        Success = Messages.Count == 0;
+    }
+
+    public string? Message => Messages.FirstOrDefault();
+
+    public IReadOnlyCollection<string> Messages { get; } = [];
 
     public bool Success { get; }
 
     public static ServiceResult Failure(string message) => new ServiceResult(false, message);
+
+    public static ServiceResult Failure(IEnumerable<string> messages) => new ServiceResult(messages);
 
     public static ServiceResult Successful(string? message = null) => new ServiceResult(true, message ?? "");
 }

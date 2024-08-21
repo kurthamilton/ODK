@@ -11,6 +11,10 @@ public class ChapterQuestionRepository : ReadWriteRepositoryBase<ChapterQuestion
     {
     }
 
+    public IDeferredQuery<bool> ChapterHasQuestions(Guid chapterId) => Set()
+        .Where(x => x.ChapterId == chapterId)
+        .DeferredAny();
+
     public IDeferredQueryMultiple<ChapterQuestion> GetByChapterId(Guid chapterId) => Set()
         .Where(x => x.ChapterId == chapterId)
         .OrderBy(x => x.DisplayOrder)

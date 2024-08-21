@@ -22,4 +22,20 @@ public class GroupAdminController : OdkControllerBase
             new AdminServiceRequest(id, MemberId), description);
         return RedirectToReferrer();
     }
+
+    [HttpPost("admin/groups/{id:guid}/texts/register")]
+    public async Task<IActionResult> UpdateRegisterText(Guid id, [FromForm] string text)
+    {
+        await _chapterAdminService.UpdateChapterDescription(
+            new AdminServiceRequest(id, MemberId), text);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("admin/groups/{id:guid}/texts/welcome")]
+    public async Task<IActionResult> UpdateWelcomeText(Guid id, [FromForm] string text)
+    {
+        await _chapterAdminService.UpdateChapterDescription(
+            new AdminServiceRequest(id, MemberId), text);
+        return RedirectToReferrer();
+    }
 }

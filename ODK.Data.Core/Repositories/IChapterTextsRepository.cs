@@ -4,5 +4,7 @@ using ODK.Data.Core.Deferred;
 namespace ODK.Data.Core.Repositories;
 public interface IChapterTextsRepository : IWriteRepository<ChapterTexts>
 {
-    IDeferredQuerySingle<ChapterTexts> GetByChapterId(Guid chapterId);
+    IDeferredQuerySingleOrDefault<ChapterTexts> GetByChapterId(Guid chapterId);
+
+    IDeferredQueryMultiple<ChapterTexts> GetByChapterIds(IEnumerable<Guid> chapterIds);
 }

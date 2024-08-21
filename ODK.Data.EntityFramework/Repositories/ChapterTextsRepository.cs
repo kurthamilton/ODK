@@ -11,7 +11,11 @@ public class ChapterTextsRepository : WriteRepositoryBase<ChapterTexts>, IChapte
     {
     }
 
-    public IDeferredQuerySingle<ChapterTexts> GetByChapterId(Guid chapterId) => Set()
+    public IDeferredQuerySingleOrDefault<ChapterTexts> GetByChapterId(Guid chapterId) => Set()
         .Where(x => x.ChapterId == chapterId)
-        .DeferredSingle();
+        .DeferredSingleOrDefault();
+
+    public IDeferredQueryMultiple<ChapterTexts> GetByChapterIds(IEnumerable<Guid> chapterIds) => Set()
+        .Where(x => chapterIds.Contains(x.ChapterId))
+        .DeferredMultiple();
 }

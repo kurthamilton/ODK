@@ -1,0 +1,50 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Razor.Models.Components
+@model GroupJoinPageViewModel
+
+@if (Model.IsMember && !Model.IsAdmin)
+{
+    <p>
+        You are already a member of this group.
+    </p>
+    return;
+}
+
+@if (!Model.RegistrationOpen)
+{
+    <div class="alert alert-danger">
+        This group is currently not receiving any new members
+    </div>
+    return;
+}
+
+@if (!string.IsNullOrEmpty(Model.Texts?.RegisterText) || Model.IsAdmin)
+{
+    <section class="section">
+        @await Html.PartialAsync("Components/_EditableHtml", new EditableTextViewModel
+        {
+            Action = $"/admin/groups/{Model.Chapter.Id}/texts/register",
+            Id = "group-texts-register",
+            IsAdmin = Model.IsAdmin,
+            Name = "text",
+            Text = Model.Texts?.RegisterText,
+            Title = "Join us"
+        })
+    </section>
+}
+
+<section class="section">
+    <form method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
+        {
+            ChapterName = "",
+            ChapterProperties = Model.Properties,
+            ChapterPropertyOptions = Model.PropertyOptions
+        })
+        <button class="btn btn-primary" type="submit">
+            Submit
+        </button>
+    </form>
+</section>

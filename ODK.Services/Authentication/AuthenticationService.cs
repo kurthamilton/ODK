@@ -38,45 +38,7 @@ public class AuthenticationService : IAuthenticationService
         _memberEmailService = memberEmailService;
         _settings = settings;
         _unitOfWork = unitOfWork;
-    }
-
-    public async Task<ServiceResult> ActivateAccountAsync(string activationToken, string password)
-    {
-        var token = await _unitOfWork.MemberActivationTokenRepository
-            .GetByToken(activationToken)
-            .RunAsync();
-        if (token == null || token.ChapterId != null)
-        {
-            return ServiceResult.Failure("The link you followed is no longer valid");
-        }
-
-        var (member, memberPassword) = await _unitOfWork.RunAsync(            
-            x => x.MemberRepository.GetById(token.MemberId),
-            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
-
-        memberPassword = UpdatePassword(memberPassword, password);
-        member.Activated = true;
-
-        _unitOfWork.MemberRepository.Update(member);
-        
-        if (memberPassword.MemberId == default)
-        {
-            memberPassword.MemberId = member.Id;
-            _unitOfWork.MemberPasswordRepository.Add(memberPassword);
-        }
-        else
-        {
-            _unitOfWork.MemberPasswordRepository.Update(memberPassword);
-        }
-        
-        _unitOfWork.MemberActivationTokenRepository.Delete(token);
-        
-        await _unitOfWork.SaveChangesAsync();
-
-        await SendNewMemberEmailsAsync(null, member);
-
-        return ServiceResult.Successful();
-    }
+    }    
 
     public async Task<ServiceResult> ActivateChapterAccountAsync(Guid chapterId, string activationToken, string password)
     {
@@ -115,6 +77,52 @@ public class AuthenticationService : IAuthenticationService
         await _unitOfWork.SaveChangesAsync();
 
         await SendNewMemberEmailsAsync(chapter, member);
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> ActivateSiteAccountAsync(string activationToken, string password)
+    {
+        var token = await _unitOfWork.MemberActivationTokenRepository
+            .GetByToken(activationToken)
+            .RunAsync();
+        if (token == null || token.ChapterId != null)
+        {
+            return ServiceResult.Failure("The link you followed is no longer valid");
+        }
+
+        var (member, memberPassword) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(token.MemberId),
+            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
+
+        memberPassword = UpdatePassword(memberPassword, password);
+        member.Activated = true;
+
+        _unitOfWork.MemberRepository.Update(member);
+
+        if (memberPassword.MemberId == default)
+        {
+            memberPassword.MemberId = member.Id;
+            _unitOfWork.MemberPasswordRepository.Add(memberPassword);
+        }
+        else
+        {
+            _unitOfWork.MemberPasswordRepository.Update(memberPassword);
+        }
+
+        _unitOfWork.MemberActivationTokenRepository.Delete(token);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        await _emailService.SendMemberEmail(null, null, member.ToEmailAddressee(),
+            subject: "{title} - Welcome!",
+            body:
+                "<p>Welcome to {title} {member.firstName}!</p>" +
+                "<p>Enjoy creating your first groups, and please do share amongst your friendship groups.</p>",
+            parameters: new Dictionary<string, string>
+            {
+                { "member.firstName", member.FirstName }
+            });
 
         return ServiceResult.Successful();
     }
@@ -320,41 +328,15 @@ public class AuthenticationService : IAuthenticationService
         return ServiceResult.Successful();
     }
 
-    private async Task SendNewMemberEmailsAsync(Chapter? chapter, Member member)
+    private async Task SendNewMemberEmailsAsync(Chapter chapter, Member member)
     {        
-        var eventsUrl = chapter != null 
-            ? _chapterUrlService.GetChapterUrl(chapter, _settings.EventsUrlPath, new Dictionary<string, string>()) 
-            : "";
-
-        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.NewMember, new Dictionary<string, string>
-        {
-            { "eventsUrl", eventsUrl },
-            { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) }
-        });
-
-        if (chapter == null)
-        {
-            return;
-        }
+        await _emailService.SendNewChapterMemberEmail(chapter, member);
 
         var (chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
-            x => x.MemberPropertyRepository.GetByMemberId(member.Id, chapter.Id));
+            x => x.MemberPropertyRepository.GetByMemberId(member.Id, chapter.Id));        
 
-        var newMemberAdminEmailParameters = new Dictionary<string, string>
-        {
-            { "member.emailAddress", HttpUtility.HtmlEncode(member.EmailAddress) },
-            { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) },
-            { "member.lastName", HttpUtility.HtmlEncode(member.LastName) }
-        };
-
-        foreach (var chapterProperty in chapterProperties)
-        {
-            string? value = memberProperties.FirstOrDefault(x => x.ChapterPropertyId == chapterProperty.Id)?.Value;
-            newMemberAdminEmailParameters.Add($"member.properties.{chapterProperty.Name}", HttpUtility.HtmlEncode(value ?? ""));
-        }
-
-        await _emailService.SendNewMemberAdminEmail(chapter, member, newMemberAdminEmailParameters);
+        await _emailService.SendNewMemberAdminEmail(chapter, member, chapterProperties, memberProperties);
     }
 
     private MemberPassword UpdatePassword(MemberPassword? memberPassword, string password)

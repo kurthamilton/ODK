@@ -72,6 +72,8 @@ public static class DependencyConfig
     private static void ConfigureCore(IServiceCollection services)
     {
         services.AddScoped<IHttpRequestProvider, HttpRequestProvider>();
+        services.AddSingleton<IHtmlSanitizer>(new HtmlSanitizer());
+        services.AddSingleton<IUrlProvider>(new UrlProvider());
     }
 
     private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
@@ -168,7 +170,6 @@ public static class DependencyConfig
 
         services.AddSingleton(new AuthenticationServiceSettings
         {
-            EventsUrlPath = urls.Events,
             PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
             PasswordResetUrlPath = urls.PasswordReset
         });

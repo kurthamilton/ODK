@@ -8,5 +8,7 @@ public interface IMemberSiteSubscriptionRepository : IWriteRepository<MemberSite
 {
     IDeferredQuerySingleOrDefault<MemberSiteSubscription> GetByMemberId(Guid memberId, PlatformType platform);
 
+    IDeferredQueryMultiple<MemberSiteSubscription> GetByMemberId(Guid memberId);
+
     IDeferredQueryMultiple<MemberSiteSubscription> GetExpired();
 }

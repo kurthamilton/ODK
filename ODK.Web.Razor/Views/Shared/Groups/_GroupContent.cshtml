@@ -2,24 +2,48 @@
 @using ODK.Core.Events
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Services.Events
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model GroupHomePageViewModel
-@{
-}
 
 <div class="row">
     <div class="col-md-8">
-        @await Html.PartialAsync("Components/_EditableTextArea", new EditableTextViewModel
+        @if (Model.IsMember || Model.IsAdmin)
         {
-            Action = $"/admin/groups/{Model.Chapter.Id}/description",
-            Id = "group-description",
-            IsAdmin = Model.IsAdmin,
-            Name = "description",
-            Text = Model.Chapter.Description,
-            Title = "About us"
-        })
+            @await Html.PartialAsync("Components/_EditableTextArea", new EditableTextViewModel
+            {
+                Action = $"/admin/groups/{Model.Chapter.Id}/description",
+                Id = "group-description",
+                IsAdmin = Model.IsAdmin,
+                Name = "description",
+                Text = Model.Texts?.Description,
+                Title = "About us"
+            })
+        }        
+
+        @if (!Model.IsMember || Model.IsAdmin)
+        {
+            <section class="section">
+                @await Html.PartialAsync("Components/_EditableHtml", new EditableTextViewModel
+                {
+                    Action = $"/admin/groups/{Model.Chapter.Id}/texts/welcome",
+                    Id = "group-texts-welcome",
+                    IsAdmin = Model.IsAdmin,
+                    Name = "text",
+                    Text = Model.Texts?.WelcomeText,
+                    Title = "Join us"
+                })
+
+                @if (!Model.IsMember)
+                {
+                    <a href="@OdkRoutes2.Groups.Join(Model.Chapter)" class="btn btn-success">
+                        Join
+                    </a>
+                }                
+            </section>
+        }
 
         @if (Model.UpcomingEvents.Count > 0)
         {
@@ -53,20 +77,7 @@
                     TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
                 })
             </section>
-        }
-
-        @if (Model.Questions.Count > 0 || Model.IsAdmin)
-        {
-            <section class="section">
-                <h3>Frequently asked questions</h3>
-                @await Html.PartialAsync("Chapters/_Questions", new ChapterQuestionsViewModel
-                {
-                    Chapter = Model.Chapter,
-                    IsAdmin = Model.IsAdmin,
-                    Questions = Model.Questions
-                })
-            </section>
-        }
+        }        
     </div>    
     <div class="col-md-4">
         @await Html.PartialAsync("Groups/_GroupContentSidebar", Model)

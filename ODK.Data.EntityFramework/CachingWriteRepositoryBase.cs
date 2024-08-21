@@ -7,18 +7,19 @@ public abstract class CachingWriteRepositoryBase<T, TKey> : WriteRepositoryBase<
     where TKey : notnull
 {
     private readonly EntityCache<TKey, T> _cache;
-    private readonly Guid _cacheSessionKey;
-
+    
     protected CachingWriteRepositoryBase(OdkContext context, EntityCache<TKey, T> cache)
         : base(context)
     {
         _cache = cache;
-        _cacheSessionKey = cache.GenerateSessionKey();
+        CacheSessionKey = cache.GenerateSessionKey();
     }
+
+    protected Guid CacheSessionKey { get; }
 
     public override void Add(T entity)
     {
-        _cache.SetPending(_cacheSessionKey, entity);
+        _cache.SetPending(CacheSessionKey, entity);
         base.Add(entity);
     }
 
@@ -26,7 +27,7 @@ public abstract class CachingWriteRepositoryBase<T, TKey> : WriteRepositoryBase<
     {
         foreach (var entity in entities)
         {
-            _cache.SetPending(_cacheSessionKey, entity);
+            _cache.SetPending(CacheSessionKey, entity);
         }
 
         base.AddMany(entities);
@@ -34,17 +35,27 @@ public abstract class CachingWriteRepositoryBase<T, TKey> : WriteRepositoryBase<
 
     public override void Delete(T entity)
     {
-        _cache.RemovePending(_cacheSessionKey, entity);
+        _cache.RemovePending(CacheSessionKey, entity);
         base.Delete(entity);
     }
 
-    public void Dispose() => _cache.EndSession(_cacheSessionKey);
+    public void Dispose() => _cache.EndSession(CacheSessionKey);
 
     public override void Update(T entity)
     {
-        _cache.SetPending(_cacheSessionKey, entity);
+        _cache.SetPending(CacheSessionKey, entity);
         base.Update(entity);
     }
 
-    protected override void OnCommit() => _cache.CommitPending(_cacheSessionKey);
+    protected override void OnCommit()
+    {
+        base.OnCommit();
+        var pending = _cache.GetPending(CacheSessionKey);
+        PreCommit(pending);
+        _cache.CommitPending(CacheSessionKey);
+    }
+
+    protected virtual void PreCommit(IEnumerable<T> pending)
+    {
+    }
 }

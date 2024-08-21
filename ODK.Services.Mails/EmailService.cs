@@ -4,6 +4,7 @@ using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Web;
 using ODK.Data.Core;
 
 namespace ODK.Services.Emails;
@@ -13,15 +14,18 @@ public class EmailService : IEmailService
     private readonly IMailProvider _mailProvider;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUrlProvider _urlProvider;
 
     public EmailService(
         IUnitOfWork unitOfWork, 
         IMailProvider mailProvider,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        IUrlProvider urlProvider)
     {
         _mailProvider = mailProvider;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
+        _urlProvider = urlProvider;
     }
 
     public async Task SendBulkEmail(
@@ -195,6 +199,19 @@ public class EmailService : IEmailService
         return await _mailProvider.SendEmail(options);
     }
 
+    public async Task SendNewChapterMemberEmail(Chapter chapter, Member member)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var eventsUrl = _urlProvider.EventsUrl(platform, chapter);
+
+        await SendEmail(chapter, member.ToEmailAddressee(), EmailType.NewMember, new Dictionary<string, string>
+        {
+            { "eventsUrl", eventsUrl },
+            { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) }
+        });
+    }
+
     public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, 
         IDictionary<string, string> parameters)
     {
@@ -214,6 +231,28 @@ public class EmailService : IEmailService
             Parameters = parameters
         };
         await _mailProvider.SendEmail(options);
+    }
+
+    public async Task SendNewMemberAdminEmail(
+        Chapter chapter, 
+        Member member,
+        IReadOnlyCollection<ChapterProperty> chapterProperties,
+        IReadOnlyCollection<MemberProperty> memberProperties)
+    {
+        var parameters = new Dictionary<string, string>
+        {
+            { "member.emailAddress", HttpUtility.HtmlEncode(member.EmailAddress) },
+            { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) },
+            { "member.lastName", HttpUtility.HtmlEncode(member.LastName) }
+        };
+
+        foreach (var chapterProperty in chapterProperties)
+        {
+            string? value = memberProperties.FirstOrDefault(x => x.ChapterPropertyId == chapterProperty.Id)?.Value;
+            parameters.Add($"member.properties.{chapterProperty.Name}", HttpUtility.HtmlEncode(value ?? ""));
+        }
+
+        await SendNewMemberAdminEmail(chapter, member, parameters);
     }
 
     private static IEnumerable<EmailAddressee> GetAddressees(IEnumerable<ChapterAdminMember> adminMembers)

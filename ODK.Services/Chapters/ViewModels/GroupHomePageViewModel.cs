@@ -11,11 +11,11 @@ public class GroupHomePageViewModel : GroupPageViewModelBase
 
     public required ChapterLinks? Links { get; init; }
 
-    public required int MemberCount { get; init; }
-
-    public required IReadOnlyCollection<ChapterQuestion> Questions { get; init; }
+    public required int MemberCount { get; init; }    
 
     public required IReadOnlyCollection<GroupHomePageEventViewModel> RecentEvents { get; init; }
+
+    public required ChapterTexts? Texts { get; init; }
 
     public required IReadOnlyCollection<GroupHomePageEventViewModel> UpcomingEvents { get; init; }
 }

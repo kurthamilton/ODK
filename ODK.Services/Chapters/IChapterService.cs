@@ -6,6 +6,8 @@ public interface IChapterService
 {
     Task<ServiceResult<Chapter?>> CreateChapter(Guid currentMemberId, ChapterCreateModel model);
 
+    Task<Chapter> GetChapterBySlug(string slug);
+
     Task<ChapterLinks?> GetChapterLinks(Guid chapterId);
 
     Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid? currentMemberId, Guid chapterId);
@@ -20,5 +22,5 @@ public interface IChapterService
 
     Task<ChaptersDto> GetChaptersDto();
 
-    Task<ChapterTexts> GetChapterTexts(Guid chapterId);    
+    Task<ChapterTexts?> GetChapterTexts(Guid chapterId);
 }

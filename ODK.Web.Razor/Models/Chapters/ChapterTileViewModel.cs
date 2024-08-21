@@ -9,4 +9,6 @@ public class ChapterTileViewModel
     public bool IsAdmin { get; init; }
 
     public bool IsOwner { get; init; }
+
+    public required ChapterTexts? Texts { get; init; }
 }

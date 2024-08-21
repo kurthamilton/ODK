@@ -16,7 +16,7 @@
 
     @await Html.PartialAsync("Admin/Chapter/_TextForm", new ChapterTextsFormViewModel
     {
-        Description = Model.Description,
+        Description = texts?.Description,
         RegisterMessage = texts?.RegisterText,
         WelcomeMessage = texts?.WelcomeText
     })

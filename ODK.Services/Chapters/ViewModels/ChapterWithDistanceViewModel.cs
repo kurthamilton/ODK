@@ -9,4 +9,6 @@ public class ChapterWithDistanceViewModel
     public required double Distance { get; init; }
 
     public required ChapterLocation Location { get; init; }
+
+    public required ChapterTexts? Texts { get; init; }
 }

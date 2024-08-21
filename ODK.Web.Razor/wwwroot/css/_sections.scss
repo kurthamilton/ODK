@@ -1,4 +1,4 @@
-.section {
+.section:not(:first-child) {
     margin-top: 2rem;
 }
 

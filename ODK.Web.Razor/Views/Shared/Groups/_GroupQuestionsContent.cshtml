@@ -1,0 +1,16 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Chapters
+@model GroupQuestionsPageViewModel
+
+@if (Model.Questions.Count > 0 || Model.IsAdmin)
+{
+    <section class="section">
+        <h3>Frequently asked questions</h3>
+        @await Html.PartialAsync("Chapters/_Questions", new ChapterQuestionsViewModel
+        {
+            Chapter = Model.Chapter,
+            IsAdmin = Model.IsAdmin,
+            Questions = Model.Questions
+        })
+    </section>
+}

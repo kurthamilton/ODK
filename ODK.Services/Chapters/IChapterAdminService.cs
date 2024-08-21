@@ -101,6 +101,8 @@ public interface IChapterAdminService
     Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(AdminServiceRequest request,
         Guid questionId, int moveBy);
 
+    Task<ServiceResult> UpdateChapterRegisterText(AdminServiceRequest request, string text);
+
     Task<ServiceResult> UpdateChapterSiteSubscription(AdminServiceRequest request, 
         Guid siteSubscriptionId, SiteSubscriptionFrequency frequency);
 
@@ -112,4 +114,6 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterTimeZone(AdminServiceRequest request, 
         string? timeZoneId);
+
+    Task<ServiceResult> UpdateChapterWelcomeText(AdminServiceRequest request, string text);
 }

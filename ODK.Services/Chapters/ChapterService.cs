@@ -19,6 +19,7 @@ public class ChapterService : IChapterService
     private readonly ICacheService _cacheService;
     private readonly IEmailService _emailService;
     private readonly IHttpRequestProvider _httpRequestProvider;
+    private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
     
@@ -28,12 +29,14 @@ public class ChapterService : IChapterService
         IAuthorizationService authorizationService,
         IPlatformProvider platformProvider,
         IEmailService emailService,
-        IHttpRequestProvider httpRequestProvider)
+        IHttpRequestProvider httpRequestProvider,
+        IHtmlSanitizer htmlSanitizer)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
         _emailService = emailService;
         _httpRequestProvider = httpRequestProvider;
+        _htmlSanitizer = htmlSanitizer;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }        
@@ -94,8 +97,7 @@ public class ChapterService : IChapterService
 
         var chapter = new Chapter
         {
-            CreatedUtc = now,
-            Description = model.Description,
+            CreatedUtc = now,            
             Name = model.Name,
             OwnerId = currentMemberId,
             Platform = platform,
@@ -104,6 +106,13 @@ public class ChapterService : IChapterService
         };
 
         _unitOfWork.ChapterRepository.Add(chapter);
+
+        var texts = new ChapterTexts
+        {
+            ChapterId = chapter.Id,
+            Description = _htmlSanitizer.Encode(model.Description),
+        };
+        _unitOfWork.ChapterTextsRepository.Add(texts);
 
         _unitOfWork.ChapterLocationRepository.Add(new ChapterLocation
         {
@@ -139,11 +148,17 @@ public class ChapterService : IChapterService
             "<p>{url}/superadmin/groups</p>",
             new Dictionary<string, string>
             {
-                { "chapter.description", chapter.Description },
+                { "chapter.description", texts.Description },
                 { "url", UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl) }
             });
 
         return ServiceResult<Chapter?>.Successful(chapter);
+    }
+
+    public async Task<Chapter> GetChapterBySlug(string slug)
+    {
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        return OdkAssertions.Exists(chapter);
     }
 
     public async Task<ChapterLinks?> GetChapterLinks(Guid chapterId)
@@ -236,10 +251,10 @@ public class ChapterService : IChapterService
             Chapters = chapters,
             Countries = countries
         };
-    }
+    } 
 
-    public Task<ChapterTexts> GetChapterTexts(Guid chapterId)
+    public async Task<ChapterTexts?> GetChapterTexts(Guid chapterId)
     {
-        return _unitOfWork.ChapterTextsRepository.GetByChapterId(chapterId).RunAsync();
-    }    
+        return await _unitOfWork.ChapterTextsRepository.GetByChapterId(chapterId).RunAsync();
+    }
 }

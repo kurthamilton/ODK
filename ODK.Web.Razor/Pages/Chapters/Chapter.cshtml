@@ -20,9 +20,9 @@
         description += " Drunken Knitwits";
     }
 
-    if (!string.IsNullOrEmpty(viewModel.Chapter.Description))
+    if (!string.IsNullOrEmpty(viewModel.Texts?.Description))
     {
-        description += ". " + viewModel.Chapter.Description;
+        description += ". " + viewModel.Texts.Description;
     }
     else if (platform == PlatformType.DrunkenKnitwits)
     {
