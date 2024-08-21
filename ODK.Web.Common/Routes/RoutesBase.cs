@@ -12,6 +12,6 @@ public abstract class RoutesBase
 
     private string PathSuffix(string path)
         => !string.IsNullOrEmpty(path)
-            ? $"/{path}"
+            ? $"{path}"
             : "";
 }

@@ -11,5 +11,5 @@ public class MemberRoutes : RoutesBase
         MemberPath(chapterName, $"/{memberId}/image");
 
     private string MemberPath(string? chapterName, string path) 
-        => GetRoute(chapterName, $"/members/{path}");
+        => GetRoute(chapterName, $"/members{path}");
 }
