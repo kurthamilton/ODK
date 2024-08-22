@@ -1,0 +1,41 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Groups.Profile
+@model GroupProfileSubscriptionPageViewModel
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    MenuContentFunc =
+        @<div>
+            @await Html.PartialAsync("Groups/Profile/_GroupProfileMenu", new GroupProfileMenuViewModel
+            {
+                Chapter = Model.Chapter
+            })
+        </div>,
+    BodyContentFunc = 
+        @<div>            
+            <section class="section">
+                TODO: PayPal sub
+            </section>
+            <section class="section">
+                <h3>Leave group</h3>
+                
+                @if (Model.Chapter.OwnerId == Model.CurrentMember?.Id)
+                {
+                    <p>You cannot leave groups you own</p>
+                }
+                else
+                {
+                    <form action="/groups/@Model.Chapter.Id/leave" method="post">
+                        @Html.AntiForgeryToken()
+                        <p>If you leave the group we will delete your data associated with this group, including any subscriptions you currently have.</p>
+                        <div class="form-group mb-3">
+                            <label for="reason" class="form-label">Reason you want to leave this group</label>
+                            <textarea id="reason" name="reason" class="form-control"></textarea>
+                        </div>
+                        <button class="btn btn-danger" onclick="return confirm('Are you sure you want to leave this group?');">Leave</button>
+                    </form>
+                }
+            </section>
+        </div>    
+})

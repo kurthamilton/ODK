@@ -1,0 +1,47 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Groups.Profile
+@model GroupProfilePageViewModel
+@{
+    var memberPropertyDictionary = Model.MemberProperties
+        .ToDictionary(x => x.ChapterPropertyId);
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    MenuContentFunc =
+        @<div>
+            @await Html.PartialAsync("Groups/Profile/_GroupProfileMenu", new GroupProfileMenuViewModel
+            {
+                Chapter = Model.Chapter
+            })
+        </div>,
+    BodyContentFunc = 
+        @<div>
+            @*TODO: Group bio here*@
+            @if (Model.ChapterProperties.Count > 0)
+            {
+                <section class="section">
+                    <form>
+                        @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
+                        {
+                            ChapterName = Model.Chapter.Name,
+                            ChapterProperties = Model.ChapterProperties,
+                            ChapterPropertyOptions = Model.ChapterPropertyOptions,
+                            Properties = Model.ChapterProperties
+                                .Where(x => !x.ApplicationOnly)
+                                .OrderBy(x => x.DisplayOrder)
+                                .Select(x => new ChapterProfileFormPropertyViewModel
+                                {
+                                    ChapterPropertyId = x.Id,
+                                    Value = memberPropertyDictionary.TryGetValue(x.Id, out var memberProperty) ? memberProperty.Value : ""
+                                }).ToList()
+                        })
+                    </form>
+                </section>
+            }            
+        </div>    
+})

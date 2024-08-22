@@ -1,0 +1,13 @@
+﻿@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Groups.Profile
+@model GroupProfileMenuViewModel
+@{
+    var menuItems = new MenuItem[]
+    {
+        new MenuItem { Link = OdkRoutes2.Groups.Profile.Index(Model.Chapter), Text = "Profile" },      
+        new MenuItem { Link = OdkRoutes2.Groups.Profile.Subscription(Model.Chapter), Text = "My subscription" }
+    };
+}
+
+@await Html.PartialAsync("Components/_SideMenu", menuItems)

@@ -1,0 +1,21 @@
+﻿@page "/groups/{slug}/profile"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ProfileModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+
+    var viewModel = await ChapterViewModelService.GetGroupProfilePage(Model.CurrentMemberId, Model.Slug);
+
+    Model.Title = $"Profile | {viewModel.Chapter.Name}";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Groups/Profile/_GroupProfileContent", viewModel),
+    Menu = await Html.PartialAsync("Groups/_GroupMenu", viewModel),
+    Title = viewModel.Chapter.Name
+})

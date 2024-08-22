@@ -142,11 +142,8 @@ public class MailProvider : IMailProvider
     {
         if (fromAdminMember != null)
         {
-            var emailAddress = !string.IsNullOrEmpty(fromAdminMember.AdminEmailAddress)
-                ? fromAdminMember.AdminEmailAddress
-                : fromAdminMember.Member.EmailAddress;
-
-            message.From.Add(new MailboxAddress($"{fromAdminMember.Member.FullName}", emailAddress));
+            var addressee = fromAdminMember.ToEmailAddressee();
+            message.From.Add(new MailboxAddress(addressee.Name, addressee.Address));
         }
         else
         {

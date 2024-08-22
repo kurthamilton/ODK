@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Emails;
+using ODK.Core.Members;
 
 namespace ODK.Core.Chapters;
 
@@ -21,4 +22,13 @@ public class ChapterAdminMember : IDatabaseEntity, IChapterEntity
     public bool ReceiveNewMemberEmails { get; set; }
 
     public bool SendNewMemberEmails { get; set; }
+
+    public EmailAddressee ToEmailAddressee()
+    {
+        var address = !string.IsNullOrEmpty(AdminEmailAddress)
+            ? AdminEmailAddress
+            : Member.EmailAddress;
+
+        return new EmailAddressee(address, Member.FullName);
+    }
 }

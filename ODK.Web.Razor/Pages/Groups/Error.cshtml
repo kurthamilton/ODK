@@ -1,0 +1,25 @@
+﻿@page "/groups/{slug}/error/{statusCode}"
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@model ODK.Web.Razor.Pages.Groups.ErrorModel
+@inject IChapterService ChapterService
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Error";
+
+    var chapter = await ChapterService.GetChapterBySlug(Model.Slug);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = OdkRoutes2.Groups.Group(chapter), Text = chapter.Name },
+        new MenuItem { Text = Model.ErrorStatusCode.ErrorPageTitle() }
+    },
+    Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),
+    Title = Model.ErrorStatusCode.ErrorPageTitle()
+})

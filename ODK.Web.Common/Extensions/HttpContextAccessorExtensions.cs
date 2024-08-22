@@ -5,9 +5,16 @@ namespace ODK.Web.Common.Extensions;
 
 public static class HttpContextAccessorExtensions
 {
-    public static bool ForPath(this IHttpContextAccessor contextAccessor, string match)
+    public static bool ForPath(this IHttpContextAccessor contextAccessor, string match, bool exactMatch = false)
     {
         var requestPath = contextAccessor.HttpContext?.Request.Path;
-        return requestPath != null && string.Equals(requestPath, match, StringComparison.InvariantCultureIgnoreCase);
+        if (requestPath == null)
+        {
+            return false;
+        }
+        
+        return exactMatch 
+            ? string.Equals(requestPath.Value, match, StringComparison.OrdinalIgnoreCase)
+            : requestPath.Value.StartsWithSegments(match, StringComparison.InvariantCultureIgnoreCase);
     }
 }

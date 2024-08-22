@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
+using ODK.Data.Core;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
@@ -24,6 +25,7 @@ public class ErrorHandlingMiddleware
         HttpContext context, 
         IRequestCache requestCache, 
         ILoggingService loggingService,
+        IUnitOfWork unitOfWork,
         AppSettings settings)
     {
         var statusCodeContext = new StatusCodeContext(context, new StatusCodePagesOptions(), _next);
@@ -48,7 +50,7 @@ public class ErrorHandlingMiddleware
             };
 
             await LogError(context, ex, loggingService);
-            await HandleAsync(statusCodeContext.HttpContext, requestCache);
+            await HandleAsync(statusCodeContext.HttpContext, requestCache, unitOfWork);
 
             if (!settings.Errors.Handle && statusCodeContext.HttpContext.Response.StatusCode == 500)
             {
@@ -57,7 +59,7 @@ public class ErrorHandlingMiddleware
         }                
     }
 
-    private async Task HandleAsync(HttpContext httpContext, IRequestCache requestCache)
+    private async Task HandleAsync(HttpContext httpContext, IRequestCache requestCache, IUnitOfWork unitOfWork)
     {
         var request = httpContext.Request;
         var response = httpContext.Response;
@@ -66,14 +68,12 @@ public class ErrorHandlingMiddleware
         var originalPath = request.Path;
         var statusCode = response.StatusCode;
 
-        var chapter = await GetChapterFromPath(httpContext, requestCache);
+        var path = await GetErrorPath(httpContext, requestCache, unitOfWork);
 
         ResetHttpContext(httpContext);
 
         request.Method = HttpMethod.Get.Method;
-        request.Path = chapter != null
-            ? $"/{chapter.Name}/Error/{statusCode}"
-            : $"/Error/{statusCode}";
+        request.Path = path;
 
         try
         {
@@ -87,21 +87,40 @@ public class ErrorHandlingMiddleware
         }
     }
 
-    private async Task<Chapter?> GetChapterFromPath(HttpContext context, IRequestCache requestCache)
+    private async Task<string?> GetErrorPath(HttpContext context, IRequestCache requestCache, IUnitOfWork unitOfWork)
     {
-        var originalPathParts = context.Request.Path.Value?.Split('/') ?? Array.Empty<string>();
-        var chapterName = originalPathParts.Length > 1 ? originalPathParts[1] : null;
+        var statusCode = context.Response.StatusCode;
+        var defaultPath = $"/error/{statusCode}";
 
-        try
+        var originalPathParts = context.Request.Path.Value?.Split('/') ?? [];
+        if (originalPathParts.Length <= 1)
         {
-            return !string.IsNullOrEmpty(chapterName)
-                ? await requestCache.GetChapterAsync(chapterName)
-                : null;
-        }        
-        catch
-        {
-            return null;
+            return defaultPath;
         }
+
+        if (string.Equals(originalPathParts[1], "groups", StringComparison.InvariantCultureIgnoreCase) && 
+            originalPathParts.Length > 2)
+        {
+            var slug = originalPathParts[2];
+            var chapter = await unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+
+            if (chapter != null)
+            {
+                return $"/groups/{slug}/error/{context.Response.StatusCode}";
+            }            
+        }
+        else
+        {
+            var chapterName = originalPathParts[1];
+            var chapter = await requestCache.GetChapterAsync(chapterName);
+            if (chapter != null)
+            {
+                return $"/{chapter.Name}/error/{statusCode}";
+            }
+            
+        }        
+
+        return defaultPath;
     }
 
     private async Task LogError(HttpContext httpContext, Exception ex, ILoggingService loggingService)

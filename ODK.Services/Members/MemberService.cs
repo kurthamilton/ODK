@@ -7,6 +7,7 @@ using ODK.Core.Emails;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
@@ -420,6 +421,78 @@ public class MemberService : IMemberService
         await _unitOfWork.SaveChangesAsync();
 
         await _emailService.SendNewMemberAdminEmail(chapter, currentMember, chapterProperties, memberProperties);
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> LeaveChapter(Guid currentMemberId, Guid chapterId, string reason)
+    {
+        var (chapter, chapterAdminMembers, currentMember, memberSubscription, memberProperties) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberSubscriptionRepository.GetByMemberIdOrDefault(currentMemberId, chapterId),
+            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapterId));                
+        
+        if (chapter.OwnerId == currentMemberId)
+        {
+            return ServiceResult.Failure("You cannot leave groups you own");
+        }
+
+        var memberChapter = currentMember.Chapters
+            .FirstOrDefault(x => x.ChapterId == chapterId);
+        if (memberChapter != null)
+        {
+            _unitOfWork.MemberChapterRepository.Delete(memberChapter);
+        }
+
+        var chapterAdminMember = chapterAdminMembers
+            .FirstOrDefault(x => x.MemberId == currentMemberId);
+        if (chapterAdminMember != null)
+        {
+            _unitOfWork.ChapterAdminMemberRepository.Delete(chapterAdminMember);
+        }
+
+        if (memberSubscription != null)
+        {
+            _unitOfWork.MemberSubscriptionRepository.Delete(memberSubscription);
+        }
+
+        _unitOfWork.MemberPropertyRepository.DeleteMany(memberProperties);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        var emailRecipients = chapterAdminMembers
+            .Where(x => x.ReceiveNewMemberEmails)
+            .Select(x => x.ToEmailAddressee())
+            .ToArray();
+
+        if (emailRecipients.Length > 0)
+        {
+            var subject = "{title} - {member.name} has left {chapter.name}";
+            var body =
+                "<p>{member.name} has left {chapter.name}</p>" +
+                "<p>They had been a member since {joined}</p>";
+
+            if (!string.IsNullOrEmpty(reason))
+            {
+                body +=
+                    "<p>They gave the following reason:</p>" +
+                    "<p>{reason}</p>";
+            }
+            else
+            {
+                body += "<p>They did not give a reason</p>";
+            }
+
+            await _emailService.SendEmail(chapter, emailRecipients, subject: subject, body: body, parameters: new Dictionary<string, string>
+            {
+                { "member.name", currentMember.FullName },
+                { "chapter.name", chapter.Name },
+                { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(chapter.TimeZone) ?? "-" },
+                { "reason", reason }
+            });
+        }
 
         return ServiceResult.Successful();
     }

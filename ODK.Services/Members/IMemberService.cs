@@ -31,6 +31,8 @@ public interface IMemberService
 
     Task<ServiceResult> JoinChapter(Guid currentMemberId, Guid chapterId, IEnumerable<UpdateMemberProperty> memberProperties);
 
+    Task<ServiceResult> LeaveChapter(Guid currentMemberId, Guid chapterId, string reason);
+
     Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId, string cardToken);
 
     Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, Guid chapterId, string newEmailAddress);

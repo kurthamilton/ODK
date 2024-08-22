@@ -35,7 +35,7 @@ public class EmailService : IEmailService
         EmailType type, 
         IDictionary<string, string> parameters)
     {
-        var options = new SendEmailOptions
+        await _mailProvider.SendEmail(new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
@@ -44,9 +44,7 @@ public class EmailService : IEmailService
             Subject = "",
             To = to.Select(x => x.ToEmailAddressee()).ToArray(),
             Type = type
-        };
-
-        await _mailProvider.SendEmail(options);
+        });
     }
 
     public async Task SendBulkEmail(
@@ -56,16 +54,14 @@ public class EmailService : IEmailService
         string subject,
         string body)
     {
-        var options = new SendEmailOptions
+        await _mailProvider.SendEmail(new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
             FromAdminMember = fromAdminMember,
             Subject = subject,
             To = to.Select(x => x.ToEmailAddressee()).ToArray(),
-        };
-
-        await _mailProvider.SendEmail(options);
+        });
     }
 
     public async Task SendContactEmail(string fromAddress, string message)
@@ -82,18 +78,14 @@ public class EmailService : IEmailService
             .Get(platform)
             .RunAsync();
 
-        var to = new EmailAddressee(settings.ContactEmailAddress, "");
-
-        var options = new SendEmailOptions
+        await _mailProvider.SendEmail(new SendEmailOptions
         {
             Body = "",
             Parameters = parameters,
             Subject = "",
-            To = [to],
+            To = [new EmailAddressee(settings.ContactEmailAddress, "")],
             Type = EmailType.ContactRequest
-        };
-
-        await _mailProvider.SendEmail(options);
+        });
     }
 
     public async Task SendContactEmail(Chapter chapter, string from, string message)
@@ -110,7 +102,7 @@ public class EmailService : IEmailService
 
         var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveContactEmails));
 
-        var options = new SendEmailOptions
+        await _mailProvider.SendEmail(new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
@@ -118,9 +110,7 @@ public class EmailService : IEmailService
             Subject = "",
             To = to.ToArray(),
             Type = EmailType.ContactRequest
-        };
-
-        await _mailProvider.SendEmail(options);
+        });
     }
 
     public async Task SendEventCommentEmail(Chapter chapter, Member? replyToMember, EventComment comment,
@@ -136,7 +126,7 @@ public class EmailService : IEmailService
             to = to.Append(new EmailAddressee(replyToMember.EmailAddress, replyToMember.FullName));
         }
 
-        var options = new SendEmailOptions
+        await _mailProvider.SendEmail(new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
@@ -144,9 +134,7 @@ public class EmailService : IEmailService
             Subject = "",
             To = to.ToArray(),
             Type = EmailType.EventComment
-        };
-
-        await _mailProvider.SendEmail(options);
+        });
     }
     
     public Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, EmailType type, 
@@ -156,7 +144,7 @@ public class EmailService : IEmailService
     public async Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, EmailType type,
         IDictionary<string, string> parameters)
     {
-        var options = new SendEmailOptions
+        return await _mailProvider.SendEmail(new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
@@ -164,9 +152,25 @@ public class EmailService : IEmailService
             Parameters = parameters,
             To = to.ToArray(),
             Type = type
-        };
+        });
+    }
 
-        return await _mailProvider.SendEmail(options);
+    public async Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, string subject, string body)
+    {
+        return await SendEmail(chapter, to, subject, body, new Dictionary<string, string>());
+    }
+
+    public async Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, string subject, string body,
+        IDictionary<string, string> parameters)
+    {
+        return await _mailProvider.SendEmail(new SendEmailOptions
+        {
+            Body = body,
+            Chapter = chapter,
+            Parameters = parameters,
+            Subject = subject,
+            To = to.ToArray()
+        });
     }
 
     public async Task<ServiceResult> SendMemberEmail(
@@ -187,7 +191,7 @@ public class EmailService : IEmailService
         string body,
         IDictionary<string, string> parameters)
     {
-        var options = new SendEmailOptions
+        return await _mailProvider.SendEmail(new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
@@ -195,8 +199,7 @@ public class EmailService : IEmailService
             Subject = subject,
             To = [to],
             Parameters = parameters
-        };
-        return await _mailProvider.SendEmail(options);
+        });
     }
 
     public async Task SendNewChapterMemberEmail(Chapter chapter, Member member)
@@ -219,18 +222,23 @@ public class EmailService : IEmailService
                 .GetByChapterId(chapter.Id)
                 .RunAsync();
 
-        var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveNewMemberEmails));
-        
-        var options = new SendEmailOptions
+        var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveNewMemberEmails))
+            .ToArray();
+
+        if (to.Length == 0)
+        {
+            return;
+        }
+
+        await _mailProvider.SendEmail(new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
             Subject = "",
-            To = to.ToArray(),
+            To = to,
             Type = EmailType.NewMemberAdmin,
             Parameters = parameters
-        };
-        await _mailProvider.SendEmail(options);
+        });
     }
 
     public async Task SendNewMemberAdminEmail(
@@ -259,11 +267,7 @@ public class EmailService : IEmailService
     {
         foreach (var adminMember in adminMembers)
         {
-            var member = adminMember.Member;
-            var address = !string.IsNullOrEmpty(adminMember.AdminEmailAddress)
-                ? adminMember.AdminEmailAddress
-                : member.EmailAddress;
-            yield return new EmailAddressee(address, member.FullName);
+            yield return adminMember.ToEmailAddressee();
         }
     }
 

@@ -236,6 +236,69 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
+    public async Task<GroupProfilePageViewModel> GetGroupProfilePage(Guid currentMemberId, string slug)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        OdkAssertions.Exists(chapter);
+
+        var (
+            currentMember, 
+            adminMembers, 
+            hasQuestions, 
+            chapterProperties, 
+            chapterPropertyOptions,
+            memberProperties
+        ) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
+            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapter.Id));
+
+        return new GroupProfilePageViewModel
+        {
+            Chapter = chapter,
+            ChapterProperties = chapterProperties,
+            ChapterPropertyOptions = chapterPropertyOptions,
+            CurrentMember = currentMember,
+            HasQuestions = hasQuestions,
+            IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
+            IsMember = currentMember.IsMemberOf(chapter.Id) == true,
+            MemberProperties = memberProperties,
+            Platform = platform            
+        };
+    }
+
+    public async Task<GroupProfileSubscriptionPageViewModel> GetGroupProfileSubscriptionPage(Guid currentMemberId, string slug)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        OdkAssertions.Exists(chapter);
+
+        var (
+            currentMember,
+            adminMembers,
+            hasQuestions            
+        ) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
+
+        return new GroupProfileSubscriptionPageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = currentMember,
+            HasQuestions = hasQuestions,
+            IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
+            IsMember = currentMember.IsMemberOf(chapter.Id) == true,
+            Platform = platform
+        };
+    }
+
     public async Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(Guid? currentMemberId, string slug)
     {
         var platform = _platformProvider.GetPlatform();

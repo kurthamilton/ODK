@@ -1,0 +1,32 @@
+﻿@using ODK.Web.Common.Components
+@model IReadOnlyCollection<MenuItem>
+@{
+    var path = Context.Request.Path;
+    var active = Model
+        .FirstOrDefault(x => string.Equals(x.Link, path, StringComparison.InvariantCultureIgnoreCase));
+}
+
+<ul class="list-group d-none d-md-block">
+    @foreach (var menuItem in Model)
+    {        
+        <li class="list-group-item @(menuItem == active ? "active" : "")">
+            <a class="nav-link text-nowrap" href="@menuItem.Link">
+                @menuItem.Text
+            </a>
+        </li>
+    }
+</ul>
+
+<div class="dropdown d-md-none">
+    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        @active?.Text
+    </button>
+    <ul class="dropdown-menu">
+        @foreach (var menuItem in Model)
+        {
+            <li>
+                <a class="dropdown-item" href="@menuItem.Link">@menuItem.Text</a>
+            </li>
+        }
+    </ul>
+</div>

@@ -8,7 +8,7 @@
 @{
     var menuItems = new List<MenuItem>
     {
-        new MenuItem { Text = "About", Link = OdkRoutes2.Groups.Group(Model.Chapter) },
+        new MenuItem { Text = "About", Link = OdkRoutes2.Groups.Group(Model.Chapter), ActiveIsExactMatch = true },
         new MenuItem { Text = "Events", Link = OdkRoutes2.Groups.Events(Model.Chapter) },
         new MenuItem { Text = "Members", Link = OdkRoutes2.Groups.Members(Model.Chapter) }
     };
@@ -20,7 +20,7 @@
 
     if (Model.IsMember)
     {
-        menuItems.Add(new MenuItem { Text = "My profile", Link = OdkRoutes2.Groups.Profile(Model.Chapter) });
+        menuItems.Add(new MenuItem { Text = "My profile", Link = OdkRoutes2.Groups.Profile.Index(Model.Chapter) });
     }
 
     var id = "nav-group";
@@ -40,7 +40,7 @@
             <ul class="navbar-nav">
                 @foreach (var menuItem in menuItems)
                 {
-                    var active = HttpContextAccessor.ForPath(menuItem.Link ?? "");
+                    var active = HttpContextAccessor.ForPath(menuItem.Link ?? "", exactMatch: menuItem.ActiveIsExactMatch);
 
                     <li class="nav-item @(menuItem.Hidden ? "invisible" : null) ">
                         <a class="nav-link @(active ? "active" : null)" href="@menuItem.Link">

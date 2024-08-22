@@ -39,6 +39,14 @@ public abstract class CachingWriteRepositoryBase<T, TKey> : WriteRepositoryBase<
         base.Delete(entity);
     }
 
+    public override void DeleteMany(IEnumerable<T> entities)
+    {
+        foreach (var entity in entities)
+        {
+            Delete(entity);
+        }
+    }
+
     public void Dispose() => _cache.EndSession(CacheSessionKey);
 
     public override void Update(T entity)

@@ -15,6 +15,8 @@ public abstract class WriteRepositoryBase<T> : RepositoryBase, IWriteRepository<
 
     public virtual void Delete(T entity) => DeleteSingle(entity);
 
+    public virtual void DeleteMany(IEnumerable<T> entities) => base.DeleteMany(entities);
+
     public virtual void Update(T entity) => UpdateSingle(entity);
 
     protected virtual IQueryable<T> Set() => Set<T>();

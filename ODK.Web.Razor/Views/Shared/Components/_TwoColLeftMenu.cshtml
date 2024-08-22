@@ -1,0 +1,11 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model TwoColLeftMenuViewModel
+
+<div class="d-md-flex">
+    <div>
+        @Model.MenuContentFunc.Invoke(null)
+    </div>
+    <div class="ps-md-5 pt-5 pt-md-0 flex-grow-1">        
+        @Model.BodyContentFunc.Invoke(null)
+    </div>
+</div>
