@@ -431,7 +431,7 @@ public class MemberService : IMemberService
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberSubscriptionRepository.GetByMemberIdOrDefault(currentMemberId, chapterId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapterId));                
         
         if (chapter.OwnerId == currentMemberId)
@@ -521,11 +521,25 @@ public class MemberService : IMemberService
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
         }
 
-        var expiresUtc = (memberSubscription.ExpiresUtc ?? DateTime.UtcNow).AddMonths(chapterSubscription.Months);
+        if (memberSubscription == null)
+        {
+            memberSubscription = new MemberSubscription();
+        }
+
+        var now = memberSubscription.ExpiresUtc > DateTime.UtcNow ? memberSubscription.ExpiresUtc.Value : DateTime.UtcNow;
+        var expiresUtc = now.AddMonths(chapterSubscription.Months);
         memberSubscription.ExpiresUtc = expiresUtc;
         memberSubscription.Type = chapterSubscription.Type;
 
-        _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
+        if (memberSubscription.MemberId == default)
+        {
+            memberSubscription.MemberId = member.Id;
+            _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
+        }
+        else
+        {
+            _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
+        }        
 
         _unitOfWork.MemberSubscriptionRepository.AddMemberSubscriptionRecord(new MemberSubscriptionRecord
         {

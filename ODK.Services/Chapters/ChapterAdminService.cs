@@ -402,10 +402,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var chapter = await _unitOfWork.ChapterRepository.GetById(chapterId).RunAsync();
 
-        var (chapterAdminMembers, currentMember, memberSubscription, chapterSubscriptions, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, chapterSubscriptions, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
@@ -416,7 +415,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             ChapterSubscriptions = chapterSubscriptions,
             MembershipSettings = membershipSettings ?? new(),
-            MemberSubscription = memberSubscription,
+            MemberSubscription = null,
             PaymentSettings = paymentSettings
         };
     }
@@ -721,6 +720,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         settings.Enabled = model.Enabled;
         settings.MembershipDisabledAfterDaysExpired = model.MembershipDisabledAfterDaysExpired;
+        settings.MembershipExpiringWarningDays = model.MembershipExpiringWarningDays;
         settings.TrialPeriodMonths = model.TrialPeriodMonths;
 
         var validationResult = ValidateChapterMembershipSettings(settings);

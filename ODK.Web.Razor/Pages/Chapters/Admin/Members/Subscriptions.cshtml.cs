@@ -28,6 +28,7 @@ public class SubscriptionsModel : AdminPageModel
             {
                 Enabled = viewModel.Enabled,
                 MembershipDisabledAfterDaysExpired = viewModel.MembershipDisabledAfter,
+                MembershipExpiringWarningDays = viewModel.MembershipExpiringWarningDays,
                 TrialPeriodMonths = viewModel.TrialPeriodMonths
             });
 

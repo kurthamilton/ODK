@@ -2,9 +2,11 @@
 
 public class UpdateChapterMembershipSettings
 {
-    public bool Enabled { get; set; }
+    public required bool Enabled { get; init; }
 
-    public int MembershipDisabledAfterDaysExpired { get; set; }
+    public required int MembershipDisabledAfterDaysExpired { get; init; }
 
-    public int TrialPeriodMonths { get; set; }
+    public required int MembershipExpiringWarningDays { get; init; }
+
+    public required int TrialPeriodMonths { get; init; }
 }

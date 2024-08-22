@@ -52,7 +52,7 @@ public class EventViewModelService : IEventViewModelService
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value) 
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => currentMemberId != null
-                ? x.MemberSubscriptionRepository.GetByMemberIdOrDefault(currentMemberId.Value, chapter.Id)
+                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
             x => x.EventHostRepository.GetByEventId(eventId),
             x => x.EventCommentRepository.GetByEventId(eventId),

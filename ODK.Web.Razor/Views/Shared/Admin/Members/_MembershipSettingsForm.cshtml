@@ -16,6 +16,12 @@
     @Html.ValidationMessageFor(x => x.MembershipDisabledAfter)
 </div>
 
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.MembershipExpiringWarningDays, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.MembershipExpiringWarningDays, new { @class = "form-control", type = "number" })
+    @Html.ValidationMessageFor(x => x.MembershipExpiringWarningDays)
+</div>
+
 <div class="mb-3 form-check">
     @Html.OdkCheckBoxFor(x => x.Enabled, new { @class = "form-check-input" })
     @Html.LabelFor(x => x.Enabled, new { @class = "form-check-label" })
