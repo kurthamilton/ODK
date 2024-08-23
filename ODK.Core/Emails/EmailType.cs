@@ -13,5 +13,7 @@ public enum EmailType
     Layout = 8,
     SubscriptionConfirmation = 9,
     EventComment = 10,
-    DuplicateEmail = 11
+    DuplicateEmail = 11,
+    SubscriptionExpiring = 12,
+    SubscriptionExpired = 13
 }

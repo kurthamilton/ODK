@@ -10,6 +10,8 @@ public class MemberSubscription : IVersioned
 
     public Guid MemberId { get; set; }
 
+    public DateTime? ReminderEmailSentUtc { get; set; }
+
     public SubscriptionType Type { get; set; }
 
     public byte[] Version => ExpiresUtc == null ? [] : BitConverter.GetBytes(DateUtils.DateVersion(ExpiresUtc.Value));

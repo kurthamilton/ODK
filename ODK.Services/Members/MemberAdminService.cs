@@ -1,6 +1,10 @@
-﻿using ODK.Core;
+﻿using System.Threading.Tasks.Dataflow;
+using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Emails;
+using ODK.Core.Extensions;
 using ODK.Core.Members;
+using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -210,6 +214,63 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.MemberRepository.GetById(memberId));
 
         return await _emailService.SendMemberEmail(chapter, chapterAdminMember, member.ToEmailAddressee(), subject, body);
+    }
+
+    public async Task SendMemberSubscriptionReminderEmails()
+    {
+        var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
+        foreach (var chapter in chapters)
+        {
+            var (members, memberSubscriptions, membershipSettings) = await _unitOfWork.RunAsync(
+                x => x.MemberRepository.GetByChapterId(chapter.Id),
+                x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id),
+                x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
+
+            var memberSubscriptionDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);            
+            foreach (var member in members)
+            {                
+                if (!memberSubscriptionDictionary.TryGetValue(member.Id, out var memberSubscription))
+                {
+                    memberSubscription = new MemberSubscription
+                    {
+                        MemberId = member.Id,
+                        ChapterId = chapter.Id,
+                        Type = SubscriptionType.Trial
+                    };
+                    _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
+                }
+                else if (memberSubscription.ExpiresUtc < DateTime.UtcNow && 
+                    memberSubscription.ReminderEmailSentUtc < memberSubscription.ExpiresUtc)
+                {
+                    var disabledDate = memberSubscription.ExpiresUtc.Value
+                        .AddDays(membershipSettings.MembershipDisabledAfterDaysExpired);
+
+                    await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.SubscriptionExpiring,
+                        new Dictionary<string, string>
+                        {
+                            { "member.firstName", member.FirstName },
+                            { "subscription.expiryDate", memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(chapter.TimeZone) },
+                            { "subscription.disabledDate", disabledDate.ToFriendlyDateString(chapter.TimeZone) }
+                        });
+
+                    memberSubscription.ReminderEmailSentUtc = DateTime.UtcNow;
+                    _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+                else if (memberSubscription.ExpiresUtc > DateTime.UtcNow)
+                {
+                    var warningDays = new[]
+                   {
+                        7, 2
+                    };
+
+                    var expiryDays = (DateTime.UtcNow - memberSubscription.ExpiresUtc.Value).TotalDays;
+                    var reminderLastSentDaysAgo = memberSubscription.ReminderEmailSentUtc != null
+                        ? (DateTime.UtcNow - memberSubscription.ReminderEmailSentUtc.Value).TotalDays
+                        : default(double?);
+                }
+            }
+        }
     }
 
     public async Task SetMemberVisibility(AdminServiceRequest request, Guid memberId, bool visible)
