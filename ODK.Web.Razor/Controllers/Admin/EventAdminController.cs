@@ -85,8 +85,7 @@ public class EventAdminController : AdminControllerBase
         var result = await _eventAdminService.UpdateScheduledEmail(
             request,
             id,
-            viewModel.ScheduledEmailDate,
-            TimeSpanUtils.FromString(viewModel.ScheduledEmailTime));
+            viewModel.ScheduledEmailDate);
         AddFeedback(result, "Scheduled email date updated");
         return RedirectToReferrer();
     }

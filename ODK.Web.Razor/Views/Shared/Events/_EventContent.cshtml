@@ -9,6 +9,12 @@
     var localTime = Model.Event.ToLocalTime(Model.Chapter.TimeZone);
 }
 
+@if (!Model.CanView)
+{
+    <p>You are not permitted to view this event</p>
+    return;
+}
+
 @await Html.PartialAsync("Components/_AdminBar", new AdminBarViewModel
 {
     AdminLink = $"/{Model.Chapter.Name}/Admin/Events/{Model.Event.Id}",
@@ -29,7 +35,11 @@
         </div>
 })
 
-<h2>@Model.Venue.Name</h2>
+@if (Model.Venue != null)
+{
+    <h2>@Model.Venue.Name</h2>
+}
+
 <h4>@localTime.ToFriendlyDateString(null)</h4>
 
 @if (localTime.TimeOfDay.TotalSeconds > 0)
@@ -68,7 +78,7 @@ else if (!string.IsNullOrEmpty(Model.Event.Time))
     </p>
 }
 
-@if (Model.Event.CanComment && Model.Comments?.Comments != null)
+@if (Model.CanRespond && Model.Event.CanComment && Model.Comments.Comments != null)
 {
     var memberDictionary = Model.Comments.Members != null
         ? Model.Comments.Members.ToDictionary(x => x.Id)
@@ -132,7 +142,7 @@ else if (!string.IsNullOrEmpty(Model.Event.Time))
     </div>
 }
 
-@if (!string.IsNullOrEmpty(Model.Venue.MapQuery))
+@if (Model.Venue != null && !string.IsNullOrEmpty(Model.Venue.MapQuery))
 {
     <h3 class="mt-5">Location</h3>
     <hr/>

@@ -39,7 +39,7 @@
         </div>
     }
 
-    @if (Model.CurrentMember?.IsMemberOf(Model.Chapter.Id) == true)
+    @if (Model.CanRespond && Model.CurrentMember != null)
     {
         if (Model.Event.TicketSettings != null)
         {

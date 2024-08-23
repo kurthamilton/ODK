@@ -6,7 +6,7 @@ internal class UtcDateTimeConverter : ValueConverter<DateTime, DateTime>
 {
     public UtcDateTimeConverter()
         : base(
-            x => x.ToUniversalTime(),
+            x => x,
             x => DateTime.SpecifyKind(x, DateTimeKind.Utc))
     {
     }

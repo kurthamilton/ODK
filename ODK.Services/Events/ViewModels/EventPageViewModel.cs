@@ -9,6 +9,8 @@ public class EventPageViewModel
 {
     public required bool CanRespond { get; init; }
 
+    public required bool CanView { get; init; }
+
     public required Chapter Chapter { get; init; }
 
     public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
@@ -44,5 +46,5 @@ public class EventPageViewModel
 
     public required IReadOnlyCollection<EventTicketPurchase> TicketPurchases { get; init; }
 
-    public required Venue Venue { get; init; }    
+    public required Venue? Venue { get; init; }    
 }

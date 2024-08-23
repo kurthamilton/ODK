@@ -5,6 +5,7 @@ using ODK.Data.EntityFramework.Caching;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class ChapterEventSettingsRepository : CachingWriteRepositoryBase<ChapterEventSettings, Guid>, IChapterEventSettingsRepository
 {
     private static readonly EntityCache<Guid, ChapterEventSettings> _cache = new EntityCache<Guid, ChapterEventSettings>(x => x.ChapterId);

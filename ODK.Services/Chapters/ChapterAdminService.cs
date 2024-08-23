@@ -372,7 +372,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         return await GetChapterAdminRestrictedContent(request,
             x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId));
-    }
+    }    
 
     public async Task<ChapterLinks?> GetChapterLinks(AdminServiceRequest request)
     {
@@ -424,6 +424,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         return await GetChapterAdminRestrictedContent(request,
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
+    }
+
+    public async Task<ChapterPrivacySettings?> GetChapterPrivacySettings(AdminServiceRequest request)
+    {
+        return await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId));
     }
 
     public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(AdminServiceRequest request)
@@ -786,6 +792,39 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
     
+    public async Task<ServiceResult> UpdateChapterPrivacySettings(AdminServiceRequest request,
+        UpdateChapterPrivacySettings model)
+    {
+        var settings = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId));
+
+        if (settings == null)
+        {
+            settings = new ChapterPrivacySettings();
+        }
+
+        settings.EventResponseVisibility = model.EventResponseVisibility == null || model.EventResponseVisibility.Value.IsMember() 
+            ? model.EventResponseVisibility
+            : null;
+        settings.EventVisibility = model.EventVisibility;
+        settings.MemberVisibility = model.MemberVisibility;
+        settings.VenueVisibility = model.VenueVisibility;
+
+        if (settings.ChapterId == default)
+        {
+            settings.ChapterId = request.ChapterId;
+            _unitOfWork.ChapterPrivacySettingsRepository.Add(settings);
+        }
+        else
+        {
+            _unitOfWork.ChapterPrivacySettingsRepository.Update(settings);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UpdateChapterProperty(AdminServiceRequest request, 
         Guid propertyId, UpdateChapterProperty model)
     {

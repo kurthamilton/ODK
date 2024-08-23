@@ -371,7 +371,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
-            var status = _authorizationService.GetSubscriptionStatus(memberSubscription, membershipSettings);
+            var status = _authorizationService.GetSubscriptionStatus(member, memberSubscription, membershipSettings);
             if (filter.Statuses.Contains(status))
             {
                 yield return member;
@@ -390,11 +390,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         if (subscription.Type == SubscriptionType.Alum && subscription.ExpiresUtc != null)
         {
             return ServiceResult.Failure("Alum should not have expiry date");
-        }
-
-        if (subscription.Type != SubscriptionType.Alum && subscription.ExpiresUtc < DateTime.UtcNow.Date)
-        {
-            return ServiceResult.Failure("Expiry date should not be in the past");
         }
 
         return ServiceResult.Successful();

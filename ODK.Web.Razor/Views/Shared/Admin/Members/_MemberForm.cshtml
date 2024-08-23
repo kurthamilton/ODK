@@ -1,7 +1,7 @@
 ﻿@using ODK.Core.Members
 @model ODK.Web.Razor.Models.Admin.Members.MemberFormViewModel
 @{
-    IEnumerable<SelectListItem> typeOptions = Enum.GetValues<SubscriptionType>()
+    var typeOptions = Enum.GetValues<SubscriptionType>()
         .Where(x => x != SubscriptionType.None)
         .Select(x => new SelectListItem { Text = x.ToString() });
 }

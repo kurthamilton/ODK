@@ -10,7 +10,7 @@
 @{
     var memberId = User.MemberId();
     var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
-    var invites = await EventAdminService.GetEventInvites(request, Model.Event.Id);    
+    var invites = await EventAdminService.GetEventInvites(request, Model.Event.Id);
 }
 
 @await Html.PartialAsync("Admin/Events/_EventHeader")
@@ -55,7 +55,6 @@
     {
         Chapter = Model.Chapter,
         EventId = Model.Event.Id,
-        ScheduledEmailDate = Model.Chapter.ToChapterTime(invites.ScheduledUtc)?.Date,
-        ScheduledEmailTime = TimeSpanUtils.ToString(Model.Chapter.ToChapterTime(invites.ScheduledUtc)?.TimeOfDay)
+        ScheduledEmailDate = Model.Chapter.ToChapterTime(invites.ScheduledUtc)
     })
 </div>

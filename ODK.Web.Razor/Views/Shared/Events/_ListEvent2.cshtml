@@ -34,8 +34,11 @@
             <span>@localTime.ToFriendlyDateString(null)</span>
             <span>@Event.ToLocalTimeString(Model.Event.Date, Model.Event.EndTime, Model.Chapter.TimeZone)</span>
         </div>
-        <div>
-            @await Html.PartialAsync("Components/_Location", Model.Event.VenueName)
-        </div>
+        @if (Model.Event.VenueName != null)
+        {
+            <div>
+                @await Html.PartialAsync("Components/_Location", Model.Event.VenueName)
+            </div>
+        }        
     </div>        
 </div>

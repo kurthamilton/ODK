@@ -19,6 +19,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterLocationRepository> _chapterLocationRepository;
     private readonly Lazy<IChapterMembershipSettingsRepository> _chapterMembershipSettingsRepository;
     private readonly Lazy<IChapterPaymentSettingsRepository> _chapterPaymentSettingsRepository;
+    private readonly Lazy<IChapterPrivacySettingsRepository> _chapterPrivacySettingsRepository;
     private readonly Lazy<IChapterPropertyOptionRepository> _chapterPropertyOptionRepository;
     private readonly Lazy<IChapterPropertyRepository> _chapterPropertyRepository;
     private readonly Lazy<IChapterQuestionRepository> _chapterQuestionRepository;
@@ -80,6 +81,7 @@ public class UnitOfWork : IUnitOfWork
         _chapterLocationRepository = new(() => new ChapterLocationRepository(_context));
         _chapterMembershipSettingsRepository = new(() => new ChapterMembershipSettingsRepository(_context));
         _chapterPaymentSettingsRepository = new(() => new ChapterPaymentSettingsRepository(_context));
+        _chapterPrivacySettingsRepository = new(() => new ChapterPrivacySettingsRepository(_context));
         _chapterPropertyOptionRepository = new(() => new ChapterPropertyOptionRepository(_context));
         _chapterPropertyRepository = new(() => new ChapterPropertyRepository(_context));
         _chapterQuestionRepository = new(() => new ChapterQuestionRepository(_context));
@@ -137,6 +139,7 @@ public class UnitOfWork : IUnitOfWork
     public IChapterLocationRepository ChapterLocationRepository => _chapterLocationRepository.Value;
     public IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository => _chapterMembershipSettingsRepository.Value;
     public IChapterPaymentSettingsRepository ChapterPaymentSettingsRepository => _chapterPaymentSettingsRepository.Value;
+    public IChapterPrivacySettingsRepository ChapterPrivacySettingsRepository => _chapterPrivacySettingsRepository.Value;
     public IChapterPropertyOptionRepository ChapterPropertyOptionRepository => _chapterPropertyOptionRepository.Value;
     public IChapterPropertyRepository ChapterPropertyRepository => _chapterPropertyRepository.Value;
     public IChapterQuestionRepository ChapterQuestionRepository => _chapterQuestionRepository.Value;
@@ -399,6 +402,87 @@ public class UnitOfWork : IUnitOfWork
             await q8.RunAsync(),
             await q9.RunAsync(),
             await q10.RunAsync());
+    }
+
+    public async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6,
+        Func<IUnitOfWork, IDeferredQuery<T7>> query7,
+        Func<IUnitOfWork, IDeferredQuery<T8>> query8,
+        Func<IUnitOfWork, IDeferredQuery<T9>> query9,
+        Func<IUnitOfWork, IDeferredQuery<T10>> query10,
+        Func<IUnitOfWork, IDeferredQuery<T11>> query11)
+    {
+        var q1 = query1(this);
+        var q2 = query2(this);
+        var q3 = query3(this);
+        var q4 = query4(this);
+        var q5 = query5(this);
+        var q6 = query6(this);
+        var q7 = query7(this);
+        var q8 = query8(this);
+        var q9 = query9(this);
+        var q10 = query10(this);
+        var q11 = query11(this);
+
+        return (
+            await q1.RunAsync(),
+            await q2.RunAsync(),
+            await q3.RunAsync(),
+            await q4.RunAsync(),
+            await q5.RunAsync(),
+            await q6.RunAsync(),
+            await q7.RunAsync(),
+            await q8.RunAsync(),
+            await q9.RunAsync(),
+            await q10.RunAsync(),
+            await q11.RunAsync());
+    }
+
+    public async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6,
+        Func<IUnitOfWork, IDeferredQuery<T7>> query7,
+        Func<IUnitOfWork, IDeferredQuery<T8>> query8,
+        Func<IUnitOfWork, IDeferredQuery<T9>> query9,
+        Func<IUnitOfWork, IDeferredQuery<T10>> query10,
+        Func<IUnitOfWork, IDeferredQuery<T11>> query11,
+        Func<IUnitOfWork, IDeferredQuery<T12>> query12)
+    {
+        var q1 = query1(this);
+        var q2 = query2(this);
+        var q3 = query3(this);
+        var q4 = query4(this);
+        var q5 = query5(this);
+        var q6 = query6(this);
+        var q7 = query7(this);
+        var q8 = query8(this);
+        var q9 = query9(this);
+        var q10 = query10(this);
+        var q11 = query11(this);
+        var q12 = query12(this);
+
+        return (
+            await q1.RunAsync(),
+            await q2.RunAsync(),
+            await q3.RunAsync(),
+            await q4.RunAsync(),
+            await q5.RunAsync(),
+            await q6.RunAsync(),
+            await q7.RunAsync(),
+            await q8.RunAsync(),
+            await q9.RunAsync(),
+            await q10.RunAsync(),
+            await q11.RunAsync(),
+            await q12.RunAsync());
     }
 
     public Task SaveChangesAsync() => _context.SaveChangesAsync();

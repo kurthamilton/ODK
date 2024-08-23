@@ -7,6 +7,7 @@ using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
+using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
@@ -15,6 +16,7 @@ namespace ODK.Services.Events;
 
 public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 {
+    private readonly IAuthorizationService _authorizationService;
     private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;    
     private readonly EventAdminServiceSettings _settings;
@@ -24,9 +26,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IUnitOfWork unitOfWork, 
         EventAdminServiceSettings settings, 
         IEmailService emailService,
-        IChapterUrlService chapterUrlService)
+        IChapterUrlService chapterUrlService,
+        IAuthorizationService authorizationService)
         : base(unitOfWork)
     {
+        _authorizationService = authorizationService;
         _chapterUrlService = chapterUrlService;
         _emailService = emailService;
         _settings = settings;
@@ -377,14 +381,22 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return ServiceResult.Successful();
         }
 
+        var (membershipSettings, privacySettings, memberSubscriptions) = await _unitOfWork.RunAsync(
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id));
+
         return await SendEventInvites(
             chapterAdminMember, 
             chapter,
             @event, 
             venue,
+            membershipSettings,
+            privacySettings,
             responses,
             invites,
-            members);
+            members,
+            memberSubscriptions);
     }
 
     public async Task SendScheduledEmails()
@@ -432,15 +444,18 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 continue;
             }
 
-            var (venue, responses, invites, members) = await _unitOfWork.RunAsync(
+            var (membershipSettings, privacySettings, venue, responses, invites, members, memberSubscriptions) = await _unitOfWork.RunAsync(
+                x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
+                x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
                 x => x.VenueRepository.GetById(@event.VenueId),
                 x => x.EventResponseRepository.GetByEventId(@event.Id),
                 x => x.EventInviteRepository.GetByEventId(@event.Id),
-                x => x.MemberRepository.GetByChapterId(@event.ChapterId));
+                x => x.MemberRepository.GetByChapterId(@event.ChapterId),
+                x => x.MemberSubscriptionRepository.GetByChapterId(@event.ChapterId));
 
             try
             {
-                await SendEventInvites(null, chapter, @event, venue, responses, invites, members);
+                await SendEventInvites(null, chapter, @event, venue, membershipSettings, privacySettings, responses, invites, members, memberSubscriptions);
             }            
             catch
             {
@@ -545,8 +560,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return response;
     }
 
-    public async Task<ServiceResult> UpdateScheduledEmail(AdminServiceRequest request, Guid eventId, DateTime? date,
-        TimeSpan? time)
+    public async Task<ServiceResult> UpdateScheduledEmail(AdminServiceRequest request, Guid eventId, DateTime? date)
     {
         var (chapter, chapterAdminMembers, currentMember, @event, eventEmail) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -556,24 +570,24 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventEmailRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
-
-        if (eventEmail == null)
+        
+        if (eventEmail?.SentUtc != null)
         {
-            return ServiceResult.Successful();
+            return ServiceResult.Failure("Email has already been sent");
         }
-
-        //TODO: delete scheduled email if blank?
 
         if (eventEmail == null)
         {
             eventEmail = new EventEmail();
-        }                
+        }
+        else if (date == null)
+        {
+            _unitOfWork.EventEmailRepository.Delete(eventEmail);
+            await _unitOfWork.SaveChangesAsync();
+            return ServiceResult.Successful();
+        }
 
-        var scheduledLocal = date != null && time != null
-            ? date + time
-            : null;
-
-        var scheduledUtc = chapter.FromLocalTime(scheduledLocal);
+        var scheduledUtc = chapter.FromLocalTime(date);
         if (scheduledUtc > @event.Date)
         {
             return ServiceResult.Failure("Scheduled date cannot be after event");
@@ -761,16 +775,30 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         Chapter chapter,
         Event @event,
         Venue venue,
+        ChapterMembershipSettings? membershipSettings,
+        ChapterPrivacySettings? privacySettings,
         IReadOnlyCollection<EventResponse> responses,
         IReadOnlyCollection<EventInvite> invites,
-        IReadOnlyCollection<Member> members)
+        IReadOnlyCollection<Member> members,
+        IReadOnlyCollection<MemberSubscription> memberSubscriptions)
     {
         var parameters = GetEventEmailParameters(chapter, @event, venue);
 
         var memberResponses = responses.ToDictionary(x => x.MemberId, x => x);
         var inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
+        var memberSubscriptionDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);
+
         var invited = members
-            .Where(x => x.IsCurrent() && x.EmailOptIn && !inviteDictionary.ContainsKey(x.Id) && !memberResponses.ContainsKey(x.Id))
+            .Where(x => 
+                _authorizationService.CanRespondToEvent(
+                    @event, 
+                    x, 
+                    memberSubscriptionDictionary.ContainsKey(x.Id) ? memberSubscriptionDictionary[x.Id] : null,
+                    membershipSettings,
+                    privacySettings) && 
+                x.EmailOptIn && 
+                !inviteDictionary.ContainsKey(x.Id) && 
+                !memberResponses.ContainsKey(x.Id))
             .ToArray();
 
         await _emailService.SendBulkEmail(

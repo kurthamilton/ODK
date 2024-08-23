@@ -34,9 +34,12 @@
                 </a>
             </td>
             <td>
-                <a href="/@Model.Chapter.Name/Admin/Events/Venue/@response.VenueId">
-                    @response.VenueName
-                </a>
+                @if (response.VenueId != null && !string.IsNullOrEmpty(response.VenueName))
+                {
+                    <a href="/@Model.Chapter.Name/Admin/Events/Venue/@response.VenueId">
+                        @response.VenueName
+                    </a>
+                }                 
             </td>
             <td>
                 @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel

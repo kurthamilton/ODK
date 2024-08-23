@@ -1,0 +1,12 @@
+﻿@page "/{chapterName}/Admin/Chapter/Privacy"
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.PrivacyModel
+@{
+    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Model.Title = "Privacy | Admin";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Admin/Chapter/_PrivacyContent", Model.Chapter)
+})

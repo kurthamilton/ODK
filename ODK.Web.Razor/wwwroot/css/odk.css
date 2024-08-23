@@ -12139,6 +12139,12 @@ html[data-platform=odk] {
   width: auto;
 }
 
+.form-horizontal .form-label {
+  margin-bottom: 0;
+  text-align: right;
+  align-self: center;
+}
+
 .form-label {
   font-weight: var(--odk-forms-labels-font-weight);
 }

@@ -37,7 +37,7 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(AdminServiceRequest request);
 
-    Task<ChapterEventSettings?> GetChapterEventSettings(AdminServiceRequest request);
+    Task<ChapterEventSettings?> GetChapterEventSettings(AdminServiceRequest request);    
 
     Task<ChapterLinks?> GetChapterLinks(AdminServiceRequest request);
 
@@ -48,6 +48,8 @@ public interface IChapterAdminService
     Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(AdminServiceRequest request);
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(AdminServiceRequest request);
+
+    Task<ChapterPrivacySettings?> GetChapterPrivacySettings(AdminServiceRequest request);
 
     Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(AdminServiceRequest request);
 
@@ -88,6 +90,9 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterPaymentSettings(AdminServiceRequest request, 
         UpdateChapterPaymentSettings model);
+
+    Task<ServiceResult> UpdateChapterPrivacySettings(AdminServiceRequest request,
+        UpdateChapterPrivacySettings model);
 
     Task<ServiceResult> UpdateChapterProperty(AdminServiceRequest request, 
         Guid propertyId, UpdateChapterProperty model);

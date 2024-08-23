@@ -1,37 +1,75 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using ODK.Core;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Events;
 using ODK.Core.Members;
-using ODK.Data.Core;
-using ODK.Services.Caching;
+using ODK.Core.Venues;
 
 namespace ODK.Services.Authorization;
 
 public class AuthorizationService : IAuthorizationService
-{
-    private readonly IRequestCache _requestCache;
-    private readonly IUnitOfWork _unitOfWork;
-
-    public AuthorizationService(IUnitOfWork unitOfWork,
-        IRequestCache requestCache)
-    {        
-        _requestCache = requestCache;
-        _unitOfWork = unitOfWork;
+{    
+    public bool CanRespondToEvent(
+        Event @event,
+        Member? member,
+        MemberSubscription? subscription,
+        ChapterMembershipSettings? membershipSettings,
+        ChapterPrivacySettings? privacySettings)
+    {
+        
+        var memberVisibility = GetMemberVisibilityType(@event.ChapterId, member, subscription, membershipSettings);
+        var responseVisibility = privacySettings?.EventResponseVisibility ?? ChapterFeatureVisibilityType.AllMembers;
+        return memberVisibility.CanView(responseVisibility);
     }
 
-    public void AssertMemberIsCurrent([NotNull] Member? member)
-        => OdkAssertions.MeetsCondition(member, x => x.IsCurrent());
-
-    public SubscriptionStatus GetSubscriptionStatus(MemberSubscription subscription, 
-        ChapterMembershipSettings membershipSettings)
+    public bool CanViewEvent(
+        Event @event,
+        Member? member,
+        MemberSubscription? subscription,
+        ChapterMembershipSettings? membershipSettings,
+        ChapterPrivacySettings? privacySettings)
     {
-        if (subscription.Type == SubscriptionType.Alum)
+        if (!@event.IsPublished)
+        {
+            return false;
+        }
+
+        var memberVisibility = GetMemberVisibilityType(@event.ChapterId, member, subscription, membershipSettings);
+        var eventVisibility = privacySettings?.EventVisibility ?? ChapterFeatureVisibilityType.ActiveMembers;
+        return memberVisibility.CanView(eventVisibility);
+    }
+
+    public bool CanViewVenue(
+        Venue venue,
+        Member? member,
+        MemberSubscription? subscription,
+        ChapterMembershipSettings? membershipSettings,
+        ChapterPrivacySettings? privacySettings)
+    {
+        var memberVisibility = GetMemberVisibilityType(venue.ChapterId, member, subscription, membershipSettings);
+        var venueVisibility = privacySettings?.VenueVisibility ?? ChapterFeatureVisibilityType.ActiveMembers;
+        return memberVisibility.CanView(venueVisibility);
+    }
+
+    public SubscriptionStatus GetSubscriptionStatus(
+        Member? member,
+        MemberSubscription? subscription, 
+        ChapterMembershipSettings? membershipSettings)
+    {
+        if (member == null || !member.IsCurrent())
+        {
+            return SubscriptionStatus.Disabled;
+        }
+
+        if (membershipSettings?.Enabled != true)
+        {
+            return SubscriptionStatus.Current;
+        }
+
+        if (subscription == null || subscription.Type == SubscriptionType.Alum)
         {
             return SubscriptionStatus.Disabled;
         }
 
         if (subscription.ExpiresUtc == null || 
-            !membershipSettings.Enabled ||
             membershipSettings.MembershipDisabledAfterDaysExpired <= 0)
         {
             return SubscriptionStatus.Current;
@@ -49,62 +87,25 @@ public class AuthorizationService : IAuthorizationService
             : SubscriptionStatus.Disabled;
     }
 
-    public async Task<bool> MembershipIsActiveAsync(Guid memberId, Guid chapterId)
-    {
-        var subscription = await _requestCache.GetMemberSubscriptionAsync(memberId, chapterId);
-        if (subscription == null)
+    private ChapterFeatureVisibilityType GetMemberVisibilityType(
+        Guid chapterId,
+        Member? member,
+        MemberSubscription? subscription,
+        ChapterMembershipSettings? membershipSettings)
+    {        
+        var subscriptionStatus = member?.IsMemberOf(chapterId) == true 
+            ? GetSubscriptionStatus(member, subscription, membershipSettings)
+            : SubscriptionStatus.None;
+
+        switch (subscriptionStatus)
         {
-            return false;
+            case SubscriptionStatus.Current:
+            case SubscriptionStatus.Expiring:
+                return ChapterFeatureVisibilityType.ActiveMembers;
+            case SubscriptionStatus.Expired:
+                return ChapterFeatureVisibilityType.AllMembers;
+            default:
+                return ChapterFeatureVisibilityType.Public;
         }
-        
-        return await MembershipIsActiveAsync(subscription, chapterId);
-    }
-
-    public async Task<bool> MembershipIsActiveAsync(MemberSubscription subscription, Guid chapterId)
-    {
-        var membershipSettings = await _unitOfWork.ChapterMembershipSettingsRepository
-            .GetByChapterId(chapterId)
-            .RunAsync();
-
-        return MembershipIsActive(subscription, membershipSettings);
-    }
-
-    public bool MembershipIsActive(MemberSubscription subscription, ChapterMembershipSettings? membershipSettings)
-    {
-        if (subscription.Type == SubscriptionType.Alum)
-        {
-            return false;
-        }
-
-        if (subscription.ExpiresUtc == null || subscription.ExpiresUtc >= DateTime.UtcNow)
-        {
-            return true;
-        }
-
-        if (membershipSettings == null)
-        {
-            return false;
-        }
-
-        if (!membershipSettings.Enabled || membershipSettings.MembershipDisabledAfterDaysExpired <= 0)
-        {
-            return true;
-        }
-
-        return subscription.ExpiresUtc >= DateTime.UtcNow.AddDays(-1 * membershipSettings.MembershipDisabledAfterDaysExpired);
-    }
-
-    private async Task<Member> GetMemberAsync(Guid id)
-    {
-        var member = await _unitOfWork.MemberRepository.GetByIdOrDefault(id).RunAsync();
-        AssertMemberIsCurrent(member);
-        return member;
-    }
-
-    private async Task<MemberSubscription?> GetMemberSubscriptionAsync(Guid memberId, Guid chapterId)
-    {
-        return await _unitOfWork.MemberSubscriptionRepository
-            .GetByMemberId(memberId, chapterId)
-            .RunAsync();
     }
 }

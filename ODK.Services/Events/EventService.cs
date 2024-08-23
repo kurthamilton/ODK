@@ -145,7 +145,7 @@ public class EventService : IEventService
     public async Task<ServiceResult> PayDeposit(Guid currentMemberId, Guid eventId, string cardToken)
     {
         var (member, @event, ticketPurchase) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberRepository.GetById(currentMemberId),           
             x => x.EventRepository.GetById(eventId),
             x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId));
 
@@ -164,7 +164,12 @@ public class EventService : IEventService
             return ServiceResult.Failure("This event does not have deposits");
         }
 
-        var validationResult = await MemberCanAttendEvent(member, @event);
+        var (membershipSettings, privacySettings, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, @event.ChapterId));
+
+        var validationResult = MemberCanAttendEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -247,7 +252,12 @@ public class EventService : IEventService
             return ServiceResult.Failure("You have already purchased a ticket for this event");
         }
 
-        var validationResult = await MemberCanAttendEvent(member, @event);
+        var (membershipSettings, privacySettings, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, @event.ChapterId));
+
+        var validationResult = MemberCanAttendEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -294,7 +304,12 @@ public class EventService : IEventService
             return ServiceResult.Failure("Ticketed events cannot be responded to");
         }
 
-        var validationResult = await MemberCanAttendEvent(member, @event);
+        var (membershipSettings, privacySettings, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, @event.ChapterId));
+
+        var validationResult = MemberCanAttendEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -345,51 +360,20 @@ public class EventService : IEventService
         return responseType;
     }
 
-    private async Task<EventCommentsDto> GetCommentsDto(Member? member, Event @event, ChapterEventSettings settings, IReadOnlyCollection<EventComment> comments)
-    {        
-        if (settings?.DisableComments == true || !@event.IsAuthorized(member) || !@event.CanComment)
-        {
-            return new EventCommentsDto
-            {
-                Comments = null,
-                Members = null
-            };
-        }
-
-        var memberIds = comments
-            .Select(x => x.MemberId)
-            .Distinct()
-            .ToArray();
-
-        var members = memberIds.Length > 0
-            ? await _unitOfWork.MemberRepository.GetByChapterId(@event.ChapterId, memberIds).RunAsync()
-            : [];
-
-        return new EventCommentsDto
-        {
-            Comments = comments,
-            Members = members
-        };
-    }
-
-    private async Task<ServiceResult> MemberCanAttendEvent(Member member, Event @event)
+    private ServiceResult MemberCanAttendEvent(
+        Event @event, 
+        Member? member, 
+        MemberSubscription? subscription, 
+        ChapterMembershipSettings? membershipSettings,
+        ChapterPrivacySettings? privacySettings)
     {
         if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
         }
 
-        if (!@event.IsAuthorized(member))
-        {
-            return ServiceResult.Failure("You are not permitted to attend this event");
-        }
-
-        var active = await _authorizationService.MembershipIsActiveAsync(member.Id, @event.ChapterId);
-        if (!active)
-        {
-            return ServiceResult.Failure("You are not permitted to attend this event");
-        }
-
-        return ServiceResult.Successful();
+        return _authorizationService.CanRespondToEvent(@event, member, subscription, membershipSettings, privacySettings)
+            ? ServiceResult.Successful()
+            : ServiceResult.Failure("You are not permitted to attend this event");
     }
 }

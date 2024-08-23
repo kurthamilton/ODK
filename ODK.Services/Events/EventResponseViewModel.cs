@@ -5,7 +5,7 @@ namespace ODK.Services.Events;
 
 public class EventResponseViewModel
 {
-    public EventResponseViewModel(Event @event, Venue venue, EventResponseType response,
+    public EventResponseViewModel(Event @event, Venue? venue, EventResponseType response,
         bool invited)
     {
         Date = @event.Date;
@@ -16,8 +16,8 @@ public class EventResponseViewModel
         Response = response;
         Ticketed = @event.Ticketed;
         Time = @event.Time;
-        VenueId = venue.Id;
-        VenueName = venue.Name;
+        VenueId = venue?.Id;
+        VenueName = venue?.Name;
     }
 
     public DateTime Date { get; }
@@ -38,7 +38,7 @@ public class EventResponseViewModel
 
     public string? Time { get; }
 
-    public Guid VenueId { get; }
+    public Guid? VenueId { get; }
 
-    public string VenueName { get; }
+    public string? VenueName { get; }
 }

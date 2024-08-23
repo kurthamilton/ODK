@@ -31,9 +31,12 @@
     }
 </h5>
 <div class="d-flex gap-2">
-    <div>
-        @await Html.PartialAsync("Components/_Location", Model.Event.VenueName)
-    </div>
+    @if (Model.Event.VenueName != null)
+    {
+        <div>
+            @await Html.PartialAsync("Components/_Location", Model.Event.VenueName)
+        </div>
+    }    
     @if (Model.Event.Ticketed)
     {
         <div>

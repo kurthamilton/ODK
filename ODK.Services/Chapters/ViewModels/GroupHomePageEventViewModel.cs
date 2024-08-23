@@ -9,5 +9,5 @@ public class GroupHomePageEventViewModel
 
     public required EventResponse? Response { get; init; }
 
-    public required Venue Venue { get; init; }
+    public required Venue? Venue { get; init; }
 }

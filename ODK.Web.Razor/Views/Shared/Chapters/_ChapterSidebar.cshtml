@@ -35,25 +35,25 @@
                     <div class="d-inline-block d-md-block">
                         <span>@localTime.ToFriendlyDateString(null)</span>
                         <span>@(@event.ToLocalTimeString(Model.Chapter.TimeZone))</span>                        
-                    </div>                    
-                    @if (venue != null)
-                    {
-                        <span class="d-md-none">&nbsp;|&nbsp;</span>
-                        <div class="d-inline-block d-md-block">
-                            <div class="d-flex">
+                    </div>
+                    <span class="d-md-none">&nbsp;|&nbsp;</span>
+                    <div class="d-inline-block d-md-block">
+                        <div class="d-flex">
+                            @if (venue != null)
+                            {
                                 <div class="me-auto">
-                                    @await Html.PartialAsync("Components/_Location", venue.Name)
+                                    @await Html.PartialAsync("Components/_Location", venue?.Name ?? "[Hidden]")
                                 </div>
-                                @if (@event.Ticketed)
-                                {
-                                    <span class="d-md-none">&nbsp;|&nbsp;</span>
-                                    <div>
-                                        <i class="fa-solid fa-ticket" data-bs-toggle="tooltip" data-bs-title="Ticketed"></i>
-                                    </div>
-                                }
-                            </div>
+                            }                            
+                            @if (@event.Ticketed)
+                            {
+                                <span class="d-md-none">&nbsp;|&nbsp;</span>
+                                <div>
+                                    <i class="fa-solid fa-ticket" data-bs-toggle="tooltip" data-bs-title="Ticketed"></i>
+                                </div>
+                            }
                         </div>
-                    }                    
+                    </div>
                 </div>
             }
         </div>

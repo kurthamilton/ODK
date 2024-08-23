@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using ODK.Core;
+﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Events;
@@ -10,18 +9,23 @@ using ODK.Core.Platforms;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
+using ODK.Services.Authorization;
 using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Chapters;
 
 public class ChapterViewModelService : IChapterViewModelService
 {
+    private readonly IAuthorizationService _authorizationService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public ChapterViewModelService(IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider)
+    public ChapterViewModelService(
+        IUnitOfWork unitOfWork,
+        IPlatformProvider platformProvider,
+        IAuthorizationService authorizationService)
     {
+        _authorizationService = authorizationService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
@@ -130,10 +134,28 @@ public class ChapterViewModelService : IChapterViewModelService
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
         OdkAssertions.Exists(chapter);
 
-        var (currentMember, adminMembers, memberCount, instagramPosts, links, upcomingEvents, recentEvents, hasQuestions, texts) = await _unitOfWork.RunAsync(
+        var (
+            currentMember, 
+            memberSubscription, 
+            membershipSettings,
+            privacySettings,
+            adminMembers, 
+            memberCount, 
+            instagramPosts, 
+            links, 
+            upcomingEvents, 
+            recentEvents, 
+            hasQuestions, 
+            texts
+        ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null 
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => currentMemberId != null
+                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
+                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => currentMemberId != null 
                 ? x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId.Value)
                 : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),
@@ -146,10 +168,6 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id));
 
         var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
-
-        upcomingEvents = upcomingEvents
-            .Where(x => x.IsPublished)
-            .ToArray();
 
         var eventIds = upcomingEvents
             .Concat(recentEvents)
@@ -166,6 +184,44 @@ public class ChapterViewModelService : IChapterViewModelService
         var venueDictionary = venues.ToDictionary(x => x.Id);
         var responseDictionary = responses.ToDictionary(x => x.EventId);
 
+        var recentEventViewModels = new List<GroupHomePageEventViewModel>();
+        foreach (var @event in recentEvents.OrderByDescending(x => x.Date))
+        {
+            var canViewEvent = _authorizationService.CanViewEvent(@event, currentMember, memberSubscription, membershipSettings, privacySettings);
+            if (!canViewEvent)
+            {
+                continue;
+            }
+
+            var venue = venueDictionary[@event.VenueId];
+            var canViewVenue = _authorizationService.CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, privacySettings);
+            recentEventViewModels.Add(new GroupHomePageEventViewModel
+            {
+                Event = @event,
+                Response = responseDictionary.ContainsKey(@event.Id) ? responseDictionary[@event.Id] : null,
+                Venue = canViewVenue ? venue : null
+            });
+        }
+
+        var upcomingEventViewModels = new List<GroupHomePageEventViewModel>();
+        foreach (var @event in upcomingEvents.OrderBy(x => x.Date))
+        {
+            var canViewEvent = _authorizationService.CanViewEvent(@event, currentMember, memberSubscription, membershipSettings, privacySettings);
+            if (!canViewEvent)
+            {
+                continue;
+            }
+
+            var venue = venueDictionary[@event.VenueId];
+            var canViewVenue = _authorizationService.CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, privacySettings);
+            recentEventViewModels.Add(new GroupHomePageEventViewModel
+            {
+                Event = @event,
+                Response = responseDictionary.ContainsKey(@event.Id) ? responseDictionary[@event.Id] : null,
+                Venue = canViewVenue ? venue : null
+            });
+        }
+
         return new GroupHomePageViewModel
         {
             Chapter = chapter,
@@ -178,25 +234,9 @@ public class ChapterViewModelService : IChapterViewModelService
             Links = links,
             MemberCount = memberCount,
             Platform = platform,
-            RecentEvents = recentEvents
-                .OrderByDescending(x => x.Date)
-                .Select(x => new GroupHomePageEventViewModel
-                {
-                    Event = x,
-                    Response = responseDictionary.ContainsKey(x.Id) ? responseDictionary[x.Id] : null,
-                    Venue = venueDictionary[x.VenueId]
-                })
-                .ToArray(),
+            RecentEvents = recentEventViewModels,
             Texts = texts,
-            UpcomingEvents = upcomingEvents
-                .OrderBy(x => x.Date)
-                .Select(x => new GroupHomePageEventViewModel
-                {
-                    Event = x,
-                    Response = responseDictionary.ContainsKey(x.Id) ? responseDictionary[x.Id] : null,
-                    Venue = venueDictionary[x.VenueId]
-                })
-                .ToArray()
+            UpcomingEvents = upcomingEventViewModels
         };
     }
     
@@ -334,19 +374,20 @@ public class ChapterViewModelService : IChapterViewModelService
 
         var today = chapter.TodayUtc();
 
-        var (currentMember, events, links, texts, instagramPosts, latestMembers) = await _unitOfWork.RunAsync(
+        var (currentMember, memberSubscription, membershipSettings, privacySettings, events, links, texts, instagramPosts, latestMembers) = await _unitOfWork.RunAsync(
             x => currentMemberId != null 
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value) 
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => currentMemberId != null
+                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
+                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetByChapterId(chapter.Id, today),
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
             x => x.InstagramPostRepository.GetByChapterId(chapter.Id, 8),
             x => x.MemberRepository.GetLatestByChapterId(chapter.Id, 8));
-
-        events = events
-            .Where(x => x.IsAuthorized(currentMember) && x.IsPublished)
-            .ToArray();
 
         var eventIds = events.Select(x => x.Id).ToArray();
 
@@ -362,8 +403,13 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             Chapter = chapter,
             CurrentMember = currentMember,
-            Events = events,
-            EventVenues = venues,
+            Events = events
+                .Where(x => _authorizationService.CanViewEvent(x, currentMember, memberSubscription, membershipSettings, privacySettings))
+                .OrderBy(x => x.Date)
+                .ToArray(),
+            EventVenues = venues
+                .Where(x => _authorizationService.CanViewVenue(x, currentMember, memberSubscription, membershipSettings, privacySettings))
+                .ToArray(),
             InstagramPosts = instagramPosts,
             LatestMembers = latestMembers,
             Links = links,

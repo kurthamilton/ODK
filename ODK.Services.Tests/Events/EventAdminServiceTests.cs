@@ -12,6 +12,7 @@ using ODK.Core.Members;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
+using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Events;
@@ -259,7 +260,8 @@ public static class EventAdminServiceTests
             unitOfWork: unitOfWork ?? CreateMockUnitOfWork(),
             settings: settings ?? CreateSettings(),
             emailService: CreateMockEmailService(),
-            chapterUrlService: CreateMockChapterUrlService());
+            chapterUrlService: CreateMockChapterUrlService(),
+            Mock.Of<IAuthorizationService>());
     }
 
     private static EventAdminServiceSettings CreateSettings() => new EventAdminServiceSettings();

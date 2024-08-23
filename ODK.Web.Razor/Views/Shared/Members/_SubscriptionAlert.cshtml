@@ -39,7 +39,7 @@
         return;
     }
 
-    var status = AuthorizationService.GetSubscriptionStatus(memberSubscription, membershipSettings);
+    var status = AuthorizationService.GetSubscriptionStatus(member, memberSubscription, membershipSettings);
     
     var type = memberSubscription.Type == SubscriptionType.Trial ? "trial" : "subscription";
     var action = memberSubscription.Type == SubscriptionType.Trial ? "Purchase membership" : "Renew";

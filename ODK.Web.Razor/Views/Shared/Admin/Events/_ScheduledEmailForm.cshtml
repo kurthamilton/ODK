@@ -10,13 +10,13 @@
         <div class="row">
             <div class="col-6">
                 @Html.LabelFor(x => x.ScheduledEmailDate, new { @class = "form-label" })
-                @Html.TextBoxFor(x => x.ScheduledEmailDate, format: "{0:dd/MM/yyyy}", new { @class = "form-control", data_datepicker = "" })
+                @Html.TextBoxFor(x => x.ScheduledEmailDate, format: "{0:dd/MM/yyyy HH:mm}", new 
+                { 
+                    @class = "form-control", 
+                    data_datepicker = "",
+                    data_datepicker_time = ""
+                })
                 @Html.ValidationMessageFor(x => x.ScheduledEmailDate)
-            </div>
-            <div class="col-6">
-                @Html.LabelFor(x => x.ScheduledEmailTime, new { @class = "form-label" })
-                @Html.TextBoxFor(x => x.ScheduledEmailTime, new { @class = "form-control" })
-                @Html.ValidationMessageFor(x => x.ScheduledEmailTime)
             </div>
         </div>        
     </div>

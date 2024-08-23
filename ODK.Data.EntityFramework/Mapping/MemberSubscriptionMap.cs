@@ -16,7 +16,7 @@ public class MemberSubscriptionMap : IEntityTypeConfiguration<MemberSubscription
 
         builder.Property(x => x.ExpiresUtc)
             .HasColumnName("ExpiryDate")
-            .HasConversion<UtcDateTimeConverter>();
+            .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.Property(x => x.Type)
             .HasColumnName("SubscriptionTypeId")

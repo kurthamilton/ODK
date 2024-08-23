@@ -1,17 +1,35 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Venues;
 
 namespace ODK.Services.Authorization;
 
 public interface IAuthorizationService
-{
-    void AssertMemberIsCurrent(Member member);
+{    
+    bool CanRespondToEvent(
+        Event @event,
+        Member? member,
+        MemberSubscription? subscription,
+        ChapterMembershipSettings? membershipSettings,
+        ChapterPrivacySettings? privacySettings);
 
-    SubscriptionStatus GetSubscriptionStatus(MemberSubscription subscription, ChapterMembershipSettings membershipSettings);
+    bool CanViewEvent(
+        Event @event, 
+        Member? member, 
+        MemberSubscription? subscription, 
+        ChapterMembershipSettings? membershipSettings,
+        ChapterPrivacySettings? privacySettings);
 
-    Task<bool> MembershipIsActiveAsync(Guid memberId, Guid chapterId);
+    bool CanViewVenue(
+        Venue venue,
+        Member? member,
+        MemberSubscription? subscription,
+        ChapterMembershipSettings? membershipSettings,
+        ChapterPrivacySettings? privacySettings);
 
-    Task<bool> MembershipIsActiveAsync(MemberSubscription subscription, Guid chapterId);
-
-    bool MembershipIsActive(MemberSubscription subscription, ChapterMembershipSettings membershipSettings);    
+    SubscriptionStatus GetSubscriptionStatus(
+        Member? member,
+        MemberSubscription? subscription, 
+        ChapterMembershipSettings? membershipSettings);   
 }
