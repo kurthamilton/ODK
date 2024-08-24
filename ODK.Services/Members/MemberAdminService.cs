@@ -1,8 +1,6 @@
-﻿using System.Threading.Tasks.Dataflow;
-using ODK.Core;
+﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
-using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Data.Core;
@@ -226,49 +224,87 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id),
                 x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
 
+            if (membershipSettings == null || !membershipSettings.Enabled)
+            {
+                continue;
+            }
+
             var memberSubscriptionDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);            
             foreach (var member in members)
-            {                
+            {
                 if (!memberSubscriptionDictionary.TryGetValue(member.Id, out var memberSubscription))
                 {
                     memberSubscription = new MemberSubscription
                     {
-                        MemberId = member.Id,
                         ChapterId = chapter.Id,
+                        MemberId = member.Id,
                         Type = SubscriptionType.Trial
                     };
                     _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
+                    continue;
                 }
-                else if (memberSubscription.ExpiresUtc < DateTime.UtcNow && 
-                    memberSubscription.ReminderEmailSentUtc < memberSubscription.ExpiresUtc)
+
+                if (memberSubscription.ExpiresUtc == null)
                 {
-                    var disabledDate = memberSubscription.ExpiresUtc.Value
-                        .AddDays(membershipSettings.MembershipDisabledAfterDaysExpired);
-
-                    await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.SubscriptionExpiring,
-                        new Dictionary<string, string>
-                        {
-                            { "member.firstName", member.FirstName },
-                            { "subscription.expiryDate", memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(chapter.TimeZone) },
-                            { "subscription.disabledDate", disabledDate.ToFriendlyDateString(chapter.TimeZone) }
-                        });
-
-                    memberSubscription.ReminderEmailSentUtc = DateTime.UtcNow;
-                    _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
-                    await _unitOfWork.SaveChangesAsync();
+                    continue;
                 }
-                else if (memberSubscription.ExpiresUtc > DateTime.UtcNow)
+
+                var now = DateTime.UtcNow;
+                var expires = memberSubscription.ExpiresUtc.Value;
+                if (expires > now.AddDays(7))
                 {
-                    var warningDays = new[]
-                   {
-                        7, 2
+                    // no need for reminder
+                    continue;
+                }
+
+                var expiring = expires > now;
+                var expired = !expiring;
+                if (expiring && memberSubscription.ReminderEmailSentUtc != null)
+                {
+                    // membership expiring - reminder already sent
+                    continue;
+                }
+
+                if (expired && memberSubscription.ReminderEmailSentUtc > memberSubscription.ExpiresUtc)
+                {
+                    // membership expired - reminder already sent
+                    continue;
+                }
+
+                if (expired && expires < now.AddDays(-7))
+                {
+                    // membership expired more than 7 days ago - no need for reminder
+                    continue;
+                }
+
+                var disabledDate = expires
+                    .AddDays(membershipSettings.MembershipDisabledAfterDaysExpired);
+
+                var properties = new Dictionary<string, string>
+                {
+                    { "chapter.name", chapter.Name },
+                    { "member.firstName", member.FirstName },
+                    { "subscription.expiryDate", expires.ToFriendlyDateString(chapter.TimeZone) },
+                    { "subscription.disabledDate", disabledDate.ToFriendlyDateString(chapter.TimeZone) }
+                };
+
+                var emailType = expiring
+                    ? memberSubscription.Type switch
+                    {
+                        SubscriptionType.Trial => EmailType.TrialExpiring,
+                        _ => EmailType.SubscriptionExpiring
+                    }
+                    : memberSubscription.Type switch
+                    {
+                        SubscriptionType.Trial => EmailType.TrialExpired,
+                        _ => EmailType.SubscriptionExpired
                     };
 
-                    var expiryDays = (DateTime.UtcNow - memberSubscription.ExpiresUtc.Value).TotalDays;
-                    var reminderLastSentDaysAgo = memberSubscription.ReminderEmailSentUtc != null
-                        ? (DateTime.UtcNow - memberSubscription.ReminderEmailSentUtc.Value).TotalDays
-                        : default(double?);
-                }
+                await _emailService.SendEmail(chapter, member.ToEmailAddressee(), emailType, properties);
+
+                memberSubscription.ReminderEmailSentUtc = now;
+                _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
+                await _unitOfWork.SaveChangesAsync();
             }
         }
     }
@@ -421,19 +457,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
-            if (filter.Types.Contains(memberSubscription.Type))
-            {
-                yield return member;
-                continue;
-            }
-
-            if (membershipSettings == null)
-            {
-                continue;
-            }
-
             var status = _authorizationService.GetSubscriptionStatus(member, memberSubscription, membershipSettings);
-            if (filter.Statuses.Contains(status))
+            if (filter.Types.Contains(memberSubscription.Type) &&
+                filter.Statuses.Contains(status))
             {
                 yield return member;
                 continue;

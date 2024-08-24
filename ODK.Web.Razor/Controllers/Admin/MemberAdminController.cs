@@ -114,7 +114,8 @@ public class MemberAdminController : AdminControllerBase
     }
 
     [HttpPost("{chapterName}/Admin/Members/SendEmail")]
-    public async Task<IActionResult> SendBulkEmail(string chapterName, [FromForm] SendMemberBulkEmailFormViewModel viewModel)
+    public async Task<IActionResult> SendBulkEmail(string chapterName, 
+        [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
         var request = await GetAdminServiceRequest(chapterName);
 

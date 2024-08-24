@@ -15,5 +15,7 @@ public enum EmailType
     EventComment = 10,
     DuplicateEmail = 11,
     SubscriptionExpiring = 12,
-    SubscriptionExpired = 13
+    SubscriptionExpired = 13,
+    TrialExpiring = 14,
+    TrialExpired = 15
 }

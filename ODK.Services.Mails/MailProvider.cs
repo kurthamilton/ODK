@@ -61,9 +61,20 @@ public class MailProvider : IMailProvider
             parameters["chapter.name"] = options.Chapter?.Name ?? "";
         }
 
+        var platformBaseUrl = _platformProvider.GetBaseUrl();
+
+        var chapterUrl = options.Chapter != null
+            ? platform == PlatformType.DrunkenKnitwits
+            ? $"{platformBaseUrl}/{options.Chapter.Name}"
+            : $"{platformBaseUrl}/groups/{options.Chapter.Slug}"
+            : null;
+        if (chapterUrl != null)
+        {
+            parameters["chapter.baseurl"] = chapterUrl;
+        }
+
         if (!parameters.ContainsKey("platform.baseurl"))
         {
-            var platformBaseUrl = _platformProvider.GetBaseUrl();
             if (platform == PlatformType.DrunkenKnitwits && options.Chapter != null)
             {
                 platformBaseUrl += $"/{options.Chapter.Name}";

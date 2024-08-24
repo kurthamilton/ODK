@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Events;
 using ODK.Services.Exceptions;
+using ODK.Services.Members;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Web.Common.Config.Settings;
@@ -13,6 +14,7 @@ public class ScheduledTasksController : Controller
 {
     private readonly IEventAdminService _eventAdminService;
     private readonly IInstagramService _instagramService;
+    private readonly IMemberAdminService _memberAdminService;
     private readonly ScheduledTasksSettings _settings;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
 
@@ -20,12 +22,29 @@ public class ScheduledTasksController : Controller
         IEventAdminService eventAdminService,
         IInstagramService instagramService,
         AppSettings settings,
-        ISiteSubscriptionService siteSubscriptionService)
+        ISiteSubscriptionService siteSubscriptionService,
+        IMemberAdminService memberAdminService)
     {
         _eventAdminService = eventAdminService;
         _instagramService = instagramService;
+        _memberAdminService = memberAdminService;
         _settings = settings.ScheduledTasks;
         _siteSubscriptionService = siteSubscriptionService;
+    }
+
+    [HttpPost("chapters/subscriptions/reminders")]
+    public async Task SyncChapterSubscriptionReminders()
+    {
+        AssertAuthorised();
+
+        try
+        {
+            await _memberAdminService.SendMemberSubscriptionReminderEmails();
+        }
+        catch
+        {
+            // do nothing
+        }
     }
 
     [HttpPost("emails")]
