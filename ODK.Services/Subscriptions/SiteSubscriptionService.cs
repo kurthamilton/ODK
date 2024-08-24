@@ -167,7 +167,8 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 var member = await _unitOfWork.MemberRepository.GetById(subscription.MemberId).RunAsync();
                 var subject = "{title} - Subscription Expired";
                 var body = 
-                    "<p>Your subscription has now expired</p>";
+                    "<p>Your subscription has now expired</p>" +
+                    "<p>{platform.baseurl}</p>";
 
                 await _emailService.SendMemberEmail(null, null, member.ToEmailAddressee(), subject, body);
             }

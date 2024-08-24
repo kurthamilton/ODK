@@ -1,6 +1,8 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Emails;
 using ODK.Core.Members;
+using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
@@ -212,6 +214,101 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return await _emailService.SendMemberEmail(chapter, chapterAdminMember, member.ToEmailAddressee(), subject, body);
     }
 
+    public async Task SendMemberSubscriptionReminderEmails()
+    {
+        var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
+        foreach (var chapter in chapters)
+        {
+            var (members, memberSubscriptions, membershipSettings) = await _unitOfWork.RunAsync(
+                x => x.MemberRepository.GetByChapterId(chapter.Id),
+                x => x.MemberSubscriptionRepository.GetByChapterId(chapter.Id),
+                x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
+
+            if (membershipSettings == null || !membershipSettings.Enabled)
+            {
+                continue;
+            }
+
+            var memberSubscriptionDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);            
+            foreach (var member in members)
+            {
+                if (!memberSubscriptionDictionary.TryGetValue(member.Id, out var memberSubscription))
+                {
+                    memberSubscription = new MemberSubscription
+                    {
+                        ChapterId = chapter.Id,
+                        MemberId = member.Id,
+                        Type = SubscriptionType.Trial
+                    };
+                    _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
+                    continue;
+                }
+
+                if (memberSubscription.ExpiresUtc == null)
+                {
+                    continue;
+                }
+
+                var now = DateTime.UtcNow;
+                var expires = memberSubscription.ExpiresUtc.Value;
+                if (expires > now.AddDays(7))
+                {
+                    // no need for reminder
+                    continue;
+                }
+
+                var expiring = expires > now;
+                var expired = !expiring;
+                if (expiring && memberSubscription.ReminderEmailSentUtc != null)
+                {
+                    // membership expiring - reminder already sent
+                    continue;
+                }
+
+                if (expired && memberSubscription.ReminderEmailSentUtc > memberSubscription.ExpiresUtc)
+                {
+                    // membership expired - reminder already sent
+                    continue;
+                }
+
+                if (expired && expires < now.AddDays(-7))
+                {
+                    // membership expired more than 7 days ago - no need for reminder
+                    continue;
+                }
+
+                var disabledDate = expires
+                    .AddDays(membershipSettings.MembershipDisabledAfterDaysExpired);
+
+                var properties = new Dictionary<string, string>
+                {
+                    { "chapter.name", chapter.Name },
+                    { "member.firstName", member.FirstName },
+                    { "subscription.expiryDate", expires.ToFriendlyDateString(chapter.TimeZone) },
+                    { "subscription.disabledDate", disabledDate.ToFriendlyDateString(chapter.TimeZone) }
+                };
+
+                var emailType = expiring
+                    ? memberSubscription.Type switch
+                    {
+                        SubscriptionType.Trial => EmailType.TrialExpiring,
+                        _ => EmailType.SubscriptionExpiring
+                    }
+                    : memberSubscription.Type switch
+                    {
+                        SubscriptionType.Trial => EmailType.TrialExpired,
+                        _ => EmailType.SubscriptionExpired
+                    };
+
+                await _emailService.SendEmail(chapter, member.ToEmailAddressee(), emailType, properties);
+
+                memberSubscription.ReminderEmailSentUtc = now;
+                _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+    }
+
     public async Task SetMemberVisibility(AdminServiceRequest request, Guid memberId, bool visible)
     {
         var chapterId = request.ChapterId;
@@ -360,19 +457,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
-            if (filter.Types.Contains(memberSubscription.Type))
-            {
-                yield return member;
-                continue;
-            }
-
-            if (membershipSettings == null)
-            {
-                continue;
-            }
-
             var status = _authorizationService.GetSubscriptionStatus(member, memberSubscription, membershipSettings);
-            if (filter.Statuses.Contains(status))
+            if (filter.Types.Contains(memberSubscription.Type) &&
+                filter.Statuses.Contains(status))
             {
                 yield return member;
                 continue;

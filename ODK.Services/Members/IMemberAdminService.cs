@@ -30,6 +30,8 @@ public interface IMemberAdminService
 
     Task<ServiceResult> SendMemberEmail(AdminServiceRequest request, Guid memberId, string subject, string body);
 
+    Task SendMemberSubscriptionReminderEmails();
+
     Task SetMemberVisibility(AdminServiceRequest request, Guid memberId, bool visible);
 
     Task<ServiceResult> UpdateMemberImage(AdminServiceRequest request, Guid id,

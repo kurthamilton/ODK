@@ -18,6 +18,9 @@ public class MemberSubscriptionMap : IEntityTypeConfiguration<MemberSubscription
             .HasColumnName("ExpiryDate")
             .HasConversion<NullableUtcDateTimeConverter>();
 
+        builder.Property(x => x.ReminderEmailSentUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.Type)
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
