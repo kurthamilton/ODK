@@ -1,20 +1,28 @@
-﻿@using ODK.Core.Members
+﻿@using ODK.Core.Features
+@using ODK.Core.Members
 @using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
 
 <h2>Bulk email</h2>
-<form method="post" action="/@Model.Chapter.Name/Admin/Members/SendEmail">
-    @Html.AntiForgeryToken()
 
-    <p>
-        <div class="row row-cols-lg-auto g-3 align-items-center">
-            <div class="col-12">
-                <label class="form-label" for="type-filter">Type</label>
-                <select class="form-control" id="type-filter" name="Type" multiple>
-                    @foreach (SubscriptionType type in Enum.GetValues<SubscriptionType>())
-                    {
+@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel
+{
+    Chapter = Model.Chapter,
+    Feature = SiteFeatureType.SendMemberEmails,
+    ContentFunc = 
+        @<form method="post" action="/my/groups/@Model.Chapter.Id/members/emails/send">
+            @Html.AntiForgeryToken()
+
+            <p>
+                <div class="row row-cols-lg-auto g-3 align-items-center">
+                    <div class="col-12">
+                        <label class="form-label" for="type-filter">Type</label>
+                        <select class="form-control" id="type-filter" name="Type" multiple>
+                            @foreach (SubscriptionType type in Enum.GetValues<SubscriptionType>())
+                        {
                         if (type == SubscriptionType.None)
                         {
-                            continue;
+                        continue;
                         }
 
                         if (type != SubscriptionType.Alum)
@@ -25,17 +33,17 @@
                         {
                             <option>@type</option>
                         }
-                    }
-                </select>
-            </div>
-            <div class="col-12">
-                <label class="form-label" for="status-filter">Subscription status</label>
-                <select class="form-control" id="status-filter" name="Status" multiple>
-                    @foreach (SubscriptionStatus status in Enum.GetValues<SubscriptionStatus>())
-                    {
+                        }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="status-filter">Subscription status</label>
+                        <select class="form-control" id="status-filter" name="Status" multiple>
+                            @foreach (SubscriptionStatus status in Enum.GetValues<SubscriptionStatus>())
+                        {
                         if (status == SubscriptionStatus.None)
                         {
-                            continue;
+                        continue;
                         }
 
                         if (status != SubscriptionStatus.Disabled)
@@ -46,12 +54,13 @@
                         {
                             <option>@status</option>
                         }
-                    }
-                </select>
-            </div>
-        </div>
-    </p>
+                        }
+                        </select>
+                    </div>
+                </div>
+            </p>
 
-    @await Html.PartialAsync("Admin/Members/_SendMemberEmailForm", new SendMemberEmailFormViewModel())
-    <button type="submit" class="btn btn-primary">Send</button>
-</form>
+            @await Html.PartialAsync("Admin/Members/_SendMemberEmailForm", new SendMemberEmailFormViewModel())
+            <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+})

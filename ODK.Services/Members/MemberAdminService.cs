@@ -1,6 +1,7 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Utils;
 using ODK.Data.Core;
@@ -82,7 +83,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 "LastName",
                 "Joined",
                 "Activated",
-                "Disabled",
                 "EmailOptIn",
                 "SubscriptionExpiryDate",
                 "SubscriptionType"
@@ -103,7 +103,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 member.LastName,
                 member.MemberChapter(request.ChapterId).CreatedUtc.ToString("yyyy-MM-dd"),
                 member.Activated ? "Y" : "",
-                member.Disabled ? "Y" : "",
                 member.EmailOptIn ? "Y" : "",
                 subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "",
                 subscription?.Type.ToString() ?? ""
@@ -190,12 +189,19 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
 
-        var (chapterAdminMember, chapter, members, memberSubscriptions, membershipSettings) = await GetChapterAdminRestrictedContent(request,
+        var (chapterAdminMember, chapter, members, memberSubscriptions, membershipSettings, subscription) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetByChapterId(chapterId),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
+
+        var authorized = _authorizationService.ChapterHasAccess(subscription.SiteSubscription, SiteFeatureType.SendMemberEmails);
+        if (!authorized)
+        {
+            return ServiceResult.Unauthorized(SiteFeatureType.SendMemberEmails);
+        }
 
         var filteredMembers = FilterMembers(members, memberSubscriptions, membershipSettings, filter);
 
@@ -206,10 +212,17 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task<ServiceResult> SendMemberEmail(AdminServiceRequest request, Guid memberId, string subject, string body)
     {
-        var (chapter, chapterAdminMember, member) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, chapterAdminMember, member, subscription) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByMemberId(request.CurrentMemberId, request.ChapterId),
-            x => x.MemberRepository.GetById(memberId));
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
+
+        var authorized = _authorizationService.ChapterHasAccess(subscription.SiteSubscription, SiteFeatureType.SendMemberEmails);
+        if (!authorized)
+        {
+            return ServiceResult.Unauthorized(SiteFeatureType.SendMemberEmails);
+        }
 
         return await _emailService.SendMemberEmail(chapter, chapterAdminMember, member.ToEmailAddressee(), subject, body);
     }

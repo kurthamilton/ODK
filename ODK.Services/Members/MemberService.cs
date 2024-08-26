@@ -5,6 +5,7 @@ using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
 using ODK.Core.Emails;
 using ODK.Core.Extensions;
+using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
@@ -150,13 +151,14 @@ public class MemberService : IMemberService
     public async Task<ServiceResult> CreateChapterAccount(Guid chapterId, CreateMemberProfile model)
     {
         var platform = _platformProvider.GetPlatform();
-        var (chapter, chapterProperties, membershipSettings, existing, siteSettings, siteSubscription) = await _unitOfWork.RunAsync(
+        var (chapter, chapterProperties, membershipSettings, existing, siteSettings, siteSubscription, ownerSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSettingsRepository.Get(),
-            x => x.SiteSubscriptionRepository.GetDefault(platform));
+            x => x.SiteSubscriptionRepository.GetDefault(platform),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
 
         var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapterId);
         
@@ -187,7 +189,6 @@ public class MemberService : IMemberService
         {
             Activated = false,
             CreatedUtc = now,
-            Disabled = false,
             EmailAddress = model.EmailAddress,
             EmailOptIn = model.EmailOptIn ?? false,
             FirstName = model.FirstName,
@@ -203,7 +204,7 @@ public class MemberService : IMemberService
             .Select(x => x.ToMemberProperty(member.Id))
             .ToArray();
 
-        AddMemberToChapter(now, member, chapter, memberProperties, membershipSettings);
+        AddMemberToChapter(now, member, chapter, memberProperties, membershipSettings, ownerSubscription);
 
         if (chapterLocation != null)
         {
@@ -391,16 +392,14 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("You are already a member of this group");
         }        
 
-        var (ownerSubscriptions, members, chapterProperties, chapterPropertyOptions, membershipSettings) = await _unitOfWork.RunAsync(
-            x => chapter.OwnerId != null 
-                ? x.MemberSiteSubscriptionRepository.GetByMemberId(chapter.OwnerId.Value)
-                : new DefaultDeferredQueryMultiple<MemberSiteSubscription>(),
+        var (ownerSubscription, members, chapterProperties, chapterPropertyOptions, membershipSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetCountByChapterId(chapter.Id),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
 
-        var registrationResult = ChapterIsOpenForRegistration(platform, members, ownerSubscriptions);
+        var registrationResult = ChapterIsOpenForRegistration(platform, members, ownerSubscription);
         if (!registrationResult.Success)
         {
             return registrationResult;
@@ -416,7 +415,7 @@ public class MemberService : IMemberService
             .Select(x => x.ToMemberProperty(currentMember.Id))
             .ToArray();
 
-        AddMemberToChapter(DateTime.UtcNow, currentMember, chapter, memberProperties, membershipSettings);
+        AddMemberToChapter(DateTime.UtcNow, currentMember, chapter, memberProperties, membershipSettings, ownerSubscription);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -863,14 +862,9 @@ public class MemberService : IMemberService
     private static ServiceResult ChapterIsOpenForRegistration(
         PlatformType platform, 
         int members, 
-        IReadOnlyCollection<MemberSiteSubscription> ownerSusbcriptions)
+        MemberSiteSubscription? ownerSubscription)
     {
-        ownerSusbcriptions = ownerSusbcriptions
-            .Where(x => !x.IsExpired() && (platform == PlatformType.Default || x.SiteSubscription.Platform == platform))
-            .ToArray();
-
-        if (ownerSusbcriptions
-            .Any(x => x.SiteSubscription.MemberLimit == null || members < x.SiteSubscription.MemberLimit.Value))
+        if (ownerSubscription?.SiteSubscription.HasCapacity(members) == true)
         {
             return ServiceResult.Successful();
         }
@@ -926,7 +920,8 @@ public class MemberService : IMemberService
         Member member, 
         Chapter chapter, 
         IEnumerable<MemberProperty> memberProperties, 
-        ChapterMembershipSettings? membershipSettings)
+        ChapterMembershipSettings? membershipSettings,
+        MemberSiteSubscription? ownerSubscription)
     {
         _unitOfWork.MemberChapterRepository.Add(new MemberChapter
         {
@@ -935,13 +930,18 @@ public class MemberService : IMemberService
             ChapterId = chapter.Id
         });
 
-        _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
+        var hasSubscriptions = _authorizationService
+            .ChapterHasAccess(ownerSubscription?.SiteSubscription, SiteFeatureType.MemberSubscriptions);
+        if (hasSubscriptions && membershipSettings?.Enabled == true)
         {
-            ChapterId = chapter.Id,
-            ExpiresUtc = membershipSettings?.TrialPeriodMonths > 0 ? now.AddMonths(membershipSettings.TrialPeriodMonths) : null,
-            MemberId = member.Id,
-            Type = membershipSettings?.TrialPeriodMonths > 0 ? SubscriptionType.Trial : SubscriptionType.Full
-        });
+            _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
+            {
+                ChapterId = chapter.Id,
+                ExpiresUtc = membershipSettings?.TrialPeriodMonths > 0 ? now.AddMonths(membershipSettings.TrialPeriodMonths) : null,
+                MemberId = member.Id,
+                Type = membershipSettings?.TrialPeriodMonths > 0 ? SubscriptionType.Trial : SubscriptionType.Full
+            });
+        }        
 
         _unitOfWork.MemberPropertyRepository.AddMany(memberProperties);
     }

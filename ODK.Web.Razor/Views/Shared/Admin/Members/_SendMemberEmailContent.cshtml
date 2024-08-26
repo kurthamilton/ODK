@@ -1,10 +1,20 @@
-﻿@using ODK.Web.Razor.Models.Admin.Members
+﻿@using ODK.Core.Features
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
-<form method="post" action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/SendEmail">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Members/_SendMemberEmailForm", new SendMemberEmailFormViewModel())
-    <button type="submit" class="btn btn-primary">Send</button>
-</form>
+@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel
+{
+    Chapter = Model.Chapter,
+    ContentFunc = 
+        @<div>
+            <form method="post" action="/my/groups/@Model.Chapter.Id/members/@Model.Member.Id/emails/send">
+                @Html.AntiForgeryToken()
+                @await Html.PartialAsync("Admin/Members/_SendMemberEmailForm", new SendMemberEmailFormViewModel())
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
+        </div>,
+    Feature = SiteFeatureType.SendMemberEmails
+})

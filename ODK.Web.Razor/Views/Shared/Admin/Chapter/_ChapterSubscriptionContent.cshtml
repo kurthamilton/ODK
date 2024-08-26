@@ -8,12 +8,6 @@
 @using ODK.Web.Razor.Models.Payments
 @model ChapterSubscriptionViewModel
 @{
-    var memberId = User.MemberId();
-    if (Model.Chapter.OwnerId != memberId)
-    {
-        return;
-    }
-
     var subscription = Model.Current;
 }
 

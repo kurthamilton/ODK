@@ -12,9 +12,14 @@
     Layout = "Admin/Chapters/_ChapterAdminLayout";
     Model.Title = "Subscription | Admin";
 
-    var memberId = User.MemberId();
-    var subscription = await SiteSubscriptionService.GetMemberSiteSubscription(memberId);
-    var siteSubscriptions = await SiteSubscriptionService.GetSiteSubscriptionsDto(memberId, Model.Chapter.Id);
+    var memberId = Model.Chapter.OwnerId;
+    if (memberId == null)
+    {
+        return;
+    }
+
+    var subscription = await SiteSubscriptionService.GetMemberSiteSubscription(memberId.Value);
+    var siteSubscriptions = await SiteSubscriptionService.GetSiteSubscriptionsDto(memberId.Value, Model.Chapter.Id);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

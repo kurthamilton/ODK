@@ -1,0 +1,16 @@
+﻿@using ODK.Services.Authorization
+@using ODK.Web.Razor.Models.Components
+@model RestrictedFeatureViewModel
+@inject IAuthorizationService AuthorizationService
+@{
+    var authorized = await AuthorizationService.ChapterHasAccess(Model.Chapter, Model.Feature);
+}
+
+@if (authorized)
+{
+    @Model.ContentFunc?.Invoke(null)
+}
+else
+{
+    @Model.DisabledContentFunc?.Invoke(null)
+}

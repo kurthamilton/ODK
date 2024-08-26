@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Members;
@@ -67,10 +68,11 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/{id:guid}/SendEmail")]
-    public async Task<IActionResult> SendEmail(string chapterName, Guid id, [FromForm] SendMemberEmailFormViewModel viewModel)
+    [HttpPost("my/groups/{chapterId:guid}/members/{id:guid}/emails/send")]
+    public async Task<IActionResult> SendEmail(Guid chapterId, Guid id, 
+        [FromForm] SendMemberEmailFormViewModel viewModel)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new AdminServiceRequest(chapterId, MemberId);
         var result = await _memberAdminService.SendMemberEmail(request, id, viewModel.Subject, viewModel.Body);
         AddFeedback(result, "Email sent");
         return RedirectToReferrer();
@@ -113,11 +115,11 @@ public class MemberAdminController : AdminControllerBase
         return DownloadCsv(data, $"Members.{DateTime.UtcNow:yyyyMMdd}.csv");
     }
 
-    [HttpPost("{chapterName}/Admin/Members/SendEmail")]
-    public async Task<IActionResult> SendBulkEmail(string chapterName, 
+    [HttpPost("my/groups/{chapterId:guid}/members/emails/send")]
+    public async Task<IActionResult> SendBulkEmail(Guid chapterId, 
         [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new AdminServiceRequest(chapterId, MemberId);
 
         var filter = new MemberFilter
         {

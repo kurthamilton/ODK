@@ -13,8 +13,6 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public DateTime CreatedUtc { get; set; }
 
-    public bool Disabled { get; set; }
-
     public string EmailAddress { get; set; } = "";
 
     public bool EmailOptIn { get; set; }
@@ -49,11 +47,6 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
             name += " [HIDDEN]";
         }
 
-        if (Disabled)
-        {
-            name += " [DISABLED]";
-        }
-
         return name;
     }
 
@@ -63,7 +56,7 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public bool IsMemberOf(Guid chapterId) => Chapters.Any(x => x.ChapterId == chapterId);
 
-    public bool IsCurrent() => Activated && !Disabled;
+    public bool IsCurrent() => Activated;
 
     public bool SharesChapterWith(Member other) => other.Chapters.Any(x => IsMemberOf(x.ChapterId));
 

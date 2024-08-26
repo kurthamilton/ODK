@@ -29,4 +29,6 @@ public class SiteSubscription : IDatabaseEntity
     public bool Premium { get; set; }
 
     public bool SendMemberEmails { get; set; }
+
+    public bool HasCapacity(int memberCount) => MemberLimit == null || memberCount < MemberLimit;
 }

@@ -1,12 +1,27 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Events;
+using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Core.Venues;
+using ODK.Data.Core;
 
 namespace ODK.Services.Authorization;
 
 public class AuthorizationService : IAuthorizationService
-{    
+{
+    private readonly IPlatformProvider _platformProvider;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public AuthorizationService(
+        IUnitOfWork unitOfWork,
+        IPlatformProvider platformProvider)
+    {
+        _platformProvider = platformProvider;
+        _unitOfWork = unitOfWork;
+    }
+
     public bool CanRespondToEvent(
         Event @event,
         Member? member,
@@ -47,6 +62,30 @@ public class AuthorizationService : IAuthorizationService
         var memberVisibility = GetMemberVisibilityType(venue.ChapterId, member, subscription, membershipSettings);
         var venueVisibility = privacySettings?.VenueVisibility ?? ChapterFeatureVisibilityType.ActiveMembers;
         return memberVisibility.CanView(venueVisibility);
+    }
+
+    public async Task<bool> ChapterHasAccess(
+        Chapter chapter,
+        SiteFeatureType feature)
+    {
+        var ownerSubscription = await _unitOfWork.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id).RunAsync();
+
+        return ChapterHasAccess(ownerSubscription?.SiteSubscription, feature);
+    }
+
+    public bool ChapterHasAccess(
+        SiteSubscription? ownerSubscription,
+        SiteFeatureType feature)
+    {
+        switch (feature)
+        {
+            case SiteFeatureType.MemberSubscriptions:
+                return ownerSubscription?.MemberSubscriptions == true;
+            case SiteFeatureType.SendMemberEmails:
+                return ownerSubscription?.SendMemberEmails == true;
+            default:
+                return false;
+        }
     }
 
     public SubscriptionStatus GetSubscriptionStatus(

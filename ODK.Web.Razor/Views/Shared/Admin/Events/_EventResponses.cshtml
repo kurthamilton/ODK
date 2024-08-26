@@ -19,7 +19,7 @@
     var (members, responses) = (dto.Members, dto.Responses);
 
     var memberDictionary = members
-        .Where(x => !x.Disabled)
+        .Where(x => x.IsCurrent())
         .ToDictionary(x => x.Id);
     var responseDictionary = responses
         .GroupBy(x => x.Type)

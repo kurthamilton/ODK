@@ -276,7 +276,7 @@ public class AuthenticationService : IAuthenticationService
         var member = await _unitOfWork.MemberRepository
             .GetByEmailAddress(emailAddress)
             .RunAsync();
-        if (member == null || member.Disabled)
+        if (member == null)
         {
             // return fake success to avoid leaking valid email addresses
             return ServiceResult.Successful();
