@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
-using ODK.Web.Razor.Models.SuperAdmin;
+using ODK.Web.Razor.Models.Chapters.SuperAdmin;
 
 namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
 

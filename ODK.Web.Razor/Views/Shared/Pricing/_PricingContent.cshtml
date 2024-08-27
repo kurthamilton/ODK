@@ -8,7 +8,9 @@
         .OrderBy(subscription => subscription.Prices.Min(x => x.Amount))
         .ToArray();
 
-    var currency = Model.Currency ?? Model.Currencies.FirstOrDefault();
+    var currency = Model.Currency 
+        ?? Model.Currencies.FirstOrDefault() 
+        ?? Model.Subscriptions.SelectMany(x => x.Prices).Select(x => x.Currency).FirstOrDefault();
     if (currency == null || Model.PaymentSettings?.Provider == null)
     {
         return;
@@ -56,7 +58,6 @@
                                     @await Html.PartialAsync("Pricing/_SubscriptionPrice", new SiteSubscriptionPriceViewModel
                                     {
                                         Amount = price.Amount,
-                                        Chapter = Model.Chapter,
                                         Currency = currency,
                                         Frequency = price.Frequency,
                                         ExternalId = price.ExternalId,

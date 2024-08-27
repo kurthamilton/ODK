@@ -2,5 +2,5 @@
 
 public class PaymentsSettings
 {
-    public string PayPalApiBaseUrl { get; set; } = "";
+    public required PaymentsPayPalSettings PayPal { get; set; }
 }

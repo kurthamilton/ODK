@@ -1,0 +1,24 @@
+﻿@page "/account/subscription"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Account.SubscriptionModel
+@{
+    Layout = "_HomeLayout";
+    Model.Title = "Subscription";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Subscription",
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = OdkRoutes.Account.Subscription(null),
+        Content =
+            @<div>
+                @await Html.PartialAsync("Account/_SiteSubscriptionContent")
+            </div>
+    })
+})

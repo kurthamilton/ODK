@@ -2,7 +2,7 @@
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
-@model PaymentModalViewModel
+@model PaymentSubscriptionModalViewModel
 
 @await Html.PartialAsync("Components/_Modal", new ModalViewModel
 {
@@ -15,7 +15,7 @@
             <form method="post" action="@Model.Action">
                 @Html.AntiForgeryToken()
                 @Model.FormContentFunc?.Invoke(null)
-                @await Html.PartialAsync("Payments/_PayPalForm", Model.PaymentForm)
+                @await Html.PartialAsync("Payments/_PaymentSubscriptionForm", Model.PaymentForm)
             </form>
         }
         else

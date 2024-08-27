@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Emails;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Settings;
 using ODK.Data.Core;
@@ -77,6 +78,12 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
     {
         var platform = _platformProvider.GetPlatform();
         return await _unitOfWork.SiteEmailSettingsRepository.Get(platform).RunAsync();
+    }    
+
+    public async Task<SitePaymentSettings> GetSitePaymentSettings(Guid currentMemberId)
+    {
+        return await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.SitePaymentSettingsRepository.Get());
     }
 
     public async Task<ServiceResult> UpdateEmailSettings(Guid currentMemberId, 
@@ -101,19 +108,6 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent)
-    {
-        var settings = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.SiteSettingsRepository.Get());
-
-        settings.InstagramScraperUserAgent = scraperUserAgent;
-
-        _unitOfWork.SiteSettingsRepository.Update(settings);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
     public async Task<ServiceResult> UpdateEmailProvider(Guid currentMemberId, Guid emailProviderId, UpdateEmailProvider model)
     {
         var provider = await GetEmailProvider(currentMemberId, emailProviderId);
@@ -132,6 +126,33 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         }
 
         _unitOfWork.EmailProviderRepository.Update(provider);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent)
+    {
+        var settings = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.SiteSettingsRepository.Get());
+
+        settings.InstagramScraperUserAgent = scraperUserAgent;
+
+        _unitOfWork.SiteSettingsRepository.Update(settings);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdatePaymentSettings(Guid currentMemberId, string publicKey, string secretKey)
+    {
+        var settings = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.SitePaymentSettingsRepository.Get());
+
+        settings.ApiPublicKey = publicKey;
+        settings.ApiSecretKey = secretKey;
+
+        _unitOfWork.SitePaymentSettingsRepository.Update(settings);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();

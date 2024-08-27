@@ -3,7 +3,7 @@ using ODK.Core.Payments;
 
 namespace ODK.Web.Razor.Models.Payments;
 
-public class PaymentModalViewModel
+public class PaymentSubscriptionModalViewModel
 {
     public required string Action { get; init; }    
 
@@ -11,7 +11,7 @@ public class PaymentModalViewModel
 
     public required string Id { get; init; }
 
-    public required PaymentFormViewModel PaymentForm { get; init; }
+    public required PaymentSubscriptionFormViewModel PaymentForm { get; init; }
 
     public required IPaymentSettings? PaymentSettings { get; init; }
 

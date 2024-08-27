@@ -112,12 +112,18 @@ public class ErrorHandlingMiddleware
         else
         {
             var chapterName = originalPathParts[1];
-            var chapter = await requestCache.GetChapterAsync(chapterName);
-            if (chapter != null)
+            try
             {
-                return $"/{chapter.Name}/error/{statusCode}";
+                var chapter = await requestCache.GetChapterAsync(chapterName);
+                if (chapter != null)
+                {
+                    return $"/{chapter.Name}/error/{statusCode}";
+                }
             }
-            
+            catch
+            {
+                return defaultPath;
+            }            
         }        
 
         return defaultPath;

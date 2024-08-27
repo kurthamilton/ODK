@@ -1,0 +1,141 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Countries
+@using ODK.Core.Extensions
+@using ODK.Core.Members
+@using ODK.Core.Subscriptions
+@using ODK.Core.Utils
+@using ODK.Services.Chapters
+@using ODK.Services.Members
+@using ODK.Services.Subscriptions
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
+@inject ISiteSubscriptionService SiteSubscriptionService
+@{
+    var memberId = User.MemberId();
+    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto(memberId);
+    
+    var (currency, currentMember, memberSubscription, subscriptions, paymentSettings) = 
+        (dto.Currency, dto.CurrentMember, dto.CurrentMemberSubscription, dto.Subscriptions, dto.PaymentSettings!);
+}
+
+@if (currency == null)
+{
+    var currencyOptions = dto.Currencies
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = $"{x.Code} ({x.Symbol})" })
+        .OrderBy(x => x.Text)
+        .ToArray();
+
+    <form action="/account/currency" method="post">
+        @Html.AntiForgeryToken()
+        <div class="form-group mb-3 required">
+            @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
+            @Html.DropDownList("currencyId", currencyOptions, "", new 
+            { 
+                @class = "form-select", 
+                data_val = "true", 
+                data_val_required = "The Currency field is required" 
+            })
+            @Html.ValidationMessage("currencyId")
+        </div>
+
+        <button class="btn btn-primary">Update</button>
+    </form>
+    return;
+}
+
+<div class="form-group mb-3">
+    <label class="form-label">Current subscription</label>
+    <div class="form-control-plaintext">
+        @(memberSubscription?.SiteSubscription.Name ?? "-")
+    </div>
+</div>
+
+<div class="form-group mb-3">
+    <label class="form-label">Next payment date</label>
+    <div class="form-control-plaintext">
+        @if (memberSubscription?.ExpiresUtc != null)
+        {
+            <span>
+                @memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
+            </span>
+        }
+        else
+        {
+            <span>-</span>
+        }
+    </div>
+</div>
+
+@if (dto.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid != true)
+{
+    <h3>Upgrade</h3>
+    
+    <div class="d-flex gap-3">
+        @foreach (var subscriptionDto in subscriptions)
+        {
+            var subscription = subscriptionDto.Subscription;
+            var prices = subscriptionDto.Prices
+                .Where(x => x.IsPaid)
+                .OrderByDescending(x => x.Amount)
+                .ToArray();
+            if (prices.Length == 0)
+            {
+                continue;
+            }
+
+            <div class="mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@subscription.Name</h5>
+                        <div class="card-text">
+                            @Html.Raw(subscription.Description)
+
+                            <div class="d-flex flex-column gap-3">
+                                @foreach (var price in prices)
+                                {
+                                    var modalId = $"payment-modal-upgrade-{price.Id}";
+                                    var periodUnit = price.Frequency.PeriodUnit();
+
+                                    <div class="d-flex align-items-center gap-1">
+                                        <button class="btn btn-primary mr-1" data-bs-toggle="modal" data-bs-target="#@modalId">
+                                            Subscribe
+                                        </button>
+                                        <span>@price.Currency.ToAmountString(price.Amount)/@periodUnit</span>
+                    
+                                        @await Html.PartialAsync("Payments/_PaymentSubscriptionModal", new PaymentSubscriptionModalViewModel
+                                        {
+                                            Action = "/account/subscription/confirm",
+                                            PaymentSettings = dto.PaymentSettings,
+                                            FormContentFunc =
+                                                @<input type="hidden" name="siteSubscriptionPriceId" value="@price.Id" />,
+                                            Id = modalId,
+                                            PaymentForm = new PaymentSubscriptionFormViewModel
+                                            {
+                                                CurrencyCode = price.Currency.Code,
+                                                ExternalId = price.ExternalId,
+                                                Provider = paymentSettings.Provider,
+                                                SiteSubscriptionPriceId = price.Id
+                                            },
+                                            Title = subscriptionDto.Subscription.Name
+                                        })
+
+                                    </div>
+                                }
+                            </div>
+                        </div>                        
+                    </div>
+                </div>
+            </div>              
+        }
+    </div>
+}
+
+@await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+{
+    ApiPublicKey = paymentSettings.ApiPublicKey ?? "",
+    CurrencyCode = "",
+    IsSubscription = true,
+    Provider = paymentSettings.Provider ?? default
+})

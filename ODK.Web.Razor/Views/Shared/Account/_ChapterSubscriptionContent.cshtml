@@ -8,7 +8,7 @@
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
-@model ODK.Web.Razor.Models.Account.SubscriptionContentViewModel
+@model ODK.Web.Razor.Models.Account.ChapterSubscriptionContentViewModel
 @inject IChapterService ChapterService
 @{
     var memberId = User.MemberId();
@@ -70,7 +70,7 @@
                     @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                     {
                         Action = $"/Chapters/{Model.Chapter.Id}/Account/Subscription/Purchase",
-                        ChapterPaymentSettings = Model.ChapterPaymentSettings,
+                        PaymentSettings = Model.ChapterPaymentSettings,
                         FormContentFunc =
                             @<input type="hidden" name="subscriptionId" value="@chapterSubscription.Id" />,
                         Id = modalId,

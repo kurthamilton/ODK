@@ -496,7 +496,7 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId,
+    public async Task<ServiceResult> PurchaseChapterSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId,
         string cardToken)
     {
         var (member, chapterSubscription, memberSubscription) = await _unitOfWork.RunAsync(
@@ -563,7 +563,7 @@ public class MemberService : IMemberService
         });
 
         return ServiceResult.Successful();
-    }        
+    }
 
     public async Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, Guid chapterId, string newEmailAddress)
     {
@@ -743,6 +743,39 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
     
+    public async Task<ServiceResult> UpdateMemberCurrency(Guid id, Guid currencyId)
+    {
+        var (currency, paymentSettings) = await _unitOfWork.RunAsync(
+            x => x.CurrencyRepository.GetByIdOrDefault(currencyId),
+            x => x.MemberPaymentSettingsRepository.GetByMemberId(id));
+
+        if (currency == null)
+        {
+            return ServiceResult.Failure("Invalid currency");
+        }
+
+        if (paymentSettings == null)
+        {
+            paymentSettings = new MemberPaymentSettings();
+        }
+        
+        paymentSettings.CurrencyId = currencyId;
+
+        if (paymentSettings.MemberId == default)
+        {
+            paymentSettings.MemberId = id;
+            _unitOfWork.MemberPaymentSettingsRepository.Add(paymentSettings);
+        }
+        else
+        {
+            _unitOfWork.MemberPaymentSettingsRepository.Update(paymentSettings);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId)
     {
         var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(id);

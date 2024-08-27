@@ -91,26 +91,24 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             .RunAsync();
     }
 
-    public async Task<SiteSubscriptionsDto> GetSiteSubscriptionsDto(Guid? memberId, Guid? chapterId)
+    public async Task<SiteSubscriptionsDto> GetSiteSubscriptionsDto(Guid? memberId)
     {
         var platform = _platformProvider.GetPlatform();
-        var (chapter, subscriptions, prices, memberPaymentSettings, chapterPaymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
-            x => chapterId != null
-                ? x.ChapterRepository.GetByIdOrDefault(chapterId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Chapter>(),
+        var (sitePaymentSettings, subscriptions, prices, currentMember, memberPaymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.Get(),
             x => x.SiteSubscriptionRepository.GetAllEnabled(platform),
             x => x.SiteSubscriptionPriceRepository.GetAllEnabled(platform),
+            x => memberId != null
+                ? x.MemberRepository.GetByIdOrDefault(memberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => memberId != null 
                 ? x.MemberPaymentSettingsRepository.GetByMemberId(memberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<MemberPaymentSettings>(),
-            x => chapterId != null 
-                ? x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<ChapterPaymentSettings>(),
             x => memberId != null
                 ? x.MemberSiteSubscriptionRepository.GetByMemberId(memberId.Value, platform)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscription>());        
 
-        var currency = chapterPaymentSettings?.Currency ?? memberPaymentSettings?.Currency;
+        var currency = memberPaymentSettings?.Currency;
 
         var currencies = prices
             .Where(x => currency == null || x.CurrencyId == currency.Id)
@@ -125,11 +123,11 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         return new SiteSubscriptionsDto
         {
-            Chapter = chapter,
             Currencies = currencies,            
             Currency = currency,
+            CurrentMember = currentMember,
             CurrentMemberSubscription = memberSubscription,
-            PaymentSettings = (IPaymentSettings?)chapterPaymentSettings ?? memberPaymentSettings,
+            PaymentSettings = sitePaymentSettings,
             Subscriptions = subscriptions
                 .Select(x => new SiteSubscriptionDto
                 {
