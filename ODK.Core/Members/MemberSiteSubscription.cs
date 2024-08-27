@@ -1,4 +1,5 @@
-﻿using ODK.Core.Payments;
+﻿using ODK.Core.Features;
+using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 
 namespace ODK.Core.Members;
@@ -22,6 +23,8 @@ public class MemberSiteSubscription : IDatabaseEntity
     public SiteSubscriptionPrice? SiteSubscriptionPrice { get; set; }
 
     public Guid? SiteSubscriptionPriceId { get; set; }
+
+    public bool HasFeature(SiteFeatureType feature) => !IsExpired() && SiteSubscription.HasFeature(feature);
 
     public bool IsExpired()
     {

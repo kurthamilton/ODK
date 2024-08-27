@@ -1,4 +1,5 @@
-﻿using ODK.Core.Platforms;
+﻿using ODK.Core.Features;
+using ODK.Core.Platforms;
 
 namespace ODK.Core.Subscriptions;
 
@@ -31,4 +32,24 @@ public class SiteSubscription : IDatabaseEntity
     public bool SendMemberEmails { get; set; }
 
     public bool HasCapacity(int memberCount) => MemberLimit == null || memberCount < MemberLimit;
+
+    public IEnumerable<SiteFeatureType> Features()
+    {
+        if (MemberSubscriptions)
+        {
+            yield return SiteFeatureType.MemberSubscriptions;
+        }
+
+        if (Premium)
+        {
+            yield return SiteFeatureType.InstagramFeed;
+        }
+
+        if (SendMemberEmails)
+        {
+            yield return SiteFeatureType.SendMemberEmails;
+        }
+    }
+
+    public bool HasFeature(SiteFeatureType feature) => Features().Contains(feature);
 }

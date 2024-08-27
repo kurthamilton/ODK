@@ -197,7 +197,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
 
-        var authorized = _authorizationService.ChapterHasAccess(subscription.SiteSubscription, SiteFeatureType.SendMemberEmails);
+        var authorized = _authorizationService.ChapterHasAccess(subscription, SiteFeatureType.SendMemberEmails);
         if (!authorized)
         {
             return ServiceResult.Unauthorized(SiteFeatureType.SendMemberEmails);
@@ -218,7 +218,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
 
-        var authorized = _authorizationService.ChapterHasAccess(subscription.SiteSubscription, SiteFeatureType.SendMemberEmails);
+        var authorized = _authorizationService.ChapterHasAccess(subscription, SiteFeatureType.SendMemberEmails);
         if (!authorized)
         {
             return ServiceResult.Unauthorized(SiteFeatureType.SendMemberEmails);

@@ -3,14 +3,27 @@
 @model RestrictedFeatureViewModel
 @inject IAuthorizationService AuthorizationService
 @{
-    var authorized = await AuthorizationService.ChapterHasAccess(Model.Chapter, Model.Feature);
+    var authorized = Model.OwnerSubscription != null 
+        ? AuthorizationService.ChapterHasAccess(Model.OwnerSubscription, Model.Feature)
+        : Model.Chapter != null 
+        ? await AuthorizationService.ChapterHasAccess(Model.Chapter, Model.Feature)
+        : false;
 }
 
 @if (authorized)
 {
-    @Model.ContentFunc?.Invoke(null)
+    @if (Model.Content != null)
+    {
+        @Model.Content
+    }
+
+    @if (Model.ContentFunc != null)
+    {
+        @Model.ContentFunc.Invoke(null)
+    }    
 }
 else
 {
+    @await Html.PartialAsync("Components/_UpgradeButton")
     @Model.DisabledContentFunc?.Invoke(null)
 }

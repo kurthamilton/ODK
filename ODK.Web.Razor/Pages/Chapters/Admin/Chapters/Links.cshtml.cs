@@ -25,9 +25,9 @@ public class LinksModel : AdminPageModel
         var serviceRequest = await GetAdminServiceRequest();
         await _chapterAdminService.UpdateChapterLinks(serviceRequest, new UpdateChapterLinks
         {
-            Facebook = viewModel.Facebook,
-            Instagram = viewModel.Instagram,
-            Twitter = viewModel.Twitter
+            Facebook = viewModel.Facebook ?? "",
+            Instagram = viewModel.Instagram ?? "",
+            Twitter = viewModel.Twitter ?? ""
         });
 
         AddFeedback(new FeedbackViewModel("Links updated", FeedbackType.Success));

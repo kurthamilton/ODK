@@ -70,23 +70,12 @@ public class AuthorizationService : IAuthorizationService
     {
         var ownerSubscription = await _unitOfWork.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id).RunAsync();
 
-        return ChapterHasAccess(ownerSubscription?.SiteSubscription, feature);
+        return ChapterHasAccess(ownerSubscription, feature);
     }
 
     public bool ChapterHasAccess(
-        SiteSubscription? ownerSubscription,
-        SiteFeatureType feature)
-    {
-        switch (feature)
-        {
-            case SiteFeatureType.MemberSubscriptions:
-                return ownerSubscription?.MemberSubscriptions == true;
-            case SiteFeatureType.SendMemberEmails:
-                return ownerSubscription?.SendMemberEmails == true;
-            default:
-                return false;
-        }
-    }
+        MemberSiteSubscription? ownerSubscription,
+        SiteFeatureType feature) => ownerSubscription?.HasFeature(feature) == true;
 
     public SubscriptionStatus GetSubscriptionStatus(
         Member? member,

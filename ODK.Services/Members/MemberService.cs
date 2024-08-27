@@ -964,7 +964,7 @@ public class MemberService : IMemberService
         });
 
         var hasSubscriptions = _authorizationService
-            .ChapterHasAccess(ownerSubscription?.SiteSubscription, SiteFeatureType.MemberSubscriptions);
+            .ChapterHasAccess(ownerSubscription, SiteFeatureType.MemberSubscriptions);
         if (hasSubscriptions && membershipSettings?.Enabled == true)
         {
             _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription

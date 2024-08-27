@@ -2,12 +2,12 @@
 @using ODK.Core.Members
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
+@model MemberViewModel
 
 <h2>Bulk email</h2>
 
-@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel
+@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.Chapter)
 {
-    Chapter = Model.Chapter,
     Feature = SiteFeatureType.SendMemberEmails,
     ContentFunc = 
         @<form method="post" action="/my/groups/@Model.Chapter.Id/members/emails/send">

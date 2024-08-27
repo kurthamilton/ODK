@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 using ODK.Core.Chapters;
+using ODK.Core.Features;
 using ODK.Core.SocialMedia;
 using ODK.Data.Core;
+using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Imaging;
 using ODK.Services.Logging;
@@ -10,6 +12,7 @@ namespace ODK.Services.SocialMedia;
 
 public class InstagramService : IInstagramService
 {
+    private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
     private readonly IImageService _imageService;
     private readonly ILoggingService _loggingService;
@@ -19,8 +22,10 @@ public class InstagramService : IInstagramService
         IUnitOfWork unitOfWork, 
         ILoggingService loggingService, 
         ICacheService cacheService,
-        IImageService imageService)
+        IImageService imageService,
+        IAuthorizationService authorizationService)
     {
+        _authorizationService = authorizationService;
         _cacheService = cacheService;
         _imageService = imageService;
         _loggingService = loggingService;
@@ -92,6 +97,12 @@ public class InstagramService : IInstagramService
         var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
         foreach (var chapter in chapters)
         {
+            var authorized = await _authorizationService.ChapterHasAccess(chapter, SiteFeatureType.InstagramFeed);
+            if (!authorized)
+            {
+                continue;
+            }
+
             try
             {
                 await ScrapeLatestInstagramPosts(chapter.Id);

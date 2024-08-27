@@ -1,0 +1,26 @@
+﻿@using ODK.Core.SocialMedia
+@using ODK.Web.Razor.Models.SocialMedia
+@model InstagramPostsViewModel
+@{
+    if (Model.Posts.Count == 0)
+    {
+        return;
+    }
+}
+
+<div class="row">
+    @foreach (var post in Model.Posts)
+    {
+        var viewModel = new InstagramPostViewModel
+        {
+            Caption = post.Caption,
+            Chapter = Model.Chapter,
+            ExternalId = post.ExternalId,
+            InstagramPostId = post.Id
+        };
+
+        <div class="col-3 col-md-3">
+            @await Html.PartialAsync("Components/_InstagramPost", viewModel)
+        </div>
+    }
+</div>

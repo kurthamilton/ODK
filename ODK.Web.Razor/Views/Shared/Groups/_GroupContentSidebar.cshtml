@@ -1,8 +1,16 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Features
+@using ODK.Core.Utils
 @using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SocialMedia
 @model GroupHomePageViewModel
-
+@{
+    var instagramPosts = await Html.PartialAsync("Components/_InstagramPosts", new InstagramPostsViewModel
+    {
+        Chapter = Model.Chapter,
+        Posts = Model.InstagramPosts
+    });
+}
 @if (Model.ChapterLocation != null)
 {
     <div class="text-end">
@@ -20,30 +28,54 @@
 
 @if (Model.InstagramPosts.Count > 0 || Model.IsAdmin)
 {
+    var authorized = Model.OwnerSubscription?.HasFeature(SiteFeatureType.InstagramFeed) == true;
+
     <section class="section">
-        <h5>Latest from Instagram</h5>
-        <div class="row">
-            @foreach (var post in Model.InstagramPosts)
+        <h5>
+            Latest from Instagram
+            @if (Model.IsAdmin)
             {
-                <div class="col-3 col-md-3">
-                    @await Html.PartialAsync("Components/_InstagramPost", 
-                        new InstagramPostViewModel
-                        {
-                            Caption = post.Caption, 
-                            Chapter = Model.Chapter, 
-                            ExternalId = post.ExternalId,
-                            InstagramPostId = post.Id
-                        })
-                </div>
+                @await Html.PartialAsync("Components/_Tooltip", "Display your Instagram feed on your home page")
             }
-        </div>
-        @if (!string.IsNullOrEmpty(Model.Links?.InstagramName))
+        </h5>
+        @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
         {
-            <div class="d-flex align-content-center justify-content-end">
-                <div>
-                    @await Html.PartialAsync("Components/_InstagramLink", Model.Links.InstagramName)
-                </div>
-            </div>
-        }
+            Feature = SiteFeatureType.InstagramFeed,
+            Content = await Html.PartialAsync("Components/_EditableContent", new EditableContentViewModel
+            {
+                Action = $"/admin/groups/{Model.Chapter.Id}/instagram",
+                Id = "instagram-name",
+                IsAdmin = Model.IsAdmin,
+                Name = "name",
+                ViewContentFunc = 
+                    @<div>
+                        @instagramPosts
+                        @if (!string.IsNullOrEmpty(Model.Links?.InstagramName))
+                        {
+                            <div class="d-flex align-content-center justify-content-end">
+                                <div>
+                                    @await Html.PartialAsync("Components/_InstagramLink", Model.Links.InstagramName)
+                                </div>
+                            </div>
+                        }
+                    </div>,
+                EditContentFunc = 
+                    @<div>
+                        @instagramPosts
+                        
+                        <div class="form-group mb-3">
+                            <label class="form-label">Instagram name</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fab fa-instagram mr-1"></i>
+                                </span>
+                                <input class="form-control" name="name" value="@Model.Links?.InstagramName" />
+                            </div>
+                        </div>
+                    </div>
+            })                
+            
+        })
+        
     </section>
 }

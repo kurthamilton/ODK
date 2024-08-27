@@ -35,7 +35,7 @@ public interface IAuthorizationService
         SiteFeatureType feature);
 
     bool ChapterHasAccess(
-        SiteSubscription? ownerSubscription,
+        MemberSiteSubscription? ownerSubscription,
         SiteFeatureType feature);
 
     SubscriptionStatus GetSubscriptionStatus(

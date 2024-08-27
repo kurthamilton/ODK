@@ -10,6 +10,7 @@ using ODK.Data.Core;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Emails;
+using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 
 namespace ODK.Services.Chapters;
@@ -21,6 +22,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IEmailService _emailService;
     private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly IInstagramService _instagramService;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -31,7 +33,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IEmailService emailService,
         IHttpRequestProvider httpRequestProvider,
         ISiteSubscriptionService siteSubscriptionService,
-        IHtmlSanitizer htmlSanitizer)
+        IHtmlSanitizer htmlSanitizer,
+        IInstagramService instagramService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
@@ -39,6 +42,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _emailService = emailService;
         _httpRequestProvider = httpRequestProvider;
         _htmlSanitizer = htmlSanitizer;
+        _instagramService = instagramService;
         _siteSubscriptionService = siteSubscriptionService;
         _unitOfWork = unitOfWork;
     }
@@ -553,17 +557,31 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task UpdateChapterLinks(AdminServiceRequest request, UpdateChapterLinks update)
     {
-        var links = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId));
+        var (links, instagramPosts) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId),
+            x => x.InstagramPostRepository.GetByChapterId(request.ChapterId));
 
         if (links == null)
         {
             links = new ChapterLinks();            
         }
 
-        links.FacebookName = update.Facebook;
-        links.TwitterName = update.Twitter;
-        links.InstagramName = update.Instagram;        
+        var originalInstagramName = links.InstagramName;
+
+        if (update.Facebook != null)
+        {
+            links.FacebookName = !string.IsNullOrWhiteSpace(update.Facebook) ? update.Facebook : null;
+        }
+
+        if (update.Instagram != null)
+        {
+            links.InstagramName = !string.IsNullOrWhiteSpace(update.Instagram) ? update.Instagram : null;
+        }
+
+        if (update.Twitter != null)
+        {
+            links.TwitterName = !string.IsNullOrWhiteSpace(update.Twitter) ? update.Twitter : null;
+        }                
         
         if (links.ChapterId == default)
         {
@@ -575,7 +593,24 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             _unitOfWork.ChapterLinksRepository.Update(links);
         }
 
+        if (links.InstagramName != originalInstagramName)
+        {
+            _unitOfWork.InstagramPostRepository.DeleteMany(instagramPosts);
+        }
+
         await _unitOfWork.SaveChangesAsync();
+
+        if (links.InstagramName != originalInstagramName && !string.IsNullOrEmpty(links.InstagramName))
+        {
+            try
+            {
+                await _instagramService.ScrapeLatestInstagramPosts(request.ChapterId);
+            }            
+            catch
+            {
+                // do nothing
+            }
+        }
     }
 
     public async Task<ServiceResult> UpdateChapterCurrency(AdminServiceRequest request, Guid currencyId)
