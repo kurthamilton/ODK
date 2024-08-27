@@ -10,6 +10,7 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
+using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
 
 namespace ODK.Services.Events;
@@ -140,6 +141,26 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return @event;
     }
     
+    public async Task<EventCreateViewModel> GetEventCreateViewModel(AdminServiceRequest request)
+    {
+        var (chapter, venues, adminMembers, eventSettings, paymentSettings) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.VenueRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
+
+        return new EventCreateViewModel
+        {
+            AdminMembers = adminMembers,
+            Chapter = chapter,
+            Date = await GetNextAvailableEventDate(request),
+            EventSettings = eventSettings,
+            PaymentSettings = paymentSettings,
+            Venues = venues            
+        };
+    }
+
     public async Task<IReadOnlyCollection<EventHost>> GetEventHosts(AdminServiceRequest request, Guid eventId)
     {
         var (@event, hosts) = await GetChapterAdminRestrictedContent(request,
@@ -253,36 +274,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetByChapterId(request.ChapterId, startOfDayUtc),
             x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId));
 
-        var startTime = settings.DefaultStartTime ?? TimeSpan.Zero;
-
-        if (settings.DefaultDayOfWeek == null)
-        {
-            return startOfDay + startTime;
-        }
-        
-        var nextEventDate = startOfDay.Next(settings.DefaultDayOfWeek.Value);        
-
-        if (events.Count == 0)
-        {
-            return nextEventDate + startTime;
-        }
-
-        var eventDatesLocal = events
-            .Select(x => chapter.ToChapterTime(x.Date).Date)
-            .ToArray();
-        var lastEventDate = eventDatesLocal.Max();
-
-        while (nextEventDate < lastEventDate)
-        {
-            if (!eventDatesLocal.Contains(nextEventDate))
-            {
-                return nextEventDate + startTime;
-            }
-
-            nextEventDate = nextEventDate.AddDays(7);
-        }
-
-        return nextEventDate + startTime;
+        return GetNextAvailableEventDate(chapter, settings, events);
     }
 
     public async Task PublishEvent(AdminServiceRequest request, Guid eventId)
@@ -631,6 +623,46 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             throw new OdkServiceException(result.Message ?? "");
         }
+    }
+
+    private static DateTime GetNextAvailableEventDate(
+        Chapter chapter, 
+        ChapterEventSettings? settings, 
+        IReadOnlyCollection<Event> events)
+    {
+        var startOfDay = chapter.CurrentTime().StartOfDay();
+
+        var startTime = settings?.DefaultStartTime ?? TimeSpan.Zero;
+
+        if (settings?.DefaultDayOfWeek == null)
+        {
+            return startOfDay + startTime;
+        }
+
+        var nextEventDate = startOfDay.Next(settings.DefaultDayOfWeek.Value);
+
+        if (events.Count == 0)
+        {
+            return nextEventDate + startTime;
+        }
+
+        var eventDatesLocal = events
+            .Select(x => chapter.ToChapterTime(x.Date).Date)
+            .ToArray();
+        var lastEventDate = eventDatesLocal.Max();
+
+        while (nextEventDate < lastEventDate)
+        {
+            if (!eventDatesLocal.Contains(nextEventDate))
+            {
+                return nextEventDate + startTime;
+            }
+
+            nextEventDate = nextEventDate.AddDays(7);
+        }
+
+        return nextEventDate + startTime;
+
     }
 
     private static ServiceResult ValidateEvent(

@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Events;
+using ODK.Services.Events.ViewModels;
 
 namespace ODK.Services.Events;
 
@@ -15,6 +16,8 @@ public interface IEventAdminService
         IReadOnlyCollection<Guid> eventIds);
 
     Task<Event> GetEvent(AdminServiceRequest request, Guid id);
+
+    Task<EventCreateViewModel> GetEventCreateViewModel(AdminServiceRequest request);
 
     Task<IReadOnlyCollection<EventHost>> GetEventHosts(AdminServiceRequest request, Guid eventId);
 

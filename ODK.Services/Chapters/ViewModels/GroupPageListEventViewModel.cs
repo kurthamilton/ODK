@@ -3,7 +3,7 @@ using ODK.Core.Venues;
 
 namespace ODK.Services.Chapters.ViewModels;
 
-public class GroupHomePageEventViewModel
+public class GroupPageListEventViewModel
 {
     public required Event Event { get; init; }
 

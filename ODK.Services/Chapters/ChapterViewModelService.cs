@@ -128,6 +128,82 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
+    public async Task<GroupEventsPageViewModel> GetGroupEventsPage(Guid? currentMemberId, string slug)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        OdkAssertions.Exists(chapter);
+
+        var (
+            currentMember,
+            memberSubscription,
+            ownerSubscription,
+            membershipSettings,
+            privacySettings,
+            adminMembers,
+            memberCount,
+            upcomingEvents,
+            recentEvents,
+            hasQuestions
+        ) = await _unitOfWork.RunAsync(
+            x => currentMemberId != null
+                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => currentMemberId != null
+                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
+                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
+            x => currentMemberId != null
+                ? x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId.Value)
+                : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),
+            x => x.MemberRepository.GetCountByChapterId(chapter.Id),
+            x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),
+            x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 3),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
+
+        var eventIds = upcomingEvents
+            .Concat(recentEvents)
+            .Select(x => x.Id)
+            .Distinct()
+            .ToArray();
+
+        var (venues, responses) = await _unitOfWork.RunAsync(
+            x => x.VenueRepository.GetByEventIds(eventIds),
+            x => currentMember?.IsMemberOf(chapter.Id) == true
+                ? x.EventResponseRepository.GetByMemberId(currentMember.Id, eventIds)
+                : new DefaultDeferredQueryMultiple<EventResponse>());
+
+        return new GroupEventsPageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = currentMember,
+            HasQuestions = hasQuestions,
+            IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
+            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
+            OwnerSubscription = ownerSubscription,
+            PastEvents = ToGroupPageListEvents(
+                recentEvents,
+                venues,
+                responses,
+                currentMember,
+                memberSubscription,
+                membershipSettings,
+                privacySettings),
+            Platform = platform,
+            UpcomingEvents = ToGroupPageListEvents(
+                upcomingEvents,
+                venues,
+                responses,
+                currentMember,
+                memberSubscription,
+                membershipSettings,
+                privacySettings)            
+        };
+    }
+
     public async Task<GroupHomePageViewModel> GetGroupHomePage(Guid? currentMemberId, string slug)
     {
         var platform = _platformProvider.GetPlatform();
@@ -182,48 +258,25 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.VenueRepository.GetByEventIds(eventIds),
             x => currentMember?.IsMemberOf(chapter.Id) == true
                 ? x.EventResponseRepository.GetByMemberId(currentMember.Id, eventIds)
-                : new DefaultDeferredQueryMultiple<EventResponse>());
+                : new DefaultDeferredQueryMultiple<EventResponse>());        
 
-        var venueDictionary = venues.ToDictionary(x => x.Id);
-        var responseDictionary = responses.ToDictionary(x => x.EventId);
+        var recentEventViewModels = ToGroupPageListEvents(
+            recentEvents.OrderByDescending(x => x.Date),
+            venues,
+            responses,
+            currentMember,
+            memberSubscription,
+            membershipSettings,
+            privacySettings);
 
-        var recentEventViewModels = new List<GroupHomePageEventViewModel>();
-        foreach (var @event in recentEvents.OrderByDescending(x => x.Date))
-        {
-            var canViewEvent = _authorizationService.CanViewEvent(@event, currentMember, memberSubscription, membershipSettings, privacySettings);
-            if (!canViewEvent)
-            {
-                continue;
-            }
-
-            var venue = venueDictionary[@event.VenueId];
-            var canViewVenue = _authorizationService.CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, privacySettings);
-            recentEventViewModels.Add(new GroupHomePageEventViewModel
-            {
-                Event = @event,
-                Response = responseDictionary.ContainsKey(@event.Id) ? responseDictionary[@event.Id] : null,
-                Venue = canViewVenue ? venue : null
-            });
-        }
-
-        var upcomingEventViewModels = new List<GroupHomePageEventViewModel>();
-        foreach (var @event in upcomingEvents.OrderBy(x => x.Date))
-        {
-            var canViewEvent = _authorizationService.CanViewEvent(@event, currentMember, memberSubscription, membershipSettings, privacySettings);
-            if (!canViewEvent)
-            {
-                continue;
-            }
-
-            var venue = venueDictionary[@event.VenueId];
-            var canViewVenue = _authorizationService.CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, privacySettings);
-            recentEventViewModels.Add(new GroupHomePageEventViewModel
-            {
-                Event = @event,
-                Response = responseDictionary.ContainsKey(@event.Id) ? responseDictionary[@event.Id] : null,
-                Venue = canViewVenue ? venue : null
-            });
-        }
+        var upcomingEventViewModels = ToGroupPageListEvents(
+            upcomingEvents.OrderBy(x => x.Date),
+            venues,
+            responses,
+            currentMember,
+            memberSubscription,
+            membershipSettings,
+            privacySettings);
 
         return new GroupHomePageViewModel
         {
@@ -486,5 +539,40 @@ public class ChapterViewModelService : IChapterViewModelService
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(name).RunAsync();
         return OdkAssertions.Exists(chapter);        
+    }
+
+    private IReadOnlyCollection<GroupPageListEventViewModel> ToGroupPageListEvents(
+        IEnumerable<Event> events, 
+        IEnumerable<Venue> venues,
+        IEnumerable<EventResponse> responses,
+        Member? currentMember,
+        MemberSubscription? memberSubscription,
+        ChapterMembershipSettings? membershipSettings,
+        ChapterPrivacySettings? privacySettings)
+    {
+        var viewModels = new List<GroupPageListEventViewModel>();
+
+        var venueDictionary = venues.ToDictionary(x => x.Id);
+        var responseDictionary = responses.ToDictionary(x => x.EventId);
+
+        foreach (var @event in events)
+        {
+            var canViewEvent = _authorizationService.CanViewEvent(@event, currentMember, memberSubscription, membershipSettings, privacySettings);
+            if (!canViewEvent)
+            {
+                continue;
+            }
+
+            var venue = venueDictionary[@event.VenueId];
+            var canViewVenue = _authorizationService.CanViewVenue(venue, currentMember, memberSubscription, membershipSettings, privacySettings);
+            viewModels.Add(new GroupPageListEventViewModel
+            {
+                Event = @event,
+                Response = responseDictionary.ContainsKey(@event.Id) ? responseDictionary[@event.Id] : null,
+                Venue = canViewVenue ? venue : null
+            });
+        }     
+        
+        return viewModels;
     }
 }

@@ -1,0 +1,19 @@
+﻿@page "/groups/{slug}/events"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Groups.EventsModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+
+    var viewModel = await ChapterViewModelService.GetGroupEventsPage(Model.CurrentMemberIdOrDefault, Model.Slug);
+
+    Model.Title = $"Events | {viewModel.Chapter.Name}";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Groups/_GroupEventsContent", viewModel),
+    Menu = await Html.PartialAsync("Groups/_GroupMenu", viewModel),
+    Title = $"{viewModel.Chapter.Name} Events"
+})

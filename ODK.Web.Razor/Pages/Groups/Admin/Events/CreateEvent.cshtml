@@ -1,0 +1,61 @@
+﻿@page "/my/groups/{id:guid}/events/create"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Utils
+@using ODK.Services
+@using ODK.Services.Events
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Groups.Admin.Events.CreateEventModel
+@inject IEventAdminService EventAdminService
+@{
+    Layout = "_HomeLayout";
+
+    var request = new AdminServiceRequest(Model.ChapterId, Model.CurrentMemberId);
+    var viewModel = await EventAdminService.GetEventCreateViewModel(request);
+    Model.Title = "Create event";
+
+    var hostOptions = viewModel.AdminMembers
+        .Select(x => new SelectListItem
+        {
+            Value = x.MemberId.ToString(),
+            Text = x.Member.FullName
+        })
+        .ToArray();
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.Groups.Group(viewModel.Chapter), Text = viewModel.Chapter.Name },
+        new MenuItem { Link = OdkRoutes2.Groups.Events(viewModel.Chapter), Text = "Events" },
+        new MenuItem { Text = "Create" }
+    },
+    ContentFunc = 
+        @<div>
+            <h2>Create new event</h2>
+
+            <form method="post" action="/my/groups/@viewModel.Chapter.Id/events">
+                @Html.AntiForgeryToken()
+    
+                @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
+                {
+                    ChapterId = viewModel.Chapter.Id,
+                    ChapterName = viewModel.Chapter.Name,
+                    CurrencySymbol = viewModel.PaymentSettings?.Currency.Symbol,
+                    Date = viewModel.Date,
+                    Description = viewModel.EventSettings?.DefaultDescription,
+                    EndTime = TimeSpanUtils.ToString(viewModel.EventSettings?.DefaultEndTime),
+                    HostOptions = hostOptions
+                })
+    
+                <div class="button-container">
+                    <button type="submit" class="btn btn-primary">Create</button>
+                    <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
+                </div>
+            </form>
+        </div>
+})

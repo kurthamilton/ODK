@@ -13,9 +13,9 @@ public class GroupHomePageViewModel : GroupPageViewModelBase
 
     public required int MemberCount { get; init; }    
 
-    public required IReadOnlyCollection<GroupHomePageEventViewModel> RecentEvents { get; init; }
+    public required IReadOnlyCollection<GroupPageListEventViewModel> RecentEvents { get; init; }
 
     public required ChapterTexts? Texts { get; init; }
 
-    public required IReadOnlyCollection<GroupHomePageEventViewModel> UpcomingEvents { get; init; }
+    public required IReadOnlyCollection<GroupPageListEventViewModel> UpcomingEvents { get; init; }
 }
