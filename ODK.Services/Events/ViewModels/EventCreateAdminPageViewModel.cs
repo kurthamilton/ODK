@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Venues;
 
@@ -13,6 +14,8 @@ public class EventCreateAdminPageViewModel
     public required DateTime Date { get; init; }
 
     public required ChapterEventSettings? EventSettings { get; init; }
+
+    public required MemberSiteSubscription? OwnerSubscription { get; init; }
 
     public required ChapterPaymentSettings? PaymentSettings { get; init; }
 

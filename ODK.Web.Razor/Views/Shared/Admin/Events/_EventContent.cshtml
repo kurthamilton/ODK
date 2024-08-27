@@ -44,12 +44,14 @@
         HostOptions = hostOptions,
         ImageUrl = Model.Event.ImageUrl,
         Name = Model.Event.Name,
+        OwnerSubscription = Model.OwnerSubscription,
         Public = Model.Event.IsPublic,
         RsvpDeadline = Model.Event.RsvpDeadlineUtc != null ? Model.Chapter.ToChapterTime(Model.Event.RsvpDeadlineUtc.Value) : null,
         TicketCost = Model.Event.TicketSettings?.Cost,
         TicketDepositCost = Model.Event.TicketSettings?.Deposit,
         Time = Model.Event.Time,
-        Venue = Model.Event.VenueId
+        Venue = Model.Event.VenueId,
+        Venues = Model.Venues
     })
     
     <div class="d-flex">

@@ -14,6 +14,8 @@ public abstract class EventAdminPageViewModelBase
 
     public required Event Event { get; init; }
 
+    public required MemberSiteSubscription? OwnerSubscription { get; init; }
+
     public required PlatformType Platform { get; init; }
 
     public required Venue Venue { get; init; }

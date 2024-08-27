@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Extensions;
+using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
@@ -46,8 +47,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
 
-        var (chapter, chapterAdminMembers, currentMember, venue, settings, chapterPaymentSettings) = await _unitOfWork.RunAsync(
+        var (chapter, ownerSubscription, chapterAdminMembers, currentMember, venue, settings, chapterPaymentSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetById(model.VenueId),
@@ -71,14 +73,18 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Name = model.Name,
             PublishedUtc = !draft ? DateTime.UtcNow : null,
             RsvpDeadlineUtc = model.RsvpDeadline != null ? chapter.FromLocalTime(model.RsvpDeadline.Value) : null,
-            TicketSettings = model.TicketCost != null ? new EventTicketSettings
-            {
-                Cost = Math.Round(model.TicketCost.Value, 2),
-                Deposit = model.TicketDepositCost != null ? Math.Round(model.TicketDepositCost.Value, 2) : null,
-            } : null,
             Time = model.Time,
             VenueId = model.VenueId
         };
+
+        if (ownerSubscription?.HasFeature(SiteFeatureType.EventTickets) == true)
+        {
+            @event.TicketSettings = model.TicketCost != null ? new EventTicketSettings
+            {
+                Cost = Math.Round(model.TicketCost.Value, 2),
+                Deposit = model.TicketDepositCost != null ? Math.Round(model.TicketDepositCost.Value, 2) : null,
+            } : null;
+        }
 
         var validationResult = ValidateEvent(@event, venue, chapterPaymentSettings);
         if (!validationResult.Success)
@@ -122,8 +128,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, currentMember, @event, responses, venue, members) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, currentMember, @event, responses, venue, members) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId),
@@ -138,6 +145,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             CurrentMember = currentMember,
             Event = @event,
             Members = members,
+            OwnerSubscription = ownerSubscription,
             Platform = platform,
             Responses = responses,
             Venue = venue
@@ -148,12 +156,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, venues, adminMembers, eventSettings, paymentSettings) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, venues, adminMembers, eventSettings, paymentSettings, ownerSubscription) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.VenueRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
 
         return new EventCreateAdminPageViewModel
         {
@@ -161,6 +170,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Chapter = chapter,
             Date = await GetNextAvailableEventDate(request),
             EventSettings = eventSettings,
+            OwnerSubscription = ownerSubscription,
             PaymentSettings = paymentSettings,
             Platform = platform,
             Venues = venues            
@@ -171,14 +181,15 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, @event, currentMember, adminMembers, paymentSettings, hosts, venue) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, @event, currentMember, adminMembers, paymentSettings, hosts, venues) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.EventHostRepository.GetByEventId(eventId),
-            x => x.VenueRepository.GetByEventId(eventId));
+            x => x.VenueRepository.GetByChapterId(request.ChapterId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
@@ -190,8 +201,10 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             CurrentMember = currentMember,
             Event = @event,
             Hosts = hosts,
+            OwnerSubscription = ownerSubscription,
             Platform = platform,
-            Venue = venue
+            Venue = venues.First(x => x.Id == @event.VenueId),
+            Venues = venues
         };
     }
 
@@ -199,8 +212,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, currentMember, @event, eventEmail, members, invites, responses, venue) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, currentMember, @event, eventEmail, members, invites, responses, venue) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventEmailRepository.GetByEventId(eventId),
@@ -224,6 +238,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 SentUtc = eventEmail?.SentUtc
             },
             Members = members,
+            OwnerSubscription = ownerSubscription,
             Platform = platform,
             Responses = responses,
             Venue = venue
@@ -295,8 +310,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, currentMember, @event, venue, paymentSettings, purchases) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, currentMember, @event, venue, paymentSettings, purchases) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -310,6 +326,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Chapter = chapter,
             CurrentMember = currentMember,
             Event = @event,
+            OwnerSubscription = ownerSubscription,
             PaymentSettings = paymentSettings,
             Platform = platform,
             Purchases = purchases,
@@ -512,8 +529,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> UpdateEvent(AdminServiceRequest request, Guid id, CreateEvent model)
     {
-        var (chapter, chapterAdminMembers, currentMember, @event, hosts, venue, chapterPaymentSettings) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, chapterAdminMembers, currentMember, @event, hosts, venue, chapterPaymentSettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.EventRepository.GetById(id),
@@ -542,15 +560,20 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         @event.Name = model.Name;
         @event.RsvpDeadlineUtc = model.RsvpDeadline != null ? chapter.FromLocalTime(model.RsvpDeadline.Value) : null;
         @event.Time = model.Time;
-        @event.VenueId = model.VenueId;        
+        @event.VenueId = model.VenueId;
 
-        if (model.TicketCost != null)
+        if (ownerSubscription?.HasFeature(SiteFeatureType.EventTickets) == true && model.TicketCost != null)
         {
             @event.TicketSettings ??= new EventTicketSettings();
             @event.TicketSettings.Cost = Math.Round(model.TicketCost.Value, 2);
             @event.TicketSettings.Deposit = model.TicketDepositCost != null ? Math.Round(model.TicketDepositCost.Value, 2) : null;
         }
-
+        else if (@event.TicketSettings != null)
+        {
+            _unitOfWork.EventTicketSettingsRepository.Delete(@event.TicketSettings);
+            @event.TicketSettings = null;
+        }
+        
         var validationResult = ValidateEvent(@event, venue, chapterPaymentSettings);
         if (!validationResult.Success)
         {

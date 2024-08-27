@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
+using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
@@ -164,10 +165,16 @@ public class EventService : IEventService
             return ServiceResult.Failure("This event does not have deposits");
         }
 
-        var (membershipSettings, privacySettings, memberSubscription) = await _unitOfWork.RunAsync(
+        var (ownerSubscription, membershipSettings, privacySettings, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, @event.ChapterId));
+
+        if (ownerSubscription?.HasFeature(SiteFeatureType.EventTickets) != null)
+        {
+            return ServiceResult.Failure("Payment not made: this group can no longer receive payments");
+        }
 
         var validationResult = MemberCanAttendEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
         if (!validationResult.Success)
@@ -252,10 +259,16 @@ public class EventService : IEventService
             return ServiceResult.Failure("You have already purchased a ticket for this event");
         }
 
-        var (membershipSettings, privacySettings, memberSubscription) = await _unitOfWork.RunAsync(
+        var (ownerSubscription, membershipSettings, privacySettings, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, @event.ChapterId));
+
+        if (ownerSubscription?.HasFeature(SiteFeatureType.EventTickets) != true)
+        {
+            return ServiceResult.Failure("Payment not made: this group can no longer receive payments");
+        }
 
         var validationResult = MemberCanAttendEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
         if (!validationResult.Success)

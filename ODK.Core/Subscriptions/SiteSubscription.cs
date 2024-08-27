@@ -42,6 +42,7 @@ public class SiteSubscription : IDatabaseEntity
 
         if (Premium)
         {
+            yield return SiteFeatureType.EventTickets;
             yield return SiteFeatureType.InstagramFeed;
         }
 

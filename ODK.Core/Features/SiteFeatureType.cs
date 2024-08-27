@@ -3,6 +3,7 @@
 public enum SiteFeatureType
 {
     None,
+    EventTickets,
     InstagramFeed,
     MemberSubscriptions,
     SendMemberEmails

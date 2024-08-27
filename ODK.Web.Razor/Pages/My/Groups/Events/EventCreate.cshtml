@@ -49,7 +49,9 @@
                     Date = viewModel.Date,
                     Description = viewModel.EventSettings?.DefaultDescription,
                     EndTime = TimeSpanUtils.ToString(viewModel.EventSettings?.DefaultEndTime),
-                    HostOptions = hostOptions
+                    HostOptions = hostOptions,
+                    OwnerSubscription = viewModel.OwnerSubscription,
+                    Venues = viewModel.Venues
                 })
     
                 <div class="button-container">

@@ -26,7 +26,7 @@ public class EventCreateModel : OdkGroupAdminPageModel
     {
     }
 
-    public async Task<IActionResult> OnPostAsync([FromForm] EventFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)
     {
         var request = new AdminServiceRequest(ChapterId, CurrentMemberId);
         var result = await _eventAdminService.CreateEvent(request, new CreateEvent
