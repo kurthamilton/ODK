@@ -2,14 +2,14 @@
 using ODK.Core;
 using ODK.Web.Razor.Pages.Chapters;
 
-namespace ODK.Web.Razor.Pages.Groups;
+namespace ODK.Web.Razor.Pages.My.Groups;
 
 public abstract class OdkGroupAdminPageModel : OdkPageModel
 {
     public Guid ChapterId { get; private set; }
 
     public override async Task OnPageHandlerExecutionAsync(
-        PageHandlerExecutingContext context, 
+        PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
     {
         var chapterId = ChapterPageContext.GetChapterId(HttpContext);

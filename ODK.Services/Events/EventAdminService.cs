@@ -4,6 +4,7 @@ using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -19,7 +20,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IChapterUrlService _chapterUrlService;
-    private readonly IEmailService _emailService;    
+    private readonly IEmailService _emailService;
+    private readonly IPlatformProvider _platformProvider;
     private readonly EventAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -28,12 +30,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         EventAdminServiceSettings settings, 
         IEmailService emailService,
         IChapterUrlService chapterUrlService,
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        IPlatformProvider platformProvider)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _chapterUrlService = chapterUrlService;
         _emailService = emailService;
+        _platformProvider = platformProvider;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
@@ -141,8 +145,34 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return @event;
     }
     
-    public async Task<EventCreateViewModel> GetEventCreateViewModel(AdminServiceRequest request)
+    public async Task<EventAttendeesAdminPageViewModel> GetEventAttendeesViewModel(AdminServiceRequest request, Guid eventId)
     {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, currentMember, @event, responses, venue, members) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(request.CurrentMemberId),
+            x => x.EventRepository.GetById(eventId),
+            x => x.EventResponseRepository.GetByEventId(eventId),
+            x => x.VenueRepository.GetByEventId(eventId),
+            x => x.MemberRepository.GetByChapterId(request.ChapterId));
+
+        return new EventAttendeesAdminPageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = currentMember,
+            Event = @event,
+            Members = members,
+            Platform = platform,
+            Responses = responses,
+            Venue = venue
+        };
+    }
+
+    public async Task<EventCreateAdminPageViewModel> GetEventCreateViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
         var (chapter, venues, adminMembers, eventSettings, paymentSettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.VenueRepository.GetByChapterId(request.ChapterId),
@@ -150,14 +180,43 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
 
-        return new EventCreateViewModel
+        return new EventCreateAdminPageViewModel
         {
             AdminMembers = adminMembers,
             Chapter = chapter,
             Date = await GetNextAvailableEventDate(request),
             EventSettings = eventSettings,
             PaymentSettings = paymentSettings,
+            Platform = platform,
             Venues = venues            
+        };
+    }
+
+    public async Task<EventEditAdminPageViewModel> GetEventEditViewModel(AdminServiceRequest request, Guid eventId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, @event, currentMember, adminMembers, paymentSettings, hosts, venue) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.EventRepository.GetById(eventId),
+            x => x.MemberRepository.GetById(request.CurrentMemberId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.EventHostRepository.GetByEventId(eventId),
+            x => x.VenueRepository.GetByEventId(eventId));
+
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
+
+        return new EventEditAdminPageViewModel
+        {
+            Chapter = chapter,
+            ChapterAdminMembers = adminMembers,
+            Currency = paymentSettings?.Currency,
+            CurrentMember = currentMember,
+            Event = @event,
+            Hosts = hosts,
+            Platform = platform,
+            Venue = venue
         };
     }
 
@@ -190,6 +249,26 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
+    public async Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(AdminServiceRequest request, Guid eventId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, currentMember, @event, venue) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(request.CurrentMemberId),
+            x => x.EventRepository.GetById(eventId),
+            x => x.VenueRepository.GetByEventId(eventId));
+
+        return new EventInvitesAdminPageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = currentMember,
+            Event = @event,
+            Platform = platform,
+            Venue = venue
+        };
+    }
+
     public async Task<EventResponsesDto> GetEventResponsesDto(AdminServiceRequest request, Guid eventId)
     {
         var (@event, responses, members) = await GetChapterAdminRestrictedContent(request,
@@ -212,9 +291,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventRepository.GetByChapterId(request.ChapterId, page, pageSize));
     }
 
-    public async Task<EventsDto> GetEventsDto(AdminServiceRequest request, int page, int pageSize)
+    public async Task<EventsAdminPageViewModel> GetEventsDto(AdminServiceRequest request, int page, int pageSize)
     {
-        var events = await GetChapterAdminRestrictedContent(request,
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, events) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.EventRepository.GetByChapterId(request.ChapterId, page, pageSize));
 
         var eventIds = events
@@ -232,10 +314,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventResponseRepository.GetResponseSummaries(eventIds),
             x => x.EventEmailRepository.GetByEventIds(eventIds));
 
-        return new EventsDto
+        return new EventsAdminPageViewModel
         {
+            Chapter = chapter,
             Events = events,    
             Invites = GetEventInvitesDtos(eventIds, invites, emails),
+            Platform = platform,
             Responses = responses,
             Venues = venues
         };

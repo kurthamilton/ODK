@@ -155,6 +155,11 @@ public class ChapterService : IChapterService
         return ServiceResult<Chapter?>.Successful(chapter);
     }
 
+    public async Task<Chapter> GetChapterById(Guid chapterId)
+    {
+        return await _unitOfWork.ChapterRepository.GetById(chapterId).RunAsync();
+    }
+
     public async Task<Chapter> GetChapterBySlug(string slug)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();

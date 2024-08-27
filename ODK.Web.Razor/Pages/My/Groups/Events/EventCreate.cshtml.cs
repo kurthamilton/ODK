@@ -1,19 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
-using ODK.Services.Caching;
+using ODK.Services;
+using ODK.Services.Chapters;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Events;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
+namespace ODK.Web.Razor.Pages.My.Groups.Events;
 
-public class EventCreateModel : AdminPageModel
+public class EventCreateModel : OdkGroupAdminPageModel
 {
+    private readonly IChapterService _chapterService;
     private readonly IEventAdminService _eventAdminService;
 
-    public EventCreateModel(IRequestCache requestCache, IEventAdminService eventAdminService)
-        : base(requestCache)
+    public EventCreateModel(
+        IEventAdminService eventAdminService,
+        IChapterService chapterService)
     {
+        _chapterService = chapterService;
         _eventAdminService = eventAdminService;
     }
 
@@ -23,7 +28,7 @@ public class EventCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormViewModel viewModel)
     {
-        var request = await GetAdminServiceRequest();
+        var request = new AdminServiceRequest(ChapterId, CurrentMemberId);
         var result = await _eventAdminService.CreateEvent(request, new CreateEvent
         {
             AttendeeLimit = viewModel.AttendeeLimit,
@@ -32,7 +37,7 @@ public class EventCreateModel : AdminPageModel
             EndTime = TimeSpanUtils.FromString(viewModel.EndTime),
             Hosts = viewModel.Hosts,
             ImageUrl = viewModel.ImageUrl,
-            IsPublic = viewModel.Public,
+            IsPublic = false,
             Name = viewModel.Name,
             RsvpDeadline = viewModel.RsvpDeadline,
             TicketCost = viewModel.TicketCost,
@@ -40,14 +45,16 @@ public class EventCreateModel : AdminPageModel
             Time = viewModel.Time,
             VenueId = viewModel.Venue
         }, viewModel.Draft);
-        
+
         if (!result.Success)
         {
             AddFeedback(new FeedbackViewModel(result));
             return Page();
         }
 
+        var chapter = await _chapterService.GetChapterById(ChapterId);
         AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Events");
+        var url = OdkRoutes2.Groups.Events(chapter);
+        return Redirect(url);
     }
 }

@@ -5,13 +5,13 @@ using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Chapters;
 
-namespace ODK.Web.Razor.Pages.Groups.Admin;
+namespace ODK.Web.Razor.Pages.My.Groups;
 
-public class CreateModel : OdkPageModel
+public class GroupCreateModel : OdkPageModel
 {
     private readonly IChapterService _chapterService;
 
-    public CreateModel(IChapterService chapterService)
+    public GroupCreateModel(IChapterService chapterService)
     {
         _chapterService = chapterService;
     }

@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Pages\Groups\Admin\Events\" />
     <Folder Include="wwwroot\lib\" />
   </ItemGroup>
 

@@ -9,6 +9,7 @@ using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
@@ -261,7 +262,8 @@ public static class EventAdminServiceTests
             settings: settings ?? CreateSettings(),
             emailService: CreateMockEmailService(),
             chapterUrlService: CreateMockChapterUrlService(),
-            Mock.Of<IAuthorizationService>());
+            Mock.Of<IAuthorizationService>(),
+            Mock.Of<IPlatformProvider>());
     }
 
     private static EventAdminServiceSettings CreateSettings() => new EventAdminServiceSettings();

@@ -2,24 +2,18 @@
 @using ODK.Core.Extensions
 @using ODK.Core.Utils
 @using ODK.Services
-@using ODK.Services.Events
+@using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Events
-@model ODK.Web.Razor.Models.Admin.Events.EventViewModel
-@inject IEventAdminService EventAdminService
-@{
-    var memberId = User.MemberId();
-    var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
-    var invites = await EventAdminService.GetEventInvites(request, Model.Event.Id);
-}
+@model EventInvitesAdminPageViewModel
 
 @await Html.PartialAsync("Admin/Events/_EventHeader")
 @await Html.PartialAsync("Admin/Events/_EventAdminTabs")
 
-@if (invites.SentUtc != null)
+@if (Model.Invites.SentUtc != null)
 {
     <p>
-        @invites.Sent invites were sent on @TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, invites.SentUtc.Value).ToString("dddd, MMMM d, yyyy")
+        @Model.Invites.Sent invites were sent on @TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, Model.Invites.SentUtc.Value).ToString("dddd, MMMM d, yyyy")
     </p>
     @await Html.PartialAsync("Admin/Events/_EventResponses")
     @await Html.PartialAsync("Admin/Events/_EventInviteeUpdate", new EventUpdateViewModel
@@ -55,6 +49,6 @@
     {
         Chapter = Model.Chapter,
         EventId = Model.Event.Id,
-        ScheduledEmailDate = Model.Chapter.ToChapterTime(invites.ScheduledUtc)
+        ScheduledEmailDate = Model.Chapter.ToChapterTime(Model.Invites.ScheduledUtc)
     })
 </div>

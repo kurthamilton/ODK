@@ -1,12 +1,20 @@
 ﻿@page "/{chapterName}/Admin/Events"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services
+@using ODK.Services.Events
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventsModel
+@inject IEventAdminService EventAdminService
 @{
     Layout = "Admin/Events/_EventAdminLayout";
     Model.Title = "Events | Admin";
+
+    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
+    var viewModel = await EventAdminService.GetEventsDto(request, 1, 1000);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await @Html.PartialAsync("Admin/Events/_EventsContent", Model.Chapter)
+    Content = await @Html.PartialAsync("Admin/Events/_EventsContent", viewModel)
 })

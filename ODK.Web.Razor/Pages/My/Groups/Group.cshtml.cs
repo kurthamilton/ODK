@@ -1,4 +1,4 @@
-namespace ODK.Web.Razor.Pages.Groups.Admin;
+namespace ODK.Web.Razor.Pages.My.Groups;
 
 public class GroupModel : OdkPageModel
 {

@@ -8,6 +8,8 @@ public interface IChapterService
 
     Task<Chapter> GetChapterBySlug(string slug);
 
+    Task<Chapter> GetChapterById(Guid chapterId);
+
     Task<ChapterLinks?> GetChapterLinks(Guid chapterId);
 
     Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid? currentMemberId, Guid chapterId);

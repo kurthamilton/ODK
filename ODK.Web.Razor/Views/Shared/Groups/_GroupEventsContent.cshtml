@@ -2,6 +2,7 @@
 @using ODK.Core.Events
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Services.Events
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Events
 @model GroupEventsPageViewModel
 
@@ -9,7 +10,7 @@
 
 @if (Model.IsAdmin)
 {
-    <a class="btn btn-outline-secondary" href="/my/groups/@Model.Chapter.Id/events/create">Create</a>
+    <a class="btn btn-outline-secondary" href="@OdkRoutes2.MemberGroups.EventCreate(Model.Platform, Model.Chapter)">Create</a>
 }
 
 @await Html.PartialAsync("Events/_EventList2", new EventListViewModel

@@ -5,7 +5,7 @@
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
 @attribute [Authorize]
-@model GroupsModel
+@model IndexModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
@@ -39,7 +39,7 @@
                 {
                     <p>
                         You haven't created any groups. 
-                        <a href="@OdkRoutes2.MemberGroups.Create()">Create a group</a>
+                        <a href="@OdkRoutes2.MemberGroups.GroupCreate()">Create a group</a>
                     </p>
                 }
             </section>

@@ -1,24 +1,7 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Events;
-using ODK.Core.Members;
+﻿using ODK.Services.Events.ViewModels;
 
 namespace ODK.Web.Razor.Models.Admin.Events;
 
-public class EventViewModel
-{
-    public EventViewModel(
-        Chapter chapter, 
-        Member currentMember, 
-        Event @event)
-    {
-        Chapter = chapter;
-        CurrentMember = currentMember;
-        Event = @event;        
-    }
-
-    public Chapter Chapter { get; }    
-    
-    public Member CurrentMember { get; }
-
-    public Event Event { get; }    
+public class EventViewModel : EventAdminPageViewModelBase
+{   
 }

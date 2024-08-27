@@ -1,11 +1,18 @@
 ﻿@page "/{chapterName}/Admin/Events/{id:guid}/Invites"
-@using ODK.Web.Razor.Models.Components
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services
+@using ODK.Services.Events
 @using ODK.Web.Common.Components
-@using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventInvitesModel
+@inject IEventAdminService EventAdminService
 @{
     Layout = "Admin/Events/_EventAdminLayout";
     Model.Title = "Event invites | Admin";
+
+    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
+    var viewModel = await EventAdminService.GetEventInvitesViewModel(request, Model.Event.Id);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -15,6 +22,5 @@
        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Events", Text = "Events" },
        new MenuItem { Text = Model.Event.GetDisplayName() }
     },
-    Content = await Html.PartialAsync("Admin/Events/_EventInvitesContent", 
-       new EventViewModel(Model.Chapter, Model.CurrentMember, Model.Event))
+    Content = await Html.PartialAsync("Admin/Events/_EventInvitesContent", viewModel)
 })

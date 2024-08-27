@@ -1,4 +1,4 @@
-﻿@page "/my/groups/{id:guid}/events/create"
+﻿@page "/my/groups/{id:guid}/events/new"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Utils
@@ -8,7 +8,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Groups.Admin.Events.CreateEventModel
+@model EventCreateModel
 @inject IEventAdminService EventAdminService
 @{
     Layout = "_HomeLayout";
@@ -30,15 +30,15 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = OdkRoutes2.Groups.Group(viewModel.Chapter), Text = viewModel.Chapter.Name },
-        new MenuItem { Link = OdkRoutes2.Groups.Events(viewModel.Chapter), Text = "Events" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.Group(viewModel.Chapter.Id), Text = viewModel.Chapter.Name },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.Events(viewModel.Platform, viewModel.Chapter), Text = "Events" },
         new MenuItem { Text = "Create" }
     },
     ContentFunc = 
         @<div>
             <h2>Create new event</h2>
 
-            <form method="post" action="/my/groups/@viewModel.Chapter.Id/events">
+            <form method="post">
                 @Html.AntiForgeryToken()
     
                 @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel

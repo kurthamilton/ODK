@@ -1,7 +1,8 @@
 ﻿@using ODK.Core.Members
 @using ODK.Core.Utils
+@using ODK.Services.Events.ViewModels
 @using ODK.Web.Razor.Models.Admin.Events
-@model ODK.Web.Razor.Models.Admin.Events.EventEditViewModel
+@model EventEditAdminPageViewModel
 @{
     var hostOptions = Model.ChapterAdminMembers
         ?.Select(x => new SelectListItem

@@ -27,7 +27,7 @@ public abstract class EventAdminPageModel : AdminPageModel
         Event = await EventAdminService.GetEvent(request, id);
         if (Event == null)
         {
-            Response.Redirect($"{Request.RouteValues["chapterName"]}/Admin/Events");
+            Response.Redirect($"{ChapterName}/Admin/Events");
             return;
         }        
     }

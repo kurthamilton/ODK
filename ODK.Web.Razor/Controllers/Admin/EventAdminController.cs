@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
-using ODK.Core.Utils;
 using ODK.Services.Caching;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
