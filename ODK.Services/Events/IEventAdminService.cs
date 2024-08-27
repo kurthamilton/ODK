@@ -9,12 +9,6 @@ public interface IEventAdminService
 
     Task DeleteEvent(AdminServiceRequest request, Guid id);
     
-    Task<IReadOnlyCollection<EventInvitesDto>> GetChapterInvites(AdminServiceRequest request, 
-        IReadOnlyCollection<Guid> eventIds);
-    
-    Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(AdminServiceRequest request, 
-        IReadOnlyCollection<Guid> eventIds);
-
     Task<Event> GetEvent(AdminServiceRequest request, Guid id);
 
     Task<EventAttendeesAdminPageViewModel> GetEventAttendeesViewModel(AdminServiceRequest request, Guid eventId);
@@ -23,21 +17,15 @@ public interface IEventAdminService
 
     Task<EventEditAdminPageViewModel> GetEventEditViewModel(AdminServiceRequest request, Guid eventId);
 
-    Task<IReadOnlyCollection<EventHost>> GetEventHosts(AdminServiceRequest request, Guid eventId);
-
-    Task<EventInvitesDto> GetEventInvites(AdminServiceRequest request, Guid eventId);
-
     Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(AdminServiceRequest request, Guid eventId);
 
     Task<EventResponsesDto> GetEventResponsesDto(AdminServiceRequest request, Guid eventId);
-
-    Task<IReadOnlyCollection<Event>> GetEvents(AdminServiceRequest request, int page, int pageSize);    
 
     Task<EventsAdminPageViewModel> GetEventsDto(AdminServiceRequest request, int page, int pageSize);
 
     Task<IReadOnlyCollection<Event>> GetEventsByVenue(AdminServiceRequest request, Guid venueId);
 
-    Task<IReadOnlyCollection<EventTicketPurchase>> GetEventTicketPurchases(AdminServiceRequest request, Guid eventId);
+    Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(AdminServiceRequest request, Guid eventId);
 
     Task<DateTime> GetNextAvailableEventDate(AdminServiceRequest request);
 

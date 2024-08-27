@@ -110,33 +110,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
     }
     
-    public async Task<IReadOnlyCollection<EventInvitesDto>> GetChapterInvites(AdminServiceRequest request,
-        IReadOnlyCollection<Guid> eventIds)
-    {
-        if (eventIds.Count == 0)
-        {
-            return Array.Empty<EventInvitesDto>();
-        }
-
-        var (invites, emails) = await GetChapterAdminRestrictedContent(request,
-            x => x.EventInviteRepository.GetEventInvitesDtos(eventIds),
-            x => x.EventEmailRepository.GetByEventIds(eventIds));
-
-        return GetEventInvitesDtos(eventIds, invites, emails);
-    }
-    
-    public async Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(AdminServiceRequest request, 
-        IReadOnlyCollection<Guid> eventIds)
-    {
-        if (eventIds.Count == 0)
-        {
-            return Array.Empty<EventResponse>();
-        }
-
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.EventResponseRepository.GetByEventIds(eventIds));
-    }
-
     public async Task<Event> GetEvent(AdminServiceRequest request, Guid id)
     {
         var @event = await GetChapterAdminRestrictedContent(request,
@@ -156,6 +129,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByChapterId(request.ChapterId));
+
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
         return new EventAttendeesAdminPageViewModel
         {
@@ -220,51 +195,37 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<IReadOnlyCollection<EventHost>> GetEventHosts(AdminServiceRequest request, Guid eventId)
-    {
-        var (@event, hosts) = await GetChapterAdminRestrictedContent(request,
-            x => x.EventRepository.GetById(eventId),
-            x => x.EventHostRepository.GetByEventId(eventId));
-
-        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
-
-        return hosts;
-    }
-
-    public async Task<EventInvitesDto> GetEventInvites(AdminServiceRequest request, Guid eventId)
-    {
-        var (@event, invites, eventEmail) = await GetChapterAdminRestrictedContent(request,
-            x => x.EventRepository.GetById(eventId),
-            x => x.EventInviteRepository.GetByEventId(eventId),
-            x => x.EventEmailRepository.GetByEventId(eventId));
-
-        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
-
-        return new EventInvitesDto
-        {
-            EventId = eventId,
-            Sent = invites.Count,
-            SentUtc = eventEmail?.SentUtc,
-            ScheduledUtc = eventEmail?.ScheduledUtc,
-        };
-    }
-
     public async Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(AdminServiceRequest request, Guid eventId)
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, currentMember, @event, venue) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, currentMember, @event, eventEmail, members, invites, responses, venue) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.EventRepository.GetById(eventId),
+            x => x.EventEmailRepository.GetByEventId(eventId),
+            x => x.MemberRepository.GetByChapterId(request.ChapterId),
+            x => x.EventInviteRepository.GetByEventId(eventId),
+            x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.VenueRepository.GetByEventId(eventId));
+
+        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
         return new EventInvitesAdminPageViewModel
         {
             Chapter = chapter,
             CurrentMember = currentMember,
             Event = @event,
+            Invites = new EventInvitesDto
+            {
+                EventId = eventId,
+                ScheduledUtc = eventEmail?.ScheduledUtc,
+                Sent = invites.Count,
+                SentUtc = eventEmail?.SentUtc
+            },
+            Members = members,
             Platform = platform,
+            Responses = responses,
             Venue = venue
         };
     }
@@ -283,12 +244,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Members = members,
             Responses = responses
         };
-    }
-
-    public async Task<IReadOnlyCollection<Event>> GetEvents(AdminServiceRequest request, int page, int pageSize)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.EventRepository.GetByChapterId(request.ChapterId, page, pageSize));
     }
 
     public async Task<EventsAdminPageViewModel> GetEventsDto(AdminServiceRequest request, int page, int pageSize)
@@ -336,15 +291,30 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return events;
     }
     
-    public async Task<IReadOnlyCollection<EventTicketPurchase>> GetEventTicketPurchases(AdminServiceRequest request, Guid eventId)
+    public async Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(AdminServiceRequest request, Guid eventId)
     {
-        var (@event, ticketPurchases) = await GetChapterAdminRestrictedContent(request,
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, currentMember, @event, venue, paymentSettings, purchases) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.EventRepository.GetById(eventId),
+            x => x.VenueRepository.GetByEventId(eventId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.EventTicketPurchaseRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
-        return ticketPurchases;
+        return new EventTicketsAdminPageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = currentMember,
+            Event = @event,
+            PaymentSettings = paymentSettings,
+            Platform = platform,
+            Purchases = purchases,
+            Venue = venue
+        };
     }
 
     public async Task<DateTime> GetNextAvailableEventDate(AdminServiceRequest request)
@@ -735,7 +705,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             .ToArray();
         var lastEventDate = eventDatesLocal.Max();
 
-        while (nextEventDate < lastEventDate)
+        while (nextEventDate <= lastEventDate)
         {
             if (!eventDatesLocal.Contains(nextEventDate))
             {
