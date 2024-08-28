@@ -2,20 +2,15 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Utils
-@using ODK.Services
 @using ODK.Services.Events
-@using ODK.Web.Common.Components
-@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Events
-@using ODK.Web.Razor.Models.Components
 @model EventCreateModel
 @inject IEventAdminService EventAdminService
 @{
-    Layout = "_HomeLayout";
-
-    var request = new AdminServiceRequest(Model.ChapterId, Model.CurrentMemberId);
-    var viewModel = await EventAdminService.GetEventCreateViewModel(request);
+    Layout = "_GroupAdminLayout";
     Model.Title = "Create event";
+    
+    var viewModel = await EventAdminService.GetEventCreateViewModel(Model.AdminServiceRequest);
 
     var hostOptions = viewModel.AdminMembers
         .Select(x => new SelectListItem
@@ -26,38 +21,26 @@
         .ToArray();
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Breadcrumbs = new[]
-    {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Group(viewModel.Chapter.Id), Text = viewModel.Chapter.Name },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Events(viewModel.Platform, viewModel.Chapter), Text = "Events" },
-        new MenuItem { Text = "Create" }
-    },
-    ContentFunc = 
-        @<div>
-            <h2>Create new event</h2>
+<h2>Create new event</h2>
 
-            <form method="post">
-                @Html.AntiForgeryToken()
+<form method="post">
+    @Html.AntiForgeryToken()
     
-                @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
-                {
-                    ChapterId = viewModel.Chapter.Id,
-                    ChapterName = viewModel.Chapter.Name,
-                    CurrencySymbol = viewModel.PaymentSettings?.Currency.Symbol,
-                    Date = viewModel.Date,
-                    Description = viewModel.EventSettings?.DefaultDescription,
-                    EndTime = TimeSpanUtils.ToString(viewModel.EventSettings?.DefaultEndTime),
-                    HostOptions = hostOptions,
-                    OwnerSubscription = viewModel.OwnerSubscription,
-                    Venues = viewModel.Venues
-                })
+    @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
+    {
+        Chapter = viewModel.Chapter,
+        CurrencySymbol = viewModel.PaymentSettings?.Currency.Symbol,
+        Date = viewModel.Date,
+        Description = viewModel.EventSettings?.DefaultDescription,
+        EndTime = TimeSpanUtils.ToString(viewModel.EventSettings?.DefaultEndTime),
+        HostOptions = hostOptions,
+        OwnerSubscription = viewModel.OwnerSubscription,
+        Platform = viewModel.Platform,
+        Venues = viewModel.Venues
+    })
     
-                <div class="button-container">
-                    <button type="submit" class="btn btn-primary">Create</button>
-                    <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
-                </div>
-            </form>
-        </div>
-})
+    <div class="button-container">
+        <button type="submit" class="btn btn-primary">Create</button>
+        <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
+    </div>
+</form>

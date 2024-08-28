@@ -1,0 +1,15 @@
+﻿@page "/my/groups/{id:guid}/venues/new"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model VenueCreateModel
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Create venue | Admin";
+}
+
+@await Html.PartialAsync("Admin/Venues/_VenueCreateContent")
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/_GoogleLocationScripts")
+}

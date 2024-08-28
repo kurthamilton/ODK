@@ -1,21 +1,16 @@
 ﻿@page "/my/groups/{id:guid}"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Services
 @using ODK.Services.Chapters
-@using ODK.Web.Razor.Models.Components
 @model GroupModel
 @inject IChapterAdminService ChapterAdminService
 @{
-    Layout = "_HomeLayout";
+    Layout = "_GroupAdminLayout";
 
-    var chapter = await ChapterAdminService.GetChapter(new AdminServiceRequest(Model.ChapterId, Model.CurrentMemberId));
+    var chapter = await ChapterAdminService.GetChapter(Model.AdminServiceRequest);
+
     Model.Title = chapter.Name;
 }
 
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Groups/_GroupEditContent", chapter),
-    Title = chapter.Name
-})
+@await Html.PartialAsync("Groups/_GroupEditContent", chapter)

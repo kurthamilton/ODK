@@ -1,0 +1,58 @@
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Caching
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IPlatformProvider PlatformProvider
+@inject IRequestCache RequestCache
+@{
+    Layout = "_HomeLayout";
+
+    var platform = PlatformProvider.GetPlatform();
+    Guid.TryParse(Context.GetRouteValue("id")?.ToString(), out var chapterId);
+    var chapter = await RequestCache.GetChapterAsync(chapterId);
+
+    var homeMenuItems = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.Groups.Group(chapter), Text = "Home" }
+    };
+
+    var groupMenuItems = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.MemberGroups.Group(chapterId), Text = "Group" }
+    };
+
+    var eventMenuItems = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.MemberGroups.Events(platform, chapter), Text = "Events" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.Venues(platform, chapter), Text = "Venues" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.EventSettings(platform, chapter), Text = "Settings" }
+    };
+}
+
+@section styles
+{
+    @await RenderSectionAsync("styles", required: false)
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+    {
+        BodyContentFunc = _ => RenderBody(),
+        MenuContentFunc = 
+            @<div class="d-flex flex-column gap-3">                
+                @await Html.PartialAsync("Components/_SideMenu", homeMenuItems)
+                @await Html.PartialAsync("Components/_SideMenu", groupMenuItems)
+                @await Html.PartialAsync("Components/_SideMenu", eventMenuItems)
+            </div>
+    }),
+    Title = chapter.Name
+})
+
+@section scripts
+{
+    @await RenderSectionAsync("scripts", required: false)
+}

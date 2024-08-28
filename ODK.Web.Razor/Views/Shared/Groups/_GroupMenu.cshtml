@@ -23,6 +23,11 @@
         menuItems.Add(new MenuItem { Text = "My profile", Link = OdkRoutes2.Groups.Profile.Index(Model.Chapter) });
     }
 
+    if (Model.IsAdmin)
+    {
+        menuItems.Add(new MenuItem { Text = "Manage", Link = OdkRoutes2.MemberGroups.Group(Model.Chapter.Id) });
+    }
+
     var id = "nav-group";
 }
 

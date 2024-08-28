@@ -1,0 +1,19 @@
+﻿@page "/my/groups/{id:guid}/venues"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Venues
+@model IndexModel
+@inject IVenueAdminService VenueAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Venues";
+
+    var viewModel = await VenueAdminService.GetVenuesViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Venues/_VenuesContent", viewModel)
+
+@section scripts
+{
+    <script src="~/js/odk.lists.js" asp-append-version="true"></script>
+}

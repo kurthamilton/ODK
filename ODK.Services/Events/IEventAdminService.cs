@@ -21,10 +21,12 @@ public interface IEventAdminService
 
     Task<EventResponsesDto> GetEventResponsesDto(AdminServiceRequest request, Guid eventId);
 
-    Task<EventsAdminPageViewModel> GetEventsDto(AdminServiceRequest request, int page, int pageSize);
-
     Task<IReadOnlyCollection<Event>> GetEventsByVenue(AdminServiceRequest request, Guid venueId);
 
+    Task<EventsAdminPageViewModel> GetEventsDto(AdminServiceRequest request, int page, int pageSize);    
+
+    Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(AdminServiceRequest request);
+    
     Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(AdminServiceRequest request, Guid eventId);
 
     Task<DateTime> GetNextAvailableEventDate(AdminServiceRequest request);

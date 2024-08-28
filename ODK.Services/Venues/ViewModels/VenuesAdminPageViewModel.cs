@@ -1,15 +1,14 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
+using ODK.Core.Events;
 using ODK.Core.Platforms;
 using ODK.Core.Venues;
 
-namespace ODK.Web.Razor.Models.Admin.Events;
-
-public class EventFormViewModel : EventFormSubmitViewModel
+namespace ODK.Services.Venues.ViewModels;
+public class VenuesAdminPageViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    public required MemberSiteSubscription? OwnerSubscription { get; init; }
+    public required IReadOnlyCollection<Event> Events { get; init; }
 
     public required PlatformType Platform { get; init; }
 

@@ -8,9 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Pages\Groups\Admin\**" />
     <Compile Remove="wwwroot\lib\vanillajs-datepicker\**" />
+    <Content Remove="Pages\Groups\Admin\**" />
     <Content Remove="wwwroot\lib\vanillajs-datepicker\**" />
+    <EmbeddedResource Remove="Pages\Groups\Admin\**" />
     <EmbeddedResource Remove="wwwroot\lib\vanillajs-datepicker\**" />
+    <None Remove="Pages\Groups\Admin\**" />
     <None Remove="wwwroot\lib\vanillajs-datepicker\**" />
   </ItemGroup>
 
@@ -25,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\Groups\Admin\Events\" />
     <Folder Include="wwwroot\lib\" />
   </ItemGroup>
 

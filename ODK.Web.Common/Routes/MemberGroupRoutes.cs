@@ -26,6 +26,9 @@ public class MemberGroupRoutes
         _ => $"{Group(chapter.Id)}/events"
     };
 
+    public string EventSettings(PlatformType platform, Chapter chapter)
+        => $"{Events(platform, chapter)}/settings";
+
     public string Group(Guid id) => $"{Index()}/{id}";
 
     public string GroupCreate() => $"{Index()}/new";
@@ -38,7 +41,7 @@ public class MemberGroupRoutes
     public string VenueCreate(PlatformType platform, Chapter chapter) => platform switch
     {
         PlatformType.DrunkenKnitwits => $"/{Venues(platform, chapter)}/Create",
-        _ => $"/{Venues(platform, chapter)}/new"
+        _ => $"{Venues(platform, chapter)}/new"
     };
 
     public string Venues(PlatformType platform, Chapter chapter) => platform switch

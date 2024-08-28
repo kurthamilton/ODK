@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Services;
 using ODK.Services.Chapters;
@@ -13,13 +14,16 @@ public class EventCreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterService _chapterService;
     private readonly IEventAdminService _eventAdminService;
+    private readonly IPlatformProvider _platformProvider;
 
     public EventCreateModel(
         IEventAdminService eventAdminService,
-        IChapterService chapterService)
+        IChapterService chapterService,
+        IPlatformProvider platformProvider)
     {
         _chapterService = chapterService;
         _eventAdminService = eventAdminService;
+        _platformProvider = platformProvider;
     }
 
     public void OnGet()
@@ -52,9 +56,10 @@ public class EventCreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
+        var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterService.GetChapterById(ChapterId);
         AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
-        var url = OdkRoutes2.Groups.Events(chapter);
+        var url = OdkRoutes2.MemberGroups.Events(platform, chapter);
         return Redirect(url);
     }
 }

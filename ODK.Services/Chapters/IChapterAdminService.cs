@@ -37,8 +37,6 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(AdminServiceRequest request);
 
-    Task<ChapterEventSettings?> GetChapterEventSettings(AdminServiceRequest request);    
-
     Task<ChapterLinks?> GetChapterLinks(AdminServiceRequest request);
 
     Task<ChapterLocation?> GetChapterLocation(AdminServiceRequest request);

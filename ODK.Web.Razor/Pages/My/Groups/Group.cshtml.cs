@@ -1,11 +1,8 @@
 namespace ODK.Web.Razor.Pages.My.Groups;
 
-public class GroupModel : OdkPageModel
+public class GroupModel : OdkGroupAdminPageModel
 {
-    public Guid ChapterId { get; set; }
-
-    public void OnGet(Guid id)
+    public void OnGet()
     {
-        ChapterId = id;
     }
 }

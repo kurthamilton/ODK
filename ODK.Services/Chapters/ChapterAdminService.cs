@@ -372,12 +372,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ContactRequestRepository.GetByChapterId(request.ChapterId));
     }
 
-    public async Task<ChapterEventSettings?> GetChapterEventSettings(AdminServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId));
-    }    
-
     public async Task<ChapterLinks?> GetChapterLinks(AdminServiceRequest request)
     {
         return await GetChapterAdminRestrictedContent(request,

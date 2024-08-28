@@ -306,6 +306,22 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         return events;
     }
     
+    public async Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, settings) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId));
+
+        return new EventSettingsAdminPageViewModel
+        {
+            Chapter = chapter,
+            Platform = platform,
+            Settings = settings
+        };
+    }
+
     public async Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(AdminServiceRequest request, Guid eventId)
     {
         var platform = _platformProvider.GetPlatform();

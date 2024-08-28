@@ -34,8 +34,7 @@
     @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
     {
         AttendeeLimit = Model.Event.AttendeeLimit,
-        ChapterId = Model.Chapter.Id,
-        ChapterName = Model.Chapter.Name,
+        Chapter = Model.Chapter,
         CurrencySymbol = Model.Currency?.Symbol,
         Date = Model.Event.ToLocalTime(Model.Chapter.TimeZone),
         Description = Model.Event.Description,
@@ -45,6 +44,7 @@
         ImageUrl = Model.Event.ImageUrl,
         Name = Model.Event.Name,
         OwnerSubscription = Model.OwnerSubscription,
+        Platform = Model.Platform,
         Public = Model.Event.IsPublic,
         RsvpDeadline = Model.Event.RsvpDeadlineUtc != null ? Model.Chapter.ToChapterTime(Model.Event.RsvpDeadlineUtc.Value) : null,
         TicketCost = Model.Event.TicketSettings?.Cost,

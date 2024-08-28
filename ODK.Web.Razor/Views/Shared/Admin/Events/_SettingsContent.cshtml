@@ -1,32 +1,28 @@
-﻿@using ODK.Core.Events
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Events
 @using ODK.Core.Utils
 @using ODK.Core.Venues
 @using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Events
+@using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Admin.Events
-@model ODK.Core.Chapters.Chapter
-@inject IChapterAdminService ChapterAdminService
-@{
-    var memberId = User.MemberId();
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var settings = await ChapterAdminService.GetChapterEventSettings(serviceRequest);
-}
+@model EventSettingsAdminPageViewModel
 
 <h2>Event settings</h2>
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Events/_SettingsForm", new EventSettingsFormViewModel
     {
-        DefaultDayOfWeek = settings?.DefaultDayOfWeek,
-        DefaultDescription = settings?.DefaultDescription,
-        DefaultEndTime = TimeSpanUtils.ToString(settings?.DefaultEndTime),
-        DefaultScheduledEmailDayOfWeek = settings?.DefaultScheduledEmailDayOfWeek,
-        DefaultScheduledEmailTimeOfDay = TimeSpanUtils.ToString(settings?.DefaultScheduledEmailTimeOfDay),
-        DefaultStartTime = TimeSpanUtils.ToString(settings?.DefaultStartTime),
-        DisableComments = settings?.DisableComments ?? false
+        DefaultDayOfWeek = Model.Settings?.DefaultDayOfWeek,
+        DefaultDescription = Model.Settings?.DefaultDescription,
+        DefaultEndTime = TimeSpanUtils.ToString(Model.Settings?.DefaultEndTime),
+        DefaultScheduledEmailDayOfWeek = Model.Settings?.DefaultScheduledEmailDayOfWeek,
+        DefaultScheduledEmailTimeOfDay = TimeSpanUtils.ToString(Model.Settings?.DefaultScheduledEmailTimeOfDay),
+        DefaultStartTime = TimeSpanUtils.ToString(Model.Settings?.DefaultStartTime),
+        DisableComments = Model.Settings?.DisableComments ?? false
     })
     <button class="btn btn-primary">Update</button>
 </form>

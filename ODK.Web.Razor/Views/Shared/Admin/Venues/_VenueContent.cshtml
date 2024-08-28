@@ -9,7 +9,6 @@
     @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel
     {
         Address = Model.Venue.Address,
-        ChapterId = Model.Chapter.Id,
         Lat = Model.Location?.LatLong.Lat,
         LocationName = Model.Location?.Name ?? Model.Venue.MapQuery,
         Long = Model.Location?.LatLong.Long,

@@ -11,10 +11,6 @@ public class EventFormSubmitViewModel
     [Range(1, int.MaxValue, ErrorMessage = "{0} cannot be less than 1")]
     public int? AttendeeLimit { get; set; }
 
-    public Guid ChapterId { get; set; }
-
-    public string ChapterName { get; set; } = "";
-
     public string? CurrencySymbol { get; set; }
 
     public DateTime Date { get; set; }

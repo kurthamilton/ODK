@@ -3,18 +3,12 @@
 @using ODK.Core.Venues
 @using ODK.Services
 @using ODK.Services.Events
-@using ODK.Services.Venues
+@using ODK.Services.Venues.ViewModels
 @using ODK.Web.Common.Extensions
-@model ODK.Core.Chapters.Chapter
-@inject IEventAdminService EventAdminService
-@inject IVenueAdminService VenueAdminService
-@{
-    var memberId = User.MemberId();
-
-    var request = new AdminServiceRequest(Model.Id, memberId);
-    var dto = await VenueAdminService.GetVenuesDto(request);
-
-    var (venues, events) = (dto.Venues, dto.Events);
+@using ODK.Web.Common.Routes
+@model VenuesAdminPageViewModel
+@{    
+    var (venues, events) = (Model.Venues, Model.Events);
 
     var eventCounts = events
         .GroupBy(x => x.VenueId)
@@ -26,7 +20,7 @@
 
 <h2>Venues</h2>
 <p>
-    <a href="/@Model.Name/Admin/Events/Venues/Create" class="btn btn-primary">Create</a>
+    <a href="@OdkRoutes2.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">Create</a>
 </p>
 <table class="table table-striped" data-sortable>
     <thead>
@@ -42,7 +36,7 @@
     {
         <tr>
             <td>
-                <a data-sort-value="@venue.Name" href="/@Model.Name/Admin/Events/Venues/@venue.Id">@venue.Name</a>
+                <a data-sort-value="@venue.Name" href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, venue)">@venue.Name</a>
             </td>
             <td>@venue.MapQuery</td>
             <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>

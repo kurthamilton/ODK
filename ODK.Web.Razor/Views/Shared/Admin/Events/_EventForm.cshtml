@@ -24,6 +24,7 @@
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Venue, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", "Select an existing venue or create a new venue first on the venues page")    
+    <a href="@OdkRoutes2.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)">Create venue</a>
     @Html.DropDownListFor(x => x.Venue, venueOptions, "", new { @class = "form-select", data_searchable = "" })
     @Html.ValidationMessageFor(x => x.Venue)
 </div>
@@ -33,7 +34,7 @@
     @await Html.PartialAsync("Components/_Tooltip", "Event date. Start time defaults to value set in event settings")
     @if (Model.Date.Date == Model.Date)
     {
-        <a href="/@Model.ChapterName/Admin/Events/Settings">Set default start time</a>
+        <a href="@OdkRoutes2.MemberGroups.EventSettings(Model.Platform, Model.Chapter)">Set default start time</a>
     }    
     @Html.TextBoxFor(x => x.Date, format: "{0:dd/MM/yyyy HH:mm}", new 
     { 

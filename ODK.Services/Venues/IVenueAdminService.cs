@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Venues;
+using ODK.Services.Venues.ViewModels;
 
 namespace ODK.Services.Venues;
 
@@ -12,7 +13,7 @@ public interface IVenueAdminService
 
     Task<IReadOnlyCollection<Venue>> GetVenues(AdminServiceRequest request);
 
-    Task<VenuesDto> GetVenuesDto(AdminServiceRequest request);
+    Task<VenuesAdminPageViewModel> GetVenuesViewModel(AdminServiceRequest request);
 
     Task<ServiceResult> UpdateVenue(AdminServiceRequest request, Guid id, CreateVenue venue);
 }

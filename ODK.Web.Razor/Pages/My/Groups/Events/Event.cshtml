@@ -1,24 +1,15 @@
 ﻿@page "/my/groups/{id:guid}/events/{eventId:guid}"
-@using ODK.Services
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Events
-@using ODK.Web.Common.Components
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.My.Groups.Events.EventModel
 @inject IEventAdminService EventAdminService
 @{
-    Layout = "_HomeLayout";
+    Layout = "_GroupAdminLayout";
 
-    var request = new AdminServiceRequest(Model.ChapterId, Model.CurrentMemberId);
-    var viewModel = await EventAdminService.GetEventEditViewModel(request, Model.EventId);
+    var viewModel = await EventAdminService.GetEventEditViewModel(Model.AdminServiceRequest, Model.EventId);
+
+    Model.Title = viewModel.Event.GetDisplayName();
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Breadcrumbs = new []
-    {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Events(viewModel.Platform, viewModel.Chapter), Text = "Events" },
-        new MenuItem { Text = viewModel.Event.GetDisplayName() }
-    },
-    Content = await Html.PartialAsync("Admin/Events/_EventContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Events/_EventContent", viewModel)
