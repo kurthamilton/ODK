@@ -36,7 +36,7 @@
     {
         <tr>
             <td>
-                <a data-sort-value="@venue.Name" href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, venue)">@venue.Name</a>
+                <a data-sort-value="@venue.Name" href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a>
             </td>
             <td>@venue.MapQuery</td>
             <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>

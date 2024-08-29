@@ -1,24 +1,24 @@
 ﻿@using ODK.Core.Members
 @using ODK.Services
 @using ODK.Services.Members
+@using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Members
-@inject IMemberAdminService MemberAdminService
-@model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
-@{
-    var currentMemberId = User.MemberId();
-    var serviceRequest = new AdminServiceRequest(Model.Chapter.Id, currentMemberId);
-    var subscription = await MemberAdminService.GetMemberSubscription(serviceRequest, Model.Member.Id);
-}
+@model MemberAdminPageViewModel
 
-@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
+@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", new MemberAdminTabsViewModel
+{
+    Chapter = Model.Chapter,
+    Member = Model.Member,
+    Platform = Model.Platform
+})
 
-<form method="post" action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id">
+<form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_MemberForm", new MemberFormViewModel
     {
-        SubscriptionExpiryDate = subscription?.ExpiresUtc,
-        SubscriptionType = subscription?.Type
+        SubscriptionExpiryDate = Model.Subscription?.ExpiresUtc,
+        SubscriptionType = Model.Subscription?.Type
     })
     <div class="d-flex">
         <button type="submit" class="btn btn-primary me-auto">Update</button>
@@ -30,6 +30,6 @@
     </div>
 </form>
 
-<form method="post" action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/Delete"
+<form method="post" action="groups/@Model.Chapter.Id/members/@Model.Member.Id/delete"
       id="member-delete-form">
 </form>

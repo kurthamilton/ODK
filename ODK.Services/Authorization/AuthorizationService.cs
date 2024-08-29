@@ -68,7 +68,7 @@ public class AuthorizationService : IAuthorizationService
         Chapter chapter,
         SiteFeatureType feature)
     {
-        var ownerSubscription = await _unitOfWork.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id).RunAsync();
+        var ownerSubscription = await _unitOfWork.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id).Run();
 
         return ChapterHasAccess(ownerSubscription, feature);
     }
@@ -92,7 +92,7 @@ public class AuthorizationService : IAuthorizationService
             return SubscriptionStatus.Current;
         }
 
-        if (subscription == null || subscription.Type == SubscriptionType.Alum)
+        if (subscription == null)
         {
             return SubscriptionStatus.Disabled;
         }

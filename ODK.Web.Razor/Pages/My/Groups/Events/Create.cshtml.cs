@@ -10,13 +10,13 @@ using ODK.Web.Razor.Models.Admin.Events;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Events;
 
-public class EventCreateModel : OdkGroupAdminPageModel
+public class CreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterService _chapterService;
     private readonly IEventAdminService _eventAdminService;
     private readonly IPlatformProvider _platformProvider;
 
-    public EventCreateModel(
+    public CreateModel(
         IEventAdminService eventAdminService,
         IChapterService chapterService,
         IPlatformProvider platformProvider)
@@ -24,10 +24,13 @@ public class EventCreateModel : OdkGroupAdminPageModel
         _chapterService = chapterService;
         _eventAdminService = eventAdminService;
         _platformProvider = platformProvider;
-    }
+    }    
 
-    public void OnGet()
+    public Guid? VenueId { get; private set; }
+
+    public void OnGet([FromQuery] Guid? venueId = null)
     {
+        VenueId = venueId;
     }
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)

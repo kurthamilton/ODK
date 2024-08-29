@@ -44,7 +44,7 @@ public class AuthenticationService : IAuthenticationService
     {
         var token = await _unitOfWork.MemberActivationTokenRepository
             .GetByToken(activationToken)
-            .RunAsync();
+            .Run();
         if (token == null)
         {
             return ServiceResult.Failure("The link you followed is no longer valid");
@@ -85,7 +85,7 @@ public class AuthenticationService : IAuthenticationService
     {
         var token = await _unitOfWork.MemberActivationTokenRepository
             .GetByToken(activationToken)
-            .RunAsync();
+            .Run();
         if (token == null || token.ChapterId != null)
         {
             return ServiceResult.Failure("The link you followed is no longer valid");
@@ -131,7 +131,7 @@ public class AuthenticationService : IAuthenticationService
     {
         var memberPassword = await _unitOfWork.MemberPasswordRepository
             .GetByMemberId(memberId)
-            .RunAsync();
+            .Run();
         var matches = CheckPassword(memberPassword, currentPassword);
         if (!matches)
         {
@@ -150,7 +150,7 @@ public class AuthenticationService : IAuthenticationService
     {
         var member = await _unitOfWork.MemberRepository
             .GetByEmailAddress(username)
-            .RunAsync();
+            .Run();
         if (member == null || !member.IsCurrent())
         {
             return null;
@@ -158,7 +158,7 @@ public class AuthenticationService : IAuthenticationService
 
         var memberPassword = await _unitOfWork.MemberPasswordRepository
             .GetByMemberId(member.Id)
-            .RunAsync();
+            .Run();
 
         bool passwordMatches = CheckPassword(memberPassword, password);
         return passwordMatches ? member : null;
@@ -166,7 +166,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(Member member)
     {
-        var adminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByMemberId(member.Id).RunAsync();
+        var adminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByMemberId(member.Id).Run();
 
         var claims = new List<Claim>
         {
@@ -191,7 +191,7 @@ public class AuthenticationService : IAuthenticationService
     {
         var chapter = await _unitOfWork.ChapterRepository
             .GetById(chapterId)
-            .RunAsync();
+            .Run();
 
         return await RequestPasswordResetAsync(chapter, emailAddress);
     }
@@ -212,7 +212,7 @@ public class AuthenticationService : IAuthenticationService
 
         var request = await _unitOfWork.MemberPasswordResetRequestRepository
             .GetByToken(token)
-            .RunAsync();
+            .Run();
         if (request == null)
         {
             return ServiceResult.Failure(message);
@@ -228,7 +228,7 @@ public class AuthenticationService : IAuthenticationService
 
         var memberPassword = await _unitOfWork.MemberPasswordRepository
             .GetByMemberId(request.MemberId)
-            .RunAsync();
+            .Run();
 
         memberPassword = UpdatePassword(memberPassword, password);
         
@@ -275,7 +275,7 @@ public class AuthenticationService : IAuthenticationService
 
         var member = await _unitOfWork.MemberRepository
             .GetByEmailAddress(emailAddress)
-            .RunAsync();
+            .Run();
         if (member == null)
         {
             // return fake success to avoid leaking valid email addresses
@@ -284,7 +284,7 @@ public class AuthenticationService : IAuthenticationService
 
         if (!member.Activated)
         {
-            var activationToken = await _unitOfWork.MemberActivationTokenRepository.GetByMemberId(member.Id).RunAsync();
+            var activationToken = await _unitOfWork.MemberActivationTokenRepository.GetByMemberId(member.Id).Run();
             if (activationToken == null)
             {
                 activationToken = new MemberActivationToken

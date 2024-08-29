@@ -13,8 +13,8 @@ public class CountryService : ICountryService
     }
 
     public Task<Country> GetCountry(Guid countryId) =>
-        _unitOfWork.CountryRepository.GetById(countryId).RunAsync();
+        _unitOfWork.CountryRepository.GetById(countryId).Run();
 
     public Task<IReadOnlyCollection<DistanceUnit>> GetDistanceUnits() =>
-        _unitOfWork.DistanceUnitRepository.GetAll().RunAsync();
+        _unitOfWork.DistanceUnitRepository.GetAll().Run();
 }

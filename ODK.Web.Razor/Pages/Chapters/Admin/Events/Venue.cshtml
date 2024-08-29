@@ -1,12 +1,16 @@
 ﻿@page "/{chapterName}/Admin/Events/Venues/{id:guid}"
+@using ODK.Services.Venues
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Admin.Venues
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.VenueModel
+@inject IVenueAdminService VenueAdminService
 @{
     Layout = "Admin/Events/_EventAdminLayout";
     Model.Title = "Edit Venue | Admin";
+
+    var viewModel = await VenueAdminService.GetVenueViewModel(Model.AdminServiceRequest, Model.VenueId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -16,8 +20,10 @@
        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Events/Venues", Text = "Venues" },
        new MenuItem { Text = Model.Venue.Name }
     },
-    Content = await Html.PartialAsync("Admin/Venues/_VenueContent", 
-       new VenueViewModel(Model.Chapter, Model.Venue, Model.Location))
+    Content = await Html.PartialAsync("Admin/Venues/_VenueContent", viewModel)
 })
 
-@await Html.PartialAsync("Components/_GoogleLocationScripts")
+@section scripts
+{
+    @await Html.PartialAsync("Components/_GoogleLocationScripts")
+}

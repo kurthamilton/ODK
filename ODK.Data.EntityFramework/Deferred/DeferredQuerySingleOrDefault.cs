@@ -47,7 +47,7 @@ public class DeferredQuerySingleOrDefault<T> : IDeferredQuerySingleOrDefault<T> 
         _updateCache = updateCache;
     }
 
-    public async Task<T?> RunAsync()
+    public async Task<T?> Run()
     {
         if (_cached != null)
         {

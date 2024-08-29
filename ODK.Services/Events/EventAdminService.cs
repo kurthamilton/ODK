@@ -354,7 +354,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<DateTime> GetNextAvailableEventDate(AdminServiceRequest request)
     {
-        var chapter = await _unitOfWork.ChapterRepository.GetById(request.ChapterId).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetById(request.ChapterId).Run();
 
         var startOfDay = chapter.CurrentTime().StartOfDay();
         var startOfDayUtc = chapter.FromLocalTime(startOfDay);
@@ -498,7 +498,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             .Select(x => x.EventId)
             .ToArray();
 
-        var events = await _unitOfWork.EventRepository.GetByIds(eventIds).RunAsync();
+        var events = await _unitOfWork.EventRepository.GetByIds(eventIds).Run();
 
         var emailDictionary = emails.ToDictionary(x => x.EventId);
 
@@ -984,7 +984,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         var sentDate = DateTime.UtcNow;
 
-        var eventEmail = await _unitOfWork.EventEmailRepository.GetByEventId(@event.Id).RunAsync();
+        var eventEmail = await _unitOfWork.EventEmailRepository.GetByEventId(@event.Id).Run();
         if (eventEmail == null)
         {
             eventEmail = new();

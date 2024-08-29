@@ -7,11 +7,19 @@ public interface IMemberAdminService
 {
     Task DeleteMember(AdminServiceRequest request, Guid memberId);
 
+    Task<AdminMembersAdminPageViewModel> GetAdminMembersAdminPageViewModel(AdminServiceRequest request);
+
+    Task<BulkEmailAdminPageViewModel> GetBulkEmailViewModel(AdminServiceRequest request);
+
     Task<Member> GetMember(AdminServiceRequest request, Guid memberId);
 
     Task<MemberAvatar?> GetMemberAvatar(AdminServiceRequest request, Guid memberId);
 
     Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(AdminServiceRequest request);
+
+    Task<MemberEmailAdminPageViewModel> GetMemberEmailViewModel(AdminServiceRequest request, Guid memberId);
+
+    Task<MemberEventsAdminPageViewModel> GetMemberEventsViewModel(AdminServiceRequest request, Guid memberId);
 
     Task<MemberImage?> GetMemberImage(AdminServiceRequest request, Guid memberId);
 
@@ -28,6 +36,8 @@ public interface IMemberAdminService
     Task<SubscriptionAdminPageViewModel> GetMemberSubscriptionViewModel(AdminServiceRequest request, Guid subscriptionId);
 
     Task<MembersAdminPageViewModel> GetMembersViewModel(AdminServiceRequest request);
+
+    Task<MemberAdminPageViewModel> GetMemberViewModel(AdminServiceRequest request, Guid memberId);
 
     Task RotateMemberImage(AdminServiceRequest request, Guid memberId);
 

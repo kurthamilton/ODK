@@ -36,7 +36,7 @@ public class InstagramService : IInstagramService
     {
         await ScrapeLatestInstagramPosts(chapterId);
 
-        var posts = await _unitOfWork.InstagramPostRepository.GetByChapterId(chapterId, 8).RunAsync();
+        var posts = await _unitOfWork.InstagramPostRepository.GetByChapterId(chapterId, 8).Run();
 
         return posts
             .Select(x => new SocialMediaImage
@@ -52,7 +52,7 @@ public class InstagramService : IInstagramService
         var result = await _cacheService.GetOrSetVersionedItem(
             async () =>
             {
-                var result = await _unitOfWork.InstagramImageRepository.GetByPostId(instagramPostId).RunAsync();
+                var result = await _unitOfWork.InstagramImageRepository.GetByPostId(instagramPostId).Run();
                 return result;
             },
             instagramPostId,
@@ -94,7 +94,7 @@ public class InstagramService : IInstagramService
 
     public async Task ScrapeLatestInstagramPosts()
     {
-        var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
+        var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
         foreach (var chapter in chapters)
         {
             var authorized = await _authorizationService.ChapterHasAccess(chapter, SiteFeatureType.InstagramFeed);

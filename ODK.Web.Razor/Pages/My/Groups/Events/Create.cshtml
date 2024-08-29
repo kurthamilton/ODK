@@ -4,7 +4,7 @@
 @using ODK.Core.Utils
 @using ODK.Services.Events
 @using ODK.Web.Razor.Models.Admin.Events
-@model EventCreateModel
+@model CreateModel
 @inject IEventAdminService EventAdminService
 @{
     Layout = "_GroupAdminLayout";
@@ -36,6 +36,7 @@
         HostOptions = hostOptions,
         OwnerSubscription = viewModel.OwnerSubscription,
         Platform = viewModel.Platform,
+        Venue = Model.VenueId ?? default,
         Venues = viewModel.Venues
     })
     

@@ -1,24 +1,27 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Features
 @using ODK.Core.Members
+@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
-@model Chapter
+@model BulkEmailAdminPageViewModel
 
 <h2>Bulk email</h2>
 
-@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model)
+@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.Chapter)
 {
     Feature = SiteFeatureType.SendMemberEmails,
     ContentFunc = 
-        @<form method="post" action="/groups/@Model.Id/members/emails/send">
+        @<form method="post" action="/groups/@Model.Chapter.Id/members/email" data-live-url-container>
             @Html.AntiForgeryToken()
 
             <p>
                 <div class="row row-cols-lg-auto g-3 align-items-center">
                     <div class="col-12">
                         <label class="form-label" for="type-filter">Type</label>
-                        <select class="form-control" id="type-filter" name="Type" multiple>
+                        <select class="form-select" id="type-filter" name="Type" multiple
+                            data-live-url-source="type">
                             @foreach (var type in Enum.GetValues<SubscriptionType>())
                             {
                                 if (type == SubscriptionType.None)
@@ -26,20 +29,14 @@
                                     continue;
                                 }
 
-                                if (type != SubscriptionType.Alum)
-                                {
-                                    <option selected>@type</option>
-                                }
-                                else
-                                {
-                                    <option>@type</option>
-                                }
+                                <option selected>@type</option>
                             }
                         </select>
                     </div>
                     <div class="col-12">
                         <label class="form-label" for="status-filter">Subscription status</label>
-                        <select class="form-control" id="status-filter" name="Status" multiple>
+                        <select class="form-select" id="status-filter" name="Status" multiple
+                            data-live-url-source="status">
                             @foreach (SubscriptionStatus status in Enum.GetValues<SubscriptionStatus>())
                             {
                                 if (status == SubscriptionStatus.None)
@@ -47,18 +44,18 @@
                                     continue;
                                 }
 
-                                if (status != SubscriptionStatus.Disabled)
-                                {
-                                    <option selected>@status</option>
-                                }
-                                else
-                                {
-                                    <option>@status</option>
-                                }
+                                <option selected>@status</option>
                             }
                         </select>
                     </div>
                 </div>
+            </p>
+
+            <p>
+                <a href="@OdkRoutes2.MemberGroups.Members(Model.Platform, Model.Chapter)" target="_blank"
+                    data-live-url-base>
+                    Preview members
+                </a>
             </p>
 
             @await Html.PartialAsync("Admin/Members/_SendMemberEmailForm", new SendMemberEmailFormViewModel())

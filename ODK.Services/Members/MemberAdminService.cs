@@ -1,6 +1,7 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -9,6 +10,7 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
+using ODK.Services.Events.ViewModels;
 using ODK.Services.Members.ViewModels;
 
 namespace ODK.Services.Members;
@@ -54,6 +56,37 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         _unitOfWork.MemberRepository.Delete(member);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<AdminMembersAdminPageViewModel> GetAdminMembersAdminPageViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, adminMembers, members) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberRepository.GetByChapterId(request.ChapterId));
+
+        return new AdminMembersAdminPageViewModel
+        {
+            AdminMembers = adminMembers,
+            Chapter = chapter,
+            Members = members,
+            Platform = platform
+        };
+    }
+
+    public async Task<BulkEmailAdminPageViewModel> GetBulkEmailViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var chapter = await _unitOfWork.ChapterRepository.GetById(request.ChapterId).Run();
+
+        return new BulkEmailAdminPageViewModel
+        {
+            Chapter = chapter,
+            Platform = platform
+        };
     }
 
     public async Task<Member> GetMember(AdminServiceRequest request, Guid memberId)
@@ -120,6 +153,67 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         }
 
         return csv;
+    }
+
+    public async Task<MemberEmailAdminPageViewModel> GetMemberEmailViewModel(AdminServiceRequest request, Guid memberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, member) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(memberId));
+
+        OdkAssertions.MemberOf(member, chapter.Id);
+
+        return new MemberEmailAdminPageViewModel
+        {
+            Chapter = chapter,
+            Member = member,
+            Platform = platform
+        };
+    }
+
+    public async Task<MemberEventsAdminPageViewModel> GetMemberEventsViewModel(AdminServiceRequest request, Guid memberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, member, events, venues, responses, invites) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.EventRepository.GetByChapterId(request.ChapterId),
+            x => x.VenueRepository.GetByChapterId(request.ChapterId),
+            x => x.EventResponseRepository.GetAllByMemberId(memberId, request.ChapterId),
+            x => x.EventInviteRepository.GetAllByMemberId(memberId, request.ChapterId));
+
+        OdkAssertions.MemberOf(member, chapter.Id);
+
+        var responseViewModels = new List<EventResponseViewModel>();
+
+        var inviteDictionary = invites.ToDictionary(x => x.EventId);
+        var responseDictionary = responses.ToDictionary(x => x.EventId);
+        var venueDictionary = venues.ToDictionary(x => x.Id);
+
+        foreach (var @event in events)
+        {
+            inviteDictionary.TryGetValue(@event.Id, out var invite);
+            responseDictionary.TryGetValue(@event.Id, out var response);
+            if (invite == null && response == null)
+            {
+                continue;
+            }
+
+            venueDictionary.TryGetValue(@event.VenueId, out var venue);
+
+            responseViewModels.Add(new EventResponseViewModel(@event, venue, response?.Type ?? EventResponseType.None, invite != null));
+        }
+
+        return new MemberEventsAdminPageViewModel
+        {
+            Chapter = chapter,
+            Member = member,
+            Platform = platform,
+            Responses = responseViewModels
+        };
     }
 
     public async Task<MemberImage?> GetMemberImage(AdminServiceRequest request, Guid memberId)
@@ -230,8 +324,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, members, subscriptions) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, membershipSettings, members, subscriptions) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetAllByChapterId(request.ChapterId),
             x => x.MemberSubscriptionRepository.GetByChapterId(request.ChapterId));
 
@@ -239,8 +334,29 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         {
             Chapter = chapter,
             Members = members,
+            MembershipSettings = membershipSettings,
             Platform = platform,
             Subscriptions = subscriptions
+        };
+    }
+
+    public async Task<MemberAdminPageViewModel> GetMemberViewModel(AdminServiceRequest request, Guid memberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+        
+        var (chapter, member, subscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, request.ChapterId));
+
+        OdkAssertions.MemberOf(member, chapter.Id);
+
+        return new MemberAdminPageViewModel
+        {
+            Chapter = chapter,
+            Member = member,
+            Platform = platform,
+            Subscription = subscription
         };
     }
 
@@ -309,7 +425,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task SendMemberSubscriptionReminderEmails()
     {
-        var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
+        var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
         foreach (var chapter in chapters)
         {
             var (members, memberSubscriptions, membershipSettings) = await _unitOfWork.RunAsync(
@@ -498,16 +614,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId));
 
-        var expiryDate = model.Type == SubscriptionType.Alum 
-            ? new DateTime?() 
-            : model.ExpiryDate;
-
         if (memberSubscription == null)
         {
             memberSubscription = new MemberSubscription();
         }
 
-        memberSubscription.ExpiresUtc = expiryDate;
+        memberSubscription.ExpiresUtc = model.ExpiryDate;
         memberSubscription.Type = model.Type;
 
         var validationResult = ValidateMemberSubscription(memberSubscription);
@@ -565,11 +677,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         if (!Enum.IsDefined(typeof(SubscriptionType), subscription.Type) || subscription.Type == SubscriptionType.None)
         {
             return ServiceResult.Failure("Invalid type");
-        }
-
-        if (subscription.Type == SubscriptionType.Alum && subscription.ExpiresUtc != null)
-        {
-            return ServiceResult.Failure("Alum should not have expiry date");
         }
 
         return ServiceResult.Successful();

@@ -9,13 +9,13 @@ using ODK.Web.Razor.Models.Admin.Venues;
 
 namespace ODK.Web.Razor.Pages.My.Groups.Venues;
 
-public class VenueCreateModel : OdkGroupAdminPageModel
+public class CreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterService _chapterService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IVenueAdminService _venueAdminService;
 
-    public VenueCreateModel(
+    public CreateModel(
         IVenueAdminService venueAdminService,
         IChapterService chapterService,
         IPlatformProvider platformProvider) 

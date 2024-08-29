@@ -47,9 +47,9 @@
         var venue = venueDictionary[@event.VenueId];
 
         <tr>
-            <td><a href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, @event)">@(@event.GetDisplayName())</a></td>
+            <td><a href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
             <td>@(@event.Date.EventDate())</td>
-            <td><a href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, venue)">@venue.Name</a></td>
+            <td><a href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a></td>
             <td>
                 @if (eventInvites?.SentUtc == null)
                 {

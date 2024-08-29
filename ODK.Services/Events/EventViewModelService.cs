@@ -31,7 +31,7 @@ public class EventViewModelService : IEventViewModelService
     public async Task<EventPageViewModel> GetEventPageViewModel(Guid? currentMemberId, string chapterName, 
         Guid eventId)
     {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter);
 
         var (
@@ -97,7 +97,7 @@ public class EventViewModelService : IEventViewModelService
             {
                 var members = await _unitOfWork.MemberRepository
                     .GetByChapterId(chapter.Id, memberIds)
-                    .RunAsync();
+                    .Run();
 
                 var memberDictionary = members.ToDictionary(x => x.Id);
 
@@ -151,7 +151,7 @@ public class EventViewModelService : IEventViewModelService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter);
 
         var currentTime = chapter.CurrentTime();
@@ -190,7 +190,7 @@ public class EventViewModelService : IEventViewModelService
         }
         else if (eventIds.Length > 0)
         {
-            venues = await _unitOfWork.VenueRepository.GetByEventIds(eventIds).RunAsync();
+            venues = await _unitOfWork.VenueRepository.GetByEventIds(eventIds).Run();
         }
 
         var responseLookup = responses

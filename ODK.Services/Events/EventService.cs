@@ -7,6 +7,7 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
+using ODK.Services.Events.ViewModels;
 using ODK.Services.Payments;
 
 namespace ODK.Services.Events;
@@ -62,7 +63,7 @@ public class EventService : IEventService
         Member? parentCommentMember = null;
         if (parentEventCommentId != null)
         {
-            parentComment = await _unitOfWork.EventCommentRepository.GetByIdOrDefault(parentEventCommentId.Value).RunAsync();
+            parentComment = await _unitOfWork.EventCommentRepository.GetByIdOrDefault(parentEventCommentId.Value).Run();
             if (parentComment != null && parentComment.EventId != @event.Id)
             {
                 parentComment = null;
@@ -70,7 +71,7 @@ public class EventService : IEventService
 
             if (parentComment != null)
             {
-                parentCommentMember = await _unitOfWork.MemberRepository.GetById(parentComment.MemberId).RunAsync();
+                parentCommentMember = await _unitOfWork.MemberRepository.GetById(parentComment.MemberId).Run();
             }
         }
 

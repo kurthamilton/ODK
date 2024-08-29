@@ -158,18 +158,18 @@ public class ChapterService : IChapterService
 
     public async Task<Chapter> GetChapterById(Guid chapterId)
     {
-        return await _unitOfWork.ChapterRepository.GetById(chapterId).RunAsync();
+        return await _unitOfWork.ChapterRepository.GetById(chapterId).Run();
     }
 
     public async Task<Chapter> GetChapterBySlug(string slug)
     {
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         return OdkAssertions.Exists(chapter);
     }
 
     public async Task<ChapterLinks?> GetChapterLinks(Guid chapterId)
     {
-        return await _unitOfWork.ChapterLinksRepository.GetByChapterId(chapterId).RunAsync();
+        return await _unitOfWork.ChapterLinksRepository.GetByChapterId(chapterId).Run();
     }
 
     public async Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
@@ -227,7 +227,7 @@ public class ChapterService : IChapterService
 
     public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId)
     {
-        var questions = await _unitOfWork.ChapterQuestionRepository.GetByChapterId(chapterId).RunAsync();
+        var questions = await _unitOfWork.ChapterQuestionRepository.GetByChapterId(chapterId).Run();
         return questions
             .OrderBy(x => x.DisplayOrder)
             .ToArray();
@@ -235,7 +235,7 @@ public class ChapterService : IChapterService
 
     public async Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId)
     {
-        return await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).RunAsync();
+        return await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).Run();
     }
 
     public async Task<ChaptersDto> GetChaptersDto()
@@ -261,6 +261,6 @@ public class ChapterService : IChapterService
 
     public async Task<ChapterTexts?> GetChapterTexts(Guid chapterId)
     {
-        return await _unitOfWork.ChapterTextsRepository.GetByChapterId(chapterId).RunAsync();
+        return await _unitOfWork.ChapterTextsRepository.GetByChapterId(chapterId).Run();
     }
 }

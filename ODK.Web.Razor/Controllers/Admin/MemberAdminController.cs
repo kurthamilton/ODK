@@ -68,7 +68,7 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{chapterId:guid}/members/{id:guid}/emails/send")]
+    [HttpPost("groups/{chapterId:guid}/members/{id:guid}/email")]
     public async Task<IActionResult> SendEmail(Guid chapterId, Guid id, 
         [FromForm] SendMemberEmailFormViewModel viewModel)
     {
@@ -87,21 +87,21 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/AdminMembers/Add")]
-    public async Task<IActionResult> AddAdminMember(string chapterName, 
+    [HttpPost("groups/{id:guid}/members/admins")]
+    public async Task<IActionResult> AddAdminMember(Guid id, 
         [FromForm] AdminMemberAddFormViewModel viewModel)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = new AdminServiceRequest(id, MemberId);
         var result = await _chapterAdminService.AddChapterAdminMember(serviceRequest, viewModel.MemberId!.Value);
         AddFeedback(result, "Admin member added");
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/AdminMembers/{id:guid}/Delete")]
-    public async Task<IActionResult> AddAdminMember(string chapterName, Guid id)
+    [HttpPost("groups/{id:guid}/members/admins/{memberId:guid}/delete")]
+    public async Task<IActionResult> AddAdminMember(Guid id, Guid memberId)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
-        var result = await _chapterAdminService.DeleteChapterAdminMember(serviceRequest, id);
+        var serviceRequest = new AdminServiceRequest(id, MemberId);
+        var result = await _chapterAdminService.DeleteChapterAdminMember(serviceRequest, memberId);
         AddFeedback(result, "Admin member removed");
         return RedirectToReferrer();
     }
@@ -115,7 +115,7 @@ public class MemberAdminController : AdminControllerBase
         return DownloadCsv(data, $"Members.{DateTime.UtcNow:yyyyMMdd}.csv");
     }
 
-    [HttpPost("groups/{chapterId:guid}/members/emails/send")]
+    [HttpPost("groups/{chapterId:guid}/members/email")]
     public async Task<IActionResult> SendBulkEmail(Guid chapterId, 
         [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {

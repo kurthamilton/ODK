@@ -71,13 +71,13 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
     public async Task<SiteSettings> GetSiteSettings()
     {
-        return await _unitOfWork.SiteSettingsRepository.Get().RunAsync();        
+        return await _unitOfWork.SiteSettingsRepository.Get().Run();        
     }
 
     public async Task<SiteEmailSettings> GetSiteEmailSettings()
     {
         var platform = _platformProvider.GetPlatform();
-        return await _unitOfWork.SiteEmailSettingsRepository.Get(platform).RunAsync();
+        return await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
     }    
 
     public async Task<SitePaymentSettings> GetSitePaymentSettings(Guid currentMemberId)

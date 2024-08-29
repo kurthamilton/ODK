@@ -71,6 +71,26 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         return OdkAssertions.BelongsToChapter(venue, request.ChapterId);
     }
 
+    public async Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(AdminServiceRequest request, Guid venueId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, venue, events) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.VenueRepository.GetById(venueId),
+            x => x.EventRepository.GetByVenueId(venueId));
+
+        OdkAssertions.BelongsToChapter(venue, request.ChapterId);
+
+        return new VenueEventsAdminPageViewModel
+        {
+            Chapter = chapter,
+            Events = events,
+            Platform = platform,
+            Venue = venue
+        };
+    }
+
     public async Task<VenueLocation?> GetVenueLocation(AdminServiceRequest request, Venue venue)
     {
         return await _unitOfWork.VenueLocationRepository.GetByVenueId(venue.Id);
@@ -97,6 +117,27 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             Events = events,
             Platform = platform,
             Venues = venues
+        };
+    }
+
+    public async Task<VenueAdminPageViewModel> GetVenueViewModel(AdminServiceRequest request, Guid venueId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, venue) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.VenueRepository.GetById(venueId));
+
+        OdkAssertions.BelongsToChapter(venue, request.ChapterId);
+
+        var location = await _unitOfWork.VenueLocationRepository.GetByVenueId(venueId);
+
+        return new VenueAdminPageViewModel
+        {
+            Chapter = chapter,
+            Location = location,
+            Platform = platform,
+            Venue = venue
         };
     }
 

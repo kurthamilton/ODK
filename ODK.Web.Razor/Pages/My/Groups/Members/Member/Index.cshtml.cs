@@ -1,4 +1,4 @@
-namespace ODK.Web.Razor.Pages.My.Groups.Members;
+namespace ODK.Web.Razor.Pages.My.Groups.Members.Member;
 
 public class IndexModel : OdkGroupAdminPageModel
 {

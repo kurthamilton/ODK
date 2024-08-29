@@ -1,7 +1,7 @@
 ﻿using ODK.Core.Events;
 using ODK.Core.Venues;
 
-namespace ODK.Services.Events;
+namespace ODK.Services.Events.ViewModels;
 
 public class EventResponseViewModel
 {

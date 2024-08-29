@@ -14,6 +14,6 @@ public class CurrencyService : ICurrencyService
 
     public async Task<IReadOnlyCollection<Currency>> GetCurrencies()
     {
-        return await _unitOfWork.CurrencyRepository.GetAll().RunAsync();
+        return await _unitOfWork.CurrencyRepository.GetAll().Run();
     }
 }

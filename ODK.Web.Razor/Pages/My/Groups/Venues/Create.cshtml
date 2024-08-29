@@ -1,10 +1,10 @@
 ﻿@page "/my/groups/{id:guid}/venues/new"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@model VenueCreateModel
+@model CreateModel
 @{
     Layout = "_GroupAdminLayout";
-    Model.Title = "Create venue | Admin";
+    Model.Title = "Create venue";
 }
 
 @await Html.PartialAsync("Admin/Venues/_VenueCreateContent")

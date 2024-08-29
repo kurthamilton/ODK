@@ -82,8 +82,8 @@ internal class MockUnitOfWork : IUnitOfWork
         var q1 = query1(this);
         var q2 = query2(this);
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync());
+            await q1.Run(),
+            await q2.Run());
     }
 
     public async Task<(T1, T2, T3)> RunAsync<T1, T2, T3>(
@@ -96,9 +96,9 @@ internal class MockUnitOfWork : IUnitOfWork
         var q3 = query3(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run());
     }
 
     public async Task<(T1, T2, T3, T4)> RunAsync<T1, T2, T3, T4>(
@@ -113,10 +113,10 @@ internal class MockUnitOfWork : IUnitOfWork
         var q4 = query4(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync(),
-            await q4.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run());
     }
 
     public async Task<(T1, T2, T3, T4, T5)> RunAsync<T1, T2, T3, T4, T5>(
@@ -133,11 +133,11 @@ internal class MockUnitOfWork : IUnitOfWork
         var q5 = query5(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync(),
-            await q4.RunAsync(),
-            await q5.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run(),
+            await q5.Run());
     }
 
     public async Task<(T1, T2, T3, T4, T5, T6)> RunAsync<T1, T2, T3, T4, T5, T6>(
@@ -156,12 +156,12 @@ internal class MockUnitOfWork : IUnitOfWork
         var q6 = query6(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync(),
-            await q4.RunAsync(),
-            await q5.RunAsync(),
-            await q6.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run(),
+            await q5.Run(),
+            await q6.Run());
     }
 
     public async Task<(T1, T2, T3, T4, T5, T6, T7)> RunAsync<T1, T2, T3, T4, T5, T6, T7>(
@@ -182,13 +182,13 @@ internal class MockUnitOfWork : IUnitOfWork
         var q7 = query7(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync(),
-            await q4.RunAsync(),
-            await q5.RunAsync(),
-            await q6.RunAsync(),
-            await q7.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run(),
+            await q5.Run(),
+            await q6.Run(),
+            await q7.Run());
     }
 
     public async Task<(T1, T2, T3, T4, T5, T6, T7, T8)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8>(
@@ -211,14 +211,14 @@ internal class MockUnitOfWork : IUnitOfWork
         var q8 = query8(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync(),
-            await q4.RunAsync(),
-            await q5.RunAsync(),
-            await q6.RunAsync(),
-            await q7.RunAsync(),
-            await q8.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run(),
+            await q5.Run(),
+            await q6.Run(),
+            await q7.Run(),
+            await q8.Run());
     }
 
     public async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9>(
@@ -243,15 +243,15 @@ internal class MockUnitOfWork : IUnitOfWork
         var q9 = query9(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync(),
-            await q4.RunAsync(),
-            await q5.RunAsync(),
-            await q6.RunAsync(),
-            await q7.RunAsync(),
-            await q8.RunAsync(),
-            await q9.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run(),
+            await q5.Run(),
+            await q6.Run(),
+            await q7.Run(),
+            await q8.Run(),
+            await q9.Run());
     }
 
     public async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
@@ -278,16 +278,16 @@ internal class MockUnitOfWork : IUnitOfWork
         var q10 = query10(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync(),
-            await q4.RunAsync(),
-            await q5.RunAsync(),
-            await q6.RunAsync(),
-            await q7.RunAsync(),
-            await q8.RunAsync(),
-            await q9.RunAsync(),
-            await q10.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run(),
+            await q5.Run(),
+            await q6.Run(),
+            await q7.Run(),
+            await q8.Run(),
+            await q9.Run(),
+            await q10.Run());
     }
 
     public async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(
@@ -316,17 +316,17 @@ internal class MockUnitOfWork : IUnitOfWork
         var q11 = query11(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync(),
-            await q4.RunAsync(),
-            await q5.RunAsync(),
-            await q6.RunAsync(),
-            await q7.RunAsync(),
-            await q8.RunAsync(),
-            await q9.RunAsync(),
-            await q10.RunAsync(),
-            await q11.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run(),
+            await q5.Run(),
+            await q6.Run(),
+            await q7.Run(),
+            await q8.Run(),
+            await q9.Run(),
+            await q10.Run(),
+            await q11.Run());
     }
 
     public async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(
@@ -357,18 +357,18 @@ internal class MockUnitOfWork : IUnitOfWork
         var q12 = query12(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync(),
-            await q4.RunAsync(),
-            await q5.RunAsync(),
-            await q6.RunAsync(),
-            await q7.RunAsync(),
-            await q8.RunAsync(),
-            await q9.RunAsync(),
-            await q10.RunAsync(),
-            await q11.RunAsync(),
-            await q12.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run(),
+            await q5.Run(),
+            await q6.Run(),
+            await q7.Run(),
+            await q8.Run(),
+            await q9.Run(),
+            await q10.Run(),
+            await q11.Run(),
+            await q12.Run());
     }
 
     public async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(
@@ -401,19 +401,19 @@ internal class MockUnitOfWork : IUnitOfWork
         var q13 = query13(this);
 
         return (
-            await q1.RunAsync(),
-            await q2.RunAsync(),
-            await q3.RunAsync(),
-            await q4.RunAsync(),
-            await q5.RunAsync(),
-            await q6.RunAsync(),
-            await q7.RunAsync(),
-            await q8.RunAsync(),
-            await q9.RunAsync(),
-            await q10.RunAsync(),
-            await q11.RunAsync(),
-            await q12.RunAsync(),
-            await q13.RunAsync());
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run(),
+            await q5.Run(),
+            await q6.Run(),
+            await q7.Run(),
+            await q8.Run(),
+            await q9.Run(),
+            await q10.Run(),
+            await q11.Run(),
+            await q12.Run(),
+            await q13.Run());
     }
 
     public Task SaveChangesAsync() => Mock.Object.SaveChangesAsync();

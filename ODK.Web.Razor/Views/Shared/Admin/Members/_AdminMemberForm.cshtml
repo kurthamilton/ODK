@@ -2,13 +2,6 @@
 @model ODK.Web.Razor.Models.Admin.Members.AdminMemberFormViewModel
 
 <div class="form-group mb-3">
-    @Html.LabelFor(x => x.Name, new { @class = "form-label" })
-    <div class="form-control-plaintext">
-        @Model.Name
-    </div>
-</div>
-
-<div class="form-group mb-3">
     @Html.LabelFor(x => x.AdminEmailAddress, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.AdminEmailAddress, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.AdminEmailAddress)

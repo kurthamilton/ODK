@@ -34,7 +34,9 @@
     var memberMenuItems = new[]
     {
         new MenuItem { Link = OdkRoutes2.MemberGroups.Members(platform, chapter), Text = "Members" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.MembersSubscriptions(platform, chapter), Text = "Subscriptions" }
+        new MenuItem { Link = OdkRoutes2.MemberGroups.MemberAdmins(platform, chapter), Text = "Admins" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.MembersSubscriptions(platform, chapter), Text = "Subscriptions" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.MembersEmail(platform, chapter), Text = "Bulk email" }
     };
 }
 
@@ -61,5 +63,6 @@
 
 @section scripts
 {
+    <script src="/js/odk.admin.js" asp-append-version="true"></script>
     @await RenderSectionAsync("scripts", required: false)
 }

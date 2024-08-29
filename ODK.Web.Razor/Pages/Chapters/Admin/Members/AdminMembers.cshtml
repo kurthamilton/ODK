@@ -1,12 +1,20 @@
-﻿@page "/{chapterName}/Admin/Members/AdminMembers"
+﻿@page "/{chapterName}/Admin/Members/Admins"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services
+@using ODK.Services.Members
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.AdminMembersModel
+@inject IMemberAdminService MemberAdminService
 @{
     Layout = "Admin/Members/_MemberAdminLayout";
     Model.Title = "Admin members | Admin";
+
+    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
+    var viewModel = await MemberAdminService.GetAdminMembersAdminPageViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Admin/Members/_AdminMembersContent", Model.Chapter)
+    Content = await Html.PartialAsync("Admin/Members/_AdminMembersContent", viewModel)
 })

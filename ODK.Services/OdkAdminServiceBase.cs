@@ -344,7 +344,7 @@ public abstract class OdkAdminServiceBase
 
     protected async Task AssertMemberIsSuperAdmin(Guid memberId)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
         AssertMemberIsSuperAdmin(member);
     }
 }

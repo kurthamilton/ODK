@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Platforms;
-using ODK.Services.Events;
+using ODK.Services.Events.ViewModels;
 
 namespace ODK.Web.Razor.Models.Events;
 

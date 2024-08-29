@@ -1,0 +1,15 @@
+﻿@page "/my/groups/{id:guid}/members/{memberId:guid}/events"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Members
+@model ODK.Web.Razor.Pages.My.Groups.Members.Member.EventsModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+
+    var viewModel = await MemberAdminService.GetMemberEventsViewModel(Model.AdminServiceRequest, Model.MemberId);
+
+    Model.Title = viewModel.Member.FullName;
+}
+
+@await Html.PartialAsync("Admin/Members/_MemberEventsContent", viewModel)

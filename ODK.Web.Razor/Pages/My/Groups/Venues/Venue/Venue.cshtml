@@ -1,0 +1,18 @@
+﻿@page "/my/groups/{id:guid}/venues/{venueId:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Venues
+@model VenueModel
+@inject IVenueAdminService VenueAdminService
+@{
+    Layout = "_GroupAdminLayout";
+
+    var viewModel = await VenueAdminService.GetVenueViewModel(Model.AdminServiceRequest, Model.VenueId);
+}
+
+@await Html.PartialAsync("Admin/Venues/_VenueContent", viewModel)
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/_GoogleLocationScripts")
+}

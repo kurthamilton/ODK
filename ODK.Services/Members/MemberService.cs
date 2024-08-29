@@ -64,7 +64,7 @@ public class MemberService : IMemberService
 
         _unitOfWork.MemberEmailAddressUpdateTokenRepository.Delete(token);
 
-        var existing = await _unitOfWork.MemberRepository.GetByEmailAddress(token.NewEmailAddress).RunAsync();
+        var existing = await _unitOfWork.MemberRepository.GetByEmailAddress(token.NewEmailAddress).Run();
         if (existing != null)
         {
             await _unitOfWork.SaveChangesAsync();
@@ -278,13 +278,13 @@ public class MemberService : IMemberService
 
     public async Task<Member> GetMember(Guid memberId)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
         return member;
     }
 
     public async Task<Member> GetMember(Guid memberId, Guid chapterId)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();        
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();        
         return OdkAssertions.MeetsCondition(member, 
             x => x.IsMemberOf(chapterId) && member.Visible(chapterId));
     }    
@@ -292,7 +292,7 @@ public class MemberService : IMemberService
     public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId)
     {
         var result = await _cacheService.GetOrSetVersionedItem(
-            () => _unitOfWork.MemberImageRepository.GetByMemberId(memberId).RunAsync(),
+            () => _unitOfWork.MemberImageRepository.GetByMemberId(memberId).Run(),
             memberId,
             currentVersion);
 
@@ -310,7 +310,7 @@ public class MemberService : IMemberService
     public async Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId)
     {
         var result = await _cacheService.GetOrSetVersionedItem(
-            () => _unitOfWork.MemberAvatarRepository.GetByMemberId(memberId).RunAsync(),
+            () => _unitOfWork.MemberAvatarRepository.GetByMemberId(memberId).Run(),
             memberId,
             currentVersion);
 
@@ -336,7 +336,7 @@ public class MemberService : IMemberService
 
     public async Task<MemberPreferences?> GetMemberPreferences(Guid memberId)
     {
-        return await _unitOfWork.MemberPreferencesRepository.GetByMemberId(memberId).RunAsync();
+        return await _unitOfWork.MemberPreferencesRepository.GetByMemberId(memberId).Run();
     }
 
     public async Task<MemberProfile?> GetMemberProfile(Guid chapterId, Guid currentMemberId, Member member)
@@ -373,7 +373,7 @@ public class MemberService : IMemberService
             return [];
         }
 
-        var members = await _unitOfWork.MemberRepository.GetByChapterId(chapterId).RunAsync();
+        var members = await _unitOfWork.MemberRepository.GetByChapterId(chapterId).Run();
         return members
             .Where(x => x.Visible(chapterId))
             .ToArray();
@@ -622,7 +622,7 @@ public class MemberService : IMemberService
 
     public async Task UpdateMemberEmailOptIn(Guid memberId, bool optIn)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
         if (member.EmailOptIn == optIn)
         {
             return;
@@ -881,7 +881,7 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(id).RunAsync();
+        var member = await _unitOfWork.MemberRepository.GetById(id).Run();
 
         member.FirstName = model.FirstName.Trim();
         member.LastName = model.LastName.Trim();

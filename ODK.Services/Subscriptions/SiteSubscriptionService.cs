@@ -61,7 +61,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         {
             var siteSubscription = await _unitOfWork.SiteSubscriptionRepository
                 .GetById(siteSubscriptionPrice.SiteSubscriptionId)
-                .RunAsync();
+                .Run();
             memberSubscription.SiteSubscription = siteSubscription;
             memberSubscription.SiteSubscriptionId = siteSubscription.Id;
             memberSubscription.SiteSubscriptionPrice = siteSubscriptionPrice;
@@ -88,7 +88,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         var platform = _platformProvider.GetPlatform();
         return await _unitOfWork.MemberSiteSubscriptionRepository
             .GetByMemberId(memberId, platform)
-            .RunAsync();
+            .Run();
     }
 
     public async Task<SiteSubscriptionsDto> GetSiteSubscriptionsDto(Guid? memberId)
@@ -162,7 +162,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             }
             else
             {
-                var member = await _unitOfWork.MemberRepository.GetById(subscription.MemberId).RunAsync();
+                var member = await _unitOfWork.MemberRepository.GetById(subscription.MemberId).Run();
                 var subject = "{title} - Subscription Expired";
                 var body = 
                     "<p>Your subscription has now expired</p>" +
@@ -210,7 +210,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
     private async Task<ChapterPaymentSettings?> GetChapterPaymentSettingsByOwnerId(Guid ownerId)
     {
-        var chapters = await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).RunAsync();
+        var chapters = await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).Run();
         if (chapters.Count == 0)
         {
             return null;
@@ -220,7 +220,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         {
             var chapterPaymentSettings = await _unitOfWork.ChapterPaymentSettingsRepository
                 .GetByChapterId(chapter.Id)
-                .RunAsync();
+                .Run();
 
             if (chapterPaymentSettings != null)
             {

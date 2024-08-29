@@ -33,7 +33,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
     public async Task<GroupsViewModel> FindGroups(ILocation location, Distance radius)
     {
-        var chapters = await _unitOfWork.ChapterRepository.GetAll().RunAsync();
+        var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
         var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetAll();
 
         var chapterDictionary = chapters
@@ -67,7 +67,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var chapterIds = chapterDistances.Keys.ToArray();
 
         var texts = chapterIds.Length > 0
-            ? await _unitOfWork.ChapterTextsRepository.GetByChapterIds(chapterIds).RunAsync()
+            ? await _unitOfWork.ChapterTextsRepository.GetByChapterIds(chapterIds).Run()
             : [];
 
         var textsDictionary = texts
@@ -132,7 +132,7 @@ public class ChapterViewModelService : IChapterViewModelService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter);
 
         var (
@@ -208,7 +208,7 @@ public class ChapterViewModelService : IChapterViewModelService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter);
 
         var (
@@ -303,7 +303,7 @@ public class ChapterViewModelService : IChapterViewModelService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter);
 
         var (currentMember, adminMembers, ownerSubscription, hasQuestions, properties, propertyOptions, texts, membershipSettings) = await _unitOfWork.RunAsync(
@@ -341,7 +341,7 @@ public class ChapterViewModelService : IChapterViewModelService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter);
 
         var (
@@ -380,7 +380,7 @@ public class ChapterViewModelService : IChapterViewModelService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter);
 
         var (
@@ -410,7 +410,7 @@ public class ChapterViewModelService : IChapterViewModelService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter);
 
         var (currentMember, adminMembers, ownerSubscription, questions) = await _unitOfWork.RunAsync(
@@ -498,7 +498,7 @@ public class ChapterViewModelService : IChapterViewModelService
             .ToArray();
 
         var texts = chapterIds.Length > 0
-            ? await _unitOfWork.ChapterTextsRepository.GetByChapterIds(chapterIds).RunAsync()
+            ? await _unitOfWork.ChapterTextsRepository.GetByChapterIds(chapterIds).Run()
             : [];
 
         var adminMemberDictionary = adminMembers
@@ -537,7 +537,7 @@ public class ChapterViewModelService : IChapterViewModelService
 
     private async Task<Chapter> GetChapter(string name)
     {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(name).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(name).Run();
         return OdkAssertions.Exists(chapter);        
     }
 
