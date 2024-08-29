@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Venues;
@@ -12,6 +13,8 @@ public class EventFormViewModel : EventFormSubmitViewModel
     public required MemberSiteSubscription? OwnerSubscription { get; init; }
 
     public required PlatformType Platform { get; init; }
+
+    public bool TicketsEnabled => OwnerSubscription?.HasFeature(SiteFeatureType.EventTickets) == true;
 
     public required IReadOnlyCollection<Venue> Venues { get; init; }
 }

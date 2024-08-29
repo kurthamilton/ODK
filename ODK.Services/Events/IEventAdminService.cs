@@ -40,6 +40,8 @@ public interface IEventAdminService
 
     Task SendScheduledEmails();
 
+    Task UpdateEventSettings(AdminServiceRequest request, UpdateEventSettings model);
+
     Task<ServiceResult> UpdateEvent(AdminServiceRequest request, Guid id, CreateEvent @event);
 
     Task<EventResponse> UpdateMemberResponse(AdminServiceRequest request, Guid eventId, Guid memberId, 

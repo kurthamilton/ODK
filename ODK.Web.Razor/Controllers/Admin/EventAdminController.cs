@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
+using ODK.Core.Utils;
+using ODK.Services;
 using ODK.Services.Caching;
+using ODK.Services.Chapters;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Events;
@@ -86,6 +89,28 @@ public class EventAdminController : AdminControllerBase
             id,
             viewModel.ScheduledEmailDate);
         AddFeedback(result, "Scheduled email date updated");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{id:guid}/events/settings")]
+    public async Task<IActionResult> UpdateEventSettings(Guid id, 
+        [FromForm] EventSettingsFormSubmitViewModel viewModel)
+    {
+        var request = new AdminServiceRequest(id, MemberId);
+        
+        await _eventAdminService.UpdateEventSettings(request, new UpdateEventSettings
+        {
+            DefaultDayOfWeek = viewModel.DefaultDayOfWeek,
+            DefaultDescription = viewModel.DefaultDescription,
+            DefaultEndTime = TimeSpanUtils.FromString(viewModel.DefaultEndTime),
+            DefaultScheduledEmailDayOfWeek = viewModel.DefaultScheduledEmailDayOfWeek,
+            DefaultScheduledEmailTimeOfDay = TimeSpanUtils.FromString(viewModel.DefaultScheduledEmailTimeOfDay),
+            DefaultStartTime = TimeSpanUtils.FromString(viewModel.DefaultStartTime),
+            DisableComments = viewModel.DisableComments
+        });
+
+        AddFeedback(new FeedbackViewModel("Event settings updated", FeedbackType.Success));
+
         return RedirectToReferrer();
     }
 }

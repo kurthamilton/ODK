@@ -310,13 +310,15 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, settings) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, settings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId));
 
         return new EventSettingsAdminPageViewModel
         {
             Chapter = chapter,
+            OwnerSubscription = ownerSubscription,
             Platform = platform,
             Settings = settings
         };
@@ -523,7 +525,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 continue;
             }
 
-            var (membershipSettings, privacySettings, venue, responses, invites, members, memberSubscriptions) = await _unitOfWork.RunAsync(
+            var (ownerSubscription, membershipSettings, privacySettings, venue, responses, invites, members, memberSubscriptions) = await _unitOfWork.RunAsync(
+                x => x.MemberSiteSubscriptionRepository.GetByChapterId(@event.ChapterId),
                 x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
                 x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
                 x => x.VenueRepository.GetById(@event.VenueId),
@@ -531,6 +534,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 x => x.EventInviteRepository.GetByEventId(@event.Id),
                 x => x.MemberRepository.GetByChapterId(@event.ChapterId),
                 x => x.MemberSubscriptionRepository.GetByChapterId(@event.ChapterId));
+
+            if (ownerSubscription?.HasFeature(SiteFeatureType.ScheduledEventEmails) != true)
+            {
+                continue;
+            }
 
             try
             {
@@ -613,6 +621,47 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
+    }
+
+    public async Task UpdateEventSettings(AdminServiceRequest request, UpdateEventSettings model)
+    {
+        var (ownerSubscription, settings) = await GetChapterAdminRestrictedContent(request,
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId));
+
+        if (settings == null)
+        {
+            settings = new();
+        }
+
+        settings.DefaultDayOfWeek = model.DefaultDayOfWeek;
+        settings.DefaultDescription = model.DefaultDescription;
+        settings.DefaultEndTime = model.DefaultEndTime;
+        settings.DefaultStartTime = model.DefaultStartTime;
+        settings.DisableComments = model.DisableComments;
+
+        if (ownerSubscription?.HasFeature(SiteFeatureType.ScheduledEventEmails) == true)
+        {
+            settings.DefaultScheduledEmailDayOfWeek = model.DefaultScheduledEmailDayOfWeek;
+            settings.DefaultScheduledEmailTimeOfDay = model.DefaultScheduledEmailTimeOfDay;
+        }
+        else
+        {
+            settings.DefaultScheduledEmailDayOfWeek = null;
+            settings.DefaultScheduledEmailTimeOfDay = null;
+        }        
+
+        if (settings.ChapterId == default)
+        {
+            settings.ChapterId = request.ChapterId;
+            _unitOfWork.ChapterEventSettingsRepository.Add(settings);
+        }
+        else
+        {
+            _unitOfWork.ChapterEventSettingsRepository.Update(settings);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<EventResponse> UpdateMemberResponse(AdminServiceRequest request, Guid eventId, Guid memberId, 

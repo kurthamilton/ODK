@@ -665,38 +665,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
-    }
-
-    public async Task UpdateChapterEventSettings(AdminServiceRequest request, UpdateChapterEventSettings model)
-    {
-        var settings = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId));
-
-        if (settings == null)
-        {
-            settings = new();
-        }
-
-        settings.DefaultDayOfWeek = model.DefaultDayOfWeek;
-        settings.DefaultDescription = model.DefaultDescription;
-        settings.DefaultEndTime = model.DefaultEndTime;
-        settings.DefaultScheduledEmailDayOfWeek = model.DefaultScheduledEmailDayOfWeek;
-        settings.DefaultScheduledEmailTimeOfDay = model.DefaultScheduledEmailTimeOfDay;
-        settings.DefaultStartTime = model.DefaultStartTime;
-        settings.DisableComments = model.DisableComments;
-
-        if (settings.ChapterId == default)
-        {
-            settings.ChapterId = request.ChapterId;
-            _unitOfWork.ChapterEventSettingsRepository.Add(settings);
-        }
-        else
-        {
-            _unitOfWork.ChapterEventSettingsRepository.Update(settings);
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-    }
+    }    
 
     public async Task<ServiceResult> UpdateChapterLocation(AdminServiceRequest request,
         LatLong? location, string? name)

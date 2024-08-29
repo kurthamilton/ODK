@@ -6,5 +6,6 @@ public enum SiteFeatureType
     EventTickets,
     InstagramFeed,
     MemberSubscriptions,
+    ScheduledEventEmails,
     SendMemberEmails
 }

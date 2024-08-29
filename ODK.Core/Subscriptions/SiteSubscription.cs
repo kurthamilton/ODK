@@ -35,16 +35,20 @@ public class SiteSubscription : IDatabaseEntity
 
     public IEnumerable<SiteFeatureType> Features()
     {
-        if (MemberSubscriptions)
-        {
-            yield return SiteFeatureType.MemberSubscriptions;
-        }
-
         if (Premium)
         {
             yield return SiteFeatureType.EventTickets;
             yield return SiteFeatureType.InstagramFeed;
+            yield return SiteFeatureType.MemberSubscriptions;
+            yield return SiteFeatureType.ScheduledEventEmails;
+            yield return SiteFeatureType.SendMemberEmails;
+            yield break;
         }
+
+        if (MemberSubscriptions)
+        {
+            yield return SiteFeatureType.MemberSubscriptions;
+        }        
 
         if (SendMemberEmails)
         {

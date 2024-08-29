@@ -12,7 +12,7 @@
 @model EventSettingsAdminPageViewModel
 
 <h2>Event settings</h2>
-<form method="post">
+<form action="/groups/@Model.Chapter.Id/events/settings" method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Events/_SettingsForm", new EventSettingsFormViewModel
     {
@@ -22,7 +22,8 @@
         DefaultScheduledEmailDayOfWeek = Model.Settings?.DefaultScheduledEmailDayOfWeek,
         DefaultScheduledEmailTimeOfDay = TimeSpanUtils.ToString(Model.Settings?.DefaultScheduledEmailTimeOfDay),
         DefaultStartTime = TimeSpanUtils.ToString(Model.Settings?.DefaultStartTime),
-        DisableComments = Model.Settings?.DisableComments ?? false
+        DisableComments = Model.Settings?.DisableComments ?? false,
+        OwnerSubscription = Model.OwnerSubscription
     })
     <button class="btn btn-primary">Update</button>
 </form>

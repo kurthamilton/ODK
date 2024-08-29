@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Subscriptions;
 using ODK.Services;

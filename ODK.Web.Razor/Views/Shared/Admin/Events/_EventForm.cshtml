@@ -106,7 +106,7 @@
     @Html.ValidationMessageFor(x => x.AttendeeLimit)
 </div>
 
-<fieldset disabled="@(Model.OwnerSubscription?.HasFeature(SiteFeatureType.EventTickets) != true ? "" : null)">
+<fieldset disabled="@(Model.TicketsEnabled ? null : "")">
     <legend>
         Tickets
     </legend>

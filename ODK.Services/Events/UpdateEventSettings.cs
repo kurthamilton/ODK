@@ -1,6 +1,6 @@
-﻿namespace ODK.Services.Chapters;
+﻿namespace ODK.Services.Events;
 
-public class UpdateChapterEventSettings
+public class UpdateEventSettings
 {
     public required DayOfWeek? DefaultDayOfWeek { get; init; }
 

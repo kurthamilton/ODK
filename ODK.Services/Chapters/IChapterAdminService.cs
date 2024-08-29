@@ -74,9 +74,7 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterCurrency(AdminServiceRequest request, Guid currencyId);
 
-    Task<ServiceResult> UpdateChapterDescription(AdminServiceRequest request, string description);
-
-    Task UpdateChapterEventSettings(AdminServiceRequest request, UpdateChapterEventSettings model);
+    Task<ServiceResult> UpdateChapterDescription(AdminServiceRequest request, string description);    
 
     Task UpdateChapterLinks(AdminServiceRequest request, UpdateChapterLinks model);    
 
