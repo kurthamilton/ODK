@@ -1,10 +1,10 @@
 ﻿@page "/my/groups"
+@attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
-@attribute [Authorize]
 @model IndexModel
 @inject IChapterViewModelService ChapterViewModelService
 @{

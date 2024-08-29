@@ -1,17 +1,10 @@
 ﻿@using ODK.Core.Members
-@using ODK.Services
-@using ODK.Services.Members
-@using ODK.Web.Common.Extensions
+@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Members
-@model ODK.Core.Chapters.Chapter
-@inject IMemberAdminService MemberAdminService
-@{
-    var memberId = User.MemberId();
-
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var dto = await MemberAdminService.GetMembersDto(serviceRequest);
-
-    var (members, subscriptions) = (dto.Members, dto.Subscriptions);
+@model MembersAdminPageViewModel
+@{    
+    var (members, subscriptions) = (Model.Members, Model.Subscriptions);
 
     var subscriptionDictionary = subscriptions.ToDictionary(x => x.MemberId);
 
@@ -28,7 +21,7 @@
         <div class="col me-auto">
             <label class="form-label" for="type-filter">Type</label>
             <select class="form-control" id="type-filter" multiple data-table-filter="#members-table" data-table-filter-field="type">
-                @foreach (SubscriptionType type in Enum.GetValues<SubscriptionType>())
+                @foreach (var type in Enum.GetValues<SubscriptionType>())
                 {
                     if (type == SubscriptionType.None)
                     {
@@ -47,7 +40,7 @@
             </select>
         </div>
         <div class="col align-self-end">
-            <a href="/@Model.Name/Admin/Members/Download">Download CSV</a>
+            <a href="@OdkRoutes2.MemberGroups.MembersDownload(Model.Platform, Model.Chapter)">Download CSV</a>
         </div>
     </div>
 </p>
@@ -72,14 +65,14 @@
             <td width="30px" class="px-0">
                 @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                 {
-                    ChapterName = Model.Name,
+                    ChapterName = Model.Chapter.Name,
                     Member = member,
                     MaxWidth = 30
                 })
             </td>
             <td>
-                <a href="/@Model.Name/Admin/Members/@member.Id" data-sort-value="@member.FullName">
-                    @member.GetDisplayName(Model.Id)
+                <a href="@OdkRoutes2.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)" data-sort-value="@member.FullName">
+                    @member.GetDisplayName(Model.Chapter.Id)
                 </a>
             </td>
             <td>@subscription?.Type</td>
@@ -103,7 +96,7 @@
             <td>
                 @if (!member.Activated)
                 {
-                    <form method="post" action="/@Model.Name/Admin/Members/@member.Id/ResendActivationEmail">
+                    <form method="post" action="/groups/@Model.Chapter.Id/members/@member.Id/emails/activation/send">
                         <button data-bs-toggle="tooltip" data-bs-title="Re-send activation email"
                                 class="btn-icon text-primary">
                             <i class="fas fa-envelope-square"></i>

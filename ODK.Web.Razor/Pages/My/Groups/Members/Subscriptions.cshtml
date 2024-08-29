@@ -1,0 +1,14 @@
+﻿@page "/my/groups/{id:guid}/members/subscriptions"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Members
+@model ODK.Web.Razor.Pages.My.Groups.Members.SubscriptionsModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Subscriptions";
+
+    var viewModel = await MemberAdminService.GetMemberSubscriptionsViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Members/_SubscriptionsContent", viewModel)

@@ -391,32 +391,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         return await GetChapterAdminRestrictedContent(request,
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId));
-    }
-
-    public async Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(
-        AdminServiceRequest request)
-    {
-        var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
-
-        var chapter = await _unitOfWork.ChapterRepository.GetById(chapterId).RunAsync();
-
-        var (chapterAdminMembers, currentMember, chapterSubscriptions, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
-
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
-
-        return new ChapterMemberSubscriptionsDto
-        {
-            ChapterSubscriptions = chapterSubscriptions,
-            MembershipSettings = membershipSettings ?? new(),
-            MemberSubscription = null,
-            PaymentSettings = paymentSettings
-        };
-    }
+    }    
 
     public async Task<ChapterPaymentSettings?> GetChapterPaymentSettings(AdminServiceRequest request)
     {

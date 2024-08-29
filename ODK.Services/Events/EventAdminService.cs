@@ -962,7 +962,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
         var memberSubscriptionDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);
 
-        var invited = members
+        var invitees = members
             .Where(x => 
                 _authorizationService.CanRespondToEvent(
                     @event, 
@@ -978,7 +978,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _emailService.SendBulkEmail(
             chapterAdminMember,
             chapter,
-            invited,
+            invitees,
             EmailType.EventInvite,
             parameters);
 
@@ -1003,7 +1003,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         // Add null event responses to indicate that members have been invited
-        var newInvites = invited
+        var newInvites = invitees
             .Select(x => new EventInvite
             {
                 EventId = @event.Id,

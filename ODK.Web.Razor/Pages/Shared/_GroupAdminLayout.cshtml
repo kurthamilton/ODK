@@ -30,6 +30,12 @@
         new MenuItem { Link = OdkRoutes2.MemberGroups.Venues(platform, chapter), Text = "Venues" },
         new MenuItem { Link = OdkRoutes2.MemberGroups.EventSettings(platform, chapter), Text = "Settings" }
     };
+
+    var memberMenuItems = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.MemberGroups.Members(platform, chapter), Text = "Members" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.MembersSubscriptions(platform, chapter), Text = "Subscriptions" }
+    };
 }
 
 @section styles
@@ -47,6 +53,7 @@
                 @await Html.PartialAsync("Components/_SideMenu", homeMenuItems)
                 @await Html.PartialAsync("Components/_SideMenu", groupMenuItems)
                 @await Html.PartialAsync("Components/_SideMenu", eventMenuItems)
+                @await Html.PartialAsync("Components/_SideMenu", memberMenuItems)
             </div>
     }),
     Title = chapter.Name

@@ -59,16 +59,16 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/{id:guid}/ResendActivationEmail")]
-    public async Task<IActionResult> ResendActivationEmail(string chapterName, Guid id)
+    [HttpPost("groups/{chapterId:guid}members/{id:guid}/emails/activation/send")]
+    public async Task<IActionResult> SendActivationEmail(Guid chapterId, Guid id)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new AdminServiceRequest(chapterId, MemberId);
         await _memberAdminService.SendActivationEmail(request, id);
         AddFeedback("Email sent", FeedbackType.Success);
         return RedirectToReferrer();
     }
 
-    [HttpPost("my/groups/{chapterId:guid}/members/{id:guid}/emails/send")]
+    [HttpPost("groups/{chapterId:guid}/members/{id:guid}/emails/send")]
     public async Task<IActionResult> SendEmail(Guid chapterId, Guid id, 
         [FromForm] SendMemberEmailFormViewModel viewModel)
     {
@@ -115,7 +115,7 @@ public class MemberAdminController : AdminControllerBase
         return DownloadCsv(data, $"Members.{DateTime.UtcNow:yyyyMMdd}.csv");
     }
 
-    [HttpPost("my/groups/{chapterId:guid}/members/emails/send")]
+    [HttpPost("groups/{chapterId:guid}/members/emails/send")]
     public async Task<IActionResult> SendBulkEmail(Guid chapterId, 
         [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
@@ -132,10 +132,10 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/Subscriptions/{id:guid}/Delete")]
-    public async Task<IActionResult> DeleteSubscription(string chapterName, Guid id)
+    [HttpPost("groups/{chapterId:guid}/members/subscriptions/{id:guid}/delete")]
+    public async Task<IActionResult> DeleteSubscription(Guid chapterId, Guid id)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = new AdminServiceRequest(chapterId, MemberId);
         var result = await _chapterAdminService.DeleteChapterSubscription(serviceRequest, id);
         AddFeedback(result, "Subscription deleted");
         return RedirectToReferrer();

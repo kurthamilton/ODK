@@ -1,14 +1,7 @@
 ﻿@using ODK.Core.Members
-@using ODK.Services
-@using ODK.Services.Chapters
 @using ODK.Web.Common.Extensions
 @model ODK.Web.Razor.Models.Admin.Members.SubscriptionFormViewModel
-@inject IChapterAdminService ChapterAdminService
 @{
-    var memberId = User.MemberId();
-    var request = new AdminServiceRequest(Model.ChapterId, memberId);
-    var paymentSettings = await ChapterAdminService.GetChapterPaymentSettings(request);
-
     var typeOptions = new[]
     {
         SubscriptionType.Full,
@@ -39,7 +32,7 @@
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Amount, new { @class = "form-label" })
     <div class="input-group mb-3">
-        <span class="input-group-text">@paymentSettings?.Currency.Symbol</span>
+        <span class="input-group-text">@Model.PaymentSettings?.Currency.Symbol</span>
         @Html.TextBoxFor(x => x.Amount, new { @class = "form-control", type = "number", min = 0, step = 0.01 })
     </div>
     @Html.ValidationMessageFor(x => x.Amount)

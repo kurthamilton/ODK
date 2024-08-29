@@ -1,10 +1,18 @@
 ﻿@page "/{chapterName}/Admin/Members/Subscriptions/Create"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services
+@using ODK.Services.Members
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.SubscriptionCreateModel
+@inject IMemberAdminService MemberAdminService
 @{
     Layout = "Admin/Members/_MemberAdminLayout";
     Model.Title = "Create subscription | Admin";
+
+    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
+    var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -14,5 +22,5 @@
         new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members/Subscriptions", Text = "Subscriptions" },
         new MenuItem { Text = "Create" }
     },
-    Content = await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", Model.Chapter)
+    Content = await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)
 })

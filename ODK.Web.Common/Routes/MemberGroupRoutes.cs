@@ -35,12 +35,36 @@ public class MemberGroupRoutes
 
     public string Index() => "/my/groups";
 
+    public string Member(PlatformType platform, Chapter chapter, Guid memberId)
+        => $"{Members(platform, chapter)}/{memberId}";
+
+    public string MembersDownload(PlatformType platform, Chapter chapter)
+        => $"{Members(platform, chapter)}/download";
+
+    public string Members(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"/{chapter.Name}/Admin/Members",
+        _ => $"{Group(chapter.Id)}/members"
+    };
+
+    public string MembersSubscription(PlatformType platform, Chapter chapter, ChapterSubscription subscription)
+        => $"{MembersSubscriptions(platform, chapter)}/{subscription.Id}";
+
+    public string MembersSubscriptionCreate(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{MembersSubscriptions(platform, chapter)}/Create",
+        _ => $"{MembersSubscriptions(platform, chapter)}/new"
+    };
+
+    public string MembersSubscriptions(PlatformType platform, Chapter chapter)
+        => $"{Members(platform, chapter)}/subscriptions";
+
     public string Venue(PlatformType platform, Chapter chapter, Venue venue)
         => $"{Venues(platform, chapter)}/{venue.Id}";
 
     public string VenueCreate(PlatformType platform, Chapter chapter) => platform switch
     {
-        PlatformType.DrunkenKnitwits => $"/{Venues(platform, chapter)}/Create",
+        PlatformType.DrunkenKnitwits => $"{Venues(platform, chapter)}/Create",
         _ => $"{Venues(platform, chapter)}/new"
     };
 

@@ -3,21 +3,19 @@
 @using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Countries
+@using ODK.Services.Members
+@using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
-@model ODK.Core.Chapters.Chapter
-@inject IChapterAdminService ChapterAdminService
-@{
-    var memberId = User.MemberId();    
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var dto = await ChapterAdminService.GetChapterMemberSubscriptionsDto(serviceRequest);
-
-    var (subscriptions, currency, membershipSettings) = (dto.ChapterSubscriptions, dto.PaymentSettings.Currency, dto.MembershipSettings);
+@model SubscriptionsAdminPageViewModel
+@{        
+    var (subscriptions, currency, membershipSettings) = (Model.ChapterSubscriptions, Model.PaymentSettings.Currency, Model.MembershipSettings);
 }
 
 <h2>Subscriptions</h2>
 <p>
-    <a href="/@Model.Name/Admin/Members/Subscriptions/Create" class="btn btn-primary">
+    <a href="@OdkRoutes2.MemberGroups.MembersSubscriptionCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
         Create subscription
     </a>
 </p>
@@ -36,14 +34,14 @@
     {
         <tr>
             <td>
-                <a href="/@Model.Name/Admin/Members/Subscriptions/@subscription.Id">@subscription.Name</a>
+                <a href="@OdkRoutes2.MemberGroups.MembersSubscription(Model.Platform, Model.Chapter, subscription)">@subscription.Name</a>
             </td>
             <td>
                 @currency.Symbol@subscription.Amount
             </td>
             <td>@subscription.Months</td>
             <td>
-                <form method="post" action="/@Model.Name/Admin/Members/Subscriptions/@subscription.Id/Delete">
+                <form method="post" action="/groups/@Model.Chapter.Id/members/subscriptions/@subscription.Id/delete">
                     <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
                             onclick="return confirm('Are you sure you want to delete this subscription?');">
                         <i class="fas fa-times"></i>

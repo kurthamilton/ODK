@@ -1,0 +1,19 @@
+﻿@page "/my/groups/{id:guid}/members"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Members
+@model ODK.Web.Razor.Pages.My.Groups.Members.IndexModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Members | Admin";
+
+    var viewModel = await MemberAdminService.GetMembersViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Members/_MembersContent", viewModel)
+
+@section scripts
+{
+    <script src="~/js/odk.lists.js" asp-append-version="true"></script>
+}

@@ -1,29 +1,8 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using ODK.Core.Members;
+﻿using ODK.Core.Chapters;
 
 namespace ODK.Web.Razor.Models.Admin.Members;
 
-public class SubscriptionFormViewModel
+public class SubscriptionFormViewModel : SubscriptionFormSubmitViewModel
 {
-    [Required]
-    public double? Amount { get; set; }
-
-    public Guid ChapterId { get; set; }
-
-    [Required]
-    public string Description { get; set; } = "";
-
-    [DisplayName("Duration (months)")]
-    [Required]
-    public int? DurationMonths { get; set; }
-
-    [Required]
-    public string Name { get; set; } = "";
-
-    [Required]
-    public string Title { get; set; } = "";
-
-    [Required]
-    public SubscriptionType Type { get; set; }
+    public required ChapterPaymentSettings? PaymentSettings { get; init; }
 }

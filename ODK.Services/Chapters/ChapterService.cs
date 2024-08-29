@@ -10,6 +10,7 @@ using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Emails;
+using ODK.Services.Members.ViewModels;
 
 namespace ODK.Services.Chapters;
 
@@ -202,7 +203,7 @@ public class ChapterService : IChapterService
         };
     }
 
-    public async Task<ChapterMemberSubscriptionsDto> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Chapter chapter)
+    public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Chapter chapter)
     {
         var chapterId = chapter.Id;
 
@@ -215,7 +216,7 @@ public class ChapterService : IChapterService
 
         OdkAssertions.MemberOf(currentMember, chapterId);
 
-        return new ChapterMemberSubscriptionsDto
+        return new SubscriptionsPageViewModel
         {
             ChapterSubscriptions = chapterSubscriptions,
             MembershipSettings = membershipSettings ?? new(),

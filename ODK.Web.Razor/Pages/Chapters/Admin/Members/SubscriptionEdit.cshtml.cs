@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
-using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
@@ -18,16 +17,15 @@ public class SubscriptionEditModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
-    public ChapterSubscription Subscription { get; private set; } = null!;
+    public Guid SubscriptionId { get; set; }
 
-    public async Task<IActionResult> OnGet(Guid id)
+    public IActionResult OnGet(Guid id)
     {
-        var serviceRequest = await GetAdminServiceRequest();
-        Subscription = await _chapterAdminService.GetChapterSubscription(serviceRequest, id);        
+        SubscriptionId = id;
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(Guid id, SubscriptionFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync(Guid id, SubscriptionFormSubmitViewModel viewModel)
     {
         var serviceRequest = await GetAdminServiceRequest();
         var result = await _chapterAdminService.UpdateChapterSubscription(serviceRequest, id, new CreateChapterSubscription

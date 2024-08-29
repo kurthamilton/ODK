@@ -1,14 +1,20 @@
 ﻿@page "/{chapterName}/Admin/Members"
+@using ODK.Services
+@using ODK.Services.Members
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.MembersModel
+@inject IMemberAdminService MemberAdminService
 @{
     Layout = "Admin/Members/_MemberAdminLayout";
     Model.Title = "Members | Admin";
+
+    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
+    var viewModel = await MemberAdminService.GetMembersViewModel(request);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Admin/Members/_MembersContent", Model.Chapter)
+    Content = await Html.PartialAsync("Admin/Members/_MembersContent", viewModel)
 })
 
 @section scripts

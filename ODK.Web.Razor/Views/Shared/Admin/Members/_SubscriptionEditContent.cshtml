@@ -1,15 +1,16 @@
-﻿@using ODK.Web.Razor.Models.Admin.Members
-@model ODK.Web.Razor.Models.Admin.Members.SubscriptionEditViewModel
+﻿@using ODK.Services.Members.ViewModels
+@using ODK.Web.Razor.Models.Admin.Members
+@model SubscriptionAdminPageViewModel
 
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
     {
         Amount = Model.Subscription.Amount,
-        ChapterId = Model.Chapter.Id,
         Description = Model.Subscription.Description,
         DurationMonths = Model.Subscription.Months,
         Name = Model.Subscription.Name,
+        PaymentSettings = Model.PaymentSettings,
         Title = Model.Subscription.Title,
         Type = Model.Subscription.Type
     })

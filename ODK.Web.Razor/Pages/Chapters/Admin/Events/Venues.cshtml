@@ -1,4 +1,6 @@
 ﻿@page "/{chapterName}/Admin/Events/Venues"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Services
 @using ODK.Services.Venues
 @using ODK.Web.Razor.Models.Components
@@ -14,7 +16,7 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Admin/Venues/_VenuesContent", request)
+    Content = await Html.PartialAsync("Admin/Venues/_VenuesContent", viewModel)
 })
 
 @section scripts

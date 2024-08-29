@@ -9,7 +9,7 @@
 {
     ContentFunc = 
         @<div>
-            <form method="post" action="/my/groups/@Model.Chapter.Id/members/@Model.Member.Id/emails/send">
+            <form method="post" action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/emails/send">
                 @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Admin/Members/_SendMemberEmailForm", new SendMemberEmailFormViewModel())
                 <button type="submit" class="btn btn-primary">Send</button>

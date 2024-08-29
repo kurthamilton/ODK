@@ -15,5 +15,5 @@
         new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" },
         new MenuItem { Text = "Bulk email" }
     },
-    Content = await Html.PartialAsync("Admin/Members/_SendMemberBulkEmailContent")
+    Content = await Html.PartialAsync("Admin/Members/_SendMemberBulkEmailContent", Model.Chapter)
 })

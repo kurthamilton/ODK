@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Members;
+using ODK.Services.Members.ViewModels;
 
 namespace ODK.Services.Members;
 
@@ -16,11 +17,17 @@ public interface IMemberAdminService
 
     Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request);
 
-    Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request, MemberFilter filter);
-
-    Task<MembersDto> GetMembersDto(AdminServiceRequest request);
+    Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request, MemberFilter filter);    
 
     Task<MemberSubscription?> GetMemberSubscription(AdminServiceRequest request, Guid memberId);
+
+    Task<SubscriptionCreateAdminPageViewModel> GetMemberSubscriptionCreateViewModel(AdminServiceRequest request);
+
+    Task<SubscriptionsAdminPageViewModel> GetMemberSubscriptionsViewModel(AdminServiceRequest request);
+
+    Task<SubscriptionAdminPageViewModel> GetMemberSubscriptionViewModel(AdminServiceRequest request, Guid subscriptionId);
+
+    Task<MembersAdminPageViewModel> GetMembersViewModel(AdminServiceRequest request);
 
     Task RotateMemberImage(AdminServiceRequest request, Guid memberId);
 

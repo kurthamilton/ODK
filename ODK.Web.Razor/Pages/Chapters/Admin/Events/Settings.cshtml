@@ -16,5 +16,5 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Admin/Events/_SettingsContent", request)
+    Content = await Html.PartialAsync("Admin/Events/_SettingsContent", viewModel)
 })
