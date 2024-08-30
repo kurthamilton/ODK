@@ -7,7 +7,7 @@ using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Venues;
 
-namespace ODK.Web.Razor.Pages.My.Groups.Venues;
+namespace ODK.Web.Razor.Pages.My.Groups.Events.Venues;
 
 public class CreateModel : OdkGroupAdminPageModel
 {

@@ -1,6 +1,6 @@
-﻿@page "/my/groups/{id:guid}/venues/{venueId:guid}/events"
+﻿@page "/my/groups/{id:guid}/events/venues/{venueId:guid}/events"
 @using ODK.Services.Venues
-@model ODK.Web.Razor.Pages.My.Groups.Venues.Venue.EventsModel
+@model EventsModel
 @inject IVenueAdminService VenueAdminService
 @{
     Layout = "_GroupAdminLayout";

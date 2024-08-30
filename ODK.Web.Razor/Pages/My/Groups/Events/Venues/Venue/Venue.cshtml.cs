@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Platforms;
 using ODK.Services.Chapters;
@@ -7,7 +6,7 @@ using ODK.Services.Venues;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Venues;
 
-namespace ODK.Web.Razor.Pages.My.Groups.Venues.Venue;
+namespace ODK.Web.Razor.Pages.My.Groups.Events.Venues.Venue;
 
 public class VenueModel : OdkGroupAdminPageModel
 {

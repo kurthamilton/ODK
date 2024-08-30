@@ -4,7 +4,6 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
-@inject IHttpContextAccessor HttpContextAccessor
 @inject IPlatformProvider PlatformProvider
 @inject IRequestCache RequestCache
 @{
@@ -14,29 +13,48 @@
     Guid.TryParse(Context.GetRouteValue("id")?.ToString(), out var chapterId);
     var chapter = await RequestCache.GetChapterAsync(chapterId);
 
-    var homeMenuItems = new[]
+    var menuItems = new[]
     {
-        new MenuItem { Link = OdkRoutes2.Groups.Group(chapter), Text = "Home" }
-    };
-
-    var groupMenuItems = new[]
-    {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Group(chapterId), Text = "Group" }
-    };
-
-    var eventMenuItems = new[]
-    {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Events(platform, chapter), Text = "Events" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Venues(platform, chapter), Text = "Venues" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.EventSettings(platform, chapter), Text = "Settings" }
-    };
-
-    var memberMenuItems = new[]
-    {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Members(platform, chapter), Text = "Members" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.MemberAdmins(platform, chapter), Text = "Admins" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.MembersSubscriptions(platform, chapter), Text = "Subscriptions" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.MembersEmail(platform, chapter), Text = "Bulk email" }
+        new MenuItem { Link = OdkRoutes2.Groups.Group(chapter), Text = "Home" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.Group(chapterId), Text = "Group" },
+        new MenuItem 
+        { 
+            Link = OdkRoutes2.MemberGroups.Events(platform, chapter), 
+            Text = "Events",
+            Children = new[]
+            {
+                new MenuItem { Link = OdkRoutes2.MemberGroups.EventCreate(platform, chapter), Text = "Create" },
+                new MenuItem 
+                { 
+                    Link = OdkRoutes2.MemberGroups.Venues(platform, chapter),
+                    Text = "Venues",
+                    Children = new[]
+                    {
+                        new MenuItem { Link = OdkRoutes2.MemberGroups.VenueCreate(platform, chapter), Text = "Create" }
+                    }
+                },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.EventSettings(platform, chapter), Text = "Settings" }
+            }
+        },
+        new MenuItem 
+        { 
+            Link = OdkRoutes2.MemberGroups.Members(platform, chapter), 
+            Text = "Members",
+            Children = new[]
+            {
+                new MenuItem { Link = OdkRoutes2.MemberGroups.MemberAdmins(platform, chapter), Text = "Admins" },
+                new MenuItem 
+                { 
+                    Link = OdkRoutes2.MemberGroups.MembersSubscriptions(platform, chapter), 
+                    Text = "Subscriptions",
+                    Children = new[]
+                    {
+                        new MenuItem { Link = OdkRoutes2.MemberGroups.MembersSubscriptionCreate(platform, chapter), Text = "Create" }
+                    }
+                },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.MembersEmail(platform, chapter), Text = "Bulk email" }
+            }
+        }
     };
 }
 
@@ -50,13 +68,11 @@
     Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
         BodyContentFunc = _ => RenderBody(),
-        MenuContentFunc = 
-            @<div class="d-flex flex-column gap-3">                
-                @await Html.PartialAsync("Components/_SideMenu", homeMenuItems)
-                @await Html.PartialAsync("Components/_SideMenu", groupMenuItems)
-                @await Html.PartialAsync("Components/_SideMenu", eventMenuItems)
-                @await Html.PartialAsync("Components/_SideMenu", memberMenuItems)
-            </div>
+        MenuContent = await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
+        {
+            MenuItems = menuItems,
+            Root = true
+        })
     }),
     Title = chapter.Name
 })

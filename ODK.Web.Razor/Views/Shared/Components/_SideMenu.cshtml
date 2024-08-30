@@ -1,32 +1,41 @@
 ﻿@using ODK.Web.Common.Components
-@model IReadOnlyCollection<MenuItem>
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Components
+@model SideMenuViewModel
 @{
-    var path = Context.Request.Path;
-    var active = Model
-        .FirstOrDefault(x => string.Equals(x.Link, path, StringComparison.InvariantCultureIgnoreCase));
+    var active = Model.Active != null
+        ? Model.Active
+        : Model.MenuItems.FirstOrDefault(x => Context.ForPath(x.Link, exactMatch: true));
+
+    var closestActive = active == null && Model.Root
+        ? Model.MenuItems.Closest(Context.Request.Path)
+        : null;
+
+    if (active == null)
+    {
+        active = closestActive;
+    }
 }
 
-<ul class="list-group d-none d-md-block">
-    @foreach (var menuItem in Model)
-    {        
-        <li class="list-group-item @(menuItem == active ? "active" : "")">
-            <a class="nav-link text-nowrap" href="@menuItem.Link">
+<ul class="side-menu">
+    @foreach (var menuItem in Model.MenuItems)
+    {
+        var showChildren = menuItem.Children?.Count > 0 && Context.ForPath(menuItem.Link, exactMatch: false);
+
+        <li>
+            <a class="nav-link text-nowrap @(menuItem == active ? "active" : "")" href="@menuItem.Link">
                 @menuItem.Text
             </a>
+
+            @if (showChildren)
+            {
+                @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
+                {
+                    Active = closestActive,
+                    MenuItems = menuItem.Children ?? [],
+                    Root = false
+                })
+            }
         </li>
     }
 </ul>
-
-<div class="dropdown d-md-none">
-    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-        @active?.Text
-    </button>
-    <ul class="dropdown-menu">
-        @foreach (var menuItem in Model)
-        {
-            <li>
-                <a class="dropdown-item" href="@menuItem.Link">@menuItem.Text</a>
-            </li>
-        }
-    </ul>
-</div>

@@ -20,14 +20,9 @@
             select: $select,
             settings: {
                 // TODO: position deselect
-                allowDeselect: false
+                allowDeselect: false,
+                placeholderText: $select.getAttribute('data-placeholder')
             }
         });
-
-        if ($select.hasAttribute('data-match-width')) {
-            // const id = $select.getAttribute('data-id');
-            // const $target = document.querySelector(`div[data-id="${id}"]`);
-            // TODO
-        }
     });
 })();

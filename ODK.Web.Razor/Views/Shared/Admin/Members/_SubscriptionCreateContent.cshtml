@@ -3,6 +3,7 @@
 @using ODK.Web.Razor.Models.Admin.Members
 @model SubscriptionCreateAdminPageViewModel
 
+<h2>Create subscription</h2>
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel

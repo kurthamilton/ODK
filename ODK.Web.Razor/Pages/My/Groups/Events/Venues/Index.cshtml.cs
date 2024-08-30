@@ -1,4 +1,4 @@
-namespace ODK.Web.Razor.Pages.My.Groups.Venues;
+namespace ODK.Web.Razor.Pages.My.Groups.Events.Venues;
 
 public class IndexModel : OdkGroupAdminPageModel
 {

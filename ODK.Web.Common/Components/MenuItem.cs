@@ -1,10 +1,14 @@
-﻿namespace ODK.Web.Common.Components;
+﻿using System.Collections.Generic;
+
+namespace ODK.Web.Common.Components;
 
 public class MenuItem
 {
     public bool Active { get; set; }
 
     public bool ActiveIsExactMatch { get; set; }
+
+    public IReadOnlyCollection<MenuItem>? Children { get; set; }
 
     public string? ExternalLink { get; set; }
 

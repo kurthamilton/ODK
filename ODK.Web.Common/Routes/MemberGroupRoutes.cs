@@ -92,6 +92,6 @@ public class MemberGroupRoutes
     public string Venues(PlatformType platform, Chapter chapter) => platform switch
     {
         PlatformType.DrunkenKnitwits => $"/{chapter.Name}/Admin/Events/Venues",
-        _ => $"{Group(chapter.Id)}/venues"
+        _ => $"{Group(chapter.Id)}/events/venues"
     };
 }

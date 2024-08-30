@@ -21,22 +21,19 @@
 }
 
 <h2>Admin members</h2>
-<p>
-    <a href="#" data-bs-toggle="collapse" data-bs-target="#add-admin-member-form">
-        Add new
-    </a>
-</p>
 <form method="post" action="/groups/@Model.Chapter.Id/members/admins"
-      id="add-admin-member-form"
-      class="collapse row row-cols-lg-auto g-3 mb-3">
+      class="row g-3 mb-3">
     @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Members/_AdminMemberAddForm", new AdminMemberAddFormViewModel
-    {
-        AdminMemberOptions = adminMemberOptions.ToArray()
-    })
-    <div class="col-12">
+    <div class="col-lg-6 col-12 d-flex gap-1">
+        <div class="flex-grow-1">
+            @await Html.PartialAsync("Admin/Members/_AdminMemberAddForm", new AdminMemberAddFormViewModel
+            {
+                AdminMemberOptions = adminMemberOptions.ToArray()
+            })
+        </div>
+
         <button class="btn btn-primary">Add</button>
-    </div>
+    </div>    
 </form>
 
 <div class="table-responsive">
@@ -61,7 +58,9 @@
                 <td>
                     <a href="@OdkRoutes2.MemberGroups.MemberAdmin(Model.Platform, Model.Chapter, adminMember)">@member.FullName</a>
                 </td>
-                <td>@adminMember.AdminEmailAddress</td>
+                <td class="text-break">
+                    @adminMember.AdminEmailAddress
+                </td>
                 <td>
                     @if (adminMember.ReceiveContactEmails)
                     {
