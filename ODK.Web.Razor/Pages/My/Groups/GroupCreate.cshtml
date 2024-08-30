@@ -1,6 +1,4 @@
 ﻿@page "/my/groups/new"
-@attribute [Authorize]
-@using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Members
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Components
@@ -21,7 +19,7 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Index(), Text = "My groups" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.Index(viewModel.Platform), Text = "My groups" },
         new MenuItem { Text = "Create" }
     },
     ContentFunc = 

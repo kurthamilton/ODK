@@ -1,11 +1,15 @@
 ﻿@page "/{chapterName}/Admin/Members/{id:guid}"
+@using ODK.Services.Members
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Admin.Members
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.MemberModel
+@inject IMemberAdminService MemberAdminService
 @{
     Layout = "Admin/Members/_MemberAdminLayout";
     Model.Title = "Edit member | Admin";
+
+    var viewModel = await MemberAdminService.GetMemberViewModel(Model.AdminServiceRequest, Model.Member.Id);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -15,6 +19,5 @@
         new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" },
         new MenuItem { Text = Model.Member.GetDisplayName(Model.Chapter.Id) }
     },
-    Content = await Html.PartialAsync("Admin/Members/_MemberContent", 
-        new MemberViewModel(Model.Chapter, Model.Member))
+    Content = await Html.PartialAsync("Admin/Members/_MemberContent", viewModel)
 })

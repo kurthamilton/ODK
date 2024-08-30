@@ -2,7 +2,6 @@
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Platforms;
-using ODK.Core.Venues;
 
 namespace ODK.Web.Common.Routes;
 
@@ -20,20 +19,35 @@ public class MemberGroupRoutes
     public string EventInvites(PlatformType platform, Chapter chapter, Event @event)
         => $"{Events(platform, chapter)}/{@event.Id}/invites";
 
-    public string Events(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"/{chapter.Name}/Admin/Events",
-        _ => $"{Group(chapter.Id)}/events"
-    };
+    public string Events(PlatformType platform, Chapter chapter) => 
+        $"{Group(platform, chapter)}/events";
 
     public string EventSettings(PlatformType platform, Chapter chapter)
         => $"{Events(platform, chapter)}/settings";
 
-    public string Group(Guid id) => $"{Index()}/{id}";
+    public string Group(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"/{chapter.Name}/Admin",
+        _ => $"{Index(platform)}/{chapter.Id}"
+    };
 
-    public string GroupCreate() => $"{Index()}/new";
+    public string GroupCreate(PlatformType platform) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => "/",
+        _ => $"{Index(platform)}"
+    };
 
-    public string Index() => "/my/groups";
+    public string GroupTexts(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => Group(platform, chapter),
+        _ => $"{Group(platform, chapter)}/texts"
+    };
+
+    public string Index(PlatformType platform) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => "/",
+        _ => "/my/groups"
+    };
 
     public string Member(PlatformType platform, Chapter chapter, Guid memberId)
         => $"{Members(platform, chapter)}/{memberId}";
@@ -56,11 +70,8 @@ public class MemberGroupRoutes
     public string MembersDownload(PlatformType platform, Chapter chapter)
         => $"{Members(platform, chapter)}/download";
 
-    public string Members(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"/{chapter.Name}/admin/members",
-        _ => $"{Group(chapter.Id)}/members"
-    };
+    public string Members(PlatformType platform, Chapter chapter)
+        => $"{Group(platform, chapter)}/members";
 
     public string MembersEmail(PlatformType platform, Chapter chapter)
         => $"{Members(platform, chapter)}/email";
@@ -89,9 +100,6 @@ public class MemberGroupRoutes
     public string VenueEvents(PlatformType platform, Chapter chapter, Guid venueId)
         => $"{Venue(platform, chapter, venueId)}/events";
 
-    public string Venues(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"/{chapter.Name}/Admin/Events/Venues",
-        _ => $"{Group(chapter.Id)}/events/venues"
-    };
+    public string Venues(PlatformType platform, Chapter chapter)
+        => $"{Events(platform, chapter)}/venues";
 }

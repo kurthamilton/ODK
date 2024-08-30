@@ -124,7 +124,8 @@ public class ChapterViewModelService : IChapterViewModelService
             ChapterCount = current.Count,
             ChapterLimit = memberSubscription.SiteSubscription.GroupLimit,
             Member = member,
-            MemberLocation = memberLocation
+            MemberLocation = memberLocation,
+            Platform = platform
         };
     }
 
@@ -489,6 +490,8 @@ public class ChapterViewModelService : IChapterViewModelService
 
     public async Task<MemberChaptersViewModel> GetMemberChapters(Guid memberId)
     {
+        var platform = _platformProvider.GetPlatform();
+
         var (chapters, adminMembers) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByMemberId(memberId),
             x => x.ChapterAdminMemberRepository.GetByMemberId(memberId));
@@ -531,6 +534,7 @@ public class ChapterViewModelService : IChapterViewModelService
             Admin = admin,
             Member = member,
             Owned = owned,
+            Platform = platform,
             Texts = texts
         };
     }

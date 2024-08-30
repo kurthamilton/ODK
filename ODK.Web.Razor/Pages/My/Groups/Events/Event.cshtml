@@ -1,6 +1,4 @@
 ﻿@page "/my/groups/{id:guid}/events/{eventId:guid}"
-@attribute [Authorize]
-@using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Events
 @model ODK.Web.Razor.Pages.My.Groups.Events.EventModel
 @inject IEventAdminService EventAdminService

@@ -1,6 +1,4 @@
 ﻿@page "/my/groups"
-@attribute [Authorize]
-@using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Chapters
@@ -31,6 +29,7 @@
                         {
                             Chapter = x,
                             IsOwner = true,
+                            Platform = viewModel.Platform,
                             Texts = textsDictionary.ContainsKey(x.Id) ? textsDictionary[x.Id] : null
                         }).ToArray()
                     })
@@ -39,7 +38,7 @@
                 {
                     <p>
                         You haven't created any groups. 
-                        <a href="@OdkRoutes2.MemberGroups.GroupCreate()">Create a group</a>
+                        <a href="@OdkRoutes2.MemberGroups.GroupCreate(viewModel.Platform)">Create a group</a>
                     </p>
                 }
             </section>
@@ -54,6 +53,7 @@
                         {
                             Chapter = x,
                             IsAdmin = true,
+                            Platform = viewModel.Platform,
                             Texts = textsDictionary.ContainsKey(x.Id) ? textsDictionary[x.Id] : null
                         }).ToArray()
                     })
@@ -69,6 +69,7 @@
                         Chapters = viewModel.Member.Select(x => new ChapterTileViewModel
                         {
                             Chapter = x,
+                            Platform = viewModel.Platform,
                             Texts = textsDictionary.ContainsKey(x.Id) ? textsDictionary[x.Id] : null
                         }).ToArray()
                     })

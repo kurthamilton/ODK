@@ -1,8 +1,6 @@
 ﻿@page "/my/groups/{id:guid}"
-@attribute [Authorize]
-@using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
-@model GroupModel
+@model IndexModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_GroupAdminLayout";
@@ -11,6 +9,5 @@
 
     Model.Title = chapter.Name;
 }
-
 
 @await Html.PartialAsync("Groups/_GroupEditContent", chapter)

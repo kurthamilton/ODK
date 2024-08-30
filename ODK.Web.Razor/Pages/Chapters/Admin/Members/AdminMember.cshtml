@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/Admin/Members/AdminMembers/{id:guid}"
+﻿@page "/{chapterName}/Admin/Members/Admins/{id:guid}"
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.AdminMemberModel
@@ -11,7 +11,7 @@
 {
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members/AdminMembers", Text = "Admin members" },
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members/Admins", Text = "Admin members" },
         new MenuItem { Text = Model.AdminMember.Member.FullName }
     },
     Content = await Html.PartialAsync("Admin/Members/_AdminMemberContent", Model.AdminMember)

@@ -32,7 +32,7 @@
     @if (Model.IsOwner || Model.IsAdmin)
     {
         <div class="card-footer text-body-secondary">
-            <a href="@OdkRoutes2.MemberGroups.Group(chapter.Id)">
+            <a href="@OdkRoutes2.MemberGroups.Group(Model.Platform, chapter)">
                 <i class="fa-solid fa-gear"></i> Manage
             </a>
         </div>

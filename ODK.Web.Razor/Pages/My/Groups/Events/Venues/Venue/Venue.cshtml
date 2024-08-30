@@ -1,6 +1,4 @@
 ﻿@page "/my/groups/{id:guid}/events/venues/{venueId:guid}"
-@attribute [Authorize]
-@using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Venues
 @model VenueModel
 @inject IVenueAdminService VenueAdminService
