@@ -5,4 +5,6 @@ namespace ODK.Data.Core.Repositories;
 public interface IChapterPropertyOptionRepository : IReadWriteRepository<ChapterPropertyOption>
 {
     IDeferredQueryMultiple<ChapterPropertyOption> GetByChapterId(Guid chapterId);
+
+    IDeferredQueryMultiple<ChapterPropertyOption> GetByPropertyId(Guid propertyId);
 }

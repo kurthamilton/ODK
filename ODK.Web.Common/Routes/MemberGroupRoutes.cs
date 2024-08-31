@@ -43,6 +43,24 @@ public class MemberGroupRoutes
         _ => $"{Index(platform)}"
     };
 
+    public string GroupMessages(PlatformType platform, Chapter chapter)
+        => $"{Group(platform, chapter)}/messages";
+
+    public string GroupPrivacy(PlatformType platform, Chapter chapter)
+        => $"{Group(platform, chapter)}/privacy";
+
+    public string GroupProperties(PlatformType platform, Chapter chapter)
+        => $"{Group(platform, chapter)}/properties";
+
+    public string GroupProperty(PlatformType platform, Chapter chapter, Guid propertyId)
+        => $"{GroupProperties(platform, chapter)}/{propertyId}";
+
+    public string GroupPropertyCreate(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{GroupProperties(platform, chapter)}/create",
+        _ => $"{GroupProperties(platform, chapter)}/new"
+    };
+
     public string GroupQuestion(PlatformType platform, Chapter chapter, Guid questionId)
         => $"{GroupQuestions(platform, chapter)}/{questionId}";
 
@@ -54,6 +72,9 @@ public class MemberGroupRoutes
 
     public string GroupQuestions(PlatformType platform, Chapter chapter)
         => $"{Group(platform, chapter)}/questions";
+
+    public string GroupSocialMedia(PlatformType platform, Chapter chapter)
+        => $"{Group(platform, chapter)}/social-media";
 
     public string GroupTexts(PlatformType platform, Chapter chapter) => platform switch
     {

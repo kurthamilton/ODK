@@ -1,19 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
+using ODK.Core.Platforms;
 using ODK.Services.Chapters;
-using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
-namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters;
+namespace ODK.Web.Razor.Pages.My.Groups.Group.Properties;
 
-public class PropertyCreateModel : AdminPageModel
+public class CreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
+    private readonly IPlatformProvider _platformProvider;
 
-    public PropertyCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
-        : base(requestCache)
+    public CreateModel(IChapterAdminService chapterAdminService, IPlatformProvider platformProvider)
     {
         _chapterAdminService = chapterAdminService;
+        _platformProvider = platformProvider;
     }
 
     public void OnGet()
@@ -22,8 +23,7 @@ public class PropertyCreateModel : AdminPageModel
 
     public async Task<IActionResult> OnPostAsync(ChapterPropertyFormViewModel viewModel)
     {
-        var serviceRequest = await GetAdminServiceRequest();
-        var result = await _chapterAdminService.CreateChapterProperty(serviceRequest, new CreateChapterProperty
+        var result = await _chapterAdminService.CreateChapterProperty(AdminServiceRequest, new CreateChapterProperty
         {
             ApplicationOnly = viewModel.ApplicationOnly,
             DataType = viewModel.DataType,
@@ -36,13 +36,16 @@ public class PropertyCreateModel : AdminPageModel
             Subtitle = viewModel.Subtitle
         });
 
+        AddFeedback(result, "Property created");
+
         if (!result.Success)
-        {
-            AddFeedback(new FeedbackViewModel(result));
+        {            
             return Page();
         }
 
-        AddFeedback(new FeedbackViewModel("Property created", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Chapter/Properties");
+        var platform = _platformProvider.GetPlatform();
+        var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
+
+        return Redirect(OdkRoutes2.MemberGroups.GroupProperties(platform, chapter));
     }
 }

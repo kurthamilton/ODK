@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/social-media"
+@using ODK.Services.Chapters
+@model ODK.Web.Razor.Pages.My.Groups.Group.SocialMediaModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Social media";
+
+    var viewModel = await ChapterAdminService.GetChapterLinksViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Chapter/_LinksContent", viewModel)

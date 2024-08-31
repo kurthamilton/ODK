@@ -1,24 +1,19 @@
 ﻿@using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Chapters
-@model ODK.Core.Chapters.Chapter
-@inject IChapterAdminService ChapterAdminService
-@{
-    var memberId = User.MemberId();
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var settings = await ChapterAdminService.GetChapterPrivacySettings(serviceRequest);    
-}
+@model ChapterPrivacyAdminPageViewModel
 
 <h2>Privacy settings</h2>
-<form action="/groups/@Model.Id/privacy" method="post">
+<form action="/groups/@Model.Chapter.Id/privacy" method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_PrivacyForm", new ChapterPrivacySettingsFormViewModel
     {
-        EventResponseVisibility = settings?.EventResponseVisibility,
-        EventVisibility = settings?.EventVisibility,
-        MemberVisibility = settings?.MemberVisibility,
-        VenueVisibility = settings?.VenueVisibility
+        EventResponseVisibility = Model.PrivacySettings?.EventResponseVisibility,
+        EventVisibility = Model.PrivacySettings?.EventVisibility,
+        MemberVisibility = Model.PrivacySettings?.MemberVisibility,
+        VenueVisibility = Model.PrivacySettings?.VenueVisibility
     })
     <button class="btn btn-primary">Update</button>
 </form>

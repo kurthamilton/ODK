@@ -5,7 +5,7 @@
 @{
     var active = Model.Active != null
         ? Model.Active
-        : Model.MenuItems.FirstOrDefault(x => Context.ForPath(x.Link, exactMatch: true));
+        : Model.MenuItems.Active(Context.Request.Path);
 
     var closestActive = active == null && Model.Root
         ? Model.MenuItems.Closest(Context.Request.Path)
@@ -20,7 +20,7 @@
 <ul class="side-menu">
     @foreach (var menuItem in Model.MenuItems)
     {
-        var showChildren = menuItem.Children?.Count > 0 && Context.ForPath(menuItem.Link, exactMatch: false);
+        var showChildren = active != null && active.DescendantOf(menuItem);
 
         <li>
             <a class="nav-link text-nowrap @(menuItem == active ? "active" : "")" href="@menuItem.Link">

@@ -1,12 +1,16 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Privacy"
+@using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.PrivacyModel
+@inject IChapterAdminService ChapterAdminService
 @{
     Layout = "Admin/Chapters/_ChapterAdminLayout";
     Model.Title = "Privacy | Admin";
+
+    var viewModel = await ChapterAdminService.GetChapterPrivacyViewModel(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Admin/Chapter/_PrivacyContent", Model.Chapter)
+    Content = await Html.PartialAsync("Admin/Chapter/_PrivacyContent", viewModel)
 })

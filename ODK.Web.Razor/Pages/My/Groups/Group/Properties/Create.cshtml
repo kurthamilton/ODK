@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/properties/new"
+@using ODK.Services.Chapters
+@model CreateModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Create property";
+
+    var chapter = await ChapterAdminService.GetChapter(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent", chapter)

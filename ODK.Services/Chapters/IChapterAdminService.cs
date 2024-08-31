@@ -39,17 +39,27 @@ public interface IChapterAdminService
 
     Task<ChapterLinks?> GetChapterLinks(AdminServiceRequest request);
 
+    Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(AdminServiceRequest request);
+
     Task<ChapterLocation?> GetChapterLocation(AdminServiceRequest request);
 
     Task<ChapterMembershipSettings?> GetChapterMembershipSettings(AdminServiceRequest request);    
+
+    Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(AdminServiceRequest request);
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(AdminServiceRequest request);
 
     Task<ChapterPrivacySettings?> GetChapterPrivacySettings(AdminServiceRequest request);
 
+    Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(AdminServiceRequest request);
+
     Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(AdminServiceRequest request);
 
+    Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(AdminServiceRequest request);
+
     Task<ChapterProperty> GetChapterProperty(AdminServiceRequest request, Guid chapterPropertyId);
+
+    Task<ChapterPropertyAdminPageViewModel> GetChapterPropertyViewModel(AdminServiceRequest request, Guid propertyId);
 
     Task<ChapterQuestion> GetChapterQuestion(AdminServiceRequest request, Guid questionId);
 

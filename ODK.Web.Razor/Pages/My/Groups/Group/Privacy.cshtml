@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/privacy"
+@using ODK.Services.Chapters
+@model ODK.Web.Razor.Pages.My.Groups.Group.PrivacyModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Privacy";
+
+    var viewModel = await ChapterAdminService.GetChapterPrivacyViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Chapter/_PrivacyContent", viewModel)

@@ -25,6 +25,22 @@ public class ChapterAdminController : AdminControllerBase
         _emailAdminService = emailAdminService;
     }
 
+    [HttpPost("groups/{id:guid}/links")]
+    public async Task<IActionResult> UpdatePrivacySettings(Guid id, [FromForm] ChapterLinksFormViewModel viewModel)
+    {
+        var request = new AdminServiceRequest(id, MemberId);
+        await _chapterAdminService.UpdateChapterLinks(request, new UpdateChapterLinks
+        {
+            Facebook = viewModel.Facebook ?? "",
+            Instagram = viewModel.Instagram ?? "",
+            Twitter = viewModel.Twitter ?? ""
+        });
+
+        AddFeedback("Social media links updated", FeedbackType.Success);
+
+        return RedirectToReferrer();
+    }
+
     [HttpPost("groups/{id:guid}/privacy")]
     public async Task<IActionResult> UpdatePrivacySettings(Guid id, [FromForm] ChapterPrivacySettingsFormViewModel viewModel)
     {
@@ -109,16 +125,12 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Chapter/ContactRequests/{id}/Delete")]
-    public async Task<IActionResult> DeleteContactRequest(string chapterName, Guid id)
+    [HttpPost("groups/{chapterId:guid}/messages/{id}/delete")]
+    public async Task<IActionResult> DeleteContactRequest(Guid chapterId, Guid id)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = new AdminServiceRequest(chapterId, MemberId);
         var result = await _chapterAdminService.DeleteChapterContactRequest(serviceRequest, id);
-        if (result.Success)
-        {
-            AddFeedback("Contact request deleted", FeedbackType.Success);
-        }
-
+        AddFeedback(result, "Message deleted");
         return RedirectToReferrer();
     }
 
@@ -157,27 +169,27 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Chapter/Properties/{id:guid}/Delete")]
-    public async Task<IActionResult> DeleteProperty(string chapterName, Guid id)
+    [HttpPost("groups/{chapterId:guid}/properties/{id:guid}/delete")]
+    public async Task<IActionResult> DeleteProperty(Guid chapterId, Guid id)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = new AdminServiceRequest(chapterId, MemberId);
         await _chapterAdminService.DeleteChapterProperty(serviceRequest, id);
         AddFeedback("Property deleted", FeedbackType.Success);
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Chapter/Properties/{id:guid}/MoveDown")]
-    public async Task<IActionResult> MovePropertyDown(string chapterName, Guid id)
+    [HttpPost("groups/{chapterId:guid}/properties/{id:guid}/move/down")]
+    public async Task<IActionResult> MovePropertyDown(Guid chapterId, Guid id)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = new AdminServiceRequest(chapterId, MemberId);
         await _chapterAdminService.UpdateChapterPropertyDisplayOrder(serviceRequest, id, 1);
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Chapter/Properties/{id:guid}/MoveUp")]
-    public async Task<IActionResult> MovePropertyUp(string chapterName, Guid id)
+    [HttpPost("groups/{chapterId:guid}/properties/{id:guid}/move/up")]
+    public async Task<IActionResult> MovePropertyUp(Guid chapterId, Guid id)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = new AdminServiceRequest(chapterId, MemberId);
         await _chapterAdminService.UpdateChapterPropertyDisplayOrder(serviceRequest, id, -1);
         return RedirectToReferrer();
     }

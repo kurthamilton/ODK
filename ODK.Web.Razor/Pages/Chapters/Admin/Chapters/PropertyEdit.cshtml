@@ -1,18 +1,17 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Properties/{id:guid}"
+@using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.PropertyEditModel
+@inject IChapterAdminService ChapterAdminService
 @{
     Layout = "Admin/Chapters/_ChapterAdminLayout";
     Model.Title = "Edit property | Admin";
+
+    var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(Model.AdminServiceRequest, Model.Property.Id);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Breadcrumbs = new []
-    {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Chapter/Properties", Text = "Properties" },
-        new MenuItem { Text = "Edit" }
-    },
-    Content = await Html.PartialAsync("Admin/Chapter/_PropertyEditContent", Model.Property)
+{    
+    Content = await Html.PartialAsync("Admin/Chapter/_PropertyEditContent", viewModel)
 })

@@ -1,24 +1,15 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Services
-@using ODK.Services.Chapters
-@using ODK.Web.Common.Extensions
+﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models.Admin.Chapters
-@model ODK.Core.Chapters.Chapter
-@inject IChapterAdminService ChapterAdminService
-@{
-    var memberId = User.MemberId();
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var links = await ChapterAdminService.GetChapterLinks(serviceRequest);
-}
+@model ChapterLinksAdminPageViewModel
 
 <h2>Social media links</h2>
-<form method="post">
+<form action="/groups/@Model.Chapter.Id/links" method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel
     {
-        Facebook = links?.FacebookName,
-        Instagram = links?.InstagramName,
-        Twitter = links?.TwitterName
+        Facebook = Model.Links?.FacebookName,
+        Instagram = Model.Links?.InstagramName,
+        Twitter = Model.Links?.TwitterName
     })
     <button class="btn btn-primary">Update</button>
 </form>

@@ -1,18 +1,40 @@
-﻿@using ODK.Web.Razor.Models.Admin.Chapters
-@model ODK.Core.Chapters.ChapterProperty
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ChapterPropertyAdminPageViewModel
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.GroupProperties(Model.Platform, Model.Chapter),
+            Text = "Member properties"
+        },
+        new MenuItem { Text = Model.Property.Name }
+    }
+})
+
+<h2>Edit member property</h2>
 
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
     {
-        ApplicationOnly = Model.ApplicationOnly,
-        DataType = Model.DataType,
-        DisplayName = Model.DisplayName,
-        HelpText = Model.HelpText,
-        Label = Model.Label,
-        Name = Model.Name,
-        Required = Model.Required,
-        Subtitle = Model.Subtitle
+        ApplicationOnly = Model.Property.ApplicationOnly,
+        DataType = Model.Property.DataType,
+        DataTypeEnabled = false,
+        DisplayName = Model.Property.DisplayName,
+        HelpText = Model.Property.HelpText,
+        Label = Model.Property.Label,
+        Name = Model.Property.Name,
+        Options = string.Join(Environment.NewLine, 
+            Model.Options.OrderBy(x => x.DisplayOrder).Select(x => x.Value)),
+        Required = Model.Property.Required,
+        Subtitle = Model.Property.Subtitle
     })
     <button class="btn btn-primary">Update</button>
 </form>

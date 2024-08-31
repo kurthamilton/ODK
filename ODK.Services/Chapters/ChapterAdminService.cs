@@ -121,10 +121,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapterId = request.ChapterId;
 
-        var existing = await GetChapterAdminRestrictedContent(request,
+        var properties = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId));
 
-        var displayOrder = existing.Count > 0 ? existing.Max(x => x.DisplayOrder) + 1 : 1;
+        var displayOrder = properties.Count > 0 ? properties.Max(x => x.DisplayOrder) + 1 : 1;
 
         var property = new ChapterProperty
         {
@@ -140,13 +140,28 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Subtitle = model.Subtitle
         };
 
-        var validationResult = ValidateChapterProperty(property, existing);
+        var validationResult = ValidateChapterProperty(property, properties);
         if (!validationResult.Success)
         {
             return validationResult;
         }
 
         _unitOfWork.ChapterPropertyRepository.Add(property);
+        
+        if (property.DataType == DataType.DropDown && model.Options.Count > 0)
+        {
+            var options = model.Options
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select((x, i) => new ChapterPropertyOption
+                {
+                    ChapterPropertyId = property.Id,
+                    DisplayOrder = i + 1,
+                    Value = x
+                })
+                .ToArray();
+            _unitOfWork.ChapterPropertyOptionRepository.AddMany(options);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -382,6 +397,22 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId));
     }
 
+    public async Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, links) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId));
+
+        return new ChapterLinksAdminPageViewModel
+        {
+            Chapter = chapter,
+            Links = links,
+            Platform = platform
+        };
+    }
+
     public async Task<ChapterLocation?> GetChapterLocation(AdminServiceRequest request)
     {
         var chapter = await GetSuperAdminRestrictedContent(request,
@@ -397,6 +428,22 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId));
     }    
 
+    public async Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, messages) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ContactRequestRepository.GetByChapterId(request.ChapterId));
+
+        return new ChapterMessagesAdminPageViewModel
+        {
+            Chapter = chapter,
+            Messages = messages,
+            Platform = platform
+        };
+    }
+
     public async Task<ChapterPaymentSettings?> GetChapterPaymentSettings(AdminServiceRequest request)
     {
         return await GetChapterAdminRestrictedContent(request,
@@ -409,10 +456,42 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId));
     }
 
+    public async Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, privacySettings) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId));
+
+        return new ChapterPrivacyAdminPageViewModel
+        {
+            Chapter = chapter,
+            Platform = platform,
+            PrivacySettings = privacySettings
+        };
+    }
+
     public async Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(AdminServiceRequest request)
     {
         return await GetChapterAdminRestrictedContent(request,
             x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId));
+    }
+
+    public async Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, properties) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId));
+
+        return new ChapterPropertiesAdminPageViewModel
+        {
+            Chapter = chapter,
+            Platform = platform,
+            Properties = properties
+        };
     }
 
     public async Task<ChapterProperty> GetChapterProperty(AdminServiceRequest request, Guid id)
@@ -421,6 +500,28 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterPropertyRepository.GetById(id));
         OdkAssertions.BelongsToChapter(property, request.ChapterId);
         return property;
+    }
+
+    public async Task<ChapterPropertyAdminPageViewModel> GetChapterPropertyViewModel(
+        AdminServiceRequest request, 
+        Guid propertyId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, property, options) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterPropertyRepository.GetById(propertyId),
+            x => x.ChapterPropertyOptionRepository.GetByPropertyId(propertyId));
+
+        OdkAssertions.BelongsToChapter(property, chapter.Id);
+
+        return new ChapterPropertyAdminPageViewModel
+        {
+            Chapter = chapter,
+            Platform = platform,
+            Options = options,
+            Property = property
+        };
     }
 
     public async Task<ChapterQuestion> GetChapterQuestion(AdminServiceRequest request, Guid questionId)
@@ -855,13 +956,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ServiceResult> UpdateChapterProperty(AdminServiceRequest request, 
         Guid propertyId, UpdateChapterProperty model)
     {
-        var properties = await GetChapterAdminRestrictedContent(request,
-             x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId));
+        var (properties, options) = await GetChapterAdminRestrictedContent(request,
+             x => x.ChapterPropertyRepository.GetByChapterId(request.ChapterId),
+             x => x.ChapterPropertyOptionRepository.GetByPropertyId(propertyId));
 
         var property = properties.FirstOrDefault(x => x.Id == propertyId);
         OdkAssertions.Exists(property);
-        OdkAssertions.BelongsToChapter(property, request.ChapterId);
-
+        
         property.ApplicationOnly = model.ApplicationOnly;
         property.DisplayName = model.DisplayName;
         property.HelpText = model.HelpText;
@@ -874,6 +975,23 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         if (!validationResult.Success)
         {
             return validationResult;
+        }
+
+        if (property.DataType == DataType.DropDown)
+        {
+            _unitOfWork.ChapterPropertyOptionRepository.DeleteMany(options);
+
+            options = model.Options
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select((x, i) => new ChapterPropertyOption
+                {
+                    ChapterPropertyId = property.Id,
+                    DisplayOrder = i + 1,
+                    Value = x
+                })
+                .ToArray();
+
+            _unitOfWork.ChapterPropertyOptionRepository.AddMany(options);
         }
 
         _unitOfWork.ChapterPropertyRepository.Update(property);
