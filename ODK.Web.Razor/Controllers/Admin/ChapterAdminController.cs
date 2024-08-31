@@ -182,31 +182,6 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Chapter/Questions/{id:guid}/Delete")]
-    public async Task<IActionResult> DeleteQuestion(string chapterName, Guid id)
-    {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
-        await _chapterAdminService.DeleteChapterQuestion(serviceRequest, id);
-        AddFeedback("Question deleted", FeedbackType.Success);
-        return RedirectToReferrer();
-    }
-
-    [HttpPost("{chapterName}/Admin/Chapter/Questions/{id:guid}/MoveDown")]
-    public async Task<IActionResult> MoveQuestionDown(string chapterName, Guid id)
-    {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
-        await _chapterAdminService.UpdateChapterQuestionDisplayOrder(serviceRequest, id, 1);
-        return RedirectToReferrer();
-    }
-
-    [HttpPost("{chapterName}/Admin/Chapter/Questions/{id:guid}/MoveUp")]
-    public async Task<IActionResult> MoveQuestionUp(string chapterName, Guid id)
-    {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
-        await _chapterAdminService.UpdateChapterQuestionDisplayOrder(serviceRequest, id, -1);
-        return RedirectToReferrer();
-    }
-
     [HttpPost("{chapterName}/Admin/Chapter/Subscriptions/{id:guid}/Automatic")]
     public async Task<IActionResult> SetUpAutomaticSubscription(string chapterName, Guid id, 
         [FromForm] SiteSubscriptionFrequency frequency)
@@ -217,11 +192,11 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Chapter/Text")]
-    public async Task<IActionResult> UpdateChapterTexts(string chapterName,
+    [HttpPost("groups/{id:guid}/texts")]
+    public async Task<IActionResult> UpdateChapterTexts(Guid id,
         [FromForm] ChapterTextsFormViewModel viewModel)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = new AdminServiceRequest(id, MemberId);
         var result = await _chapterAdminService.UpdateChapterTexts(serviceRequest, new UpdateChapterTexts
         {
             Description = viewModel.Description,

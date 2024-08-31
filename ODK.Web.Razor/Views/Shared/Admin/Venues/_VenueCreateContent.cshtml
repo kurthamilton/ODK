@@ -1,5 +1,28 @@
-﻿@using ODK.Web.Common.Extensions
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Platforms
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Venues
+@using ODK.Web.Razor.Models.Components
+@model Chapter
+@inject IPlatformProvider PlatformProvider
+@{
+    var platform = PlatformProvider.GetPlatform();
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.Venues(platform, Model),
+            Text = "Venues"
+        },
+        new MenuItem { Text = "New" }
+    }
+})
 
 <h2>Create venue</h2>
 

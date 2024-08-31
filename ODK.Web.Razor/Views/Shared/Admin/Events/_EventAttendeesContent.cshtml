@@ -8,6 +8,7 @@
         .ToDictionary(x => x.MemberId, x => x.Type);
 }
 
+@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
 @await Html.PartialAsync("Admin/Events/_EventHeader")
 @await Html.PartialAsync("Admin/Events/_EventAdminTabs")
 

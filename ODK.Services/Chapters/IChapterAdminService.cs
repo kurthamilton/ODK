@@ -55,13 +55,19 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(AdminServiceRequest request);
 
+    Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(AdminServiceRequest request);
+
+    Task<ChapterQuestionAdminPageViewModel> GetChapterQuestionViewModel(AdminServiceRequest request, Guid questionId);
+
     Task<ChapterSubscription> GetChapterSubscription(AdminServiceRequest request, Guid id);
 
     Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(AdminServiceRequest request);
 
-    Task<ChapterTexts?> GetChapterTexts(AdminServiceRequest request);    
+    Task<ChapterTexts?> GetChapterTexts(AdminServiceRequest request);
 
-    Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);
+    Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(AdminServiceRequest request);
+
+    Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);    
 
     Task<ServiceResult> PublishChapter(AdminServiceRequest request);
 

@@ -3,9 +3,14 @@
 @using ODK.Core.Utils
 @using ODK.Services
 @using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Razor.Models.Components
 @model EventInvitesAdminPageViewModel
+
+@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
 
 @await Html.PartialAsync("Admin/Events/_EventHeader")
 @await Html.PartialAsync("Admin/Events/_EventAdminTabs")

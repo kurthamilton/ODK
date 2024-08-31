@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.DataTypes;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Web;
@@ -23,6 +24,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IInstagramService _instagramService;
+    private readonly IPlatformProvider _platformProvider;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -34,7 +36,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IHttpRequestProvider httpRequestProvider,
         ISiteSubscriptionService siteSubscriptionService,
         IHtmlSanitizer htmlSanitizer,
-        IInstagramService instagramService)
+        IInstagramService instagramService,
+        IPlatformProvider platformProvider)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
@@ -43,6 +46,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _httpRequestProvider = httpRequestProvider;
         _htmlSanitizer = htmlSanitizer;
         _instagramService = instagramService;
+        _platformProvider = platformProvider;
         _siteSubscriptionService = siteSubscriptionService;
         _unitOfWork = unitOfWork;
     }
@@ -427,6 +431,40 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return question;
     }
 
+    public async Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, questions) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterQuestionRepository.GetByChapterId(request.ChapterId));
+
+        return new ChapterQuestionsAdminPageViewModel
+        {
+            Chapter = chapter,
+            Platform = platform,
+            Questions = questions
+        };
+    }
+
+    public async Task<ChapterQuestionAdminPageViewModel> GetChapterQuestionViewModel(AdminServiceRequest request, Guid questionId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, question) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterQuestionRepository.GetById(questionId));
+
+        OdkAssertions.BelongsToChapter(question, chapter.Id);
+
+        return new ChapterQuestionAdminPageViewModel
+        {
+            Chapter = chapter,
+            Platform = platform,
+            Question = question
+        };
+    }
+
     public async Task<ChapterSubscription> GetChapterSubscription(AdminServiceRequest request, Guid id)
     {
         var subscription = await GetChapterAdminRestrictedContent(request, 
@@ -451,6 +489,22 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         return await GetChapterAdminRestrictedContent(request,
             x => x.ChapterTextsRepository.GetByChapterId(request.ChapterId));
+    }
+
+    public async Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, texts) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterTextsRepository.GetByChapterId(request.ChapterId));
+
+        return new ChapterTextsAdminPageViewModel
+        {
+            Chapter = chapter,
+            Platform = platform,
+            Texts = texts
+        };
     }
 
     public async Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId)

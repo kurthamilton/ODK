@@ -3,7 +3,6 @@
 @using ODK.Web.Razor.Models.Admin.Members
 @model MemberAdminTabsViewModel
 
-<h2>@Model.Member.FullName</h2>
 <ul class="nav nav-underline mb-3">
     <li class="nav-item">
         <a class="nav-link" data-menu-link="exact" href="@OdkRoutes2.MemberGroups.Member(Model.Platform, Model.Chapter, Model.Member.Id)">Subscription</a>

@@ -4,10 +4,5 @@ namespace ODK.Web.Razor.Models.Components;
 
 public class BreadcrumbsViewModel
 {
-    public BreadcrumbsViewModel(IEnumerable<MenuItem> breadcrumbs)
-    {
-        Breadcrumbs = breadcrumbs.ToArray();
-    }
-
-    public IReadOnlyCollection<MenuItem> Breadcrumbs { get; }
+    public required IReadOnlyCollection<MenuItem> Breadcrumbs { get; init; }
 }

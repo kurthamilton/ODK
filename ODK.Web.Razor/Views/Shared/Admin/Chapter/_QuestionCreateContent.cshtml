@@ -1,6 +1,28 @@
-﻿@using ODK.Web.Razor.Models.Admin.Chapters
+﻿@using ODK.Core.Platforms
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
 @model ODK.Core.Chapters.Chapter
+@inject IPlatformProvider PlatformProvider
+@{
+    var platform = PlatformProvider.GetPlatform();
+}
 
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.GroupQuestions(platform, Model),
+            Text = "FAQ"
+        },
+        new MenuItem { Text = "New" }
+    }
+})
+
+<h2>Create question</h2>
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel())

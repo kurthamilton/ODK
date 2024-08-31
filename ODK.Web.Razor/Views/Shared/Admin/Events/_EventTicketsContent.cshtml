@@ -7,6 +7,7 @@
 @using ODK.Web.Razor.Models.Members
 @model EventTicketsAdminPageViewModel
 
+@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
 @await Html.PartialAsync("Admin/Events/_EventHeader")
 @await Html.PartialAsync("Admin/Events/_EventAdminTabs")
 

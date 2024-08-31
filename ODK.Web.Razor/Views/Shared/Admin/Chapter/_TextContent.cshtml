@@ -1,24 +1,20 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Chapters
-@model ODK.Core.Chapters.Chapter
-@inject IChapterAdminService ChapterAdminService
-@{
-    var memberId = User.MemberId();
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var texts = await ChapterAdminService.GetChapterTexts(serviceRequest);
-}
+@model ChapterTextsAdminPageViewModel
 
-<form method="post" action="/@Model.Name/Admin/Chapter/Text">
+<h2>Texts</h2>
+<form method="post" action="/groups/@Model.Chapter.Id/texts">
     @Html.AntiForgeryToken()
 
     @await Html.PartialAsync("Admin/Chapter/_TextForm", new ChapterTextsFormViewModel
     {
-        Description = texts?.Description,
-        RegisterMessage = texts?.RegisterText,
-        WelcomeMessage = texts?.WelcomeText
+        Description = Model.Texts?.Description,
+        RegisterMessage = Model.Texts?.RegisterText,
+        WelcomeMessage = Model.Texts?.WelcomeText
     })
     <button class="btn btn-primary">Update</button>
 </form>

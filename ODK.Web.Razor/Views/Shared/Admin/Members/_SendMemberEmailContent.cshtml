@@ -4,6 +4,8 @@
 @using ODK.Web.Razor.Models.Components
 @model MemberEmailAdminPageViewModel
 
+@await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
+
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", new MemberAdminTabsViewModel
 {
     Chapter = Model.Chapter,

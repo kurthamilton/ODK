@@ -18,10 +18,5 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Breadcrumbs = new []
-    {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Events(viewModel.Platform, viewModel.Chapter), Text = "Events" },
-        new MenuItem { Text = viewModel.Event.GetDisplayName() }
-    },
     Content = await Html.PartialAsync("Admin/Events/_EventContent", viewModel)
 })

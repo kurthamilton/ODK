@@ -1,5 +1,4 @@
 ﻿@page "/{chapterName}/Admin/Events/{id:guid}/Tickets"
-@using ODK.Services
 @using ODK.Services.Events
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Admin.Events
@@ -10,8 +9,7 @@
     Layout = "Admin/Events/_EventAdminLayout";
     Model.Title = "Event tickets | Admin";
 
-    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
-    var viewModel = await EventAdminService.GetEventTicketsViewModel(request, Model.Event.Id);
+    var viewModel = await EventAdminService.GetEventTicketsViewModel(Model.AdminServiceRequest, Model.Event.Id);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

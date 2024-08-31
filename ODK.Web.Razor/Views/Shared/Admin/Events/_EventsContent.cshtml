@@ -53,7 +53,7 @@
             <td>
                 @if (eventInvites?.SentUtc == null)
                 {
-                    <a href="@OdkRoutes2.MemberGroups.EventInvites(Model.Platform, Model.Chapter, @event)">
+                    <a href="@OdkRoutes2.MemberGroups.EventInvites(Model.Platform, Model.Chapter, @event.Id)">
                         @(eventInvites?.ScheduledUtc != null ? "Scheduled" : "Send")
                     </a>
                 }

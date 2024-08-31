@@ -10,20 +10,26 @@ public class MemberGroupRoutes
     public string Event(PlatformType platform, Chapter chapter, Guid eventId)
         => $"{Events(platform, chapter)}/{eventId}";
 
+    public string EventAttendees(PlatformType platform, Chapter chapter, Guid eventId)
+        => $"{Events(platform, chapter)}/{@eventId}/attendees";
+
     public string EventCreate(PlatformType platform, Chapter chapter) => platform switch
     {
         PlatformType.DrunkenKnitwits => $"{Events(platform, chapter)}/create",
         _ => $"{Events(platform, chapter)}/new"
     };
 
-    public string EventInvites(PlatformType platform, Chapter chapter, Event @event)
-        => $"{Events(platform, chapter)}/{@event.Id}/invites";
+    public string EventInvites(PlatformType platform, Chapter chapter, Guid eventId)
+        => $"{Events(platform, chapter)}/{@eventId}/invites";
 
     public string Events(PlatformType platform, Chapter chapter) => 
         $"{Group(platform, chapter)}/events";
 
     public string EventSettings(PlatformType platform, Chapter chapter)
         => $"{Events(platform, chapter)}/settings";
+
+    public string EventTickets(PlatformType platform, Chapter chapter, Guid eventId)
+        => $"{Events(platform, chapter)}/{@eventId}/tickets";
 
     public string Group(PlatformType platform, Chapter chapter) => platform switch
     {
@@ -36,6 +42,18 @@ public class MemberGroupRoutes
         PlatformType.DrunkenKnitwits => "/",
         _ => $"{Index(platform)}"
     };
+
+    public string GroupQuestion(PlatformType platform, Chapter chapter, Guid questionId)
+        => $"{GroupQuestions(platform, chapter)}/{questionId}";
+
+    public string GroupQuestionCreate(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{GroupQuestions(platform, chapter)}/create",
+        _ => $"{GroupQuestions(platform, chapter)}/new"
+    };
+
+    public string GroupQuestions(PlatformType platform, Chapter chapter)
+        => $"{Group(platform, chapter)}/questions";
 
     public string GroupTexts(PlatformType platform, Chapter chapter) => platform switch
     {

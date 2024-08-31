@@ -1,7 +1,10 @@
 ﻿@using ODK.Core.Members
 @using ODK.Core.Utils
 @using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Razor.Models.Components
 @model EventEditAdminPageViewModel
 @{
     var hostOptions = Model.ChapterAdminMembers
@@ -12,6 +15,8 @@
         })
         .ToArray() ?? [];
 }
+
+@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
 
 @await Html.PartialAsync("Admin/Events/_EventHeader", Model)
 

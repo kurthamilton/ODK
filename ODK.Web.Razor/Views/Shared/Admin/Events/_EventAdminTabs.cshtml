@@ -1,21 +1,22 @@
 ﻿@using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Routes
 @model EventAdminPageViewModelBase
 
-<ul class="nav nav-tabs my-3">
+<ul class="nav nav-underline my-3">
     <li class="nav-item">
-        <a class="nav-link" data-menu-link="exact" href="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id">Edit</a>
+        <a class="nav-link" data-menu-link="exact" href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, Model.Event.Id)">Edit</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" data-menu-link href="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Invites">Invites</a>
+        <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.EventInvites(Model.Platform, Model.Chapter, Model.Event.Id)">Invites</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" data-menu-link href="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees">Attendees</a>
+        <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.EventAttendees(Model.Platform, Model.Chapter, Model.Event.Id)">Attendees</a>
     </li>
 
     @if (Model.Event.Ticketed)
     {
         <li class="nav-item">
-            <a class="nav-link" data-menu-link href="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Tickets">Tickets</a>
+            <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.EventTickets(Model.Platform, Model.Chapter, Model.Event.Id)">Tickets</a>
         </li>
     }
 </ul>

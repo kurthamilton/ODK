@@ -16,7 +16,16 @@
     var menuItems = new[]
     {
         new MenuItem { Link = OdkRoutes2.Groups.Group(chapter), Text = "Home" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Group(platform, chapter), Text = "Group" },
+        new MenuItem 
+        { 
+            Link = OdkRoutes2.MemberGroups.Group(platform, chapter), 
+            Text = "Group",
+            Children = new[]
+            {
+                new MenuItem { Link = OdkRoutes2.MemberGroups.GroupQuestions(platform, chapter), Text = "FAQ" },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" }
+            }
+        },
         new MenuItem 
         { 
             Link = OdkRoutes2.MemberGroups.Events(platform, chapter), 

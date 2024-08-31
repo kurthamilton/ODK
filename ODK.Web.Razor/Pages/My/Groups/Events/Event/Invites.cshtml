@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/events/{eventId:guid}/invites"
+@using ODK.Services.Events
+@model InvitesModel
+@inject IEventAdminService EventAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Event invites";
+
+    var viewModel = await EventAdminService.GetEventInvitesViewModel(Model.AdminServiceRequest, Model.EventId);
+}
+
+@await Html.PartialAsync("Admin/Events/_EventInvitesContent", viewModel)
