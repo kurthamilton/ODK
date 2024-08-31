@@ -23,7 +23,7 @@
 @if (currency == null)
 {
     var currencyOptions = dto.Currencies
-        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = $"{x.Code} ({x.Symbol})" })
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.ToString() })
         .OrderBy(x => x.Text)
         .ToArray();
 

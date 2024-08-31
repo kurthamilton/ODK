@@ -8,8 +8,7 @@
     Layout = "Admin/Members/_MemberAdminLayout";
     Model.Title = "Subscriptions | Admin";
 
-    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
-    var viewModel = await MemberAdminService.GetMemberSubscriptionsViewModel(request);
+    var viewModel = await MemberAdminService.GetMemberSubscriptionsViewModel(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

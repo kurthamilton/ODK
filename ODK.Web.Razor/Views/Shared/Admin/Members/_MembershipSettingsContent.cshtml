@@ -1,0 +1,27 @@
+﻿@using ODK.Core.Features
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
+@model MembershipSettingsAdminPageViewModel
+@{
+    var membershipSettings = Model.MembershipSettings;
+}
+
+<h2>Membership settings</h2>
+
+@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+{
+    Feature = SiteFeatureType.MemberSubscriptions,
+    ContentFunc = 
+        @<form action="/groups/@Model.Chapter.Id/membership" method="post">
+            @Html.AntiForgeryToken()
+            @await Html.PartialAsync("Admin/Members/_MembershipSettingsForm", new MembershipSettingsFormViewModel
+            {
+                Enabled = membershipSettings?.Enabled ?? false,
+                MembershipDisabledAfter = membershipSettings?.MembershipDisabledAfterDaysExpired ?? 0,
+                MembershipExpiringWarningDays = membershipSettings?.MembershipExpiringWarningDays ?? 0,
+                TrialPeriodMonths = membershipSettings?.TrialPeriodMonths ?? 0
+            })
+            <button class="btn btn-primary">Update</button>
+        </form>
+})

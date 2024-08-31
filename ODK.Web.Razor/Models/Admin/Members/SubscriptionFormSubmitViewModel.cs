@@ -7,7 +7,8 @@ namespace ODK.Web.Razor.Models.Admin.Members;
 public class SubscriptionFormSubmitViewModel
 {
     [Required]
-    public double? Amount { get; set; }    
+    [Range(0, double.MaxValue)]
+    public double? Amount { get; set; }
 
     [Required]
     public string Description { get; set; } = "";

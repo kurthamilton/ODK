@@ -9,4 +9,4 @@
     var viewModel = await EventAdminService.GetEventCreateViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel.Chapter)
+@await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel)

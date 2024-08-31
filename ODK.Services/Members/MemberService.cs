@@ -499,7 +499,8 @@ public class MemberService : IMemberService
     public async Task<ServiceResult> PurchaseChapterSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId,
         string cardToken)
     {
-        var (member, chapterSubscription, memberSubscription) = await _unitOfWork.RunAsync(
+        var (paymentSettings, member, chapterSubscription, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(memberId),
             x => x.ChapterSubscriptionRepository.GetByIdOrDefault(chapterSubscriptionId),
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId));
@@ -513,7 +514,8 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Payment not made: you are not a member of this subscription's chapter");
         }
         
-        var paymentResult = await _paymentService.MakePayment(chapterSubscription.ChapterId, member, (decimal)chapterSubscription.Amount, cardToken, 
+        var paymentResult = await _paymentService.MakePayment(paymentSettings, 
+            paymentSettings.Currency, member, (decimal)chapterSubscription.Amount, cardToken, 
             chapterSubscription.Title);
         if (!paymentResult.Success)
         {

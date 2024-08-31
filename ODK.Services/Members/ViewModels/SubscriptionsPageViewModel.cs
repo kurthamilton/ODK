@@ -11,5 +11,5 @@ public class SubscriptionsPageViewModel
 
     public required MemberSubscription? MemberSubscription { get; init; }
 
-    public required ChapterPaymentSettings PaymentSettings { get; init; }
+    public required ChapterPaymentSettings? PaymentSettings { get; init; }
 }

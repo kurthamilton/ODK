@@ -7,6 +7,7 @@ using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
+using ODK.Web.Razor.Models.Admin.Members;
 
 namespace ODK.Web.Razor.Controllers.Admin;
 
@@ -37,6 +38,25 @@ public class ChapterAdminController : AdminControllerBase
         });
 
         AddFeedback("Social media links updated", FeedbackType.Success);
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{id:guid}/membership")]
+    public async Task<IActionResult> UpdateMembershipSettings(Guid id, 
+        [FromForm] MembershipSettingsFormViewModel viewModel)
+    {
+        var request = new AdminServiceRequest(id, MemberId);
+        var result = await _chapterAdminService.UpdateChapterMembershipSettings(request,
+            new UpdateChapterMembershipSettings
+            {
+                Enabled = viewModel.Enabled,
+                MembershipDisabledAfterDaysExpired = viewModel.MembershipDisabledAfter,
+                MembershipExpiringWarningDays = viewModel.MembershipExpiringWarningDays,
+                TrialPeriodMonths = viewModel.TrialPeriodMonths
+            });
+
+        AddFeedback(result, "Membership settings updated");
 
         return RedirectToReferrer();
     }

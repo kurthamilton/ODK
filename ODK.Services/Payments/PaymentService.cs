@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Data.Core;
 
@@ -60,20 +61,17 @@ public class PaymentService : IPaymentService
         return await provider.GetSubscriptionPlan(externalId);
     }
 
-    public async Task<ServiceResult> MakePayment(Guid chapterId, Member member, decimal amount, string cardToken, string reference)
+    public async Task<ServiceResult> MakePayment(IPaymentSettings paymentSettings, 
+        Currency currency, Member member, decimal amount, string cardToken, string reference)
     {
-        var (settings, chapter) = await _unitOfWork.RunAsync(
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterRepository.GetById(chapterId));
-
-        if (settings == null || settings.Provider == null)
+        if (paymentSettings.Provider == null)
         {
             return ServiceResult.Failure("Payment settings not found");
         }
 
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(paymentSettings);
 
-        var paymentResult = await paymentProvider.MakePayment(settings.Currency.Code, amount, cardToken, reference,
+        var paymentResult = await paymentProvider.MakePayment(currency.Code, amount, cardToken, reference,
             member.FullName);
         if (!paymentResult.Success)
         {
@@ -83,7 +81,7 @@ public class PaymentService : IPaymentService
         _unitOfWork.PaymentRepository.Add(new Payment
         {
             Amount = (double)amount,
-            CurrencyCode = settings.Currency.Code,
+            CurrencyCode = currency.Code,
             MemberId = member.Id,
             PaidUtc = DateTime.UtcNow,
             Reference = reference

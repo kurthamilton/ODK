@@ -3,7 +3,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Models.Admin.Events.EventFormViewModel
-@{    
+@{
     var venueOptions = Model.Venues
         .OrderBy(x => x.Name)
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
@@ -23,7 +23,7 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Venue, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_Tooltip", "Select an existing venue or create a new venue first on the venues page")    
+    @await Html.PartialAsync("Components/_Tooltip", "Select an existing venue or create a new venue first on the venues page")
     <a href="@OdkRoutes2.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)">Create venue</a>
     @Html.DropDownListFor(x => x.Venue, venueOptions, "", new { @class = "form-select", data_searchable = "" })
     @Html.ValidationMessageFor(x => x.Venue)
@@ -31,7 +31,7 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Date, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_Tooltip", "Event date. Start time defaults to value set in event settings")
+    <span class="ms-1 text-muted">Event date. Start time defaults to value set in event settings</span>
     @if (Model.Date.Date == Model.Date)
     {
         <a href="@OdkRoutes2.MemberGroups.EventSettings(Model.Platform, Model.Chapter)">Set default start time</a>
@@ -112,25 +112,14 @@
     </legend>
     <div class="form-group mb-3">
         @Html.LabelFor(x => x.TicketCost, new { @class = "form-label" })
-        @await Html.PartialAsync("Components/_Tooltip",
-                 "The total ticket cost for this event. Set the max number of attendees above to set the number of tickets.")
-        <div class="input-group">
-            @if (Model.CurrencySymbol != null)
-            {
-                <span class="input-group-text">
-                    @Model.CurrencySymbol
-                </span>
-            }
-            @Html.TextBoxFor(x => x.TicketCost, format: "{0:0.00}", new { @class = "form-control", Type = "number" })
-        </div>
-
+        <span class="ms-1 text-muted">The total ticket cost for this event. Set the max number of attendees above to set the number of tickets.</span>
+        @Html.TextBoxFor(x => x.TicketCost, format: "{0:0.00}", new { @class = "form-control", Type = "number" })
         @Html.ValidationMessageFor(x => x.TicketCost)
     </div>
 
     <div class="form-group mb-3">
         @Html.LabelFor(x => x.TicketDepositCost, new { @class = "form-label" })
-        @await Html.PartialAsync("Components/_Tooltip",
-                 "The deposit cost for this event. Members who pay a deposit will then only need to pay the remainder of the total cost.")
+        <span class="ms-1 text-muted">The deposit cost for this event. Members who pay a deposit will then only need to pay the remainder of the total cost.</span>
         <div class="input-group">
             @if (Model.CurrencySymbol != null)
             {

@@ -34,7 +34,6 @@ public class CreateModel : OdkGroupAdminPageModel
             Name = viewModel.Name,
             Title = viewModel.Title,
             Type = viewModel.Type
-
         });
 
         AddFeedback(result, "Subscription created");

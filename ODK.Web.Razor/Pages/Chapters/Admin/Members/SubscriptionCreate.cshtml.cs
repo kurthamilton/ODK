@@ -32,8 +32,7 @@ public class SubscriptionCreateModel : AdminPageModel
             Months = viewModel.DurationMonths ?? 0,
             Name = viewModel.Name,
             Title = viewModel.Title,
-            Type = viewModel.Type
-            
+            Type = viewModel.Type            
         });
 
         if (result.Success)

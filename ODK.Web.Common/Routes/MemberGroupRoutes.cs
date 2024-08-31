@@ -129,6 +129,9 @@ public class MemberGroupRoutes
     public string MembersEmail(PlatformType platform, Chapter chapter)
         => $"{Members(platform, chapter)}/email";
 
+    public string MembershipSettings(PlatformType platform, Chapter chapter)
+        => $"{Members(platform, chapter)}/membership";
+
     public string MembersSubscription(PlatformType platform, Chapter chapter, ChapterSubscription subscription)
         => $"{MembersSubscriptions(platform, chapter)}/{subscription.Id}";
 

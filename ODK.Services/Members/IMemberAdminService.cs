@@ -25,7 +25,7 @@ public interface IMemberAdminService
 
     Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request);
 
-    Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request, MemberFilter filter);    
+    Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request, MemberFilter filter);        
 
     Task<MemberSubscription?> GetMemberSubscription(AdminServiceRequest request, Guid memberId);
 

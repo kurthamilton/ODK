@@ -243,7 +243,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         return FilterMembers(members, memberSubscriptions, membershipSettings, filter)
             .ToArray();
-    }    
+    }        
 
     public async Task<MemberSubscription?> GetMemberSubscription(AdminServiceRequest request, Guid memberId)
     {
@@ -260,13 +260,15 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, paymentSettings) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, paymentSettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
 
         return new SubscriptionCreateAdminPageViewModel
         {
             Chapter = chapter,
+            OwnerSubscription = ownerSubscription,
             PaymentSettings = paymentSettings,
             Platform = platform
         };
@@ -279,8 +281,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
 
-        var (chapter, chapterAdminMembers, currentMember, chapterSubscriptions, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
+        var (chapter, ownerSubscription, chapterAdminMembers, currentMember, chapterSubscriptions, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
@@ -295,6 +298,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             ChapterSubscriptions = chapterSubscriptions,
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = null,
+            OwnerSubscription = ownerSubscription,
             PaymentSettings = paymentSettings,
             Platform = platform,
         };
@@ -304,8 +308,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, paymentSettings, subscription) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, paymentSettings, subscription) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterSubscriptionRepository.GetById(subscriptionId));
 
@@ -314,6 +319,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return new SubscriptionAdminPageViewModel
         {
             Chapter = chapter,
+            OwnerSubscription = ownerSubscription,
             PaymentSettings = paymentSettings,
             Platform = platform,
             Subscription = subscription

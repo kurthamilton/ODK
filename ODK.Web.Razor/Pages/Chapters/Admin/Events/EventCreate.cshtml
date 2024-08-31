@@ -1,10 +1,14 @@
 ﻿@page "/{chapterName}/Admin/Events/Create"
+@using ODK.Services.Events
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventCreateModel
+@inject IEventAdminService EventAdminService
 @{
     Layout = "Admin/Events/_EventAdminLayout";
     Model.Title = "Create event | Admin";
+
+    var viewModel = await EventAdminService.GetEventCreateViewModel(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -14,5 +18,5 @@
         new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Events", Text = "Events" },
         new MenuItem { Text = "Create" }
     },
-    Content = await Html.PartialAsync("Admin/Events/_EventCreateContent", Model.Chapter)
+    Content = await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel)
 })

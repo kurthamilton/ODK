@@ -77,6 +77,8 @@ public interface IChapterAdminService
 
     Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(AdminServiceRequest request);
 
+    Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(AdminServiceRequest request);
+
     Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);    
 
     Task<ServiceResult> PublishChapter(AdminServiceRequest request);

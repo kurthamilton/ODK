@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.DataTypes;
+using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
@@ -202,8 +203,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var chapterId = request.ChapterId;
 
-        var existing = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId));
+        var (ownerSubscription, existing, paymentSettings) = await GetChapterAdminRestrictedContent(request,
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
+
+        if (ownerSubscription?.HasFeature(SiteFeatureType.MemberSubscriptions) != true)
+        {
+            return ServiceResult.Failure("Not permitted");
+        }
 
         var subscription = new ChapterSubscription
         {
@@ -605,6 +613,24 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Chapter = chapter,
             Platform = platform,
             Texts = texts
+        };
+    }
+
+    public async Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, ownerSubscription, membershipSettings) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId));
+
+        return new MembershipSettingsAdminPageViewModel
+        {
+            Chapter = chapter,
+            MembershipSettings = membershipSettings,
+            OwnerSubscription = ownerSubscription,
+            Platform = platform
         };
     }
 
@@ -1166,6 +1192,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var subscriptions = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterSubscriptionRepository.GetByChapterId(request.ChapterId));
+
         var subscription = subscriptions.FirstOrDefault(x => x.Id == id);
         OdkAssertions.Exists(subscription);
 
