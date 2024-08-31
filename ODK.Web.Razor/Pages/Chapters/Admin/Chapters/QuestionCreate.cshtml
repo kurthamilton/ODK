@@ -9,10 +9,5 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Breadcrumbs = new []
-    {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Chapter/Questions", Text = "Questions" },
-        new MenuItem { Text = "Create question" }
-    },
     Content = await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent", Model.Chapter)
 })

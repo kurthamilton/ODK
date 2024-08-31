@@ -8,7 +8,7 @@
     Layout = "Admin/Chapters/_ChapterAdminLayout";
     Model.Title = "Edit property | Admin";
 
-    var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(Model.AdminServiceRequest, Model.Property.Id);
+    var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(Model.AdminServiceRequest, Model.PropertyId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

@@ -1,6 +1,5 @@
 ﻿using System;
 using ODK.Core.Chapters;
-using ODK.Core.Events;
 using ODK.Core.Platforms;
 
 namespace ODK.Web.Common.Routes;
@@ -43,14 +42,23 @@ public class MemberGroupRoutes
         _ => $"{Index(platform)}"
     };
 
-    public string GroupMessages(PlatformType platform, Chapter chapter)
-        => $"{Group(platform, chapter)}/messages";
+    public string GroupMessages(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/messages",
+        _ => $"{Group(platform, chapter)}/messages"
+    };
 
-    public string GroupPrivacy(PlatformType platform, Chapter chapter)
-        => $"{Group(platform, chapter)}/privacy";
+    public string GroupPrivacy(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/privacy",
+        _ => $"{Group(platform, chapter)}/privacy"
+    };
 
-    public string GroupProperties(PlatformType platform, Chapter chapter)
-        => $"{Group(platform, chapter)}/properties";
+    public string GroupProperties(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/properties",
+        _ => $"{Group(platform, chapter)}/properties"
+    };
 
     public string GroupProperty(PlatformType platform, Chapter chapter, Guid propertyId)
         => $"{GroupProperties(platform, chapter)}/{propertyId}";
@@ -70,15 +78,21 @@ public class MemberGroupRoutes
         _ => $"{GroupQuestions(platform, chapter)}/new"
     };
 
-    public string GroupQuestions(PlatformType platform, Chapter chapter)
-        => $"{Group(platform, chapter)}/questions";
+    public string GroupQuestions(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/questions",
+        _ => $"{Group(platform, chapter)}/questions"
+    };
 
-    public string GroupSocialMedia(PlatformType platform, Chapter chapter)
-        => $"{Group(platform, chapter)}/social-media";
+    public string GroupSocialMedia(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/social-media",
+        _ => $"{Group(platform, chapter)}/social-media"
+    };
 
     public string GroupTexts(PlatformType platform, Chapter chapter) => platform switch
     {
-        PlatformType.DrunkenKnitwits => Group(platform, chapter),
+        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/text",
         _ => $"{Group(platform, chapter)}/texts"
     };
 
