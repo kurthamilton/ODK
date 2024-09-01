@@ -162,7 +162,7 @@ public class MemberService : IMemberService
 
         var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapterId);
         
-        var validationResult = ValidateMemberProfile(chapterProperties, model);
+        var validationResult = ValidateMemberProfile(chapterProperties, model, forApplication: true);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -405,7 +405,7 @@ public class MemberService : IMemberService
             return registrationResult;
         }
 
-        var validationResult = ValidateMemberProperties(chapterProperties, properties);
+        var validationResult = ValidateMemberProperties(chapterProperties, properties, forApplication: true);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -694,7 +694,7 @@ public class MemberService : IMemberService
             x => x.MemberRepository.GetById(id),
             x => x.MemberPropertyRepository.GetByMemberId(id, chapterId));
 
-        var validationResult = ValidateMemberProfile(chapterProperties, model);
+        var validationResult = ValidateMemberProfile(chapterProperties, model, forApplication: false);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -907,15 +907,18 @@ public class MemberService : IMemberService
         return ServiceResult.Failure("This group is not able to welcome any new members");
     }
 
-    private static IEnumerable<string> GetMissingMemberProfileProperties(CreateMemberProfile profile, IEnumerable<ChapterProperty> chapterProperties,
-        IEnumerable<UpdateMemberProperty> memberProperties)
+    private static IEnumerable<string> GetMissingMemberProfileProperties(
+        CreateMemberProfile profile, 
+        IEnumerable<ChapterProperty> chapterProperties,
+        IEnumerable<UpdateMemberProperty> memberProperties,
+        bool forApplication)
     {
         if (string.IsNullOrWhiteSpace(profile.EmailAddress))
         {
             yield return "Email address";
         }
 
-        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, memberProperties);
+        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, memberProperties, forApplication);
         foreach (string property in missingProperties)
         {
             yield return property;
@@ -924,7 +927,8 @@ public class MemberService : IMemberService
 
     private static IEnumerable<string> GetMissingMemberProfileProperties(
         IEnumerable<ChapterProperty> chapterProperties,
-        IEnumerable<UpdateMemberProperty> memberProperties)
+        IEnumerable<UpdateMemberProperty> memberProperties,
+        bool forApplication)
     {
         var memberPropertyDictionary = memberProperties
             .ToDictionary(x => x.ChapterPropertyId, x => x.Value);
@@ -940,6 +944,11 @@ public class MemberService : IMemberService
                 }                
             }
             else if (!string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            if (chapterProperty.ApplicationOnly && !forApplication)
             {
                 continue;
             }
@@ -1025,9 +1034,12 @@ public class MemberService : IMemberService
             new Dictionary<string, string>());
     }
 
-    private ServiceResult ValidateMemberProfile(IReadOnlyCollection<ChapterProperty> chapterProperties, UpdateMemberChapterProfile profile)
+    private ServiceResult ValidateMemberProfile(
+        IReadOnlyCollection<ChapterProperty> chapterProperties, 
+        UpdateMemberChapterProfile profile,
+        bool forApplication)
     {
-        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, profile.Properties).ToArray();
+        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, profile.Properties, forApplication).ToArray();
         if (missingProperties.Length > 0)
         {
             return ServiceResult.Failure($"The following properties are required: {string.Join(", ", missingProperties)}");
@@ -1038,9 +1050,10 @@ public class MemberService : IMemberService
 
     private ServiceResult ValidateMemberProfile(
         IReadOnlyCollection<ChapterProperty> chapterProperties, 
-        CreateMemberProfile profile)
+        CreateMemberProfile profile,
+        bool forApplication)
     {
-        var propertyResult = ValidateMemberProperties(chapterProperties, profile.Properties);
+        var propertyResult = ValidateMemberProperties(chapterProperties, profile.Properties, forApplication);
 
         if (!MailUtils.ValidEmailAddress(profile.EmailAddress))
         {
@@ -1052,9 +1065,10 @@ public class MemberService : IMemberService
 
     private ServiceResult ValidateMemberProperties(
         IReadOnlyCollection<ChapterProperty> chapterProperties, 
-        IEnumerable<UpdateMemberProperty> memberProperties)
+        IEnumerable<UpdateMemberProperty> memberProperties,
+        bool forApplication)
     {
-        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, memberProperties)
+        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, memberProperties, forApplication)
             .ToArray();
         if (missingProperties.Length > 0)
         {
