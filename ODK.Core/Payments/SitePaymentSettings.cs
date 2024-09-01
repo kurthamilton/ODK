@@ -2,9 +2,9 @@
 
 public class SitePaymentSettings : IDatabaseEntity, IPaymentSettings
 {
-    public string? ApiPublicKey { get; set; }
+    public string ApiPublicKey { get; set; } = "";
 
-    public string? ApiSecretKey { get; set; }
+    public string ApiSecretKey { get; set; } = "";
 
     public bool HasApiKey => !string.IsNullOrEmpty(ApiPublicKey) && !string.IsNullOrEmpty(ApiSecretKey);
 

@@ -10,5 +10,7 @@ public class UpdateChapterPaymentSettings
 
     public required Guid? CurrencyId { get; init; }
 
+    public required string? EmailAddress { get; init; }
+
     public required PaymentProviderType? Provider { get; init; }
 }

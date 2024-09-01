@@ -164,6 +164,35 @@ public class PayPalPaymentProvider : IPaymentProvider
         return ServiceResult.Successful();
     }
 
+    public async Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
+        string paymentId, string note)
+    {
+        var client = GetClient();
+        var response = await client.CreatePayout(new PayoutBatchJsonModel
+        {
+            Items =
+            [
+                new PayoutBatchItemJsonModel
+                {
+                    Amount = new PayoutAmountJsonModel
+                    {
+                        CurrencyCode = currencyCode,
+                        Value = amount.ToString("0.00")
+                    },
+                    Note = note,
+                    Receiver = emailAddress,
+                    RecipientType = "EMAIL"
+                }
+            ],
+            SenderBatchHeader = new PayoutBatchSenderHeaderJsonModel
+            {
+                SenderBatchId = paymentId
+            }
+        });
+
+        return response?.BatchHeader?.PayoutBatchId;
+    }
+
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
     {
         throw new NotImplementedException();
@@ -171,15 +200,15 @@ public class PayPalPaymentProvider : IPaymentProvider
 
     private PayPalClient GetClient()
     {
-        if (_paymentSettings.ApiPublicKey == null || _paymentSettings.ApiSecretKey == null)
+        if (!_paymentSettings.HasApiKey)
         {
             throw new Exception("PayPal API settings missing");
         }
 
         return new PayPalClient(
             _settings.ApiBaseUrl, 
-            _paymentSettings.ApiPublicKey, 
-            _paymentSettings.ApiSecretKey,
+            _paymentSettings.ApiPublicKey ?? "", 
+            _paymentSettings.ApiSecretKey ?? "",
             _httpClientFactory);
     }
 }

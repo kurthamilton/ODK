@@ -18,6 +18,13 @@
 
 <h2>Subscriptions</h2>
 
+@if (Model.ChapterSubscriptions.Count == 0)
+{
+    <p>
+        Charge your members a subscription fee to cover your group running costs.
+    </p>
+}
+
 @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
 {
     Feature = SiteFeatureType.MemberSubscriptions,

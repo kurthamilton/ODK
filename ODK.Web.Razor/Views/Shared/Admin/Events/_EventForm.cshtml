@@ -2,6 +2,7 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
 @model ODK.Web.Razor.Models.Admin.Events.EventFormViewModel
 @{
     var venueOptions = Model.Venues
@@ -119,7 +120,22 @@
         <div class="form-group mb-3">
             @Html.LabelFor(x => x.TicketCost, new { @class = "form-label" })
             <span class="ms-1 text-muted">The total ticket cost for this event. Set the max number of attendees above to set the number of tickets.</span>
-            @Html.TextBoxFor(x => x.TicketCost, format: "{0:0.00}", new { @class = "form-control", Type = "number" })
+            <div class="input-group">
+                @if (Model.PaymentSettings?.Currency != null)
+                {
+                    <span class="input-group-text">
+                        @Model.PaymentSettings.Currency.Symbol
+                    </span>
+                }
+                @Html.TextBoxFor(x => x.TicketCost, format: "{0:0.00}", new { @class = "form-control", Type = "number" })
+            </div>
+            <div>
+                @await Html.PartialAsync("Payments/_PaymentCommissionText", new PaymentCommissionTextViewModel
+                {
+                    ChapterPaymentSettings = Model.PaymentSettings,
+                    OwnerSubscription = Model.OwnerSubscription
+                })
+            </div>
             @Html.ValidationMessageFor(x => x.TicketCost)
         </div>
 

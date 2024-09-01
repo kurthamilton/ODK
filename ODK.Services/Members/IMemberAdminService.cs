@@ -23,12 +23,6 @@ public interface IMemberAdminService
 
     Task<MemberImage?> GetMemberImage(AdminServiceRequest request, Guid memberId);
 
-    Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request);
-
-    Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request, MemberFilter filter);        
-
-    Task<MemberSubscription?> GetMemberSubscription(AdminServiceRequest request, Guid memberId);
-
     Task<SubscriptionCreateAdminPageViewModel> GetMemberSubscriptionCreateViewModel(AdminServiceRequest request);
 
     Task<SubscriptionsAdminPageViewModel> GetMemberSubscriptionsViewModel(AdminServiceRequest request);

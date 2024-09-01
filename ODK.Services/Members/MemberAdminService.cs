@@ -227,35 +227,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return memberImage;
     }
 
-    public Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request) => GetMembers(request,
-        new MemberFilter
-        {
-            Statuses = Enum.GetValues<SubscriptionStatus>().ToList(),
-            Types = Enum.GetValues<SubscriptionType>().ToList()
-        });
-
-    public async Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request, MemberFilter filter)
-    {
-        var (members, memberSubscriptions, membershipSettings) = await GetChapterAdminRestrictedContent(request,
-            x => x.MemberRepository.GetAllByChapterId(request.ChapterId),
-            x => x.MemberSubscriptionRepository.GetByChapterId(request.ChapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId));        
-
-        return FilterMembers(members, memberSubscriptions, membershipSettings, filter)
-            .ToArray();
-    }        
-
-    public async Task<MemberSubscription?> GetMemberSubscription(AdminServiceRequest request, Guid memberId)
-    {
-        var (member, memberSubscription) = await GetChapterAdminRestrictedContent(request,            
-            x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, request.ChapterId));
-
-        AssertMemberIsInChapter(member, request);
-
-        return memberSubscription;
-    }
-
     public async Task<SubscriptionCreateAdminPageViewModel> GetMemberSubscriptionCreateViewModel(AdminServiceRequest request)
     {
         var platform = _platformProvider.GetPlatform();

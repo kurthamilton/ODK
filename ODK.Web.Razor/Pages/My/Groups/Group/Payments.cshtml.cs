@@ -27,6 +27,7 @@ public class PaymentsModel : OdkGroupAdminPageModel
             ApiPublicKey = existing?.ApiPublicKey,
             ApiSecretKey = existing?.ApiSecretKey,
             CurrencyId = viewModel.CurrencyId,
+            EmailAddress = viewModel.EmailAddress,
             Provider = viewModel.Provider
         });
 

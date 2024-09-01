@@ -462,15 +462,17 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, paymentSettings, currencies) = await _unitOfWork.RunAsync(
+        var (chapter, paymentSettings, currencies, ownerSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.CurrencyRepository.GetAll());
+            x => x.CurrencyRepository.GetAll(),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
 
         return new ChapterPaymentSettingsAdminPageViewModel
         {
             Chapter = chapter,
             CurrencyOptions = currencies,
+            OwnerSubscription = ownerSubscription,
             PaymentSettings = paymentSettings,
             Platform = platform
         };
@@ -947,6 +949,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         settings.ApiSecretKey = model.ApiSecretKey;
         settings.CurrencyId = model.CurrencyId.Value;
         settings.Provider = model.Provider;
+        settings.EmailAddress = model.EmailAddress;
 
         if (settings.ChapterId == default)
         {

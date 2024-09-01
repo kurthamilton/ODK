@@ -41,6 +41,7 @@
                 @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
                 {
+                    OwnerSubscription = Model.OwnerSubscription,
                     PaymentSettings = Model.PaymentSettings,
                     Type = SubscriptionType.Full    
                 })

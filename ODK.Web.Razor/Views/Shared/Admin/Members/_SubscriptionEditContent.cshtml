@@ -1,7 +1,24 @@
 ﻿@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
 @model SubscriptionAdminPageViewModel
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.MembersSubscriptions(Model.Platform, Model.Chapter),
+            Text = "Subscriptions"
+        },
+        new MenuItem { Text = Model.Subscription.Name }
+    }
+})
+
+<h2>Edit subscription</h2>
 
 @if (Model.PaymentSettings == null)
 {
@@ -21,6 +38,7 @@
         Description = Model.Subscription.Description,
         DurationMonths = Model.Subscription.Months,
         Name = Model.Subscription.Name,
+        OwnerSubscription = Model.OwnerSubscription,
         PaymentSettings = Model.PaymentSettings,
         Title = Model.Subscription.Title,
         Type = Model.Subscription.Type

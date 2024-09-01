@@ -241,7 +241,8 @@ public class EventService : IEventService
         }
 
         var amount = @event.TicketSettings.Cost - ticketPurchase.DepositPaid.Value;
-        var paymentResult = await _paymentService.MakePayment(paymentSettings, paymentSettings.Currency, member, amount, cardToken, @event.Name);
+        var paymentResult = await _paymentService.MakePayment(paymentSettings, 
+            paymentSettings.Currency, member, amount, cardToken, @event.Name);
         if (!paymentResult.Success)
         {
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");

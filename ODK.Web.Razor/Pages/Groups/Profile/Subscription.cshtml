@@ -1,6 +1,7 @@
 ﻿@page "/groups/{slug}/profile/subscription"
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
 @model ODK.Web.Razor.Pages.Groups.Profile.SubscriptionModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
@@ -17,3 +18,14 @@
     Menu = await Html.PartialAsync("Groups/_GroupMenu", viewModel),
     Title = viewModel.Chapter.Name
 })
+
+@section scripts
+{
+    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+    {
+        ApiPublicKey = viewModel.SitePaymentSettings.ApiPublicKey,
+        CurrencyCode = viewModel.ChapterPaymentSettings?.Currency.Code ?? "",
+        IsSubscription = false,
+        Provider = viewModel.SitePaymentSettings.Provider        
+    })
+}

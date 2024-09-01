@@ -19,12 +19,14 @@ public class PaymentSettingsModel : ChapterSuperAdminPageModel
     public async Task<IActionResult> OnPostAsync(PaymentSettingsFormViewModel viewModel)
     {
         var serviceRequest = await GetAdminServiceRequest();
+        var existing = await _chapterAdminService.GetChapterPaymentSettings(serviceRequest);
         var result = await _chapterAdminService.UpdateChapterPaymentSettings(serviceRequest, 
             new UpdateChapterPaymentSettings
             {
                 ApiPublicKey = viewModel.PublicKey,
                 ApiSecretKey = viewModel.SecretKey,
                 CurrencyId = viewModel.CurrencyId,
+                EmailAddress = existing?.EmailAddress,
                 Provider = viewModel.Provider
             });
 

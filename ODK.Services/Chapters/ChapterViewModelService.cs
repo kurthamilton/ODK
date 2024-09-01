@@ -388,12 +388,16 @@ public class ChapterViewModelService : IChapterViewModelService
             currentMember,
             adminMembers,
             ownerSubscription,
-            hasQuestions            
+            hasQuestions,
+            chapterPaymentSettings,
+            sitePaymentSettings
         ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.SitePaymentSettingsRepository.Get());
 
         return new GroupProfileSubscriptionPageViewModel
         {
@@ -403,7 +407,9 @@ public class ChapterViewModelService : IChapterViewModelService
             IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
             IsMember = currentMember.IsMemberOf(chapter.Id) == true,
             OwnerSubscription = ownerSubscription,
-            Platform = platform
+            ChapterPaymentSettings = chapterPaymentSettings,
+            Platform = platform,
+            SitePaymentSettings = sitePaymentSettings
         };
     }
 
