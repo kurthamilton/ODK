@@ -62,16 +62,18 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, adminMembers, members) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, adminMembers, members, ownerSubscription) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
-            x => x.MemberRepository.GetByChapterId(request.ChapterId));
+            x => x.MemberRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
 
         return new AdminMembersAdminPageViewModel
         {
             AdminMembers = adminMembers,
             Chapter = chapter,
             Members = members,
+            OwnerSubscription = ownerSubscription,
             Platform = platform
         };
     }

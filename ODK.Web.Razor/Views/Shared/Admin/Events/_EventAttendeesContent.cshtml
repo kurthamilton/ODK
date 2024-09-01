@@ -29,7 +29,8 @@
                 <a href="/@Model.Chapter.Name/Admin/Members/@member.Id">@member.FullName</a>
             </div>
             <div class="d-flex justify-content-center">
-                <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees/@member.Id">
+                <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                    @Html.AntiForgeryToken()
                     @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                     {
                         Active = response == EventResponseType.Yes,
@@ -38,7 +39,8 @@
                     })
                 </form>
 
-                <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees/@member.Id">
+                <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                    @Html.AntiForgeryToken()
                     @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                     {
                         Active = response == EventResponseType.Maybe,
@@ -47,7 +49,8 @@
                     })
                 </form>
 
-                <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees/@member.Id">
+                <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                    @Html.AntiForgeryToken()
                     @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                     {
                         Active = response == EventResponseType.No,

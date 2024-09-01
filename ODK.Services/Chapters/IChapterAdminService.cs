@@ -35,15 +35,9 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(AdminServiceRequest request);
 
-    Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(AdminServiceRequest request);
-
-    Task<ChapterLinks?> GetChapterLinks(AdminServiceRequest request);
-
     Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(AdminServiceRequest request);
 
     Task<ChapterLocation?> GetChapterLocation(AdminServiceRequest request);
-
-    Task<ChapterMembershipSettings?> GetChapterMembershipSettings(AdminServiceRequest request);    
 
     Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(AdminServiceRequest request);
 
@@ -51,15 +45,11 @@ public interface IChapterAdminService
 
     Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(AdminServiceRequest request);
 
-    Task<ChapterPrivacySettings?> GetChapterPrivacySettings(AdminServiceRequest request);
-
     Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(AdminServiceRequest request);
 
     Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(AdminServiceRequest request);
 
     Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(AdminServiceRequest request);
-
-    Task<ChapterProperty> GetChapterProperty(AdminServiceRequest request, Guid chapterPropertyId);
 
     Task<ChapterPropertyAdminPageViewModel> GetChapterPropertyViewModel(AdminServiceRequest request, Guid propertyId);
 
@@ -70,12 +60,6 @@ public interface IChapterAdminService
     Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(AdminServiceRequest request);
 
     Task<ChapterQuestionAdminPageViewModel> GetChapterQuestionViewModel(AdminServiceRequest request, Guid questionId);
-
-    Task<ChapterSubscription> GetChapterSubscription(AdminServiceRequest request, Guid id);
-
-    Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(AdminServiceRequest request);
-
-    Task<ChapterTexts?> GetChapterTexts(AdminServiceRequest request);
 
     Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(AdminServiceRequest request);
 
@@ -120,8 +104,6 @@ public interface IChapterAdminService
     Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(AdminServiceRequest request,
         Guid questionId, int moveBy);
 
-    Task<ServiceResult> UpdateChapterRegisterText(AdminServiceRequest request, string text);
-
     Task<ServiceResult> UpdateChapterSiteSubscription(AdminServiceRequest request, 
         Guid siteSubscriptionId, SiteSubscriptionFrequency frequency);
 
@@ -133,6 +115,4 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterTimeZone(AdminServiceRequest request, 
         string? timeZoneId);
-
-    Task<ServiceResult> UpdateChapterWelcomeText(AdminServiceRequest request, string text);
 }

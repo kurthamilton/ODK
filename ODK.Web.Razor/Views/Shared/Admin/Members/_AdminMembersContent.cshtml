@@ -1,4 +1,5 @@
 ﻿@using ODK.Core.Chapters
+@using ODK.Core.Features
 @using ODK.Core.Members
 @using ODK.Services
 @using ODK.Services.Chapters
@@ -7,6 +8,7 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
 @model AdminMembersAdminPageViewModel
 @{    
     var adminMemberDictionary = Model.AdminMembers
@@ -21,88 +23,104 @@
 }
 
 <h2>Admin members</h2>
-<form method="post" action="/groups/@Model.Chapter.Id/members/admins"
-      class="row g-3 mb-3">
-    @Html.AntiForgeryToken()
-    <div class="col-lg-6 col-12 d-flex gap-1">
-        <div class="flex-grow-1">
-            @await Html.PartialAsync("Admin/Members/_AdminMemberAddForm", new AdminMemberAddFormViewModel
-            {
-                AdminMemberOptions = adminMemberOptions.ToArray()
-            })
+
+@if (Model.AdminMembers.Count == 1)
+{
+    <p>
+        Allow other members to help you run the group. 
+        Granting admin permissions to a member will give them access to all admin pages.
+    </p>
+}
+
+@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+{
+    Feature = SiteFeatureType.AdminMembers,
+    ContentFunc = 
+        @<div>
+            <form method="post" action="/groups/@Model.Chapter.Id/members/admins"
+                  class="row g-3 mb-3">
+                @Html.AntiForgeryToken()
+                <div class="col-lg-6 col-12 d-flex gap-1">
+                    <div class="flex-grow-1">
+                        @await Html.PartialAsync("Admin/Members/_AdminMemberAddForm", new AdminMemberAddFormViewModel
+                        {
+                            AdminMemberOptions = adminMemberOptions.ToArray()
+                        })
+                    </div>
+
+                    <button class="btn btn-primary">Add</button>
+                </div>    
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Admin email address</th>
+                        <th>Receive contact emails</th>
+                        <th>Receive new member emails</th>
+                        <th>Send new member emails</th>
+                        <th>Receive event comment emails</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var adminMember in Model.AdminMembers.OrderBy(x => x.Member.FullName))
+                    {
+                        var member = adminMember.Member;
+
+                        <tr>
+                            <td>
+                                <a href="@OdkRoutes2.MemberGroups.MemberAdmin(Model.Platform, Model.Chapter, adminMember)">@member.FullName</a>
+                            </td>
+                            <td class="text-break">
+                                @adminMember.AdminEmailAddress
+                            </td>
+                            <td>
+                                @if (adminMember.ReceiveContactEmails)
+                                {
+                                    <i class="fa fa-check"></i>
+                                }
+                            </td>
+                            <td>
+                                @if (adminMember.ReceiveNewMemberEmails)
+                                {
+                                    <i class="fa fa-check"></i>
+                                }
+                            </td>
+                            <td>
+                                @if (adminMember.SendNewMemberEmails)
+                                {
+                                    <i class="fa fa-check"></i>
+                                }
+                            </td>
+                            <td>
+                                @if (adminMember.ReceiveEventCommentEmails)
+                                {
+                                    <i class="fa fa-check"></i>
+                                }
+                            </td>
+                            <td>
+                                @if (Model.Chapter.OwnerId != adminMember.MemberId)
+                                {
+                                    <form method="post" action="/groups/@Model.Chapter.Id/members/admins/@member.Id/delete">
+                                        <button data-bs-toggle="tooltip" data-bs-title="Remove"
+                                                class="btn-icon text-danger"
+                                                onclick="return confirm('Are you sure you want to remove admin access for this member?');">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                }          
+                                else
+                                {
+                                    <i class="fa-solid fa-star text-warning" data-bs-toggle="tooltip" data-bs-title="Owner"></i>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <button class="btn btn-primary">Add</button>
-    </div>    
-</form>
-
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Admin email address</th>
-            <th>Receive contact emails</th>
-            <th>Receive new member emails</th>
-            <th>Send new member emails</th>
-            <th>Receive event comment emails</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var adminMember in Model.AdminMembers.OrderBy(x => x.Member.FullName))
-        {
-            var member = adminMember.Member;
-
-            <tr>
-                <td>
-                    <a href="@OdkRoutes2.MemberGroups.MemberAdmin(Model.Platform, Model.Chapter, adminMember)">@member.FullName</a>
-                </td>
-                <td class="text-break">
-                    @adminMember.AdminEmailAddress
-                </td>
-                <td>
-                    @if (adminMember.ReceiveContactEmails)
-                    {
-                        <i class="fa fa-check"></i>
-                    }
-                </td>
-                <td>
-                    @if (adminMember.ReceiveNewMemberEmails)
-                    {
-                        <i class="fa fa-check"></i>
-                    }
-                </td>
-                <td>
-                    @if (adminMember.SendNewMemberEmails)
-                    {
-                        <i class="fa fa-check"></i>
-                    }
-                </td>
-                <td>
-                    @if (adminMember.ReceiveEventCommentEmails)
-                    {
-                        <i class="fa fa-check"></i>
-                    }
-                </td>
-                <td>
-                    @if (Model.Chapter.OwnerId != adminMember.MemberId)
-                    {
-                        <form method="post" action="/groups/@Model.Chapter.Id/members/admins/@member.Id/delete">
-                            <button data-bs-toggle="tooltip" data-bs-title="Remove"
-                                    class="btn-icon text-danger"
-                                    onclick="return confirm('Are you sure you want to remove admin access for this member?');">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </form>
-                    }          
-                    else
-                    {
-                        <i class="fa-solid fa-star text-warning" data-bs-toggle="tooltip" data-bs-title="Owner"></i>
-                    }
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
-</div>
+})

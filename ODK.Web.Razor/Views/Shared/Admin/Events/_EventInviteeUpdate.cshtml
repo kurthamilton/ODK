@@ -5,7 +5,7 @@
 @inject IEventAdminService EventAdminService
 
 <h4>Send update</h4>
-<form method="post" action="/@Model.Chapter/Admin/Events/@Model.EventId/Invites/SendUpdate">
+<form method="post" action="/groups/@Model.Chapter.Id/events/@Model.EventId/invites/send/update">
     @Html.AntiForgeryToken()
     
     <div class="form-group mb-3 required">

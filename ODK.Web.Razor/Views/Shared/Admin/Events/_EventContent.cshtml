@@ -24,7 +24,8 @@
 
 @if (Model.Event.PublishedUtc == null)
 {
-    <form action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Publish" method="post">
+    <form action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/publish" method="post">
+        @Html.AntiForgeryToken()
         <div class="mb-3">
             <button class="btn btn-primary" type="submit">
                 <i class="fa-solid fa-upload"></i>
@@ -34,7 +35,7 @@
     </form>
 }
 
-<form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id">
+<form method="post">
     @Html.AntiForgeryToken()    
     @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
     {
@@ -69,6 +70,6 @@
     </div>
 </form>
 
-<form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Delete"
+<form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/delete"
       id="event-delete-form">
 </form>

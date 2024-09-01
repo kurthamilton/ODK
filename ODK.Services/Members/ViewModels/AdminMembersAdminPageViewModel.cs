@@ -12,5 +12,7 @@ public class AdminMembersAdminPageViewModel
 
     public required IReadOnlyCollection<Member> Members { get; init; }
 
+    public required MemberSiteSubscription? OwnerSubscription { get; init; }
+
     public required PlatformType Platform { get; init; }
 }

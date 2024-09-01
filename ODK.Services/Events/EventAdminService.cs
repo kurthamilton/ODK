@@ -696,15 +696,21 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> UpdateScheduledEmail(AdminServiceRequest request, Guid eventId, DateTime? date)
     {
-        var (chapter, chapterAdminMembers, currentMember, @event, eventEmail) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, chapterAdminMembers, currentMember, @event, eventEmail, ownerSubscription) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.EventRepository.GetById(eventId),
-            x => x.EventEmailRepository.GetByEventId(eventId));
+            x => x.EventEmailRepository.GetByEventId(eventId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
         
+        if (ownerSubscription?.HasFeature(SiteFeatureType.ScheduledEventEmails) != true)
+        {
+            return ServiceResult.Failure("Not permitted");
+        }
+
         if (eventEmail?.SentUtc != null)
         {
             return ServiceResult.Failure("Email has already been sent");

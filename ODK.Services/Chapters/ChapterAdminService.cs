@@ -56,12 +56,18 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
 
-        var (chapterAdminMembers, currentMember, member) = await _unitOfWork.RunAsync(
+        var (chapterAdminMembers, currentMember, member, ownerSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberRepository.GetById(memberId));
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
 
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+
+        if (ownerSubscription?.HasFeature(SiteFeatureType.AdminMembers) != true)
+        {
+            return ServiceResult.Failure("Not permitted");
+        }
 
         var existing = chapterAdminMembers.FirstOrDefault(x => x.MemberId == memberId);
         if (existing != null)
@@ -392,19 +398,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return chapterAdminMembers;
     }
 
-    public async Task<IReadOnlyCollection<ContactRequest>> GetChapterContactRequests(
-        AdminServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.ContactRequestRepository.GetByChapterId(request.ChapterId));
-    }
-
-    public async Task<ChapterLinks?> GetChapterLinks(AdminServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId));
-    }
-
     public async Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(AdminServiceRequest request)
     {
         var platform = _platformProvider.GetPlatform();
@@ -429,12 +422,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(request.ChapterId);
         return location;
     }
-
-    public async Task<ChapterMembershipSettings?> GetChapterMembershipSettings(AdminServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId));
-    }    
 
     public async Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(AdminServiceRequest request)
     {
@@ -478,12 +465,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterPrivacySettings?> GetChapterPrivacySettings(AdminServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId));
-    }
-
     public async Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(AdminServiceRequest request)
     {
         var platform = _platformProvider.GetPlatform();
@@ -520,14 +501,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Platform = platform,
             Properties = properties
         };
-    }
-
-    public async Task<ChapterProperty> GetChapterProperty(AdminServiceRequest request, Guid id)
-    {
-        var property = await GetChapterAdminRestrictedContent(request, 
-            x => x.ChapterPropertyRepository.GetById(id));
-        OdkAssertions.BelongsToChapter(property, request.ChapterId);
-        return property;
     }
 
     public async Task<ChapterPropertyAdminPageViewModel> GetChapterPropertyViewModel(
@@ -594,30 +567,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
-    public async Task<ChapterSubscription> GetChapterSubscription(AdminServiceRequest request, Guid id)
-    {
-        var subscription = await GetChapterAdminRestrictedContent(request, 
-            x => x.ChapterSubscriptionRepository.GetById(id));
-        OdkAssertions.BelongsToChapter(subscription, request.ChapterId);
-        return subscription;
-    }
-
     public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(AdminServiceRequest request)
     {
         return await GetChapterAdminRestrictedContent(request,
             x => x.ChapterQuestionRepository.GetByChapterId(request.ChapterId));
-    }
-
-    public async Task<IReadOnlyCollection<ChapterSubscription>> GetChapterSubscriptions(AdminServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterSubscriptionRepository.GetByChapterId(request.ChapterId));        
-    }
-
-    public async Task<ChapterTexts?> GetChapterTexts(AdminServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterTextsRepository.GetByChapterId(request.ChapterId));
     }
 
     public async Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(AdminServiceRequest request)
@@ -1159,33 +1112,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return questions.OrderBy(x => x.DisplayOrder).ToArray();
     }
 
-    public async Task<ServiceResult> UpdateChapterRegisterText(AdminServiceRequest request, string text)
-    {
-        var texts = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterTextsRepository.GetByChapterId(request.ChapterId));
-
-        if (texts == null)
-        {
-            texts = new ChapterTexts();
-        }
-
-        texts.RegisterText = _htmlSanitizer.Encode(text);
-
-        if (texts.ChapterId == default)
-        {
-            texts.ChapterId = request.ChapterId;
-            _unitOfWork.ChapterTextsRepository.Add(texts);
-        }
-        else
-        {
-            _unitOfWork.ChapterTextsRepository.Update(texts);
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
     public async Task<ServiceResult> UpdateChapterSiteSubscription(AdminServiceRequest request,
         Guid siteSubscriptionId, SiteSubscriptionFrequency frequency)
     {
@@ -1289,33 +1215,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         chapter.TimeZone = timeZone;
 
         _unitOfWork.ChapterRepository.Update(chapter);
-        await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    public async Task<ServiceResult> UpdateChapterWelcomeText(AdminServiceRequest request, string text)
-    {
-        var texts = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterTextsRepository.GetByChapterId(request.ChapterId));
-
-        if (texts == null)
-        {
-            texts = new ChapterTexts();
-        }
-
-        texts.WelcomeText = _htmlSanitizer.Encode(text);
-
-        if (texts.ChapterId == default)
-        {
-            texts.ChapterId = request.ChapterId;
-            _unitOfWork.ChapterTextsRepository.Add(texts);
-        }
-        else
-        {
-            _unitOfWork.ChapterTextsRepository.Update(texts);
-        }
-
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
