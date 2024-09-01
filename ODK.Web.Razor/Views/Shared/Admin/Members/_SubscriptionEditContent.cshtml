@@ -1,6 +1,17 @@
 ﻿@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
 @model SubscriptionAdminPageViewModel
+
+@if (Model.PaymentSettings == null)
+{
+    <div class="alert alert-warning">
+        You must update your
+        <a href="@OdkRoutes2.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a>
+        before you can edit subscriptions
+    </div>
+    return;
+}
 
 <form method="post">
     @Html.AntiForgeryToken()

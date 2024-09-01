@@ -26,7 +26,17 @@
 {
     Feature = SiteFeatureType.MemberSubscriptions,
     ContentFunc = 
-        @<div>            
+        @<div>
+            @if (Model.PaymentSettings?.CurrencyId == null)
+            {
+                <div class="alert alert-warning">
+                    You must update your 
+                    <a href="@OdkRoutes2.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a> 
+                    before you can create subscriptions
+                </div>
+                return;
+            }
+
             <form method="post">
                 @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel

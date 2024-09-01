@@ -49,6 +49,8 @@ public interface IChapterAdminService
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(AdminServiceRequest request);
 
+    Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(AdminServiceRequest request);
+
     Task<ChapterPrivacySettings?> GetChapterPrivacySettings(AdminServiceRequest request);
 
     Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(AdminServiceRequest request);

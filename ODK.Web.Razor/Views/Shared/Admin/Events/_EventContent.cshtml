@@ -40,7 +40,6 @@
     {
         AttendeeLimit = Model.Event.AttendeeLimit,
         Chapter = Model.Chapter,
-        CurrencySymbol = Model.Currency?.Symbol,
         Date = Model.Event.ToLocalTime(Model.Chapter.TimeZone),
         Description = Model.Event.Description,
         EndTime = TimeSpanUtils.ToString(Model.Event.EndTime),
@@ -49,6 +48,7 @@
         ImageUrl = Model.Event.ImageUrl,
         Name = Model.Event.Name,
         OwnerSubscription = Model.OwnerSubscription,
+        PaymentSettings = Model.PaymentSettings,
         Platform = Model.Platform,
         Public = Model.Event.IsPublic,
         RsvpDeadline = Model.Event.RsvpDeadlineUtc != null ? Model.Chapter.ToChapterTime(Model.Event.RsvpDeadlineUtc.Value) : null,

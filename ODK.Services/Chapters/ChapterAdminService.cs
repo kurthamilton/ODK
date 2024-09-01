@@ -458,6 +458,24 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
     }
 
+    public async Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, paymentSettings, currencies) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.CurrencyRepository.GetAll());
+
+        return new ChapterPaymentSettingsAdminPageViewModel
+        {
+            Chapter = chapter,
+            CurrencyOptions = currencies,
+            PaymentSettings = paymentSettings,
+            Platform = platform
+        };
+    }
+
     public async Task<ChapterPrivacySettings?> GetChapterPrivacySettings(AdminServiceRequest request)
     {
         return await GetChapterAdminRestrictedContent(request,
@@ -927,7 +945,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         settings.ApiPublicKey = model.ApiPublicKey;
         settings.ApiSecretKey = model.ApiSecretKey;
-        settings.Currency = currency;
         settings.CurrencyId = model.CurrencyId.Value;
         settings.Provider = model.Provider;
 

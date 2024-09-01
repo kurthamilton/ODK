@@ -27,6 +27,14 @@
         : "Renew membership";
 }
 
+@if (currency == null)
+{
+    <div class="alert alert-error">
+        This group has not set its payment settings
+    </div>
+    return;
+}
+
 <div class="form-group mb-3">
     <label class="form-label">Membership type</label>
     <div class="form-control-plaintext">
@@ -65,7 +73,7 @@
                 </div>
                 <div>
                     <button class="btn btn-primary mr-1" data-bs-toggle="modal" data-bs-target="#@modalId">Purchase</button>
-                    <span>@currency?.ToAmountString(chapterSubscription.Amount)</span>
+                    <span>@currency.ToAmountString(chapterSubscription.Amount)</span>
                     
                     @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                     {

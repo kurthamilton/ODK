@@ -197,11 +197,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             Chapter = chapter,
             ChapterAdminMembers = adminMembers,
-            Currency = paymentSettings?.Currency,
             CurrentMember = currentMember,
             Event = @event,
             Hosts = hosts,
             OwnerSubscription = ownerSubscription,
+            PaymentSettings = paymentSettings,
             Platform = platform,
             Venue = venues.First(x => x.Id == @event.VenueId),
             Venues = venues

@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/payments"
+@using ODK.Services.Chapters
+@model ODK.Web.Razor.Pages.My.Groups.Group.PaymentsModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Payments";
+
+    var viewModel = await ChapterAdminService.GetChapterPaymentSettingsViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Chapter/_PaymentSettingsContent", viewModel)

@@ -48,6 +48,9 @@ public class MemberGroupRoutes
         _ => $"{Group(platform, chapter)}/messages"
     };
 
+    public string GroupPayments(PlatformType platform, Chapter chapter)
+        => $"{Group(platform, chapter)}/payments";
+
     public string GroupPrivacy(PlatformType platform, Chapter chapter) => platform switch
     {
         PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/privacy",
