@@ -1,0 +1,18 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Admin.Chapters
+@model ChapterPaymentSettingsAdminPageViewModel
+
+<h2>Payment settings</h2>
+<form method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Admin/Chapter/_PaymentSettingsForm", new ChapterPaymentSettingsFormViewModel
+    {
+        ChapterPaymentSettings = Model.PaymentSettings,
+        CurrencyId = Model.PaymentSettings?.CurrencyId,
+        CurrencyOptions = Model.CurrencyOptions,
+        EmailAddress = Model.PaymentSettings?.EmailAddress,
+        OwnerSubscription = Model.OwnerSubscription,
+        Provider = Model.PaymentSettings?.Provider
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

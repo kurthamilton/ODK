@@ -78,7 +78,7 @@ public class MediaFileProvider : IMediaFileProvider
 
     private async Task<Chapter> GetChapter(Guid chapterId)
     {
-        return await _unitOfWork.ChapterRepository.GetById(chapterId).RunAsync();
+        return await _unitOfWork.ChapterRepository.GetById(chapterId).Run();
     }
 
     private Task<MediaFile> GetMediaFile(string chapter, FileInfo file)

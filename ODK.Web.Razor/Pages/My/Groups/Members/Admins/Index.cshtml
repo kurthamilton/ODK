@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/members/admins"
+@using ODK.Services.Members
+@model IndexModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Admin members";
+
+    var viewModel = await MemberAdminService.GetAdminMembersAdminPageViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Members/_AdminMembersContent", viewModel)

@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/events"
+@using ODK.Services.Events
+@model ODK.Web.Razor.Pages.My.Groups.Events.IndexModel
+@inject IEventAdminService EventAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Events";
+
+    var viewModel = await EventAdminService.GetEventsDto(Model.AdminServiceRequest, 1, 500);
+}
+
+@await Html.PartialAsync("Admin/Events/_EventsContent", viewModel)

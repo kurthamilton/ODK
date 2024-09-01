@@ -27,7 +27,7 @@
         ChapterName = Model.Chapter.Name,
         Content = 
             @<div>
-                @await Html.PartialAsync("Account/_SubscriptionContent", new SubscriptionContentViewModel
+                @await Html.PartialAsync("Account/_ChapterSubscriptionContent", new ChapterSubscriptionContentViewModel
                 {
                     Chapter = Model.Chapter,
                     ChapterPaymentSettings = chapterPaymentSettings

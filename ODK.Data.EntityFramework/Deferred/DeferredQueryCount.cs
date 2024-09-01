@@ -13,5 +13,5 @@ public class DeferredQueryCount<T> : IDeferredQuerySingle<int> where T : class
             .FutureValue();
     }
 
-    public async Task<int> RunAsync() => await _query.ValueAsync();
+    public async Task<int> Run() => await _query.ValueAsync();
 }

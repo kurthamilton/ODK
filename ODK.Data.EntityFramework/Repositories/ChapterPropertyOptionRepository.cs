@@ -21,4 +21,8 @@ public class ChapterPropertyOptionRepository : ReadWriteRepositoryBase<ChapterPr
             select chapterPropertyOption;
         return query.DeferredMultiple();
     }
+
+    public IDeferredQueryMultiple<ChapterPropertyOption> GetByPropertyId(Guid propertyId) => Set()
+        .Where(x => x.ChapterPropertyId ==  propertyId)
+        .DeferredMultiple();
 }

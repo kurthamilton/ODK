@@ -1,16 +1,24 @@
-﻿@model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
+﻿@using ODK.Core.Platforms
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Members
+@model MemberAdminTabsViewModel
 
-<ul class="nav nav-tabs mb-3">
+<ul class="nav nav-underline mb-3">
     <li class="nav-item">
-        <a class="nav-link" data-menu-link="exact" href="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id">Subscription</a>
+        <a class="nav-link" data-menu-link="exact" href="@OdkRoutes2.MemberGroups.Member(Model.Platform, Model.Chapter, Model.Member.Id)">Subscription</a>
+    </li>
+    
+    @if (Model.Platform == PlatformType.DrunkenKnitwits)
+    {
+        <li class="nav-item">
+            <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.MemberImage(Model.Platform, Model.Chapter, Model.Member.Id)">Image</a>
+        </li>
+    }
+    
+    <li class="nav-item">
+        <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.MemberEvents(Model.Platform, Model.Chapter, Model.Member.Id)">Events</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" data-menu-link href="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/Image">Image</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-menu-link href="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/Events">Events</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-menu-link href="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/SendEmail">Send email</a>
+        <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.MemberEmail(Model.Platform, Model.Chapter, Model.Member.Id)">Send email</a>
     </li>
 </ul>

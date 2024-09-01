@@ -3,7 +3,14 @@
 
 <div class="d-md-flex">
     <div>
-        @Model.MenuContentFunc.Invoke(null)
+        @if (Model.MenuContentFunc != null)
+        {
+            @Model.MenuContentFunc.Invoke(null)
+        }
+        else if (Model.MenuContent != null)
+        {
+            @Model.MenuContent
+        }
     </div>
     <div class="ps-md-5 pt-5 pt-md-0 flex-grow-1">        
         @Model.BodyContentFunc.Invoke(null)

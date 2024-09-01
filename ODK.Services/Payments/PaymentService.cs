@@ -1,4 +1,6 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Data.Core;
 
@@ -60,35 +62,41 @@ public class PaymentService : IPaymentService
         return await provider.GetSubscriptionPlan(externalId);
     }
 
-    public async Task<ServiceResult> MakePayment(Guid chapterId, Member member, decimal amount, string cardToken, string reference)
+    public async Task<ServiceResult> MakePayment(ChapterPaymentSettings chapterPaymentSettings, 
+        Currency currency, Member member, decimal amount, string cardToken, string reference)
     {
-        var (settings, chapter) = await _unitOfWork.RunAsync(
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterRepository.GetById(chapterId));
+        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository.Get().Run();
 
-        if (settings == null || settings.Provider == null)
-        {
-            return ServiceResult.Failure("Payment settings not found");
-        }
+        var sitePaymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings);
 
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var chapterPaymentProvider = chapterPaymentSettings.HasApiKey
+            ? _paymentProviderFactory.GetPaymentProvider(chapterPaymentSettings)
+            : sitePaymentProvider;
 
-        var paymentResult = await paymentProvider.MakePayment(settings.Currency.Code, amount, cardToken, reference,
+        var paymentResult = await sitePaymentProvider.MakePayment(currency.Code, amount, cardToken, reference,
             member.FullName);
         if (!paymentResult.Success)
         {
             return paymentResult;
         }
 
-        _unitOfWork.PaymentRepository.Add(new Payment
+        var payment = new Payment
         {
             Amount = (double)amount,
-            CurrencyCode = settings.Currency.Code,
+            CurrencyCode = currency.Code,
             MemberId = member.Id,
             PaidUtc = DateTime.UtcNow,
             Reference = reference
-        });
+        };
+        _unitOfWork.PaymentRepository.Add(payment);
         await _unitOfWork.SaveChangesAsync();
+
+        if (!chapterPaymentSettings.HasApiKey && !string.IsNullOrEmpty(chapterPaymentSettings.EmailAddress))
+        {
+            amount = Math.Round(amount - (0.025M * amount), 2);
+            await sitePaymentProvider.SendPayment(currency.Code, amount,
+                chapterPaymentSettings.EmailAddress, payment.Id.ToString(), reference);
+        }        
 
         return ServiceResult.Successful();
     }

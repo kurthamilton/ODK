@@ -1,5 +1,6 @@
 ﻿@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups.Profile
 @model GroupProfileMenuViewModel
 @{
@@ -10,4 +11,7 @@
     };
 }
 
-@await Html.PartialAsync("Components/_SideMenu", menuItems)
+@await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
+{
+    MenuItems = menuItems
+})

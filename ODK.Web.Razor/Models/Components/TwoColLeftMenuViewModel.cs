@@ -6,5 +6,7 @@ public class TwoColLeftMenuViewModel
 {
     public required Func<object?, IHtmlContent> BodyContentFunc { get; init; }
 
-    public required Func<object?, IHtmlContent> MenuContentFunc { get; init; }
+    public IHtmlContent? MenuContent { get; init; }
+
+    public Func<object?, IHtmlContent>? MenuContentFunc { get; init; }
 }

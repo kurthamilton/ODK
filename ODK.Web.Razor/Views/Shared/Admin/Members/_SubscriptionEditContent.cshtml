@@ -1,15 +1,45 @@
-﻿@using ODK.Web.Razor.Models.Admin.Members
-@model ODK.Web.Razor.Models.Admin.Members.SubscriptionEditViewModel
+﻿@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
+@model SubscriptionAdminPageViewModel
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.MembersSubscriptions(Model.Platform, Model.Chapter),
+            Text = "Subscriptions"
+        },
+        new MenuItem { Text = Model.Subscription.Name }
+    }
+})
+
+<h2>Edit subscription</h2>
+
+@if (Model.PaymentSettings == null)
+{
+    <div class="alert alert-warning">
+        You must update your
+        <a href="@OdkRoutes2.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a>
+        before you can edit subscriptions
+    </div>
+    return;
+}
 
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
     {
         Amount = Model.Subscription.Amount,
-        ChapterId = Model.Chapter.Id,
         Description = Model.Subscription.Description,
         DurationMonths = Model.Subscription.Months,
         Name = Model.Subscription.Name,
+        OwnerSubscription = Model.OwnerSubscription,
+        PaymentSettings = Model.PaymentSettings,
         Title = Model.Subscription.Title,
         Type = Model.Subscription.Type
     })

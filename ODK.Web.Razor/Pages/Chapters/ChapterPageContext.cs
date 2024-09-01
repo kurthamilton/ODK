@@ -15,7 +15,14 @@ public class ChapterPageContext
         _httpContext = httpContext;
         _requestCache = requestCache;
     }
-    
+
+    public static Guid? GetChapterId(HttpContext httpContext)
+    {
+        return Guid.TryParse(httpContext.Request.RouteValues["id"]?.ToString(), out Guid id)
+            ? id
+            : null;
+    }
+
     public static string? GetChapterName(HttpContext httpContext)
     {
         var chapterName = httpContext.Request.RouteValues["chapterName"] as string;

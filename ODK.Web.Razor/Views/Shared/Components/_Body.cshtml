@@ -32,7 +32,10 @@
         <div class="container">
             @if (Model.Breadcrumbs != null)
             {
-                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel(Model.Breadcrumbs))
+                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+                {
+                    Breadcrumbs = Model.Breadcrumbs
+                })
             }
             
             @await Html.PartialAsync("Feedback/_Feedback")           

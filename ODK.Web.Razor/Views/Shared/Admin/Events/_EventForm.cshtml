@@ -1,15 +1,11 @@
-﻿@using ODK.Core.Venues
-@using ODK.Services
-@using ODK.Services.Venues
+﻿@using ODK.Core.Features
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
 @model ODK.Web.Razor.Models.Admin.Events.EventFormViewModel
-@inject IVenueAdminService VenueAdminService
 @{
-    var memberId = User.MemberId();
-    var request = new AdminServiceRequest(Model.ChapterId, memberId);
-    var venues = await VenueAdminService.GetVenues(request);
-    var venueOptions = venues
+    var venueOptions = Model.Venues
         .OrderBy(x => x.Name)
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
         .ToArray();
@@ -28,17 +24,18 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Venue, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_Tooltip", "Select an existing venue or create a new venue first on the venues page")    
+    @await Html.PartialAsync("Components/_Tooltip", "Select an existing venue or create a new venue first on the venues page")
+    <a href="@OdkRoutes2.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)">Create venue</a>
     @Html.DropDownListFor(x => x.Venue, venueOptions, "", new { @class = "form-select", data_searchable = "" })
     @Html.ValidationMessageFor(x => x.Venue)
 </div>
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Date, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_Tooltip", "Event date. Start time defaults to value set in event settings")
+    <span class="ms-1 text-muted">Event date. Start time defaults to value set in event settings</span>
     @if (Model.Date.Date == Model.Date)
     {
-        <a href="/@Model.ChapterName/Admin/Events/Settings">Set default start time</a>
+        <a href="@OdkRoutes2.MemberGroups.EventSettings(Model.Platform, Model.Chapter)">Set default start time</a>
     }    
     @Html.TextBoxFor(x => x.Date, format: "{0:dd/MM/yyyy HH:mm}", new 
     { 
@@ -99,56 +96,62 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.AttendeeLimit, new { @class = "form-label" })
-    @await Html.PartialAsync("Components/_FeatureTooltip", 
-        new FeatureTooltipViewModel 
-        {
-            Name = "Events.AttendeeLimit"
-        })
     @await Html.PartialAsync("Components/_Tooltip", 
         "Limit how many members can attend this event. For ticketed events this limits how many tickets can be bought.")
     @Html.TextBoxFor(x => x.AttendeeLimit, new { @class = "form-control", type = "number" })
     @Html.ValidationMessageFor(x => x.AttendeeLimit)
 </div>
 
-<fieldset>
+<fieldset disabled="@(Model.TicketsEnabled ? null : "")">
     <legend>
         Tickets
-        @await Html.PartialAsync("Components/_FeatureTooltip", 
-            new FeatureTooltipViewModel 
-            {
-                Name = "Events.Tickets"
-            })
     </legend>
-    <div class="form-group mb-3">
-        @Html.LabelFor(x => x.TicketCost, new { @class = "form-label" })
-        @await Html.PartialAsync("Components/_Tooltip",
-                 "The total ticket cost for this event. Set the max number of attendees above to set the number of tickets.")
-        <div class="input-group">
-            @if (Model.CurrencySymbol != null)
-            {
-                <span class="input-group-text">
-                    @Model.CurrencySymbol
-                </span>
-            }
-            @Html.TextBoxFor(x => x.TicketCost, format: "{0:0.00}", new { @class = "form-control", Type = "number" })
+
+    @if (Model.TicketsEnabled && Model.PaymentSettings == null)
+    {
+        <div class="alert alert-warning">
+            You must update your
+            <a href="@OdkRoutes2.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a>
+            before you can create ticketed events
+        </div>
+    }
+    else
+    {
+        <div class="form-group mb-3">
+            @Html.LabelFor(x => x.TicketCost, new { @class = "form-label" })
+            <span class="ms-1 text-muted">The total ticket cost for this event. Set the max number of attendees above to set the number of tickets.</span>
+            <div class="input-group">
+                @if (Model.PaymentSettings?.Currency != null)
+                {
+                    <span class="input-group-text">
+                        @Model.PaymentSettings.Currency.Symbol
+                    </span>
+                }
+                @Html.TextBoxFor(x => x.TicketCost, format: "{0:0.00}", new { @class = "form-control", Type = "number" })
+            </div>
+            <div>
+                @await Html.PartialAsync("Payments/_PaymentCommissionText", new PaymentCommissionTextViewModel
+                {
+                    ChapterPaymentSettings = Model.PaymentSettings,
+                    OwnerSubscription = Model.OwnerSubscription
+                })
+            </div>
+            @Html.ValidationMessageFor(x => x.TicketCost)
         </div>
 
-        @Html.ValidationMessageFor(x => x.TicketCost)
-    </div>
-
-    <div class="form-group mb-3">
-        @Html.LabelFor(x => x.TicketDepositCost, new { @class = "form-label" })
-        @await Html.PartialAsync("Components/_Tooltip",
-                 "The deposit cost for this event. Members who pay a deposit will then only need to pay the remainder of the total cost.")
-        <div class="input-group">
-            @if (Model.CurrencySymbol != null)
-            {
-                <span class="input-group-text">
-                    @Model.CurrencySymbol
-                </span>
-            }
-            @Html.TextBoxFor(x => x.TicketDepositCost, format: "{0:0.00}", new { @class = "form-control", Type = "number" })
+        <div class="form-group mb-3">
+            @Html.LabelFor(x => x.TicketDepositCost, new { @class = "form-label" })
+            <span class="ms-1 text-muted">The deposit cost for this event. Members who pay a deposit will then only need to pay the remainder of the total cost.</span>
+            <div class="input-group">
+                @if (Model.PaymentSettings?.Currency != null)
+                {
+                    <span class="input-group-text">
+                        @Model.PaymentSettings.Currency.Symbol
+                    </span>
+                }
+                @Html.TextBoxFor(x => x.TicketDepositCost, format: "{0:0.00}", new { @class = "form-control", type = "number", step = 0.5 })
+            </div>
+            @Html.ValidationMessageFor(x => x.TicketDepositCost)
         </div>
-        @Html.ValidationMessageFor(x => x.TicketDepositCost)
-    </div>
+    }    
 </fieldset>

@@ -8,15 +8,12 @@ internal static class MemberQueries
         = [SubscriptionType.Trial, SubscriptionType.Full, SubscriptionType.Partial];
 
     internal static IQueryable<Member> Current(this IQueryable<Member> query, 
-        IQueryable<MemberSubscription> memberSubscriptionQuery, 
         Guid chapterId)
     {        
         query =
-            from member in query.Where(x => x.Activated && !x.Disabled)
-            where memberSubscriptionQuery.Any(x => 
-                x.MemberId == member.Id && 
-                x.ChapterId == chapterId &&
-                ActiveSubscriptionTypes.Contains(x.Type))
+            from member in query
+            where member.Activated
+                && member.Chapters.Any(x => x.ChapterId == chapterId)
             select member;
 
         return query;

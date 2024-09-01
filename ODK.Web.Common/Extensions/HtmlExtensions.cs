@@ -20,6 +20,13 @@ public static class HtmlExtensions
     }
 
     public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(this IHtmlHelper<TModel> htmlHelper,
+        Expression<Func<TModel, TEnum?>> expression, object htmlAttributes, IEnumerable<TEnum>? excludeOptions = null)
+        where TEnum : struct, Enum
+    {
+        return htmlHelper.EnumDropDownFor(expression, null, htmlAttributes, excludeOptions);
+    }
+
+    public static IHtmlContent OdkEnumDropDownFor<TModel, TEnum>(this IHtmlHelper<TModel> htmlHelper,
         Expression<Func<TModel, TEnum?>> expression, string optionLabel, object htmlAttributes, IEnumerable<TEnum>? excludeOptions = null) 
         where TEnum : struct, Enum
     {

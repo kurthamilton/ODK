@@ -1,0 +1,13 @@
+﻿@page "/my/groups/{id:guid}/events/venues/{venueId:guid}/events"
+@using ODK.Services.Venues
+@model EventsModel
+@inject IVenueAdminService VenueAdminService
+@{
+    Layout = "_GroupAdminLayout";
+
+    var viewModel = await VenueAdminService.GetVenueEventsViewModel(Model.AdminServiceRequest, Model.VenueId);
+
+    Model.Title = viewModel.Venue.Name;
+}
+
+@await Html.PartialAsync("Admin/Venues/_VenueEventsContent", viewModel)

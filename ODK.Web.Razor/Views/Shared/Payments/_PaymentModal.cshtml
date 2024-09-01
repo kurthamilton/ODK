@@ -10,7 +10,7 @@
     Title = Model.Title,
     Body =
     @<div>
-        @if (Model.ChapterPaymentSettings?.Provider == PaymentProviderType.PayPal)
+        @if (Model.PaymentSettings?.Provider == PaymentProviderType.PayPal)
         {
             <form method="post" action="@Model.Action">
                 @Html.AntiForgeryToken()

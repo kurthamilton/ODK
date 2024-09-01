@@ -61,7 +61,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         {
             var siteSubscription = await _unitOfWork.SiteSubscriptionRepository
                 .GetById(siteSubscriptionPrice.SiteSubscriptionId)
-                .RunAsync();
+                .Run();
             memberSubscription.SiteSubscription = siteSubscription;
             memberSubscription.SiteSubscriptionId = siteSubscription.Id;
             memberSubscription.SiteSubscriptionPrice = siteSubscriptionPrice;
@@ -88,29 +88,27 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         var platform = _platformProvider.GetPlatform();
         return await _unitOfWork.MemberSiteSubscriptionRepository
             .GetByMemberId(memberId, platform)
-            .RunAsync();
+            .Run();
     }
 
-    public async Task<SiteSubscriptionsDto> GetSiteSubscriptionsDto(Guid? memberId, Guid? chapterId)
+    public async Task<SiteSubscriptionsDto> GetSiteSubscriptionsDto(Guid? memberId)
     {
         var platform = _platformProvider.GetPlatform();
-        var (chapter, subscriptions, prices, memberPaymentSettings, chapterPaymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
-            x => chapterId != null
-                ? x.ChapterRepository.GetByIdOrDefault(chapterId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<Chapter>(),
+        var (sitePaymentSettings, subscriptions, prices, currentMember, memberPaymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.Get(),
             x => x.SiteSubscriptionRepository.GetAllEnabled(platform),
             x => x.SiteSubscriptionPriceRepository.GetAllEnabled(platform),
+            x => memberId != null
+                ? x.MemberRepository.GetByIdOrDefault(memberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => memberId != null 
                 ? x.MemberPaymentSettingsRepository.GetByMemberId(memberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<MemberPaymentSettings>(),
-            x => chapterId != null 
-                ? x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<ChapterPaymentSettings>(),
             x => memberId != null
                 ? x.MemberSiteSubscriptionRepository.GetByMemberId(memberId.Value, platform)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSiteSubscription>());        
 
-        var currency = chapterPaymentSettings?.Currency ?? memberPaymentSettings?.Currency;
+        var currency = memberPaymentSettings?.Currency;
 
         var currencies = prices
             .Where(x => currency == null || x.CurrencyId == currency.Id)
@@ -125,11 +123,11 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         return new SiteSubscriptionsDto
         {
-            Chapter = chapter,
             Currencies = currencies,            
             Currency = currency,
+            CurrentMember = currentMember,
             CurrentMemberSubscription = memberSubscription,
-            PaymentSettings = (IPaymentSettings?)chapterPaymentSettings ?? memberPaymentSettings,
+            PaymentSettings = sitePaymentSettings,
             Subscriptions = subscriptions
                 .Select(x => new SiteSubscriptionDto
                 {
@@ -164,7 +162,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             }
             else
             {
-                var member = await _unitOfWork.MemberRepository.GetById(subscription.MemberId).RunAsync();
+                var member = await _unitOfWork.MemberRepository.GetById(subscription.MemberId).Run();
                 var subject = "{title} - Subscription Expired";
                 var body = 
                     "<p>Your subscription has now expired</p>" +
@@ -212,7 +210,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
     private async Task<ChapterPaymentSettings?> GetChapterPaymentSettingsByOwnerId(Guid ownerId)
     {
-        var chapters = await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).RunAsync();
+        var chapters = await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).Run();
         if (chapters.Count == 0)
         {
             return null;
@@ -222,7 +220,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         {
             var chapterPaymentSettings = await _unitOfWork.ChapterPaymentSettingsRepository
                 .GetByChapterId(chapter.Id)
-                .RunAsync();
+                .Run();
 
             if (chapterPaymentSettings != null)
             {

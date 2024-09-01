@@ -1,16 +1,35 @@
-﻿@using ODK.Web.Common.Extensions
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Platforms
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Venues
-@model ODK.Core.Chapters.Chapter
+@using ODK.Web.Razor.Models.Components
+@model Chapter
+@inject IPlatformProvider PlatformProvider
+@{
+    var platform = PlatformProvider.GetPlatform();
+}
 
-<h2>Create new venue</h2>
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.Venues(platform, Model),
+            Text = "Venues"
+        },
+        new MenuItem { Text = "New" }
+    }
+})
 
-<form method="post" action`="/@Model.Name/Admin/Events/Venues/Create">
+<h2>Create venue</h2>
+
+<form method="post">
     @Html.AntiForgeryToken()
     
-    @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel
-    {
-        ChapterId = Model.Id
-    })
+    @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel())
     
     <button type="submit" class="btn btn-primary">Create</button>
 </form>

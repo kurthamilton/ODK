@@ -1,9 +1,13 @@
 ﻿using System;
 using FluentAssertions;
+using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
+using ODK.Data.Core;
 using ODK.Services.Authorization;
+using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Authorization;
 public static class AuthorizationServiceTests
@@ -131,6 +135,8 @@ public static class AuthorizationServiceTests
 
     private static AuthorizationService CreateService()
     {
-        return new AuthorizationService();
+        return new AuthorizationService(
+            new MockUnitOfWork(new Mock<IUnitOfWork>()),
+            Mock.Of<IPlatformProvider>());
     }
 }

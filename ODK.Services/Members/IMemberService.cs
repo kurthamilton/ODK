@@ -33,7 +33,7 @@ public interface IMemberService
 
     Task<ServiceResult> LeaveChapter(Guid currentMemberId, Guid chapterId, string reason);
 
-    Task<ServiceResult> PurchaseSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId, string cardToken);
+    Task<ServiceResult> PurchaseChapterSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId, string cardToken);
 
     Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, Guid chapterId, string newEmailAddress);
 
@@ -47,7 +47,9 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberChapterProfile(Guid id, Guid chapterId, UpdateMemberChapterProfile model);
 
-    Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);
+    Task<ServiceResult> UpdateMemberCurrency(Guid id, Guid currencyId);
+
+    Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);    
 
     Task<ServiceResult> UpdateMemberPreferences(Guid id, Guid? distanceUnitId);
 

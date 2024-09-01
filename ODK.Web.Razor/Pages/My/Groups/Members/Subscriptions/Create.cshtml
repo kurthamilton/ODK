@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/members/subscriptions/new"
+@using ODK.Services.Members
+@model CreateModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Create subscription";
+
+    var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)

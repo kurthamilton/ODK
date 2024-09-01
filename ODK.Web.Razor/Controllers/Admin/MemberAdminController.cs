@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Members;
@@ -58,19 +59,20 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/{id:guid}/ResendActivationEmail")]
-    public async Task<IActionResult> ResendActivationEmail(string chapterName, Guid id)
+    [HttpPost("groups/{chapterId:guid}members/{id:guid}/emails/activation/send")]
+    public async Task<IActionResult> SendActivationEmail(Guid chapterId, Guid id)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new AdminServiceRequest(chapterId, MemberId);
         await _memberAdminService.SendActivationEmail(request, id);
         AddFeedback("Email sent", FeedbackType.Success);
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/{id:guid}/SendEmail")]
-    public async Task<IActionResult> SendEmail(string chapterName, Guid id, [FromForm] SendMemberEmailFormViewModel viewModel)
+    [HttpPost("groups/{chapterId:guid}/members/{id:guid}/email")]
+    public async Task<IActionResult> SendEmail(Guid chapterId, Guid id, 
+        [FromForm] SendMemberEmailFormViewModel viewModel)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new AdminServiceRequest(chapterId, MemberId);
         var result = await _memberAdminService.SendMemberEmail(request, id, viewModel.Subject, viewModel.Body);
         AddFeedback(result, "Email sent");
         return RedirectToReferrer();
@@ -85,21 +87,21 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/AdminMembers/Add")]
-    public async Task<IActionResult> AddAdminMember(string chapterName, 
+    [HttpPost("groups/{id:guid}/members/admins")]
+    public async Task<IActionResult> AddAdminMember(Guid id, 
         [FromForm] AdminMemberAddFormViewModel viewModel)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = new AdminServiceRequest(id, MemberId);
         var result = await _chapterAdminService.AddChapterAdminMember(serviceRequest, viewModel.MemberId!.Value);
         AddFeedback(result, "Admin member added");
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/AdminMembers/{id:guid}/Delete")]
-    public async Task<IActionResult> AddAdminMember(string chapterName, Guid id)
+    [HttpPost("groups/{id:guid}/members/admins/{memberId:guid}/delete")]
+    public async Task<IActionResult> AddAdminMember(Guid id, Guid memberId)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
-        var result = await _chapterAdminService.DeleteChapterAdminMember(serviceRequest, id);
+        var serviceRequest = new AdminServiceRequest(id, MemberId);
+        var result = await _chapterAdminService.DeleteChapterAdminMember(serviceRequest, memberId);
         AddFeedback(result, "Admin member removed");
         return RedirectToReferrer();
     }
@@ -113,11 +115,11 @@ public class MemberAdminController : AdminControllerBase
         return DownloadCsv(data, $"Members.{DateTime.UtcNow:yyyyMMdd}.csv");
     }
 
-    [HttpPost("{chapterName}/Admin/Members/SendEmail")]
-    public async Task<IActionResult> SendBulkEmail(string chapterName, 
+    [HttpPost("groups/{chapterId:guid}/members/email")]
+    public async Task<IActionResult> SendBulkEmail(Guid chapterId, 
         [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new AdminServiceRequest(chapterId, MemberId);
 
         var filter = new MemberFilter
         {
@@ -130,10 +132,10 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/Subscriptions/{id:guid}/Delete")]
-    public async Task<IActionResult> DeleteSubscription(string chapterName, Guid id)
+    [HttpPost("groups/{chapterId:guid}/members/subscriptions/{id:guid}/delete")]
+    public async Task<IActionResult> DeleteSubscription(Guid chapterId, Guid id)
     {
-        var serviceRequest = await GetAdminServiceRequest(chapterName);
+        var serviceRequest = new AdminServiceRequest(chapterId, MemberId);
         var result = await _chapterAdminService.DeleteChapterSubscription(serviceRequest, id);
         AddFeedback(result, "Subscription deleted");
         return RedirectToReferrer();

@@ -1,14 +1,24 @@
 ﻿@using ODK.Core.Events
 @using ODK.Services.Events
-@using ODK.Web.Razor.Models.Events
-@model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
-@inject IEventService EventService
+@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Events;
+@using ODK.Services.Events.ViewModels
+@model MemberEventsAdminPageViewModel
 @{
-    IReadOnlyCollection<EventResponseViewModel> responses = await EventService.GetEventResponseViewModels(Model.Member, 
-        Model.Chapter.Id, null);
+    var responses = Model.Responses
+        .OrderByDescending(x => x.Date);
 }
 
-@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
+@await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
+
+@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", new MemberAdminTabsViewModel
+{
+    Chapter = Model.Chapter,
+    Member = Model.Member,
+    Platform = Model.Platform
+})
 
 <p>
     Events are included below if this member was either invited by email, or has responded via the website.
@@ -23,20 +33,18 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (EventResponseViewModel response in responses
-        .Where(x => x.Invited || x.Response != EventResponseType.None)
-        .OrderByDescending(x => x.Date))
+    @foreach (var response in responses)
     {
         <tr>
             <td>
-                <a href="/@Model.Chapter.Name/Admin/Events/@response.EventId">
+                <a href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, response.EventId)">
                     @response.Date.ToString("yyyy-MM-dd")
                 </a>
             </td>
             <td>
                 @if (response.VenueId != null && !string.IsNullOrEmpty(response.VenueName))
                 {
-                    <a href="/@Model.Chapter.Name/Admin/Events/Venue/@response.VenueId">
+                    <a href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, response.VenueId.Value)">
                         @response.VenueName
                     </a>
                 }                 

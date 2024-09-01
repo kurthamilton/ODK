@@ -1,20 +1,18 @@
-﻿@page "/{chapterName}/Admin/Members/{id:guid}/SendEmail"
+﻿@page "/{chapterName}/Admin/Members/{id:guid}/Email"
+@using ODK.Services.Members
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.SendMemberEmailModel
+@inject IMemberAdminService MemberAdminService
 @{
     Layout = "Admin/Members/_MemberAdminLayout";
     Model.Title = "Send member email | Admin";
+
+    var viewModel = await MemberAdminService.GetMemberEmailViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Breadcrumbs = new []
-    {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" },
-        new MenuItem { Text = Model.Member.GetDisplayName(Model.Chapter.Id) }
-    },
-    Content = await Html.PartialAsync("Admin/Members/_SendMemberEmailContent",
-        new MemberViewModel(Model.Chapter, Model.Member))
+    Content = await Html.PartialAsync("Admin/Members/_SendMemberEmailContent", viewModel)
 })

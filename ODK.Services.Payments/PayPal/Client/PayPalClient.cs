@@ -57,6 +57,16 @@ public class PayPalClient
         return await MapJsonResponse<OrderCaptureJsonModel>(response);
     }
 
+    public async Task<PayoutBatchResponseJsonModel?> CreatePayout(
+        PayoutBatchJsonModel model)
+    {
+        var url = GetUrl("/v1/payments/payouts");
+        using var client = await GetAuthenticatedHttpClient();
+        var payload = GetJsonContent(model);
+        var response = await client.PostAsync(url, payload);
+        return await MapJsonResponse<PayoutBatchResponseJsonModel>(response);
+    }
+
     public async Task<ProductResponseJsonModel?> CreateProduct(
         ProductJsonModel model)
     {

@@ -1,0 +1,29 @@
+﻿@using ODK.Services.Authorization
+@using ODK.Web.Razor.Models.Components
+@model RestrictedFeatureViewModel
+@inject IAuthorizationService AuthorizationService
+@{
+    var authorized = Model.OwnerSubscription != null 
+        ? AuthorizationService.ChapterHasAccess(Model.OwnerSubscription, Model.Feature)
+        : Model.Chapter != null 
+        ? await AuthorizationService.ChapterHasAccess(Model.Chapter, Model.Feature)
+        : false;
+}
+
+@if (authorized)
+{
+    @if (Model.Content != null)
+    {
+        @Model.Content
+    }
+
+    @if (Model.ContentFunc != null)
+    {
+        @Model.ContentFunc.Invoke(null)
+    }    
+}
+else
+{
+    @await Html.PartialAsync("Components/_UpgradeButton")
+    @Model.DisabledContentFunc?.Invoke(null)
+}

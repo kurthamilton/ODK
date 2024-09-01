@@ -1,15 +1,11 @@
 ﻿@using ODK.Core.Subscriptions
+@using ODK.Core.Utils
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
 @using ODK.Web.Razor.Models.Pricing
 @model SiteSubscriptionPriceViewModel
 @{
-    var periodUnit = Model.Frequency switch
-    {
-        SiteSubscriptionFrequency.Monthly => "month",
-        SiteSubscriptionFrequency.Yearly => "year",
-        _ => ""
-    };
+    var periodUnit = Model.Frequency.PeriodUnit();
 
     var modalId = $"subscription-price-{Model.SiteSubscriptionPriceId}";
 }

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Utils;
-using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
@@ -18,11 +17,14 @@ public class EventCreateModel : AdminPageModel
         _eventAdminService = eventAdminService;
     }
 
-    public void OnGet()
+    public Guid? VenueId { get; private set; }
+
+    public void OnGet(Guid? venueId = null)
     {
+        VenueId = venueId;
     }
 
-    public async Task<IActionResult> OnPostAsync([FromForm] EventFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)
     {
         var request = await GetAdminServiceRequest();
         var result = await _eventAdminService.CreateEvent(request, new CreateEvent

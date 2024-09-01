@@ -1,22 +1,15 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services
-@using ODK.Services.Chapters
 @using ODK.Services.Events
+@using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
-@model ODK.Core.Chapters.Chapter
-@inject IChapterAdminService ChapterAdminService
-@inject IEventAdminService EventAdminService
+@model EventCreateAdminPageViewModel
 @{
-    var memberId = User.MemberId();
-    var request = new AdminServiceRequest(Model.Id, memberId);
-    var settings = await ChapterAdminService.GetChapterEventSettings(request);
-    var nextEventDate = await EventAdminService.GetNextAvailableEventDate(request);
-    var chapterAdminMembers = await ChapterAdminService.GetChapterAdminMembers(request);
-    var chapterPaymentSettings = await ChapterAdminService.GetChapterPaymentSettings(request);
-
-    var hostOptions = chapterAdminMembers
+    var hostOptions = Model.AdminMembers
         .Select(x => new SelectListItem
         {
             Value = x.MemberId.ToString(),
@@ -25,29 +18,40 @@
         .ToArray();
 }
 
-<h2>Create new event</h2>
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.Events(Model.Platform, Model.Chapter),
+            Text = "Events"
+        },
+        new MenuItem { Text = "New" }
+    }
+})
 
-<form method="post" action="/@Model.Name/Admin/Events/Create">
+<h2>Create event</h2>
+
+<form method="post">
     @Html.AntiForgeryToken()
     
     @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
     {
-        ChapterId = Model.Id,
-        ChapterName = Model.Name,
-        CurrencySymbol = chapterPaymentSettings?.Currency.Symbol,
-        Date = nextEventDate,
-        Description = settings?.DefaultDescription,
-        EndTime = TimeSpanUtils.ToString(settings?.DefaultEndTime),
-        HostOptions = hostOptions
+        Chapter = Model.Chapter,
+        Date = Model.Date,
+        Description = Model.EventSettings?.DefaultDescription,
+        EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
+        HostOptions = hostOptions,
+        OwnerSubscription = Model.OwnerSubscription,
+        PaymentSettings = Model.PaymentSettings,
+        Platform = Model.Platform,
+        Venue = Model.VenueId ?? default,
+        Venues = Model.Venues
     })
     
     <div class="button-container">
         <button type="submit" class="btn btn-primary">Create</button>
         <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
-        @await Html.PartialAsync("Components/_FeatureTooltip",
-            new FeatureTooltipViewModel
-            {
-                Name = "Events.SaveDraft"
-            })
     </div>
 </form>

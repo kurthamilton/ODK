@@ -1,6 +1,11 @@
-﻿@using ODK.Services.Authentication
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Authentication
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@inject IPlatformProvider PlatformProvider
+@{
+    var platform = PlatformProvider.GetPlatform();
+}
 
 @if (User.Authenticated())
 {
@@ -16,14 +21,14 @@
                     </span>                    
                     <span>My profile</span>
                 </a>
-                <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes2.MemberGroups.Index()">
+                <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes2.MemberGroups.Index(platform)">
                     <span class="icon">
                         <i class="fa-solid fa-users-rectangle"></i>
                     </span>                    
                     <span>My groups</span>
                 </a>
 
-                <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes2.MemberGroups.Create()">
+                <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes2.MemberGroups.GroupCreate(platform)">
                     <span class="icon">
                         <i class="fa-solid fa-plus"></i>
                     </span>

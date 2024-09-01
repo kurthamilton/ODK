@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Emails;
+using ODK.Core.Payments;
 using ODK.Core.Settings;
 
 namespace ODK.Services.Settings;
@@ -17,6 +18,8 @@ public interface ISettingsService
 
     Task<SiteEmailSettings> GetSiteEmailSettings();
 
+    Task<SitePaymentSettings> GetSitePaymentSettings(Guid currentMemberId);
+
     Task<ServiceResult> UpdateEmailProvider(Guid currentMemberId, Guid emailProviderId, UpdateEmailProvider model);
 
     Task<ServiceResult> UpdateEmailSettings(Guid currentMemberId, 
@@ -25,5 +28,7 @@ public interface ISettingsService
         string emailTitle,
         string contactEmailAddress);
 
-    Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent);    
+    Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent);
+
+    Task<ServiceResult> UpdatePaymentSettings(Guid currentMemberId, string publicKey, string secretKey);
 }

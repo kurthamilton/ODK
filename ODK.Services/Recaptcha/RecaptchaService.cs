@@ -22,7 +22,7 @@ public class RecaptchaService : IRecaptchaService
 
     public async Task<ReCaptchaResponse> Verify(string token)
     {
-        var settings = await _unitOfWork.SiteSettingsRepository.Get().RunAsync();
+        var settings = await _unitOfWork.SiteSettingsRepository.Get().Run();
         
         var postContent = new FormUrlEncodedContent(new Dictionary<string, string>
         {

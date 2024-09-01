@@ -1,5 +1,6 @@
 ﻿(function () {
     bindCollapseToggle();
+    bindConditionals();
     bindFeaturePopovers();
     bindForms();
     bindImages();
@@ -30,6 +31,32 @@
                 $trigger.setAttribute('aria-expanded', 'true');
                 $hideTrigger.setAttribute('aria-expanded', 'false');
             });
+        });
+    }
+
+    function bindConditionals() {
+        const $targets = document.querySelectorAll('[data-if]');
+        $targets.forEach($target => {
+            const sourceSelector = $target.getAttribute('data-if');
+            const $source = document.querySelector(sourceSelector);
+            if (!$source) {
+                return;
+            }
+
+            const conditionalValue = $target.getAttribute('data-if-value');
+
+            const setDisplay = () => {
+                const sourceValue = $source.value;
+                const visible = sourceValue === conditionalValue;
+                if (visible) {
+                    $target.classList.remove('d-none');
+                } else {
+                    $target.classList.add('d-none');
+                }
+            };
+
+            $source.addEventListener('change', () => setDisplay());
+            setDisplay();
         });
     }
 

@@ -1,0 +1,18 @@
+﻿@page "/superadmin/payments"
+@using ODK.Services.Settings
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.SuperAdmin.PaymentsModel
+@inject ISettingsService SettingsService
+@{
+    Layout = "SuperAdmin/_SuperAdminLayout";
+    Model.Title = "Payments | SuperAdmin";
+
+    var memberId = User.MemberId();
+    var settings = await SettingsService.GetSitePaymentSettings(memberId);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("SuperAdmin/_PaymentsContent", settings)
+})

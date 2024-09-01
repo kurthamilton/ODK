@@ -28,7 +28,7 @@ public class DeferredQueryMultiple<T> : IDeferredQueryMultiple<T> where T : clas
         _updateCache = updateCache;
     }
 
-    public async Task<IReadOnlyCollection<T>> RunAsync()
+    public async Task<IReadOnlyCollection<T>> Run()
     {        
         if (_cached != null)
         {

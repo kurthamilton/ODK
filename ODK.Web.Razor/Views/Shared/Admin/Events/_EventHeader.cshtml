@@ -1,17 +1,14 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Core.Venues
-@using ODK.Services.Venues
-@model ODK.Web.Razor.Models.Admin.Events.EventViewModel
-@inject IVenueService VenueService
-@{
-    Venue? venue = await VenueService.GetVenueAsync(Model.CurrentMember, Model.Event);
-}
+@using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Routes
+@model EventAdminPageViewModelBase
 
 <h5>@Model.Event.Date.EventDate()</h5>
 <h5 class="d-flex justify-content-between">
-    <a href="/@Model.Chapter.Name/Admin/Events/Venues/@venue!.Id">@venue.Name</a>
+    <a href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, Model.Venue.Id)">@Model.Venue.Name</a>
 </h5>
 
-<a href="/@Model.Chapter.Name/Events/@Model.Event.Id">
+<a href="@OdkRoutes2.Groups.Event(Model.Platform, Model.Chapter, Model.Event.Id)">
     <i class="fas fa-home"></i> View in site
 </a>

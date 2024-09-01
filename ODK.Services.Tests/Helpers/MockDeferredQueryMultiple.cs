@@ -15,6 +15,6 @@ internal class MockDeferredQueryMultiple<T> : IDeferredQueryMultiple<T>
         _values = values ?? [];
     }
 
-    public Task<IReadOnlyCollection<T>> RunAsync()
+    public Task<IReadOnlyCollection<T>> Run()
         => Task.FromResult((IReadOnlyCollection<T>)_values.ToArray());
 }

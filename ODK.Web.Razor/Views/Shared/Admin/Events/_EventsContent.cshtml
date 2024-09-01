@@ -3,18 +3,14 @@
 @using ODK.Core.Venues
 @using ODK.Services
 @using ODK.Services.Events
+@using ODK.Services.Events.ViewModels
 @using ODK.Services.Venues
 @using ODK.Web.Common.Extensions
-@model ODK.Core.Chapters.Chapter
-@inject IEventAdminService EventAdminService
-@inject IVenueAdminService VenueAdminService
+@using ODK.Web.Common.Routes
+@model EventsAdminPageViewModel
 @{
-    var memberId = User.MemberId();
-
-    var request = new AdminServiceRequest(Model.Id, memberId);
-    var dto = await EventAdminService.GetEventsDto(request, 1, 30);
-
-    var (events, venues, allInvites, allResponses) = (dto.Events, dto.Venues, dto.Invites, dto.Responses);
+    var (events, venues, allInvites, allResponses) = 
+        (Model.Events, Model.Venues, Model.Invites, Model.Responses);
 
     var venueDictionary = venues.ToDictionary(x => x.Id);
 
@@ -27,7 +23,7 @@
 
 <h2>Events</h2>
 <p>
-    <a class="btn btn-primary" href="/@Model.Name/Admin/Events/Create">Create</a>
+    <a class="btn btn-primary" href="@OdkRoutes2.MemberGroups.EventCreate(Model.Platform, Model.Chapter)">Create</a>
 </p>
 
 <table class="table table-striped">
@@ -43,7 +39,7 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (Event @event in events)
+    @foreach (var @event in events)
     {
         invitesDictionary.TryGetValue(@event.Id, out var eventInvites);
         responseDictionary.TryGetValue(@event.Id, out var eventResponses);
@@ -51,13 +47,13 @@
         var venue = venueDictionary[@event.VenueId];
 
         <tr>
-            <td><a href="/@Model.Name/Admin/Events/@(@event.Id)">@(@event.GetDisplayName())</a></td>
+            <td><a href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
             <td>@(@event.Date.EventDate())</td>
-            <td><a href="/@Model.Name/Admin/Venues/@venue.Id">@venue.Name</a></td>
+            <td><a href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a></td>
             <td>
                 @if (eventInvites?.SentUtc == null)
                 {
-                    <a href="/@Model.Name/Admin/Events/@(@event.Id)/Invites">
+                    <a href="@OdkRoutes2.MemberGroups.EventInvites(Model.Platform, Model.Chapter, @event.Id)">
                         @(eventInvites?.ScheduledUtc != null ? "Scheduled" : "Send")
                     </a>
                 }

@@ -1,7 +1,11 @@
 ﻿@using ODK.Core.Members
 @using ODK.Core.Utils
+@using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Events
-@model ODK.Web.Razor.Models.Admin.Events.EventEditViewModel
+@using ODK.Web.Razor.Models.Components
+@model EventEditAdminPageViewModel
 @{
     var hostOptions = Model.ChapterAdminMembers
         ?.Select(x => new SelectListItem
@@ -12,13 +16,16 @@
         .ToArray() ?? [];
 }
 
+@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
+
 @await Html.PartialAsync("Admin/Events/_EventHeader", Model)
 
 @await Html.PartialAsync("Admin/Events/_EventAdminTabs", Model)
 
 @if (Model.Event.PublishedUtc == null)
 {
-    <form action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Publish" method="post">
+    <form action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/publish" method="post">
+        @Html.AntiForgeryToken()
         <div class="mb-3">
             <button class="btn btn-primary" type="submit">
                 <i class="fa-solid fa-upload"></i>
@@ -28,14 +35,12 @@
     </form>
 }
 
-<form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id">
+<form method="post">
     @Html.AntiForgeryToken()    
     @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
     {
         AttendeeLimit = Model.Event.AttendeeLimit,
-        ChapterId = Model.Chapter.Id,
-        ChapterName = Model.Chapter.Name,
-        CurrencySymbol = Model.Currency?.Symbol,
+        Chapter = Model.Chapter,
         Date = Model.Event.ToLocalTime(Model.Chapter.TimeZone),
         Description = Model.Event.Description,
         EndTime = TimeSpanUtils.ToString(Model.Event.EndTime),
@@ -43,12 +48,16 @@
         HostOptions = hostOptions,
         ImageUrl = Model.Event.ImageUrl,
         Name = Model.Event.Name,
+        OwnerSubscription = Model.OwnerSubscription,
+        PaymentSettings = Model.PaymentSettings,
+        Platform = Model.Platform,
         Public = Model.Event.IsPublic,
         RsvpDeadline = Model.Event.RsvpDeadlineUtc != null ? Model.Chapter.ToChapterTime(Model.Event.RsvpDeadlineUtc.Value) : null,
         TicketCost = Model.Event.TicketSettings?.Cost,
         TicketDepositCost = Model.Event.TicketSettings?.Deposit,
         Time = Model.Event.Time,
-        Venue = Model.Event.VenueId
+        Venue = Model.Event.VenueId,
+        Venues = Model.Venues
     })
     
     <div class="d-flex">
@@ -61,6 +70,6 @@
     </div>
 </form>
 
-<form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Delete"
+<form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/delete"
       id="event-delete-form">
 </form>

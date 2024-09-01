@@ -1,7 +1,7 @@
 ﻿@model ODK.Web.Razor.Models.Admin.Members.AdminMemberAddFormViewModel
 
-<div class="col-12">
+<div>
     @Html.DropDownListFor(x => x.MemberId, Model.AdminMemberOptions, "", 
-        new { @class = "form-select" })
+        new { @class = "form-select", data_searchable = "", data_placeholder = "Add member" })
     @Html.ValidationMessage("MemberId")
 </div>

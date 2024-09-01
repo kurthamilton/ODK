@@ -2,29 +2,24 @@
 @using ODK.Core.Members
 @using ODK.Services
 @using ODK.Services.Events
+@using ODK.Services.Events.ViewModels
 @using ODK.Services.Members
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Members
-@model EventViewModel
+@model EventInvitesAdminPageViewModel
 @inject IEventAdminService EventAdminService
 @inject IMemberService MemberService
 @{
     const int cols = 6;
-
-    var memberId = User.MemberId();
-    var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
-    var dto = await EventAdminService.GetEventResponsesDto(request, Model.Event.Id);
-
-    var (members, responses) = (dto.Members, dto.Responses);
-
-    var memberDictionary = members
-        .Where(x => !x.Disabled)
+    
+    var memberDictionary = Model.Members
+        .Where(x => x.IsCurrent())
         .ToDictionary(x => x.Id);
-    var responseDictionary = responses
+    var responseDictionary = Model.Responses
         .GroupBy(x => x.Type)
         .ToDictionary(x => x.Key, x => x.ToArray());
-    var membersByResponse = responses
+    var membersByResponse = Model.Responses
         .GroupBy(x => x.Type)
         .ToDictionary(
             group => group.Key, 

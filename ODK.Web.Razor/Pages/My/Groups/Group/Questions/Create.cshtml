@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/questions/new"
+@using ODK.Services.Chapters
+@model CreateModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Create question";
+
+    var chapter = await ChapterAdminService.GetChapter(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent", chapter)

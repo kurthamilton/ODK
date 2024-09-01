@@ -66,6 +66,14 @@ public class AccountController : OdkControllerBase
         return Redirect($"/Account/Pending");
     }
 
+    [HttpPost("account/currency")]
+    public async Task<IActionResult> UpdateCurrency([FromForm] Guid currencyId)
+    {
+        var result = await _memberService.UpdateMemberCurrency(MemberId, currencyId);
+        AddFeedback(result, "Currency updated");
+        return RedirectToReferrer();
+    }
+
     [AllowAnonymous]
     [HttpPost("account/login")]
     public async Task<IActionResult> Login([FromForm] LoginViewModel viewModel, string? returnUrl)
@@ -315,9 +323,9 @@ public class AccountController : OdkControllerBase
     }
 
     [HttpPost("Chapters/{id:guid}/Account/Subscription/Purchase")]
-    public async Task<IActionResult> PurchaseSubscription(Guid id, [FromForm] PurchaseSubscriptionRequest request)
+    public async Task<IActionResult> PurchaseChapterSubscription(Guid id, [FromForm] PurchaseSubscriptionRequest request)
     {
-        var result = await _memberService.PurchaseSubscription(MemberId, id, request.SubscriptionId, request.Token);
+        var result = await _memberService.PurchaseChapterSubscription(MemberId, id, request.SubscriptionId, request.Token);
         AddFeedback(result, "Purchase complete. Thank you for subscribing.");
         return RedirectToReferrer();
     }

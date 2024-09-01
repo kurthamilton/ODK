@@ -12195,6 +12195,10 @@ html[data-platform=odk] {
   color: #6d6dcb;
 }
 
+.icon--excel {
+  color: #107C41;
+}
+
 .list-item {
   border-bottom: 1px solid #E3E3E3;
   margin-bottom: 0.5rem;
@@ -12417,6 +12421,26 @@ html[data-platform=odk] {
 
 .section--admin {
   margin-bottom: 3rem;
+}
+
+.side-menu {
+  --odk-side-menu-color: var(--bs-secondary-color);
+  position: sticky;
+  top: 0;
+  list-style: none;
+  padding: 0;
+}
+.side-menu .nav-link {
+  color: var(--odk-side-menu-color);
+  border-left: 0.125rem solid transparent;
+  padding: 0.125rem 0 0.125rem 0.75rem;
+}
+.side-menu .nav-link.active, .side-menu .nav-link:hover {
+  --odk-side-menu-color: var(--bs-emphasis-color);
+  border-left-color: var(--odk-side-menu-color);
+}
+.side-menu .side-menu {
+  padding-left: 1rem;
 }
 
 .sidebar-card {

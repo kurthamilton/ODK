@@ -1,4 +1,6 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Core.Payments;
 
 namespace ODK.Services.Payments;
@@ -19,5 +21,6 @@ public interface IPaymentService
 
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(IPaymentSettings settings, string externalId);
 
-    Task<ServiceResult> MakePayment(Guid chapterId, Member member, decimal amount, string cardToken, string reference);
+    Task<ServiceResult> MakePayment(ChapterPaymentSettings chapterPaymentSettings, 
+        Currency currency, Member member, decimal amount, string cardToken, string reference);
 }

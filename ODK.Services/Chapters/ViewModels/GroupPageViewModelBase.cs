@@ -16,5 +16,7 @@ public abstract class GroupPageViewModelBase
 
     public required bool IsMember { get; init; }
 
+    public required MemberSiteSubscription? OwnerSubscription { get; init; }
+
     public required PlatformType Platform { get; init; }
 }

@@ -23,19 +23,19 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         .DeferredSingleOrDefault();    
 
     public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId) => Set()
-        .Current(Set<MemberSubscription>(), chapterId)
+        .Current(chapterId)
         .Visible(chapterId)
         .InChapter(chapterId)
         .DeferredMultiple();
 
     public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId, IEnumerable<Guid> memberIds) => Set()
-        .Current(Set<MemberSubscription>(), chapterId)
+        .Current(chapterId)
         .InChapter(chapterId)
         .Where(x => memberIds.Contains(x.Id))
         .DeferredMultiple();
 
     public IDeferredQuery<int> GetCountByChapterId(Guid chapterId) => Set()
-        .Current(Set<MemberSubscription>(), chapterId)
+        .Current(chapterId)
         .Visible(chapterId)
         .InChapter(chapterId)
         .DeferredCount();
@@ -44,7 +44,7 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
     {
         var query =
             from member in Set()
-                .Current(Set<MemberSubscription>(), chapterId)
+                .Current(chapterId)
                 .Visible(chapterId)
             from memberChapter in Set<MemberChapter>()
             where memberChapter.MemberId == member.Id

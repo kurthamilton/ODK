@@ -1,0 +1,90 @@
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Caching
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@inject IPlatformProvider PlatformProvider
+@inject IRequestCache RequestCache
+@{
+    Layout = "_HomeLayout";
+
+    var platform = PlatformProvider.GetPlatform();
+    Guid.TryParse(Context.GetRouteValue("id")?.ToString(), out var chapterId);
+    var chapter = await RequestCache.GetChapterAsync(chapterId);
+
+    var menuItems = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.Groups.Group(chapter), Text = "Home" },
+        new MenuItem 
+        { 
+            Link = OdkRoutes2.MemberGroups.Group(platform, chapter), 
+            Text = "Group",
+            Children = new[]
+            {
+                new MenuItem { Link = OdkRoutes2.MemberGroups.GroupQuestions(platform, chapter), Text = "FAQ" },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.GroupMessages(platform, chapter), Text = "Messages" },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.GroupPayments(platform, chapter), Text = "Payments" },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.GroupProperties(platform, chapter), Text = "Properties" },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.GroupSocialMedia(platform, chapter), Text = "Social media" },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" }
+            }
+        },
+        new MenuItem 
+        { 
+            Link = OdkRoutes2.MemberGroups.Events(platform, chapter), 
+            Text = "Events",
+            Children = new[]
+            {
+                new MenuItem 
+                { 
+                    Link = OdkRoutes2.MemberGroups.Venues(platform, chapter),
+                    Text = "Venues"
+                },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.EventSettings(platform, chapter), Text = "Settings" }
+            }
+        },
+        new MenuItem 
+        { 
+            Link = OdkRoutes2.MemberGroups.Members(platform, chapter), 
+            Text = "Members",
+            Children = new[]
+            {
+                new MenuItem { Link = OdkRoutes2.MemberGroups.MemberAdmins(platform, chapter), Text = "Admins" },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.MembershipSettings(platform, chapter), Text = "Membership" },
+                new MenuItem 
+                { 
+                    Link = OdkRoutes2.MemberGroups.MembersSubscriptions(platform, chapter), 
+                    Text = "Subscriptions"
+                },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.MembersEmail(platform, chapter), Text = "Bulk email" }
+            }
+        }
+    };
+}
+
+@section styles
+{
+    @await RenderSectionAsync("styles", required: false)
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+    {
+        BodyContentFunc = _ => RenderBody(),
+        MenuContent = await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
+        {
+            MenuItems = menuItems,
+            Root = true
+        })
+    }),
+    Title = chapter.Name
+})
+
+@section scripts
+{
+    <script src="/js/odk.admin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("scripts", required: false)
+}

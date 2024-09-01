@@ -1,70 +1,80 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Countries
+@using ODK.Core.Features
 @using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Countries
+@using ODK.Services.Members
+@using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
-@model ODK.Core.Chapters.Chapter
-@inject IChapterAdminService ChapterAdminService
-@{
-    var memberId = User.MemberId();    
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var dto = await ChapterAdminService.GetChapterMemberSubscriptionsDto(serviceRequest);
-
-    var (subscriptions, currency, membershipSettings) = (dto.ChapterSubscriptions, dto.PaymentSettings.Currency, dto.MembershipSettings);
+@using ODK.Web.Razor.Models.Components
+@model SubscriptionsAdminPageViewModel
+@{        
+    var (subscriptions, currency, membershipSettings) = 
+        (Model.ChapterSubscriptions, Model.PaymentSettings?.Currency, Model.MembershipSettings);
 }
 
 <h2>Subscriptions</h2>
-<p>
-    <a href="/@Model.Name/Admin/Members/Subscriptions/Create" class="btn btn-primary">
-        Create subscription
-    </a>
-</p>
 
-<table class="table table-striped mb-5">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Amount</th>
-        <th>Months</th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var subscription in subscriptions)
-    {
-        <tr>
-            <td>
-                <a href="/@Model.Name/Admin/Members/Subscriptions/@subscription.Id">@subscription.Name</a>
-            </td>
-            <td>
-                @currency.Symbol@subscription.Amount
-            </td>
-            <td>@subscription.Months</td>
-            <td>
-                <form method="post" action="/@Model.Name/Admin/Members/Subscriptions/@subscription.Id/Delete">
-                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
-                            onclick="return confirm('Are you sure you want to delete this subscription?');">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </form>
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
+@if (Model.ChapterSubscriptions.Count == 0)
+{
+    <p>
+        Charge your members a subscription fee to cover your group running costs.
+    </p>
+}
 
-<h3>Membership settings</h3>
+@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+{
+    Feature = SiteFeatureType.MemberSubscriptions,
+    ContentFunc = 
+        @<div>
+            @if (Model.MembershipSettings?.Enabled != true)
+            {
+                <div class="alert alert-warning">
+                    Membership is currently disabled. 
+                    <a href="@OdkRoutes2.MemberGroups.MembershipSettings(Model.Platform, Model.Chapter)">Update membership settings</a>
+                </div>
+            }
 
-<form method="post">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Members/_MembershipSettingsForm", new MembershipSettingsFormViewModel
-    {
-        Enabled = membershipSettings?.Enabled ?? false,
-        MembershipDisabledAfter = membershipSettings?.MembershipDisabledAfterDaysExpired ?? 0,
-        MembershipExpiringWarningDays = membershipSettings?.MembershipExpiringWarningDays ?? 0,
-        TrialPeriodMonths = membershipSettings?.TrialPeriodMonths ?? 0
-    })
-    <button class="btn btn-primary">Update</button>
-</form>
+            <p>
+                <a href="@OdkRoutes2.MemberGroups.MembersSubscriptionCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
+                    Create subscription
+                </a>
+            </p>
+
+            <table class="table table-striped mb-5">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>Months</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var subscription in subscriptions)
+                {
+                    <tr>
+                        <td>
+                            <a href="@OdkRoutes2.MemberGroups.MembersSubscription(Model.Platform, Model.Chapter, subscription)">@subscription.Name</a>
+                        </td>
+                        <td>
+                            @currency?.ToAmountString(subscription.Amount)
+                        </td>
+                        <td>@subscription.Months</td>
+                        <td>
+                            <form method="post" action="/groups/@Model.Chapter.Id/members/subscriptions/@subscription.Id/delete">
+                                <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                        onclick="return confirm('Are you sure you want to delete this subscription?');">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>            
+        </div>
+})

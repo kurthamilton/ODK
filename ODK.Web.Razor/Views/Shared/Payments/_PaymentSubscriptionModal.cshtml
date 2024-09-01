@@ -1,0 +1,28 @@
+﻿@using ODK.Core.Payments
+@using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
+@model PaymentSubscriptionModalViewModel
+
+@await Html.PartialAsync("Components/_Modal", new ModalViewModel
+{
+    Id = Model.Id,
+    Title = Model.Title,
+    Body =
+    @<div>
+        @if (Model.PaymentSettings?.Provider == PaymentProviderType.PayPal)
+        {
+            <form method="post" action="@Model.Action">
+                @Html.AntiForgeryToken()
+                @Model.FormContentFunc?.Invoke(null)
+                @await Html.PartialAsync("Payments/_PaymentSubscriptionForm", Model.PaymentForm)
+            </form>
+        }
+        else
+        {
+            <div class="alert alert-danger">
+                Payment provider not supported
+            </div>
+        }
+    </div>
+})

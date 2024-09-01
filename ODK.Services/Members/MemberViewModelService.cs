@@ -15,7 +15,7 @@ public class MemberViewModelService : IMemberViewModelService
 
     public async Task<MemberPageViewModel> GetMemberPage(Guid currentMemberId, string chapterName, Guid memberId)
     {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter);
 
         var (currentMember, members, chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
@@ -41,7 +41,7 @@ public class MemberViewModelService : IMemberViewModelService
 
     public async Task<MembersPageViewModel> GetMembersPage(Guid currentMemberId, string chapterName)
     {        
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter);
 
         // get current member separately as they might be hidden from the list of members

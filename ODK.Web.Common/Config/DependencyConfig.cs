@@ -87,10 +87,10 @@ public static class DependencyConfig
 
     private static void ConfigurePayments(this IServiceCollection services, AppSettings appSettings)
     {
-        PaymentsSettings payments = appSettings.Payments;
+        var payments = appSettings.Payments;
 
         services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
-        services.AddSingleton(new PayPalPaymentProviderSettings(payments.PayPalApiBaseUrl));
+        services.AddSingleton(new PayPalPaymentProviderSettings(payments.PayPal.ApiBaseUrl));
     }
 
     private static void ConfigureServices(this IServiceCollection services, AppSettings appSettings)

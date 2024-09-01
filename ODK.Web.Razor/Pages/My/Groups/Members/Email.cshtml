@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/members/email"
+@using ODK.Services.Members
+@model EmailModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Bulk email";
+
+    var viewModel = await MemberAdminService.GetBulkEmailViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Members/_BulkEmailContent", viewModel)

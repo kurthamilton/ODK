@@ -9,7 +9,7 @@ public interface ISiteSubscriptionService
 
     Task<MemberSiteSubscription?> GetMemberSiteSubscription(Guid memberId);
 
-    Task<SiteSubscriptionsDto> GetSiteSubscriptionsDto(Guid? memberId, Guid? chapterId);
+    Task<SiteSubscriptionsDto> GetSiteSubscriptionsDto(Guid? memberId);
 
     Task SyncExpiredSubscriptions();
 

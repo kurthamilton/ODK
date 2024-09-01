@@ -1,17 +1,28 @@
-﻿@using ODK.Services
+﻿@using ODK.Core.Platforms
+@using ODK.Services
 @using ODK.Services.Members
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Members
 @model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
-
-@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 @inject IMemberAdminService MemberAdminService
+@inject IPlatformProvider PlatformProvider
 @{
+    var platform = PlatformProvider.GetPlatform();
+
     var request = new AdminServiceRequest(Model.Chapter.Id, User.MemberId());
     var memberAvatar = await MemberAdminService.GetMemberAvatar(request, Model.Member.Id);
     var memberImage = await MemberAdminService.GetMemberImage(request, Model.Member.Id);
 }
+
+@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", new MemberAdminTabsViewModel
+{
+    Chapter = Model.Chapter,
+    Member = Model.Member,
+    Platform = platform
+})
+
 <section class="section--admin">
     <h3>Picture</h3>
     @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel

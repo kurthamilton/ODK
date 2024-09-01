@@ -11,6 +11,10 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
     {
     }
 
+    public IDeferredQueryMultiple<EventResponse> GetAllByMemberId(Guid memberId, Guid chapterId) => Query(chapterId)
+        .Where(x => x.MemberId == memberId)
+        .DeferredMultiple();
+
     public IDeferredQueryMultiple<EventResponse> GetByChapterId(Guid chapterId) => Query(chapterId)
         .DeferredMultiple();
 

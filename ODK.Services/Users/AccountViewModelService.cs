@@ -34,7 +34,7 @@ public class AccountViewModelService : IAccountViewModelService
 
     public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName)
     {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter);
         OdkAssertions.MeetsCondition(chapter, x => x.IsOpenForRegistration());
 
@@ -62,7 +62,7 @@ public class AccountViewModelService : IAccountViewModelService
 
     public async Task<ChapterPicturePageViewModel> GetChapterPicturePage(Guid currentMemberId, string chapterName)
     {
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter);
 
         var (
@@ -87,10 +87,10 @@ public class AccountViewModelService : IAccountViewModelService
 
     public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(Guid currentMemberId, string chapterName)
     {        
-        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).RunAsync();
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter);
 
-        var member = await _unitOfWork.MemberRepository.GetById(currentMemberId).RunAsync();
+        var member = await _unitOfWork.MemberRepository.GetById(currentMemberId).Run();
 
         var (
                 chapterProperties,

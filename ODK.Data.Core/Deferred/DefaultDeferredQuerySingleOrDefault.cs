@@ -2,5 +2,5 @@
 
 public class DefaultDeferredQuerySingleOrDefault<T> : IDeferredQuerySingleOrDefault<T>
 {
-    public Task<T?> RunAsync() => Task.FromResult(default(T?));
+    public Task<T?> Run() => Task.FromResult(default(T?));
 }

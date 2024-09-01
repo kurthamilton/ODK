@@ -9,8 +9,6 @@ public class SiteSubscriptionPriceViewModel
 {
     public required decimal Amount { get; init; }
 
-    public Chapter? Chapter { get; init; }
-
     public required Currency Currency { get; init; }
 
     public required string ExternalId { get; init; }

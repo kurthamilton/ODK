@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/members/subscriptions/{subscriptionId:guid}"
+@using ODK.Services.Members
+@model EditModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Edit subscription";
+
+    var viewModel = await MemberAdminService.GetMemberSubscriptionViewModel(Model.AdminServiceRequest, Model.SubscriptionId);
+}
+
+@await Html.PartialAsync("Admin/Members/_SubscriptionEditContent", viewModel)

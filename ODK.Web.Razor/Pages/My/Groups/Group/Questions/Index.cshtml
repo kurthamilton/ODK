@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/questions"
+@using ODK.Services.Chapters
+@model ODK.Web.Razor.Pages.My.Groups.Group.Questions.IndexModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "FAQ";
+
+    var viewModel = await ChapterAdminService.GetChapterQuestionsViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Chapter/_QuestionsContent", viewModel)

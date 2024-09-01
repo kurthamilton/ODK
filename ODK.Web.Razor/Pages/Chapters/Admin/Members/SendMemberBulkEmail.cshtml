@@ -1,19 +1,24 @@
-﻿@page "/{chapterName}/Admin/Members/SendEmail"
+﻿@page "/{chapterName}/Admin/Members/Email"
+@using ODK.Services.Members
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.SendMemberBulkEmailModel
+@inject IMemberAdminService MemberAdminService
 @{
     Layout = "Admin/Members/_MemberAdminLayout";
     Model.Title = "Send bulk email | Admin";
+
+    var viewModel = await MemberAdminService.GetBulkEmailViewModel(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" },
+        new MenuItem { Link = @OdkRoutes2.MemberGroups.Members(viewModel.Platform, viewModel.Chapter), Text = "Members" },
         new MenuItem { Text = "Bulk email" }
     },
-    Content = await Html.PartialAsync("Admin/Members/_SendMemberBulkEmailContent")
+    Content = await Html.PartialAsync("Admin/Members/_BulkEmailContent", viewModel)
 })

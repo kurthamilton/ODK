@@ -10,6 +10,10 @@ public class InstagramPostRepository : ReadWriteRepositoryBase<InstagramPost>, I
     {
     }
 
+    public IDeferredQueryMultiple<InstagramPost> GetByChapterId(Guid chapterId) => Set()
+        .Where(x => x.ChapterId == chapterId)
+        .DeferredMultiple();
+
     public IDeferredQueryMultiple<InstagramPost> GetByChapterId(Guid chapterId, int pageSize) => Set()
         .Where(x => x.ChapterId == chapterId)
         .OrderByDescending(x => x.Date)

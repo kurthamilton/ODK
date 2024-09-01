@@ -2,19 +2,38 @@
 @using ODK.Core.Utils
 @using ODK.Services
 @using ODK.Services.Events
+@using ODK.Services.Venues.ViewModels
+@using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
-@model ODK.Web.Razor.Models.Admin.Venues.VenueViewModel
-@inject IEventAdminService EventAdminService
-@{
-    var memberId = User.MemberId();
-    var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
-    var events = await EventAdminService.GetEventsByVenue(request, Model.Venue.Id);
-}
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Razor.Models.Components
+@model VenueEventsAdminPageViewModel
 
-@await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", Model)
+<h2>@Model.Venue.Name</h2>
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.Venues(Model.Platform, Model.Chapter),
+            Text = "Venues"
+        },
+        new MenuItem { Text = Model.Venue.Name }
+    }
+})
+
+@await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", new VenueAdminTabsViewModel
+{
+    Chapter = Model.Chapter,
+    Platform = Model.Platform,
+    Venue = Model.Venue
+})
 
 <p>
-    <a href="/@Model.Chapter.Name/Admin/Events/Create?venueId=@Model.Venue.Id" class="btn btn-primary">
+    <a href="@OdkRoutes2.MemberGroups.EventCreate(Model.Platform, Model.Chapter)?venueId=@Model.Venue.Id" class="btn btn-primary">
         Create event
     </a>
 </p>
@@ -27,11 +46,11 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (Event @event in events.OrderByDescending(x => x.Date))
+    @foreach (var @event in Model.Events.OrderByDescending(x => x.Date))
     {
         <tr>
             <td>
-                <a href="/@Model.Chapter.Name/Admin/Events/@(@event.Id)">@(@event.GetDisplayName())</a>
+                <a href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a>
             </td>
             <td>@(@event.Date.EventDate())</td>
         </tr>

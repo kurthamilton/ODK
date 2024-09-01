@@ -21,5 +21,8 @@ public interface IPaymentProvider
     Task<ServiceResult> MakePayment(string currencyCode, decimal amount, string cardToken, 
         string description, string memberName);
 
+    Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
+        string paymentId, string note);
+
     Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken);
 }

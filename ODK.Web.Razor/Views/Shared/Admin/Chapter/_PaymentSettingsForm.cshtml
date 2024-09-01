@@ -1,0 +1,36 @@
+﻿@using ODK.Core.Payments
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Payments
+@model ChapterPaymentSettingsFormViewModel
+@{
+    var currencyOptions = Model.CurrencyOptions
+        .OrderBy(x => x.Code)
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.ToString() })
+        .ToArray();
+}
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Provider, new { @class = "form-label" })
+    @Html.OdkEnumDropDownFor(x => x.Provider, new { @class = "form-select" }, 
+        excludeOptions: new[] { PaymentProviderType.Stripe })
+    @Html.ValidationMessageFor(x => x.Provider)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.CurrencyId, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.CurrencyId)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.EmailAddress, new { @class = "form-label" })
+    <span class="ms-1 text-muted">The email address you will receive payments for</span>
+    @Html.TextBoxFor(x => x.EmailAddress, new { @class = "form-control" })
+    @await Html.PartialAsync("Payments/_PaymentCommissionText", new PaymentCommissionTextViewModel
+    {
+        ChapterPaymentSettings = Model.ChapterPaymentSettings,
+        OwnerSubscription = Model.OwnerSubscription
+    })
+    @Html.ValidationMessageFor(x => x.EmailAddress)
+</div>

@@ -1,4 +1,6 @@
-﻿namespace ODK.Services;
+﻿using ODK.Core.Features;
+
+namespace ODK.Services;
 
 public class ServiceResult<T> : ServiceResult
 {
@@ -42,4 +44,6 @@ public class ServiceResult
     public static ServiceResult Failure(IEnumerable<string> messages) => new ServiceResult(messages);
 
     public static ServiceResult Successful(string? message = null) => new ServiceResult(true, message ?? "");
+
+    public static ServiceResult Unauthorized(SiteFeatureType feature) => Failure("You do not have access to this feature");
 }

@@ -13,5 +13,5 @@ internal class MockDeferredQuerySingleOrDefault<T> : IDeferredQuerySingleOrDefau
         _value = value;
     }
 
-    public Task<T?> RunAsync() => Task.FromResult(_value);
+    public Task<T?> Run() => Task.FromResult(_value);
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Data.Core.Deferred;
@@ -12,6 +13,18 @@ public class MemberSiteSubscriptionRepository : WriteRepositoryBase<MemberSiteSu
     public MemberSiteSubscriptionRepository(OdkContext context) 
         : base(context)
     {
+    }
+
+    public IDeferredQuerySingleOrDefault<MemberSiteSubscription> GetByChapterId(Guid chapterId)
+    {
+        var query = 
+            from chapter in Set<Chapter>()
+            from subscription in Set()
+            where chapter.Id == chapterId
+                && subscription.MemberId == chapter.OwnerId
+            select subscription;
+
+        return query.DeferredSingleOrDefault();
     }
 
     public IDeferredQuerySingleOrDefault<MemberSiteSubscription> GetByMemberId(Guid memberId, PlatformType platform) => Set()

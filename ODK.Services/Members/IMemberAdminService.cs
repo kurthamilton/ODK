@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Members;
+using ODK.Services.Members.ViewModels;
 
 namespace ODK.Services.Members;
 
@@ -6,21 +7,33 @@ public interface IMemberAdminService
 {
     Task DeleteMember(AdminServiceRequest request, Guid memberId);
 
+    Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(AdminServiceRequest request, Guid memberId);
+
+    Task<AdminMembersAdminPageViewModel> GetAdminMembersAdminPageViewModel(AdminServiceRequest request);
+
+    Task<BulkEmailAdminPageViewModel> GetBulkEmailViewModel(AdminServiceRequest request);
+
     Task<Member> GetMember(AdminServiceRequest request, Guid memberId);
 
     Task<MemberAvatar?> GetMemberAvatar(AdminServiceRequest request, Guid memberId);
 
     Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(AdminServiceRequest request);
 
+    Task<MemberEmailAdminPageViewModel> GetMemberEmailViewModel(AdminServiceRequest request, Guid memberId);
+
+    Task<MemberEventsAdminPageViewModel> GetMemberEventsViewModel(AdminServiceRequest request, Guid memberId);
+
     Task<MemberImage?> GetMemberImage(AdminServiceRequest request, Guid memberId);
 
-    Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request);
+    Task<SubscriptionCreateAdminPageViewModel> GetMemberSubscriptionCreateViewModel(AdminServiceRequest request);
 
-    Task<IReadOnlyCollection<Member>> GetMembers(AdminServiceRequest request, MemberFilter filter);
+    Task<SubscriptionsAdminPageViewModel> GetMemberSubscriptionsViewModel(AdminServiceRequest request);
 
-    Task<MembersDto> GetMembersDto(AdminServiceRequest request);
+    Task<SubscriptionAdminPageViewModel> GetMemberSubscriptionViewModel(AdminServiceRequest request, Guid subscriptionId);
 
-    Task<MemberSubscription?> GetMemberSubscription(AdminServiceRequest request, Guid memberId);
+    Task<MembersAdminPageViewModel> GetMembersViewModel(AdminServiceRequest request);
+
+    Task<MemberAdminPageViewModel> GetMemberViewModel(AdminServiceRequest request, Guid memberId);
 
     Task RotateMemberImage(AdminServiceRequest request, Guid memberId);
 

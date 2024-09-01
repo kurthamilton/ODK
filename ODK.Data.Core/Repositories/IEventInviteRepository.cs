@@ -4,6 +4,7 @@ using ODK.Data.Core.Deferred;
 namespace ODK.Data.Core.Repositories;
 public interface IEventInviteRepository : IWriteRepository<EventInvite>
 {
+    IDeferredQueryMultiple<EventInvite> GetAllByMemberId(Guid memberId, Guid chapterId);
     IDeferredQueryMultiple<EventInvite> GetByEventId(Guid eventId);
     IDeferredQueryMultiple<EventInvite> GetByEventIds(IEnumerable<Guid> eventIds);
     IDeferredQueryMultiple<EventInvite> GetByMemberId(Guid memberId);

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Html;
-
-namespace ODK.Web.Razor.Models.Components;
+﻿namespace ODK.Web.Razor.Models.Components;
 
 public abstract class EditableContentViewModelBase
 {
@@ -16,5 +14,5 @@ public abstract class EditableContentViewModelBase
 
     public required string Name { get; init; }
 
-    public required string Title { get; init; }
+    public string? Title { get; init; }
 }

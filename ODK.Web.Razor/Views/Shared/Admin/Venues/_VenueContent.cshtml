@@ -1,15 +1,39 @@
-﻿@using ODK.Web.Common.Extensions
+﻿@using ODK.Services.Venues.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Admin.Venues
-@model ODK.Web.Razor.Models.Admin.Venues.VenueViewModel
+@using ODK.Web.Razor.Models.Components
+@model VenueAdminPageViewModel
 
-@await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", Model)
+<h2>@Model.Venue.Name</h2>
 
-<form method="post" action="/@Model.Chapter.Name/Admin/Events/Venues/@Model.Venue.Id">
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.Venues(Model.Platform, Model.Chapter),
+            Text = "Venues"
+        },
+        new MenuItem { Text = Model.Venue.Name }
+    }
+})
+
+@await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", new VenueAdminTabsViewModel
+{
+    Chapter = Model.Chapter,
+    Platform = Model.Platform,
+    Venue = Model.Venue
+})
+
+<form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel
     {
         Address = Model.Venue.Address,
-        ChapterId = Model.Chapter.Id,
         Lat = Model.Location?.LatLong.Lat,
         LocationName = Model.Location?.Name ?? Model.Venue.MapQuery,
         Long = Model.Location?.LatLong.Long,

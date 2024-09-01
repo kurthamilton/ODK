@@ -21,7 +21,7 @@ public class SubscriptionCreateModel : AdminPageModel
     {
     }
 
-    public async Task<IActionResult> OnPostAsync(SubscriptionFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync(SubscriptionFormSubmitViewModel viewModel)
     {
         var serviceRequest = await GetAdminServiceRequest();
         var result = await _chapterAdminService.CreateChapterSubscription(serviceRequest, new CreateChapterSubscription
@@ -32,8 +32,7 @@ public class SubscriptionCreateModel : AdminPageModel
             Months = viewModel.DurationMonths ?? 0,
             Name = viewModel.Name,
             Title = viewModel.Title,
-            Type = viewModel.Type
-            
+            Type = viewModel.Type            
         });
 
         if (result.Success)

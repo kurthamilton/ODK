@@ -15,7 +15,7 @@ internal class MockDeferredQuerySingle<T> : IDeferredQuerySingle<T>
         _value = value;
     }
 
-    public Task<T> RunAsync()
+    public Task<T> Run()
     {
         OdkAssertions.Exists(_value);
         return Task.FromResult(_value);

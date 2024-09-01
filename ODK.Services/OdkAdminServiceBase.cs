@@ -196,6 +196,68 @@ public abstract class OdkAdminServiceBase
         return (result1, result2, result3, result4, result5, result6, result7);
     }
 
+    protected async Task<(T1, T2, T3, T4, T5, T6, T7, T8)> GetChapterAdminRestrictedContent<T1, T2, T3, T4, T5, T6, T7, T8>(
+        AdminServiceRequest request,
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6,
+        Func<IUnitOfWork, IDeferredQuery<T7>> query7,
+        Func<IUnitOfWork, IDeferredQuery<T8>> query8)
+    {
+        var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
+
+        var (chapterAdminMembers, currentMember, result1, result2, result3, result4, result5, result6, result7, result8) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
+            query1,
+            query2,
+            query3,
+            query4,
+            query5,
+            query6,
+            query7,
+            query8);
+
+        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+
+        return (result1, result2, result3, result4, result5, result6, result7, result8);
+    }
+
+    protected async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9)> GetChapterAdminRestrictedContent<T1, T2, T3, T4, T5, T6, T7, T8, T9>(
+        AdminServiceRequest request,
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6,
+        Func<IUnitOfWork, IDeferredQuery<T7>> query7,
+        Func<IUnitOfWork, IDeferredQuery<T8>> query8,
+        Func<IUnitOfWork, IDeferredQuery<T9>> query9)
+    {
+        var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
+
+        var (chapterAdminMembers, currentMember, result1, result2, result3, result4, result5, result6, result7, result8, result9) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
+            query1,
+            query2,
+            query3,
+            query4,
+            query5,
+            query6,
+            query7,
+            query8,
+            query9);
+
+        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+
+        return (result1, result2, result3, result4, result5, result6, result7, result8, result9);
+    }
+
     protected async Task<T1> GetSuperAdminRestrictedContent<T1>(Guid currentMemberId,
         Func<IUnitOfWork, IDeferredQuery<T1>> query1)
     {
@@ -282,7 +344,7 @@ public abstract class OdkAdminServiceBase
 
     protected async Task AssertMemberIsSuperAdmin(Guid memberId)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(memberId).RunAsync();
+        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
         AssertMemberIsSuperAdmin(member);
     }
 }

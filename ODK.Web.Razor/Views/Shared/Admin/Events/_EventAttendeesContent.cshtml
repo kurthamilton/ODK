@@ -1,32 +1,21 @@
 ﻿@using ODK.Core.Events
-@using ODK.Core.Members
-@using ODK.Services
-@using ODK.Services.Events
-@using ODK.Services.Members
-@using ODK.Web.Common.Extensions
+@using ODK.Services.Events.ViewModels
 @using ODK.Web.Razor.Models.Events
 @using ODK.Web.Razor.Models.Members
-@model ODK.Web.Razor.Models.Admin.Events.EventViewModel
-@inject IEventAdminService EventAdminService
-@inject IMemberAdminService MemberAdminService
+@model EventAttendeesAdminPageViewModel
 @{
-    var memberId = User.MemberId();
-    var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
-    var dto = await EventAdminService.GetEventResponsesDto(request, Model.Event.Id);
-
-    var (members, responses) = (dto.Members, dto.Responses);
-
-    var responsesDictionary = responses
+    var responseDictionary = Model.Responses
         .ToDictionary(x => x.MemberId, x => x.Type);
 }
 
+@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
 @await Html.PartialAsync("Admin/Events/_EventHeader")
 @await Html.PartialAsync("Admin/Events/_EventAdminTabs")
 
 <div class="row row-cols-3 row-cols-md-6">
-    @foreach (var member in members.OrderBy(x => x.FullName))
+    @foreach (var member in Model.Members.OrderBy(x => x.FullName))
     {
-        responsesDictionary.TryGetValue(member.Id, out EventResponseType response);
+        responseDictionary.TryGetValue(member.Id, out var response);
 
         <div class="col text-center overlay-container mb-3">
             <div class="d-flex align-items-end justify-content-center">
@@ -40,7 +29,8 @@
                 <a href="/@Model.Chapter.Name/Admin/Members/@member.Id">@member.FullName</a>
             </div>
             <div class="d-flex justify-content-center">
-                <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees/@member.Id">
+                <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                    @Html.AntiForgeryToken()
                     @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                     {
                         Active = response == EventResponseType.Yes,
@@ -49,7 +39,8 @@
                     })
                 </form>
 
-                <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees/@member.Id">
+                <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                    @Html.AntiForgeryToken()
                     @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                     {
                         Active = response == EventResponseType.Maybe,
@@ -58,7 +49,8 @@
                     })
                 </form>
 
-                <form method="post" action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Attendees/@member.Id">
+                <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                    @Html.AntiForgeryToken()
                     @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                     {
                         Active = response == EventResponseType.No,

@@ -12,6 +12,8 @@ public class ChapterPropertyFormViewModel
     [Required]
     public DataType DataType { get; set; }
 
+    public bool DataTypeEnabled { get; set; }
+
     [DisplayName("Display name")]
     public string? DisplayName { get; set; }
 
@@ -23,6 +25,8 @@ public class ChapterPropertyFormViewModel
 
     [Required]
     public string Name { get; set; } = "";
+
+    public string Options { get; set; } = "";
 
     public bool Required { get; set; }
 

@@ -1,0 +1,13 @@
+﻿@page "/my/groups/{id:guid}/members/{memberId:guid}/email"
+@using ODK.Services.Members
+@model ODK.Web.Razor.Pages.My.Groups.Members.Member.EmailModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+
+    var viewModel = await MemberAdminService.GetMemberEmailViewModel(Model.AdminServiceRequest, Model.MemberId);
+
+    Model.Title = viewModel.Member.FullName;
+}
+
+@await Html.PartialAsync("Admin/Members/_SendMemberEmailContent", viewModel)

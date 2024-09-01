@@ -117,7 +117,8 @@ public class MailProvider : IMailProvider
         }
         else
         {
-            var to = new MailboxAddress(siteSettings.FromName, siteSettings.FromEmailAddress);
+            var name = StringUtils.Interpolate(siteSettings.FromName, parameters);
+            var to = new MailboxAddress(name, siteSettings.FromEmailAddress);
 
             var bcc = options.To;
             AddBulkEmailBccRecipients(message, to, bcc);

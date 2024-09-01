@@ -1,13 +1,13 @@
 ﻿@using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Events
+@using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Members
-@model EventViewModel
-@inject IChapterAdminService ChapterAdminService
-@inject IEventAdminService EventAdminService
+@model EventTicketsAdminPageViewModel
 
+@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
 @await Html.PartialAsync("Admin/Events/_EventHeader")
 @await Html.PartialAsync("Admin/Events/_EventAdminTabs")
 
@@ -17,12 +17,7 @@
         return;
     }
 
-    var memberId = User.MemberId();
-    var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
-    var ticketPurchases = await EventAdminService.GetEventTicketPurchases(request, Model.Event.Id);
-    var chapterPaymentSettings = await ChapterAdminService.GetChapterPaymentSettings(request);
-
-    if (chapterPaymentSettings == null)
+    if (Model.PaymentSettings == null)
     {
         <div class="alert alert-danger">
             Chapter payment settings not set up
@@ -41,7 +36,7 @@
         </tr>
     </thead>
     <tbody> 
-        @foreach (var ticketPurchase in ticketPurchases.OrderBy(x => x.Member.FullName))
+        @foreach (var ticketPurchase in Model.Purchases.OrderBy(x => x.Member.FullName))
         {
             <tr>
                 <td width="30px" class="px-0">
@@ -56,12 +51,12 @@
                     <a href="/@Model.Chapter.Name/Admin/Members/@ticketPurchase.MemberId">@ticketPurchase.Member.FullName</a>
                 </td>
                 <td>
-                    @chapterPaymentSettings.Currency.ToAmountString(ticketPurchase.TotalPaid)
+                    @Model.PaymentSettings.Currency.ToAmountString(ticketPurchase.TotalPaid)
 
                     @if (ticketPurchase.TotalPaid < Model.Event.TicketSettings.Cost)
                     {
                         var remaining = Model.Event.TicketSettings.Cost - ticketPurchase.TotalPaid;
-                        @:(Remaining: @chapterPaymentSettings.Currency.ToAmountString(remaining))
+                        @:(Remaining: @Model.PaymentSettings.Currency.ToAmountString(remaining))
                     }
                 </td>
             </tr>

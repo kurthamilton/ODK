@@ -102,7 +102,7 @@ public class ErrorHandlingMiddleware
             originalPathParts.Length > 2)
         {
             var slug = originalPathParts[2];
-            var chapter = await unitOfWork.ChapterRepository.GetBySlug(slug).RunAsync();
+            var chapter = await unitOfWork.ChapterRepository.GetBySlug(slug).Run();
 
             if (chapter != null)
             {
@@ -112,12 +112,18 @@ public class ErrorHandlingMiddleware
         else
         {
             var chapterName = originalPathParts[1];
-            var chapter = await requestCache.GetChapterAsync(chapterName);
-            if (chapter != null)
+            try
             {
-                return $"/{chapter.Name}/error/{statusCode}";
+                var chapter = await requestCache.GetChapterAsync(chapterName);
+                if (chapter != null)
+                {
+                    return $"/{chapter.Name}/error/{statusCode}";
+                }
             }
-            
+            catch
+            {
+                return defaultPath;
+            }            
         }        
 
         return defaultPath;

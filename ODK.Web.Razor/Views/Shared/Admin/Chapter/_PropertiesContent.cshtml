@@ -1,21 +1,17 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Extensions
-@model ODK.Core.Chapters.Chapter
-@inject IChapterAdminService ChapterAdminService
-@{
-    var memberId = User.MemberId();
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var properties = await ChapterAdminService.GetChapterProperties(serviceRequest);
-}
+@using ODK.Web.Common.Routes
+@model ChapterPropertiesAdminPageViewModel
 
 <h2>Member properties</h2>
 <p>
-    The member properties are additional personal questions asked to members when they sign up. Answers are visible to other members.
+    The member properties are personal questions asked to members when they sign up. Answers are visible to other members.
 </p>
 <p>
-    <a href="/@Model.Name/Admin/Chapter/Properties/Create" class="btn btn-primary">
+    <a href="@OdkRoutes2.MemberGroups.GroupPropertyCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
         Create property
     </a>
 </p>
@@ -30,22 +26,22 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (ChapterProperty property in properties.OrderBy(x => x.DisplayOrder))
+    @foreach (var property in Model.Properties.OrderBy(x => x.DisplayOrder))
     {
         <tr>
             <td>
-                <a href="/@Model.Name/Admin/Chapter/Properties/@property.Id">@property.Label</a>
+                <a href="@OdkRoutes2.MemberGroups.GroupProperty(Model.Platform, Model.Chapter, property.Id)">@property.Label</a>
             </td>
             <td>@property.Name</td>
             <td>
                 <div class="d-flex">
-                    <form method="post" action="/@Model.Name/Admin/Chapter/Properties/@property.Id/MoveUp">
+                    <form method="post" action="/groups/@Model.Chapter.Id/properties/@property.Id/move/up">
                         @Html.AntiForgeryToken()
                         <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
                             <i class="fas fa-arrow-circle-up"></i>
                         </button>
                     </form>
-                    <form method="post" action="/@Model.Name/Admin/Chapter/Properties/@property.Id/MoveDown">
+                    <form method="post" action="/groups/@Model.Chapter.Id/properties/@property.Id/move/down">
                         @Html.AntiForgeryToken()
                         <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
                             <i class="fas fa-arrow-circle-down"></i>
@@ -54,7 +50,7 @@
                 </div>                
             </td>
             <td>
-                <form method="post" action="/@Model.Name/Admin/Chapter/Properties/@property.Id/Delete">
+                <form method="post" action="/groups/@Model.Chapter.Id/properties/@property.Id/delete">
                     @Html.AntiForgeryToken()
                     <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
                             onclick="return confirm('Are you sure you want to delete this property?');">

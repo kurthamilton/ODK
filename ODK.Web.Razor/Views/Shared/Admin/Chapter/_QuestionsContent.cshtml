@@ -1,21 +1,24 @@
 ﻿@using ODK.Core.Chapters
+@using ODK.Core.Platforms
 @using ODK.Services
 @using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Extensions
-@model ODK.Core.Chapters.Chapter
-@inject IChapterAdminService ChapterAdminService
-@{
-    var memberId = User.MemberId();
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var questions = await ChapterAdminService.GetChapterQuestions(serviceRequest);
+@using ODK.Web.Common.Routes
+@model ChapterQuestionsAdminPageViewModel
+
+<h2>FAQ</h2>
+
+@if (Model.Platform == PlatformType.DrunkenKnitwits)
+{
+    
+    <p>
+        The questions below are shown on the About page.
+    </p>
 }
 
-<h2>About page</h2>
 <p>
-    The FAQs below are shown on the About page.
-</p>
-<p>
-    <a href="/@Model.Name/Admin/Chapter/Questions/Create" class="btn btn-primary">Create question</a>
+    <a href="@OdkRoutes2.MemberGroups.GroupQuestionCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">Create question</a>
 </p>
 <table class="table table-striped">
     <thead>
@@ -26,21 +29,21 @@
     </tr>
     </thead>
     <tbody>
-        @foreach (var question in questions.OrderBy(x => x.DisplayOrder))
+        @foreach (var question in Model.Questions.OrderBy(x => x.DisplayOrder))
         {
             <tr>
                 <td>
-                    <a href="/@Model.Name/Admin/Chapter/Questions/@question.Id">@question.Name</a>
+                    <a href="@OdkRoutes2.MemberGroups.GroupQuestion(Model.Platform, Model.Chapter, question.Id)">@question.Name</a>
                 </td>
                 <td>
                     <div class="d-flex">
-                        <form method="post" action="/@Model.Name/Admin/Chapter/Questions/@question.Id/MoveUp">
+                        <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/move/up">
                             @Html.AntiForgeryToken()
                             <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
                                 <i class="fas fa-arrow-circle-up"></i>
                             </button>
                         </form>
-                        <form method="post" action="/@Model.Name/Admin/Chapter/Questions/@question.Id/MoveDown">
+                        <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/move/down">
                             @Html.AntiForgeryToken()
                             <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
                                 <i class="fas fa-arrow-circle-down"></i>
@@ -49,7 +52,7 @@
                     </div>
                 </td>
                 <td>
-                    <form method="post" action="/@Model.Name/Admin/Chapter/Questions/@question.Id/Delete">
+                    <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/delete">
                         @Html.AntiForgeryToken()
                         <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
                                 onclick="return confirm('Are you sure you want to delete this question?');">

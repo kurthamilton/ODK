@@ -6,7 +6,7 @@
 }
 
 <div class="card">
-    <div class="card-header d-flex">
+    <div class="card-header d-flex gap-3">
         <div class="me-auto">
             <a href="@OdkRoutes2.Groups.Group(chapter)">@chapter.Name</a>
         </div>
@@ -32,7 +32,7 @@
     @if (Model.IsOwner || Model.IsAdmin)
     {
         <div class="card-footer text-body-secondary">
-            <a href="@OdkRoutes2.MemberGroups.Group(chapter.Id)">
+            <a href="@OdkRoutes2.MemberGroups.Group(Model.Platform, chapter)">
                 <i class="fa-solid fa-gear"></i> Manage
             </a>
         </div>

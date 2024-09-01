@@ -16,11 +16,12 @@
             allowDeselect = !!$placeholder;
         }
 
-        new SlimSelect({
+        slimSelect = new SlimSelect({
             select: $select,
             settings: {
                 // TODO: position deselect
-                allowDeselect: false
+                allowDeselect: false,
+                placeholderText: $select.getAttribute('data-placeholder')
             }
         });
     });

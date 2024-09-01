@@ -62,11 +62,11 @@ public class FeatureService : OdkAdminServiceBase, IFeatureService
 
     public Task<Feature?> GetUnseeen(Guid memberId, string featureName) => _unitOfWork.FeatureRepository
         .GetUnseen(memberId, featureName)
-        .RunAsync();
+        .Run();
 
     public async Task MarkAsSeen(Guid memberId, string featureName)
     {
-        var feature = await _unitOfWork.FeatureRepository.GetUnseen(memberId, featureName).RunAsync();
+        var feature = await _unitOfWork.FeatureRepository.GetUnseen(memberId, featureName).Run();
         if (feature == null)
         {
             return;

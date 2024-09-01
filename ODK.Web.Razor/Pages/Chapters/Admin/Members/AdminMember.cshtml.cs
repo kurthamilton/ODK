@@ -17,13 +17,11 @@ public class AdminMemberModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
-    public ChapterAdminMember AdminMember { get; private set; } = null!;
+    public Guid MemberId { get; private set; }
 
-    public async Task<IActionResult> OnGetAsync(Guid id)
+    public void OnGet(Guid id)
     {
-        var serviceRequest = await GetAdminServiceRequest();
-        AdminMember = await _chapterAdminService.GetChapterAdminMember(serviceRequest, id);
-        return Page();
+        MemberId = id;
     }
 
     public async Task<IActionResult> OnPostAsync(Guid id, AdminMemberFormViewModel viewModel)
@@ -41,7 +39,7 @@ public class AdminMemberModel : AdminPageModel
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Chapter admin member updated", FeedbackType.Success));
-            return Redirect($"/{Chapter.Name}/Admin/Members/AdminMembers");
+            return Redirect($"/{Chapter.Name}/Admin/Members/Admins");
         }
 
         AddFeedback(new FeedbackViewModel(result));

@@ -1,6 +1,15 @@
 ﻿@using ODK.Web.Common.Extensions
 @model ODK.Web.Razor.Models.Admin.Members.MembershipSettingsFormViewModel
 
+<div class="mb-3 form-check">
+    @Html.OdkCheckBoxFor(x => x.Enabled, new { @class = "form-check-input" })
+    @Html.LabelFor(x => x.Enabled, new { @class = "form-check-label" })
+
+    <span>
+        @await Html.PartialAsync("Components/_Tooltip", "Whether or not membership is enforced")
+    </span>
+</div>
+
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.TrialPeriodMonths, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.TrialPeriodMonths, new { @class = "form-control", type = "number" })
@@ -20,13 +29,4 @@
     @Html.LabelFor(x => x.MembershipExpiringWarningDays, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.MembershipExpiringWarningDays, new { @class = "form-control", type = "number" })
     @Html.ValidationMessageFor(x => x.MembershipExpiringWarningDays)
-</div>
-
-<div class="mb-3 form-check">
-    @Html.OdkCheckBoxFor(x => x.Enabled, new { @class = "form-check-input" })
-    @Html.LabelFor(x => x.Enabled, new { @class = "form-check-label" })
-
-    <span>
-        @await Html.PartialAsync("Components/_Tooltip", "Whether or not membership is enforced")
-    </span>
 </div>

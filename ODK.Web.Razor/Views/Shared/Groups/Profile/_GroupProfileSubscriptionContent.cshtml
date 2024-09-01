@@ -1,4 +1,5 @@
 ﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups.Profile
 @model GroupProfileSubscriptionPageViewModel
@@ -15,7 +16,12 @@
     BodyContentFunc = 
         @<div>            
             <section class="section">
-                TODO: PayPal sub
+                <h3>My subscription</h3>
+                @await Html.PartialAsync("Account/_ChapterSubscriptionContent", new ChapterSubscriptionContentViewModel
+                {
+                    Chapter = Model.Chapter,
+                    ChapterPaymentSettings = Model.ChapterPaymentSettings                    
+                })
             </section>
             <section class="section">
                 <h3>Leave group</h3>

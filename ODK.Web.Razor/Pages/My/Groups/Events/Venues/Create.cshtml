@@ -1,0 +1,17 @@
+﻿@page "/my/groups/{id:guid}/events/venues/new"
+@using ODK.Services.Chapters
+@model CreateModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Create venue";
+
+    var chapter = await ChapterAdminService.GetChapter(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", chapter)
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/_GoogleLocationScripts")
+}

@@ -1,12 +1,27 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Events;
+using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Core.Venues;
+using ODK.Data.Core;
 
 namespace ODK.Services.Authorization;
 
 public class AuthorizationService : IAuthorizationService
-{    
+{
+    private readonly IPlatformProvider _platformProvider;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public AuthorizationService(
+        IUnitOfWork unitOfWork,
+        IPlatformProvider platformProvider)
+    {
+        _platformProvider = platformProvider;
+        _unitOfWork = unitOfWork;
+    }
+
     public bool CanRespondToEvent(
         Event @event,
         Member? member,
@@ -49,6 +64,19 @@ public class AuthorizationService : IAuthorizationService
         return memberVisibility.CanView(venueVisibility);
     }
 
+    public async Task<bool> ChapterHasAccess(
+        Chapter chapter,
+        SiteFeatureType feature)
+    {
+        var ownerSubscription = await _unitOfWork.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id).Run();
+
+        return ChapterHasAccess(ownerSubscription, feature);
+    }
+
+    public bool ChapterHasAccess(
+        MemberSiteSubscription? ownerSubscription,
+        SiteFeatureType feature) => ownerSubscription?.HasFeature(feature) == true;
+
     public SubscriptionStatus GetSubscriptionStatus(
         Member? member,
         MemberSubscription? subscription, 
@@ -64,7 +92,7 @@ public class AuthorizationService : IAuthorizationService
             return SubscriptionStatus.Current;
         }
 
-        if (subscription == null || subscription.Type == SubscriptionType.Alum)
+        if (subscription == null)
         {
             return SubscriptionStatus.Disabled;
         }

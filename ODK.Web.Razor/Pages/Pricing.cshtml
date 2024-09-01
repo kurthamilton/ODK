@@ -7,7 +7,7 @@
     Layout = "_HomeLayout";
     Model.Title = "Pricing";
 
-    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto(Model.CurrentMemberIdOrDefault, null);
+    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto(Model.CurrentMemberIdOrDefault);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

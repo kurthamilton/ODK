@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
-using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
@@ -18,12 +17,11 @@ public class PropertyEditModel : AdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
-    public ChapterProperty Property { get; private set; } = null!;
+    public Guid PropertyId { get; set; }
 
-    public async Task<IActionResult> OnGetAsync(Guid id)
+    public IActionResult OnGet(Guid id)
     {
-        var serviceRequest = await GetAdminServiceRequest();
-        Property = await _chapterAdminService.GetChapterProperty(serviceRequest, id);        
+        PropertyId = id;    
         return Page();
     }
 
@@ -37,6 +35,7 @@ public class PropertyEditModel : AdminPageModel
             HelpText = viewModel.HelpText,
             Label = viewModel.Label,
             Name = viewModel.Name,
+            Options = viewModel.Options.Split(Environment.NewLine),
             Required = viewModel.Required,
             Subtitle = viewModel.Subtitle
         });

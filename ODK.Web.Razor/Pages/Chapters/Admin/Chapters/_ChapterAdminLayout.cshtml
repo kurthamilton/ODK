@@ -1,6 +1,9 @@
-﻿@using ODK.Web.Common.Components
+﻿@using ODK.Core.Platforms
+@using ODK.Web.Common.Components
 @using ODK.Core.Chapters
 @using ODK.Services.Caching
+@using ODK.Web.Common.Routes
+@inject IPlatformProvider PlatformProvider
 @inject IRequestCache RequestCache
 @{
     Layout = "Admin/_AdminLayout";
@@ -11,17 +14,19 @@
     {
         return;
     }
+
+    var platform = PlatformProvider.GetPlatform();
 }
 
 @await Html.PartialAsync("Header/_AdminSubMenu", new []
 {
-    new MenuItem { Link = $"/{chapter.Name}/Admin/Chapter/Text", Text = "Text" },
-    new MenuItem { Link = $"/{chapter.Name}/Admin/Chapter/Questions", Text = "About" },
-    new MenuItem { Link = $"/{chapter.Name}/Admin/Chapter/Links", Text = "Links" },
-    new MenuItem { Link = $"/{chapter.Name}/Admin/Chapter/Properties", Text = "Properties" },
+    new MenuItem { Link = OdkRoutes2.MemberGroups.GroupTexts(platform, chapter), Text = "Text" },
+    new MenuItem { Link = OdkRoutes2.MemberGroups.GroupQuestions(platform, chapter), Text = "About" },
+    new MenuItem { Link = OdkRoutes2.MemberGroups.GroupSocialMedia(platform, chapter), Text = "Links" },
+    new MenuItem { Link = OdkRoutes2.MemberGroups.GroupProperties(platform, chapter), Text = "Properties" },
     new MenuItem { Link = $"/{chapter.Name}/Admin/Chapter/Emails", Text = "Emails" },
-    new MenuItem { Link = $"/{chapter.Name}/Admin/Chapter/Messages", Text = "Messages" },
-    new MenuItem { Link = $"/{chapter.Name}/Admin/Chapter/Privacy", Text = "Privacy" },
+    new MenuItem { Link = OdkRoutes2.MemberGroups.GroupMessages(platform, chapter), Text = "Messages" },
+    new MenuItem { Link = OdkRoutes2.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },
     new MenuItem { Link = $"/{chapter.Name}/Admin/Chapter/Subscription", Text = "Subscription" }
 })
 

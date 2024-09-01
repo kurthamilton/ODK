@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Events;
+using ODK.Services.Events.ViewModels;
 
 namespace ODK.Services.Events;
 
@@ -8,27 +9,25 @@ public interface IEventAdminService
 
     Task DeleteEvent(AdminServiceRequest request, Guid id);
     
-    Task<IReadOnlyCollection<EventInvitesDto>> GetChapterInvites(AdminServiceRequest request, 
-        IReadOnlyCollection<Guid> eventIds);
-    
-    Task<IReadOnlyCollection<EventResponse>> GetChapterResponses(AdminServiceRequest request, 
-        IReadOnlyCollection<Guid> eventIds);
-
     Task<Event> GetEvent(AdminServiceRequest request, Guid id);
 
-    Task<IReadOnlyCollection<EventHost>> GetEventHosts(AdminServiceRequest request, Guid eventId);
+    Task<EventAttendeesAdminPageViewModel> GetEventAttendeesViewModel(AdminServiceRequest request, Guid eventId);
 
-    Task<EventInvitesDto> GetEventInvites(AdminServiceRequest request, Guid eventId);
+    Task<EventCreateAdminPageViewModel> GetEventCreateViewModel(AdminServiceRequest request);
+
+    Task<EventEditAdminPageViewModel> GetEventEditViewModel(AdminServiceRequest request, Guid eventId);
+
+    Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(AdminServiceRequest request, Guid eventId);
 
     Task<EventResponsesDto> GetEventResponsesDto(AdminServiceRequest request, Guid eventId);
 
-    Task<IReadOnlyCollection<Event>> GetEvents(AdminServiceRequest request, int page, int pageSize);    
-
-    Task<EventsDto> GetEventsDto(AdminServiceRequest request, int page, int pageSize);
-
     Task<IReadOnlyCollection<Event>> GetEventsByVenue(AdminServiceRequest request, Guid venueId);
 
-    Task<IReadOnlyCollection<EventTicketPurchase>> GetEventTicketPurchases(AdminServiceRequest request, Guid eventId);
+    Task<EventsAdminPageViewModel> GetEventsDto(AdminServiceRequest request, int page, int pageSize);    
+
+    Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(AdminServiceRequest request);
+    
+    Task<EventTicketsAdminPageViewModel> GetEventTicketsViewModel(AdminServiceRequest request, Guid eventId);
 
     Task<DateTime> GetNextAvailableEventDate(AdminServiceRequest request);
 
@@ -40,6 +39,8 @@ public interface IEventAdminService
     Task<ServiceResult> SendEventInvites(AdminServiceRequest request, Guid eventId, bool test = false);
 
     Task SendScheduledEmails();
+
+    Task UpdateEventSettings(AdminServiceRequest request, UpdateEventSettings model);
 
     Task<ServiceResult> UpdateEvent(AdminServiceRequest request, Guid id, CreateEvent @event);
 

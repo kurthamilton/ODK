@@ -76,7 +76,7 @@ public class EmailService : IEmailService
 
         var settings = await _unitOfWork.SiteEmailSettingsRepository
             .Get(platform)
-            .RunAsync();
+            .Run();
 
         await _mailProvider.SendEmail(new SendEmailOptions
         {
@@ -98,7 +98,7 @@ public class EmailService : IEmailService
 
         var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
             .GetByChapterId(chapter.Id)
-            .RunAsync();
+            .Run();
 
         var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveContactEmails));
 
@@ -118,7 +118,7 @@ public class EmailService : IEmailService
     {
         var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
             .GetByChapterId(chapter.Id)
-            .RunAsync();
+            .Run();
 
         var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveEventCommentEmails));
         if (replyToMember != null)
@@ -220,7 +220,7 @@ public class EmailService : IEmailService
     {
         var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
                 .GetByChapterId(chapter.Id)
-                .RunAsync();
+                .Run();
 
         var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveNewMemberEmails))
             .ToArray();

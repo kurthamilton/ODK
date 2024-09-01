@@ -1,0 +1,17 @@
+﻿@page "/my/groups/{id:guid}/members"
+@using ODK.Services.Members
+@model IndexModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Members | Admin";
+
+    var viewModel = await MemberAdminService.GetMembersViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Members/_MembersContent", viewModel)
+
+@section scripts
+{
+    <script src="~/js/odk.lists.js" asp-append-version="true"></script>
+}

@@ -1,53 +1,78 @@
 ﻿@using ODK.Core.Members
-@using ODK.Services
-@using ODK.Services.Members
-@using ODK.Web.Common.Extensions
+@using ODK.Services.Authorization
+@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Members
-@model ODK.Core.Chapters.Chapter
-@inject IMemberAdminService MemberAdminService
+@model MembersAdminPageViewModel
+@inject IAuthorizationService AuthorizationService
 @{
-    var memberId = User.MemberId();
-
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
-    var dto = await MemberAdminService.GetMembersDto(serviceRequest);
-
-    var (members, subscriptions) = (dto.Members, dto.Subscriptions);
+    var (members, subscriptions) = (Model.Members, Model.Subscriptions);
 
     var subscriptionDictionary = subscriptions.ToDictionary(x => x.MemberId);
 
     var subscriptionWarningDate = DateTime.Today.AddDays(7);
+
+    var statuses = Context.Request.Query
+        .Where(x => string.Equals(x.Key, "status", StringComparison.InvariantCultureIgnoreCase))
+        .SelectMany(x => x.Value)
+        .Select(x => x?.ToLower() ?? "")
+        .ToArray();
+
+    var types = Context.Request.Query
+        .Where(x => string.Equals(x.Key, "type", StringComparison.InvariantCultureIgnoreCase))
+        .SelectMany(x => x.Value)
+        .Select(x => x?.ToLower() ?? "")
+        .ToArray();
 }
 
 <h2>Members</h2>
 <p>
     <div class="row row-cols-lg-auto g-3 align-items-center">
-        <div class="col">
+        <div class="col-12">
             <label class="form-label" for="name-filter">Name</label>
             <input class="form-control" id="name-filter" data-table-filter="#members-table" data-table-filter-field="name" />
         </div>
-        <div class="col me-auto">
+        <div class="col-12">
             <label class="form-label" for="type-filter">Type</label>
-            <select class="form-control" id="type-filter" multiple data-table-filter="#members-table" data-table-filter-field="type">
-                @foreach (SubscriptionType type in Enum.GetValues<SubscriptionType>())
+            <select class="form-select" id="type-filter" multiple data-table-filter="#members-table" data-table-filter-field="type">
+                @foreach (var type in Enum.GetValues<SubscriptionType>())
                 {
                     if (type == SubscriptionType.None)
                     {
                         continue;
                     }
 
-                    if (type != SubscriptionType.Alum)
-                    {
-                        <option selected>@type</option>
-                    }
-                    else
-                    {
-                        <option>@type</option>
-                    }
+                    var selected = types.Length > 0
+                        ? types.Contains(type.ToString().ToLowerInvariant())
+                        : true;
+
+                    <option selected="@(selected ? "" : null)">@type</option>                    
                 }
             </select>
         </div>
-        <div class="col align-self-end">
-            <a href="/@Model.Name/Admin/Members/Download">Download CSV</a>
+        <div class="col-12">
+            <label class="form-label" for="status-filter">Subscription status</label>
+            <select class="form-select" id="status-filter" multiple data-table-filter="#members-table" data-table-filter-field="status">
+                @foreach (var status in Enum.GetValues<SubscriptionStatus>())
+                {
+                    if (status == SubscriptionStatus.None)
+                    {
+                        continue;
+                    }
+
+                    var selected = statuses.Length > 0
+                        ? statuses.Contains(status.ToString().ToLowerInvariant())
+                        : true;
+
+                    <option selected="@(selected ? "" : null)">@status</option>
+                }
+            </select>
+        </div>
+        <div class="col ms-auto align-self-end">
+            <a href="@OdkRoutes2.MemberGroups.MembersDownload(Model.Platform, Model.Chapter)">
+                <i class="fa-solid fa-file-excel icon--excel"></i>
+                Download CSV
+            </a>
         </div>
     </div>
 </p>
@@ -59,6 +84,7 @@
         <th data-sortable-sort="default">Name</th>
         <th data-sortable-sort>Type</th>
         <th data-sortable-sort>Expires</th>
+        <th data-sortable-sort>Status</th>
         <th>Emails</th>
         <th></th>
     </tr>
@@ -67,22 +93,25 @@
     @foreach (var member in members)
     {
         subscriptionDictionary.TryGetValue(member.Id, out var subscription);
+        var status = AuthorizationService.GetSubscriptionStatus(member, subscription, Model.MembershipSettings);
 
-        <tr data-filter-name="@member.FullName" data-filter-type="@subscription?.Type">
+        <tr data-filter-name="@member.FullName" 
+            data-filter-type="@(subscription?.Type ?? SubscriptionType.Full)"
+            data-filter-status="@status">
             <td width="30px" class="px-0">
                 @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                 {
-                    ChapterName = Model.Name,
+                    ChapterName = Model.Chapter.Name,
                     Member = member,
                     MaxWidth = 30
                 })
             </td>
             <td>
-                <a href="/@Model.Name/Admin/Members/@member.Id" data-sort-value="@member.FullName">
-                    @member.GetDisplayName(Model.Id)
+                <a href="@OdkRoutes2.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)" data-sort-value="@member.FullName">
+                    @member.GetDisplayName(Model.Chapter.Id)
                 </a>
             </td>
-            <td>@subscription?.Type</td>
+            <td>@(subscription?.Type ?? SubscriptionType.Full)</td>
             <td>
                 <span class="d-none" data-sort-value="@(subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "")"></span>
                 <span class="@(subscription?.ExpiresUtc < DateTime.Today ? "text-danger" : null)
@@ -90,6 +119,7 @@
                     @subscription?.ExpiresUtc?.ToString("yyyy-MM-dd")
                 </span>
             </td>
+            <td>@status</td>
             <td>
                 @if (member.EmailOptIn)
                 {
@@ -103,7 +133,7 @@
             <td>
                 @if (!member.Activated)
                 {
-                    <form method="post" action="/@Model.Name/Admin/Members/@member.Id/ResendActivationEmail">
+                    <form method="post" action="/groups/@Model.Chapter.Id/members/@member.Id/emails/activation/send">
                         <button data-bs-toggle="tooltip" data-bs-title="Re-send activation email"
                                 class="btn-icon text-primary">
                             <i class="fas fa-envelope-square"></i>

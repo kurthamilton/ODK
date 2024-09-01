@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using ODK.Core.Chapters;
 using ODK.Core.Events;
 
 namespace ODK.Web.Razor.Models.Admin.Events;
@@ -10,7 +11,7 @@ public class EventUpdateViewModel
     [Required]
     public string? Body { get; set; }
 
-    public string? Chapter { get; set; }
+    public required Chapter Chapter { get; set; }
 
     public Guid EventId { get; set; }
 

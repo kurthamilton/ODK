@@ -1,0 +1,40 @@
+﻿@using ODK.Web.Razor.Models.Chapters.SuperAdmin
+@model PaymentSettingsFormViewModel
+@{
+    var providerOptions = new[]
+    {
+        new SelectListItem { Text = "PayPal" }
+    };
+
+    var currencyOptions = Model.CurrencyOptions
+        .Select(x => new SelectListItem
+        {
+            Value = x.Id.ToString(),
+            Text = x.Code
+        })
+        .OrderBy(x => x.Text)
+        .ToArray();
+}
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.CurrencyId, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.CurrencyId)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Provider, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.Provider, providerOptions, new { @class = "form-select" })
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.PublicKey, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.PublicKey, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.PublicKey)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.SecretKey, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.SecretKey, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.SecretKey)
+</div>

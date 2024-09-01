@@ -1,14 +1,11 @@
 ﻿@page "/{chapterName}/Admin/Events/{id:guid}"
 @using ODK.Services
-@using ODK.Services.Chapters
 @using ODK.Services.Events
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
-@using ODK.Web.Razor.Models.Admin.Events
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventModel
-@inject IChapterAdminService ChapterAdminService
-@inject IChapterService ChapterService
 @inject IEventAdminService EventAdminService
 @{
     Layout = "Admin/Events/_EventAdminLayout";
@@ -16,19 +13,10 @@
 
     var memberId = User.MemberId();
     var serviceRequest = new AdminServiceRequest(Model.Chapter.Id, memberId);
-    var chapterAdminMembers = await ChapterAdminService.GetChapterAdminMembers(serviceRequest);
-    var request = new AdminServiceRequest(Model.Chapter.Id, memberId);
-    var hosts = await EventAdminService.GetEventHosts(request, Model.Event.Id);
-    var chapterPaymentSettings = await ChapterAdminService.GetChapterPaymentSettings(request);
+    var viewModel = await EventAdminService.GetEventEditViewModel(serviceRequest, Model.Event.Id);    
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Breadcrumbs = new []
-    {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Events", Text = "Events" },
-        new MenuItem { Text = Model.Event.GetDisplayName() }
-    },
-    Content = await Html.PartialAsync("Admin/Events/_EventContent", 
-        new EventEditViewModel(Model.Chapter, Model.CurrentMember, Model.Event, chapterPaymentSettings?.Currency, chapterAdminMembers, hosts))
+    Content = await Html.PartialAsync("Admin/Events/_EventContent", viewModel)
 })

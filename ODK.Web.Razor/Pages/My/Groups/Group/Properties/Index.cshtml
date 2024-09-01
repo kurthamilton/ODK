@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/properties"
+@using ODK.Services.Chapters
+@model IndexModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Properties";
+
+    var viewModel = await ChapterAdminService.GetChapterPropertiesViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Chapter/_PropertiesContent", viewModel)

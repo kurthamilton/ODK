@@ -1,0 +1,13 @@
+﻿@page "/my/groups/{id:guid}/events/new"
+@using ODK.Services.Events
+@model CreateModel
+@inject IEventAdminService EventAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Create event";
+
+    var viewModel = await EventAdminService.GetEventCreateViewModel(Model.AdminServiceRequest);
+    viewModel.VenueId = Model.VenueId;
+}
+
+@await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel)

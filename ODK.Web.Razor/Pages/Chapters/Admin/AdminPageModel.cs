@@ -18,6 +18,8 @@ public abstract class AdminPageModel : ChapterPageModel2
         _requestCache = requestCache;
     }
 
+    public AdminServiceRequest AdminServiceRequest => new AdminServiceRequest(Chapter.Id, CurrentMemberId);
+
     public Chapter Chapter { get; set; } = null!;
 
     public Member CurrentMember { get; private set; } = null!;    

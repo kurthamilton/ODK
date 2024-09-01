@@ -50,7 +50,7 @@ public class RequestCache : IRequestCache
 
         var chapters = await _unitOfWork.ChapterRepository
             .GetAll()
-            .RunAsync();
+            .Run();
 
         var platform = _platformProvider.GetPlatform();
         if (platform != PlatformType.Default)
@@ -72,7 +72,7 @@ public class RequestCache : IRequestCache
     {
         if (!_chapterMembershipSettings.ContainsKey(chapterId))
         {
-            var settings = await _unitOfWork.ChapterMembershipSettingsRepository.GetByChapterId(chapterId).RunAsync();
+            var settings = await _unitOfWork.ChapterMembershipSettingsRepository.GetByChapterId(chapterId).Run();
             _chapterMembershipSettings[chapterId] = settings;
         }
 
@@ -86,7 +86,7 @@ public class RequestCache : IRequestCache
             return member;
         }
 
-        member = await _unitOfWork.MemberRepository.GetByIdOrDefault(memberId).RunAsync();        
+        member = await _unitOfWork.MemberRepository.GetByIdOrDefault(memberId).Run();        
         if (member != null)
         {
             _members[memberId] = member;
@@ -101,7 +101,7 @@ public class RequestCache : IRequestCache
         {
             try
             {
-                var subscription = await _unitOfWork.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId).RunAsync();
+                var subscription = await _unitOfWork.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId).Run();
                 _memberSubscriptions[memberId] = subscription;
             }            
             catch

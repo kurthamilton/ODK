@@ -1,12 +1,31 @@
-﻿@using ODK.Web.Razor.Models.Admin.Chapters
-@model ODK.Core.Chapters.ChapterQuestion
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ChapterQuestionAdminPageViewModel
 
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.GroupQuestions(Model.Platform, Model.Chapter),
+            Text = "FAQ"
+        },
+        new MenuItem { Text = Model.Question.Name }
+    }
+})
+
+<h2>Edit question</h2>
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel
     {
-        Answer = Model.Answer,
-        Question = Model.Name
+        Answer = Model.Question.Answer,
+        Question = Model.Question.Name
     })
     <button class="btn btn-primary">Update</button>
 </form>
