@@ -9,15 +9,10 @@
     Layout = "Admin/Members/_MemberAdminLayout";
     Model.Title = "Send member email | Admin";
 
-    var viewModel = await MemberAdminService.GetMemberEmailViewModel(Model.AdminServiceRequest, Model.CurrentMemberId);
+    var viewModel = await MemberAdminService.GetMemberEmailViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Breadcrumbs = new []
-    {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" },
-        new MenuItem { Text = Model.Member.GetDisplayName(Model.Chapter.Id) }
-    },
     Content = await Html.PartialAsync("Admin/Members/_SendMemberEmailContent", viewModel)
 })

@@ -1,16 +1,19 @@
+using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
-using ODK.Services.Members;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
 
-public class MemberImageModel : MemberAdminPageModel
+public class MemberImageModel : AdminPageModel
 {
-    public MemberImageModel(IRequestCache requestCache, IMemberAdminService memberAdminService) 
-        : base(requestCache, memberAdminService)
+    public MemberImageModel(IRequestCache requestCache) 
+        : base(requestCache)
     {
     }
 
-    public void OnGet()
+    public Guid MemberId { get; private set; }
+
+    public void OnGet(Guid id)
     {
+        MemberId = id;
     }
 }

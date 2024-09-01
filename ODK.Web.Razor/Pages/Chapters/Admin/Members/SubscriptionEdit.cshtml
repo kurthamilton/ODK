@@ -16,10 +16,5 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Breadcrumbs = new []
-    {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members/Subscriptions", Text = "Subscriptions" },
-        new MenuItem { Text = viewModel.Subscription.Name }
-    },
     Content = await Html.PartialAsync("Admin/Members/_SubscriptionEditContent", viewModel)
 })

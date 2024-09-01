@@ -7,6 +7,8 @@ public interface IMemberAdminService
 {
     Task DeleteMember(AdminServiceRequest request, Guid memberId);
 
+    Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(AdminServiceRequest request, Guid memberId);
+
     Task<AdminMembersAdminPageViewModel> GetAdminMembersAdminPageViewModel(AdminServiceRequest request);
 
     Task<BulkEmailAdminPageViewModel> GetBulkEmailViewModel(AdminServiceRequest request);

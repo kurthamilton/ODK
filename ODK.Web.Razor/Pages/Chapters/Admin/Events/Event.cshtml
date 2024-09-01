@@ -13,7 +13,7 @@
 
     var memberId = User.MemberId();
     var serviceRequest = new AdminServiceRequest(Model.Chapter.Id, memberId);
-    var viewModel = await EventAdminService.GetEventEditViewModel(serviceRequest, Model.Event.Id);
+    var viewModel = await EventAdminService.GetEventEditViewModel(serviceRequest, Model.Event.Id);    
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

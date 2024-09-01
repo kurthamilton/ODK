@@ -58,6 +58,27 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(AdminServiceRequest request, Guid memberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, adminMembers) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId));
+
+        var adminMember = adminMembers.FirstOrDefault(x => x.MemberId == memberId);
+        OdkAssertions.Exists(adminMember);
+
+        AssertMemberIsChapterAdmin(adminMember.Member, request.ChapterId, adminMembers);
+
+        return new AdminMemberAdminPageViewModel
+        {
+            AdminMember = adminMember,
+            Chapter = chapter,
+            Platform = platform
+        };
+    }
+
     public async Task<AdminMembersAdminPageViewModel> GetAdminMembersAdminPageViewModel(AdminServiceRequest request)
     {
         var platform = _platformProvider.GetPlatform();

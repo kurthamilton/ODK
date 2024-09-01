@@ -1,12 +1,12 @@
 ﻿@page "/my/groups/{id:guid}/members/admins/{memberId:guid}"
-@using ODK.Services.Chapters
+@using ODK.Services.Members
 @model AdminMemberModel
-@inject IChapterAdminService ChapterAdminService
+@inject IMemberAdminService MemberAdminService
 @{
     Layout = "_GroupAdminLayout";
     Model.Title = "Edit admin member";
 
-    var adminMember = await ChapterAdminService.GetChapterAdminMember(Model.AdminServiceRequest, Model.MemberId);
+    var viewModel = await MemberAdminService.GetAdminMemberViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
-@await Html.PartialAsync("Admin/Members/_AdminMemberContent", adminMember)
+@await Html.PartialAsync("Admin/Members/_AdminMemberContent", viewModel)

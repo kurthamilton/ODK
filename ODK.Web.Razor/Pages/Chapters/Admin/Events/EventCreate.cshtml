@@ -9,14 +9,10 @@
     Model.Title = "Create event | Admin";
 
     var viewModel = await EventAdminService.GetEventCreateViewModel(Model.AdminServiceRequest);
+    viewModel.VenueId = Model.VenueId;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Breadcrumbs = new []
-    {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Events", Text = "Events" },
-        new MenuItem { Text = "Create" }
-    },
     Content = await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel)
 })

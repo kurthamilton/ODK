@@ -21,5 +21,7 @@ public class EventCreateAdminPageViewModel
 
     public required PlatformType Platform { get; init; }
 
+    public Guid? VenueId { get; set; }
+
     public required IReadOnlyCollection<Venue> Venues { get; init; }
 }

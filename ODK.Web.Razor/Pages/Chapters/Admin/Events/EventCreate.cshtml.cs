@@ -17,8 +17,11 @@ public class EventCreateModel : AdminPageModel
         _eventAdminService = eventAdminService;
     }
 
-    public void OnGet()
+    public Guid? VenueId { get; private set; }
+
+    public void OnGet(Guid? venueId = null)
     {
+        VenueId = venueId;
     }
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)

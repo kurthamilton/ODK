@@ -1,11 +1,15 @@
 ﻿@page "/{chapterName}/Admin/Members/{id:guid}/Image"
+@using ODK.Services.Members
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.MemberImageModel
+@inject IMemberAdminService MemberAdminService
 @{
     Layout = "Admin/Members/_MemberAdminLayout";
     Model.Title = "Member image | Admin";
+
+    var member = await MemberAdminService.GetMember(Model.AdminServiceRequest, Model.MemberId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -13,10 +17,10 @@
     Breadcrumbs = new []
     {
         new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" },
-        new MenuItem { Text = Model.Member.GetDisplayName(Model.Chapter.Id) }
+        new MenuItem { Text = member.GetDisplayName(Model.Chapter.Id) }
     },
     Content = await Html.PartialAsync("Admin/Members/_MemberImageContent", 
-        new MemberViewModel(Model.Chapter, Model.Member))
+        new MemberViewModel(Model.Chapter, member))
 })
 
 @section styles
