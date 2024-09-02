@@ -59,16 +59,18 @@ public class ContactService : IContactService
             message = $"[FLAGGED AS SPAM: {recaptchaResponse.Score} / 1.0] {message}";
         }
 
-        _unitOfWork.SiteContactMessageRepository.Add(new SiteContactMessage
+        var contactMessage = new SiteContactMessage
         {
             CreatedUtc = DateTime.UtcNow,
             FromAddress = fromAddress,
             Message = message,
-            RecaptchaScore = recaptchaResponse.Score            
-        });
+            RecaptchaScore = recaptchaResponse.Score
+        };
+
+        _unitOfWork.SiteContactMessageRepository.Add(contactMessage);
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendContactEmail(fromAddress, message);
+        await _emailService.SendContactEmail(contactMessage);
     }
 
     private static void ValidateRequest(string fromAddress, string message)

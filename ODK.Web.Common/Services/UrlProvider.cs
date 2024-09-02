@@ -19,6 +19,9 @@ public class UrlProvider : IUrlProvider
     public string EventsUrl(PlatformType platform, Chapter chapter) 
         => GetUrl(OdkRoutes.Chapters.Events(platform, chapter));
 
+    public string MessageAdminUrl(PlatformType platform, Guid messageId)
+        => GetUrl($"/superadmin/messages/{messageId}");
+
     public string MessageAdminUrl(PlatformType platform, Chapter chapter, Guid messageId) 
         => GetUrl(OdkRoutes2.MemberGroups.GroupMessage(platform, chapter, messageId));
 

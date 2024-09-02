@@ -2,6 +2,7 @@
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Messages;
 
 namespace ODK.Services.Emails;
 
@@ -21,7 +22,7 @@ public interface IEmailService
         string subject,
         string body);
 
-    Task SendContactEmail(string fromAddress, string message);
+    Task SendContactEmail(SiteContactMessage message);
 
     Task SendContactEmail(Chapter chapter, ChapterContactMessage message);
 

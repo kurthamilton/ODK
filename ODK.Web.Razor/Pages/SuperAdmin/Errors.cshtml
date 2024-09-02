@@ -2,11 +2,8 @@
 @using ODK.Web.Razor.Models.Components
 @model ErrorsModel
 @{
-    Layout = "SuperAdmin/_SuperAdminLayout";
+    Layout = "_SiteAdminLayout";
     Model.Title = "Error log | SuperAdmin";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("SuperAdmin/_ErrorsContent")
-})
+@await Html.PartialAsync("SuperAdmin/_ErrorsContent")

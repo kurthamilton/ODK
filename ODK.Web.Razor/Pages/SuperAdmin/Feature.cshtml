@@ -4,16 +4,17 @@
 @using ODK.Web.Razor.Models.SuperAdmin
 @model FeatureModel
 @{
-    Layout = "SuperAdmin/_SuperAdminLayout";
+    Layout = "_SiteAdminLayout";
     Model.Title = "Feature | SuperAdmin";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
 {
     Breadcrumbs = new[]
     {
         new MenuItem { Link = "/SuperAdmin/Features", Text = "Features" },
         new MenuItem { Text = Model.Feature.Name }
-    },
-    Content = await Html.PartialAsync("SuperAdmin/_FeatureContent", new FeatureContentViewModel(Model.Feature))
+    }
 })
+
+@await Html.PartialAsync("SuperAdmin/_FeatureContent", new FeatureContentViewModel(Model.Feature))

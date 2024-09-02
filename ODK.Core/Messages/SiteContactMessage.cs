@@ -10,7 +10,7 @@ public class SiteContactMessage : IDatabaseEntity
 
     public string Message { get; set; } = "";
 
-    public float? RecaptchaScore { get; set; }
+    public double? RecaptchaScore { get; set; }
 
     public DateTime? RepliedUtc { get; set; }
 }

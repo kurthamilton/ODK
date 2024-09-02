@@ -5,18 +5,19 @@
 @model ODK.Web.Razor.Pages.SuperAdmin.SubscriptionModel
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
 @{
-    Layout = "SuperAdmin/_SuperAdminLayout";
+    Layout = "_SiteAdminLayout";
     Model.Title = "Subscription | SuperAdmin";
 
     var dto = await SiteSubscriptionAdminService.GetSubscriptionDto(Model.CurrentMemberId, Model.SubscriptionId);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
 {
     Breadcrumbs = new[]
     {
         new MenuItem { Link = "/SuperAdmin/Subscriptions", Text = "Subscriptions" },
         new MenuItem { Text = dto.Subscription.Name }
-    },
-    Content = await Html.PartialAsync("SuperAdmin/_SubscriptionContent", dto)
+    }
 })
+
+@await Html.PartialAsync("SuperAdmin/_SubscriptionContent", dto)

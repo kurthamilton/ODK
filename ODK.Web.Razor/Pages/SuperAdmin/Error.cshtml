@@ -4,17 +4,17 @@
 @using ODK.Web.Razor.Models.SuperAdmin
 @model ErrorModel
 @{
-    Layout = "SuperAdmin/_SuperAdminLayout";
+    Layout = "_SiteAdminLayout";
     Model.Title = "Error | SuperAdmin";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
 {
     Breadcrumbs = new []
     {
         new MenuItem { Link = "/SuperAdmin/Errors", Text = "Error log" },
         new MenuItem { Text = "Error" }
-    },
-    Content = await Html.PartialAsync("SuperAdmin/_ErrorContent", 
-        new ErrorContentViewModel(Model.Error)),
+    }
 })
+
+@await Html.PartialAsync("SuperAdmin/_ErrorContent", new ErrorContentViewModel(Model.Error))

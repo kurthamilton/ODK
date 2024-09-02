@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Messages;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Data.Core;
@@ -64,15 +65,16 @@ public class EmailService : IEmailService
         });
     }
 
-    public async Task SendContactEmail(string fromAddress, string message)
+    public async Task SendContactEmail(SiteContactMessage message)
     {
+        var platform = _platformProvider.GetPlatform();
+
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            {"from", fromAddress},
-            {"message", HttpUtility.HtmlEncode(message)}
-        };
-
-        var platform = _platformProvider.GetPlatform();
+            {"message.from", message.FromAddress},
+            {"message.text", HttpUtility.HtmlEncode(message.Message)},
+            {"url", _urlProvider.MessageAdminUrl(platform, message.Id)}
+        };        
 
         var settings = await _unitOfWork.SiteEmailSettingsRepository
             .Get(platform)

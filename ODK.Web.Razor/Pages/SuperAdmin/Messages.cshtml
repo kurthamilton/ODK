@@ -1,0 +1,12 @@
+﻿@page "/superadmin/messages"
+@using ODK.Services.Contact
+@model ODK.Web.Razor.Pages.SuperAdmin.MessagesModel
+@inject IContactAdminService ContactAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Messages";
+
+    var viewModel = await ContactAdminService.GetMessagesViewModel(Model.CurrentMemberId);
+}
+
+@await Html.PartialAsync("SuperAdmin/_MessagesContent", viewModel)

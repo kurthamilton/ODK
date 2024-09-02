@@ -4,16 +4,17 @@
 @using ODK.Web.Razor.Models.SuperAdmin
 @model EmailModel
 @{
-    Layout = "SuperAdmin/_SuperAdminLayout";
+    Layout = "_SiteAdminLayout";
     Model.Title = "Edit email | SuperAdmin";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
 {
-    Breadcrumbs = new []
+    Breadcrumbs = new[]
     {
-        new MenuItem { Link = $"/SuperAdmin/Emails", Text = "Emails" },
+        new MenuItem { Link = "/SuperAdmin/Emails", Text = "Emails" },
         new MenuItem { Text = Model.Email.Type.ToString() }
-    },
-    Content = await Html.PartialAsync("SuperAdmin/_EmailContent", new EmailContentViewModel(Model.Email))
+    }
 })
+
+@await Html.PartialAsync("SuperAdmin/_EmailContent", new EmailContentViewModel(Model.Email))

@@ -2,11 +2,8 @@
 @using ODK.Web.Razor.Models.Components
 @model FeaturesModel
 @{
-    Layout = "SuperAdmin/_SuperAdminLayout";
+    Layout = "_SiteAdminLayout";
     Model.Title = "Features | SuperAdmin";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("SuperAdmin/_FeaturesContent")
-})
+@await Html.PartialAsync("SuperAdmin/_FeaturesContent")

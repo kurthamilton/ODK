@@ -1,0 +1,48 @@
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Caching
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@inject IPlatformProvider PlatformProvider
+@inject IRequestCache RequestCache
+@{
+    Layout = "_HomeLayout";
+
+    var platform = PlatformProvider.GetPlatform();
+    
+    var menuItems = new[]
+    {
+        new MenuItem { Link = "/superadmin/emails", Text = "Emails" },
+        new MenuItem { Link = "/superadmin/errors", Text = "Error log" },
+        new MenuItem { Link = "/superadmin/features", Text = "Features" },
+        new MenuItem { Link = "/superadmin/groups", Text = "Groups" },
+        new MenuItem { Link = "/superadmin/messages", Text = "Messages" },
+        new MenuItem { Link = "/superadmin/payments", Text = "Payments" },
+        new MenuItem { Link = "/superadmin/subscriptions", Text = "Subscriptions" }
+    };
+}
+
+@section styles
+{
+    @await RenderSectionAsync("styles", required: false)
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+    {
+        BodyContentFunc = _ => RenderBody(),
+        MenuContent = await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
+        {
+            MenuItems = menuItems,
+            Root = true
+        })
+    })
+})
+
+@section scripts
+{
+    <script src="/js/odk.admin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("scripts", required: false)
+}

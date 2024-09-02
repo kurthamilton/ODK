@@ -5,14 +5,11 @@
 @model ODK.Web.Razor.Pages.SuperAdmin.PaymentsModel
 @inject ISettingsService SettingsService
 @{
-    Layout = "SuperAdmin/_SuperAdminLayout";
+    Layout = "_SiteAdminLayout";
     Model.Title = "Payments | SuperAdmin";
 
     var memberId = User.MemberId();
     var settings = await SettingsService.GetSitePaymentSettings(memberId);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("SuperAdmin/_PaymentsContent", settings)
-})
+@await Html.PartialAsync("SuperAdmin/_PaymentsContent", settings)

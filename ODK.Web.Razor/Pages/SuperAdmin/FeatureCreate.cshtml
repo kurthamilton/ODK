@@ -3,16 +3,17 @@
 @using ODK.Web.Common.Components
 @model FeatureCreateModel
 @{
-    Layout = "SuperAdmin/_SuperAdminLayout";
+    Layout = "_SiteAdminLayout";
     Model.Title = "Create feature | SuperAdmin";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
 {
     Breadcrumbs = new []
     {
         new MenuItem { Link = "/SuperAdmin/Features", Text = "Features" },
-        new MenuItem { Text = "Create" }
-    },
-    Content = await Html.PartialAsync("SuperAdmin/_FeatureCreateContent")
+        new MenuItem { Text = "New" }
+    }
 })
+
+@await Html.PartialAsync("SuperAdmin/_FeatureCreateContent")

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ODK.Services;
 using ODK.Services.Caching;
+using ODK.Services.Contact;
 using ODK.Services.Emails;
 using ODK.Services.Features;
 using ODK.Services.Logging;
@@ -7,12 +9,14 @@ using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.SuperAdmin;
 
 namespace ODK.Web.Razor.Controllers.SuperAdmin;
 
 public class SuperAdminController : OdkControllerBase
 {
+    private readonly IContactAdminService _contactAdminService;
     private readonly IEmailAdminService _emailAdminService;
     private readonly IFeatureService _featureService;
     private readonly IInstagramService _instagramService;
@@ -21,12 +25,17 @@ public class SuperAdminController : OdkControllerBase
     private readonly ISettingsService _settingsService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
 
-    public SuperAdminController(IEmailAdminService emailAdminService,
-        ILoggingService loggingService, IInstagramService instagramService,
-        IRequestCache requestCache, ISettingsService settingsService,
+    public SuperAdminController(
+        IEmailAdminService emailAdminService,
+        ILoggingService loggingService, 
+        IInstagramService instagramService,
+        IRequestCache requestCache, 
+        ISettingsService settingsService,
         ISiteSubscriptionAdminService siteSubscriptionAdminService,
-        IFeatureService featureService)
+        IFeatureService featureService,
+        IContactAdminService contactAdminService)
     {
+        _contactAdminService = contactAdminService;
         _emailAdminService = emailAdminService;
         _featureService = featureService;
         _instagramService = instagramService;
@@ -63,6 +72,23 @@ public class SuperAdminController : OdkControllerBase
     {
         await _featureService.DeleteFeature(MemberId, id);
         return Redirect("/SuperAdmin/Features");
+    }
+
+    [HttpPost("superadmin/messages/{id:guid}/replied")]
+    public async Task<IActionResult> MarkMessageAsReplied(Guid id)
+    {
+        var result = await _contactAdminService.SetMessageAsReplied(MemberId, id);
+        AddFeedback(result, "Message updated");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("superadmin/messages/{id:guid}/reply")]
+    public async Task<IActionResult> ReplyToMessage(Guid id,
+        [FromForm] ChapterMessageReplyFormViewModel viewModel)
+    {
+        var result = await _contactAdminService.ReplyToMessage(MemberId, id, viewModel.Message ?? "");
+        AddFeedback(result, "Reply sent");
+        return RedirectToReferrer();
     }
 
     [HttpPost("superadmin/subscriptions")]

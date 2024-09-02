@@ -2,11 +2,8 @@
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.SuperAdmin.SubscriptionsModel
 @{
-    Layout = "SuperAdmin/_SuperAdminLayout";
+    Layout = "_SiteAdminLayout";
     Model.Title = "Subscriptions | SuperAdmin";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("SuperAdmin/_SubscriptionsContent")
-})
+@await Html.PartialAsync("SuperAdmin/_SubscriptionsContent")
