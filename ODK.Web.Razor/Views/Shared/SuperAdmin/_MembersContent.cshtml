@@ -12,49 +12,52 @@
 }
 
 <h2>Members</h2>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Owner</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var adminMember in adminMembers.OrderBy(x => x.Member.FullName))
-        {
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>@adminMember.Member.FullName</td>
-                <td>
-                    @if (Model.OwnerId == adminMember.MemberId)
-                    {
-                        <i class="fa-solid fa-star text-warning"></i>
-                    }
-                    else
-                    {
-                        <form action="/@Model.Name/Admin/Chapter/Owner" method="post">
-                            @Html.Hidden("memberId", adminMember.MemberId)
-                            <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
-                                <i class="fa-regular fa-star text-warning"></i>
-                            </button>
-                        </form>                        
-                    }
-                </td>
-                <td>
-                    <form action="/@Model.Name/Admin/Members/@adminMember.MemberId/Visibility" method="post">
-                        @if (adminMember.Member.Visible(Model.Id))
+                <th>Name</th>
+                <th>Owner</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var adminMember in adminMembers.OrderBy(x => x.Member.FullName))
+            {
+                <tr>
+                    <td>@adminMember.Member.FullName</td>
+                    <td>
+                        @if (Model.OwnerId == adminMember.MemberId)
                         {
-                            @Html.Hidden("visible", false)
-                            <button class="btn btn-danger btn-sm" type="submit">Hide</button>
+                            <i class="fa-solid fa-star text-warning"></i>
                         }
                         else
                         {
-                            @Html.Hidden("visible", true)
-                            <button class="btn btn-success btn-sm" type="submit">Show</button>
+                            <form action="/@Model.Name/Admin/Chapter/Owner" method="post">
+                                @Html.Hidden("memberId", adminMember.MemberId)
+                                <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
+                                    <i class="fa-regular fa-star text-warning"></i>
+                                </button>
+                            </form>                        
                         }
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                    </td>
+                    <td>
+                        <form action="/@Model.Name/Admin/Members/@adminMember.MemberId/Visibility" method="post">
+                            @if (adminMember.Member.Visible(Model.Id))
+                            {
+                                @Html.Hidden("visible", false)
+                                <button class="btn btn-danger btn-sm" type="submit">Hide</button>
+                            }
+                            else
+                            {
+                                @Html.Hidden("visible", true)
+                                <button class="btn btn-success btn-sm" type="submit">Show</button>
+                            }
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

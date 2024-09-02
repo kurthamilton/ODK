@@ -20,33 +20,35 @@
 <div class="alert alert-warning">
     CAUTION: it is best not to update these templates unless you know what you are doing!
 </div>
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Email</th>
-        <th>Custom</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (ChapterEmail email in emails.OrderBy(x => x.Type.ToString()))
-    {
-        <tr>
-            <td>
-                <a href="/@Model.Name/Admin/Chapter/Emails/@email.Type">@email.Type</a>
-            </td>
-            <td>
-                @if (email.IsDefault())
-                {
-                    <span class="text-muted">Default</span>
-                }
-                else
-                {
-                    <span>
-                        <i class="fas fa-check-circle text-success"></i>
-                    </span>
-                }
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Custom</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (ChapterEmail email in emails.OrderBy(x => x.Type.ToString()))
+            {
+                <tr>
+                    <td>
+                        <a href="/@Model.Name/Admin/Chapter/Emails/@email.Type">@email.Type</a>
+                    </td>
+                    <td>
+                        @if (email.IsDefault())
+                        {
+                            <span class="text-muted">Default</span>
+                        }
+                        else
+                        {
+                            <span>
+                                <i class="fas fa-check-circle text-success"></i>
+                            </span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

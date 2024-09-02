@@ -6,22 +6,24 @@
     var emails = await EmailAdminService.GetEmails(memberId);
 }
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Email</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var email in emails.OrderBy(x => x.Type.ToString()))
-        {
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>
-                    <a href="/SuperAdmin/Emails/@email.Type">
-                        @email.Type
-                    </a>
-                </td>
+                <th>Email</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var email in emails.OrderBy(x => x.Type.ToString()))
+            {
+                <tr>
+                    <td>
+                        <a href="/SuperAdmin/Emails/@email.Type">
+                            @email.Type
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

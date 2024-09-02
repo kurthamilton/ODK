@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Extensions
+@using ODK.Core.Utils
 @using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Chapters.ViewModels
@@ -9,43 +10,45 @@
 
 <h2>Messages</h2>
 
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Time</th>
-        <th>From</th>
-        <th>Message</th>
-        <th>Replied</th>
-        <th></th>
-        <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var message in Model.Messages.OrderByDescending(x => x.CreatedUtc))
-    {
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
         <tr>
-            <td>@TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, message.CreatedUtc).ToString("dd/MM/yyyy HH:mm")</td>
-            <td>@message.FromAddress</td>
-            <td>@message.Message</td>
-            <td>
-                @if (message.RepliedUtc != null)
-                {
-                    <i class="fas fa-check-circle text-success"></i>
-                }
-            </td>
-            <td>
-                <a href="@OdkRoutes2.MemberGroups.GroupMessage(Model.Platform, Model.Chapter, message.Id)">View</a>
-            </td>
-            <td>
-                <form method="post" action="/groups/@Model.Chapter.Id/messages/@message.Id/delete">
-                    @Html.AntiForgeryToken()
-                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
-                            onclick="return confirm('Are you sure you want to delete this message?');">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </form>
-            </td>
+            <th>Time</th>
+            <th>From</th>
+            <th>Message</th>
+            <th>Replied</th>
+            <th></th>
+            <th></th>
         </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        @foreach (var message in Model.Messages.OrderByDescending(x => x.CreatedUtc))
+        {
+            <tr>
+                <td>@message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
+                <td>@message.FromAddress</td>
+                <td>@message.Message</td>
+                <td>
+                    @if (message.RepliedUtc != null)
+                    {
+                        <i class="fas fa-check-circle text-success"></i>
+                    }
+                </td>
+                <td>
+                    <a href="@OdkRoutes2.MemberGroups.GroupMessage(Model.Platform, Model.Chapter, message.Id)">View</a>
+                </td>
+                <td>
+                    <form method="post" action="/groups/@Model.Chapter.Id/messages/@message.Id/delete">
+                        @Html.AntiForgeryToken()
+                        <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                onclick="return confirm('Are you sure you want to delete this message?');">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

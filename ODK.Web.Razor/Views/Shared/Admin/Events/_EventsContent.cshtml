@@ -26,46 +26,48 @@
     <a class="btn btn-primary" href="@OdkRoutes2.MemberGroups.EventCreate(Model.Platform, Model.Chapter)">Create</a>
 </p>
 
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Date</th>
-        <th>Venue</th>
-        <th><i class="fas fa-envelope"></i></th>
-        <th><i class="fas fa-check-circle text-success"></i></th>
-        <th><i class="fas fa-question-circle text-warning"></i></th>
-        <th><i class="fas fa-times-circle text-danger"></i></th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var @event in events)
-    {
-        invitesDictionary.TryGetValue(@event.Id, out var eventInvites);
-        responseDictionary.TryGetValue(@event.Id, out var eventResponses);
-        
-        var venue = venueDictionary[@event.VenueId];
-
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
         <tr>
-            <td><a href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
-            <td>@(@event.Date.EventDate())</td>
-            <td><a href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a></td>
-            <td>
-                @if (eventInvites?.SentUtc == null)
-                {
-                    <a href="@OdkRoutes2.MemberGroups.EventInvites(Model.Platform, Model.Chapter, @event.Id)">
-                        @(eventInvites?.ScheduledUtc != null ? "Scheduled" : "Send")
-                    </a>
-                }
-                else
-                {
-                    @eventInvites.Sent
-                }
-            </td>
-            <td>@(eventResponses?.Yes ?? 0)</td>
-            <td>@(eventResponses?.Maybe ?? 0)</td>
-            <td>@(eventResponses?.No ?? 0)</td>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Venue</th>
+            <th><i class="fas fa-envelope"></i></th>
+            <th><i class="fas fa-check-circle text-success"></i></th>
+            <th><i class="fas fa-question-circle text-warning"></i></th>
+            <th><i class="fas fa-times-circle text-danger"></i></th>
         </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        @foreach (var @event in events)
+        {
+            invitesDictionary.TryGetValue(@event.Id, out var eventInvites);
+            responseDictionary.TryGetValue(@event.Id, out var eventResponses);
+        
+            var venue = venueDictionary[@event.VenueId];
+
+            <tr>
+                <td><a href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
+                <td>@(@event.Date.EventDate())</td>
+                <td><a href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a></td>
+                <td>
+                    @if (eventInvites?.SentUtc == null)
+                    {
+                        <a href="@OdkRoutes2.MemberGroups.EventInvites(Model.Platform, Model.Chapter, @event.Id)">
+                            @(eventInvites?.ScheduledUtc != null ? "Scheduled" : "Send")
+                        </a>
+                    }
+                    else
+                    {
+                        @eventInvites.Sent
+                    }
+                </td>
+                <td>@(eventResponses?.Yes ?? 0)</td>
+                <td>@(eventResponses?.Maybe ?? 0)</td>
+                <td>@(eventResponses?.No ?? 0)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -44,37 +44,39 @@
                 </a>
             </p>
 
-            <table class="table table-striped mb-5">
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Amount</th>
-                    <th>Months</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach (var subscription in subscriptions)
-                {
+            <div class="table-responsive">
+                <table class="table table-striped mb-5">
+                    <thead>
                     <tr>
-                        <td>
-                            <a href="@OdkRoutes2.MemberGroups.MembersSubscription(Model.Platform, Model.Chapter, subscription)">@subscription.Name</a>
-                        </td>
-                        <td>
-                            @currency?.ToAmountString(subscription.Amount)
-                        </td>
-                        <td>@subscription.Months</td>
-                        <td>
-                            <form method="post" action="/groups/@Model.Chapter.Id/members/subscriptions/@subscription.Id/delete">
-                                <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
-                                        onclick="return confirm('Are you sure you want to delete this subscription?');">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </form>
-                        </td>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Months</th>
+                        <th></th>
                     </tr>
-                }
-                </tbody>
-            </table>            
+                    </thead>
+                    <tbody>
+                    @foreach (var subscription in subscriptions)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@OdkRoutes2.MemberGroups.MembersSubscription(Model.Platform, Model.Chapter, subscription)">@subscription.Name</a>
+                            </td>
+                            <td>
+                                @currency?.ToAmountString(subscription.Amount)
+                            </td>
+                            <td>@subscription.Months</td>
+                            <td>
+                                <form method="post" action="/groups/@Model.Chapter.Id/members/subscriptions/@subscription.Id/delete">
+                                    <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                            onclick="return confirm('Are you sure you want to delete this subscription?');">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
         </div>
 })

@@ -11,29 +11,32 @@
         Create
     </a>
 </p>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Provider</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var provider in providers)
-        {
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>
-                    <a href="/SuperAdmin/EmailProviders/@provider.Id">@provider.SmtpServer</a>
-                </td>
-                <td>
-                    <form method="post" action="/SuperAdmin/Emails/Providers/@provider.Id/Delete">
-                        <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
-                                onclick="return confirm('Are you sure you want to delete this email provider?');">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </form>
-                </td>
+                <th>Provider</th>
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var provider in providers)
+            {
+                <tr>
+                    <td>
+                        <a href="/SuperAdmin/EmailProviders/@provider.Id">@provider.SmtpServer</a>
+                    </td>
+                    <td>
+                        <form method="post" action="/SuperAdmin/Emails/Providers/@provider.Id/Delete">
+                            <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                    onclick="return confirm('Are you sure you want to delete this email provider?');">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

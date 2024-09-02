@@ -24,40 +24,42 @@
     Events are included below if this member was either invited by email, or has responded via the website.
 </p>
 
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Date</th>
-        <th>Venue</th>
-        <th>Response</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var response in responses)
-    {
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
         <tr>
-            <td>
-                <a href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, response.EventId)">
-                    @response.Date.ToString("yyyy-MM-dd")
-                </a>
-            </td>
-            <td>
-                @if (response.VenueId != null && !string.IsNullOrEmpty(response.VenueName))
-                {
-                    <a href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, response.VenueId.Value)">
-                        @response.VenueName
-                    </a>
-                }                 
-            </td>
-            <td>
-                @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
-                {
-                    Active = true,
-                    ReadOnly = true,
-                    ResponseType = response.Response
-                })
-            </td>
+            <th>Date</th>
+            <th>Venue</th>
+            <th>Response</th>
         </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        @foreach (var response in responses)
+        {
+            <tr>
+                <td>
+                    <a href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, response.EventId)">
+                        @response.Date.ToString("yyyy-MM-dd")
+                    </a>
+                </td>
+                <td>
+                    @if (response.VenueId != null && !string.IsNullOrEmpty(response.VenueName))
+                    {
+                        <a href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, response.VenueId.Value)">
+                            @response.VenueName
+                        </a>
+                    }                 
+                </td>
+                <td>
+                    @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                    {
+                        Active = true,
+                        ReadOnly = true,
+                        ResponseType = response.Response
+                    })
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
