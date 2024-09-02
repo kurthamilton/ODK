@@ -18,7 +18,9 @@ internal class MockUnitOfWork : IUnitOfWork
 
     public Mock<IUnitOfWork> Mock { get; }
 
-    public IChapterAdminMemberRepository ChapterAdminMemberRepository => Mock.Object.ChapterAdminMemberRepository;    
+    public IChapterAdminMemberRepository ChapterAdminMemberRepository => Mock.Object.ChapterAdminMemberRepository;
+    public IChapterContactMessageReplyRepository ChapterContactMessageReplyRepository => Mock.Object.ChapterContactMessageReplyRepository;
+    public IChapterContactMessageRepository ChapterContactMessageRepository => Mock.Object.ChapterContactMessageRepository;
     public IChapterEmailRepository ChapterEmailRepository => Mock.Object.ChapterEmailRepository;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => Mock.Object.ChapterEventSettingsRepository;
     public IChapterLinksRepository ChapterLinksRepository => Mock.Object.ChapterLinksRepository;
@@ -33,7 +35,6 @@ internal class MockUnitOfWork : IUnitOfWork
     public IChapterSubscriptionRepository ChapterSubscriptionRepository => Mock.Object.ChapterSubscriptionRepository;
     public ICountryRepository CountryRepository => Mock.Object.CountryRepository;
     public IChapterTextsRepository ChapterTextsRepository => Mock.Object.ChapterTextsRepository;
-    public IContactRequestRepository ContactRequestRepository => Mock.Object.ContactRequestRepository;
     public ICurrencyRepository CurrencyRepository => Mock.Object.CurrencyRepository;
     public IDistanceUnitRepository DistanceUnitRepository => Mock.Object.DistanceUnitRepository;
     public IEmailProviderRepository EmailProviderRepository => Mock.Object.EmailProviderRepository;
@@ -67,6 +68,8 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => Mock.Object.MemberSiteSubscriptionRepository;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => Mock.Object.MemberSubscriptionRepository;
     public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;    
+    public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => Mock.Object.SiteContactMessageReplyRepository;
+    public ISiteContactMessageRepository SiteContactMessageRepository => Mock.Object.SiteContactMessageRepository;
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => Mock.Object.SiteEmailSettingsRepository;
     public ISitePaymentSettingsRepository SitePaymentSettingsRepository => Mock.Object.SitePaymentSettingsRepository;
     public ISiteSettingsRepository SiteSettingsRepository => Mock.Object.SiteSettingsRepository;

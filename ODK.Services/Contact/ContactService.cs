@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Messages;
 using ODK.Data.Core;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
@@ -33,17 +34,19 @@ public class ContactService : IContactService
             message = $"[FLAGGED AS SPAM: {recaptchaResponse.Score} / 1.0] {message}";
         }
 
-        _unitOfWork.ContactRequestRepository.Add(new ContactRequest
+        var contactMessage = new ChapterContactMessage
         {
             ChapterId = chapter.Id,
             CreatedUtc = DateTime.UtcNow,
             FromAddress = fromAddress,
             Message = message,
-            Sent = false
-        });
+            RecaptchaScore = recaptchaResponse.Score
+        };
+
+        _unitOfWork.ChapterContactMessageRepository.Add(contactMessage);
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendContactEmail(chapter, fromAddress, message);
+        await _emailService.SendContactEmail(chapter, contactMessage);
     }
 
     public async Task SendSiteContactMessage(string fromAddress, string message, string recaptchaToken)
@@ -56,12 +59,12 @@ public class ContactService : IContactService
             message = $"[FLAGGED AS SPAM: {recaptchaResponse.Score} / 1.0] {message}";
         }
 
-        _unitOfWork.ContactRequestRepository.Add(new ContactRequest
+        _unitOfWork.SiteContactMessageRepository.Add(new SiteContactMessage
         {
             CreatedUtc = DateTime.UtcNow,
             FromAddress = fromAddress,
             Message = message,
-            Sent = false
+            RecaptchaScore = recaptchaResponse.Score            
         });
         await _unitOfWork.SaveChangesAsync();
 

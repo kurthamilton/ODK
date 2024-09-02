@@ -88,12 +88,17 @@ public class EmailService : IEmailService
         });
     }
 
-    public async Task SendContactEmail(Chapter chapter, string from, string message)
+    public async Task SendContactEmail(Chapter chapter, ChapterContactMessage message)
     {
+        var platform = _platformProvider.GetPlatform();
+
+        var url = _urlProvider.MessageAdminUrl(platform, chapter, message.Id);
+
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            {"from", from},
-            {"message", HttpUtility.HtmlEncode(message)}
+            {"message.from", message.FromAddress},
+            {"message.text", HttpUtility.HtmlEncode(message.Message)},
+            {"url", url}
         };
 
         var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository

@@ -4,6 +4,7 @@
 @using ODK.Services.Chapters
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @model ChapterMessagesAdminPageViewModel
 
 <h2>Messages</h2>
@@ -14,6 +15,8 @@
         <th>Time</th>
         <th>From</th>
         <th>Message</th>
+        <th>Replied</th>
+        <th></th>
         <th></th>
     </tr>
     </thead>
@@ -24,6 +27,15 @@
             <td>@TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, message.CreatedUtc).ToString("dd/MM/yyyy HH:mm")</td>
             <td>@message.FromAddress</td>
             <td>@message.Message</td>
+            <td>
+                @if (message.RepliedUtc != null)
+                {
+                    <i class="fas fa-check-circle text-success"></i>
+                }
+            </td>
+            <td>
+                <a href="@OdkRoutes2.MemberGroups.GroupMessage(Model.Platform, Model.Chapter, message.Id)">View</a>
+            </td>
             <td>
                 <form method="post" action="/groups/@Model.Chapter.Id/messages/@message.Id/delete">
                     @Html.AntiForgeryToken()

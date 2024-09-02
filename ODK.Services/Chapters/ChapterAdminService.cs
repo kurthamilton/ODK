@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.DataTypes;
+using ODK.Core.Emails;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -288,14 +289,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> DeleteChapterContactRequest(AdminServiceRequest request, Guid id)
+    public async Task<ServiceResult> DeleteChapterContactMessage(AdminServiceRequest request, Guid id)
     {
-        var contactRequest = await GetChapterAdminRestrictedContent(request,
-            x => x.ContactRequestRepository.GetById(id));
+        var contactMessage = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterContactMessageRepository.GetById(id));
 
-        OdkAssertions.MeetsCondition(contactRequest, x => x.ChapterId == request.ChapterId);
+        OdkAssertions.BelongsToChapter(contactMessage, request.ChapterId);
 
-        _unitOfWork.ContactRequestRepository.Delete(contactRequest);
+        _unitOfWork.ChapterContactMessageRepository.Delete(contactMessage);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -370,21 +371,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterRepository.GetById(request.ChapterId));
     }
 
-    public async Task<ChapterAdminMember> GetChapterAdminMember(AdminServiceRequest request, Guid memberId)
-    {
-        var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
-
-        var (chapterAdminMembers, currentMember, member) = await _unitOfWork.RunAsync(
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberRepository.GetById(memberId));
-
-        AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
-
-        var adminMember = chapterAdminMembers.FirstOrDefault(x => x.MemberId == memberId);
-        return OdkAssertions.Exists(adminMember);
-    }
-
     public async Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(AdminServiceRequest request)
     {
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
@@ -429,13 +415,33 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var (chapter, messages) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
-            x => x.ContactRequestRepository.GetByChapterId(request.ChapterId));
+            x => x.ChapterContactMessageRepository.GetByChapterId(request.ChapterId));
 
         return new ChapterMessagesAdminPageViewModel
         {
             Chapter = chapter,
             Messages = messages,
             Platform = platform
+        };
+    }
+
+    public async Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(AdminServiceRequest request, Guid id)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, message, replies) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterContactMessageRepository.GetById(id),
+            x => x.ChapterContactMessageReplyRepository.GetByChapterContactMessageId(id));
+
+        OdkAssertions.BelongsToChapter(message, request.ChapterId);
+
+        return new ChapterMessageAdminPageViewModel
+        {
+            Chapter = chapter,
+            Message = message,
+            Platform = platform,
+            Replies = replies
         };
     }
 
@@ -633,6 +639,69 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         chapter.PublishedUtc = DateTime.UtcNow;
         _unitOfWork.ChapterRepository.Update(chapter);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> ReplyToMessage(AdminServiceRequest request, Guid messageId, string message)
+    {
+        var (chapter, adminMembers, originalMessage) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterContactMessageRepository.GetById(messageId));
+
+        var adminMember = adminMembers.FirstOrDefault(x => x.MemberId == request.CurrentMemberId);
+
+        OdkAssertions.Exists(adminMember);
+        OdkAssertions.BelongsToChapter(originalMessage, request.ChapterId);
+
+        var to = new[]
+        {
+            new EmailAddressee(originalMessage.FromAddress, "")
+        };
+
+        var body = $"{message}<hr/><p>Your original message:</p><p>{originalMessage.Message}</p>";
+
+        var sendResult = await _emailService.SendEmail(chapter, to, "Re: your message to {title}", body);
+        if (!sendResult.Success)
+        {
+            return sendResult;
+        }
+
+        var now = DateTime.UtcNow;
+
+        originalMessage.RepliedUtc = now;
+        _unitOfWork.ChapterContactMessageRepository.Update(originalMessage);
+
+        _unitOfWork.ChapterContactMessageReplyRepository.Add(new ChapterContactMessageReply
+        {
+            ChapterContactMessageId = originalMessage.Id,
+            CreatedUtc = now,
+            Message = message,
+            MemberId = request.CurrentMemberId            
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> SetMessageAsReplied(AdminServiceRequest request, Guid messageId)
+    {
+        var (adminMembers, originalMessage) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterContactMessageRepository.GetById(messageId));
+
+        var adminMember = adminMembers.FirstOrDefault(x => x.MemberId == request.CurrentMemberId);
+
+        OdkAssertions.Exists(adminMember);
+        OdkAssertions.BelongsToChapter(originalMessage, request.ChapterId);
+
+        originalMessage.RepliedUtc = DateTime.UtcNow;
+
+        _unitOfWork.ChapterContactMessageRepository.Update(originalMessage);
+
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();

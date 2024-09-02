@@ -5,19 +5,21 @@ using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
-public class ContactRequestMap : IEntityTypeConfiguration<ContactRequest>
+public class ChapterContactMessageMap : IEntityTypeConfiguration<ChapterContactMessage>
 {
-    public void Configure(EntityTypeBuilder<ContactRequest> builder)
+    public void Configure(EntityTypeBuilder<ChapterContactMessage> builder)
     {
-        builder.ToTable("ContactRequests");
+        builder.ToTable("ChapterContactMessages");
 
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.CreatedUtc)
-            .HasColumnName("CreatedDate")
             .HasConversion<UtcDateTimeConverter>();
 
         builder.Property(x => x.Id)
-            .HasColumnName("ContactRequestId");
+            .HasColumnName("ChapterContactMessageId");
+
+        builder.Property(x => x.RepliedUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
     }
 }

@@ -7,7 +7,7 @@ public class ChapterMessagesAdminPageViewModel
 {
     public required Chapter Chapter { get; init; } 
 
-    public required IReadOnlyCollection<ContactRequest> Messages { get; init; }
+    public required IReadOnlyCollection<ChapterContactMessage> Messages { get; init; }
 
     public required PlatformType Platform { get; init; }
 }

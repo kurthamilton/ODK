@@ -61,6 +61,25 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("groups/{chapterId:guid}/messages/{id:guid}/replied")]
+    public async Task<IActionResult> MarkMessageAsReplied(Guid chapterId, Guid id)
+    {
+        var request = new AdminServiceRequest(chapterId, MemberId);
+        var result = await _chapterAdminService.SetMessageAsReplied(request, id);
+        AddFeedback(result, "Message updated");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{chapterId:guid}/messages/{id:guid}/reply")]
+    public async Task<IActionResult> ReplyToMessage(Guid chapterId, Guid id, 
+        [FromForm] ChapterMessageReplyFormViewModel viewModel)
+    {
+        var request = new AdminServiceRequest(chapterId, MemberId);
+        var result = await _chapterAdminService.ReplyToMessage(request, id, viewModel.Message ?? "");
+        AddFeedback(result, "Reply sent");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("groups/{id:guid}/privacy")]
     public async Task<IActionResult> UpdatePrivacySettings(Guid id, [FromForm] ChapterPrivacySettingsFormViewModel viewModel)
     {
@@ -149,7 +168,7 @@ public class ChapterAdminController : AdminControllerBase
     public async Task<IActionResult> DeleteContactRequest(Guid chapterId, Guid id)
     {
         var serviceRequest = new AdminServiceRequest(chapterId, MemberId);
-        var result = await _chapterAdminService.DeleteChapterContactRequest(serviceRequest, id);
+        var result = await _chapterAdminService.DeleteChapterContactMessage(serviceRequest, id);
         AddFeedback(result, "Message deleted");
         return RedirectToReferrer();
     }

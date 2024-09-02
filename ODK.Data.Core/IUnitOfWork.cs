@@ -8,6 +8,8 @@ namespace ODK.Data.Core;
 public interface IUnitOfWork
 {
     IChapterAdminMemberRepository ChapterAdminMemberRepository { get; }    
+    IChapterContactMessageReplyRepository ChapterContactMessageReplyRepository { get; }
+    IChapterContactMessageRepository ChapterContactMessageRepository { get; }
     IChapterEmailRepository ChapterEmailRepository { get; }
     IChapterEventSettingsRepository ChapterEventSettingsRepository { get; }    
     IChapterLinksRepository ChapterLinksRepository { get; }
@@ -22,7 +24,6 @@ public interface IUnitOfWork
     IChapterSubscriptionRepository ChapterSubscriptionRepository { get; }
     ICountryRepository CountryRepository { get; }
     IChapterTextsRepository ChapterTextsRepository { get; }
-    IContactRequestRepository ContactRequestRepository { get; }
     ICurrencyRepository CurrencyRepository { get; }
     IDistanceUnitRepository DistanceUnitRepository { get; }
     IEmailProviderRepository EmailProviderRepository { get; }
@@ -55,7 +56,9 @@ public interface IUnitOfWork
     IMemberRepository MemberRepository { get; }
     IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository { get; }
     IMemberSubscriptionRepository MemberSubscriptionRepository { get; }
-    IPaymentRepository PaymentRepository { get; }    
+    IPaymentRepository PaymentRepository { get; }   
+    ISiteContactMessageReplyRepository SiteContactMessageReplyRepository { get; }
+    ISiteContactMessageRepository SiteContactMessageRepository { get; }
     ISiteEmailSettingsRepository SiteEmailSettingsRepository { get; }
     ISitePaymentSettingsRepository SitePaymentSettingsRepository { get; }
     ISiteSettingsRepository SiteSettingsRepository { get; }

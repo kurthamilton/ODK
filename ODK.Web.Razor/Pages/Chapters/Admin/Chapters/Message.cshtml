@@ -1,0 +1,16 @@
+﻿@page "/{chapterName}/Admin/Chapter/Messages/{id:guid}"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.MessageModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Model.Title = "Message | Admin";
+
+    var viewModel = await ChapterAdminService.GetChapterMessageViewModel(Model.AdminServiceRequest, Model.MessageId);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Content = await Html.PartialAsync("Admin/Chapter/_MessageContent", viewModel)
+})

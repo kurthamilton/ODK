@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/messages/{messageId:guid}"
+@using ODK.Services.Chapters
+@model MessageModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Message";
+
+    var viewModel = await ChapterAdminService.GetChapterMessageViewModel(Model.AdminServiceRequest, Model.MessageId);
+}
+
+@await Html.PartialAsync("Admin/Chapter/_MessageContent", viewModel)

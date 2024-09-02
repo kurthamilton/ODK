@@ -21,7 +21,7 @@ public interface IChapterAdminService
 
     Task<ServiceResult> DeleteChapterAdminMember(AdminServiceRequest request, Guid memberId);
 
-    Task<ServiceResult> DeleteChapterContactRequest(AdminServiceRequest request, Guid id);
+    Task<ServiceResult> DeleteChapterContactMessage(AdminServiceRequest request, Guid id);
 
     Task DeleteChapterProperty(AdminServiceRequest request, Guid id);
 
@@ -31,8 +31,6 @@ public interface IChapterAdminService
 
     Task<Chapter> GetChapter(AdminServiceRequest request);
 
-    Task<ChapterAdminMember> GetChapterAdminMember(AdminServiceRequest request, Guid memberId);
-
     Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(AdminServiceRequest request);
 
     Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(AdminServiceRequest request);
@@ -40,6 +38,8 @@ public interface IChapterAdminService
     Task<ChapterLocation?> GetChapterLocation(AdminServiceRequest request);
 
     Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(AdminServiceRequest request);
+
+    Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(AdminServiceRequest request, Guid id);
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(AdminServiceRequest request);
 
@@ -65,9 +65,13 @@ public interface IChapterAdminService
 
     Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(AdminServiceRequest request);
 
-    Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);    
+    Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);        
 
     Task<ServiceResult> PublishChapter(AdminServiceRequest request);
+
+    Task<ServiceResult> ReplyToMessage(AdminServiceRequest request, Guid messageId, string message);
+
+    Task<ServiceResult> SetMessageAsReplied(AdminServiceRequest request, Guid messageId);
 
     Task SetOwner(AdminServiceRequest request, Guid memberId);
 

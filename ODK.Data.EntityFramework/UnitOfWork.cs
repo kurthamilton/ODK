@@ -13,6 +13,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly IPlatformProvider _platformProvider;
 
     private readonly Lazy<IChapterAdminMemberRepository> _chapterAdminMemberRepository;
+    private readonly Lazy<IChapterContactMessageReplyRepository> _chapterContactMessageReplyRepository;
+    private readonly Lazy<IChapterContactMessageRepository> _chapterContactMessageRepository;
     private readonly Lazy<IChapterEmailRepository> _chapterEmailRepository;
     private readonly Lazy<IChapterEventSettingsRepository> _chapterEventSettingsRepository;
     private readonly Lazy<IChapterLinksRepository> _chapterLinksRepository;
@@ -26,7 +28,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterRepository> _chapterRepository;
     private readonly Lazy<IChapterSubscriptionRepository> _chapterSubscriptionRepository;
     private readonly Lazy<IChapterTextsRepository> _chapterTextsRepository;
-    private readonly Lazy<IContactRequestRepository> _contactRequestRepository;
     private readonly Lazy<ICountryRepository> _countryRepository;
     private readonly Lazy<ICurrencyRepository> _currencyRepository;
     private readonly Lazy<IDistanceUnitRepository> _distanceUnitRepository;
@@ -61,6 +62,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberSiteSubscriptionRepository> _memberSiteSubscriptionRepository;
     private readonly Lazy<IMemberSubscriptionRepository> _memberSubscriptionRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;    
+    private readonly Lazy<ISiteContactMessageReplyRepository> _siteContactMessageReplyRepository;
+    private readonly Lazy<ISiteContactMessageRepository> _siteContactMessageRepository;
     private readonly Lazy<ISiteEmailSettingsRepository> _siteEmailSettingsRepository;
     private readonly Lazy<ISitePaymentSettingsRepository> _sitePaymentSettingsRepository;
     private readonly Lazy<ISiteSettingsRepository> _siteSettingsRepository;
@@ -75,6 +78,8 @@ public class UnitOfWork : IUnitOfWork
         _platformProvider = platformProvider;
 
         _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));        
+        _chapterContactMessageReplyRepository = new(() => new ChapterContactMessageReplyRepository(_context));
+        _chapterContactMessageRepository = new(() => new ChapterContactMessageRepository(_context));
         _chapterEmailRepository = new(() => new ChapterEmailRepository(_context));
         _chapterEventSettingsRepository = new(() => new ChapterEventSettingsRepository(_context));
         _chapterLinksRepository = new(() => new ChapterLinksRepository(_context));
@@ -88,7 +93,6 @@ public class UnitOfWork : IUnitOfWork
         _chapterRepository = new(() => new ChapterRepository(_context, _platformProvider));
         _chapterSubscriptionRepository = new(() => new ChapterSubscriptionRepository(_context));
         _chapterTextsRepository = new(() => new ChapterTextsRepository(_context));
-        _contactRequestRepository = new(() => new ContactRequestRepository(_context));
         _countryRepository = new(() => new CountryRepository(_context));
         _currencyRepository = new(() => new CurrencyRepository(_context));
         _distanceUnitRepository = new(() => new DistanceUnitRepository(_context));
@@ -123,6 +127,8 @@ public class UnitOfWork : IUnitOfWork
         _memberSiteSubscriptionRepository = new(() => new MemberSiteSubscriptionRepository(_context));
         _memberSubscriptionRepository = new(() => new MemberSubscriptionRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
+        _siteContactMessageReplyRepository = new(() => new SiteContactMessageReplyRepository(_context));
+        _siteContactMessageRepository = new(() => new SiteContactMessageRepository(_context));
         _siteEmailSettingsRepository = new(() => new SiteEmailSettingsRepository(_context));
         _sitePaymentSettingsRepository = new(() => new SitePaymentSettingsRepository(_context));
         _siteSettingsRepository = new(() => new SiteSettingsRepository(_context));
@@ -133,6 +139,8 @@ public class UnitOfWork : IUnitOfWork
     }
 
     public IChapterAdminMemberRepository ChapterAdminMemberRepository => _chapterAdminMemberRepository.Value;
+    public IChapterContactMessageReplyRepository ChapterContactMessageReplyRepository => _chapterContactMessageReplyRepository.Value;
+    public IChapterContactMessageRepository ChapterContactMessageRepository => _chapterContactMessageRepository.Value;
     public IChapterEmailRepository ChapterEmailRepository => _chapterEmailRepository.Value;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => _chapterEventSettingsRepository.Value;
     public IChapterLinksRepository ChapterLinksRepository => _chapterLinksRepository.Value;
@@ -146,7 +154,6 @@ public class UnitOfWork : IUnitOfWork
     public IChapterRepository ChapterRepository => _chapterRepository.Value;
     public IChapterSubscriptionRepository ChapterSubscriptionRepository => _chapterSubscriptionRepository.Value;
     public IChapterTextsRepository ChapterTextsRepository => _chapterTextsRepository.Value;
-    public IContactRequestRepository ContactRequestRepository => _contactRequestRepository.Value;
     public ICountryRepository CountryRepository => _countryRepository.Value;
     public ICurrencyRepository CurrencyRepository => _currencyRepository.Value;
     public IDistanceUnitRepository DistanceUnitRepository => _distanceUnitRepository.Value;
@@ -181,6 +188,8 @@ public class UnitOfWork : IUnitOfWork
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => _memberSiteSubscriptionRepository.Value;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => _memberSubscriptionRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
+    public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => _siteContactMessageReplyRepository.Value;
+    public ISiteContactMessageRepository SiteContactMessageRepository => _siteContactMessageRepository.Value;
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => _siteEmailSettingsRepository.Value;
     public ISitePaymentSettingsRepository SitePaymentSettingsRepository => _sitePaymentSettingsRepository.Value;
     public ISiteSettingsRepository SiteSettingsRepository => _siteSettingsRepository.Value;

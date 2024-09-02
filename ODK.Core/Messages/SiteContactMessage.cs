@@ -1,9 +1,7 @@
-﻿namespace ODK.Core.Chapters;
+﻿namespace ODK.Core.Messages;
 
-public class ContactRequest : IDatabaseEntity
+public class SiteContactMessage : IDatabaseEntity
 {
-    public Guid? ChapterId { get; set; }
-
     public DateTime CreatedUtc { get; set; }
 
     public string FromAddress { get; set; } = "";
@@ -12,5 +10,7 @@ public class ContactRequest : IDatabaseEntity
 
     public string Message { get; set; } = "";
 
-    public bool Sent { get; set; }
+    public float? RecaptchaScore { get; set; }
+
+    public DateTime? RepliedUtc { get; set; }
 }

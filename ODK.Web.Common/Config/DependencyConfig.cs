@@ -73,7 +73,7 @@ public static class DependencyConfig
     {
         services.AddScoped<IHttpRequestProvider, HttpRequestProvider>();
         services.AddSingleton<IHtmlSanitizer>(new HtmlSanitizer());
-        services.AddSingleton<IUrlProvider>(new UrlProvider());
+        services.AddScoped<IUrlProvider, UrlProvider>();
     }
 
     private static void ConfigureData(IServiceCollection services, IConfiguration configuration)

@@ -23,7 +23,7 @@ public interface IEmailService
 
     Task SendContactEmail(string fromAddress, string message);
 
-    Task SendContactEmail(Chapter chapter, string fromAddress, string message);
+    Task SendContactEmail(Chapter chapter, ChapterContactMessage message);
 
     Task SendEventCommentEmail(Chapter chapter, Member? replyToMember, EventComment comment,
         IDictionary<string, string> parameters);
