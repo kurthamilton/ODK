@@ -1,40 +1,37 @@
 ﻿@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
 @model ChapterTileViewModel
 @{
     var chapter = Model.Chapter;
 }
 
-<div class="card">
-    <div class="card-header d-flex gap-3">
-        <div class="me-auto">
-            <a href="@OdkRoutes2.Groups.Group(Model.Platform, chapter)">@chapter.Name</a>
-        </div>
-        @if (Model.IsOwner || Model.IsAdmin)
-        {
-            <div>
-                @if (!chapter.Approved())
-                {
-                    <i class="fa-solid fa-triangle-exclamation text-danger" 
-                        data-bs-toggle="tooltip" data-bs-title="Pending approval"></i>
-                }
-                else if (chapter.CanBePublished())
-                {
-                    <i class="fa-solid fa-triangle-exclamation text-warning" 
-                        data-bs-toggle="tooltip" data-bs-title="Pending publication"></i>
-                }
+@await Html.PartialAsync("Components/_Card", new CardViewModel
+{
+    HeaderContentFunc = 
+        @<div class="d-flex gap-3">
+            <div class="me-auto">
+                <a href="@OdkRoutes2.Groups.Group(Model.Platform, chapter)">@chapter.Name</a>
             </div>
-        }        
-    </div>
-    <div class="card-body">        
-        <p class="card-text">@Model.Texts?.Description</p>
-    </div>
-    @if (Model.IsOwner || Model.IsAdmin)
-    {
-        <div class="card-footer text-body-secondary">
-            <a href="@OdkRoutes2.MemberGroups.Group(Model.Platform, chapter)">
-                <i class="fa-solid fa-gear"></i> Manage
-            </a>
-        </div>
-    }    
-</div>
+            @if (Model.IsOwner || Model.IsAdmin)
+            {
+                <div>
+                    @if (!chapter.Approved())
+                    {
+                        <i class="fa-solid fa-triangle-exclamation text-danger" 
+                            data-bs-toggle="tooltip" data-bs-title="Pending approval"></i>
+                    }
+                    else if (chapter.CanBePublished())
+                    {
+                        <i class="fa-solid fa-triangle-exclamation text-warning" 
+                            data-bs-toggle="tooltip" data-bs-title="Pending publication"></i>
+                    }
+                </div>
+            }        
+        </div>,
+    BodyContentFunc = @<p class="card-text">@Model.Texts?.Description</p>,
+    FooterContentFunc = 
+        @<a class="text-body-secondary" href="@OdkRoutes2.MemberGroups.Group(Model.Platform, chapter)">
+            <i class="fa-solid fa-gear"></i> Manage
+        </a>
+})

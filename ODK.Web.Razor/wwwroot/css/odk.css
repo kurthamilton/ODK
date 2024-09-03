@@ -12443,6 +12443,12 @@ html[data-platform=odk] {
   padding-left: 1rem;
 }
 
+.sidebar--cards {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 .sidebar-card {
   margin-bottom: 1rem;
 }
@@ -12457,6 +12463,17 @@ html[data-platform=odk] {
 }
 .social-media-image-tile:hover {
   opacity: 0.5;
+}
+
+.social-media-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.social-media-link i {
+  display: flex;
+  justify-content: center;
+  color: var(--bs-body-color);
 }
 
 .tab-content {

@@ -1,0 +1,52 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model SocialMediaLinksViewModel
+@{
+    var sizeClass = Model.Large ? "fa-2x" : null;
+}
+
+@if (!string.IsNullOrEmpty(Model.Instagram))
+{
+    var url = $"https://www.instagram.com/{Model.Instagram}";
+
+    <div>        
+        <a class="social-media-link" href="@url" target="_blank">
+            <i class="fa-brands fa-instagram @sizeClass"></i>
+            @if (Model.ShowNames)
+            {
+                <span>@Model.Instagram</span>
+            }
+        </a>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.Facebook))
+{
+    var url = $"https://www.facebook.com/{Model.Facebook}";
+
+    <div>        
+        <a class="social-media-link" href="@url" target="_blank">
+            <i class="fa-brands fa-facebook-f @sizeClass"></i>
+            
+            @if (Model.ShowNames)
+            {
+                <span>@Model.Facebook</span>
+            }            
+        </a>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.Twitter))
+{
+    var url = $"https://www.x.com/{Model.Twitter}";
+
+    <div>
+        <a class="social-media-link" href="@url" target="_blank">
+            <i class="fa-brands fa-x-twitter @sizeClass"></i>
+
+            @if (Model.ShowNames)
+            {
+                <span>@Model.Twitter</span>
+            }           
+        </a>
+    </div>
+}

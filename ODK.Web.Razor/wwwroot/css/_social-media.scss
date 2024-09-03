@@ -11,3 +11,15 @@
         opacity: 0.5;
     }
 }
+
+.social-media-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    i {
+        display: flex;
+        justify-content: center;        
+        color: var(--bs-body-color);
+    }
+}

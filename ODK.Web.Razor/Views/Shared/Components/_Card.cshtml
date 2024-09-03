@@ -1,0 +1,25 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model CardViewModel
+
+<div class="card">
+    @if (Model.HeaderContentFunc != null)
+    {
+        <div class="card-header">
+            @Model.HeaderContentFunc.Invoke(null)
+        </div>
+    }    
+
+    @if (Model.BodyContentFunc != null)
+    {
+        <div class="card-body">
+            @Model.BodyContentFunc.Invoke(null)
+        </div>
+    }    
+
+    @if (Model.FooterContentFunc != null)
+    {
+        <div class="card-footer">
+            @Model.FooterContentFunc.Invoke(null)
+        </div>
+    }
+</div>

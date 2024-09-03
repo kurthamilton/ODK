@@ -10,7 +10,7 @@
 @model GroupHomePageViewModel
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-lg-7">
         @if (Model.IsMember || Model.IsAdmin)
         {
             @await Html.PartialAsync("Components/_EditableTextArea", new EditableTextViewModel
@@ -88,7 +88,7 @@
             </section>
         }        
     </div>    
-    <div class="col-md-4">
-        @await Html.PartialAsync("Groups/_GroupContentSidebar", Model)
+    <div class="col-lg-4 offset-lg-1">
+        @await Html.PartialAsync("Groups/Home/_GroupContentSidebar", Model)
     </div>
 </div>

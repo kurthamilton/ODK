@@ -1,4 +1,5 @@
 ﻿@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Models.Footer.FooterViewModel
 @inject IChapterService ChapterService
 @{
@@ -18,29 +19,13 @@
                     </div>
                 </div>
                 <div class="col">
-                    @if (!string.IsNullOrEmpty(links?.InstagramName))
+                    @await Html.PartialAsync("Components/_SocialMediaLinks", new SocialMediaLinksViewModel
                     {
-                        <div>
-                            <i class="fab fa-instagram mr-1"></i>
-                            <a href="https://www.instagram.com/@links.InstagramName" target="_blank">@links.InstagramName</a>
-                        </div>
-                    }
-
-                    @if (!string.IsNullOrEmpty(links?.FacebookName))
-                    {
-                        <div>
-                            <i class="fab fa-facebook-f mr-1"></i>
-                            <a href="https://www.facebook.com/@links.FacebookName" target="_blank">@links.FacebookName</a>
-                        </div>
-                    }
-
-                    @if (!string.IsNullOrEmpty(links?.TwitterName))
-                    {
-                        <div>
-                            <i class="fab fa-x-twitter mr-1"></i>
-                            <a href="https://www.x.com/@links.TwitterName" target="_blank">@links.TwitterName</a>
-                        </div>
-                    }
+                        Facebook = links?.FacebookName,
+                        Instagram = links?.InstagramName,
+                        ShowNames = true,
+                        Twitter = links?.TwitterName
+                    })
                 </div>
             </div>
         </div>
