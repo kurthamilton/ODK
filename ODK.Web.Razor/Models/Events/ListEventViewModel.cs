@@ -10,6 +10,8 @@ public class ListEventViewModel
 
     public required EventResponseViewModel Event { get; init; }
 
+    public bool ForceDisplayYear { get; init; }
+
     public required PlatformType Platform { get; init; }
 
     public required TimeZoneInfo TimeZone { get; init; }

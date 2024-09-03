@@ -22,6 +22,8 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public TimeSpan? EndTime { get; set; }
 
+    public bool HasPassed => Date < DateTime.UtcNow;
+
     public Guid Id { get; set; }
 
     public string? ImageUrl { get; set; }
@@ -81,7 +83,7 @@ public class Event : IDatabaseEntity, IChapterEntity
         var time = TimeSpanUtils.ToString(localTime.TimeOfDay);
         return endTime != null
             ? $"{time} - {TimeSpanUtils.ToString(endTime)}"
-            : $"From {time}";
+            : $"from {time}";
     }
 
     public string GetDisplayName() => (!IsPublished ? "[DRAFT] " : "") + Name;    

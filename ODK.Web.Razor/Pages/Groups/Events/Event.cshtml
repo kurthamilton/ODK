@@ -21,7 +21,9 @@
     SidebarContent = await Html.PartialAsync("Events/_EventSidebar", viewModel),
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = OdkRoutes2.Groups.Events(viewModel.Platform, viewModel.Chapter), Text = "Events" },
+        viewModel.Event.HasPassed 
+            ? new MenuItem { Link = OdkRoutes2.Groups.PastEvents(viewModel.Platform, viewModel.Chapter), Text = "Past events" }
+            : new MenuItem { Link = OdkRoutes2.Groups.Events(viewModel.Platform, viewModel.Chapter), Text = "Events" },
         new MenuItem { Text = viewModel.Event.GetDisplayName() }
     }
 })

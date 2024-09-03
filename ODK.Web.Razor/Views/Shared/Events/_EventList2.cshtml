@@ -1,18 +1,16 @@
 ﻿@using ODK.Services.Events
 @using ODK.Web.Razor.Models.Events
 @model EventListViewModel
-@{
-    var events = Model.Events.OrderBy(x => x.Date);
-}
 
 <div class="row">
-    @foreach (var @event in events)
+    @foreach (var @event in Model.Events)
     {
-        <div class="col-12 col-md-4 mb-3">
+        <div class="col-12 mb-3 @(Model.FullWidth ? null : "col-md-4")">
             @await Html.PartialAsync("Events/_ListEvent2", new ListEventViewModel
             {
                 Chapter = Model.Chapter,
                 Event = @event,
+                ForceDisplayYear = Model.ForceDisplayYear,
                 Platform = Model.Platform,
                 TimeZone = Model.TimeZone
             })

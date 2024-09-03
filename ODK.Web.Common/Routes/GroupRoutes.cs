@@ -32,7 +32,9 @@ public class GroupRoutes
         => $"{Members(platform, chapter)}/{memberId}";
 
     public string Members(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/members");
-    
+
+    public string PastEvents(PlatformType platform, Chapter chapter) => $"{Events(platform, chapter)}/past";
+
     public GroupProfileRoutes Profile { get; } = new GroupProfileRoutes();
     
     public string Questions(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/faq");

@@ -1,0 +1,18 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Groups.Profile
+@model GroupPageViewModelBase
+@{
+    var menuItems = new MenuItem[]
+    {
+        new MenuItem { Link = OdkRoutes2.Groups.Events(Model.Platform, Model.Chapter), Text = "Upcoming" },
+        new MenuItem { Link = OdkRoutes2.Groups.PastEvents(Model.Platform, Model.Chapter), Text = "Past" }
+    };
+}
+
+@await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
+{
+    MenuItems = menuItems
+})

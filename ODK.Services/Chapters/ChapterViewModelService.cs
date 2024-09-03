@@ -218,7 +218,7 @@ public class ChapterViewModelService : IChapterViewModelService
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             OwnerSubscription = ownerSubscription,
             Events = ToGroupPageListEvents(
-                upcomingEvents,
+                upcomingEvents.OrderBy(x => x.Date),
                 venues,
                 responses,
                 currentMember,
@@ -281,7 +281,7 @@ public class ChapterViewModelService : IChapterViewModelService
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             OwnerSubscription = ownerSubscription,
             Events = ToGroupPageListEvents(
-                pastEvents,
+                pastEvents.OrderByDescending(x => x.Date),
                 venues,
                 responses,
                 currentMember,

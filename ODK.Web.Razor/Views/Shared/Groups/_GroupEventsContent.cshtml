@@ -3,16 +3,30 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Services.Events
 @using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model GroupEventsPageViewModel
+@{
+    var past = Context.ForPath(OdkRoutes2.Groups.PastEvents(Model.Platform, Model.Chapter));
+}
 
-@await Html.PartialAsync("Events/_EventList2", new EventListViewModel
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
-    Chapter = Model.Chapter,
-    Events = Model.Events
-        .Select(x => new EventResponseViewModel(x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
-        .ToArray(),
-    Platform = Model.Platform,
-    TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+    MenuContent = await Html.PartialAsync("Groups/_GroupEventsMenu", Model),
+    BodyContentFunc = 
+        @<div>
+            @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
+            {
+                Chapter = Model.Chapter,
+                Events = Model.Events
+                    .Select(x => new EventResponseViewModel(x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
+                    .ToArray(),
+                ForceDisplayYear = past,
+                FullWidth = true,
+                Platform = Model.Platform,
+                TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+            })
+        </div>
 })

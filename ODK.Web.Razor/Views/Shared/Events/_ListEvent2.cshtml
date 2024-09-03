@@ -31,7 +31,7 @@
     </div>
     <div class="card-body">
         <div>
-            <span>@localTime.ToFriendlyDateString(null)</span>
+            <span>@localTime.ToFriendlyDateString(Model.Chapter.TimeZone, forceIncludeYear: Model.ForceDisplayYear)</span>
             <span>@Event.ToLocalTimeString(Model.Event.Date, Model.Event.EndTime, Model.Chapter.TimeZone)</span>
         </div>
         @if (Model.Event.VenueName != null)
