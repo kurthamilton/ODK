@@ -1,7 +1,7 @@
 ﻿@using ODK.Web.Common.Routes
 @model ODK.Web.Razor.Models.Members.MemberAvatarViewModel
 @{
-    var imageUrl = OdkRoutes.Members.Avatar(Model.Member.Id, Model.ChapterName); ;
+    var imageUrl = OdkRoutes.Members.Avatar(Model.Member.Id);
     var maxWidth = Model.MaxWidth > 0 ? Model.MaxWidth : 75;
 }
 

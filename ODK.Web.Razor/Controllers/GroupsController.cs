@@ -1,21 +1,42 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Platforms;
+using ODK.Services.Chapters;
+using ODK.Services.Contact;
 using ODK.Services.Members;
+using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
+using ODK.Web.Razor.Models.Contact;
 
 namespace ODK.Web.Razor.Controllers;
 
 public class GroupsController : OdkControllerBase
 {
+    private readonly IContactService _contactService;
     private readonly IMemberService _memberService;
     private readonly IPlatformProvider _platformProvider;
 
-    public GroupsController(IMemberService memberService,
-        IPlatformProvider platformProvider)
+    public GroupsController(
+        IMemberService memberService,
+        IPlatformProvider platformProvider,
+        IContactService contactService)
     {
+        _contactService = contactService;
         _memberService = memberService;
         _platformProvider = platformProvider;
+    }
+
+    [HttpPost("groups/{id:guid}/contact")]
+    public async Task<IActionResult> Contact(Guid id, [FromForm] ContactFormViewModel viewModel)
+    {
+        await _contactService.SendChapterContactMessage(id, 
+            viewModel.EmailAddress ?? "", 
+            viewModel.Message ?? "", 
+            viewModel.Recaptcha ?? "");
+
+        AddFeedback("Your message has been sent. Thank you for getting in touch.", FeedbackType.Success);
+
+        return RedirectToReferrer();
     }
 
     [Authorize]

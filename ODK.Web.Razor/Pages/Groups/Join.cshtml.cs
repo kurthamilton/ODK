@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Platforms;
 using ODK.Services.Chapters;
 using ODK.Services.Members;
 using ODK.Services.Users.ViewModels;
@@ -41,6 +42,6 @@ public class JoinModel : OdkGroupPageModel
             return Page();
         }
 
-        return Redirect(OdkRoutes2.Groups.Group(chapter));
+        return Redirect(OdkRoutes2.Groups.Group(PlatformType.Default, chapter));
     }
 }

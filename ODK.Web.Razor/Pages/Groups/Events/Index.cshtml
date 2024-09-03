@@ -1,7 +1,7 @@
 ﻿@page "/groups/{slug}/events"
 @using ODK.Services.Chapters
-@using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Groups.EventsModel
+@using ODK.Web.Razor.Models.Groups
+@model IndexModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
@@ -11,9 +11,9 @@
     Model.Title = $"Events | {viewModel.Chapter.Name}";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
+    Title = "",
     Content = await Html.PartialAsync("Groups/_GroupEventsContent", viewModel),
-    Menu = await Html.PartialAsync("Groups/_GroupMenu", viewModel),
-    Title = $"{viewModel.Chapter.Name} Events"
+    Group = viewModel
 })

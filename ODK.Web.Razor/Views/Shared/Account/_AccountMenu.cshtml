@@ -6,23 +6,23 @@
 @{    
     var menuItems = new MenuItem[]
     {
-        new MenuItem { Link = OdkRoutes.Account.PersonalDetails(Model.ChapterName), Text = "Personal details" },
-        Model.ChapterName == null 
+        new MenuItem { Link = OdkRoutes.Account.PersonalDetails(Model.Chapter), Text = "Personal details" },
+        Model.Chapter == null 
             ? new MenuItem { Link = OdkRoutes.Account.Location(), Text = "Location" }
             : new MenuItem(),
-        Model.ChapterName != null
-            ? new MenuItem { Link = OdkRoutes.Account.Profile(Model.ChapterName), Text = "Profile" }
+        Model.Chapter != null
+            ? new MenuItem { Link = OdkRoutes.Account.Profile(Model.Chapter), Text = "Profile" }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes.Account.Picture(Model.ChapterName), Text = "Picture" },
-        Model.ChapterName != null
-            ? new MenuItem { Link = OdkRoutes.Account.Subscription(Model.ChapterName), Text = "My subscription" }
+        new MenuItem { Link = OdkRoutes.Account.Picture(Model.Chapter), Text = "Picture" },
+        Model.Chapter != null
+            ? new MenuItem { Link = OdkRoutes.Account.Subscription(Model.Chapter), Text = "My subscription" }
             : new MenuItem { Link = OdkRoutes.Account.Subscription(null), Text = "My subscription" },
-        new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(Model.ChapterName), Text = "Update email address" },
-        new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.ChapterName), Text = "Update password" },
-        Model.ChapterName != null
-            ? new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.ChapterName), Text = "Email preferences" }
+        new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(Model.Chapter), Text = "Email address" },
+        new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.Chapter), Text = "Password" },
+        Model.Chapter != null
+            ? new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.Chapter), Text = "Email preferences" }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes.Account.Delete(Model.ChapterName), Text = "Delete account" }
+        new MenuItem { Link = OdkRoutes.Account.Delete(Model.Chapter), Text = "Delete account" }
     }.Where(x => !string.IsNullOrEmpty(x.Link)).ToArray();
 }
 

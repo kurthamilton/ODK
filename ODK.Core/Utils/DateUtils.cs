@@ -56,13 +56,13 @@ public static class DateUtils
 
     public static DateTime StartOfDay(this DateTime date) => date - date.TimeOfDay;
 
-    public static string ToFriendlyDateString(this DateTime dateUtc, TimeZoneInfo? timeZone)
+    public static string ToFriendlyDateString(this DateTime dateUtc, TimeZoneInfo? timeZone, bool forceIncludeYear = false)
     {
         var localDate = timeZone != null 
             ? TimeZoneInfo.ConvertTimeFromUtc(dateUtc, timeZone)
             : dateUtc;
 
-        var includeYear = dateUtc.Year != DateTime.UtcNow.Year;
+        var includeYear = forceIncludeYear || dateUtc.Year != DateTime.UtcNow.Year;
         
         var format = "ddd, MMM d";
 

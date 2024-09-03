@@ -27,7 +27,6 @@
     <h3>Picture</h3>
     @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
     {
-        ChapterName = Model.Chapter.Name,
         Member = Model.Member
     })
 </section>
@@ -35,7 +34,6 @@
     <h3>Avatar</h3>
     @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
     {
-        ChapterName = Model.Chapter.Name,
         Member = Model.Member
     })
 </section>
@@ -45,7 +43,6 @@
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
         {
-            ChapterName = Model.Chapter.Name,
             CropHeight = memberAvatar?.CropHeight,
             CropWidth = memberAvatar?.CropWidth,
             CropX = memberAvatar?.CropX,

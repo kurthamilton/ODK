@@ -1,0 +1,21 @@
+﻿@page "/groups/{slug}/members"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Members
+@using ODK.Web.Razor.Models.Groups
+@model IndexModel
+@inject IMemberViewModelService MemberViewModelService
+@{
+    Layout = "_HomeLayout";
+
+    var viewModel = await MemberViewModelService.GetGroupMembersPage(Model.CurrentMemberId, Model.Slug);
+
+    Model.Title = $"Members | {viewModel.Chapter.Name}";
+}
+
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
+{
+    Title = "Members",
+    Content = await Html.PartialAsync("Members/_MembersContent", viewModel),
+    Group = viewModel
+})

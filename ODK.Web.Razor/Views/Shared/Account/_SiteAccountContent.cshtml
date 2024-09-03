@@ -12,7 +12,7 @@
     <div class="me-auto">
         @await Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
         {
-            ChapterName = null
+            Chapter = null
         })
     </div>
 
@@ -20,8 +20,7 @@
         <div class="d-inline-block">
             <div class="d-flex justify-content-center">
                 @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
-               {
-                   ChapterName = null,
+               {                   
                    HasImage = Model.Image != null,
                    Image = Model.Image,
                    Member = Model.CurrentMember
@@ -55,7 +54,6 @@
         <form method="post" action="/account/picture/change" enctype="multipart/form-data">
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
             {
-                ChapterName = null,
                 CropHeight = Model.Avatar?.CropHeight,
                 CropWidth = Model.Avatar?.CropWidth,
                 CropX = Model.Avatar?.CropX,

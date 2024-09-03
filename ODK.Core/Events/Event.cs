@@ -22,6 +22,8 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public TimeSpan? EndTime { get; set; }
 
+    public bool HasPassed => Date < DateTime.UtcNow;
+
     public Guid Id { get; set; }
 
     public string? ImageUrl { get; set; }
@@ -81,7 +83,7 @@ public class Event : IDatabaseEntity, IChapterEntity
         var time = TimeSpanUtils.ToString(localTime.TimeOfDay);
         return endTime != null
             ? $"{time} - {TimeSpanUtils.ToString(endTime)}"
-            : $"From {time}";
+            : $"from {time}";
     }
 
     public string GetDisplayName() => (!IsPublished ? "[DRAFT] " : "") + Name;    
@@ -95,6 +97,13 @@ public class Event : IDatabaseEntity, IChapterEntity
 
         return member?.SuperAdmin == true || 
             (member?.IsCurrent() == true && member?.IsMemberOf(ChapterId) == true);
+    }
+
+    public int? NumberOfSpacesLeft(int numberOfAttendees)
+    {
+        return AttendeeLimit != null
+            ? Math.Max(AttendeeLimit.Value - numberOfAttendees, 0)
+            : null;
     }
 
     public DateTime ToLocalTime(TimeZoneInfo? timeZone) => ToLocalTime(Date, timeZone);

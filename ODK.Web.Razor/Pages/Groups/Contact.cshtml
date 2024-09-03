@@ -1,0 +1,24 @@
+﻿@page "/groups/{slug}/contact"
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Groups
+@model ODK.Web.Razor.Pages.Groups.ContactModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_HomeLayout";
+
+    var viewModel = await ChapterViewModelService.GetGroupContactPage(Model.CurrentMemberIdOrDefault, Model.Slug);
+
+    Model.Title = $"Contact | {viewModel.Chapter.Name}";
+}
+
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
+{
+    Title = "Send us a message",
+    Content = await Html.PartialAsync("Groups/_GroupContactContent", viewModel),
+    Group = viewModel
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/_RecaptchaScripts")
+}

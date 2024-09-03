@@ -20,13 +20,13 @@
     var currentChapterPendingPublication = ownedChapters
         .Where(x => x.CanBePublished() &&
             (HttpContextAccessor.ForPath(OdkRoutes2.MemberGroups.Group(platform, x)) ||
-            HttpContextAccessor.ForPath(OdkRoutes2.Groups.Group(x))))
+            HttpContextAccessor.ForPath(OdkRoutes2.Groups.Group(platform, x))))
         .FirstOrDefault();
 
     var chaptersPendingPublication = ownedChapters
         .Where(x => x.CanBePublished() && 
             !HttpContextAccessor.ForPath(OdkRoutes2.MemberGroups.Group(platform, x)) &&
-            !HttpContextAccessor.ForPath(OdkRoutes2.Groups.Group(x)))
+            !HttpContextAccessor.ForPath(OdkRoutes2.Groups.Group(platform, x)))
         .ToArray();
 }
 

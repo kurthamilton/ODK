@@ -7,40 +7,26 @@
     Model.MembersByResponse.TryGetValue(EventResponseType.Yes, out var attendees);
 
     var spacesLeft = Model.SpacesLeft;
-    var deadlinePassed = Model.Event.RsvpDeadlinePassed;
     var canRsvp = Model.MemberResponse == EventResponseType.Yes
-        || ((spacesLeft == null || spacesLeft > 0) && !deadlinePassed);
+        || ((spacesLeft == null || spacesLeft > 0) && !Model.Event.RsvpDeadlinePassed);
 }
 
 <div class="card sidebar-card">
     <div class="card-header">RSVP</div>
     <div class="card-body card-body-sm">
         <div class="d-flex flex-column gap-3">
-            @if (deadlinePassed)
+            @await Html.PartialAsync("Events/_EventStatus", new EventStatusViewModel
             {
-                <div class="badge text-bg-danger w-100">
-                    RSVP deadline passed
-                </div>
-            }
-            else if (Model.Event.RsvpDeadlineUtc != null)
-            {
-                <div class="badge text-bg-secondary w-100">
-                    RSVP deadline: @Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
-                </div>
-            }
-        
-            @if (!deadlinePassed && spacesLeft != null)
-            {            
-                <div>
-                    Spaces left: @spacesLeft / @Model.Event.AttendeeLimit
-                </div>
-            }
+                Chapter = Model.Chapter,
+                Event = Model.Event,
+                SpacesLeft = Model.SpacesLeft
+            })
 
             @if (canRsvp)
             {
-                if (deadlinePassed)
+                if (Model.Event.RsvpDeadlinePassed)
                 {
-                    <form action="/@Model.Chapter.Name/Events/@Model.Event.Id/RSVP" method="post">
+                    <form action="/events/@Model.Event.Id/rsvp" method="post">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="responseType" value="@EventResponseType.Yes" />
                         <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your RSVP? This action cannot be undone');">
@@ -53,7 +39,7 @@
                     <div class="d-flex justify-content-around">
                         @foreach (var responseType in Model.ResponseTypes)
                         {
-                            <form action="/@Model.Chapter.Name/Events/@Model.Event.Id/RSVP" method="post">
+                            <form action="/events/@Model.Event.Id/rsvp" method="post">
                                 @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                                 {
                                     Active = Model.MemberResponse == responseType,

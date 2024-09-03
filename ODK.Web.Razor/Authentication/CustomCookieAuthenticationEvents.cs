@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using ODK.Core.Chapters;
 using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Razor.Authentication;
@@ -21,7 +22,7 @@ public class CustomCookieAuthenticationEvents : CookieAuthenticationEvents
     public override Task RedirectToLogin(RedirectContext<CookieAuthenticationOptions> context)
     {
         var routeData = context.Request.HttpContext.GetRouteData();
-        string? chapter = routeData.Values["chapterName"]?.ToString();
+        string? chapterName = routeData.Values["chapterName"]?.ToString();
 
         string? redirectUri = context.Request.Path.Value;
         if (!string.IsNullOrEmpty(context.Request.QueryString.Value))
@@ -29,7 +30,10 @@ public class CustomCookieAuthenticationEvents : CookieAuthenticationEvents
             redirectUri += "?" + context.Request.QueryString.Value;
         }
 
-        context.RedirectUri = OdkRoutes.Account.Login(chapter);
+        var fakeChapter = chapterName != null
+            ? new Chapter { Name = chapterName }
+            : null;
+        context.RedirectUri = OdkRoutes.Account.Login(fakeChapter);
         if (!string.IsNullOrEmpty(redirectUri))
         {
             context.RedirectUri += $"?{context.Options.ReturnUrlParameter}={HttpUtility.UrlEncode(redirectUri)}";

@@ -50,10 +50,7 @@
         @*Hack to show the picture upload before the confirmation checkboxes*@
         <div class="form-group mb-3 required">
             <label class="form-label">Picture</label>
-            @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
-            {
-                ChapterName = Model.ChapterName
-            })
+            @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel())
         </div>
 
         applicationCheckboxesRendered = true;
@@ -181,10 +178,7 @@
     {
         <div class="form-group mb-3 required">
             <label class="form-label">Picture</label>
-            @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
-            {
-                ChapterName = Model.ChapterName
-            })
+            @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel())
         </div>
     }
 

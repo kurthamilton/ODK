@@ -4,8 +4,6 @@ namespace ODK.Web.Razor.Models.Account;
 
 public class PictureUploadViewModel
 {
-    public required string? ChapterName { get; set; }
-
     public int? CropHeight { get; set; }
 
     public int? CropWidth { get; set; }

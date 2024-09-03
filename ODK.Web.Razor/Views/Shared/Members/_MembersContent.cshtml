@@ -4,19 +4,21 @@
 @using ODK.Web.Razor.Models.Members
 @model MembersPageViewModel
 @{
-    var list = Model.Members
+    var members = Model.Members
         .OrderBy(x => x.FullName)
         .Select(x => new ListMemberViewModel
         {
-            ChapterName = Model.ChapterName,
-            Member = x
+            Chapter = Model.Chapter,
+            Member = x,
+            Platform = Model.Platform
         })
         .ToArray();
 }
 
 @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
 {
-    ChapterName = Model.ChapterName,
+    Chapter = Model.Chapter,
     Cols = 3,
-    Members = list
+    Members = members,
+    Platform = Model.Platform
 })

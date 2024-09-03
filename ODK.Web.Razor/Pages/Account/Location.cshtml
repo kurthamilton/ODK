@@ -25,24 +25,27 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Location",
+    Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Location(),
         Content = 
-            @<form action="/account/location" method="post">
-                @Html.AntiForgeryToken()
-                @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel
-                {
-                    DistanceUnit = memberPreferences?.DistanceUnit?.Id,
-                    DistanceUnitOptions = distanceUnitOptions,
-                    Lat = location?.LatLong.Lat,
-                    Long = location?.LatLong.Long,
-                    Name = location?.Name ?? "",
-                    TimeZoneId = member.TimeZone?.Id ?? Member.DefaultTimeZoneId
-                })
-                <button class="btn btn-primary">Update</button>
-            </form>
+            @<div>
+                <h2>Location</h2>
+                <form action="/account/location" method="post">
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel
+                    {
+                        DistanceUnit = memberPreferences?.DistanceUnit?.Id,
+                        DistanceUnitOptions = distanceUnitOptions,
+                        Lat = location?.LatLong.Lat,
+                        Long = location?.LatLong.Long,
+                        Name = location?.Name ?? "",
+                        TimeZoneId = member.TimeZone?.Id ?? Member.DefaultTimeZoneId
+                    })
+                    <button class="btn btn-primary">Update</button>
+                </form>
+            </div>
     })
 })
 

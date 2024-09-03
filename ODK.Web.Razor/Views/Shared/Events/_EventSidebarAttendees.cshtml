@@ -9,8 +9,9 @@
     var members = Model.Members
         .Select(x => new ListMemberViewModel
         {
-            ChapterName = Model.Chapter.Name,
+            Chapter = Model.Chapter,
             Member = x,
+            Platform = Model.Platform,
             Size = "xs"
         })
         .ToArray();
@@ -21,10 +22,11 @@
     <div class="card-body card-body-sm">        
         @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
         {
-            ChapterName = Model.Chapter.Name,
+            Chapter = Model.Chapter,
             Cols = 4,
             Members = members,
-            Size = "xs"
+            Size = "xs",
+            Platform = Model.Platform
         })
     </div>
 </div>

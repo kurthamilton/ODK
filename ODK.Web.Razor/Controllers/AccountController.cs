@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Core.Platforms;
 using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
@@ -24,6 +26,7 @@ public class AccountController : OdkControllerBase
     private readonly IFeatureService _featureService;
     private readonly ILoginHandler _loginHandler;
     private readonly IMemberService _memberService;
+    private readonly IPlatformProvider _platformProvider;
     private readonly IRequestCache _requestCache;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
 
@@ -33,12 +36,14 @@ public class AccountController : OdkControllerBase
         IRequestCache requestCache,
         IAuthenticationService authenticationService, 
         IFeatureService featureService,
-        ISiteSubscriptionService siteSubscriptionService)
+        ISiteSubscriptionService siteSubscriptionService,
+        IPlatformProvider platformProvider)
     {
         _authenticationService = authenticationService;
         _featureService = featureService;
         _loginHandler = loginHandler;
         _memberService = memberService;
+        _platformProvider = platformProvider;
         _requestCache = requestCache;
         _siteSubscriptionService = siteSubscriptionService;
     }
@@ -137,25 +142,26 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/email/change")]
     public async Task<IActionResult> ChangeEmailRequest([FromForm] ChangeEmailFormViewModel viewModel)
     {
-        var result = await _memberService.RequestMemberEmailAddressUpdate(MemberId, viewModel.Email ?? "");
+        Guid? chapterId = null;
+
+        var platform = _platformProvider.GetPlatform();
+        if (platform == PlatformType.DrunkenKnitwits)
+        {
+            var member = await _memberService.GetMember(MemberId);
+            chapterId = member.Chapters.Count == 1
+                ? member.Chapters.First().ChapterId
+                : null;
+        }
+
+        var result = chapterId != null
+            ? await _memberService.RequestMemberEmailAddressUpdate(MemberId, chapterId.Value, viewModel.Email ?? "")
+            : await _memberService.RequestMemberEmailAddressUpdate(MemberId, viewModel.Email ?? "");
+
         var successMessage =
             "An email has been sent to the email address you provided. " +
             "Please complete your update by following the link in the email.";
         AddFeedback(result, successMessage);
 
-        return RedirectToReferrer();
-    }
-
-    [HttpPost("{ChapterName}/Account/Email/Change")]
-    public async Task<IActionResult> ChangeEmailRequest(string chapterName, [FromForm] ChangeEmailFormViewModel viewModel)
-    {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-
-        var result = await _memberService.RequestMemberEmailAddressUpdate(MemberId, chapter.Id, viewModel.Email ?? "");
-        var successMessage =
-            "An email has been sent to the email address you provided. " +
-            "Please complete your update by following the link in the email.";
-        AddFeedback(result, successMessage);
         return RedirectToReferrer();
     }
 

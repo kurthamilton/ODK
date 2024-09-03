@@ -7,7 +7,6 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
-using ODK.Services.Events.ViewModels;
 using ODK.Services.Payments;
 
 namespace ODK.Services.Events;
@@ -101,47 +100,6 @@ public class EventService : IEventService
         await _emailService.SendEventCommentEmail(chapter, parentCommentMember, eventComment, parameters);
 
         return ServiceResult.Successful();
-    }
-
-    public async Task<IReadOnlyCollection<EventResponseViewModel>> GetEventResponseViewModels(Member? member,
-        Guid chapterId, DateTime? afterUtc)
-    {
-        var isChapterMember = member?.IsMemberOf(chapterId) == true;
-
-        var (events, venues) = await _unitOfWork.RunAsync(
-            x => isChapterMember 
-                ? x.EventRepository.GetByChapterId(chapterId, afterUtc) 
-                : x.EventRepository.GetPublicEventsByChapterId(chapterId, afterUtc),
-            x => x.VenueRepository.GetByChapterId(chapterId));
-
-        IReadOnlyCollection<EventResponse> responses = [];
-        IReadOnlyCollection<EventInvite> invites = [];
-        var invitedEventIds = new HashSet<Guid>();
-        if (member != null)
-        {
-            (responses, invites) = await _unitOfWork.RunAsync(
-                x => x.EventResponseRepository.GetByMemberId(member.Id, afterUtc),
-                x => x.EventInviteRepository.GetByMemberId(member.Id));
-
-            invitedEventIds = new HashSet<Guid>(invites.Select(x => x.EventId));
-        }
-
-        var responseLookup = responses
-            .ToDictionary(x => x.EventId, x => x.Type);
-
-        var venueLookup = venues.ToDictionary(x => x.Id);        
-
-        var viewModels = new List<EventResponseViewModel>();
-        foreach (var @event in events.Where(x => x.PublishedUtc != null))
-        {
-            var invited = invitedEventIds.Contains(@event.Id);
-            responseLookup.TryGetValue(@event.Id, out EventResponseType responseType);
-            var viewModel = new EventResponseViewModel(@event, venueLookup[@event.VenueId], 
-                responseType, invited);
-            viewModels.Add(viewModel);
-        }
-
-        return viewModels;
     }
 
     public async Task<ServiceResult> PayDeposit(Guid currentMemberId, Guid eventId, string cardToken)

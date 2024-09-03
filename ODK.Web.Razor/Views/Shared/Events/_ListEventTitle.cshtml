@@ -1,0 +1,25 @@
+﻿@using ODK.Core.Events
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Events
+@model ListEventViewModel
+
+<div class="d-flex">
+    <div class="me-auto">
+        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+        {
+            ReadOnly = true,
+            ResponseType = Model.Event.Response
+        })
+
+        <a href="@OdkRoutes2.Groups.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" 
+           class="@(Model.Event.Response != EventResponseType.None ? "ms-1" : null)">
+            @Model.Event.EventName
+        </a>
+    </div>
+    @if (Model.Event.Ticketed)
+    {
+        <div data-bs-toggle="tooltip" data-bs-title="Ticketed">
+            @await Html.PartialAsync("Components/Icons/_Ticket")
+        </div>
+    }
+</div>

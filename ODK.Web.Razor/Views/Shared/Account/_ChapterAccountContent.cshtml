@@ -12,7 +12,6 @@
         <div>
             @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
             {
-                ChapterName = Model.Chapter.Name,
                 Member = Model.CurrentMember
             })
         </div>
@@ -22,7 +21,7 @@
                 Change picture
             </button>
 
-            <form class="d-flex align-items-center" method="post" action="@OdkRoutes.Account.PictureRotate(Model.Chapter.Name)">
+            <form class="d-flex align-items-center" method="post" action="@OdkRoutes.Account.PictureRotate(Model.Chapter)">
                 <button class="btn-icon" data-bs-toggle="tooltip" data-bs-title="Rotate right">
                     <i class="fas fa-undo flip-horizontal"></i>
                 </button>
@@ -38,10 +37,9 @@
     Size = "modal-lg",
     Body =
     @<div>
-        <form method="post" action="@OdkRoutes.Account.PictureUpload(Model.Chapter.Name)" enctype="multipart/form-data">
+        <form method="post" action="@OdkRoutes.Account.PictureUpload(Model.Chapter)" enctype="multipart/form-data">
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
             {
-                ChapterName = Model.Chapter.Name,
                 CropHeight = Model.Avatar?.CropHeight,
                 CropWidth = Model.Avatar?.CropWidth,
                 CropX = Model.Avatar?.CropX,

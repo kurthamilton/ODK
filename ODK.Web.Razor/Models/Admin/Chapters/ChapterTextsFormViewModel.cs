@@ -5,15 +5,13 @@ namespace ODK.Web.Razor.Models.Admin.Chapters;
 
 public class ChapterTextsFormViewModel
 {
-    public Guid ChapterId { get; set; }
-
     public string? Description { get; set; }
 
     [Required]
-    [DisplayName("Register message")]
+    [DisplayName("Message to non-members on the registration page")]
     public string? RegisterMessage { get; set; }
 
     [Required]
-    [DisplayName("Welcome message")]
+    [DisplayName("Message to non-members on the home page")]
     public string? WelcomeMessage { get; set; }
 }

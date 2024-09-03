@@ -22,7 +22,7 @@
     Going since @Model.Chapter.CreatedUtc.ToFriendlyDateString(Model.CurrentMember?.TimeZone ?? Model.Chapter.TimeZone)
 </div>
 <div class="text-end">
-    <i class="fa-solid fa-users"></i>
+    @await Html.PartialAsync("Components/Icons/_Members")
     @Model.MemberCount @StringUtils.Pluralise(Model.MemberCount, "member")
 </div>
 

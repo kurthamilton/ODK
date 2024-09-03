@@ -19,11 +19,11 @@
                     <span class="icon">
                         <i class="fa-regular fa-user"></i>
                     </span>                    
-                    <span>My profile</span>
+                    <span>My account</span>
                 </a>
                 <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes2.MemberGroups.Index(platform)">
                     <span class="icon">
-                        <i class="fa-solid fa-users-rectangle"></i>
+                        @await Html.PartialAsync("Components/Icons/_Groups")
                     </span>                    
                     <span>My groups</span>
                 </a>

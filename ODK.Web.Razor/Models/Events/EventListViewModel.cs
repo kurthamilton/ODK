@@ -10,6 +10,10 @@ public class EventListViewModel
 
     public required IReadOnlyCollection<EventResponseViewModel> Events { get; init; }
 
+    public bool FullWidth { get; init; }
+
+    public bool ForceDisplayYear { get; init; }
+
     public required PlatformType Platform { get; init; }
 
     public required TimeZoneInfo TimeZone { get; init; }

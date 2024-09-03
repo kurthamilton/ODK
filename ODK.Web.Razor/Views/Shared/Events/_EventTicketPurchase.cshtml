@@ -63,7 +63,7 @@
 
                 @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                 {
-                    Action = $"/{Model.Chapter.Name}/Events/{Model.Event.Id}/Tickets/Complete",
+                    Action = $"/events/{Model.Event.Id}/tickets/complete",
                     PaymentSettings = Model.ChapterPaymentSettings,
                     Id = modalId,
                     PaymentForm = new PaymentFormViewModel
@@ -114,7 +114,7 @@
 
                     @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                     {
-                        Action = $"/{Model.Chapter.Name}/Events/{Model.Event.Id}/Tickets/Deposit",
+                        Action = $"/events/{Model.Event.Id}/tickets/deposit",
                         PaymentSettings = Model.ChapterPaymentSettings,
                         Id = modalId,
                         PaymentForm = new PaymentFormViewModel
@@ -155,7 +155,7 @@
 
                     @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                     {
-                        Action = $"/{Model.Chapter.Name}/Events/{Model.Event.Id}/Tickets/Purchase",
+                        Action = $"/events/{Model.Event.Id}/tickets/purchase",
                         PaymentSettings = Model.ChapterPaymentSettings,
                         Id = modalId,
                         PaymentForm = new PaymentFormViewModel

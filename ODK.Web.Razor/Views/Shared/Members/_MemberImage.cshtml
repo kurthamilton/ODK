@@ -4,7 +4,7 @@
 @{
     var imageUrl = Model.HasImage != null 
         ? Model.Image != null ? ImageHelper.ToDataUrl(Model.Image.ImageData, Model.Image.MimeType) : ""
-        : OdkRoutes.Members.Image(Model.Member.Id, Model.ChapterName);    
+        : OdkRoutes.Members.Image(Model.Member.Id);    
 }
 
 <img class="@(Model.IsTop ? "card-img-top" : "card-img") @(imageUrl == "" ? "d-none" : "")"

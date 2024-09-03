@@ -14,14 +14,14 @@
     </p>
 }
 
-<form method="post" action="/@Model.ChapterName/Account/Join" enctype="multipart/form-data">
+<form method="post" action="/@Model.Chapter.Name/Account/Join" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     
     @if (memberId == null)
     {
         @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
         {
-            ChapterName = Model.ChapterName
+            Chapter = Model.Chapter
         });
     }    
 

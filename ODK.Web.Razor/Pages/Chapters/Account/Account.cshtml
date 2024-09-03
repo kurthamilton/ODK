@@ -1,6 +1,8 @@
 ﻿@page "/{chapterName}/Account"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Caching
+@using ODK.Services.Chapters
 @using ODK.Services.Members
 @using ODK.Services.Users
 @using ODK.Services.Users.ViewModels
@@ -9,11 +11,13 @@
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model AccountModel
+@inject IRequestCache RequestCache
 @inject IMemberService MemberService
 @{
     Layout = "_ChapterLayout";
     Model.Title = "Account";
 
+    var chapter = await RequestCache.GetChapterAsync(Model.ChapterName);
     var member = await MemberService.GetMember(Model.CurrentMemberId);
 }
 
@@ -22,13 +26,13 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.PersonalDetails(Model.ChapterName),
-        ChapterName = Model.ChapterName,
+        Active = OdkRoutes.Account.PersonalDetails(chapter),
+        Chapter = chapter,
         Content = 
             @<form action="/Account/PersonalDetails" method="post">
                 @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
                 {
-                    ChapterName = Model.ChapterName,
+                    Chapter = chapter,
                     EmailAddress = member.EmailAddress,
                     FirstName = member.FirstName,
                     LastName = member.LastName

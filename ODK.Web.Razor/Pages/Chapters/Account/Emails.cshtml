@@ -13,10 +13,6 @@
     Model.Title = "Email preferences";
 
     var viewModel = await AccountViewModelService.GetChapterAccountViewModel(Model.CurrentMemberId, Model.ChapterName);
-    if (viewModel.ChapterName == null)
-    {
-        return;
-    }
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -24,13 +20,13 @@
     Title = "Account",    
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.EmailPreferences(viewModel.ChapterName),
-        ChapterName = viewModel.ChapterName,
+        Active = OdkRoutes.Account.EmailPreferences(viewModel.Chapter),
+        Chapter = viewModel.Chapter,
         Content =
             @<div>
                 @await Html.PartialAsync("Account/_EmailPreferencesContent", new EmailPreferencesContentViewModel
                 {
-                    ChapterName = viewModel.ChapterName,
+                    ChapterName = viewModel.Chapter.Name,
                     CurrentMember = viewModel.CurrentMember
                 })
             </div>

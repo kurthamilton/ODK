@@ -1,6 +1,4 @@
-﻿using ODK.Core.Chapters;
-
-namespace ODK.Web.Razor.Models.Contact;
+﻿namespace ODK.Web.Razor.Models.Contact;
 
 public class ContactContentViewModel
 {

@@ -1,0 +1,29 @@
+﻿@page "/groups/{slug}/events/{id:guid}"
+@using ODK.Services.Events
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Groups
+@model EventModel
+@inject IEventViewModelService EventViewModelService
+@{
+    Layout = "_HomeLayout";
+
+    var viewModel = await EventViewModelService.GetGroupEventPageViewModel(Model.CurrentMemberIdOrDefault, Model.Slug, Model.EventId);
+
+    Model.Title = $"{viewModel.Event.GetDisplayName()} | {viewModel.Chapter.Name}";
+}
+
+@await Html.PartialAsync("Groups/_GroupBodyWithSidebar", new GroupBodyWithSidebarViewModel
+{
+    Title = "",
+    Content = await Html.PartialAsync("Events/_EventContent", viewModel),
+    Group = viewModel,
+    SidebarContent = await Html.PartialAsync("Events/_EventSidebar", viewModel),
+    Breadcrumbs = new[]
+    {
+        viewModel.Event.HasPassed 
+            ? new MenuItem { Link = OdkRoutes2.Groups.PastEvents(viewModel.Platform, viewModel.Chapter), Text = "Past events" }
+            : new MenuItem { Link = OdkRoutes2.Groups.Events(viewModel.Platform, viewModel.Chapter), Text = "Events" },
+        new MenuItem { Text = viewModel.Event.GetDisplayName() }
+    }
+})

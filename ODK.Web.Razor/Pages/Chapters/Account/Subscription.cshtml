@@ -23,8 +23,8 @@
     HideSubscriptionAlert = true,    
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Subscription(Model.Chapter.Name),
-        ChapterName = Model.Chapter.Name,
+        Active = OdkRoutes.Account.Subscription(Model.Chapter),
+        Chapter = Model.Chapter,
         Content = 
             @<div>
                 @await Html.PartialAsync("Account/_ChapterSubscriptionContent", new ChapterSubscriptionContentViewModel

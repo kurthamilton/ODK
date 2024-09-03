@@ -3,38 +3,35 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Services.Events
 @using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model GroupEventsPageViewModel
-
-<h3>Upcoming</h3>
-
-@if (Model.IsAdmin)
-{
-    <a class="btn btn-outline-secondary" href="@OdkRoutes2.MemberGroups.EventCreate(Model.Platform, Model.Chapter)">Create</a>
+@{
+    var past = Context.ForPath(OdkRoutes2.Groups.PastEvents(Model.Platform, Model.Chapter));
 }
 
-@await Html.PartialAsync("Events/_EventList2", new EventListViewModel
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
-    Chapter = Model.Chapter,
-    Events = Model.UpcomingEvents
-            .Select(x => new EventResponseViewModel(x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
-            .ToArray(),
-    Platform = Model.Platform,
-    TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+    MenuContent = await Html.PartialAsync("Groups/_GroupEventsMenu", Model),
+    BodyContentFunc = 
+        @<div>
+            @await Html.PartialAsync("Events/_EventList", new EventListViewModel
+            {
+                Chapter = Model.Chapter,
+                Events = Model.Events
+                    .Select(x => new EventResponseViewModel(
+                        @event: x.Event, 
+                        venue: x.Venue, 
+                        response: x.Response?.Type ?? EventResponseType.None, 
+                        invited: false,
+                        responseSummary: x.ResponseSummary))
+                    .ToArray(),
+                ForceDisplayYear = past,
+                FullWidth = true,
+                Platform = Model.Platform,
+                TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+            })
+        </div>
 })
-
-@if (Model.PastEvents.Count > 0)
-{
-    <h3>Past</h3>
-
-    @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
-    {
-        Chapter = Model.Chapter,
-        Events = Model.PastEvents
-            .Select(x => new EventResponseViewModel(x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
-            .ToArray(),
-        Platform = Model.Platform,
-        TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
-    })
-}

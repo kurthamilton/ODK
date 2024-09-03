@@ -17,15 +17,17 @@ else
     
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     {
-        ChapterName = Model.Chapter.Name,
+        Chapter = Model.Chapter,
         Cols = 2,
         Members = Model.LatestMembers
             .Select(x => new ListMemberViewModel
             {
-                ChapterName = Model.Chapter.Name,
-                Member = x
+                Chapter = Model.Chapter,
+                Member = x,
+                Platform = Model.Platform
             })
-            .ToArray()
+            .ToArray(),
+        Platform = Model.Platform
     })
 }
                 

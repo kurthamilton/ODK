@@ -21,7 +21,6 @@
             <div class="d-flex align-items-end justify-content-center">
                 @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                 {
-                    ChapterName = Model.Chapter.Name,
                     Member = member
                 })
             </div>

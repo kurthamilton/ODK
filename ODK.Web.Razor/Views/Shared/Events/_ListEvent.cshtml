@@ -1,46 +1,11 @@
-﻿@using ODK.Core.Events
-@using ODK.Core.Utils
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models.Events
+﻿@using ODK.Web.Razor.Models.Events
 @model ListEventViewModel
-@{
-    var localTime = Event.ToLocalTime(Model.Event.Date, Model.Chapter.TimeZone);
-}
 
-<h4 class="d-flex align-items-center">  
-    @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
-    {
-        ReadOnly = true,
-        ResponseType = Model.Event.Response
-    })
-    
-    <a href="@OdkRoutes.Chapters.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" 
-       class="@(Model.Event.Response > 0 ? "ms-1" : null)">
-        @Model.Event.EventName
-    </a>
-</h4>
-<h5>
-    <span>@localTime.ToFriendlyDateString(null)</span>
-    @if (Model.Event.Date.TimeOfDay.TotalSeconds > 0)
-    {
-        <span>@Event.ToLocalTimeString(Model.Event.Date, Model.Event.EndTime, Model.Chapter.TimeZone)</span>
-    }
-    else if (!string.IsNullOrEmpty(Model.Event.Time))
-    {
-        <span>@Model.Event.Time</span>
-    }
-</h5>
-<div class="d-flex gap-2">
-    @if (Model.Event.VenueName != null)
-    {
-        <div>
-            @await Html.PartialAsync("Components/_Location", Model.Event.VenueName)
-        </div>
-    }    
-    @if (Model.Event.Ticketed)
-    {
-        <div>
-            <i class="fa-solid fa-ticket" data-bs-toggle="tooltip" data-bs-title="Ticketed"></i>
-        </div>        
-    }    
+<div class="card">
+    <div class="card-header">
+        @await Html.PartialAsync("Events/_ListEventTitle", Model)
+    </div>
+    <div class="card-body">
+        @await Html.PartialAsync("Events/_ListEventBody", Model)
+    </div>        
 </div>

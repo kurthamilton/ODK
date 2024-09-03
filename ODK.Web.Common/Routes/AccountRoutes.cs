@@ -1,21 +1,23 @@
-﻿namespace ODK.Web.Common.Routes;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Platforms;
+
+namespace ODK.Web.Common.Routes;
 
 public class AccountRoutes : RoutesBase
 {
-    public string Delete(string? chapterName) => AccountPath(chapterName, "/delete");
-    public string EmailAddressChange(string? chapterName) => AccountPath(chapterName, "/email/change");
-    public string EmailPreferences(string? chapterName) => AccountPath(chapterName, "/emails");
-    public string Join(string? chapterName) => AccountPath(chapterName, "/join");
+    public string Delete(Chapter? chapter) => AccountPath(chapter, "/delete");
+    public string EmailAddressChange(Chapter? chapter) => AccountPath(chapter, "/email/change");
+    public string EmailPreferences(Chapter? chapter) => AccountPath(chapter, "/emails");
+    public string Join(Chapter? chapter) => AccountPath(chapter, "/join");
     public string Location() => AccountPath(null, "/location");
-    public string Login(string? chapterName) => AccountPath(chapterName, "/login");
-    public string PasswordChange(string? chapterName) => AccountPath(chapterName, "/password/change");
-    public string PersonalDetails(string? chapterName) => AccountPath(chapterName, "");
-    public string Picture(string? chapterName) => AccountPath(chapterName, "/picture");
-    public string PictureRotate(string? chapterName) => AccountPath(chapterName, "/picture/rotate");
-    public string PictureUpload(string? chapterName) => AccountPath(chapterName, "/picture/change");
-    public string Profile(string chapterName) => AccountPath(chapterName, "/profile");
-    public string Subscription(string? chapterName) => AccountPath(chapterName, "/subscription");
+    public string Login(Chapter? chapter) => AccountPath(chapter, "/login");
+    public string PasswordChange(Chapter? chapter) => AccountPath(chapter, "/password/change");
+    public string PersonalDetails(Chapter? chapter) => AccountPath(chapter, "");
+    public string Picture(Chapter? chapter) => AccountPath(chapter, "/picture");
+    public string PictureRotate(Chapter? chapter) => AccountPath(chapter, "/picture/rotate");
+    public string PictureUpload(Chapter? chapter) => AccountPath(chapter, "/picture/change");
+    public string Profile(Chapter? chapter) => AccountPath(chapter, "/profile");
+    public string Subscription(Chapter? chapter) => AccountPath(chapter, "/subscription");
 
-    private string AccountPath(string? chapterName, string path)
-        => GetRoute(chapterName, "/account" + path);
+    private string AccountPath(Chapter? chapter, string path) => GetRoute(chapter, "/account" + path);
 }

@@ -1,0 +1,17 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Events
+
+@model EventResponseSummaryViewModel
+
+@if (Model.Summary == null || Model.Summary.Yes == 0)
+{
+    return;
+}
+
+<div class="small">
+    <span>@await Html.PartialAsync("Components/Icons/_Members")</span>
+    <span>
+        @Model.Summary.Yes
+        @StringUtils.Pluralise(Model.Summary.Yes, "Attendee")
+    </span>
+</div>
