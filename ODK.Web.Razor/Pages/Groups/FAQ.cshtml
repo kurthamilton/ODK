@@ -1,6 +1,6 @@
 ﻿@page "/groups/{slug}/faq"
 @using ODK.Services.Chapters
-@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Groups
 @model ODK.Web.Razor.Pages.Groups.FAQModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
@@ -11,9 +11,9 @@
     Model.Title = $"FAQ | {viewModel.Chapter.Name}";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
+    Title = "Frequently asked questions",
     Content = await Html.PartialAsync("Groups/_GroupQuestionsContent", viewModel),
-    Menu = await Html.PartialAsync("Groups/_GroupMenu", viewModel),
-    Title = viewModel.Chapter.Name
+    Group = viewModel
 })

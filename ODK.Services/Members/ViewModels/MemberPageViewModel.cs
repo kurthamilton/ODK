@@ -1,15 +1,12 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Members.ViewModels;
 
-public class MemberPageViewModel
-{
-    public required Chapter Chapter { get; init; }
-
+public class MemberPageViewModel : GroupPageViewModelBase
+{    
     public required IReadOnlyCollection<ChapterProperty> ChapterProperties { get; init; }
-
-    public required Member CurrentMember { get; init; }
 
     public required Member Member { get; init; }
 

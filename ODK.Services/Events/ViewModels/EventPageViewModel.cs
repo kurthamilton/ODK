@@ -2,20 +2,17 @@
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Venues;
+using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Events.ViewModels;
 
-public class EventPageViewModel
+public class EventPageViewModel : GroupPageViewModelBase
 {
     public required bool CanRespond { get; init; }
 
     public required bool CanView { get; init; }
 
-    public required Chapter Chapter { get; init; }
-
     public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
-
-    public required Member? CurrentMember { get; init; }
 
     public required EventCommentsDto Comments { get; init; }
 
@@ -46,5 +43,7 @@ public class EventPageViewModel
 
     public required IReadOnlyCollection<EventTicketPurchase> TicketPurchases { get; init; }
 
-    public required Venue? Venue { get; init; }    
+    public required Venue? Venue { get; init; }
+
+    public required VenueLocation? VenueLocation { get; init; }
 }

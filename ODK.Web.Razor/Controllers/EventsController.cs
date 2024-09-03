@@ -16,8 +16,8 @@ public class EventsController : OdkControllerBase
     }    
 
     [Authorize]
-    [HttpPost("{chapterName}/Events/{id:guid}/Comments")]
-    public async Task<IActionResult> AddComment(string chapterName, Guid id, EventCommentFormViewModel viewModel)
+    [HttpPost("events/{id:guid}/comments")]
+    public async Task<IActionResult> AddComment(Guid chapterId, Guid id, EventCommentFormViewModel viewModel)
     {
         var result = await _eventService.AddComment(MemberId, id, viewModel.Text ?? "", viewModel.Parent);
         if (!result.Success)

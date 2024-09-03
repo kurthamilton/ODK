@@ -7,34 +7,12 @@
 @using ODK.Web.Razor.Models.Events
 @model GroupEventsPageViewModel
 
-<h3>Upcoming</h3>
-
-@if (Model.IsAdmin)
-{
-    <a class="btn btn-outline-secondary" href="@OdkRoutes2.MemberGroups.EventCreate(Model.Platform, Model.Chapter)">Create</a>
-}
-
 @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
 {
     Chapter = Model.Chapter,
-    Events = Model.UpcomingEvents
-            .Select(x => new EventResponseViewModel(x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
-            .ToArray(),
+    Events = Model.Events
+        .Select(x => new EventResponseViewModel(x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
+        .ToArray(),
     Platform = Model.Platform,
     TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
 })
-
-@if (Model.PastEvents.Count > 0)
-{
-    <h3>Past</h3>
-
-    @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
-    {
-        Chapter = Model.Chapter,
-        Events = Model.PastEvents
-            .Select(x => new EventResponseViewModel(x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
-            .ToArray(),
-        Platform = Model.Platform,
-        TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
-    })
-}

@@ -1,10 +1,9 @@
 ﻿using ODK.Core.Members;
+using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Members.ViewModels;
 
-public class MembersPageViewModel
+public class MembersPageViewModel : GroupPageViewModelBase
 {
-    public required string ChapterName { get; init; }
-
     public required IReadOnlyCollection<Member> Members { get; init; }
 }

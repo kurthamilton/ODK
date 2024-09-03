@@ -43,7 +43,6 @@
                     <td width="30px" class="px-0">
                         @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                         {
-                            ChapterName = Model.Chapter.Name,
                             Member = ticketPurchase.Member,
                             MaxWidth = 30
                         })

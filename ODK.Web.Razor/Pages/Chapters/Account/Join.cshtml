@@ -14,10 +14,10 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = $"Join the {viewModel.ChapterName} Drunken Knitwits",
+    Title = $"Join the {viewModel.Chapter.Name} Drunken Knitwits",
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{viewModel.ChapterName}", Text = viewModel.ChapterName },
+        new MenuItem { Link = $"/{viewModel.Chapter.Name}", Text = viewModel.Chapter.Name },
         new MenuItem { Text = "Join" }
     },
     Content = await Html.PartialAsync("Account/_ChapterJoinContent", viewModel)

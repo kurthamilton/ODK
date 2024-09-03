@@ -27,7 +27,7 @@ public class AccountViewModelService : IAccountViewModelService
 
         return new ChapterAccountViewModel
         {
-            ChapterName = chapter.Name,
+            Chapter = chapter,
             CurrentMember = member
         };
     }         
@@ -49,7 +49,7 @@ public class AccountViewModelService : IAccountViewModelService
 
         return new ChapterJoinPageViewModel
         {
-            ChapterName = chapter.Name,
+            Chapter = chapter,
             Profile = CreateProfileFormViewModel(
                 chapter, 
                 chapterProperties, 

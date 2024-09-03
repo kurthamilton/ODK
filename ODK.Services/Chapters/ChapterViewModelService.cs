@@ -33,6 +33,8 @@ public class ChapterViewModelService : IChapterViewModelService
 
     public async Task<GroupsViewModel> FindGroups(ILocation location, Distance radius)
     {
+        var platform = _platformProvider.GetPlatform();
+
         var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
         var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetAll();
 
@@ -83,6 +85,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 Chapter = chapterDictionary[chapterId],
                 Distance = chapterDistances[chapterId],
                 Location = chapterLocationDictionary[chapterId],
+                Platform = platform,
                 Texts = chapterTexts
             });
         }
@@ -129,6 +132,40 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
+    public async Task<GroupContactPageViewModel> GetGroupContactPage(Guid? currentMemberId, string slug)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
+        OdkAssertions.Exists(chapter);
+
+        var (
+            currentMember,
+            ownerSubscription,
+            adminMembers,
+            hasQuestions
+        ) = await _unitOfWork.RunAsync(
+            x => currentMemberId != null
+                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => currentMemberId != null
+                ? x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId.Value)
+                : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),       
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
+
+        return new GroupContactPageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = currentMember,
+            HasQuestions = hasQuestions,
+            IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
+            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
+            OwnerSubscription = ownerSubscription,
+            Platform = platform
+        };
+    }
+
     public async Task<GroupEventsPageViewModel> GetGroupEventsPage(Guid? currentMemberId, string slug)
     {
         var platform = _platformProvider.GetPlatform();
@@ -143,9 +180,7 @@ public class ChapterViewModelService : IChapterViewModelService
             membershipSettings,
             privacySettings,
             adminMembers,
-            memberCount,
             upcomingEvents,
-            recentEvents,
             hasQuestions
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
@@ -160,13 +195,10 @@ public class ChapterViewModelService : IChapterViewModelService
             x => currentMemberId != null
                 ? x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId.Value)
                 : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),
-            x => x.MemberRepository.GetCountByChapterId(chapter.Id),
-            x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),
-            x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 3),
+            x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),            
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
 
         var eventIds = upcomingEvents
-            .Concat(recentEvents)
             .Select(x => x.Id)
             .Distinct()
             .ToArray();
@@ -185,23 +217,78 @@ public class ChapterViewModelService : IChapterViewModelService
             IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             OwnerSubscription = ownerSubscription,
-            PastEvents = ToGroupPageListEvents(
-                recentEvents,
-                venues,
-                responses,
-                currentMember,
-                memberSubscription,
-                membershipSettings,
-                privacySettings),
-            Platform = platform,
-            UpcomingEvents = ToGroupPageListEvents(
+            Events = ToGroupPageListEvents(
                 upcomingEvents,
                 venues,
                 responses,
                 currentMember,
                 memberSubscription,
                 membershipSettings,
-                privacySettings)            
+                privacySettings),
+            Platform = platform          
+        };
+    }
+
+    public async Task<GroupEventsPageViewModel> GetGroupPastEventsPage(Guid? currentMemberId, string slug)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
+        OdkAssertions.Exists(chapter);
+
+        var (
+            currentMember,
+            memberSubscription,
+            ownerSubscription,
+            membershipSettings,
+            privacySettings,
+            adminMembers,
+            pastEvents,
+            hasQuestions
+        ) = await _unitOfWork.RunAsync(
+            x => currentMemberId != null
+                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => currentMemberId != null
+                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
+                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
+            x => currentMemberId != null
+                ? x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId.Value)
+                : new DefaultDeferredQueryMultiple<ChapterAdminMember>(),
+            x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 1000),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
+
+        var eventIds = pastEvents
+            .Select(x => x.Id)
+            .Distinct()
+            .ToArray();
+
+        var (venues, responses) = await _unitOfWork.RunAsync(
+            x => x.VenueRepository.GetByEventIds(eventIds),
+            x => currentMember?.IsMemberOf(chapter.Id) == true
+                ? x.EventResponseRepository.GetByMemberId(currentMember.Id, eventIds)
+                : new DefaultDeferredQueryMultiple<EventResponse>());
+
+        return new GroupEventsPageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = currentMember,
+            HasQuestions = hasQuestions,
+            IsAdmin = adminMembers.Any(x => x.ChapterId == chapter.Id),
+            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
+            OwnerSubscription = ownerSubscription,
+            Events = ToGroupPageListEvents(
+                pastEvents,
+                venues,
+                responses,
+                currentMember,
+                memberSubscription,
+                membershipSettings,
+                privacySettings),
+            Platform = platform
         };
     }
 
@@ -445,6 +532,8 @@ public class ChapterViewModelService : IChapterViewModelService
 
     public async Task<ChapterHomePageViewModel> GetHomePage(Guid? currentMemberId, string chapterName)
     {        
+        var platform = _platformProvider.GetPlatform();
+
         var chapter = await GetChapter(chapterName);
         OdkAssertions.MeetsCondition(chapter, x => x.IsOpenForRegistration());
 
@@ -490,6 +579,7 @@ public class ChapterViewModelService : IChapterViewModelService
             LatestMembers = latestMembers,
             Links = links,
             MemberEventResponses = responses,
+            Platform = platform,
             Texts = texts
         };
     }

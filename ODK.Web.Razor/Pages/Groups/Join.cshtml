@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Groups
 @model ODK.Web.Razor.Pages.Groups.JoinModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
@@ -13,9 +14,9 @@
     Model.Title = $"Join | {viewModel.Chapter.Name}";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
+    Title = "Join us",
     Content = await Html.PartialAsync("Groups/_GroupJoinContent", viewModel),
-    Menu = await Html.PartialAsync("Groups/_GroupMenu", viewModel),
-    Title = $"{viewModel.Chapter.Name} - Join"
+    Group = viewModel
 })

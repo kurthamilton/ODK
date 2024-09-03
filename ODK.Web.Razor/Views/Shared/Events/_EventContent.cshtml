@@ -15,54 +15,37 @@
     return;
 }
 
-@await Html.PartialAsync("Components/_AdminBar", new AdminBarViewModel
-{
-    AdminLink = $"/{Model.Chapter.Name}/Admin/Events/{Model.Event.Id}",
-    AdminLinkText = "Edit",
-    Chapter = Model.Chapter,
-    CurrentMember = Model.CurrentMember,
-    Toolbar = 
-        @<div>
-            @if (Model.Event.PublishedUtc == null)
-            {
-                <form action="/@Model.Chapter.Name/Admin/Events/@Model.Event.Id/Publish" method="post">
-                    <button class="btn btn-primary">
-                        <i class="fa-solid fa-upload"></i>
-                        Publish
-                    </button>
-                </form>
-            }
-        </div>
-})
-
 @if (Model.Venue != null)
 {
-    <h2>@Model.Venue.Name</h2>
+    <h5>@Model.Venue.Name</h5>
 }
 
-<h4>@localTime.ToFriendlyDateString(null)</h4>
+<h6>
+    @localTime.ToFriendlyDateString(Model.Chapter.TimeZone)
+    
+    @if (localTime.TimeOfDay.TotalSeconds > 0)
+    {
+        <span>
+            @if (Model.Event.EndTime == null)
+            {
+                <span>from</span>
+            }
 
-@if (localTime.TimeOfDay.TotalSeconds > 0)
-{
-    <h5>
-        @if (Model.Event.EndTime == null)
-        {
-            <span>From</span>
-        }
+            <span>@localTime.ToString("HH:mm")</span>
 
-        <span>@localTime.ToString("HH:mm")</span>
+            @if (Model.Event.EndTime != null)
+            {
+                <span>-</span>
+                <span>@TimeSpanUtils.ToString(Model.Event.EndTime)</span>
+            }
+        </span>
+    }
+    else if (!string.IsNullOrEmpty(Model.Event.Time))
+    {
+        <span>@Model.Event.Time</span>
+    }
+</h6>
 
-        @if (Model.Event.EndTime != null)
-        {
-            <span>-</span>
-            <span>@TimeSpanUtils.ToString(Model.Event.EndTime)</span>
-        }
-    </h5>
-}
-else if (!string.IsNullOrEmpty(Model.Event.Time))
-{
-    <h5>@Model.Event.Time</h5>
-}
 
 @if (!string.IsNullOrEmpty(Model.Event.Description))
 {
@@ -73,7 +56,7 @@ else if (!string.IsNullOrEmpty(Model.Event.Time))
 
 @if (!string.IsNullOrEmpty(Model.Event.ImageUrl))
 {
-    <p *ngIf="event.imageUrl">
+    <p>
         <img src="@Model.Event.ImageUrl" style="max-height: 500px;" />
     </p>
 }
@@ -85,15 +68,7 @@ else if (!string.IsNullOrEmpty(Model.Event.Time))
         : new Dictionary<Guid, Member>();
 
     <h3 class="mt-5">
-        Comments
-        @if (Model.CurrentMember != null)
-        {
-            @await Html.PartialAsync("Components/_FeatureTooltip",
-                new FeatureTooltipViewModel
-                {
-                    Name = "Events.Comments"
-                })
-        }        
+        Comments        
     </h3>
 
     @foreach (var comment in Model.Comments.Comments)
@@ -107,7 +82,7 @@ else if (!string.IsNullOrEmpty(Model.Event.Time))
             <div>
                 <strong>@member.FullName</strong>
                 <span>
-                    @TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, comment.CreatedUtc).ToString("dddd dd MMMM yyyy HH:mm")
+                    @comment.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
                 </span>
                 <span>
                     <a data-bs-toggle="collapse" href="#comment-reply-@comment.Id" role="button" aria-expanded="false" aria-controls="collapseExample">
@@ -119,7 +94,7 @@ else if (!string.IsNullOrEmpty(Model.Event.Time))
                 @comment.Text
             </div>
             <div class="collapse" id="comment-reply-@comment.Id">
-                <form action="/@Model.Chapter.Name/Events/@Model.Event.Id/Comments" method="post">
+                <form action="/events/@Model.Event.Id/comments" method="post">
                     @await Html.PartialAsync("Events/_EventCommentForm", new EventCommentFormViewModel
                     {
                         Parent  = comment.Id,
@@ -132,7 +107,7 @@ else if (!string.IsNullOrEmpty(Model.Event.Time))
     }
 
     <div>
-        <form action="/@Model.Chapter.Name/Events/@Model.Event.Id/Comments" method="post">
+        <form action="/events/@Model.Event.Id/comments" method="post">
             @await Html.PartialAsync("Events/_EventCommentForm", new EventCommentFormViewModel
             {
                 Text = ""
@@ -144,16 +119,18 @@ else if (!string.IsNullOrEmpty(Model.Event.Time))
 
 @if (Model.Venue != null && !string.IsNullOrEmpty(Model.Venue.MapQuery))
 {
+    var mapQuery = Model.VenueLocation?.Name ?? Model.Venue.MapQuery;
+
     <h3 class="mt-5">Location</h3>
     <hr/>
     @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
     {
-        Query = Model.Venue.MapQuery
+        Query = mapQuery
     })
     @if (!string.IsNullOrEmpty(Model.Venue.MapQuery))
     {
         <p>
-            <a href="https://maps.google.com?q=@Model.Venue.MapQuery" target="_blank">View in Google maps</a>
+            <a href="https://maps.google.com?q=@mapQuery" target="_blank">View in Google maps</a>
         </p>
     }    
 }

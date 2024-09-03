@@ -12,6 +12,11 @@
         Title = Model.Title
     })
 
+    @if (Model.Menu != null)
+    {
+        @Model.Menu
+    }
+
     <div class="container page-alerts">
         @if (!Model.HideSubscriptionAlert)
         {
@@ -39,6 +44,8 @@
                     {
                         @Model.Content
                     }
+
+                    @Model.ContentFunc?.Invoke(null)
                 </div>
                 <div class="col-lg-3 col-md-4 order-1 order-md-2">
                     @if (Model.SidebarContent != null)

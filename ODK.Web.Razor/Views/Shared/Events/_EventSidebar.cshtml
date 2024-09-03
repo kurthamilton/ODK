@@ -25,7 +25,6 @@
                         <div class="d-flex align-items-center justify-content-start">
                             @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                             {
-                                ChapterName = Model.Chapter.Name,
                                 Member = host,
                                 MaxWidth = 50
                             })
@@ -67,6 +66,7 @@
             {
                 Chapter = Model.Chapter,
                 Members = members,
+                Platform = Model.Platform,
                 Title = responseType.ToString(forAction: false)
             })
         }

@@ -26,8 +26,9 @@
             group => group
                 .Select(x => new ListMemberViewModel
                 {
-                    ChapterName = Model.Chapter.Name,
-                    Member = memberDictionary[x.MemberId]
+                    Chapter = Model.Chapter,
+                    Member = memberDictionary[x.MemberId],
+                    Platform = Model.Platform
                 })
                 .ToArray());
 }
@@ -37,10 +38,11 @@
     <h5>Going</h5>
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     { 
-        ChapterName = Model.Chapter.Name,
+        Chapter = Model.Chapter,
         Members = membersByResponse[EventResponseType.Yes],
         Size = "xs",
-        Cols = cols
+        Cols = cols,
+        Platform = Model.Platform
     })
 }
 
@@ -49,10 +51,11 @@
     <h5>Maybe</h5>
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     {
-        ChapterName = Model.Chapter.Name,
+        Chapter = Model.Chapter,
         Members = membersByResponse[EventResponseType.Maybe],
         Size = "xs",
-        Cols = cols
+        Cols = cols,
+        Platform = Model.Platform
     })
 }
 
@@ -61,10 +64,11 @@
     <h5>Declined</h5>
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     {
-        ChapterName = Model.Chapter.Name,
+        Chapter = Model.Chapter,
         Members = membersByResponse[EventResponseType.No],
         Size = "xs",
-        Cols = cols
+        Cols = cols,
+        Platform = Model.Platform
     })
 }
 
@@ -73,10 +77,11 @@
     <h5>No response</h5>
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     {
-        ChapterName = Model.Chapter.Name,
+        Chapter = Model.Chapter,
         Members = membersByResponse[EventResponseType.None],
         Size = "xs",
-        Cols = cols
+        Cols = cols,
+        Platform = Model.Platform
     })
 }
 
@@ -85,9 +90,10 @@
     <h5>Not invited</h5>
     @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
     {
-        ChapterName = Model.Chapter.Name,
+        Chapter = Model.Chapter,
         Members = membersByResponse[EventResponseType.NotInvited],
         Size = "xs",
-        Cols = cols
+        Cols = cols,
+        Platform = Model.Platform
     })
 }

@@ -1,4 +1,5 @@
 ﻿@page "/groups/{slug}/error/{statusCode}"
+@using ODK.Core.Platforms
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
@@ -17,7 +18,7 @@
 {
     Breadcrumbs = new []
     {
-        new MenuItem { Link = OdkRoutes2.Groups.Group(chapter), Text = chapter.Name },
+        new MenuItem { Link = OdkRoutes2.Groups.Group(PlatformType.Default, chapter), Text = chapter.Name },
         new MenuItem { Text = Model.ErrorStatusCode.ErrorPageTitle() }
     },
     Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),

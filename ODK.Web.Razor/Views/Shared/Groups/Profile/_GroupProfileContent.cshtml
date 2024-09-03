@@ -25,6 +25,7 @@
             @if (Model.ChapterProperties.Count > 0)
             {
                 <section class="section">
+                    <h3>My profile</h3>
                     <form>
                         @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
                         {

@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.Groups;
 
-public class EventsModel : OdkGroupPageModel
+public class ContactModel : OdkGroupPageModel
 {
     public void OnGet()
     {

@@ -1,0 +1,19 @@
+﻿@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Groups
+@model GroupBodyViewModel
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = Model.Breadcrumbs,
+    Menu = await Html.PartialAsync("Groups/_GroupMenu", Model.Group),
+    Title = Model.Group.Chapter.Name,
+    ContentFunc = 
+        @<div>
+            @if (!string.IsNullOrEmpty(Model.Title))
+            {
+                <h2>@Model.Title</h2>
+            }
+            
+            @Model.Content
+        </div>
+})

@@ -24,6 +24,12 @@ public class ContactService : IContactService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task SendChapterContactMessage(Guid chapterId, string fromAddress, string message, string recaptchaToken)
+    {
+        var chapter = await _unitOfWork.ChapterRepository.GetById(chapterId).Run();
+        await SendChapterContactMessage(chapter, fromAddress, message, recaptchaToken);
+    }
+
     public async Task SendChapterContactMessage(Chapter chapter, string fromAddress, string message, string recaptchaToken)
     {
         ValidateRequest(fromAddress, message);

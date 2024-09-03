@@ -10,7 +10,23 @@ internal static class ChapterQueries
     {
         if (platform != PlatformType.DrunkenKnitwits)
         {
-            return query;
+            return query
+                .Select(x => new Chapter
+                {
+                    ApprovedUtc = x.ApprovedUtc,
+                    BannerImageUrl = x.BannerImageUrl,
+                    Id = x.Id,
+                    CountryId = x.CountryId,
+                    CreatedUtc = x.CreatedUtc,
+                    DisplayOrder = x.DisplayOrder,
+                    Name = x.Platform == PlatformType.DrunkenKnitwits ? x.Name + " Drunken Knitwits" : x.Name,
+                    OwnerId = x.OwnerId,
+                    Platform = platform,
+                    PublishedUtc = x.PublishedUtc,
+                    RedirectUrl = x.RedirectUrl,
+                    Slug = x.Slug,
+                    TimeZone = x.TimeZone
+                });
         }
 
         return query
