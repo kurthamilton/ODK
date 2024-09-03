@@ -1,9 +1,14 @@
-﻿:root {
-    --odk-bg-light: #e9ecef;
+﻿$odk-bg-light: #e9ecef;
+$odk-bg-dark: #212529;
+
+:root {
+    --bs-body-bg: #{$odk-bg-light};
+    --odk-bg-light: #{$odk-bg-light};
 }
 
 [data-bs-theme="dark"] {
-    --odk-bg-light: #403f3f;
+    --bs-body-bg: #{$odk-bg-dark};
+    --odk-bg-light: #{$odk-bg-dark};
 }
 
 @import "odk/_variables";

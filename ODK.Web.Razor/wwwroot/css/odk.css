@@ -11909,11 +11909,13 @@ textarea.form-control-lg {
 }
 
 :root {
+  --bs-body-bg: #e9ecef;
   --odk-bg-light: #e9ecef;
 }
 
 [data-bs-theme=dark] {
-  --odk-bg-light: #403f3f;
+  --bs-body-bg: #212529;
+  --odk-bg-light: #212529;
 }
 
 html[data-platform=odk] {
@@ -12359,6 +12361,21 @@ html[data-platform=odk] {
   margin: auto;
 }
 
+.panel {
+  background-color: #f2f2f2;
+  padding: 1rem;
+}
+.panel .panel-title {
+  display: inline-block;
+  border-bottom: 1px solid var(--bs-body-color);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+[data-bs-theme=dark] .panel {
+  background-color: #2c3237;
+}
+
 .paragraphs p:last-child {
   margin-bottom: 0;
 }
@@ -12474,6 +12491,9 @@ html[data-platform=odk] {
   display: flex;
   justify-content: center;
   color: var(--bs-body-color);
+}
+.social-media-link i:hover {
+  opacity: 0.6;
 }
 
 .tab-content {

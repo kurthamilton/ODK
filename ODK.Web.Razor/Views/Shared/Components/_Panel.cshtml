@@ -1,0 +1,11 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model PanelViewModel
+
+<section class="panel">
+    <div class="panel-title">
+        @Model.TitleFunc.Invoke(null)
+    </div>
+    <div class="panel-body">
+        @Model.ContentFunc.Invoke(null)
+    </div>    
+</section>

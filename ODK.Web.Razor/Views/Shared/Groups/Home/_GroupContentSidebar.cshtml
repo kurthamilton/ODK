@@ -10,10 +10,10 @@
 
     @if (Model.InstagramPosts.Count > 0)
     {
-        @await Html.PartialAsync("Components/_Card", new CardViewModel
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            HeaderContentFunc = @<div>Latest from Instagram</div>,
-            BodyContentFunc =
+            TitleFunc = @<h5>Latest from Instagram</h5>,
+            ContentFunc = 
                 @<div>
                     @await Html.PartialAsync("Components/_InstagramPosts", new InstagramPostsViewModel
                     {
@@ -30,15 +30,15 @@
                         </div>
                     }
                 </div>
-        })    
+        })   
     }
 
     @if (Model.Links?.HasLinks == true)
     {
-        @await Html.PartialAsync("Components/_Card", new CardViewModel
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            HeaderContentFunc = @<div>Find us</div>,
-            BodyContentFunc =
+            TitleFunc = @<h5>Follow us</h5>,
+            ContentFunc =
                 @<div class="d-flex gap-3">
                     @await Html.PartialAsync("Components/_SocialMediaLinks", new SocialMediaLinksViewModel
                     {

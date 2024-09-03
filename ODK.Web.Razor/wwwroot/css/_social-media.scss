@@ -21,5 +21,9 @@
         display: flex;
         justify-content: center;        
         color: var(--bs-body-color);
+
+        &:hover {
+            opacity: 0.6;
+        }
     }
 }

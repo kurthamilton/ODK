@@ -5,7 +5,7 @@
 <div class="row">
     @foreach (var @event in Model.Events)
     {
-        <div class="col-12 mb-3 @(Model.FullWidth ? null : "col-md-4")">
+        <div class="col-12 @(Model.FullWidth ? null : "col-md-4")">
             @await Html.PartialAsync("Events/_ListEvent", new ListEventViewModel
             {
                 Chapter = Model.Chapter,

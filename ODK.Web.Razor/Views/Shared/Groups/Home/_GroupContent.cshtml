@@ -11,82 +11,86 @@
 
 <div class="row">
     <div class="col-lg-7">
-        @if (Model.IsMember || Model.IsAdmin)
-        {
-            @await Html.PartialAsync("Components/_EditableTextArea", new EditableTextViewModel
+        <div class="d-flex flex-column gap-5">
+            @if (Model.IsMember || Model.IsAdmin)
             {
-                Action = $"/admin/groups/{Model.Chapter.Id}/description",
-                Id = "group-description",
-                IsAdmin = Model.IsAdmin,
-                Name = "description",
-                Text = Model.Texts?.Description,
-                Title = "About us"
-            })
-        }        
-
-        @if (!Model.IsMember || Model.IsAdmin)
-        {
-            <section class="section">
-                @await Html.PartialAsync("Components/_EditableHtml", new EditableTextViewModel
+                @await Html.PartialAsync("Components/_EditableTextArea", new EditableTextViewModel
                 {
-                    Action = $"/admin/groups/{Model.Chapter.Id}/texts/welcome",
-                    Id = "group-texts-welcome",
+                    Action = $"/admin/groups/{Model.Chapter.Id}/description",
+                    Id = "group-description",
                     IsAdmin = Model.IsAdmin,
-                    Name = "text",
-                    Text = Model.Texts?.WelcomeText,
-                    Title = "Join us"
+                    Name = "description",
+                    Text = Model.Texts?.Description,
+                    Title = "About us"
                 })
+            }        
 
-                @if (!Model.IsMember)
-                {
+            @if (!Model.IsMember && !string.IsNullOrEmpty(Model.Texts?.WelcomeText))
+            {
+                <section class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Join us</h3>
+                    </div>
+                    <div class="mb-3">
+                        @Html.Raw(Model.Texts.WelcomeText)
+                    </div>
+
                     <a href="@OdkRoutes2.Groups.Join(Model.Platform, Model.Chapter)" class="btn btn-success">
                         Join
                     </a>
-                }                
-            </section>
-        }
+                </section>
+            }
 
-        @if (Model.UpcomingEvents.Count > 0)
-        {
-            <section class="section">
-                <h3>Upcoming events</h3>
-                @await Html.PartialAsync("Events/_EventList", new EventListViewModel
+            @if (Model.UpcomingEvents.Count > 0)
+            {
+                @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
-                    Chapter = Model.Chapter,
-                    Events = Model.UpcomingEvents
-                        .Select(x => new EventResponseViewModel(
-                            @event: x.Event, 
-                            venue: x.Venue, 
-                            response: x.Response?.Type ?? EventResponseType.None, 
-                            invited: false,
-                            responseSummary: x.ResponseSummary))
-                        .ToArray(),
-                    Platform = Model.Platform,
-                    TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
-                })
-            </section>
-        }
+                    TitleFunc = @<h3>Upcoming events</h3>,
+                    ContentFunc = 
+                        @<div>
+                            @await Html.PartialAsync("Events/_EventList", new EventListViewModel
+                            {
+                                Chapter = Model.Chapter,
+                                Events = Model.UpcomingEvents
+                                    .Select(x => new EventResponseViewModel(
+                                        @event: x.Event, 
+                                        venue: x.Venue, 
+                                        response: x.Response?.Type ?? EventResponseType.None, 
+                                        invited: false,
+                                        responseSummary: x.ResponseSummary))
+                                    .ToArray(),
+                                Platform = Model.Platform,
+                                TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+                            })
+                        </div>
+                })                
+            }
 
-        @if (Model.RecentEvents.Count > 0)
-        {
-            <section class="section">
-                <h3>Recent events</h3>
-                @await Html.PartialAsync("Events/_EventList", new EventListViewModel
+            @if (Model.RecentEvents.Count > 0)
+            {
+                @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
-                    Chapter = Model.Chapter,
-                    Events = Model.RecentEvents
-                        .Select(x => new EventResponseViewModel(
-                            @event: x.Event, 
-                            venue: x.Venue, 
-                            response: x.Response?.Type ?? EventResponseType.None, 
-                            invited: false,
-                            responseSummary: x.ResponseSummary))
-                        .ToArray(),
-                    Platform = Model.Platform,
-                    TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+                    TitleFunc = @<h3>Recent events</h3>,
+                    ContentFunc = 
+                        @<div>
+                            @await Html.PartialAsync("Events/_EventList", new EventListViewModel
+                            {
+                                Chapter = Model.Chapter,
+                                Events = Model.RecentEvents
+                                    .Select(x => new EventResponseViewModel(
+                                        @event: x.Event, 
+                                        venue: x.Venue, 
+                                        response: x.Response?.Type ?? EventResponseType.None, 
+                                        invited: false,
+                                        responseSummary: x.ResponseSummary))
+                                    .ToArray(),
+                                Platform = Model.Platform,
+                                TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+                            })
+                        </div>
                 })
-            </section>
-        }        
+            } 
+        </div>               
     </div>    
     <div class="col-lg-4 offset-lg-1">
         @await Html.PartialAsync("Groups/Home/_GroupContentSidebar", Model)
