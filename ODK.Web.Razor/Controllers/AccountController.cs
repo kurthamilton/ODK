@@ -68,7 +68,7 @@ public class AccountController : OdkControllerBase
 
         var result = await _memberService.CreateAccount(model);
         PostJoin(result);
-        return Redirect($"/Account/Pending");
+        return Redirect("/Account/Pending");
     }
 
     [HttpPost("account/currency")]
@@ -225,31 +225,6 @@ public class AccountController : OdkControllerBase
         return result.Success
             ? RedirectToReferrer()
             : View();        
-    }
-
-    [HttpPost("{ChapterName}/Account/Profile")]
-    public async Task<IActionResult> UpdateChapterProfile(
-        string chapterName, 
-        [FromForm] ChapterProfileFormSubmitViewModel profileViewModel)
-    {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var model = new UpdateMemberChapterProfile
-        {
-            Properties = profileViewModel.Properties.Select(x => new UpdateMemberProperty
-            {
-                ChapterPropertyId = x.ChapterPropertyId,
-                Value = string.Equals(x.Value, "Other", StringComparison.InvariantCultureIgnoreCase) &&
-                        !string.IsNullOrEmpty(x.OtherValue)
-                    ? x.OtherValue ?? ""
-                    : x.Value ?? ""
-            })
-        };
-
-        var memberId = User.MemberId();
-
-        var result = await _memberService.UpdateMemberChapterProfile(memberId, chapter.Id, model);
-        AddFeedback(result, "Profile updated");        
-        return result.Success ? RedirectToReferrer() : View();        
     }
 
     [HttpPost("Account/FeatureTips/{name}/Hide")]

@@ -25,7 +25,7 @@
         Active = OdkRoutes.Account.Profile(viewModel.Chapter),
         Chapter = viewModel.Chapter,
         Content =
-            @<form method="post" action="/@viewModel.Chapter.Name/Account/Profile">
+            @<form method="post" action="/groups/@viewModel.Chapter.Id/profile">
                 @Html.AntiForgeryToken()
 
                 @await Html.PartialAsync("Account/_ChapterProfileForm", viewModel.ChapterProfile)

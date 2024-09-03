@@ -26,7 +26,8 @@
             {
                 <section class="section">
                     <h3>My profile</h3>
-                    <form>
+                    <form action="/groups/@Model.Chapter.Id/profile" method="post">
+                        @Html.AntiForgeryToken()
                         @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
                         {
                             ChapterName = Model.Chapter.Name,
@@ -41,6 +42,7 @@
                                     Value = memberPropertyDictionary.TryGetValue(x.Id, out var memberProperty) ? memberProperty.Value : ""
                                 }).ToList()
                         })
+                        <button class="btn btn-primary">Update</button>
                     </form>
                 </section>
             }            
