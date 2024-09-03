@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Platforms;
 
@@ -22,7 +21,7 @@ public class GroupRoutes
 
     public string Index(PlatformType platform) => platform switch
     {
-        PlatformType.DrunkenKnitwits => "/",
+        PlatformType.DrunkenKnitwits => "",
         _ => "/groups"
     };
     

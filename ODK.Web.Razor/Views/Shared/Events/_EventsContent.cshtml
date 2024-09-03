@@ -19,6 +19,7 @@
     {
         Chapter = Model.Chapter,
         Events = Model.Events,
+        FullWidth = true,
         Platform = Model.Platform,
         TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
     })

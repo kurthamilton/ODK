@@ -62,17 +62,19 @@ public class EventViewModelService : IEventViewModelService
         var eventIds = events.Select(x => x.Id).ToArray();
         var venueIds = events.Select(x => x.VenueId).Distinct().ToArray();
 
-        IReadOnlyCollection<EventResponse> responses = [];
+        IReadOnlyCollection<EventResponse> memberResponses = [];
         IReadOnlyCollection<EventInvite> invites = [];
         IReadOnlyCollection<Guid> invitedEventIds = [];
         IReadOnlyCollection<Venue> venues = [];
+        IReadOnlyCollection<EventResponseSummaryDto> responseSummaries = [];
 
         if (eventIds.Length > 0 && member?.IsMemberOf(chapter.Id) == true)
         {
-            (venues, responses, invites) = await _unitOfWork.RunAsync(
+            (venues, memberResponses, invites, responseSummaries) = await _unitOfWork.RunAsync(
                 x => x.VenueRepository.GetByEventIds(eventIds),
                 x => x.EventResponseRepository.GetByMemberId(member.Id, eventIds),
-                x => x.EventInviteRepository.GetByMemberId(member.Id, eventIds));
+                x => x.EventInviteRepository.GetByMemberId(member.Id, eventIds),
+                x => x.EventResponseRepository.GetResponseSummaries(eventIds));
 
             invitedEventIds = invites
                 .Select(x => x.EventId)
@@ -81,15 +83,20 @@ public class EventViewModelService : IEventViewModelService
         }
         else if (eventIds.Length > 0)
         {
-            venues = await _unitOfWork.VenueRepository.GetByEventIds(eventIds).Run();
+            (venues, responseSummaries) = await _unitOfWork.RunAsync(
+                x => x.VenueRepository.GetByEventIds(eventIds),
+                x => x.EventResponseRepository.GetResponseSummaries(eventIds));
         }
 
-        var responseLookup = responses
+        var memberResponseLookup = memberResponses
             .ToDictionary(x => x.EventId, x => x.Type);
 
         var venueLookup = venues
             .GroupBy(x => x.Id)
             .ToDictionary(x => x.Key, x => x.First());
+
+        var responseSummaryLookup = responseSummaries
+            .ToDictionary(x => x.EventId);
 
         var viewModels = new List<EventResponseViewModel>();
         foreach (var @event in events.Where(x => x.PublishedUtc != null))
@@ -104,8 +111,16 @@ public class EventViewModelService : IEventViewModelService
             var canViewVenue = _authorizationService.CanViewVenue(venue, member, memberSubscription, membershipSettings, chapterPrivacySettings);
 
             var invited = invitedEventIds.Contains(@event.Id);
-            responseLookup.TryGetValue(@event.Id, out EventResponseType responseType);
-            var viewModel = new EventResponseViewModel(@event, canViewVenue ? venue : null, responseType, invited);
+            memberResponseLookup.TryGetValue(@event.Id, out EventResponseType responseType);
+
+            responseSummaryLookup.TryGetValue(@event.Id, out var responseSummary);
+
+            var viewModel = new EventResponseViewModel(
+                @event: @event, 
+                venue: canViewVenue ? venue : null, 
+                response: responseType, 
+                invited: invited,
+                responseSummary: responseSummary);
             viewModels.Add(viewModel);
         }
 

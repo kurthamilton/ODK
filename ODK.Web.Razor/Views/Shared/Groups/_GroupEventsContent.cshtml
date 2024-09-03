@@ -17,11 +17,16 @@
     MenuContent = await Html.PartialAsync("Groups/_GroupEventsMenu", Model),
     BodyContentFunc = 
         @<div>
-            @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
+            @await Html.PartialAsync("Events/_EventList", new EventListViewModel
             {
                 Chapter = Model.Chapter,
                 Events = Model.Events
-                    .Select(x => new EventResponseViewModel(x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
+                    .Select(x => new EventResponseViewModel(
+                        @event: x.Event, 
+                        venue: x.Venue, 
+                        response: x.Response?.Type ?? EventResponseType.None, 
+                        invited: false,
+                        responseSummary: x.ResponseSummary))
                     .ToArray(),
                 ForceDisplayYear = past,
                 FullWidth = true,

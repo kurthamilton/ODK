@@ -200,7 +200,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, member, events, venues, responses, invites) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, member, events, venues, memberResponses, invites) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetByChapterId(request.ChapterId),
@@ -213,7 +213,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var responseViewModels = new List<EventResponseViewModel>();
 
         var inviteDictionary = invites.ToDictionary(x => x.EventId);
-        var responseDictionary = responses.ToDictionary(x => x.EventId);
+        var responseDictionary = memberResponses.ToDictionary(x => x.EventId);
         var venueDictionary = venues.ToDictionary(x => x.Id);
 
         foreach (var @event in events)
@@ -227,7 +227,13 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
             venueDictionary.TryGetValue(@event.VenueId, out var venue);
 
-            responseViewModels.Add(new EventResponseViewModel(@event, venue, response?.Type ?? EventResponseType.None, invite != null));
+            var responseViewModel = new EventResponseViewModel(
+                @event: @event, 
+                venue: venue, 
+                response: response?.Type ?? EventResponseType.None, 
+                invited: invite != null,
+                responseSummary: null);
+            responseViewModels.Add(responseViewModel);
         }
 
         return new MemberEventsAdminPageViewModel

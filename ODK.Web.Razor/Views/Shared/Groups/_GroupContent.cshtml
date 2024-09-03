@@ -50,12 +50,16 @@
         {
             <section class="section">
                 <h3>Upcoming events</h3>
-                @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
+                @await Html.PartialAsync("Events/_EventList", new EventListViewModel
                 {
                     Chapter = Model.Chapter,
                     Events = Model.UpcomingEvents
                         .Select(x => new EventResponseViewModel(
-                            x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
+                            @event: x.Event, 
+                            venue: x.Venue, 
+                            response: x.Response?.Type ?? EventResponseType.None, 
+                            invited: false,
+                            responseSummary: x.ResponseSummary))
                         .ToArray(),
                     Platform = Model.Platform,
                     TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
@@ -67,12 +71,16 @@
         {
             <section class="section">
                 <h3>Recent events</h3>
-                @await Html.PartialAsync("Events/_EventList2", new EventListViewModel
+                @await Html.PartialAsync("Events/_EventList", new EventListViewModel
                 {
                     Chapter = Model.Chapter,
                     Events = Model.RecentEvents
                         .Select(x => new EventResponseViewModel(
-                            x.Event, x.Venue, x.Response?.Type ?? EventResponseType.None, false))
+                            @event: x.Event, 
+                            venue: x.Venue, 
+                            response: x.Response?.Type ?? EventResponseType.None, 
+                            invited: false,
+                            responseSummary: x.ResponseSummary))
                         .ToArray(),
                     Platform = Model.Platform,
                     TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)

@@ -1,0 +1,24 @@
+﻿@using ODK.Core.Events
+@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Events
+@model EventStatusViewModel
+
+@if (Model.Event.RsvpDeadlinePassed)
+{
+    <div class="badge text-bg-danger w-100">
+        RSVP deadline passed
+    </div>
+}
+else if (Model.Event.RsvpDeadlineUtc != null)
+{
+    <div class="badge text-bg-secondary w-100">
+        RSVP deadline: @Model.Event.RsvpDeadlineUtc.Value.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+    </div>
+}
+
+@if (!Model.Event.RsvpDeadlinePassed && Model.SpacesLeft != null)
+{
+    <div>
+        Spaces left: @Model.SpacesLeft / @Model.Event.AttendeeLimit
+    </div>
+}

@@ -30,14 +30,11 @@ public class EventPageViewModel : GroupPageViewModelBase
     {
         get
         {
-            if (Event.AttendeeLimit == null)
-            {
-                return null;
-            }
+            var numberOfAttendees = MembersByResponse.TryGetValue(EventResponseType.Yes, out var attendees)
+                ? attendees.Count 
+                : 0;
 
-            return MembersByResponse.TryGetValue(EventResponseType.Yes, out var attendees)
-                ? Event.AttendeeLimit.Value - attendees.Count 
-                : Event.AttendeeLimit.Value;
+            return Event.NumberOfSpacesLeft(numberOfAttendees);
         }
     }
 

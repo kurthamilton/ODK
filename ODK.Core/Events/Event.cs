@@ -99,6 +99,13 @@ public class Event : IDatabaseEntity, IChapterEntity
             (member?.IsCurrent() == true && member?.IsMemberOf(ChapterId) == true);
     }
 
+    public int? NumberOfSpacesLeft(int numberOfAttendees)
+    {
+        return AttendeeLimit != null
+            ? Math.Max(AttendeeLimit.Value - numberOfAttendees, 0)
+            : null;
+    }
+
     public DateTime ToLocalTime(TimeZoneInfo? timeZone) => ToLocalTime(Date, timeZone);
 
     public string ToLocalTimeString(TimeZoneInfo? timeZone) => ToLocalTimeString(Date, EndTime, timeZone);

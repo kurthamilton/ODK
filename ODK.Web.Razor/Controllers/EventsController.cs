@@ -29,8 +29,8 @@ public class EventsController : OdkControllerBase
     }
 
     [Authorize]
-    [HttpPost("{chapterName}/Events/{id:guid}/RSVP")]
-    public async Task<IActionResult> UpdateResponse(string chapterName, Guid id, [FromForm] string? responseType)
+    [HttpPost("events/{id:guid}/rsvp")]
+    public async Task<IActionResult> UpdateResponse(Guid id, [FromForm] string? responseType)
     {
         if (Enum.TryParse<EventResponseType>(responseType, true, out var type))
         {
@@ -45,8 +45,8 @@ public class EventsController : OdkControllerBase
     }
 
     [Authorize]
-    [HttpPost("{chapterName}/Events/{id:guid}/Tickets/Deposit")]
-    public async Task<IActionResult> PayDeposit(string chapterName, Guid id, [FromForm] string? token)
+    [HttpPost("events/{id:guid}/tickets/deposit")]
+    public async Task<IActionResult> PayDeposit(Guid id, [FromForm] string? token)
     {
         var result = await _eventService.PayDeposit(MemberId, id, token ?? "");
         AddFeedback(result, "Deposit paid");
@@ -54,8 +54,8 @@ public class EventsController : OdkControllerBase
     }
 
     [Authorize]
-    [HttpPost("{chapterName}/Events/{id:guid}/Tickets/Purchase")]
-    public async Task<IActionResult> PurchaseTicket(string chapterName, Guid id, [FromForm] string? token)
+    [HttpPost("events/{id:guid}/tickets/purchase")]
+    public async Task<IActionResult> PurchaseTicket(Guid id, [FromForm] string? token)
     {
         var result = await _eventService.PurchaseTicket(MemberId, id, token ?? "");
         AddFeedback(result, "Ticket purchased");
@@ -63,7 +63,7 @@ public class EventsController : OdkControllerBase
     }
 
     [Authorize]
-    [HttpPost("{chapterName}/Events/{id:guid}/Tickets/Complete")]
+    [HttpPost("events/{id:guid}/tickets/complete")]
     public async Task<IActionResult> CompleteTicketPurchase(string chapterName, Guid id, [FromForm] string? token)
     {
         var result = await _eventService.PayTicketRemainder(MemberId, id, token ?? "");

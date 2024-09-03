@@ -1,0 +1,30 @@
+﻿@using ODK.Core.Events
+@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Events
+@model ListEventViewModel
+@{
+    var localTime = Event.ToLocalTime(Model.Event.Date, Model.Chapter.TimeZone);
+}
+
+<div>
+    <span>@localTime.ToFriendlyDateString(Model.Chapter.TimeZone, forceIncludeYear: Model.ForceDisplayYear)</span>
+    <span>@Event.ToLocalTimeString(Model.Event.Date, Model.Event.EndTime, Model.Chapter.TimeZone)</span>
+</div>
+
+@if (Model.Event.VenueName != null)
+{
+    <div>
+        @await Html.PartialAsync("Components/_Location", Model.Event.VenueName)
+    </div>
+}
+
+@if (Model.Event.ResponseSummary != null)
+{
+    <div class="mt-3">
+        @await Html.PartialAsync("Events/_EventResponseSummary", new EventResponseSummaryViewModel
+        {
+            MemberResponse = Model.Event.Response,
+            Summary = Model.Event.ResponseSummary
+        })
+    </div>
+}

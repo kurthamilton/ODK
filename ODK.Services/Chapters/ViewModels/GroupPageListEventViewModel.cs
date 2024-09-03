@@ -9,5 +9,7 @@ public class GroupPageListEventViewModel
 
     public required EventResponse? Response { get; init; }
 
+    public required EventResponseSummaryDto? ResponseSummary { get; init; }
+
     public required Venue? Venue { get; init; }
 }

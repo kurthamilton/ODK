@@ -1,11 +1,7 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Chapters
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Razor.Models.Events
 @model ChapterHomePageViewModel
-@{
-    var responseDictionary = Model.MemberEventResponses.ToDictionary(x => x.EventId);
-    var venueDictionary = Model.EventVenues.ToDictionary(x => x.Id);
-}
 
 <div class="sidebar">
     @if (Model.Events.Count > 0)
@@ -13,46 +9,25 @@
         <div class="card sidebar-card">
             <div class="card-header">Upcoming events</div>
 
-            @foreach (var @event in Model.Events.OrderBy(x => x.Date))
+            @foreach (var @event in Model.Events)
             {
-                responseDictionary.TryGetValue(@event.Id, out var response);
-                venueDictionary.TryGetValue(@event.VenueId, out var venue);
-
-                var localTime = @event.ToLocalTime(Model.Chapter.TimeZone);
+                var viewModel = new ListEventViewModel
+                {
+                    Chapter = Model.Chapter,
+                    Event = @event,
+                    Platform = Model.Platform,
+                    TimeZone = 
+                        Model.CurrentMember?.TimeZone ?? 
+                        Model.Chapter.TimeZone ?? 
+                        TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+                };
 
                 <div class="card-body card-body-sm">
                     <h6 class="card-title">
-                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
-                        {
-                            ResponseType = response?.Type,
-                            ReadOnly = true
-                        })
-                        
-                        <a href="/@Model.Chapter.Name/Events/@(@event.Id)">
-                            @(@event.GetDisplayName())
-                        </a>
+                        @await Html.PartialAsync("Events/_ListEventTitle", viewModel)
                     </h6>
-                    <div class="d-inline-block d-md-block">
-                        <span>@localTime.ToFriendlyDateString(null)</span>
-                        <span>@(@event.ToLocalTimeString(Model.Chapter.TimeZone))</span>                        
-                    </div>
-                    <span class="d-md-none">&nbsp;|&nbsp;</span>
-                    <div class="d-inline-block d-md-block">
-                        <div class="d-flex">
-                            @if (venue != null)
-                            {
-                                <div class="me-auto">
-                                    @await Html.PartialAsync("Components/_Location", venue?.Name ?? "[Hidden]")
-                                </div>
-                            }                            
-                            @if (@event.Ticketed)
-                            {
-                                <span class="d-md-none">&nbsp;|&nbsp;</span>
-                                <div>
-                                    <i class="fa-solid fa-ticket" data-bs-toggle="tooltip" data-bs-title="Ticketed"></i>
-                                </div>
-                            }
-                        </div>
+                    <div class="small">
+                        @await Html.PartialAsync("Events/_ListEventBody", viewModel)
                     </div>
                 </div>
             }
