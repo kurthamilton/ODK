@@ -4,7 +4,9 @@ namespace ODK.Web.Razor.Models.Components;
 
 public class PanelViewModel
 {
-    public required Func<object?, IHtmlContent> ContentFunc { get; init; }
+    public required Func<object?, IHtmlContent> BodyContentFunc { get; init; }    
 
-    public required Func<object?, IHtmlContent> TitleFunc { get; init; }
+    public required Func<object?, IHtmlContent> TitleContentFunc { get; init; }    
+
+    public Func<object?, IHtmlContent>? TitleEndContentFunc { get; init; }
 }

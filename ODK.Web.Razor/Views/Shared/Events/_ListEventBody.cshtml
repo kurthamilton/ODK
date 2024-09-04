@@ -6,9 +6,12 @@
     var localTime = Event.ToLocalTime(Model.Event.Date, Model.Chapter.TimeZone);
 }
 
-<div>
-    <span>@localTime.ToFriendlyDateString(Model.Chapter.TimeZone, forceIncludeYear: Model.ForceDisplayYear)</span>
-    <span>@Event.ToLocalTimeString(Model.Event.Date, Model.Event.EndTime, Model.Chapter.TimeZone)</span>
+<div class="d-flex align-items-center gap-2">
+    @await Html.PartialAsync("Components/Icons/_Calendar")
+    <span>
+        <span>@localTime.ToFriendlyDateString(Model.Chapter.TimeZone, forceIncludeYear: Model.ForceDisplayYear)</span>
+        <span>@Event.ToLocalTimeString(Model.Event.Date, Model.Event.EndTime, Model.Chapter.TimeZone)</span>
+    </span>
 </div>
 
 @if (Model.Event.VenueName != null)

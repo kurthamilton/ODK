@@ -2,10 +2,19 @@
 @model PanelViewModel
 
 <section class="panel">
-    <div class="panel-title">
-        @Model.TitleFunc.Invoke(null)
-    </div>
+    <div class="panel-header">
+        <div class="panel-title">
+            @Model.TitleContentFunc.Invoke(null)
+        </div>
+
+        @if (Model.TitleEndContentFunc != null)
+        {
+            <div class="panel-title-end">
+                @Model.TitleEndContentFunc.Invoke(null)
+            </div>
+        }
+    </div>    
     <div class="panel-body">
-        @Model.ContentFunc.Invoke(null)
+        @Model.BodyContentFunc.Invoke(null)
     </div>    
 </section>

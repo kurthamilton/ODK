@@ -1,19 +1,44 @@
 ﻿@using ODK.Core.Features
 @using ODK.Core.Utils
 @using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Members
 @using ODK.Web.Razor.Models.SocialMedia
 @model GroupHomePageViewModel
 
 <div class="sidebar sidebar--cards">
     @await Html.PartialAsync("Groups/Home/_GroupInfo", Model)
 
+    @await Html.PartialAsync("Components/_panel", new PanelViewModel
+    {
+        TitleContentFunc = @<h5>Organisers</h5>,
+        TitleEndContentFunc = @<a href="@OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter)">Contact</a>,
+        BodyContentFunc = 
+            @<div>
+                @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel
+                {
+                    Chapter = Model.Chapter,
+                    Members = Model.Owners
+                        .Select(x => new ListMemberViewModel
+                        {
+                            Chapter = Model.Chapter,
+                            Member = x,
+                            Platform = Model.Platform                            
+                        }).ToArray(),
+                    Platform = Model.Platform,
+                    Size = "xs",
+                    Cols = 4
+                })
+            </div>
+    })    
+
     @if (Model.InstagramPosts.Count > 0)
     {
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            TitleFunc = @<h5>Latest from Instagram</h5>,
-            ContentFunc = 
+            TitleContentFunc = @<h5>Latest from Instagram</h5>,
+            BodyContentFunc = 
                 @<div>
                     @await Html.PartialAsync("Components/_InstagramPosts", new InstagramPostsViewModel
                     {
@@ -37,8 +62,8 @@
     {
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
-            TitleFunc = @<h5>Follow us</h5>,
-            ContentFunc =
+            TitleContentFunc = @<h5>Follow us</h5>,
+            BodyContentFunc =
                 @<div class="d-flex gap-3">
                     @await Html.PartialAsync("Components/_SocialMediaLinks", new SocialMediaLinksViewModel
                     {

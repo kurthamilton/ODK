@@ -5,15 +5,15 @@
 <div class="d-flex flex-column gap-1 justify-content-end">
     @if (Model.ChapterLocation != null)
     {
-        <div class="text-end">
+        <div class="d-flex justify-content-end">
             @await Html.PartialAsync("Components/_Location", Model.ChapterLocation.Name)
         </div>
     }
 
-    <div class="text-end">
+    <div class="d-flex justify-content-end">
         Going since @Model.Chapter.CreatedUtc.ToFriendlyDateString(Model.CurrentMember?.TimeZone ?? Model.Chapter.TimeZone)
     </div>
-    <div class="text-end">
+    <div class="d-flex justify-content-end align-items-center gap-2">
         @await Html.PartialAsync("Components/Icons/_Members")
         @Model.MemberCount @StringUtils.Pluralise(Model.MemberCount, "member")
     </div>

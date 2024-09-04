@@ -11909,13 +11909,11 @@ textarea.form-control-lg {
 }
 
 :root {
-  --bs-body-bg: #e9ecef;
-  --odk-bg-light: #e9ecef;
+  --odk-bg-light: #f2f2f2;
 }
 
 [data-bs-theme=dark] {
-  --bs-body-bg: #212529;
-  --odk-bg-light: #212529;
+  --odk-bg-light: #2c3237;
 }
 
 html[data-platform=odk] {
@@ -12219,6 +12217,9 @@ html[data-platform=odk] {
     margin-left: 1.75rem;
   }
 }
+.navbar {
+  background-color: var(--odk-bg-light);
+}
 .navbar .navbar-toggler:focus {
   box-shadow: none;
 }
@@ -12283,12 +12284,20 @@ html[data-platform=odk] {
   padding-right: 0.5rem;
 }
 
-.navbar--group .nav-item:first-child .nav-link {
-  padding-left: 0;
+.navbar--group .navbar-nav {
+  display: flex;
+  gap: 1rem;
 }
-.navbar--group .nav-item .nav-link:hover {
-  color: var(--bs-primary);
+.navbar--group .nav-item {
+  padding: 0;
+}
+.navbar--group .nav-item .nav-link {
+  padding: 0 !important;
+  border-bottom: 2px solid transparent;
+}
+.navbar--group .nav-item .nav-link.active, .navbar--group .nav-item .nav-link:hover {
   background-color: transparent;
+  border-bottom-color: var(--bs-body-color);
 }
 
 .account-links {
@@ -12365,11 +12374,27 @@ html[data-platform=odk] {
   background-color: #f2f2f2;
   padding: 1rem;
 }
+.panel .panel-header {
+  display: flex;
+  align-items: end;
+}
 .panel .panel-title {
   display: inline-block;
   border-bottom: 1px solid var(--bs-body-color);
+}
+.panel .panel-title > * {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.panel .panel-title-end {
+  margin-left: auto;
+}
+.panel .panel-title,
+.panel .panel-title-end {
   padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
+}
+.panel .panel-body {
+  margin-top: 1rem;
 }
 
 [data-bs-theme=dark] .panel {
@@ -12551,6 +12576,12 @@ th.sortable.sort-desc:after {
 .table thead th {
   border-top: 1px solid var(--bs-table-border-color);
   border-bottom: 2px solid var(--bs-table-border-color);
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .event-response-option {

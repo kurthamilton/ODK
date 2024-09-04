@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Members
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @inject IMemberViewModelService MemberViewModelService
@@ -11,6 +12,10 @@
     Model.Title = "Knitwits";
 
     var viewModel = await MemberViewModelService.GetMembersPage(Model.CurrentMemberId, Model.ChapterName);
+    if (!viewModel.IsMember)
+    {
+        Response.Redirect(OdkRoutes2.Groups.Join(viewModel.Platform, viewModel.Chapter));
+    }
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

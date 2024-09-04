@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Members
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Groups
 @model IndexModel
 @inject IMemberViewModelService MemberViewModelService
@@ -9,6 +10,11 @@
     Layout = "_HomeLayout";
 
     var viewModel = await MemberViewModelService.GetGroupMembersPage(Model.CurrentMemberId, Model.Slug);
+
+    if (!viewModel.IsMember)
+    {
+        Response.Redirect(OdkRoutes2.Groups.Join(viewModel.Platform, viewModel.Chapter));
+    }
 
     Model.Title = $"Members | {viewModel.Chapter.Name}";
 }

@@ -12,19 +12,18 @@
 <div class="row">
     <div class="col-lg-7">
         <div class="d-flex flex-column gap-5">
-            @if (Model.IsMember || Model.IsAdmin)
+            @if (!string.IsNullOrEmpty(Model.Texts?.Description))
             {
-                @await Html.PartialAsync("Components/_EditableTextArea", new EditableTextViewModel
+                @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
-                    Action = $"/admin/groups/{Model.Chapter.Id}/description",
-                    Id = "group-description",
-                    IsAdmin = Model.IsAdmin,
-                    Name = "description",
-                    Text = Model.Texts?.Description,
-                    Title = "About us"
+                    TitleContentFunc = @<h3>About</h3>,
+                    BodyContentFunc = 
+                        @<div>
+                            @Html.Raw(Model.Texts?.Description)
+                        </div>
                 })
-            }        
-
+            }
+            
             @if (!Model.IsMember && !string.IsNullOrEmpty(Model.Texts?.WelcomeText))
             {
                 <section class="panel">
@@ -45,8 +44,9 @@
             {
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
-                    TitleFunc = @<h3>Upcoming events</h3>,
-                    ContentFunc = 
+                    TitleContentFunc = @<h3>Upcoming events</h3>,
+                    TitleEndContentFunc = @<a href="@OdkRoutes2.Groups.Events(Model.Platform, Model.Chapter)">See all</a>,
+                    BodyContentFunc = 
                         @<div>
                             @await Html.PartialAsync("Events/_EventList", new EventListViewModel
                             {
@@ -70,8 +70,9 @@
             {
                 @await Html.PartialAsync("Components/_Panel", new PanelViewModel
                 {
-                    TitleFunc = @<h3>Recent events</h3>,
-                    ContentFunc = 
+                    TitleContentFunc = @<h3>Recent events</h3>,
+                    TitleEndContentFunc = @<a href="@OdkRoutes2.Groups.PastEvents(Model.Platform, Model.Chapter)">See all</a>,
+                    BodyContentFunc = 
                         @<div>
                             @await Html.PartialAsync("Events/_EventList", new EventListViewModel
                             {

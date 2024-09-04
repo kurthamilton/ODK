@@ -2,7 +2,7 @@
 @using ODK.Web.Razor.Models.Members
 @model ODK.Web.Razor.Models.Members.ListMemberViewModel
 
-<div class="card member-tile @(Model.HideName ? "member-tile-sm" : null)">
+<div class="member-tile @(Model.HideName ? "member-tile-sm" : null)">
     <a href="@OdkRoutes2.Groups.Member(Model.Platform, Model.Chapter, Model.Member.Id)" 
        data-bs-toggle="@(Model.HideName ? "tooltip" : "")" data-bs-title="@(Model.HideName ? Model.Member.FullName : "")" container="body">
 

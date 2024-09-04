@@ -9,15 +9,20 @@
     var menuItems = new List<MenuItem>
     {
         new MenuItem { Text = "About", Link = OdkRoutes2.Groups.Group(Model.Platform, Model.Chapter), ActiveIsExactMatch = true },
-        new MenuItem { Text = "Events", Link = OdkRoutes2.Groups.Events(Model.Platform, Model.Chapter) },
-        new MenuItem { Text = "Members", Link = OdkRoutes2.Groups.Members(Model.Platform, Model.Chapter) },
-        new MenuItem { Text = "Contact", Link = OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter) }
+        new MenuItem { Text = "Events", Link = OdkRoutes2.Groups.Events(Model.Platform, Model.Chapter) }
     };
 
-    if (Model.HasQuestions || Model.IsAdmin)
+    if (Model.IsMember)
+    {
+        menuItems.Add(new MenuItem { Text = "Members", Link = OdkRoutes2.Groups.Members(Model.Platform, Model.Chapter) });        
+    }
+
+    if (Model.HasQuestions)
     {
         menuItems.Add(new MenuItem { Text = "FAQ", Link = OdkRoutes2.Groups.Questions(Model.Platform, Model.Chapter) });
     }
+
+    menuItems.Add(new MenuItem { Text = "Contact", Link = OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter) });    
 
     if (Model.IsMember)
     {

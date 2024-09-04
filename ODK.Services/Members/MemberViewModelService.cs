@@ -56,25 +56,22 @@ public class MemberViewModelService : IMemberViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var (
-            currentMember, 
-            members, 
+            currentMember,             
+            member,
             chapterProperties, 
             memberProperties,
             hasQuestions,
             adminMembers,
             ownerSubscription) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberRepository.GetByChapterId(chapter.Id, [currentMemberId, memberId]),
+            x => x.MemberRepository.GetById(memberId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(memberId, chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
 
-        var member = members.FirstOrDefault(x => x.Id == memberId);
-
-        OdkAssertions.MemberOf(currentMember, chapter.Id);
-        OdkAssertions.Exists(member);
+        OdkAssertions.MemberOf(member, chapter.Id);
 
         return new MemberPageViewModel
         {
@@ -109,7 +106,7 @@ public class MemberViewModelService : IMemberViewModelService
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
 
-        OdkAssertions.MemberOf(currentMember, chapter.Id);
+        var isMember = currentMember.IsMemberOf(chapter.Id);
 
         return new MembersPageViewModel
         {
@@ -117,8 +114,8 @@ public class MemberViewModelService : IMemberViewModelService
             CurrentMember = currentMember,
             HasQuestions = hasQuestions,
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
-            IsMember = currentMember.IsMemberOf(chapter.Id),
-            Members = members,
+            IsMember = isMember,
+            Members = isMember ? members : [],
             OwnerSubscription = ownerSubscription,
             Platform = platform
         };

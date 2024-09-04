@@ -2,13 +2,11 @@
 $odk-bg-dark: #212529;
 
 :root {
-    --bs-body-bg: #{$odk-bg-light};
-    --odk-bg-light: #{$odk-bg-light};
+    --odk-bg-light: #{darken($body-bg, 5%)};
 }
 
 [data-bs-theme="dark"] {
-    --bs-body-bg: #{$odk-bg-dark};
-    --odk-bg-light: #{$odk-bg-dark};
+    --odk-bg-light: #{lighten($body-bg-dark, 5%)};
 }
 
 @import "odk/_variables";

@@ -11,6 +11,10 @@
     Layout = "_HomeLayout";
 
     var viewModel = await MemberViewModelService.GetGroupMemberPage(Model.CurrentMemberId, Model.Slug, Model.MemberId);
+    if (!viewModel.IsMember)
+    {
+        Response.Redirect(OdkRoutes2.Groups.Join(viewModel.Platform, viewModel.Chapter));
+    }
 
     Model.Title = $"{viewModel.Member.GetDisplayName(viewModel.Chapter.Id)} | {viewModel.Chapter.Name}";
 }

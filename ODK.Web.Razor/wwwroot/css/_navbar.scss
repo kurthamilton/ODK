@@ -14,6 +14,8 @@ $navbar-dark-separator: rgba(255, 255, 255, .5);
 }
 
 .navbar {
+    background-color: var(--odk-bg-light);
+
     .navbar-toggler:focus {
         box-shadow: none;
     }
@@ -104,17 +106,22 @@ $navbar-dark-separator: rgba(255, 255, 255, .5);
 }
 
 .navbar--group {
+    .navbar-nav {
+        display: flex;
+        gap: 1rem;
+    }
+
     .nav-item {
-        &:first-child {
-            .nav-link {
-                padding-left: 0;
-            }
-        }
+        padding: 0;
 
         .nav-link {
+            padding: 0 !important;
+            border-bottom: 2px solid transparent;
+
+            &.active,
             &:hover {
-                color: var(--bs-primary);
                 background-color: transparent;
+                border-bottom-color: var(--bs-body-color);
             }
         }
     }

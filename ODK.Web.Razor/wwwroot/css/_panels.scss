@@ -2,11 +2,32 @@
     background-color: #{darken($body-bg, 5%)};
     padding: 1rem;
 
+    .panel-header {
+        display: flex;
+        align-items: end;
+    }
+
     .panel-title {
         display: inline-block;
         border-bottom: 1px solid var(--bs-body-color);
+        
+        & > * {
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+    }
+
+    .panel-title-end {
+        margin-left: auto;
+    }
+
+    .panel-title,
+    .panel-title-end {
         padding-bottom: 0.5rem;
-        margin-bottom: 1rem;
+    }
+
+    .panel-body {
+        margin-top: 1rem;
     }
 }
 

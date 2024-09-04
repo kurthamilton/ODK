@@ -8,8 +8,8 @@
     return;
 }
 
-<div class="small">
-    <span>@await Html.PartialAsync("Components/Icons/_Members")</span>
+<div class="d-flex align-items-center gap-2 small">
+    @await Html.PartialAsync("Components/Icons/_Members")
     <span>
         @Model.Summary.Yes
         @StringUtils.Pluralise(Model.Summary.Yes, "Attendee")
