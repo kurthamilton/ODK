@@ -5,5 +5,6 @@ public interface IWriteRepository<T>
     void AddMany(IEnumerable<T> entities);
     void Delete(T entity);
     void DeleteMany(IEnumerable<T> entities);
-    void Update(T entity);    
+    void Update(T entity);
+    void UpdateMany(IEnumerable<T> entities);
 }

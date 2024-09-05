@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.DataTypes;
 using ODK.Core.Emails;
+using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
@@ -431,6 +432,17 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var canReply = lastMessage.MemberId == conversation.MemberId || 
             ownerSubscription?.HasFeature(SiteFeatureType.SendMemberEmails) == true;
 
+        var unread = messages
+            .Where(x => !x.ReadByChapter)
+            .ToArray();
+
+        if (unread.Length > 0)
+        {
+            unread.ForEach(x => x.ReadByChapter = true);
+            _unitOfWork.ChapterConversationMessageRepository.UpdateMany(unread);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         return new ChapterConversationAdminPageViewModel
         {
             CanReply = canReply,
@@ -736,6 +748,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             ChapterConversationId = conversationId,
             CreatedUtc = DateTime.UtcNow,
             MemberId = request.CurrentMemberId,
+            ReadByChapter = true,
             Text = message
         };
 
@@ -857,6 +870,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             ChapterConversationId = conversation.Id,
             CreatedUtc = now,
             MemberId = request.CurrentMemberId,
+            ReadByChapter = true,
             Text = message
         };
 

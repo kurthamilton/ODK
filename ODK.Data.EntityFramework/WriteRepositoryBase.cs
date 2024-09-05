@@ -19,5 +19,13 @@ public abstract class WriteRepositoryBase<T> : RepositoryBase, IWriteRepository<
 
     public virtual void Update(T entity) => UpdateSingle(entity);
 
+    public virtual void UpdateMany(IEnumerable<T> entities)
+    {
+        foreach (var entity in entities)
+        {
+            Update(entity);
+        }
+    }
+
     protected virtual IQueryable<T> Set() => Set<T>();
 }

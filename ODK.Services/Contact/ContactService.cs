@@ -77,6 +77,7 @@ public class ContactService : IContactService
             ChapterConversationId = conversationId,
             CreatedUtc = DateTime.UtcNow,
             MemberId = currentMemberId,
+            ReadByMember = true,
             Text = message
         };
 
@@ -179,11 +180,12 @@ public class ContactService : IContactService
 
         _unitOfWork.ChapterConversationRepository.Add(conversation);
 
-        var conversationMessage = new ChapterConversationMessage()
+        var conversationMessage = new ChapterConversationMessage
         {
             ChapterConversationId = conversation.Id,
             CreatedUtc = now,
             MemberId = currentMemberId,
+            ReadByMember = true,
             RecaptchaScore = recaptchaResponse.Score,
             Text = message
         };

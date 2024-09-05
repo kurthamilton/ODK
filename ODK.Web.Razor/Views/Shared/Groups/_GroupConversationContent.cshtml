@@ -12,7 +12,7 @@
     Breadcrumbs = new[]
     {
         new MenuItem { Link = OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter), Text = "Contact" },
-        new MenuItem { Text = "Conversation" }
+        new MenuItem { Text = Model.Conversation.Subject }
     }
 })
 

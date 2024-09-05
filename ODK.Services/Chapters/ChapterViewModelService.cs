@@ -183,7 +183,8 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupConversationPageViewModel> GetGroupConversationPage(Guid currentMemberId, string slug, Guid conversationId)
+    public async Task<GroupConversationPageViewModel> GetGroupConversationPage(Guid currentMemberId, string slug, 
+        Guid conversationId)
     {
         var platform = _platformProvider.GetPlatform();
 
@@ -208,6 +209,17 @@ public class ChapterViewModelService : IChapterViewModelService
         var dto = conversations
             .FirstOrDefault(x => x.Conversation.Id == conversationId);
         OdkAssertions.Exists(dto);
+
+        var unread = messages
+            .Where(x => !x.ReadByMember)
+            .ToArray();
+
+        if (unread.Any())
+        {
+            unread.ForEach(x => x.ReadByMember = true);
+            _unitOfWork.ChapterConversationMessageRepository.UpdateMany(unread);
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         return new GroupConversationPageViewModel
         {
