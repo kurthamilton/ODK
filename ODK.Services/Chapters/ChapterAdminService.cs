@@ -411,8 +411,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, currentMember, conversation, messages) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, currentMember, conversation, messages) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.ChapterConversationRepository.GetById(id),
             x => x.ChapterConversationMessageRepository.GetByConversationId(id));
@@ -423,14 +424,23 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.MemberRepository.GetById(conversation.MemberId),
             x => x.ChapterConversationRepository.GetDtosByMemberId(conversation.MemberId, request.ChapterId));
 
+        var lastMessage = messages
+            .OrderByDescending(x => x.CreatedUtc)
+            .First();
+
+        var canReply = lastMessage.MemberId == conversation.MemberId || 
+            ownerSubscription?.HasFeature(SiteFeatureType.SendMemberEmails) == true;
+
         return new ChapterConversationAdminPageViewModel
         {
+            CanReply = canReply,
             Chapter = chapter,
             Conversation = conversation,
             CurrentMember = currentMember,
             Member = member,
             Messages = messages,
             OtherConversations = otherConversations.Where(x => x.Conversation.Id != id).ToArray(),
+            OwnerSubscription = ownerSubscription,
             Platform = platform
         };
     }
@@ -697,14 +707,27 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> ReplyToConversation(AdminServiceRequest request, Guid conversationId, string message)
     {
-        var (chapter, currentMember, conversation, adminMembers, ownerSubscription) = await _unitOfWork.RunAsync(
+        var (chapter, currentMember, conversation, messages, adminMembers, ownerSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.ChapterConversationRepository.GetById(conversationId),
+            x => x.ChapterConversationMessageRepository.GetByConversationId(conversationId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
 
+        OdkAssertions.BelongsToChapter(conversation, chapter.Id);
+
         AssertMemberIsChapterAdmin(currentMember, request.ChapterId, adminMembers);
+
+        var lastMessage = messages
+            .OrderByDescending(x => x.CreatedUtc)
+            .First();
+
+        if (lastMessage.MemberId != conversation.MemberId && 
+            ownerSubscription?.HasFeature(SiteFeatureType.SendMemberEmails) != true)
+        {
+            return ServiceResult.Failure("Not permitted");
+        }
 
         var member = await _unitOfWork.MemberRepository.GetById(conversation.MemberId).Run();
 
@@ -801,6 +824,50 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         chapter.OwnerId = memberId;
         _unitOfWork.ChapterRepository.Update(chapter);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<ServiceResult> StartConversation(AdminServiceRequest request, Guid memberId, string subject, string message)
+    {
+        var (chapter, ownerSubscription, member) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberRepository.GetById(memberId));
+
+        OdkAssertions.MemberOf(member, request.ChapterId);
+
+        if (!ownerSubscription.HasFeature(SiteFeatureType.SendMemberEmails))
+        {
+            return ServiceResult.Failure("Not permitted");
+        }
+
+        var now = DateTime.UtcNow;
+
+        var conversation = new ChapterConversation
+        {
+            ChapterId = request.ChapterId,
+            CreatedUtc = now,
+            MemberId = memberId,
+            Subject = subject
+        };
+
+        _unitOfWork.ChapterConversationRepository.Add(conversation);
+
+        var conversationMessage = new ChapterConversationMessage
+        {
+            ChapterConversationId = conversation.Id,
+            CreatedUtc = now,
+            MemberId = request.CurrentMemberId,
+            Text = message
+        };
+
+        _unitOfWork.ChapterConversationMessageRepository.Add(conversationMessage);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        await _emailService.SendChapterConversationEmail(chapter, conversation, conversationMessage, [member], 
+            isReply: false);
+
+        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> UpdateChapterAdminMember(AdminServiceRequest request, Guid memberId,

@@ -1,4 +1,5 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Features
+@using ODK.Core.Utils
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
@@ -42,12 +43,23 @@
             {
                 TitleContentFunc = @<h5>Reply</h5>,
                 BodyContentFunc = 
-                    @<div>
-                        <form action="/admin/groups/@Model.Chapter.Id/conversations/@Model.Conversation.Id/reply" method="post">
-                            @Html.AntiForgeryToken()
-                            @await Html.PartialAsync("Admin/Chapter/Conversations/_ConversationReplyForm", new ChapterConversationReplyFormViewModel())
-                            <button class="btn btn-primary">Send</button>
-                        </form>
+                    @<div>                        
+                        @if (Model.CanReply)
+                        {
+                            <form action="/admin/groups/@Model.Chapter.Id/conversations/@Model.Conversation.Id/reply" method="post">
+                                @Html.AntiForgeryToken()
+                                @await Html.PartialAsync("Admin/Chapter/Conversations/_ConversationReplyForm", new ChapterConversationReplyFormViewModel())
+                                <button class="btn btn-primary">Send</button>
+                            </form>
+                        }          
+                        else
+                        {
+                            <p>You have already replied to this conversation</p>
+                            @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(false)
+                            {
+                                Feature = SiteFeatureType.SendMemberEmails
+                            })
+                        }
                     </div>
             })
         </section>

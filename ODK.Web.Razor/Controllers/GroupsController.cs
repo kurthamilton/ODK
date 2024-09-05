@@ -43,7 +43,7 @@ public class GroupsController : OdkControllerBase
 
     [Authorize]
     [HttpPost("groups/{chapterId:guid}/conversations")]
-    public async Task<IActionResult> Conversation(Guid chapterId, [FromForm] ConversationFormViewModel viewModel)
+    public async Task<IActionResult> StartConversation(Guid chapterId, [FromForm] ConversationFormViewModel viewModel)
     {
         await _contactService.StartChapterConversation(
             MemberId,

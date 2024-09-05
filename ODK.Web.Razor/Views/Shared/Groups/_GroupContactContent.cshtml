@@ -56,22 +56,8 @@
                 </tbody>
             </table>
         </div>
-    </section>    
-}
-
-@if (Model.Conversations.Count == 0)
-{
-    <h2>Start new conversation</h2>
-    <section class="section">
-        <form action="/groups/@Model.Chapter.Id/conversations" method="post">
-            @Html.AntiForgeryToken()
-            @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
-            <button class="btn btn-primary">Send</button>
-        </form>
-    </section>
-}
-else
-{
+    </section>  
+    
     <section class="section">
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
         {
@@ -85,5 +71,16 @@ else
                     </form>
                 </div>
         })
+    </section>
+}
+else
+{
+    <h2>Start new conversation</h2>
+    <section class="section">
+        <form action="/groups/@Model.Chapter.Id/conversations" method="post">
+            @Html.AntiForgeryToken()
+            @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
+            <button class="btn btn-primary">Send</button>
+        </form>
     </section>
 }

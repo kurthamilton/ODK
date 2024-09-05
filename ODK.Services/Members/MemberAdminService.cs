@@ -138,10 +138,11 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, member, conversations) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, member, conversations, ownerSubscription) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetById(memberId),
-            x => x.ChapterConversationRepository.GetDtosByMemberId(memberId, request.ChapterId));
+            x => x.ChapterConversationRepository.GetDtosByMemberId(memberId, request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
 
         OdkAssertions.MemberOf(member, chapter.Id);
 
@@ -150,6 +151,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             Chapter = chapter,
             Conversations = conversations,
             Member = member,
+            OwnerSubscription = ownerSubscription,
             Platform = platform
         };
     }

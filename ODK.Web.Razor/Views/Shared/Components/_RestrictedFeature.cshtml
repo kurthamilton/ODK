@@ -3,11 +3,13 @@
 @model RestrictedFeatureViewModel
 @inject IAuthorizationService AuthorizationService
 @{
-    var authorized = Model.OwnerSubscription != null 
-        ? AuthorizationService.ChapterHasAccess(Model.OwnerSubscription, Model.Feature)
-        : Model.Chapter != null 
-        ? await AuthorizationService.ChapterHasAccess(Model.Chapter, Model.Feature)
-        : false;
+    var authorized = Model.Permitted != null 
+        ? Model.Permitted.Value 
+        : Model.OwnerSubscription != null 
+            ? AuthorizationService.ChapterHasAccess(Model.OwnerSubscription, Model.Feature)
+            : Model.Chapter != null 
+                ? await AuthorizationService.ChapterHasAccess(Model.Chapter, Model.Feature)
+                : false;
 }
 
 @if (authorized)

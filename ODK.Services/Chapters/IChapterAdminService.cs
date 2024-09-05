@@ -81,6 +81,8 @@ public interface IChapterAdminService
 
     Task SetOwner(AdminServiceRequest request, Guid memberId);
 
+    Task<ServiceResult> StartConversation(AdminServiceRequest request, Guid memberId, string subject, string message);
+
     Task<ServiceResult> UpdateChapterAdminMember(AdminServiceRequest request, Guid memberId, 
         UpdateChapterAdminMember model);
 

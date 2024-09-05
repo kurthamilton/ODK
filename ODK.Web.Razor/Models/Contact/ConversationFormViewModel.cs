@@ -11,5 +11,5 @@ public class ConversationFormViewModel
     public string? Recaptcha { get; set; }
 
     [Required]
-    public string? Subject { get; set; }    
+    public string? Subject { get; set; }
 }

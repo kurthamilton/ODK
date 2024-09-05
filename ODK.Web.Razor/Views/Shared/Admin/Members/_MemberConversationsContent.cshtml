@@ -1,7 +1,10 @@
 ﻿@using ODK.Core.Utils
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Contact
 @model MemberConversationsAdminPageViewModel
 
 @await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
@@ -13,40 +16,84 @@
     Platform = Model.Platform
 })
 
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Subject</th>
-                <th>Started</th>
-                <th>Last message</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
-            {
-                var conversation = dto.Conversation;
+@if (Model.Conversations.Count > 0)
+{
+    <section class="section">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Started</th>
+                        <th>Last message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+                    {
+                        var conversation = dto.Conversation;
 
-                <tr>
-                    <td>
-                        <a href="@OdkRoutes2.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
-                            @dto.Conversation.Subject
-                        </a>
-                    </td>
-                    <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
-                    <td>
-                        <div>
-                            @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
-                        </div>
-                        @if (dto.LastMessage.MemberId != dto.Conversation.MemberId)
-                        {
-                            <div>
-                                @dto.LastMessage.Member?.FullName
-                            </div>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+                        <tr>
+                            <td>
+                                <a href="@OdkRoutes2.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
+                                    @dto.Conversation.Subject
+                                </a>
+                            </td>
+                            <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
+                            <td>
+                                <div>
+                                    @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                                </div>
+                                @if (dto.LastMessage.MemberId != dto.Conversation.MemberId)
+                                {
+                                    <div>
+                                        @dto.LastMessage.Member?.FullName
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>    
+
+    <section class="section">
+        @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+        {
+            Feature = ODK.Core.Features.SiteFeatureType.SendMemberEmails,
+            Content = await Html.PartialAsync("Components/_Panel", new PanelViewModel
+            {
+                TitleContentFunc = @<h5>New conversation</h5>,
+                BodyContentFunc = 
+                    @<div>
+                        <form action="/admin/groups/@Model.Chapter.Id/conversations" method="post">
+                            @Html.AntiForgeryToken()
+                @Html.Hidden(nameof(ChapterAdminStartConversationFormViewModel.MemberId), Model.Member.Id)
+                            @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
+                            <button class="btn btn-primary">Send</button>
+                        </form>
+                    </div>
+            })
+        })
+    </section>
+}
+else
+{
+    <h2>Start new conversation</h2>
+    <section class="section">
+        @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+        {
+            Feature = ODK.Core.Features.SiteFeatureType.SendMemberEmails,
+            ContentFunc = 
+                @<div>
+                    <form action="/admin/groups/@Model.Chapter.Id/conversations" method="post">
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden(nameof(ChapterAdminStartConversationFormViewModel.MemberId), Model.Member.Id)
+                        @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
+                        <button class="btn btn-primary">Send</button>
+                    </form>
+                </div>
+        })
+    </section>
+}
