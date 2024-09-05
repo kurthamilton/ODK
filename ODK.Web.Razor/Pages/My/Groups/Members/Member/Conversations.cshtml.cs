@@ -1,6 +1,6 @@
-namespace ODK.Web.Razor.Pages.My.Groups.Members;
+namespace ODK.Web.Razor.Pages.My.Groups.Members.Member;
 
-public class MemberModel : OdkGroupAdminPageModel
+public class ConversationsModel : OdkGroupAdminPageModel
 {
     public Guid MemberId { get; private set; }
 

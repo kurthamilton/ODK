@@ -33,6 +33,10 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(AdminServiceRequest request);
 
+    Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(AdminServiceRequest request, bool replied);
+
+    Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(AdminServiceRequest request, Guid id);
+
     Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(AdminServiceRequest request);
 
     Task<ChapterLocation?> GetChapterLocation(AdminServiceRequest request);
@@ -68,6 +72,8 @@ public interface IChapterAdminService
     Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);        
 
     Task<ServiceResult> PublishChapter(AdminServiceRequest request);
+
+    Task<ServiceResult> ReplyToConversation(AdminServiceRequest request, Guid conversationId, string message);
 
     Task<ServiceResult> ReplyToMessage(AdminServiceRequest request, Guid messageId, string message);
 

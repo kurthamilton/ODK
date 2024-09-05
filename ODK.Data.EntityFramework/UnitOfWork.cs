@@ -15,6 +15,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterAdminMemberRepository> _chapterAdminMemberRepository;
     private readonly Lazy<IChapterContactMessageReplyRepository> _chapterContactMessageReplyRepository;
     private readonly Lazy<IChapterContactMessageRepository> _chapterContactMessageRepository;
+    private readonly Lazy<IChapterConversationMessageRepository> _chapterConversationMessageRepository;
+    private readonly Lazy<IChapterConversationRepository> _chapterConversationRepository;
     private readonly Lazy<IChapterEmailRepository> _chapterEmailRepository;
     private readonly Lazy<IChapterEventSettingsRepository> _chapterEventSettingsRepository;
     private readonly Lazy<IChapterLinksRepository> _chapterLinksRepository;
@@ -80,6 +82,8 @@ public class UnitOfWork : IUnitOfWork
         _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));        
         _chapterContactMessageReplyRepository = new(() => new ChapterContactMessageReplyRepository(_context));
         _chapterContactMessageRepository = new(() => new ChapterContactMessageRepository(_context));
+        _chapterConversationMessageRepository = new(() => new ChapterConversationMessageRepository(_context));
+        _chapterConversationRepository = new(() => new ChapterConversationRepository(_context));
         _chapterEmailRepository = new(() => new ChapterEmailRepository(_context));
         _chapterEventSettingsRepository = new(() => new ChapterEventSettingsRepository(_context));
         _chapterLinksRepository = new(() => new ChapterLinksRepository(_context));
@@ -141,6 +145,8 @@ public class UnitOfWork : IUnitOfWork
     public IChapterAdminMemberRepository ChapterAdminMemberRepository => _chapterAdminMemberRepository.Value;
     public IChapterContactMessageReplyRepository ChapterContactMessageReplyRepository => _chapterContactMessageReplyRepository.Value;
     public IChapterContactMessageRepository ChapterContactMessageRepository => _chapterContactMessageRepository.Value;
+    public IChapterConversationMessageRepository ChapterConversationMessageRepository => _chapterConversationMessageRepository.Value;
+    public IChapterConversationRepository ChapterConversationRepository => _chapterConversationRepository.Value;
     public IChapterEmailRepository ChapterEmailRepository => _chapterEmailRepository.Value;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => _chapterEventSettingsRepository.Value;
     public IChapterLinksRepository ChapterLinksRepository => _chapterLinksRepository.Value;

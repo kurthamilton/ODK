@@ -13,6 +13,8 @@ public interface IChapterViewModelService
 
     Task<GroupContactPageViewModel> GetGroupContactPage(Guid? currentMemberId, string slug);
 
+    Task<GroupConversationPageViewModel> GetGroupConversationPage(Guid currentMemberId, string slug, Guid conversationId);
+
     Task<GroupEventsPageViewModel> GetGroupEventsPage(Guid? currentMemberId, string slug);
 
     Task<GroupEventsPageViewModel> GetGroupPastEventsPage(Guid? currentMemberId, string slug);

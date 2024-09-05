@@ -1,0 +1,16 @@
+﻿@using ODK.Web.Razor.Models.Contact
+@model ConversationFormViewModel
+
+@Html.HiddenFor(x => x.Recaptcha, new { data_recaptcha_token = "" })
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Subject, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Subject, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Subject)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Message, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.Message, new { @class = "form-control", rows = 5 })
+    @Html.ValidationMessageFor(x => x.Message)
+</div>

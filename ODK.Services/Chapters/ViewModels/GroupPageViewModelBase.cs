@@ -19,4 +19,6 @@ public abstract class GroupPageViewModelBase
     public required MemberSiteSubscription? OwnerSubscription { get; init; }
 
     public required PlatformType Platform { get; init; }
+
+    public TimeZoneInfo? TimeZone => CurrentMember?.TimeZone ?? Chapter.TimeZone;
 }

@@ -20,12 +20,15 @@
 })
 
 <h2>Edit question</h2>
-<form method="post">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel
-    {
-        Answer = Model.Question.Answer,
-        Question = Model.Question.Name
-    })
-    <button class="btn btn-primary">Update</button>
-</form>
+
+<section class="section">
+    <form method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel
+        {
+            Answer = Model.Question.Answer,
+            Question = Model.Question.Name
+        })
+        <button class="btn btn-primary">Update</button>
+    </form>
+</section>

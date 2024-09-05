@@ -1,6 +1,4 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
-using ODK.Core.Emails;
+﻿using ODK.Core.Emails;
 using ODK.Core.Messages;
 using ODK.Data.Core;
 using ODK.Services.Contact.ViewModels;

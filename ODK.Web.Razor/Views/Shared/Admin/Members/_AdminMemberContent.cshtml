@@ -15,6 +15,7 @@
         new MenuItem { Text = Model.AdminMember.Member.FullName }
     }
 })
+
 <form method="post">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel

@@ -1,24 +1,20 @@
 ﻿@using ODK.Core.Platforms
+@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Members
 @model MemberAdminTabsViewModel
-
-<ul class="nav nav-underline mb-3">
-    <li class="nav-item">
-        <a class="nav-link" data-menu-link="exact" href="@OdkRoutes2.MemberGroups.Member(Model.Platform, Model.Chapter, Model.Member.Id)">Subscription</a>
-    </li>
-    
-    @if (Model.Platform == PlatformType.DrunkenKnitwits)
+@{
+    var menuItems = new List<MenuItem>
     {
-        <li class="nav-item">
-            <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.MemberImage(Model.Platform, Model.Chapter, Model.Member.Id)">Image</a>
-        </li>
+        new MenuItem { Link = OdkRoutes2.MemberGroups.Member(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Subscription" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.MemberEvents(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Events" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Conversations" }
+    };
+
+    if (Model.Platform == PlatformType.DrunkenKnitwits)
+    {
+        menuItems.Add(new MenuItem { Link = OdkRoutes2.MemberGroups.MemberImage(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Image" });
     }
-    
-    <li class="nav-item">
-        <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.MemberEvents(Model.Platform, Model.Chapter, Model.Member.Id)">Events</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.MemberEmail(Model.Platform, Model.Chapter, Model.Member.Id)">Send email</a>
-    </li>
-</ul>
+}
+
+@await Html.PartialAsync("Components/_Tabs", menuItems)

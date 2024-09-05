@@ -384,6 +384,57 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return chapterAdminMembers;
     }
 
+    public async Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(AdminServiceRequest request, bool replied)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, privacySettings, conversations) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterConversationRepository.GetDtosByChapterId(request.ChapterId, replied: replied));
+
+        var repliedConversations = new List<ChapterConversationDto>();
+        var unrepliedConversations = new List<ChapterConversationDto>();
+
+        return new ChapterConversationsAdminPageViewModel
+        {
+            Chapter = chapter,
+            Conversations = conversations,
+            Platform = platform,
+            PrivacySettings = privacySettings,
+            Replied = replied
+        };
+    }
+
+    public async Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(
+        AdminServiceRequest request, Guid id)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, currentMember, conversation, messages) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(request.CurrentMemberId),
+            x => x.ChapterConversationRepository.GetById(id),
+            x => x.ChapterConversationMessageRepository.GetByConversationId(id));
+
+        OdkAssertions.BelongsToChapter(conversation, request.ChapterId);
+
+        var (member, otherConversations) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(conversation.MemberId),
+            x => x.ChapterConversationRepository.GetDtosByMemberId(conversation.MemberId, request.ChapterId));
+
+        return new ChapterConversationAdminPageViewModel
+        {
+            Chapter = chapter,
+            Conversation = conversation,
+            CurrentMember = currentMember,
+            Member = member,
+            Messages = messages,
+            OtherConversations = otherConversations.Where(x => x.Conversation.Id != id).ToArray(),
+            Platform = platform
+        };
+    }
+
     public async Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(AdminServiceRequest request)
     {
         var platform = _platformProvider.GetPlatform();
@@ -640,6 +691,36 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         chapter.PublishedUtc = DateTime.UtcNow;
         _unitOfWork.ChapterRepository.Update(chapter);
         await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> ReplyToConversation(AdminServiceRequest request, Guid conversationId, string message)
+    {
+        var (chapter, currentMember, conversation, adminMembers, ownerSubscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(request.CurrentMemberId),
+            x => x.ChapterConversationRepository.GetById(conversationId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
+
+        AssertMemberIsChapterAdmin(currentMember, request.ChapterId, adminMembers);
+
+        var member = await _unitOfWork.MemberRepository.GetById(conversation.MemberId).Run();
+
+        var conversationMessage = new ChapterConversationMessage
+        {
+            ChapterConversationId = conversationId,
+            CreatedUtc = DateTime.UtcNow,
+            MemberId = request.CurrentMemberId,
+            Text = message
+        };
+
+        _unitOfWork.ChapterConversationMessageRepository.Add(conversationMessage);
+
+        await _unitOfWork.SaveChangesAsync();
+        
+        await _emailService.SendChapterConversationEmail(chapter, conversation, conversationMessage, [member], isReply: true);
 
         return ServiceResult.Successful();
     }
@@ -988,7 +1069,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
     
-    public async Task<ServiceResult> UpdateChapterPrivacySettings(AdminServiceRequest request,
+    public async Task<ServiceResult> UpdateChapterPrivacySettings(
+        AdminServiceRequest request,
         UpdateChapterPrivacySettings model)
     {
         var settings = await GetChapterAdminRestrictedContent(request,
@@ -999,6 +1081,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             settings = new ChapterPrivacySettings();
         }
 
+        settings.Conversations = model.Conversations;
         settings.EventResponseVisibility = model.EventResponseVisibility == null || model.EventResponseVisibility.Value.IsMember() 
             ? model.EventResponseVisibility
             : null;

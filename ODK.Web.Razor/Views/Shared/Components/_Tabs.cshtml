@@ -1,0 +1,19 @@
+﻿@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@model IReadOnlyCollection<MenuItem>
+@{
+    var activeMenuItem = Model.FirstOrDefault(x => Context.ForPath(x.Link, exactMatch: true));
+}
+
+<ul class="nav nav-underline my-3">
+    @foreach (var menuItem in Model)
+    {
+        var active = menuItem.Link == activeMenuItem?.Link;
+
+        <li class="nav-item">
+            <a class="nav-link @(active ? "active" : null)" href="@menuItem.Link">
+                @menuItem.Text
+            </a>
+        </li>
+    }    
+</ul>

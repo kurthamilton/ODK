@@ -12405,7 +12405,8 @@ html[data-platform=odk] {
   margin-bottom: 0;
 }
 
-.section:not(:first-child) {
+.section:not(:first-child),
+.mt-section {
   margin-top: 2rem;
 }
 

@@ -1,0 +1,52 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Members
+@model MemberConversationsAdminPageViewModel
+
+@await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
+
+@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", new MemberAdminTabsViewModel
+{
+    Chapter = Model.Chapter,
+    Member = Model.Member,
+    Platform = Model.Platform
+})
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Started</th>
+                <th>Last message</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+            {
+                var conversation = dto.Conversation;
+
+                <tr>
+                    <td>
+                        <a href="@OdkRoutes2.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
+                            @dto.Conversation.Subject
+                        </a>
+                    </td>
+                    <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
+                    <td>
+                        <div>
+                            @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                        </div>
+                        @if (dto.LastMessage.MemberId != dto.Conversation.MemberId)
+                        {
+                            <div>
+                                @dto.LastMessage.Member?.FullName
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

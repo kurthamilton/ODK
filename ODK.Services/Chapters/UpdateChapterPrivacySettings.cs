@@ -4,6 +4,8 @@ namespace ODK.Services.Chapters;
 
 public class UpdateChapterPrivacySettings
 {
+    public ChapterFeatureVisibilityType? Conversations { get; init; }
+
     public ChapterFeatureVisibilityType? EventResponseVisibility { get; init; }
 
     public ChapterFeatureVisibilityType? EventVisibility { get; init; }

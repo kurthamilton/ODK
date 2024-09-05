@@ -24,8 +24,8 @@
             @*TODO: Group bio here*@
             @if (Model.ChapterProperties.Count > 0)
             {
-                <section class="section">
-                    <h3>My profile</h3>
+                <h3>My profile</h3>
+                <section class="section">                    
                     <form action="/groups/@Model.Chapter.Id/profile" method="post">
                         @Html.AntiForgeryToken()
                         @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel

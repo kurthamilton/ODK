@@ -1,0 +1,13 @@
+﻿@model ChapterConversationsAdminPageViewModel
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@{
+    var menuItems = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversations(Model.Platform, Model.Chapter), Text = "Unreplied" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversationsReplied(Model.Platform, Model.Chapter), Text = "Replied" }
+    };
+}
+
+@await Html.PartialAsync("Components/_Tabs", menuItems)

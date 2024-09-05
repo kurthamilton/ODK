@@ -21,6 +21,8 @@ internal class MockUnitOfWork : IUnitOfWork
     public IChapterAdminMemberRepository ChapterAdminMemberRepository => Mock.Object.ChapterAdminMemberRepository;
     public IChapterContactMessageReplyRepository ChapterContactMessageReplyRepository => Mock.Object.ChapterContactMessageReplyRepository;
     public IChapterContactMessageRepository ChapterContactMessageRepository => Mock.Object.ChapterContactMessageRepository;
+    public IChapterConversationMessageRepository ChapterConversationMessageRepository => Mock.Object.ChapterConversationMessageRepository;
+    public IChapterConversationRepository ChapterConversationRepository => Mock.Object.ChapterConversationRepository;
     public IChapterEmailRepository ChapterEmailRepository => Mock.Object.ChapterEmailRepository;
     public IChapterEventSettingsRepository ChapterEventSettingsRepository => Mock.Object.ChapterEventSettingsRepository;
     public IChapterLinksRepository ChapterLinksRepository => Mock.Object.ChapterLinksRepository;

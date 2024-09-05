@@ -10,8 +10,6 @@
 @using ODK.Web.Razor.Models.Components
 @model VenueEventsAdminPageViewModel
 
-<h2>@Model.Venue.Name</h2>
-
 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
 {
     Breadcrumbs = new[]

@@ -133,6 +133,27 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return memberAvatar;
     }
 
+    public async Task<MemberConversationsAdminPageViewModel> GetMemberConversationsViewModel(AdminServiceRequest request, 
+        Guid memberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, member, conversations) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterConversationRepository.GetDtosByMemberId(memberId, request.ChapterId));
+
+        OdkAssertions.MemberOf(member, chapter.Id);
+
+        return new MemberConversationsAdminPageViewModel
+        {
+            Chapter = chapter,
+            Conversations = conversations,
+            Member = member,
+            Platform = platform
+        };
+    }
+
     public async Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(AdminServiceRequest request)
     {
         var (members, subscriptions) = await GetChapterAdminRestrictedContent(request,

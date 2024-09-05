@@ -7,14 +7,17 @@
 @model ChapterTextsAdminPageViewModel
 
 <h2>Texts</h2>
-<form method="post" action="/groups/@Model.Chapter.Id/texts">
-    @Html.AntiForgeryToken()
 
-    @await Html.PartialAsync("Admin/Chapter/_TextForm", new ChapterTextsFormViewModel
-    {
-        Description = Model.Texts?.Description,
-        RegisterMessage = Model.Texts?.RegisterText,
-        WelcomeMessage = Model.Texts?.WelcomeText
-    })
-    <button class="btn btn-primary">Update</button>
-</form>
+<section class="section">
+    <form method="post" action="/groups/@Model.Chapter.Id/texts">
+        @Html.AntiForgeryToken()
+
+        @await Html.PartialAsync("Admin/Chapter/_TextForm", new ChapterTextsFormViewModel
+        {
+            Description = Model.Texts?.Description,
+            RegisterMessage = Model.Texts?.RegisterText,
+            WelcomeMessage = Model.Texts?.WelcomeText
+        })
+        <button class="btn btn-primary">Update</button>
+    </form>
+</section>

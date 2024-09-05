@@ -6,14 +6,18 @@
 @model ChapterPrivacyAdminPageViewModel
 
 <h2>Privacy settings</h2>
-<form action="/groups/@Model.Chapter.Id/privacy" method="post">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Chapter/_PrivacyForm", new ChapterPrivacySettingsFormViewModel
-    {
-        EventResponseVisibility = Model.PrivacySettings?.EventResponseVisibility,
-        EventVisibility = Model.PrivacySettings?.EventVisibility,
-        MemberVisibility = Model.PrivacySettings?.MemberVisibility,
-        VenueVisibility = Model.PrivacySettings?.VenueVisibility
-    })
-    <button class="btn btn-primary">Update</button>
-</form>
+
+<section class="section">
+    <form action="/groups/@Model.Chapter.Id/privacy" method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("Admin/Chapter/_PrivacyForm", new ChapterPrivacySettingsFormViewModel
+        {
+            Conversations = Model.PrivacySettings?.Conversations,
+            EventResponseVisibility = Model.PrivacySettings?.EventResponseVisibility,
+            EventVisibility = Model.PrivacySettings?.EventVisibility,
+            MemberVisibility = Model.PrivacySettings?.MemberVisibility,
+            VenueVisibility = Model.PrivacySettings?.VenueVisibility
+        })
+        <button class="btn btn-primary">Update</button>
+    </form>
+</section>

@@ -1,0 +1,83 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@model ChapterConversationsAdminPageViewModel
+
+<h2>Conversations</h2>
+
+<section class="section">
+    <p>Contact messages sent by logged in members</p>
+
+    <p>
+        Your <a href="@OdkRoutes2.MemberGroups.GroupPrivacy(Model.Platform, Model.Chapter)">privacy settings</a> currently allow 
+        @switch (Model.PrivacySettings?.Conversations)
+        {
+            case null:
+            case ChapterFeatureVisibilityType.Public:
+                @: anyone
+                break;
+            case ChapterFeatureVisibilityType.ActiveMembers:
+                @: active members
+                break;
+            case ChapterFeatureVisibilityType.AllMembers:
+                @: all members
+                break;
+        }
+
+        to start conversations.
+    </p>
+
+    @await Html.PartialAsync("Admin/Chapter/Conversations/_ConversationsAdminTabs")
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>Subject</th>
+                    <th>Started</th>
+                    <th>Last message</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+                {
+                    var conversation = dto.Conversation;
+
+                    <tr>
+                        <td>
+                            @if (dto.Member.IsMemberOf(Model.Chapter.Id))
+                            {
+                                <a href="@OdkRoutes2.MemberGroups.Member(Model.Platform, Model.Chapter, dto.Member.Id)">
+                                    @dto.Member.FullName
+                                </a>
+                            }      
+                            else
+                            {
+                                @dto.Member.FullName
+                            }
+                        </td>
+                        <td>
+                            <a href="@OdkRoutes2.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
+                                @dto.Conversation.Subject
+                            </a>
+                        </td>
+                        <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
+                        <td>
+                            <div>
+                                @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                            </div>
+                            @if (dto.LastMessage.MemberId != dto.Conversation.MemberId)
+                            {
+                                <div>
+                                    @dto.LastMessage.Member?.FullName
+                                </div>
+                            }
+                        </td>                    
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

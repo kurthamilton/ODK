@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Pages\Groups\Conversations\" />
     <Folder Include="wwwroot\lib\" />
   </ItemGroup>
 

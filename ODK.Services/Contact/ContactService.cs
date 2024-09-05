@@ -1,7 +1,13 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Emails;
+using ODK.Core.Members;
 using ODK.Core.Messages;
+using ODK.Core.Platforms;
+using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Services.Authorization;
+using ODK.Services.Contact.ViewModels;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 using ODK.Services.Recaptcha;
@@ -10,18 +16,82 @@ namespace ODK.Services.Contact;
 
 public class ContactService : IContactService
 {
+    private readonly IAuthorizationService _authorizationService;
     private readonly IEmailService _emailService;
+    private readonly IPlatformProvider _platformProvider;
     private readonly IRecaptchaService _recaptchaService;
     private readonly IUnitOfWork _unitOfWork;
-
+    
     public ContactService(
         IRecaptchaService recaptchaService,
         IUnitOfWork unitOfWork,
-        IEmailService emailService)
+        IEmailService emailService,
+        IPlatformProvider platformProvider,
+        IAuthorizationService authorizationService)
     {
+        _authorizationService = authorizationService;
         _emailService = emailService;
+        _platformProvider = platformProvider;
         _recaptchaService = recaptchaService;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<ChapterContactPageViewModel> GetChapterContactPageViewModel(Guid currentMemberId, Guid chapterId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, currentMember, memberSubscription, membershipSettings, privacySettings, conversations) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapterId),
+            x => x.ChapterConversationRepository.GetByMemberId(currentMemberId, chapterId));
+
+        var canStartConversation = _authorizationService.CanStartConversation(chapterId, currentMember, memberSubscription,
+            membershipSettings, privacySettings);
+
+        return new ChapterContactPageViewModel
+        {
+            CanStartConversation = canStartConversation,
+            Chapter = chapter,
+            Conversations = conversations,
+            Platform = platform
+        };
+    }
+
+    public async Task<ServiceResult> ReplyToChapterConversation(Guid currentMemberId, Guid conversationId, string message)
+    {
+        var (currentMember, conversation) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterConversationRepository.GetById(conversationId));
+
+        OdkAssertions.MeetsCondition(conversation, x => x.MemberId == currentMemberId);
+
+        var (chapter, adminMembers) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(conversation.ChapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(conversation.ChapterId));
+
+        var conversationMessage = new ChapterConversationMessage
+        {
+            ChapterConversationId = conversationId,
+            CreatedUtc = DateTime.UtcNow,
+            MemberId = currentMemberId,
+            Text = message
+        };
+
+        _unitOfWork.ChapterConversationMessageRepository.Add(conversationMessage);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        var addressees = adminMembers
+            .Where(x => x.ReceiveContactEmails)
+            .Select(x => x.Member);
+
+        await _emailService.SendChapterConversationEmail(chapter, conversation, conversationMessage, addressees.ToArray(), 
+            isReply: true);
+
+        return ServiceResult.Successful();
     }
 
     public async Task SendChapterContactMessage(Guid chapterId, string fromAddress, string message, string recaptchaToken)
@@ -77,6 +147,59 @@ public class ContactService : IContactService
         await _unitOfWork.SaveChangesAsync();
 
         await _emailService.SendContactEmail(contactMessage);
+    }
+
+    public async Task<ServiceResult> StartChapterConversation(Guid currentMemberId, Guid chapterId, 
+        string subject, string message, string recaptchaToken)
+    {
+        var (chapter, currentMember, memberSubscription, privacySettings, membershipSettings, adminMembers) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId));
+
+        if (!_authorizationService.CanStartConversation(chapterId, currentMember, memberSubscription, membershipSettings, privacySettings))
+        {
+            return ServiceResult.Failure("Permission denied");
+        }
+
+        var recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);        
+
+        var now = DateTime.UtcNow;
+
+        var conversation = new ChapterConversation
+        {
+            ChapterId = chapterId,
+            CreatedUtc = now,
+            MemberId = currentMemberId,
+            Subject = subject
+        };
+
+        _unitOfWork.ChapterConversationRepository.Add(conversation);
+
+        var conversationMessage = new ChapterConversationMessage()
+        {
+            ChapterConversationId = conversation.Id,
+            CreatedUtc = now,
+            MemberId = currentMemberId,
+            RecaptchaScore = recaptchaResponse.Score,
+            Text = message
+        };
+
+        _unitOfWork.ChapterConversationMessageRepository.Add(conversationMessage);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        var emailMembers = adminMembers
+            .Where(x => x.ReceiveContactEmails)
+            .Select(x => x.Member);
+
+        await _emailService.SendChapterConversationEmail(chapter, conversation, conversationMessage, emailMembers.ToArray(), 
+            isReply: false);
+
+        return ServiceResult.Successful();
     }
 
     private static void ValidateRequest(string fromAddress, string message)

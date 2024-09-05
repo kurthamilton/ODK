@@ -17,6 +17,8 @@ public interface IMemberAdminService
 
     Task<MemberAvatar?> GetMemberAvatar(AdminServiceRequest request, Guid memberId);
 
+    Task<MemberConversationsAdminPageViewModel> GetMemberConversationsViewModel(AdminServiceRequest request, Guid memberId);
+
     Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(AdminServiceRequest request);
 
     Task<MemberEmailAdminPageViewModel> GetMemberEmailViewModel(AdminServiceRequest request, Guid memberId);

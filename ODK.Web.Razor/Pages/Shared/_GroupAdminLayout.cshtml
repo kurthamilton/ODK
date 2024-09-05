@@ -22,6 +22,7 @@
             Text = "Group",
             Children = new[]
             {
+                new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversations(platform, chapter), Text = "Conversations" },
                 new MenuItem { Link = OdkRoutes2.MemberGroups.GroupQuestions(platform, chapter), Text = "FAQ" },
                 new MenuItem { Link = OdkRoutes2.MemberGroups.GroupMessages(platform, chapter), Text = "Messages" },
                 new MenuItem { Link = OdkRoutes2.MemberGroups.GroupPayments(platform, chapter), Text = "Payments" },

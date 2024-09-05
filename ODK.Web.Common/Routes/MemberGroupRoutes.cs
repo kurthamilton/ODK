@@ -36,6 +36,18 @@ public class MemberGroupRoutes
         _ => $"{Index(platform)}/{chapter.Id}"
     };
 
+    public string GroupConversation(PlatformType platform, Chapter chapter, Guid conversationId)
+        => $"{GroupConversations(platform, chapter)}/{conversationId}";
+
+    public string GroupConversations(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/conversations",
+        _ => $"{Group(platform, chapter)}/conversations"
+    };
+
+    public string GroupConversationsReplied(PlatformType platform, Chapter chapter) 
+        => $"{GroupConversations(platform, chapter)}/replied";
+
     public string GroupCreate(PlatformType platform) => platform switch
     {
         PlatformType.DrunkenKnitwits => "/",
@@ -116,6 +128,9 @@ public class MemberGroupRoutes
 
     public string MemberAdmins(PlatformType platform, Chapter chapter) 
         => $"{Members(platform, chapter)}/admins";
+
+    public string MemberConversations(PlatformType platform, Chapter chapter, Guid memberId)
+        => $"{Member(platform, chapter, memberId)}/conversations";
 
     public string MemberEmail(PlatformType platform, Chapter chapter, Guid memberId)
         => $"{Member(platform, chapter, memberId)}/email";

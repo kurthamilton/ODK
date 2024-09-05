@@ -1,0 +1,77 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ChapterConversationAdminPageViewModel
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversations(Model.Platform, Model.Chapter), Text = "Conversations" },
+        new MenuItem { Text = Model.Member.FullName }
+    }
+})
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>Conversation</h2>
+
+        <section class="section">
+            @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+            {
+                TitleContentFunc = @<h5>Messages</h5>,
+                BodyContentFunc = 
+                    @<div>
+                        @await Html.PartialAsync("Chapters/_Conversation", new ChapterConversationViewModel
+                        {
+                            Chapter = Model.Chapter,
+                            CurrentMember = Model.CurrentMember,
+                            MemberId = Model.Conversation.MemberId,
+                            Messages = Model.Messages        
+                        })
+                    </div>
+            })    
+        </section>
+
+        <section class="section">
+            @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+            {
+                TitleContentFunc = @<h5>Reply</h5>,
+                BodyContentFunc = 
+                    @<div>
+                        <form action="/admin/groups/@Model.Chapter.Id/conversations/@Model.Conversation.Id/reply" method="post">
+                            @Html.AntiForgeryToken()
+                            @await Html.PartialAsync("Admin/Chapter/Conversations/_ConversationReplyForm", new ChapterConversationReplyFormViewModel())
+                            <button class="btn btn-primary">Send</button>
+                        </form>
+                    </div>
+            })
+        </section>
+    </div>
+    <div class="col-md-4 mt-section mt-md-0">
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            TitleContentFunc = @<h5>Other conversations</h5>,
+            BodyContentFunc = 
+                @<div class="list-group">
+                    @foreach (var dto in Model.OtherConversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+                    {
+                        <div class="list-group-item">
+                            <div>
+                                <a href="@OdkRoutes2.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, dto.Conversation.Id)">
+                                    @dto.Conversation.Subject
+                                </a>
+                            </div>
+                            <div>
+                                @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                            </div>
+                        </div>
+                    }
+                </div>
+        })
+    </div>
+</div>
