@@ -26,6 +26,10 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
             _cache.GetAll,
             _cache.SetAll);
 
+    public IDeferredQueryMultiple<Chapter> GetByIds(IEnumerable<Guid> ids) => Set()
+        .Where(x => ids.Contains(x.Id))
+        .DeferredMultiple();
+
     public IDeferredQueryMultiple<Chapter> GetByMemberId(Guid memberId)
     {
         var query =

@@ -35,6 +35,32 @@ public class MemberViewModelService : IMemberViewModelService
         return await GetMembersPage(currentMemberId, chapter);
     }
 
+    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(Guid currentMemberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (currentMember, conversations) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterConversationRepository.GetDtosByMemberId(currentMemberId));
+
+        var chapterIds = conversations
+            .Select(x => x.Conversation.ChapterId)
+            .Distinct()
+            .ToArray();
+
+        var chapters = chapterIds.Length > 0
+            ? await _unitOfWork.ChapterRepository.GetByIds(chapterIds).Run()
+            : [];
+
+        return new MemberConversationsPageViewModel
+        {
+            Chapters = chapters,
+            Conversations = conversations,
+            CurrentMember = currentMember,
+            Platform = platform
+        };
+    }
+
     public async Task<MemberPageViewModel> GetMemberPage(Guid currentMemberId, string chapterName, Guid memberId)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();

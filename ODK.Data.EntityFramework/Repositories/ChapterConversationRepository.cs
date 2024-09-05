@@ -22,21 +22,29 @@ public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConv
         .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
         .DeferredMultiple();
 
-    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId) => 
-        ChapterConversationDtoSet(chapterId)
+    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId) 
+        => ChapterConversationDtoSet()
+            .Where(x => x.Conversation.ChapterId == chapterId)
             .DeferredMultiple();
 
-    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId, bool replied) =>
-        ChapterConversationDtoSet(chapterId)
-            .Where(x => (x.Conversation.MemberId != x.LastMessage.MemberId) == replied)
+    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId, bool replied) 
+        => ChapterConversationDtoSet()
+            .Where(x => x.Conversation.ChapterId == chapterId && 
+                (x.Conversation.MemberId != x.LastMessage.MemberId) == replied)
             .DeferredMultiple();
 
-    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId, Guid chapterId) =>
-        ChapterConversationDtoSet(chapterId)
+    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId) 
+        => ChapterConversationDtoSet()
             .Where(x => x.Conversation.MemberId == memberId)
             .DeferredMultiple();
+        
 
-    private IQueryable<ChapterConversationDto> ChapterConversationDtoSet(Guid chapterId)
+    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId, Guid chapterId) 
+        => ChapterConversationDtoSet()
+            .Where(x => x.Conversation.ChapterId == chapterId && x.Conversation.MemberId == memberId)
+            .DeferredMultiple();
+
+    private IQueryable<ChapterConversationDto> ChapterConversationDtoSet()
     {
         var query =
             from conversation in Set()
@@ -50,8 +58,7 @@ public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConv
             from memberSubscription in Set<MemberSubscription>()
                 .Where(x => x.MemberId == member.Id && x.ChapterId == conversation.ChapterId)
                 .DefaultIfEmpty()
-            where conversation.ChapterId == chapterId
-                && member.Id == conversation.MemberId
+            where member.Id == conversation.MemberId
             select new ChapterConversationDto
             {
                 Conversation = conversation,

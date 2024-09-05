@@ -1,13 +1,17 @@
-﻿@page "/account/subscription"
+﻿@page "/account/conversations"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@model ODK.Web.Razor.Pages.Account.SubscriptionModel
+@model ConversationsModel
+@inject IMemberViewModelService MemberViewModelService
 @{
     Layout = "_HomeLayout";
-    Model.Title = "Subscription";
+    Model.Title = "My conversations";
+
+    var viewModel = await MemberViewModelService.GetMemberConversationsPage(Model.CurrentMemberId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -15,12 +19,12 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Subscription(null),
+        Active = OdkRoutes.Account.Conversations(null),
         Content =
             @<div>
-                <h2>My subscription</h2>
+                <h2>My conversations</h2>
                 <section class="section">
-                    @await Html.PartialAsync("Account/_SiteSubscriptionContent")
+                    @await Html.PartialAsync("Account/_ConversationsContent", viewModel)
                 </section>
             </div>
     })

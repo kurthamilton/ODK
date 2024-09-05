@@ -1,10 +1,10 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Platforms;
 
 namespace ODK.Web.Common.Routes;
 
 public class AccountRoutes : RoutesBase
 {
+    public string Conversations(Chapter? chapter) => AccountPath(chapter, "/conversations");
     public string Delete(Chapter? chapter) => AccountPath(chapter, "/delete");
     public string EmailAddressChange(Chapter? chapter) => AccountPath(chapter, "/email/change");
     public string EmailPreferences(Chapter? chapter) => AccountPath(chapter, "/emails");

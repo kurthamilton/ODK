@@ -13,5 +13,7 @@ public interface IChapterConversationRepository : IReadWriteRepository<ChapterCo
 
     IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId, bool replied);
 
+    IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId);
+
     IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId, Guid chapterId);
 }

@@ -24,16 +24,18 @@
         Content = 
             @<div>
                 <h2>Change email address</h2>
-                <form method="post" action="/account/email/change">
-                    @Html.AntiForgeryToken()        
+                <section class="section">
+                    <form method="post" action="/account/email/change">
+                        @Html.AntiForgeryToken()        
     
-                    @await Html.PartialAsync("Account/_ChangeEmailForm", new ChangeEmailFormViewModel
-                    {
-                        Current = member.EmailAddress
-                    })
+                        @await Html.PartialAsync("Account/_ChangeEmailForm", new ChangeEmailFormViewModel
+                        {
+                            Current = member.EmailAddress
+                        })
 
-                    <button type="submit" class="btn btn-primary">Update</button>
-                </form>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+                </section>
             </div>
     })
 })

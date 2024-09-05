@@ -23,15 +23,17 @@
         Content = 
             @<div>
                 <h2>Personal details</h2>
-                <form action="/Account/PersonalDetails" method="post">
-                    @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
-                    {
-                        EmailAddress = member.EmailAddress,
-                        FirstName = member.FirstName,
-                        LastName = member.LastName
-                    })
-                    <button class="btn btn-primary">Update</button>
-                </form>
+                <section class="section">
+                    <form action="/Account/PersonalDetails" method="post">
+                        @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
+                        {
+                            EmailAddress = member.EmailAddress,
+                            FirstName = member.FirstName,
+                            LastName = member.LastName
+                        })
+                        <button class="btn btn-primary">Update</button>
+                    </form>
+                </section>                
             </div>
     })
 })
