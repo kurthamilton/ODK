@@ -162,7 +162,7 @@ public class EmailService : IEmailService
         var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveEventCommentEmails));
         if (replyToMember != null)
         {
-            to = to.Append(new EmailAddressee(replyToMember.EmailAddress, replyToMember.FullName));
+            to = to.Append(replyToMember.ToEmailAddressee());
         }
 
         await _mailProvider.SendEmail(new SendEmailOptions
@@ -286,7 +286,6 @@ public class EmailService : IEmailService
     {
         var parameters = new Dictionary<string, string>
         {
-            { "member.emailAddress", HttpUtility.HtmlEncode(member.EmailAddress) },
             { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) },
             { "member.lastName", HttpUtility.HtmlEncode(member.LastName) }
         };

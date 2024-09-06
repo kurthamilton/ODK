@@ -173,7 +173,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             new []
             {
                 "ID",
-                "Email",
                 "FirstName",
                 "LastName",
                 "Joined",
@@ -193,7 +192,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             csv.Add(
             [
                 member.Id.ToString(),
-                member.EmailAddress,
                 member.FirstName,
                 member.LastName,
                 member.MemberChapter(request.ChapterId).CreatedUtc.ToString("yyyy-MM-dd"),
