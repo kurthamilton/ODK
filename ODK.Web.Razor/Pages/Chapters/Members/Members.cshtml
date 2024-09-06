@@ -8,7 +8,7 @@
 @inject IMemberViewModelService MemberViewModelService
 @model MembersModel
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "Knitwits";
 
     var viewModel = await MemberViewModelService.GetMembersPage(Model.CurrentMemberId, Model.ChapterName);

@@ -1,9 +1,12 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Services
 @using ODK.Services.Members
+@using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
 @model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
 @inject IMemberAdminService MemberAdminService
@@ -15,6 +18,19 @@
     var memberAvatar = await MemberAdminService.GetMemberAvatar(request, Model.Member.Id);
     var memberImage = await MemberAdminService.GetMemberImage(request, Model.Member.Id);
 }
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.Members(platform, Model.Chapter),
+            Text = "Members"
+        },
+        new MenuItem { Text = Model.Member.FullName }
+    }
+})
 
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", new MemberAdminTabsViewModel
 {

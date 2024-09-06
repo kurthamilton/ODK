@@ -4,13 +4,10 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.TextModel
 @inject IChapterAdminService ChapterAdminService
 @{
-    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Text | Admin";
 
     var viewModel = await ChapterAdminService.GetChapterTextsViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Chapter/_TextContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Chapter/_TextContent", viewModel)

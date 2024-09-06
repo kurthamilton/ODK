@@ -5,17 +5,14 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.MembersModel
 @inject IMemberAdminService MemberAdminService
 @{
-    Layout = "Admin/Members/_MemberAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Members | Admin";
 
     var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
     var viewModel = await MemberAdminService.GetMembersViewModel(request);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Members/_MembersContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Members/_MembersContent", viewModel)
 
 @section scripts
 {

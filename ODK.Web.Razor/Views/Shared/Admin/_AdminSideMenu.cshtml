@@ -1,0 +1,78 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Platforms
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@model Chapter
+@inject IPlatformProvider PlatformProvider
+@{
+    var platform = PlatformProvider.GetPlatform();
+    var chapter = Model;
+
+    var groupLinks = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversations(platform, chapter), Text = "Conversations" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem { Link = $"/{chapter.Name}/admin/chapter/emails", Text = "Emails" }
+            : new MenuItem(),
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupQuestions(platform, chapter), Text = "FAQ" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupMessages(platform, chapter), Text = "Messages" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem()
+            : new MenuItem { Link = OdkRoutes2.MemberGroups.GroupPayments(platform, chapter), Text = "Payments" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupProperties(platform, chapter), Text = "Properties" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupSocialMedia(platform, chapter), Text = "Social media" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem { Link = $"/{chapter.Name}/admin/chapter/subscription", Text = "Subscription" }
+            : new MenuItem(),
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" }
+    };
+
+    var menuItems = new[]
+    {
+        new MenuItem { Link = OdkRoutes2.Groups.Group(platform, chapter), Text = "Home" },
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.Group(platform, chapter),
+            Text = "Group",
+            Children = groupLinks.Where(x => !string.IsNullOrEmpty(x.Text)).ToArray()
+        },
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.Events(platform, chapter),
+            Text = "Events",
+            Children = new[]
+            {
+                new MenuItem
+                {
+                    Link = OdkRoutes2.MemberGroups.Venues(platform, chapter),
+                    Text = "Venues"
+                },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.EventSettings(platform, chapter), Text = "Settings" }
+            }
+        },
+        new MenuItem
+        {
+            Link = OdkRoutes2.MemberGroups.Members(platform, chapter),
+            Text = "Members",
+            Children = new[]
+            {
+                new MenuItem { Link = OdkRoutes2.MemberGroups.MemberAdmins(platform, chapter), Text = "Admins" },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.MembershipSettings(platform, chapter), Text = "Membership" },
+                new MenuItem
+                {
+                    Link = OdkRoutes2.MemberGroups.MembersSubscriptions(platform, chapter),
+                    Text = "Subscriptions"
+                },
+                new MenuItem { Link = OdkRoutes2.MemberGroups.MembersEmail(platform, chapter), Text = "Bulk email" }
+            }
+        }
+    };
+}
+
+@await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
+{
+    MenuItems = menuItems,
+    Root = true
+})

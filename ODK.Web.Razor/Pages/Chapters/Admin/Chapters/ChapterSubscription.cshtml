@@ -9,7 +9,7 @@
 @inject IMemberService MemberService
 @inject ISiteSubscriptionService SiteSubscriptionService
 @{
-    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Subscription | Admin";
 
     var memberId = Model.Chapter.OwnerId;
@@ -22,14 +22,11 @@
     var siteSubscriptions = await SiteSubscriptionService.GetSiteSubscriptionsDto(memberId.Value);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", new ChapterSubscriptionViewModel
 {
-    Content = await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", new ChapterSubscriptionViewModel
-    {
-        Chapter = Model.Chapter,
-        Current = subscription,
-        SiteSubscriptions = siteSubscriptions
-    })
+    Chapter = Model.Chapter,
+    Current = subscription,
+    SiteSubscriptions = siteSubscriptions
 })
 
 @section scripts

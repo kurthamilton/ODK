@@ -13,7 +13,7 @@
 @inject IAccountViewModelService AccountViewModelService
 @inject IRequestCache RequestCache
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "Change email";
 
     var memberId = User.MemberId();
@@ -30,7 +30,10 @@
         Chapter = chapter,
         Content = 
             @<div>
-                @await Html.PartialAsync("Account/_ChangeEmailContent", viewModel)
+                <h2>Change email address</h2>
+                <section class="section">
+                    @await Html.PartialAsync("Account/_ChangeEmailContent", viewModel)
+                </section>
             </div>
     })
 })

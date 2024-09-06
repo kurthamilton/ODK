@@ -1,0 +1,11 @@
+﻿@page "/{chapterName}/Admin"
+@using ODK.Core.Platforms
+@using ODK.Web.Common.Routes
+@model IndexModel
+@inject IPlatformProvider PlatformProvider
+@{
+    Layout = "_OdkChapterAdminLayout";
+
+    var platform = PlatformProvider.GetPlatform();
+    Response.Redirect(OdkRoutes2.MemberGroups.GroupTexts(platform, Model.Chapter));
+}

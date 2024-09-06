@@ -3,7 +3,7 @@
 @using ODK.Web.Common.Components
 @inject IRequestCache RequestCache
 @{
-    Layout = "Admin/_AdminLayout";
+    Layout = "_OdkChapterAdminLayout";
 
     var chapterContext = new ChapterPageContext(RequestCache, Context);
     var chapter = await chapterContext.GetChapterAsync();

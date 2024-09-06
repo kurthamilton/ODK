@@ -6,7 +6,7 @@
 @model ODK.Web.Razor.Pages.Chapters.Account.JoinModel
 @inject IAccountViewModelService AccountViewModelService
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "Join";
 
     var viewModel = await AccountViewModelService.GetChapterJoinPage(Model.ChapterName);    

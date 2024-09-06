@@ -10,7 +10,7 @@
 @model ODK.Web.Razor.Pages.Chapters.Account.SubscriptionModel
 @inject IChapterService ChapterService
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "Subscription";
 
     var memberId = User.MemberId();
@@ -27,11 +27,14 @@
         Chapter = Model.Chapter,
         Content = 
             @<div>
-                @await Html.PartialAsync("Account/_ChapterSubscriptionContent", new ChapterSubscriptionContentViewModel
-                {
-                    Chapter = Model.Chapter,
-                    ChapterPaymentSettings = chapterPaymentSettings
-                })
+                <h2>My subscription</h2>
+                <section class="section">
+                    @await Html.PartialAsync("Account/_ChapterSubscriptionContent", new ChapterSubscriptionContentViewModel
+                    {
+                        Chapter = Model.Chapter,
+                        ChapterPaymentSettings = chapterPaymentSettings
+                    })
+                </section>
             </div>
     })
 })

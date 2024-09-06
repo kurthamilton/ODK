@@ -6,13 +6,10 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.SendMemberEmailModel
 @inject IMemberAdminService MemberAdminService
 @{
-    Layout = "Admin/Members/_MemberAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Send member email | Admin";
 
     var viewModel = await MemberAdminService.GetMemberEmailViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Members/_SendMemberEmailContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Members/_SendMemberEmailContent", viewModel)

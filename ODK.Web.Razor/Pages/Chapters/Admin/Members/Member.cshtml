@@ -6,13 +6,10 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.MemberModel
 @inject IMemberAdminService MemberAdminService
 @{
-    Layout = "Admin/Members/_MemberAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit member | Admin";
 
     var viewModel = await MemberAdminService.GetMemberViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{    
-    Content = await Html.PartialAsync("Admin/Members/_MemberContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Members/_MemberContent", viewModel)

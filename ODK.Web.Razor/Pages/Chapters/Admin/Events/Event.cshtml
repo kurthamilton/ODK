@@ -8,7 +8,7 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventModel
 @inject IEventAdminService EventAdminService
 @{
-    Layout = "Admin/Events/_EventAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit Event | Admin";
 
     var memberId = User.MemberId();
@@ -16,7 +16,4 @@
     var viewModel = await EventAdminService.GetEventEditViewModel(serviceRequest, Model.Event.Id);    
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Events/_EventContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Events/_EventContent", viewModel)

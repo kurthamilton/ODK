@@ -1,0 +1,22 @@
+﻿@page "/{chapterName}/conversations/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@model ConversationModel
+@inject IChapterViewModelService ChapterViewModelService
+@{
+    Layout = "_OdkChapterLayout";
+
+    var viewModel = await ChapterViewModelService.GetGroupConversationPage(Model.CurrentMemberId, Model.Chapter.Slug, Model.ConversationId);
+
+    Model.Title = $"{viewModel.Conversation.Subject} | Conversations | {viewModel.Chapter.Name}";
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Contact",
+    Content = await Html.PartialAsync("Groups/_GroupConversationContent", viewModel)
+})

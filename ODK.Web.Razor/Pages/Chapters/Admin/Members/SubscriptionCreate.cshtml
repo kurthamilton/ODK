@@ -6,14 +6,11 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.SubscriptionCreateModel
 @inject IMemberAdminService MemberAdminService
 @{
-    Layout = "Admin/Members/_MemberAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create subscription | Admin";
 
     var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
     var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(request);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)

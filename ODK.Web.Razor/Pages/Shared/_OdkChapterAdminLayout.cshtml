@@ -1,10 +1,12 @@
-﻿@using ODK.Web.Razor.Models.Header
+﻿@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Header
 @using ODK.Core.Chapters
 @using ODK.Core.Members
 @using ODK.Services.Caching
+@using ODK.Web.Razor.Pages.Chapters
 @inject IRequestCache RequestCache
 @{
-    Layout = "Shared/_Layout";
+    Layout = "_OdkChapterLayout";
 
     var chapterContext = new ChapterPageContext(RequestCache, Context);
     var chapter = await chapterContext.GetChapterAsync();
@@ -15,12 +17,15 @@
     }
 }
 
-@section header
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    @await Html.PartialAsync("Header/_AdminHeader", new AdminHeaderViewModel(chapter, member))
-}
-
-@RenderBody()
+    Title = "Admin",
+    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+    {
+        BodyContentFunc = _ => RenderBody(),
+        MenuContent = await Html.PartialAsync("Admin/_AdminSideMenu", chapter)
+    })
+})
 
 @section styles
 {

@@ -6,7 +6,7 @@
 @model EventsModel
 @inject IEventViewModelService EventViewModelService
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "Events";
 
     var viewModel = await EventViewModelService.GetEventsPage(Model.CurrentMemberIdOrDefault, Model.ChapterName);

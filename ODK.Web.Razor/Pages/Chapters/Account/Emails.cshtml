@@ -9,7 +9,7 @@
 @model ODK.Web.Razor.Pages.Chapters.Account.EmailsModel
 @inject IAccountViewModelService AccountViewModelService
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "Email preferences";
 
     var viewModel = await AccountViewModelService.GetChapterAccountViewModel(Model.CurrentMemberId, Model.ChapterName);
@@ -24,11 +24,14 @@
         Chapter = viewModel.Chapter,
         Content =
             @<div>
-                @await Html.PartialAsync("Account/_EmailPreferencesContent", new EmailPreferencesContentViewModel
-                {
-                    ChapterName = viewModel.Chapter.Name,
-                    CurrentMember = viewModel.CurrentMember
-                })
+                <h2>Email preferences</h2>
+                <section class="section">
+                    @await Html.PartialAsync("Account/_EmailPreferencesContent", new EmailPreferencesContentViewModel
+                    {
+                        ChapterName = viewModel.Chapter.Name,
+                        CurrentMember = viewModel.CurrentMember
+                    })
+                </section>
             </div>
     })
 })

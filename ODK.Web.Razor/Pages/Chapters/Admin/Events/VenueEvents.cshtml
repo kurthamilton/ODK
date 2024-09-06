@@ -6,13 +6,10 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.VenueEventsModel
 @inject IVenueAdminService VenueAdminService
 @{
-    Layout = "Admin/Events/_EventAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Venue events | Admin";
 
     var viewModel = await VenueAdminService.GetVenueEventsViewModel(Model.AdminServiceRequest, Model.VenueId);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Venues/_VenueEventsContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Venues/_VenueEventsContent", viewModel)

@@ -10,7 +10,7 @@
 @model ODK.Web.Razor.Pages.Chapters.Account.ProfileModel
 @inject IAccountViewModelService AccountViewModelService
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "Profile";
 
     var viewModel = await AccountViewModelService.GetChapterProfilePage(Model.CurrentMemberId, Model.ChapterName);
@@ -25,19 +25,24 @@
         Active = OdkRoutes.Account.Profile(viewModel.Chapter),
         Chapter = viewModel.Chapter,
         Content =
-            @<form method="post" action="/groups/@viewModel.Chapter.Id/profile">
-                @Html.AntiForgeryToken()
+            @<div>
+                <h2>Profile</h2>
+                <section class="section">
+                    <form method="post" action="/groups/@viewModel.Chapter.Id/profile">
+                        @Html.AntiForgeryToken()
 
-                @await Html.PartialAsync("Account/_ChapterProfileForm", viewModel.ChapterProfile)
+                        @await Html.PartialAsync("Account/_ChapterProfileForm", viewModel.ChapterProfile)
 
-                <div class="form-group mb-3">
-                    <label class="form-label">Date joined</label>
-                    <div class="form-control-plaintext">
-                        <span>@TimeZoneEntityExtensions.ToLocalTime(viewModel.Chapter, dateJoined).ToString("d MMMM yyyy")</span>
-                    </div>
-                </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label">Date joined</label>
+                            <div class="form-control-plaintext">
+                                <span>@TimeZoneEntityExtensions.ToLocalTime(viewModel.Chapter, dateJoined).ToString("d MMMM yyyy")</span>
+                            </div>
+                        </div>
 
-                <button type="submit" class="btn btn-primary">Update</button>
-            </form>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+                </section>
+            </div>
     })
 })

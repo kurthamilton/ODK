@@ -4,13 +4,10 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.LinksModel
 @inject IChapterAdminService ChapterAdminService
 @{
-    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Links | Admin";
 
     var viewModel = await ChapterAdminService.GetChapterLinksViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Chapter/_LinksContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Chapter/_LinksContent", viewModel)

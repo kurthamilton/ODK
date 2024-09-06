@@ -12217,9 +12217,6 @@ html[data-platform=odk] {
     margin-left: 1.75rem;
   }
 }
-.navbar {
-  background-color: var(--odk-bg-light);
-}
 .navbar .navbar-toggler:focus {
   box-shadow: none;
 }

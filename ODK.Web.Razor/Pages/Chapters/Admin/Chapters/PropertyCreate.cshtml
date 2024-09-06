@@ -3,11 +3,8 @@
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.PropertyCreateModel
 @{
-    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create property | Admin";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent", Model.Chapter)
-})
+@await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent", Model.Chapter)

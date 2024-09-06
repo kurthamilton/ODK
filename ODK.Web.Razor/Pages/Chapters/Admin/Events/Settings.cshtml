@@ -5,14 +5,11 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.SettingsModel
 @inject IEventAdminService EventAdminService
 @{
-    Layout = "Admin/Events/_EventAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Event settings | Admin";
 
     var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
     var viewModel = await EventAdminService.GetEventSettingsViewModel(request);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Events/_SettingsContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Events/_SettingsContent", viewModel)

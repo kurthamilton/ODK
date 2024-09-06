@@ -1,0 +1,30 @@
+﻿@page "/{chapterName}/Account/Conversations"
+@using ODK.Services.Members
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model ConversationsModel
+@inject IMemberViewModelService MemberViewModelService
+@{
+    Layout = "_OdkChapterLayout";
+    Model.Title = "My conversations";
+
+    var viewModel = await MemberViewModelService.GetMemberConversationsPage(Model.CurrentMemberId, Model.Chapter.Id);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Account",
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = OdkRoutes.Account.Conversations(Model.Chapter),
+        Chapter = Model.Chapter,
+        Content =
+            @<div>
+                <h2>My conversations</h2>
+                <section class="section">
+                    @await Html.PartialAsync("Account/_ConversationsContent", viewModel)
+                </section>
+            </div>
+    })
+})
