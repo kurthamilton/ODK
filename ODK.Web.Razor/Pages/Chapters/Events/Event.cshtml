@@ -1,5 +1,4 @@
 ﻿@page "/{chapterName}/Events/{id:guid}"
-@attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Venues
 @using ODK.Services.Events
@@ -14,7 +13,7 @@
     Layout = "_OdkChapterLayout";
 
     var viewModel = await EventViewModelService.GetEventPageViewModel(
-        Model.CurrentMemberId,
+        Model.CurrentMemberIdOrDefault,
         Model.ChapterName,
         Model.EventId);
 

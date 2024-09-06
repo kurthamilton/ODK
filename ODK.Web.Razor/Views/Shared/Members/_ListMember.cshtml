@@ -1,10 +1,14 @@
 ﻿@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Members
 @model ODK.Web.Razor.Models.Members.ListMemberViewModel
+@{
+    var showTooltip = Model.HideName && User.Identity?.IsAuthenticated == true;
+}
 
 <div class="member-tile @(Model.HideName ? "member-tile-sm" : null)">
     <a href="@OdkRoutes2.Groups.Member(Model.Platform, Model.Chapter, Model.Member.Id)" 
-       data-bs-toggle="@(Model.HideName ? "tooltip" : "")" data-bs-title="@(Model.HideName ? Model.Member.FullName : "")" container="body">
+       data-bs-toggle="@(showTooltip ? "tooltip" : "")" 
+       data-bs-title="@(showTooltip ? Model.Member.FullName : "")" container="body">
 
         <div class="d-flex align-items-end justify-content-center">
            @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel

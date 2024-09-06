@@ -3,11 +3,15 @@
 @{
     var imageUrl = OdkRoutes.Members.Avatar(Model.Member.Id);
     var maxWidth = Model.MaxWidth > 0 ? Model.MaxWidth : 75;
+
+    var alt = User.Identity?.IsAuthenticated == true
+        ? $"Photo of {Model.Member.FullName}"
+        : "Photo of member";
 }
 
 <img style="@(maxWidth > 0 ? $"max-width: {maxWidth}px" : null)"
      class="@(Model.IsTop ? "card-img-top" : "card-img")"
      src="@imageUrl"
-     alt="Photo of @Model.Member.FullName"
+     alt="@alt"
      data-img-fallback="/assets/img/member.png"
      onerror="setImageError(this)" />
