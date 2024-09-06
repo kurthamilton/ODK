@@ -1,4 +1,5 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Platforms
+@using ODK.Core.Utils
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
@@ -6,14 +7,20 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Contact
 @model GroupConversationPageViewModel
-
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
-{
-    Breadcrumbs = new[]
+@{
+    var breadcrumbs = new[]
     {
+        Model.Platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem { Link = OdkRoutes2.Groups.Group(Model.Platform, Model.Chapter), Text = Model.Chapter.Name }
+            : new MenuItem(),
         new MenuItem { Link = OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter), Text = "Contact" },
         new MenuItem { Text = Model.Conversation.Subject }
-    }
+    }.Where(x => !string.IsNullOrEmpty(x.Text))
+    .ToArray();
+}
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = breadcrumbs
 })
 
 @if (Model.CurrentMember == null)

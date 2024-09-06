@@ -385,14 +385,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return chapterAdminMembers;
     }
 
-    public async Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(AdminServiceRequest request, bool replied)
+    public async Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(AdminServiceRequest request, bool readByChapter)
     {
         var platform = _platformProvider.GetPlatform();
 
         var (chapter, privacySettings, conversations) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.ChapterConversationRepository.GetDtosByChapterId(request.ChapterId, replied: replied));
+            x => x.ChapterConversationRepository.GetDtosByChapterId(request.ChapterId, readByChapter: readByChapter));
 
         var repliedConversations = new List<ChapterConversationDto>();
         var unrepliedConversations = new List<ChapterConversationDto>();
@@ -403,7 +403,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Conversations = conversations,
             Platform = platform,
             PrivacySettings = privacySettings,
-            Replied = replied
+            ReadByChapter = readByChapter
         };
     }
 

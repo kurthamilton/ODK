@@ -12,9 +12,9 @@
 <form method="post" class="mb-3">
     @Html.AntiForgeryToken()
     @await Html.PartialAsync("SuperAdmin/_InstagramForm", new InstagramFormViewModel
-           {
-               ScraperUserAgent = settings.InstagramScraperUserAgent
-           })
+    {
+        ScraperUserAgent = settings.InstagramScraperUserAgent
+    })
     <button class="btn btn-primary">Update</button>
 </form>
 

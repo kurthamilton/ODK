@@ -13,7 +13,8 @@
     Breadcrumbs = new[]
     {
         new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversations(Model.Platform, Model.Chapter), Text = "Conversations" },
-        new MenuItem { Text = Model.Member.FullName }
+        new MenuItem { Link = OdkRoutes2.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id), Text = Model.Member.FullName },
+        new MenuItem { Text = Model.Conversation.Subject }
     }
 })
 

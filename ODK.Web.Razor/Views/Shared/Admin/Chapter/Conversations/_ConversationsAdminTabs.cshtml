@@ -5,8 +5,8 @@
 @{
     var menuItems = new[]
     {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversations(Model.Platform, Model.Chapter), Text = "Unreplied" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversationsReplied(Model.Platform, Model.Chapter), Text = "Replied" }
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversations(Model.Platform, Model.Chapter), Text = "Unread" },
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversationsRead(Model.Platform, Model.Chapter), Text = "Read" }
     };
 }
 

@@ -27,10 +27,10 @@ public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConv
             .Where(x => x.Conversation.ChapterId == chapterId)
             .DeferredMultiple();
 
-    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId, bool replied) 
+    public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByChapterId(Guid chapterId, bool readByChapter) 
         => ChapterConversationDtoSet()
             .Where(x => x.Conversation.ChapterId == chapterId && 
-                (x.Conversation.MemberId != x.LastMessage.MemberId) == replied)
+                x.LastMessage.ReadByChapter == readByChapter)
             .DeferredMultiple();
 
     public IDeferredQueryMultiple<ChapterConversationDto> GetDtosByMemberId(Guid memberId) 

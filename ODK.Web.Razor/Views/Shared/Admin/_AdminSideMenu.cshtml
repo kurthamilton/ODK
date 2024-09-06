@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Platforms
+@using ODK.Services.Authentication
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
@@ -28,6 +29,16 @@
             : new MenuItem(),
         new MenuItem { Link = OdkRoutes2.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" }
     };
+
+    var superadminLinks = platform == PlatformType.DrunkenKnitwits && User.IsInRole(OdkRoles.SuperAdmin)
+        ? new[]
+        {
+            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Members", Text = "Members" },
+            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Payments", Text = "Payments" },
+            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Location", Text = "Location" },
+            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Instagram", Text = "Instagram" },
+        } 
+        : [];
 
     var menuItems = new[]
     {
@@ -67,8 +78,16 @@
                 },
                 new MenuItem { Link = OdkRoutes2.MemberGroups.MembersEmail(platform, chapter), Text = "Bulk email" }
             }
-        }
-    };
+        },
+        superadminLinks.Length > 0
+            ? new MenuItem
+            {
+                Link = $"/{chapter.Name}/Admin/SuperAdmin",
+                Text = "SuperAdmin",
+                Children = superadminLinks
+            } : new MenuItem()
+    }.Where(x => !string.IsNullOrEmpty(x.Text))
+    .ToArray();
 }
 
 @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel

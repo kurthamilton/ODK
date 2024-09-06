@@ -13,5 +13,5 @@ public class ChapterConversationsAdminPageViewModel
 
     public required ChapterPrivacySettings? PrivacySettings { get; init; }
 
-    public required bool Replied { get; init; }
+    public required bool ReadByChapter { get; init; }
 }

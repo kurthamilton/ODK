@@ -45,8 +45,8 @@ public class MemberGroupRoutes
         _ => $"{Group(platform, chapter)}/conversations"
     };
 
-    public string GroupConversationsReplied(PlatformType platform, Chapter chapter) 
-        => $"{GroupConversations(platform, chapter)}/replied";
+    public string GroupConversationsRead(PlatformType platform, Chapter chapter) 
+        => $"{GroupConversations(platform, chapter)}/read";
 
     public string GroupCreate(PlatformType platform) => platform switch
     {

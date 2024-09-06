@@ -4,7 +4,7 @@ using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Chapters.SuperAdmin;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.SuperAdmin;
 
 public class PaymentSettingsModel : ChapterSuperAdminPageModel
 {

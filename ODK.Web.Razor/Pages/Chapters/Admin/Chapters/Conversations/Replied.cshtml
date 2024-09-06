@@ -1,9 +1,9 @@
-﻿@page "/my/groups/{id:guid}/conversations/read"
+﻿@page "/{chapterName}/Admin/Chapter/Conversations/Read"
 @using ODK.Services.Chapters
 @model RepliedModel
 @inject IChapterAdminService ChapterAdminService
 @{
-    Layout = "_GroupAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Conversations";
 
     var viewModel = await ChapterAdminService.GetChapterConversationsViewModel(Model.AdminServiceRequest, readByChapter: true);

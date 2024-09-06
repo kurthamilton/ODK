@@ -1,9 +1,9 @@
-﻿@page "/my/groups/{id:guid}/members/{memberId:guid}/conversations"
+﻿@page "/{chapterName}/Admin/Members/{id:guid}/Conversations"
 @using ODK.Services.Members
-@model ConversationsModel
+@model MemberConversationsModel
 @inject IMemberAdminService MemberAdminService
 @{
-    Layout = "_GroupAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
 
     var viewModel = await MemberAdminService.GetMemberConversationsViewModel(Model.AdminServiceRequest, Model.MemberId);
 

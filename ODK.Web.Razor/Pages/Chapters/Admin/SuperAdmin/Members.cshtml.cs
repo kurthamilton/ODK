@@ -1,6 +1,6 @@
 using ODK.Services.Caching;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.SuperAdmin;
 
 public class MembersModel : ChapterSuperAdminPageModel
 {

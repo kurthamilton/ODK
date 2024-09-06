@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
-using ODK.Web.Razor.Pages.Chapters.Admin;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.SuperAdmin;
 
 public abstract class ChapterSuperAdminPageModel : AdminPageModel
 {

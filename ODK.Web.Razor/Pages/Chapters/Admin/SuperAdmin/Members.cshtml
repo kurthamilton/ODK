@@ -1,0 +1,9 @@
+﻿@page "/{chapterName}/Admin/SuperAdmin/Members"
+@using ODK.Web.Razor.Models.Components
+@model MembersModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Members | SuperAdmin";
+}
+
+@await Html.PartialAsync("SuperAdmin/_MembersContent", Model.Chapter)

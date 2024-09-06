@@ -1,7 +1,7 @@
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 
-namespace ODK.Web.Razor.Pages.Chapters.SuperAdmin;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.SuperAdmin;
 
 public class LocationModel : ChapterSuperAdminPageModel
 {
