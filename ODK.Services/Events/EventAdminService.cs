@@ -8,6 +8,7 @@ using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
@@ -23,24 +24,24 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;
     private readonly IPlatformProvider _platformProvider;
-    private readonly EventAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUrlProvider _urlProvider;
 
     public EventAdminService(
         IUnitOfWork unitOfWork, 
-        EventAdminServiceSettings settings, 
         IEmailService emailService,
         IChapterUrlService chapterUrlService,
         IAuthorizationService authorizationService,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        IUrlProvider urlProvider)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _chapterUrlService = chapterUrlService;
         _emailService = emailService;
         _platformProvider = platformProvider;
-        _settings = settings;
         _unitOfWork = unitOfWork;
+        _urlProvider = urlProvider;
     }
 
     public async Task<ServiceResult> CreateEvent(AdminServiceRequest request, CreateEvent model, bool draft)
@@ -900,9 +901,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             {"event.time", time}
         };
 
-        parameters.Add("event.rsvpurl", _chapterUrlService.GetChapterUrl(chapter, _settings.EventRsvpUrlFormat, parameters));
-        parameters.Add("event.url", _chapterUrlService.GetChapterUrl(chapter, _settings.EventUrlFormat, parameters));
-        parameters.Add("unsubscribeUrl", _chapterUrlService.GetChapterUrl(chapter, _settings.UnsubscribeUrlFormat, parameters));
+        var eventUrl = _urlProvider.EventUrl(chapter, @event.Id);
+        var rsvpUrl = _urlProvider.EventRsvpUrl(chapter, @event.Id, EventResponseType.Yes);
+        var unsubscribeUrl = _urlProvider.EmailPreferences(chapter);
+
+        parameters.Add("event.rsvpurl", rsvpUrl);
+        parameters.Add("event.url", eventUrl);
+        parameters.Add("unsubscribeUrl", unsubscribeUrl);
 
         return parameters;
     }

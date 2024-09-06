@@ -1,17 +1,29 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Platforms;
+using ODK.Core.Events;
 
 namespace ODK.Core.Web;
 
 public interface IUrlProvider
 {
-    string ConversationAdminUrl(PlatformType platform, Chapter chapter, Guid conversationId);
+    string ActivateAccountUrl(Chapter? chapter, string token);
 
-    string ConversationUrl(PlatformType platform, Chapter chapter, Guid conversationId);
+    string ConfirmEmailAddressUpdate(Chapter? chapter, string token);
 
-    string EventsUrl(PlatformType platform, Chapter chapter);
+    string ConversationAdminUrl(Chapter chapter, Guid conversationId);
 
-    string MessageAdminUrl(PlatformType platform, Guid messageId);
+    string ConversationUrl(Chapter chapter, Guid conversationId);
 
-    string MessageAdminUrl(PlatformType platform, Chapter chapter, Guid messageId);
+    string EmailPreferences(Chapter? chapter);
+
+    string EventRsvpUrl(Chapter chapter, Guid eventId, EventResponseType response);
+
+    string EventsUrl(Chapter chapter);    
+
+    string EventUrl(Chapter chapter, Guid eventId);
+
+    string MessageAdminUrl(Guid messageId);
+
+    string MessageAdminUrl(Chapter chapter, Guid messageId);
+
+    string PasswordReset(Chapter? chapter, string token);
 }

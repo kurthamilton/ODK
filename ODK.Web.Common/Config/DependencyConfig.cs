@@ -167,36 +167,16 @@ public static class DependencyConfig
         MembersSettings members = appSettings.Members;
         PathSettings paths = appSettings.Paths;
         RecaptchaSettings recaptcha = appSettings.Recaptcha;
-        UrlSettings urls = appSettings.Urls;
-
+        
         services.AddSingleton(new AuthenticationServiceSettings
         {
             PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,
-            PasswordResetUrlPath = urls.PasswordReset
         });
         
-        services.AddSingleton(new EventAdminServiceSettings
-        {
-            EventRsvpUrlFormat = urls.EventRsvp,
-            EventUrlFormat = urls.Event,
-            UnsubscribeUrlFormat = urls.Unsubscribe
-        });
-
-        services.AddSingleton(new EventServiceSettings
-        {
-            EventUrlFormat = urls.Event
-        });        
-
         services.AddSingleton(new MediaFileProviderSettings
         {
             RootMediaPath = paths.MediaRoot,
-            RootMediaUrlPath = urls.Media
-        });
-
-        services.AddSingleton(new MemberEmailServiceSettings
-        {
-            ActivateAccountUrlPath = urls.ActivateAccount,
-            ConfirmEmailAddressUpdateUrlPath = urls.ConfirmEmailAddressUpdate
+            RootMediaUrlPath = "NOT IMPLEMENTED"
         });
 
         services.AddSingleton(new RecaptchaServiceSettings

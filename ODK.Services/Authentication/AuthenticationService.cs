@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
-using System.Web;
 using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
 using ODK.Core.Members;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
@@ -23,6 +23,7 @@ public class AuthenticationService : IAuthenticationService
     private readonly IMemberEmailService _memberEmailService;
     private readonly AuthenticationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUrlProvider _urlProvider;
 
     public AuthenticationService(
         IEmailService emailService, 
@@ -30,7 +31,8 @@ public class AuthenticationService : IAuthenticationService
         IAuthorizationService authorizationService, 
         IUnitOfWork unitOfWork,
         IChapterUrlService chapterUrlService,
-        IMemberEmailService memberEmailService)
+        IMemberEmailService memberEmailService,
+        IUrlProvider urlProvider)
     {
         _authorizationService = authorizationService;
         _chapterUrlService = chapterUrlService;
@@ -38,6 +40,7 @@ public class AuthenticationService : IAuthenticationService
         _memberEmailService = memberEmailService;
         _settings = settings;
         _unitOfWork = unitOfWork;
+        _urlProvider = urlProvider;
     }    
 
     public async Task<ServiceResult> ActivateChapterAccountAsync(Guid chapterId, string activationToken, string password)
@@ -314,11 +317,8 @@ public class AuthenticationService : IAuthenticationService
         });
 
         await _unitOfWork.SaveChangesAsync();
-
-        string url = _chapterUrlService.GetChapterUrl(chapter, _settings.PasswordResetUrlPath, new Dictionary<string, string>
-        {
-            { "token", HttpUtility.UrlEncode(token) }
-        });
+        
+        string url = _urlProvider.PasswordReset(chapter, token);
 
         await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.PasswordReset, new Dictionary<string, string>
         {

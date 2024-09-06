@@ -83,13 +83,11 @@ public class EmailService : IEmailService
             "<p>{conversation.message}</p>" +
             "<p>View: <a href=\"{url}\">{url}</a></p>";
 
-        var platform = _platformProvider.GetPlatform();
-
         var isToMember = message.MemberId != conversation.MemberId;
 
         var url = isToMember
-            ? _urlProvider.ConversationUrl(platform, chapter, conversation.Id)
-            : _urlProvider.ConversationAdminUrl(platform, chapter, conversation.Id);
+            ? _urlProvider.ConversationUrl(chapter, conversation.Id)
+            : _urlProvider.ConversationAdminUrl(chapter, conversation.Id);
 
         var addressees = to.Select(x => x.ToEmailAddressee());
 
@@ -109,7 +107,7 @@ public class EmailService : IEmailService
         {
             {"message.from", message.FromAddress},
             {"message.text", HttpUtility.HtmlEncode(message.Message)},
-            {"url", _urlProvider.MessageAdminUrl(platform, message.Id)}
+            {"url", _urlProvider.MessageAdminUrl(message.Id)}
         };        
 
         var settings = await _unitOfWork.SiteEmailSettingsRepository
@@ -128,9 +126,7 @@ public class EmailService : IEmailService
 
     public async Task SendContactEmail(Chapter chapter, ChapterContactMessage message)
     {
-        var platform = _platformProvider.GetPlatform();
-
-        var url = _urlProvider.MessageAdminUrl(platform, chapter, message.Id);
+        var url = _urlProvider.MessageAdminUrl(chapter, message.Id);
 
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -247,9 +243,7 @@ public class EmailService : IEmailService
 
     public async Task SendNewChapterMemberEmail(Chapter chapter, Member member)
     {
-        var platform = _platformProvider.GetPlatform();
-
-        var eventsUrl = _urlProvider.EventsUrl(platform, chapter);
+        var eventsUrl = _urlProvider.EventsUrl(chapter);
 
         await SendEmail(chapter, member.ToEmailAddressee(), EmailType.NewMember, new Dictionary<string, string>
         {

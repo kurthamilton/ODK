@@ -19,6 +19,4 @@ public class AppSettings
     public required RecaptchaSettings Recaptcha { get; set; }
 
     public required ScheduledTasksSettings ScheduledTasks { get; set; }
-
-    public required UrlSettings Urls { get; set; }
 }

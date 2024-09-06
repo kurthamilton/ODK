@@ -1,34 +1,27 @@
-﻿using System.Web;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Members;
-using ODK.Services.Chapters;
+using ODK.Core.Web;
 using ODK.Services.Emails;
 
 namespace ODK.Services.Members;
 
 public class MemberEmailService : IMemberEmailService
 {
-    private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;
-    private readonly MemberEmailServiceSettings _settings;
+    private readonly IUrlProvider _urlProvider;
 
     public MemberEmailService(
         IEmailService emailService, 
-        MemberEmailServiceSettings settings, 
-        IChapterUrlService chapterUrlService)
+        IUrlProvider urlProvider)
     {
-        _chapterUrlService = chapterUrlService;
         _emailService = emailService;
-        _settings = settings;
+        _urlProvider = urlProvider;
     }
 
     public async Task SendActivationEmail(Chapter? chapter, Member member, string token)
     {        
-        var url = _chapterUrlService.GetChapterUrl(chapter, _settings.ActivateAccountUrlPath, new Dictionary<string, string>
-        {
-            { "token", HttpUtility.UrlEncode(token) }
-        });
+        var url = _urlProvider.ActivateAccountUrl(chapter, token);
 
         await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.ActivateAccount, new Dictionary<string, string>
         {
@@ -38,10 +31,7 @@ public class MemberEmailService : IMemberEmailService
 
     public async Task SendAddressUpdateEmail(Chapter? chapter, Member member, string newEmailAddress, string token)
     {
-        var url = _chapterUrlService.GetChapterUrl(chapter, _settings.ConfirmEmailAddressUpdateUrlPath, new Dictionary<string, string>
-        {
-            { "token", HttpUtility.UrlEncode(token) }
-        });
+        var url = _urlProvider.ConfirmEmailAddressUpdate(chapter, token);
 
         await _emailService.SendEmail(chapter, new EmailAddressee(newEmailAddress, member.FullName), EmailType.EmailAddressUpdate,
             new Dictionary<string, string>

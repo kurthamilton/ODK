@@ -1,0 +1,8 @@
+﻿@page "/{chapterName}/Account/Payments"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model PaymentsModel
+@{
+    Layout = "_OdkChapterLayout";
+    Model.Title = "Payments";
+}

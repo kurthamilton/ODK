@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
@@ -20,22 +21,22 @@ public class EventService : IEventService
     private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;
     private readonly IPaymentService _paymentService;
-    private readonly EventServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUrlProvider _urlProvider;
 
     public EventService(IUnitOfWork unitOfWork,       
         IAuthorizationService authorizationService,
         IEmailService emailService,
-        EventServiceSettings settings,
         IChapterUrlService chapterUrlService,
-        IPaymentService paymentService)
+        IPaymentService paymentService,
+        IUrlProvider urlProvider)
     {
         _authorizationService = authorizationService;
         _chapterUrlService = chapterUrlService;
         _emailService = emailService;
         _paymentService = paymentService;
-        _settings = settings;
         _unitOfWork = unitOfWork;
+        _urlProvider = urlProvider;
     }
 
     public async Task<ServiceResult> AddComment(Guid currentMemberId, Guid eventId, string comment, Guid? parentEventCommentId)
@@ -94,7 +95,7 @@ public class EventService : IEventService
             { "event.id", @event.Id.ToString() }
         };
 
-        var url = _chapterUrlService.GetChapterUrl(chapter, _settings.EventUrlFormat, parameters);
+        var url = _urlProvider.EventUrl(chapter, @event.Id);
         parameters.Add("event.url", url);
 
         await _emailService.SendEventCommentEmail(chapter, parentCommentMember, eventComment, parameters);

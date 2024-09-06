@@ -1,5 +1,6 @@
 ﻿using System;
 using ODK.Core.Chapters;
+using ODK.Core.Events;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Web;
@@ -10,26 +11,48 @@ namespace ODK.Web.Common.Services;
 public class UrlProvider : IUrlProvider
 {
     private readonly IHttpRequestProvider _httpRequestProvider;
+    private readonly PlatformType _platform;
 
-    public UrlProvider(IHttpRequestProvider httpRequestProvider)
+    public UrlProvider(
+        IHttpRequestProvider httpRequestProvider,
+        IPlatformProvider platformProvider)
     {
         _httpRequestProvider = httpRequestProvider;
+        _platform = platformProvider.GetPlatform();
     }
 
-    public string ConversationAdminUrl(PlatformType platform, Chapter chapter, Guid conversationId)
-        => GetUrl(OdkRoutes2.MemberGroups.GroupConversation(platform, chapter, conversationId));
+    public string ActivateAccountUrl(Chapter? chapter, string token)
+        => GetUrl(OdkRoutes.Account.Activate(chapter, token));
 
-    public string ConversationUrl(PlatformType platform, Chapter chapter, Guid conversationId)
-        => GetUrl(OdkRoutes2.Groups.Conversation(platform, chapter, conversationId));
+    public string ConfirmEmailAddressUpdate(Chapter? chapter, string token)
+        => GetUrl(OdkRoutes.Account.EmailAddressChangeConfirm(chapter, token));
 
-    public string EventsUrl(PlatformType platform, Chapter chapter) 
-        => GetUrl(OdkRoutes.Chapters.Events(platform, chapter));
+    public string ConversationAdminUrl(Chapter chapter, Guid conversationId)
+        => GetUrl(OdkRoutes2.MemberGroups.GroupConversation(_platform, chapter, conversationId));
 
-    public string MessageAdminUrl(PlatformType platform, Guid messageId)
+    public string ConversationUrl(Chapter chapter, Guid conversationId)
+        => GetUrl(OdkRoutes2.Groups.Conversation(_platform, chapter, conversationId));
+
+    public string EmailPreferences(Chapter? chapter)
+        => GetUrl(OdkRoutes.Account.EmailPreferences(chapter));
+
+    public string EventRsvpUrl(Chapter chapter, Guid eventId, EventResponseType response)
+        => $"{EventUrl(chapter, eventId)}?rsvp={response.ToString().ToLowerInvariant()}";
+
+    public string EventsUrl(Chapter chapter) 
+        => GetUrl(OdkRoutes2.Groups.Events(_platform, chapter));
+
+    public string EventUrl(Chapter chapter, Guid eventId)
+        => GetUrl(OdkRoutes2.Groups.Event(_platform, chapter, eventId));
+
+    public string MessageAdminUrl(Guid messageId)
         => GetUrl($"/superadmin/messages/{messageId}");
 
-    public string MessageAdminUrl(PlatformType platform, Chapter chapter, Guid messageId) 
-        => GetUrl(OdkRoutes2.MemberGroups.GroupMessage(platform, chapter, messageId));
+    public string MessageAdminUrl(Chapter chapter, Guid messageId) 
+        => GetUrl(OdkRoutes2.MemberGroups.GroupMessage(_platform, chapter, messageId));
+
+    public string PasswordReset(Chapter? chapter, string token)
+        => GetUrl(OdkRoutes.Account.PasswordReset(chapter, token));
 
     private string GetUrl(string path) 
         => $"{UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl)}{path}";
