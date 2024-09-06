@@ -18,6 +18,7 @@
         Model.Chapter != null
             ? new MenuItem { Link = OdkRoutes.Account.Subscription(Model.Chapter), Text = "My subscription" }
             : new MenuItem { Link = OdkRoutes.Account.Subscription(null), Text = "My subscription" },
+        new MenuItem { Link = OdkRoutes.Account.Payments(Model.Chapter), Text = "My payments" },
         new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(Model.Chapter), Text = "Email address" },
         new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.Chapter), Text = "Password" },
         Model.Chapter != null

@@ -1,10 +1,16 @@
-﻿namespace ODK.Core.Payments;
+﻿using ODK.Core.Countries;
+
+namespace ODK.Core.Payments;
 
 public class Payment : IDatabaseEntity
 {
-    public double Amount { get; set; }
+    public decimal Amount { get; set; }
 
-    public string CurrencyCode { get; set; } = "";
+    public Guid ChapterId { get; set; }
+
+    public Currency Currency { get; set; } = null!;
+
+    public Guid CurrencyId { get; set; }
 
     public Guid Id { get; set; }
 

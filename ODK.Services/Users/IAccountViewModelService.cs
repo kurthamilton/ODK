@@ -12,5 +12,9 @@ public interface IAccountViewModelService
 
     Task<ChapterProfilePageViewModel> GetChapterProfilePage(Guid currentMemberId, string chapterName);
 
+    Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(Guid currentMemberId, string chapterName);
+
+    Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(Guid currentMemberId);
+
     Task<SitePicturePageViewModel> GetSitePicturePage(Guid currentMemberId);        
 }

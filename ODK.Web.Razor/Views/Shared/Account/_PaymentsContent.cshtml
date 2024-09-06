@@ -1,0 +1,35 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Users.ViewModels
+@model MemberPaymentsPageViewModel
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Group</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Reference</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dto in Model.Payments.OrderByDescending(x => x.Payment.PaidUtc))
+            {
+                <tr>
+                    <td>
+                        @dto.Chapter.Name
+                    </td>
+                    <td>
+                        @dto.Payment.PaidUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? dto.Chapter.TimeZone)
+                    </td>
+                    <td>
+                        @dto.Payment.Currency.ToAmountString(dto.Payment.Amount)
+                    </td>
+                    <td>
+                        @dto.Payment.Reference
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

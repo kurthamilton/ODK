@@ -82,8 +82,9 @@ public class PaymentService : IPaymentService
 
         var payment = new Payment
         {
-            Amount = (double)amount,
-            CurrencyCode = currency.Code,
+            Amount = amount,
+            ChapterId = chapterPaymentSettings.ChapterId,
+            CurrencyId = currency.Id,
             MemberId = member.Id,
             PaidUtc = DateTime.UtcNow,
             Reference = reference

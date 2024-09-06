@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/Account/Payments"
+﻿@page "/account/payments"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Users
@@ -8,10 +8,10 @@
 @model PaymentsModel
 @inject IAccountViewModelService AccountViewModelService
 @{
-    Layout = "_OdkChapterLayout";
+    Layout = "_HomeLayout";
     Model.Title = "Payments";
 
-    var viewModel = await AccountViewModelService.GetMemberChapterPaymentsPage(Model.CurrentMemberId, Model.ChapterName);
+    var viewModel = await AccountViewModelService.GetMemberPaymentsPage(Model.CurrentMemberId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -19,8 +19,7 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Payments(viewModel.Chapter),
-        Chapter = viewModel.Chapter,
+        Active = OdkRoutes.Account.Payments(null),
         Content =
             @<div>
                 <h2>My payments</h2>

@@ -1,7 +1,7 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Core.Settings;
+using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Users.ViewModels;
 
@@ -9,10 +9,14 @@ namespace ODK.Services.Users;
 
 public class AccountViewModelService : IAccountViewModelService
 {
+    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public AccountViewModelService(IUnitOfWork unitOfWork)
+    public AccountViewModelService(
+        IUnitOfWork unitOfWork,
+        IPlatformProvider platformProvider)
     {
+        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }    
 
@@ -120,6 +124,42 @@ public class AccountViewModelService : IAccountViewModelService
                 memberProperties)
         };
     }
+
+    public async Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(Guid currentMemberId, string chapterName)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
+        OdkAssertions.Exists(chapter);
+
+        var (member, payments) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.PaymentRepository.GetDtosByMemberId(currentMemberId));
+
+        return new MemberChapterPaymentsPageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = member,
+            Payments = payments,
+            Platform = platform
+        };
+    }
+
+    public async Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(Guid currentMemberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (member, payments) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.PaymentRepository.GetDtosByMemberId(currentMemberId));
+
+        return new MemberPaymentsPageViewModel
+        {
+            CurrentMember = member,
+            Payments = payments,
+            Platform = platform
+        };
+    }    
 
     public async Task<SitePicturePageViewModel> GetSitePicturePage(Guid currentMemberId)
     {
