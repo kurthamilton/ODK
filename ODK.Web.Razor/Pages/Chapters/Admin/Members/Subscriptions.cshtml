@@ -5,13 +5,10 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.SubscriptionsModel
 @inject IMemberAdminService MemberAdminService
 @{
-    Layout = "Admin/Members/_MemberAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Subscriptions | Admin";
 
     var viewModel = await MemberAdminService.GetMemberSubscriptionsViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Members/_SubscriptionsContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Members/_SubscriptionsContent", viewModel)

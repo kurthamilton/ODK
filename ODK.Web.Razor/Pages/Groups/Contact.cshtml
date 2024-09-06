@@ -13,7 +13,7 @@
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
-    Title = "Send us a message",
+    Title = "",
     Content = await Html.PartialAsync("Groups/_GroupContactContent", viewModel),
     Group = viewModel
 })

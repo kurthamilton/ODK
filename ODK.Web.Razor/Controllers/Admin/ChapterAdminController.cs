@@ -24,7 +24,7 @@ public class ChapterAdminController : AdminControllerBase
     {
         _chapterAdminService = chapterAdminService;
         _emailAdminService = emailAdminService;
-    }
+    }    
 
     [HttpPost("groups/{id:guid}/links")]
     public async Task<IActionResult> UpdatePrivacySettings(Guid id, [FromForm] ChapterLinksFormViewModel viewModel)
@@ -86,6 +86,7 @@ public class ChapterAdminController : AdminControllerBase
         var request = new AdminServiceRequest(id, MemberId);
         var result = await _chapterAdminService.UpdateChapterPrivacySettings(request, new UpdateChapterPrivacySettings
         {
+            Conversations = viewModel.Conversations,
             EventResponseVisibility = viewModel.EventResponseVisibility,
             EventVisibility = viewModel.EventVisibility,
             MemberVisibility = viewModel.MemberVisibility,

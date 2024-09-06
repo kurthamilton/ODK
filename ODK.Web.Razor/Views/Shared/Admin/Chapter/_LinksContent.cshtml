@@ -3,13 +3,16 @@
 @model ChapterLinksAdminPageViewModel
 
 <h2>Social media links</h2>
-<form action="/groups/@Model.Chapter.Id/links" method="post">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel
-    {
-        Facebook = Model.Links?.FacebookName,
-        Instagram = Model.Links?.InstagramName,
-        Twitter = Model.Links?.TwitterName
-    })
-    <button class="btn btn-primary">Update</button>
-</form>
+
+<section class="section">
+    <form action="/groups/@Model.Chapter.Id/links" method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel
+        {
+            Facebook = Model.Links?.FacebookName,
+            Instagram = Model.Links?.InstagramName,
+            Twitter = Model.Links?.TwitterName
+        })
+        <button class="btn btn-primary">Update</button>
+    </form>
+</section>

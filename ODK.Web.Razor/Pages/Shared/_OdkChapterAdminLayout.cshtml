@@ -1,0 +1,41 @@
+﻿@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Header
+@using ODK.Core.Chapters
+@using ODK.Core.Members
+@using ODK.Services.Caching
+@using ODK.Web.Razor.Pages.Chapters
+@inject IRequestCache RequestCache
+@{
+    Layout = "_OdkChapterLayout";
+
+    var chapterContext = new ChapterPageContext(RequestCache, Context);
+    var chapter = await chapterContext.GetChapterAsync();
+    var member = await chapterContext.GetMemberAsync();
+    if (chapter == null || member == null)
+    {
+        return;
+    }
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Admin",
+    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+    {
+        BodyContentFunc = _ => RenderBody(),
+        MenuContent = await Html.PartialAsync("Admin/_AdminSideMenu", chapter)
+    })
+})
+
+@section styles
+{
+    @await RenderSectionAsync("styles", required: false)
+}
+
+@section scripts
+{
+    <script src="/js/odk.admin.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("scripts", required: false)
+}
+

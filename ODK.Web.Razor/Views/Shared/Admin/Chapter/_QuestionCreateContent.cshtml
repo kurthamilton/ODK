@@ -23,8 +23,11 @@
 })
 
 <h2>Create question</h2>
-<form method="post">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel())
-    <button class="btn btn-primary">Create</button>
-</form>
+
+<section class="section">
+    <form method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel())
+        <button class="btn btn-primary">Create</button>
+    </form>
+</section>

@@ -7,7 +7,7 @@
 @model ODK.Web.Razor.Pages.Chapters.AboutModel
 @inject IChapterService ChapterService
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "About";
 
     OdkAssertions.MeetsCondition(Model.Chapter, x => x.IsOpenForRegistration());

@@ -7,7 +7,7 @@
 @inject IChapterViewModelService ChapterViewModelService
 @inject IPlatformProvider PlatformProvider
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
 
     var memberId = User.MemberIdOrDefault();
     var viewModel = await ChapterViewModelService.GetHomePage(memberId, Model.ChapterName);

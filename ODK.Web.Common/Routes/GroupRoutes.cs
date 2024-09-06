@@ -8,6 +8,12 @@ public class GroupRoutes
 {
     public string Contact(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/contact");
 
+    public string Conversation(PlatformType platform, Chapter chapter, Guid conversationId) 
+        => $"{Conversations(platform, chapter)}/{conversationId}";
+
+    public string Conversations(PlatformType platform, Chapter chapter)
+        => $"{Group(platform, chapter)}/conversations";
+
     public string Event(PlatformType platform, Chapter chapter, Guid eventId)
         => $"{Events(platform, chapter)}/{eventId}";
 

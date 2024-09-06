@@ -5,14 +5,11 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventCreateModel
 @inject IEventAdminService EventAdminService
 @{
-    Layout = "Admin/Events/_EventAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create event | Admin";
 
     var viewModel = await EventAdminService.GetEventCreateViewModel(Model.AdminServiceRequest);
     viewModel.VenueId = Model.VenueId;
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel)

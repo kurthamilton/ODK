@@ -7,7 +7,7 @@
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Account.DeleteModel
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "Delete account";
 }
 
@@ -20,7 +20,10 @@
         Chapter = Model.Chapter,
         Content =
             @<div>
-                @await Html.PartialAsync("Account/_DeleteAccountContent")
+                <h2>Delete account</h2>
+                <section class="section">
+                    @await Html.PartialAsync("Account/_DeleteAccountContent")
+                </section>
             </div>
     })
 })

@@ -20,32 +20,32 @@
     }
 })
 
-<h2>Create subscription</h2>
-
-@await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
-{
-    Feature = SiteFeatureType.MemberSubscriptions,
-    ContentFunc = 
-        @<div>
-            @if (Model.PaymentSettings?.CurrencyId == null)
-            {
-                <div class="alert alert-warning">
-                    You must update your 
-                    <a href="@OdkRoutes2.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a> 
-                    before you can create subscriptions
-                </div>
-                return;
-            }
-
-            <form method="post">
-                @Html.AntiForgeryToken()
-                @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
+<section class="section">
+    @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+    {
+        Feature = SiteFeatureType.MemberSubscriptions,
+        ContentFunc = 
+            @<div>
+                @if (Model.PaymentSettings?.CurrencyId == null)
                 {
-                    OwnerSubscription = Model.OwnerSubscription,
-                    PaymentSettings = Model.PaymentSettings,
-                    Type = SubscriptionType.Full    
-                })
-                <button class="btn btn-primary">Create</button>
-            </form>
-        </div>
-})
+                    <div class="alert alert-warning">
+                        You must update your 
+                        <a href="@OdkRoutes2.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a> 
+                        before you can create subscriptions
+                    </div>
+                    return;
+                }
+
+                <form method="post">
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
+                    {
+                        OwnerSubscription = Model.OwnerSubscription,
+                        PaymentSettings = Model.PaymentSettings,
+                        Type = SubscriptionType.Full    
+                    })
+                    <button class="btn btn-primary">Create</button>
+                </form>
+            </div>
+    })
+</section>

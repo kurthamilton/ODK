@@ -14,6 +14,7 @@
             ? new MenuItem { Link = OdkRoutes.Account.Profile(Model.Chapter), Text = "Profile" }
             : new MenuItem(),
         new MenuItem { Link = OdkRoutes.Account.Picture(Model.Chapter), Text = "Picture" },
+        new MenuItem { Link = OdkRoutes.Account.Conversations(Model.Chapter), Text = "My conversations" },
         Model.Chapter != null
             ? new MenuItem { Link = OdkRoutes.Account.Subscription(Model.Chapter), Text = "My subscription" }
             : new MenuItem { Link = OdkRoutes.Account.Subscription(null), Text = "My subscription" },

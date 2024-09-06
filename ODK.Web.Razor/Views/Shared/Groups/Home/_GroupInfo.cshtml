@@ -11,7 +11,7 @@
     }
 
     <div class="d-flex justify-content-end">
-        Going since @Model.Chapter.CreatedUtc.ToFriendlyDateString(Model.CurrentMember?.TimeZone ?? Model.Chapter.TimeZone)
+        Going since @Model.Chapter.CreatedUtc.ToFriendlyDateString(Model.TimeZone)
     </div>
     <div class="d-flex justify-content-end align-items-center gap-2">
         @await Html.PartialAsync("Components/Icons/_Members")

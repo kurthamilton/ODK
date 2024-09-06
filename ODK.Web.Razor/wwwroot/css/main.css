@@ -12210,9 +12210,6 @@ html[data-platform=odk] {
     margin-left: 1.75rem;
   }
 }
-.navbar {
-  background-color: var(--odk-bg-light);
-}
 .navbar .navbar-toggler:focus {
   box-shadow: none;
 }
@@ -12398,7 +12395,8 @@ html[data-platform=odk] {
   margin-bottom: 0;
 }
 
-.section:not(:first-child) {
+.section:not(:first-child),
+.mt-section {
   margin-top: 2rem;
 }
 

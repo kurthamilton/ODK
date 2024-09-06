@@ -16,6 +16,12 @@ public class UrlProvider : IUrlProvider
         _httpRequestProvider = httpRequestProvider;
     }
 
+    public string ConversationAdminUrl(PlatformType platform, Chapter chapter, Guid conversationId)
+        => GetUrl(OdkRoutes2.MemberGroups.GroupConversation(platform, chapter, conversationId));
+
+    public string ConversationUrl(PlatformType platform, Chapter chapter, Guid conversationId)
+        => GetUrl(OdkRoutes2.Groups.Conversation(platform, chapter, conversationId));
+
     public string EventsUrl(PlatformType platform, Chapter chapter) 
         => GetUrl(OdkRoutes.Chapters.Events(platform, chapter));
 

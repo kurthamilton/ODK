@@ -33,25 +33,27 @@
 
 <h2>Create event</h2>
 
-<form method="post">
-    @Html.AntiForgeryToken()
+<section class="section">
+    <form method="post">
+        @Html.AntiForgeryToken()
     
-    @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
-    {
-        Chapter = Model.Chapter,
-        Date = Model.Date,
-        Description = Model.EventSettings?.DefaultDescription,
-        EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
-        HostOptions = hostOptions,
-        OwnerSubscription = Model.OwnerSubscription,
-        PaymentSettings = Model.PaymentSettings,
-        Platform = Model.Platform,
-        Venue = Model.VenueId ?? default,
-        Venues = Model.Venues
-    })
+        @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
+        {
+            Chapter = Model.Chapter,
+            Date = Model.Date,
+            Description = Model.EventSettings?.DefaultDescription,
+            EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
+            HostOptions = hostOptions,
+            OwnerSubscription = Model.OwnerSubscription,
+            PaymentSettings = Model.PaymentSettings,
+            Platform = Model.Platform,
+            Venue = Model.VenueId ?? default,
+            Venues = Model.Venues
+        })
     
-    <div class="button-container">
-        <button type="submit" class="btn btn-primary">Create</button>
-        <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
-    </div>
-</form>
+        <div class="button-container">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
+        </div>
+    </form>
+</section>

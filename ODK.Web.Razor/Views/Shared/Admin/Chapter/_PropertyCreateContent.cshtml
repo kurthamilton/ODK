@@ -24,12 +24,15 @@
 })
 
 <h2>Create member property</h2>
-<form method="post">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
-    {
-        DataType = DataType.Text,
-        DataTypeEnabled = true
-    })
-    <button class="btn btn-primary">Create</button>
-</form>
+
+<section class="section">
+    <form method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
+        {
+            DataType = DataType.Text,
+            DataTypeEnabled = true
+        })
+        <button class="btn btn-primary">Create</button>
+    </form>
+</section>

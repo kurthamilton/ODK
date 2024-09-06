@@ -2,6 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services;
 using ODK.Services.Chapters;
+using ODK.Web.Common.Feedback;
+using ODK.Web.Razor.Models.Admin.Chapters;
+using ODK.Web.Razor.Models.Chapters;
+using ODK.Web.Razor.Models.Contact;
 
 namespace ODK.Web.Razor.Controllers.Admin;
 
@@ -13,6 +17,27 @@ public class GroupAdminController : OdkControllerBase
     public GroupAdminController(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
+    }
+
+    [HttpPost("admin/groups/{id:guid}/conversations")]
+    public async Task<IActionResult> StartConversation(Guid id,
+        [FromForm] ChapterAdminStartConversationFormViewModel viewModel)
+    {
+        var request = new AdminServiceRequest(id, MemberId);
+        await _chapterAdminService.StartConversation(request, viewModel.MemberId, 
+            viewModel.Subject ?? "", viewModel.Message ?? "");
+        AddFeedback("Message sent", FeedbackType.Success);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("admin/groups/{id:guid}/conversations/{conversationId:guid}/reply")]
+    public async Task<IActionResult> ReplyToConversation(Guid id, Guid conversationId,
+        [FromForm] ChapterConversationReplyFormViewModel viewModel)
+    {
+        var request = new AdminServiceRequest(id, MemberId);
+        var result = await _chapterAdminService.ReplyToConversation(request, conversationId, viewModel.Message ?? "");
+        AddFeedback(result, "Reply sent");
+        return RedirectToReferrer();
     }
 
     [HttpPost("admin/groups/{id:guid}/description")]

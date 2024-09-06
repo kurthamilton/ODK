@@ -11,7 +11,7 @@
     var subscription = Model.Current;
 }
 
-<section class="section mt-0 mb-3">
+<section class="section">
     <h3>Current subscription</h3>
     @if (subscription != null)
     {
@@ -32,25 +32,27 @@
     }
 </section>
 
-<h3>Change subscription</h3>
-@if (Model.SiteSubscriptions.Currency != null)
-{
-    @await Html.PartialAsync("Pricing/_PricingContent", Model.SiteSubscriptions)
-}
-else
-{
-    var currencyOptions = Model.SiteSubscriptions.Currencies
-        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Code })
-        .OrderBy(x => x.Text)
-        .ToArray();
+<section class="section">
+    <h3>Change subscription</h3>
+    @if (Model.SiteSubscriptions.Currency != null)
+    {
+        @await Html.PartialAsync("Pricing/_PricingContent", Model.SiteSubscriptions)
+    }
+    else
+    {
+        var currencyOptions = Model.SiteSubscriptions.Currencies
+            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Code })
+            .OrderBy(x => x.Text)
+            .ToArray();
     
-    <form action="/@Model.Chapter.Name/Admin/Chapter/Currency" method="post">
-        @Html.AntiForgeryToken()
-        <div class="form-group mb-3">
-            @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
-            @Html.DropDownList("currencyId", currencyOptions, "", new { @class = "form-select" })
-        </div>
+        <form action="/@Model.Chapter.Name/Admin/Chapter/Currency" method="post">
+            @Html.AntiForgeryToken()
+            <div class="form-group mb-3">
+                @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
+                @Html.DropDownList("currencyId", currencyOptions, "", new { @class = "form-select" })
+            </div>
         
-        <button class="btn btn-primary">Update</button>
-    </form>
-}
+            <button class="btn btn-primary">Update</button>
+        </form>
+    }
+</section>

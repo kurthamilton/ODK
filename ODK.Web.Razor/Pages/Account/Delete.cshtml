@@ -19,7 +19,9 @@
         Content = 
             @<div>
                 <h2>Delete account</h2>
-                @await Html.PartialAsync("Account/_DeleteAccountContent")
+                <section class="section">
+                    @await Html.PartialAsync("Account/_DeleteAccountContent")
+                </section>
             </div>
     })
 })

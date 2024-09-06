@@ -4,7 +4,7 @@
 @using ODK.Web.Razor.Models.Login
 @model ODK.Web.Razor.Pages.Chapters.Account.LoginModel
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "Login";
 
     OdkAssertions.MeetsCondition(Model.Chapter, x => x.IsOpenForRegistration());

@@ -17,6 +17,11 @@ public class RestrictedFeatureViewModel
         OwnerSubscription = ownerSubscription;
     }
 
+    public RestrictedFeatureViewModel(bool permitted)
+    {
+        Permitted = permitted;
+    }
+
     public Chapter? Chapter { get; }
 
     public IHtmlContent? Content { get; init; }
@@ -28,4 +33,6 @@ public class RestrictedFeatureViewModel
     public required SiteFeatureType Feature { get; init; }
 
     public MemberSiteSubscription? OwnerSubscription { get; }
+
+    public bool? Permitted { get; }
 }

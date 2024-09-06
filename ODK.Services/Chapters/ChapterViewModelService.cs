@@ -144,23 +144,96 @@ public class ChapterViewModelService : IChapterViewModelService
             currentMember,
             ownerSubscription,
             adminMembers,
-            hasQuestions
+            hasQuestions,
+            conversations,
+            membershipSettings,
+            privacySettings,
+            memberSubscription
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => currentMemberId != null
+                ? x.ChapterConversationRepository.GetDtosByMemberId(currentMemberId.Value, chapter.Id)
+                : new DefaultDeferredQueryMultiple<ChapterConversationDto>(),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
+            x => currentMemberId != null
+                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
+                : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>());
+
+        var canStartConversation = currentMember != null
+            ? _authorizationService.CanStartConversation(chapter.Id, currentMember, memberSubscription, membershipSettings, privacySettings)
+            : false;
 
         return new GroupContactPageViewModel
         {
+            CanStartConversation = canStartConversation,
             Chapter = chapter,
+            Conversations = conversations,
             CurrentMember = currentMember,
             HasQuestions = hasQuestions,
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             OwnerSubscription = ownerSubscription,
+            Platform = platform
+        };
+    }
+
+    public async Task<GroupConversationPageViewModel> GetGroupConversationPage(Guid currentMemberId, string slug, 
+        Guid conversationId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
+        OdkAssertions.Exists(chapter);
+
+        var (
+            currentMember,
+            ownerSubscription,
+            adminMembers,
+            hasQuestions,
+            conversations,
+            messages
+        ) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetByIdOrDefault(currentMemberId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterConversationRepository.GetDtosByMemberId(currentMemberId, chapter.Id),
+            x => x.ChapterConversationMessageRepository.GetByConversationId(conversationId));
+
+        var dto = conversations
+            .FirstOrDefault(x => x.Conversation.Id == conversationId);
+        OdkAssertions.Exists(dto);
+
+        var unread = messages
+            .Where(x => !x.ReadByMember)
+            .ToArray();
+
+        if (unread.Any())
+        {
+            unread.ForEach(x => x.ReadByMember = true);
+            _unitOfWork.ChapterConversationMessageRepository.UpdateMany(unread);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        return new GroupConversationPageViewModel
+        {
+            Chapter = chapter,
+            Conversation = dto.Conversation,
+            CurrentMember = currentMember,
+            HasQuestions = hasQuestions,
+            IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
+            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
+            Messages = messages,
+            OwnerSubscription = ownerSubscription,
+            OtherConversations = conversations
+                .Where(x => x.Conversation.Id != conversationId)
+                .ToArray(),
             Platform = platform
         };
     }

@@ -19,7 +19,9 @@
         Content =
             @<div>
                 <h2>My subscription</h2>
-                @await Html.PartialAsync("Account/_SiteSubscriptionContent")
+                <section class="section">
+                    @await Html.PartialAsync("Account/_SiteSubscriptionContent")
+                </section>
             </div>
     })
 })

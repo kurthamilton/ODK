@@ -1,0 +1,71 @@
+﻿@using ODK.Core.Platforms
+@using ODK.Core.Utils
+@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
+@model MemberConversationsPageViewModel
+@{
+    var chapterDictionary = Model.Chapters
+        .ToDictionary(x => x.Id);
+}
+
+@if (Model.Conversations.Count == 0)
+{
+    <p>You haven't started any conversations yet</p>
+    return;
+}
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                @if (Model.Platform != PlatformType.DrunkenKnitwits)
+                {
+                    <th>Group</th>
+                }                
+                <th>Subject</th>
+                <th>Started</th>
+                <th>Last message</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+            {
+                if (!chapterDictionary.TryGetValue(dto.Conversation.ChapterId, out var chapter))
+                {
+                    continue;
+                }
+
+                var timeZone = Model.CurrentMember.TimeZone ?? chapter.TimeZone;
+
+                <tr>
+                    @if (Model.Platform != PlatformType.DrunkenKnitwits)
+                    {
+                        <td>
+                            <a href="@OdkRoutes2.Groups.Group(Model.Platform, chapter)">
+                                @chapter.Name
+                            </a>
+                        </td>
+                    }
+                    
+                    <td>
+                        <a href="@OdkRoutes2.Groups.Conversation(Model.Platform, chapter, dto.Conversation.Id)">
+                            @dto.Conversation.Subject
+                        </a>
+                    </td>
+                    <td>@dto.Conversation.CreatedUtc.ToFriendlyDateTimeString(timeZone)</td>
+                    <td>
+                        <div>
+                            @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(timeZone)
+                        </div>
+                        @if (dto.LastMessage.MemberId != Model.CurrentMember.Id)
+                        {
+                            <div>
+                                @dto.LastMessage.Member?.FullName
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

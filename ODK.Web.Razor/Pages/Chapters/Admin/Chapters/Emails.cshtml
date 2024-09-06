@@ -2,11 +2,8 @@
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.EmailsModel
 @{
-    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Emails | Admin";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Chapter/_EmailsContent", Model.Chapter)
-})
+@await Html.PartialAsync("Admin/Chapter/_EmailsContent", Model.Chapter)

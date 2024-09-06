@@ -7,14 +7,11 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventAttendeesModel
 @inject IEventAdminService EventAdminService
 @{
-    Layout = "Admin/Events/_EventAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Event attendees | Admin";
 
     var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
     var viewModel = await EventAdminService.GetEventAttendeesViewModel(request, Model.Event.Id);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Events/_EventAttendeesContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Events/_EventAttendeesContent", viewModel)

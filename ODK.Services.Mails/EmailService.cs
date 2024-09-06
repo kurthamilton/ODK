@@ -65,6 +65,42 @@ public class EmailService : IEmailService
         });
     }
 
+    public async Task SendChapterConversationEmail(
+        Chapter chapter, 
+        ChapterConversation conversation, 
+        ChapterConversationMessage message,
+        IReadOnlyCollection<Member> to,
+        bool isReply)
+    {        
+        var subject = "{conversation.subject} - {title}";
+
+        if (isReply)
+        {
+            subject = $"Re: {subject}";
+        }
+
+        var body =
+            "<p>{conversation.message}</p>" +
+            "<p>View: <a href=\"{url}\">{url}</a></p>";
+
+        var platform = _platformProvider.GetPlatform();
+
+        var isToMember = message.MemberId != conversation.MemberId;
+
+        var url = isToMember
+            ? _urlProvider.ConversationUrl(platform, chapter, conversation.Id)
+            : _urlProvider.ConversationAdminUrl(platform, chapter, conversation.Id);
+
+        var addressees = to.Select(x => x.ToEmailAddressee());
+
+        await SendEmail(chapter, addressees, subject, body, new Dictionary<string, string>
+        {
+            { "conversation.subject", conversation.Subject },
+            { "conversation.message", message.Text },
+            { "url", url }
+        });
+    }
+
     public async Task SendContactEmail(SiteContactMessage message)
     {
         var platform = _platformProvider.GetPlatform();

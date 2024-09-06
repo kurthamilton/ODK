@@ -6,22 +6,13 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.MemberImageModel
 @inject IMemberAdminService MemberAdminService
 @{
-    Layout = "Admin/Members/_MemberAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Member image | Admin";
 
     var member = await MemberAdminService.GetMember(Model.AdminServiceRequest, Model.MemberId);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Breadcrumbs = new []
-    {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Members", Text = "Members" },
-        new MenuItem { Text = member.GetDisplayName(Model.Chapter.Id) }
-    },
-    Content = await Html.PartialAsync("Admin/Members/_MemberImageContent", 
-        new MemberViewModel(Model.Chapter, member))
-})
+@await Html.PartialAsync("Admin/Members/_MemberImageContent", new MemberViewModel(Model.Chapter, member))
 
 @section styles
 {

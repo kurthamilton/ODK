@@ -5,13 +5,10 @@
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.QuestionEditModel
 @inject IChapterAdminService ChapterAdminService
 @{
-    Layout = "Admin/Chapters/_ChapterAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit question | Admin";
 
     var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(Model.AdminServiceRequest, Model.Question.Id);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Chapter/_QuestionEditContent", viewModel)
-})
+@await Html.PartialAsync("Admin/Chapter/_QuestionEditContent", viewModel)

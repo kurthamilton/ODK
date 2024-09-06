@@ -1,5 +1,16 @@
-﻿@using ODK.Web.Razor.Models.Admin.Chapters
+﻿@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
 @model ChapterEmailContentViewModel
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Chapter/Emails", Text = "Emails" },
+        new MenuItem { Text = Model.Email.Type.ToString() }
+    }
+})
 
 @if (Model.Email.IsDefault())
 {

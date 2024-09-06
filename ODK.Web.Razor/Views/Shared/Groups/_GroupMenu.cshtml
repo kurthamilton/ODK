@@ -22,7 +22,14 @@
         menuItems.Add(new MenuItem { Text = "FAQ", Link = OdkRoutes2.Groups.Questions(Model.Platform, Model.Chapter) });
     }
 
-    menuItems.Add(new MenuItem { Text = "Contact", Link = OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter) });    
+    menuItems.Add(new MenuItem 
+    { 
+        Text = "Contact", 
+        Link = OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter),
+        Active = 
+            Context.ForPath(OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter)) || 
+            Context.ForPath(OdkRoutes2.Groups.Conversations(Model.Platform, Model.Chapter))
+    });    
 
     if (Model.IsMember)
     {
@@ -51,7 +58,8 @@
             <ul class="navbar-nav">
                 @foreach (var menuItem in menuItems)
                 {
-                    var active = HttpContextAccessor.ForPath(menuItem.Link ?? "", exactMatch: menuItem.ActiveIsExactMatch);
+                    var active = menuItem.Active || 
+                        HttpContextAccessor.ForPath(menuItem.Link ?? "", exactMatch: menuItem.ActiveIsExactMatch);
 
                     <li class="nav-item @(menuItem.Hidden ? "invisible" : null) ">
                         <a class="nav-link @(active ? "active" : null)" href="@menuItem.Link">

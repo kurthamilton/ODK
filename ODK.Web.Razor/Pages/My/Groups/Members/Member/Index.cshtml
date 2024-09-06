@@ -1,17 +1,13 @@
-﻿@page "/my/groups/{id:guid}/members"
+﻿@page "/my/groups/{id:guid}/members/{memberId:guid}"
 @using ODK.Services.Members
 @model IndexModel
 @inject IMemberAdminService MemberAdminService
 @{
     Layout = "_GroupAdminLayout";
-    Model.Title = "Members | Admin";
 
-    var viewModel = await MemberAdminService.GetMembersViewModel(Model.AdminServiceRequest);
+    var viewModel = await MemberAdminService.GetMemberViewModel(Model.AdminServiceRequest, Model.MemberId);
+    
+    Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
 }
 
-@await Html.PartialAsync("Admin/Members/_MembersContent", viewModel)
-
-@section scripts
-{
-    <script src="~/js/odk.lists.js" asp-append-version="true"></script>
-}
+@await Html.PartialAsync("Admin/Members/_MemberContent", viewModel)

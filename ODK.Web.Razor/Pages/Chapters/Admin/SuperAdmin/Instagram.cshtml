@@ -1,0 +1,9 @@
+﻿@page "/{chapterName}/Admin/SuperAdmin/Instagram"
+@using ODK.Web.Razor.Models.Components
+@model InstagramModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Instagram | SuperAdmin";   
+}
+
+@await Html.PartialAsync("SuperAdmin/_InstagramContent", Model.Chapter)

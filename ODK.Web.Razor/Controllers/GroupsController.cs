@@ -7,6 +7,7 @@ using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
+using ODK.Web.Razor.Models.Chapters;
 using ODK.Web.Razor.Models.Contact;
 
 namespace ODK.Web.Razor.Controllers;
@@ -36,6 +37,37 @@ public class GroupsController : OdkControllerBase
             viewModel.Recaptcha ?? "");
 
         AddFeedback("Your message has been sent. Thank you for getting in touch.", FeedbackType.Success);
+
+        return RedirectToReferrer();
+    }
+
+    [Authorize]
+    [HttpPost("groups/{chapterId:guid}/conversations")]
+    public async Task<IActionResult> StartConversation(Guid chapterId, [FromForm] ConversationFormViewModel viewModel)
+    {
+        await _contactService.StartChapterConversation(
+            MemberId,
+            chapterId,
+            viewModel.Subject ?? "",
+            viewModel.Message ?? "",
+            viewModel.Recaptcha ?? "");
+
+        AddFeedback("Your message has been sent. Thank you for getting in touch.", FeedbackType.Success);
+
+        return RedirectToReferrer();
+    }
+
+    [Authorize]
+    [HttpPost("groups/{chapterId:guid}/conversations/{conversationId:guid}/reply")]
+    public async Task<IActionResult> ReplyToConversation(Guid chapterId, Guid conversationId, 
+        [FromForm] ChapterConversationReplyFormViewModel viewModel)
+    {
+        await _contactService.ReplyToChapterConversation(
+            MemberId,
+            conversationId,
+            viewModel.Message ?? "");
+
+        AddFeedback("Reply sent", FeedbackType.Success);
 
         return RedirectToReferrer();
     }

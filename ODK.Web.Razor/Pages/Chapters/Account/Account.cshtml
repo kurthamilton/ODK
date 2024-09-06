@@ -14,7 +14,7 @@
 @inject IRequestCache RequestCache
 @inject IMemberService MemberService
 @{
-    Layout = "_ChapterLayout";
+    Layout = "_OdkChapterLayout";
     Model.Title = "Account";
 
     var chapter = await RequestCache.GetChapterAsync(Model.ChapterName);
@@ -29,15 +29,20 @@
         Active = OdkRoutes.Account.PersonalDetails(chapter),
         Chapter = chapter,
         Content = 
-            @<form action="/Account/PersonalDetails" method="post">
-                @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
-                {
-                    Chapter = chapter,
-                    EmailAddress = member.EmailAddress,
-                    FirstName = member.FirstName,
-                    LastName = member.LastName
-                })
-                <button class="btn btn-primary">Update</button>
-            </form>
+            @<div>
+                <h2>Personal details</h2>
+                <section class="section">
+                    <form action="/Account/PersonalDetails" method="post">
+                        @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
+                        {
+                            Chapter = chapter,
+                            EmailAddress = member.EmailAddress,
+                            FirstName = member.FirstName,
+                            LastName = member.LastName
+                        })
+                        <button class="btn btn-primary">Update</button>
+                    </form>
+                </section>                
+            </div>
     })
 })

@@ -1,0 +1,12 @@
+﻿@page "/{chapterName}/Admin/Chapter/Conversations"
+@using ODK.Services.Chapters
+@model IndexModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Conversations | Admin";
+
+    var viewModel = await ChapterAdminService.GetChapterConversationsViewModel(Model.AdminServiceRequest, readByChapter: false);
+}
+
+@await Html.PartialAsync("Admin/Chapter/Conversations/_ConversationsContent", viewModel)

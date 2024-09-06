@@ -7,7 +7,7 @@
 
     var viewModel = await MemberAdminService.GetMemberEventsViewModel(Model.AdminServiceRequest, Model.MemberId);
 
-    Model.Title = viewModel.Member.FullName;
+    Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
 }
 
 @await Html.PartialAsync("Admin/Members/_MemberEventsContent", viewModel)

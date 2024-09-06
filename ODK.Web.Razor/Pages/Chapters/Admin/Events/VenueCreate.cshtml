@@ -3,14 +3,11 @@
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.VenueCreateModel
 @{
-    Layout = "Admin/Events/_EventAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create venue | Admin";
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Content = await Html.PartialAsync("Admin/Venues/_VenueCreateContent", Model.Chapter)
-})
+@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", Model.Chapter)
 
 @section scripts
 {

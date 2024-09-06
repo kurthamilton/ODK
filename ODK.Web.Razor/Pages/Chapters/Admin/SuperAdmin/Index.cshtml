@@ -1,0 +1,6 @@
+﻿@page "/{chapterName}/Admin/SuperAdmin"
+@model IndexModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Response.Redirect($"/{Model.ChapterName}/Admin/SuperAdmin/Members");
+}

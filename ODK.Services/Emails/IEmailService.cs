@@ -22,6 +22,13 @@ public interface IEmailService
         string subject,
         string body);
 
+    Task SendChapterConversationEmail(
+        Chapter chapter, 
+        ChapterConversation conversation,
+        ChapterConversationMessage message,
+        IReadOnlyCollection<Member> to,
+        bool isReply);
+
     Task SendContactEmail(SiteContactMessage message);
 
     Task SendContactEmail(Chapter chapter, ChapterContactMessage message);
