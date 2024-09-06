@@ -20,6 +20,7 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
             from payment in Set()
             from chapter in Set<Chapter>()
             where chapter.Id == payment.ChapterId
+                && payment.MemberId == memberId
             select new PaymentDto
             {
                 Chapter = chapter,
