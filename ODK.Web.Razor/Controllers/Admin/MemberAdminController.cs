@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Platforms;
 using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Members;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Members;
 
 namespace ODK.Web.Razor.Controllers.Admin;
@@ -13,16 +15,19 @@ public class MemberAdminController : AdminControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
     private readonly IMemberAdminService _memberAdminService;
+    private readonly IPlatformProvider _platformProvider;
     private readonly IRequestCache _requestCache;
 
     public MemberAdminController(
         IMemberAdminService memberAdminService, 
         IChapterAdminService chapterAdminService,
-        IRequestCache requestCache)
+        IRequestCache requestCache,
+        IPlatformProvider platformProvider)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;
         _memberAdminService = memberAdminService;
+        _platformProvider = platformProvider;
         _requestCache = requestCache;
     }
 
@@ -57,6 +62,18 @@ public class MemberAdminController : AdminControllerBase
         var request = await GetAdminServiceRequest(chapterName);
         await _memberAdminService.RotateMemberImage(request, id);
         return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{chapterId:guid}/members/{id:guid}/delete")]
+    public async Task<IActionResult> DeleteMember(Guid chapterId, Guid id)
+    {
+        var request = new AdminServiceRequest(chapterId, MemberId);
+        await _memberAdminService.DeleteMember(request, id);
+        AddFeedback("Member deleted", FeedbackType.Success);
+
+        var platform = _platformProvider.GetPlatform();
+        var chapter = await _chapterAdminService.GetChapter(request);
+        return Redirect(OdkRoutes2.MemberGroups.Members(platform, chapter));
     }
 
     [HttpPost("groups/{chapterId:guid}members/{id:guid}/emails/activation/send")]

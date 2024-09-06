@@ -54,6 +54,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var member = await GetMember(request, memberId);
 
+        var platform = _platformProvider.GetPlatform();
+        if (platform != PlatformType.DrunkenKnitwits)
+        {
+            throw new Exception("Not permitted");
+        }
+
         _unitOfWork.MemberRepository.Delete(member);
         await _unitOfWork.SaveChangesAsync();
     }
