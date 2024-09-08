@@ -12356,11 +12356,31 @@ html[data-platform=odk] {
 
 .notification-item {
   --odk-notification-item-padding-y: 1rem;
+  --odk-notification-item-padding-x: var(--bs-dropdown-item-padding-x);
   border-top: 1px solid var(--bs-border-color);
   padding: 0;
+  cursor: default;
 }
 .notification-item:hover {
   background-color: var(--odk-bg-light) !important;
+}
+.notification-item .notification-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.notification-item .notification-col {
+  flex-grow: 1;
+}
+.notification-item .notification-col-icon {
+  margin-left: auto;
+  padding-right: var(--odk-notification-item-padding-x);
+  align-self: stretch;
+  display: flex;
+}
+.notification-item .notification-icon {
+  align-self: center;
+  opacity: 0.5;
 }
 .notification-item .notification-link {
   color: var(--bs-body-color);
@@ -12368,24 +12388,31 @@ html[data-platform=odk] {
 .notification-item .notification-link:hover * {
   background-color: var(--odk-bg-light-hover) !important;
 }
-.notification-item .btn-close {
-  position: absolute;
-  top: var(--odk-notification-item-padding-y);
-  right: var(--bs-dropdown-item-padding-x);
+.notification-item .notification-link:hover .notification-icon {
+  opacity: 1;
 }
-.notification-item .notification-title,
-.notification-item .notification-text {
-  padding-left: var(--bs-dropdown-item-padding-x);
-  padding-right: calc(3 * var(--bs-dropdown-item-padding-x));
+.notification-item .notification-header {
+  margin-top: var(--odk-notification-item-padding-y);
 }
 .notification-item .notification-title {
-  padding-top: var(--odk-notification-item-padding-y);
+  padding-left: var(--odk-notification-item-padding-x);
+  margin-right: 0.5rem;
+}
+.notification-item .btn-close {
+  padding: 0;
+  font-size: 0.75em;
 }
 .notification-item .notification-text {
-  padding-bottom: var(--odk-notification-item-padding-y);
+  padding: var(--odk-notification-item-padding-y) var(--odk-notification-item-padding-x);
+}
+.notification-item .notification-text p {
+  margin-bottom: 0.5rem;
+}
+.notification-item .notification-text p:last-child {
+  margin-bottom: 0;
 }
 .notification-item .notification-placeholder {
-  padding: var(--odk-notification-item-padding-y) var(--bs-dropdown-item-padding-x);
+  padding: var(--odk-notification-item-padding-y) var(--odk-notification-item-padding-x);
 }
 
 .overlay {

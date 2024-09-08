@@ -37,25 +37,42 @@
     };
 
     Func<object?, IHtmlContent> notificationContent =
-        @<div>
-            <div class="notification-title">@title</div>
-            <div class="notification-text">@notification.Text</div>
+        @<div>            
+            <div class="notification-text">
+                @foreach (var paragraph in notification.Text.Split(Environment.NewLine))
+                {
+                    <p>@paragraph</p>
+                }
+            </div>
         </div>;
 }
 
-<div class="position-relative">
-    <button type="button" class="btn-close" aria-label="Dismiss"
-        data-bs-toggle="tooltip" data-bs-title="Dismiss"
-        data-notification-dismiss="/account/notifications/@notification.Id/dismiss"></button>
-
-    @if (!string.IsNullOrEmpty(url))
-    {
-        <a class="notification-link" href="@url">
+<div>
+    <div class="notification-row notification-header">
+        <div class="notification-col">
+            <strong class="notification-title">@title</strong>
+        </div>
+        <div class="notification-col-icon">
+            <button type="button" class="btn-close notification-icon" aria-label="Dismiss"
+                    data-bs-toggle="tooltip" data-bs-title="Dismiss"
+                    data-notification-dismiss="/account/notifications/@notification.Id/dismiss"></button>
+        </div>        
+    </div>
+    <div class="notification-body">
+        @if (!string.IsNullOrEmpty(url))
+        {
+            <a class="notification-row notification-link" href="@url">
+                <div class="notification-col">
+                    @notificationContent.Invoke(null)
+                </div>
+                <div class="notification-col-icon">
+                    <i class="fa-solid fa-chevron-right notification-icon"></i>
+                </div>
+            </a>
+        }
+        else
+        {
             @notificationContent.Invoke(null)
-        </a>
-    }
-    else
-    {
-        @notificationContent.Invoke(null)
-    }
+        }
+    </div>    
 </div>
