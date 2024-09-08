@@ -12,7 +12,7 @@
     },
     {
       "provider": "unpkg",
-      "library": "aspnet-client-validation@0.10.1",
+      "library": "aspnet-client-validation@0.11.0",
       "destination": "wwwroot/lib/aspnet-client-validation/",
       "files": [
         "dist/aspnet-validation.css",
@@ -33,7 +33,7 @@
     },
     {
       "provider": "cdnjs",
-      "library": "tinymce@7.2.1",
+      "library": "tinymce@7.3.0",
       "destination": "wwwroot/lib/tinymce/"
     },
     {

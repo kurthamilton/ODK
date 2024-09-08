@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Platforms;
 using ODK.Services;
@@ -8,6 +7,7 @@ using ODK.Services.Authentication;
 using ODK.Services.Caching;
 using ODK.Services.Features;
 using ODK.Services.Members;
+using ODK.Services.Notifications;
 using ODK.Services.Subscriptions;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Account;
@@ -15,6 +15,7 @@ using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Account;
 using ODK.Web.Razor.Models.Login;
+using ODK.Web.Razor.Models.Notifications;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -26,6 +27,7 @@ public class AccountController : OdkControllerBase
     private readonly IFeatureService _featureService;
     private readonly ILoginHandler _loginHandler;
     private readonly IMemberService _memberService;
+    private readonly INotificationService _notificationService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IRequestCache _requestCache;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
@@ -37,12 +39,14 @@ public class AccountController : OdkControllerBase
         IAuthenticationService authenticationService, 
         IFeatureService featureService,
         ISiteSubscriptionService siteSubscriptionService,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        INotificationService notificationService)
     {
         _authenticationService = authenticationService;
         _featureService = featureService;
         _loginHandler = loginHandler;
         _memberService = memberService;
+        _notificationService = notificationService;
         _platformProvider = platformProvider;
         _requestCache = requestCache;
         _siteSubscriptionService = siteSubscriptionService;
@@ -206,6 +210,28 @@ public class AccountController : OdkControllerBase
         AddFeedback("Location updated", FeedbackType.Success);
 
         return RedirectToReferrer();
+    }
+
+    [HttpPost("account/notifications")]
+    public async Task<IActionResult> UpdateNotificationSettings([FromForm] NotificationSettingsFormViewModel viewModel)
+    {
+        var disabledTypes = viewModel.Settings
+            .Where(x => !x.Enabled)
+            .Select(x => x.Type)
+            .ToArray();
+
+        var result = await _notificationService.UpdateMemberNotificationSettings(MemberId, disabledTypes);
+
+        AddFeedback(result, "Notification preferences updated");
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("account/notifications/{id:guid}/dismiss")]
+    public async Task<IActionResult> DismissNotification(Guid id)
+    {        
+        await _notificationService.MarkAsRead(MemberId, id);
+        return Ok();
     }
 
     [HttpPost("account/personaldetails")]

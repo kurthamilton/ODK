@@ -1,0 +1,36 @@
+﻿@using ODK.Core.Notifications
+@using ODK.Services.Notifications.ViewModels
+@using ODK.Web.Razor.Models.Notifications
+@model NotificationsPageViewModel
+@{
+    var settingsDictionary = Model.Settings
+        .ToDictionary(x => x.NotificationType);
+
+    var types = new[] 
+    { 
+        NotificationType.NewEvent,
+        NotificationType.NewMember,
+        NotificationType.ChapterContactMessage,
+        NotificationType.ConversationOwnerMessage,
+        NotificationType.ConversationAdminMessage
+    };
+
+    var settingsViewModels = types
+        .Where(x => Model.IsAdmin || !x.ForAdmins())
+        .Select(x => new NotificationSettingFormViewModel
+        {
+            Enabled = settingsDictionary.ContainsKey(x) ? !settingsDictionary[x].Disabled : true,
+            Type = x
+        })
+        .ToList();
+}
+
+<p>Show notifications for:</p>
+<form method="post" action="/account/notifications">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Account/_NotificationSettingsForm", new NotificationSettingsFormViewModel
+    {
+        Settings = settingsViewModels
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

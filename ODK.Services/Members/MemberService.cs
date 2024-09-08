@@ -7,14 +7,15 @@ using ODK.Core.Emails;
 using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Data.Core;
-using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
+using ODK.Services.Notifications;
 using ODK.Services.Payments;
 
 namespace ODK.Services.Members;
@@ -27,14 +28,22 @@ public class MemberService : IMemberService
     private readonly IEmailService _emailService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
+    private readonly INotificationService _notificationService;
     private readonly IPaymentService _paymentService;    
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public MemberService(IUnitOfWork unitOfWork, IAuthorizationService authorizationService,
-        IEmailService emailService, IPaymentService paymentService, ICacheService cacheService, 
-        IMemberImageService memberImageService, IChapterUrlService chapterUrlService, 
-        IPlatformProvider platformProvider, IMemberEmailService memberEmailService)
+    public MemberService(
+        IUnitOfWork unitOfWork, 
+        IAuthorizationService authorizationService,
+        IEmailService emailService, 
+        IPaymentService paymentService, 
+        ICacheService cacheService, 
+        IMemberImageService memberImageService, 
+        IChapterUrlService chapterUrlService, 
+        IPlatformProvider platformProvider, 
+        IMemberEmailService memberEmailService,
+        INotificationService notificationService)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
@@ -42,6 +51,7 @@ public class MemberService : IMemberService
         _emailService = emailService;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
+        _notificationService = notificationService;
         _paymentService = paymentService;        
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
@@ -234,7 +244,7 @@ public class MemberService : IMemberService
             ActivationToken = activationToken,
             ChapterId = chapterId,
             MemberId = member.Id
-        });
+        });        
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -383,21 +393,31 @@ public class MemberService : IMemberService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, currentMember) = await _unitOfWork.RunAsync(
+        var (
+            chapter, 
+            adminMembers,
+            notificationSettings,
+            currentMember, 
+            ownerSubscription, 
+            members, 
+            chapterProperties, 
+            chapterPropertyOptions, 
+            membershipSettings
+            ) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId));
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.NewMember),
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetCountByChapterId(chapterId),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
+            x => x.ChapterPropertyOptionRepository.GetByChapterId(chapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
         if (currentMember.IsMemberOf(chapter.Id))
         {
             return ServiceResult.Failure("You are already a member of this group");
         }        
-
-        var (ownerSubscription, members, chapterProperties, chapterPropertyOptions, membershipSettings) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.MemberRepository.GetCountByChapterId(chapter.Id),
-            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterPropertyOptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id));
 
         var registrationResult = ChapterIsOpenForRegistration(platform, members, ownerSubscription);
         if (!registrationResult.Success)
@@ -417,9 +437,11 @@ public class MemberService : IMemberService
 
         AddMemberToChapter(DateTime.UtcNow, currentMember, chapter, memberProperties, membershipSettings, ownerSubscription);
 
+        _notificationService.AddNewMemberNotifications(currentMember, chapter.Id, adminMembers, notificationSettings);
+
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendNewMemberAdminEmail(chapter, currentMember, chapterProperties, memberProperties);
+        await _emailService.SendNewMemberAdminEmail(chapter, adminMembers, currentMember, chapterProperties, memberProperties);
 
         return ServiceResult.Successful();
     }

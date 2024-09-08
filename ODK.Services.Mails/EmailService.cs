@@ -106,7 +106,7 @@ public class EmailService : IEmailService
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {"message.from", message.FromAddress},
-            {"message.text", HttpUtility.HtmlEncode(message.Message)},
+            {"message.text", message.Message},
             {"url", _urlProvider.MessageAdminUrl(message.Id)}
         };        
 
@@ -131,7 +131,7 @@ public class EmailService : IEmailService
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {"message.from", message.FromAddress},
-            {"message.text", HttpUtility.HtmlEncode(message.Message)},
+            {"message.text", message.Message},
             {"url", url}
         };
 
@@ -252,7 +252,10 @@ public class EmailService : IEmailService
         });
     }
 
-    public async Task SendNewMemberAdminEmail(Chapter chapter, Member member, 
+    public async Task SendNewMemberAdminEmail(
+        Chapter chapter,
+        IReadOnlyCollection<ChapterAdminMember> adminMembers,
+        Member member, 
         IDictionary<string, string> parameters)
     {
         var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
@@ -279,24 +282,25 @@ public class EmailService : IEmailService
     }
 
     public async Task SendNewMemberAdminEmail(
-        Chapter chapter, 
+        Chapter chapter,
+        IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties)
     {
         var parameters = new Dictionary<string, string>
         {
-            { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) },
-            { "member.lastName", HttpUtility.HtmlEncode(member.LastName) }
+            { "member.firstName", member.FirstName },
+            { "member.lastName", member.LastName }
         };
 
         foreach (var chapterProperty in chapterProperties)
         {
             string? value = memberProperties.FirstOrDefault(x => x.ChapterPropertyId == chapterProperty.Id)?.Value;
-            parameters.Add($"member.properties.{chapterProperty.Name}", HttpUtility.HtmlEncode(value ?? ""));
+            parameters.Add($"member.properties.{chapterProperty.Name}", value ?? "");
         }
 
-        await SendNewMemberAdminEmail(chapter, member, parameters);
+        await SendNewMemberAdminEmail(chapter, adminMembers, member, parameters);
     }
 
     private static IEnumerable<EmailAddressee> GetAddressees(IEnumerable<ChapterAdminMember> adminMembers)
@@ -305,10 +309,5 @@ public class EmailService : IEmailService
         {
             yield return adminMember.ToEmailAddressee();
         }
-    }
-
-    private static Email GetEmail(Email email, IDictionary<string, string> parameters)
-    {
-        return email.Interpolate(parameters);
     }
 }

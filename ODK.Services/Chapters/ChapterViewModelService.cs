@@ -6,6 +6,7 @@ using ODK.Core.Exceptions;
 using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -197,14 +198,16 @@ public class ChapterViewModelService : IChapterViewModelService
             adminMembers,
             hasQuestions,
             conversations,
-            messages
+            messages,
+            notifications
         ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByIdOrDefault(currentMemberId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterConversationRepository.GetDtosByMemberId(currentMemberId, chapter.Id),
-            x => x.ChapterConversationMessageRepository.GetByConversationId(conversationId));
+            x => x.ChapterConversationMessageRepository.GetByConversationId(conversationId),
+            x => x.NotificationRepository.GetUnreadByMemberId(currentMemberId, NotificationType.ConversationAdminMessage, conversationId));
 
         var dto = conversations
             .FirstOrDefault(x => x.Conversation.Id == conversationId);
@@ -214,10 +217,19 @@ public class ChapterViewModelService : IChapterViewModelService
             .Where(x => !x.ReadByMember)
             .ToArray();
 
-        if (unread.Any())
+        if (unread.Length > 0)
         {
             unread.ForEach(x => x.ReadByMember = true);
-            _unitOfWork.ChapterConversationMessageRepository.UpdateMany(unread);
+            _unitOfWork.ChapterConversationMessageRepository.UpdateMany(unread);            
+        }
+
+        if (notifications.Count > 0)
+        {
+            _unitOfWork.NotificationRepository.MarkAsRead(notifications);
+        }
+
+        if (unread.Length > 0 || notifications.Count > 0)
+        {
             await _unitOfWork.SaveChangesAsync();
         }
 

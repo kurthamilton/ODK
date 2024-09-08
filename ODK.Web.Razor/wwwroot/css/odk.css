@@ -11910,10 +11910,12 @@ textarea.form-control-lg {
 
 :root {
   --odk-bg-light: #f2f2f2;
+  --odk-bg-light-hover: #e6e6e6;
 }
 
 [data-bs-theme=dark] {
   --odk-bg-light: #2c3237;
+  --odk-bg-light-hover: #383f45;
 }
 
 html[data-platform=odk] {
@@ -11929,6 +11931,10 @@ html[data-platform=odk] {
     font-size: var(--odk-body-font-size-lg);
   }
 }
+.small {
+  font-size: 0.875em !important;
+}
+
 .flip-horizontal {
   transform: scaleX(-1);
 }
@@ -11952,10 +11958,13 @@ html[data-platform=odk] {
 
 html[data-platform=odk] {
   --odk-badges-padding-top: 0.5rem;
+  --odk-badges-line-height: 0.5;
 }
 
 .badge {
   padding-top: var(--odk-badges-padding-top);
+  z-index: 1;
+  line-height: var(--odk-badges-line-height);
 }
 
 html[data-platform=odk] {
@@ -12095,8 +12104,20 @@ html[data-platform=odk] {
   background-color: var(--odk-datepicker-bg-hover);
 }
 
-.dropdown-menu-end {
-  text-align: right;
+.dropdown .dropdown-header {
+  cursor: default;
+  color: var(--bs-body-color);
+}
+.dropdown .card,
+.dropdown .dropdown-menu {
+  background-color: var(--odk-bg-light);
+}
+.dropdown .dropdown-item:hover {
+  background-color: var(--odk-bg-light-hover);
+}
+
+.dropdown-item:hover .card {
+  background-color: var(--bs-dropdown-link-hover-bg);
 }
 
 .dropdown-item--icon {
@@ -12297,15 +12318,12 @@ html[data-platform=odk] {
   border-bottom-color: var(--bs-body-color);
 }
 
-.account-links {
-  cursor: pointer;
-}
-.account-links.account-links--right {
+.account-links--right {
   right: 0;
   position: absolute;
   padding: 1rem;
 }
-.account-links.account-links--right .dropdown-menu {
+.account-links--right .dropdown-menu {
   min-width: inherit;
 }
 
@@ -12322,7 +12340,7 @@ html[data-platform=odk] {
 }
 
 @media (min-width: 576px) {
-  .chapter .account-links {
+  .chapter .account-links--right {
     position: absolute;
   }
   .chapter .account-links__user {
@@ -12341,6 +12359,40 @@ html[data-platform=odk] {
 }
 .anonymous-links .anonymous-link:not(:first-child) {
   margin-left: 0.25rem;
+}
+
+.notification-item {
+  --odk-notification-item-padding-y: 1rem;
+  border-top: 1px solid var(--bs-border-color);
+  padding: 0;
+}
+.notification-item:hover {
+  background-color: var(--odk-bg-light) !important;
+}
+.notification-item .notification-link {
+  color: var(--bs-body-color);
+}
+.notification-item .notification-link:hover * {
+  background-color: var(--odk-bg-light-hover) !important;
+}
+.notification-item .btn-close {
+  position: absolute;
+  top: var(--odk-notification-item-padding-y);
+  right: var(--bs-dropdown-item-padding-x);
+}
+.notification-item .notification-title,
+.notification-item .notification-text {
+  padding-left: var(--bs-dropdown-item-padding-x);
+  padding-right: calc(3 * var(--bs-dropdown-item-padding-x));
+}
+.notification-item .notification-title {
+  padding-top: var(--odk-notification-item-padding-y);
+}
+.notification-item .notification-text {
+  padding-bottom: var(--odk-notification-item-padding-y);
+}
+.notification-item .notification-placeholder {
+  padding: var(--odk-notification-item-padding-y) var(--bs-dropdown-item-padding-x);
 }
 
 .overlay {

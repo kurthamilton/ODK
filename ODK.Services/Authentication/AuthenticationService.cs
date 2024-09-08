@@ -5,6 +5,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
@@ -12,6 +13,7 @@ using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
+using ODK.Services.Notifications;
 
 namespace ODK.Services.Authentication;
 
@@ -21,6 +23,7 @@ public class AuthenticationService : IAuthenticationService
     private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;
     private readonly IMemberEmailService _memberEmailService;
+    private readonly INotificationService _notificationService;
     private readonly AuthenticationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProvider _urlProvider;
@@ -32,12 +35,14 @@ public class AuthenticationService : IAuthenticationService
         IUnitOfWork unitOfWork,
         IChapterUrlService chapterUrlService,
         IMemberEmailService memberEmailService,
-        IUrlProvider urlProvider)
+        IUrlProvider urlProvider,
+        INotificationService notificationService)
     {
         _authorizationService = authorizationService;
         _chapterUrlService = chapterUrlService;
         _emailService = emailService;      
         _memberEmailService = memberEmailService;
+        _notificationService = notificationService;
         _settings = settings;
         _unitOfWork = unitOfWork;
         _urlProvider = urlProvider;
@@ -53,8 +58,10 @@ public class AuthenticationService : IAuthenticationService
             return ServiceResult.Failure("The link you followed is no longer valid");
         }
 
-        var (chapter, member, memberPassword) = await _unitOfWork.RunAsync(
+        var (chapter, adminMembers, notificationSettings, member, memberPassword) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.NewMember),
             x => x.MemberRepository.GetById(token.MemberId),
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
 
@@ -77,9 +84,11 @@ public class AuthenticationService : IAuthenticationService
 
         _unitOfWork.MemberActivationTokenRepository.Delete(token);
 
+        _notificationService.AddNewMemberNotifications(member, chapter.Id, adminMembers, notificationSettings);
+
         await _unitOfWork.SaveChangesAsync();
 
-        await SendNewMemberEmailsAsync(chapter, member);
+        await SendNewMemberEmailsAsync(chapter, adminMembers, member);
 
         return ServiceResult.Successful();
     }
@@ -328,7 +337,10 @@ public class AuthenticationService : IAuthenticationService
         return ServiceResult.Successful();
     }
 
-    private async Task SendNewMemberEmailsAsync(Chapter chapter, Member member)
+    private async Task SendNewMemberEmailsAsync(
+        Chapter chapter, 
+        IReadOnlyCollection<ChapterAdminMember> adminMembers, 
+        Member member)
     {        
         await _emailService.SendNewChapterMemberEmail(chapter, member);
 
@@ -336,7 +348,7 @@ public class AuthenticationService : IAuthenticationService
             x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
             x => x.MemberPropertyRepository.GetByMemberId(member.Id, chapter.Id));        
 
-        await _emailService.SendNewMemberAdminEmail(chapter, member, chapterProperties, memberProperties);
+        await _emailService.SendNewMemberAdminEmail(chapter, adminMembers, member, chapterProperties, memberProperties);
     }
 
     private MemberPassword UpdatePassword(MemberPassword? memberPassword, string password)

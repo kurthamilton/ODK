@@ -1,0 +1,32 @@
+﻿@page "/{chapterName}/account/notifications"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Notifications
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model NotificationsModel
+@inject INotificationService NotificationService
+@{
+    Layout = "_OdkChapterLayout";
+    Model.Title = "Notifications";
+
+    var viewModel = await NotificationService.GetNotificationsPageViewModel(Model.CurrentMemberId);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Account",
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = OdkRoutes.Account.Notifications(Model.Chapter),
+        Chapter = Model.Chapter,
+        Content =
+            @<div>
+                <h2>Notification preferences</h2>
+                <section class="section">
+                    @await Html.PartialAsync("Account/_NotificationsContent", viewModel)
+                </section>
+            </div>
+    })
+})

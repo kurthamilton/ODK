@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Emails;
 using ODK.Core.Messages;
+using ODK.Core.Notifications;
 using ODK.Data.Core;
 using ODK.Services.Contact.ViewModels;
 using ODK.Services.Emails;
@@ -37,12 +38,19 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
 
     public async Task<MessageAdminPageViewModel> GetMessageViewModel(Guid currentMemberId, Guid messageId)
     {
-        var (currentMember, message, replies) = await _unitOfWork.RunAsync(
+        var (currentMember, message, replies, notifications) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.SiteContactMessageRepository.GetById(messageId),
-            x => x.SiteContactMessageReplyRepository.GetBySiteContactMessageId(messageId));
+            x => x.SiteContactMessageReplyRepository.GetBySiteContactMessageId(messageId),
+            x => x.NotificationRepository.GetUnreadByMemberId(currentMemberId, NotificationType.ChapterContactMessage, messageId));
 
         AssertMemberIsSuperAdmin(currentMember);
+
+        if (notifications.Count > 0)
+        {
+            _unitOfWork.NotificationRepository.MarkAsRead(notifications);
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         return new MessageAdminPageViewModel
         {

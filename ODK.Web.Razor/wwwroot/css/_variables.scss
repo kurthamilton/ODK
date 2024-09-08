@@ -3,10 +3,12 @@ $odk-bg-dark: #212529;
 
 :root {
     --odk-bg-light: #{darken($body-bg, 5%)};
+    --odk-bg-light-hover: #{darken($body-bg, 10%)};
 }
 
 [data-bs-theme="dark"] {
     --odk-bg-light: #{lighten($body-bg-dark, 5%)};
+    --odk-bg-light-hover: #{lighten($body-bg-dark, 10%)};
 }
 
 @import "odk/_variables";

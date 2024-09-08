@@ -51,7 +51,10 @@
                 
             @if (!Model.HideAccountMenu)
             {
-                @await Html.PartialAsync("Header/_AccountMenu", accountMenu)
+                <div class="d-flex gap-4 account-links--right">
+                    @await Html.PartialAsync("Header/_NotificationDropdown")
+                    @await Html.PartialAsync("Header/_AccountDropdown", accountMenu)
+                </div>
             }
         </div>
 

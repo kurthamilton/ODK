@@ -1,15 +1,15 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
-using ODK.Core.Members;
 using ODK.Core.Messages;
+using ODK.Core.Notifications;
 using ODK.Core.Platforms;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Contact.ViewModels;
 using ODK.Services.Emails;
 using ODK.Services.Exceptions;
+using ODK.Services.Notifications;
 using ODK.Services.Recaptcha;
 
 namespace ODK.Services.Contact;
@@ -18,6 +18,7 @@ public class ContactService : IContactService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IEmailService _emailService;
+    private readonly INotificationService _notificationService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IRecaptchaService _recaptchaService;
     private readonly IUnitOfWork _unitOfWork;
@@ -27,10 +28,12 @@ public class ContactService : IContactService
         IUnitOfWork unitOfWork,
         IEmailService emailService,
         IPlatformProvider platformProvider,
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        INotificationService notificationService)
     {
         _authorizationService = authorizationService;
         _emailService = emailService;
+        _notificationService = notificationService;
         _platformProvider = platformProvider;
         _recaptchaService = recaptchaService;
         _unitOfWork = unitOfWork;
@@ -68,9 +71,10 @@ public class ContactService : IContactService
 
         OdkAssertions.MeetsCondition(conversation, x => x.MemberId == currentMemberId);
 
-        var (chapter, adminMembers) = await _unitOfWork.RunAsync(
+        var (chapter, adminMembers, notificationSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(conversation.ChapterId),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(conversation.ChapterId));
+            x => x.ChapterAdminMemberRepository.GetByChapterId(conversation.ChapterId),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(conversation.ChapterId, NotificationType.ConversationOwnerMessage));
 
         var conversationMessage = new ChapterConversationMessage
         {
@@ -82,6 +86,11 @@ public class ContactService : IContactService
         };
 
         _unitOfWork.ChapterConversationMessageRepository.Add(conversationMessage);
+
+        _notificationService.AddNewConversationOwnerMessageNotifications(
+            conversation,
+            adminMembers,
+            notificationSettings);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -111,6 +120,10 @@ public class ContactService : IContactService
             message = $"[FLAGGED AS SPAM: {recaptchaResponse.Score} / 1.0] {message}";
         }
 
+        var (adminMembers, notificationSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapter.Id, NotificationType.ChapterContactMessage));
+
         var contactMessage = new ChapterContactMessage
         {
             ChapterId = chapter.Id,
@@ -121,6 +134,12 @@ public class ContactService : IContactService
         };
 
         _unitOfWork.ChapterContactMessageRepository.Add(contactMessage);
+
+        _notificationService.AddNewChapterContactMessageNotifications(
+            contactMessage,
+            adminMembers,
+            notificationSettings);
+
         await _unitOfWork.SaveChangesAsync();
 
         await _emailService.SendContactEmail(chapter, contactMessage);
@@ -153,13 +172,21 @@ public class ContactService : IContactService
     public async Task<ServiceResult> StartChapterConversation(Guid currentMemberId, Guid chapterId, 
         string subject, string message, string recaptchaToken)
     {
-        var (chapter, currentMember, memberSubscription, privacySettings, membershipSettings, adminMembers) = await _unitOfWork.RunAsync(
+        var (
+            chapter, 
+            currentMember, 
+            memberSubscription, 
+            privacySettings, 
+            membershipSettings, 
+            adminMembers,
+            notificationSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId));
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.ConversationOwnerMessage));
 
         if (!_authorizationService.CanStartConversation(chapterId, currentMember, memberSubscription, membershipSettings, privacySettings))
         {
@@ -191,6 +218,11 @@ public class ContactService : IContactService
         };
 
         _unitOfWork.ChapterConversationMessageRepository.Add(conversationMessage);
+
+        _notificationService.AddNewConversationOwnerMessageNotifications(
+            conversation,
+            adminMembers,
+            notificationSettings);
 
         await _unitOfWork.SaveChangesAsync();
 

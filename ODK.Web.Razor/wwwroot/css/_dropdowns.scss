@@ -1,5 +1,27 @@
-﻿.dropdown-menu-end {
-    text-align: right;
+﻿.dropdown {
+    .dropdown-header {
+        cursor: default;
+        color: var(--bs-body-color);
+    }
+
+    .card,
+    .dropdown-menu {
+        background-color: var(--odk-bg-light);
+    }
+
+    .dropdown-item {
+        &:hover {
+            background-color: var(--odk-bg-light-hover);
+        }
+    }
+}
+
+.dropdown-item {
+    &:hover {
+        .card {
+            background-color: var(--bs-dropdown-link-hover-bg);
+        }
+    }
 }
 
 .dropdown-item--icon {

@@ -32,7 +32,7 @@ public class MemberGroupRoutes
 
     public string Group(PlatformType platform, Chapter chapter) => platform switch
     {
-        PlatformType.DrunkenKnitwits => $"/{chapter.Name}/Admin",
+        PlatformType.DrunkenKnitwits => $"/{chapter.Name.ToLowerInvariant()}/admin",
         _ => $"{Index(platform)}/{chapter.Id}"
     };
 
@@ -158,7 +158,7 @@ public class MemberGroupRoutes
 
     public string MembersSubscriptionCreate(PlatformType platform, Chapter chapter) => platform switch
     {
-        PlatformType.DrunkenKnitwits => $"{MembersSubscriptions(platform, chapter)}/Create",
+        PlatformType.DrunkenKnitwits => $"{MembersSubscriptions(platform, chapter)}/create",
         _ => $"{MembersSubscriptions(platform, chapter)}/new"
     };
 
@@ -170,7 +170,7 @@ public class MemberGroupRoutes
 
     public string VenueCreate(PlatformType platform, Chapter chapter) => platform switch
     {
-        PlatformType.DrunkenKnitwits => $"{Venues(platform, chapter)}/Create",
+        PlatformType.DrunkenKnitwits => $"{Venues(platform, chapter)}/create",
         _ => $"{Venues(platform, chapter)}/new"
     };
 

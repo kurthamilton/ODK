@@ -1,0 +1,64 @@
+﻿@using ODK.Core.Notifications
+@using ODK.Services.Caching
+@using ODK.Services.Notifications
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Notifications;
+@using ODK.Services.Notifications.ViewModels
+@using ODK.Web.Razor.Pages.Chapters
+@model UnreadNotificationsViewModel
+@inject IRequestCache RequestCache
+@{
+    var notifications = Model.Unread;
+
+    var chapterPageContext = new ChapterPageContext(RequestCache, Context);
+    var chapter = await chapterPageContext.GetChapterAsync();
+
+    var showIfEmptyClass = notifications.Count == 0 ? null : "d-none";
+    var hideIfEmptyClass = notifications.Count == 0 ? "d-none" : null;
+}
+
+<div class="dropdown position-relative" role="button" data-notifications>
+    <span data-notifications-hide-if-empty
+        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger @hideIfEmptyClass">
+        <span data-notification-count>@(notifications.Count > 9 ? "9+" : notifications.Count.ToString())</span>
+        <span class="visually-hidden">unread messages</span>
+    </span>
+
+    <div class="text-light account-links__user dropdown-toggle" 
+        data-bs-toggle="dropdown" data-bs-auto-close="outside">
+        <i data-notifications-show-if-empty class="fa-regular fa-bell @showIfEmptyClass"></i>
+        <i data-notifications-hide-if-empty class="fa-solid fa-bell @hideIfEmptyClass"></i>
+    </div>
+    <div class="dropdown-menu dropdown-menu-end p-0">
+        <div class="dropdown-header">
+            <div class="d-flex align-items-center">
+                <h5 class="m-0">Notifications</h5>
+                <div class="ms-auto">
+                    <a class="btn btn-icon" href="@OdkRoutes.Account.Notifications(chapter)">
+                        @await Html.PartialAsync("Components/Icons/_Settings")
+                    </a>
+                </div>
+            </div>            
+        </div>
+        @if (notifications.Count > 0)
+        {
+            foreach (var notification in notifications)
+            {
+                <div class="dropdown-item notification-item" data-notification>
+                    @await Html.PartialAsync("Notifications/_NotificationListItem", new NotificationListItemViewModel
+                    {
+                        Notification = notification,
+                        Platform = Model.Platform
+                    })
+                </div>
+            }
+        }        
+        
+        <div class="dropdown-item notification-item @showIfEmptyClass" 
+            data-notifications-show-if-empty>
+            <div class="notification-placeholder">
+                No unread notifications
+            </div>
+        </div>
+    </div>
+</div>

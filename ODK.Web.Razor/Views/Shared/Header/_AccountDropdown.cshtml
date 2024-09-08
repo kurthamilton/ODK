@@ -3,12 +3,12 @@
 
 @if (Model.MemberChapter != null)
 {
-    <div class="account-links account-links--right">
+    <div class="account-links" role="button">
         <div class="dropdown">
             <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">
                 <i class="fas fa-user"></i>
             </div>
-            <div class="dropdown-menu dropdown-menu-end">
+            <div class="dropdown-menu dropdown-menu-end text-end">
                 <a class="dropdown-item" href="/@Model.MemberChapter.Name/Account">My profile</a>
                 <a class="dropdown-item" href="/@Model.MemberChapter.Name">@Model.MemberChapter.Name</a>
                 <a class="dropdown-item" href="/@Model.MemberChapter.Name/Account/Logout">Sign Out</a>

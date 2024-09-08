@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
@@ -159,7 +160,8 @@ public class EventViewModelService : IEventViewModelService
             privacySettings,
             hasQuestions,
             adminMembers,
-            ownerSubscription) = await _unitOfWork.RunAsync(
+            ownerSubscription,
+            notifications) = await _unitOfWork.RunAsync(
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetById(eventId),
             x => x.VenueRepository.GetByEventId(eventId),
@@ -177,7 +179,10 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => currentMemberId != null 
+                ? x.NotificationRepository.GetUnreadByMemberId(currentMemberId.Value, NotificationType.NewEvent, eventId)
+                : new DefaultDeferredQueryMultiple<Notification>());
 
         OdkAssertions.BelongsToChapter(@event, chapter.Id);
 
@@ -244,6 +249,12 @@ public class EventViewModelService : IEventViewModelService
         var venueLocation = canViewVenue
             ? await _unitOfWork.VenueLocationRepository.GetByVenueId(venue.Id)
             : null;
+
+        if (notifications.Count > 0)
+        {
+            _unitOfWork.NotificationRepository.MarkAsRead(notifications);
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         return new EventPageViewModel
         {

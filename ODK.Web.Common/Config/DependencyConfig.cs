@@ -22,6 +22,7 @@ using ODK.Services.Logging;
 using ODK.Services.Mails;
 using ODK.Services.Media;
 using ODK.Services.Members;
+using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Payments.PayPal;
 using ODK.Services.Recaptcha;
@@ -139,6 +140,7 @@ public static class DependencyConfig
         });
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IMemberViewModelService, MemberViewModelService>();
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IPlatformProvider, PlatformProvider>();
         services.AddSingleton(new PlatformProviderSettings

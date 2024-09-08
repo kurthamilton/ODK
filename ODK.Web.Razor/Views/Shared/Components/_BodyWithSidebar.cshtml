@@ -39,7 +39,7 @@
             @await Html.PartialAsync("Feedback/_Feedback")
 
             <div class="row">
-                <div class="col-lg-9 col-md-8 order-2 order-md-1">
+                <div class="col-xl-9 col-md-8 order-2 order-md-1">
                     @if (Model.Content != null)
                     {
                         @Model.Content
@@ -47,7 +47,7 @@
 
                     @Model.ContentFunc?.Invoke(null)
                 </div>
-                <div class="col-lg-3 col-md-4 order-1 order-md-2">
+                <div class="col-xl-3 col-md-4 order-1 order-md-2">
                     @if (Model.SidebarContent != null)
                     {
                         @Model.SidebarContent

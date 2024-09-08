@@ -4,6 +4,7 @@ using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Data.Core;
@@ -377,12 +378,19 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = _platformProvider.GetPlatform();
         
-        var (chapter, member, subscription) = await _unitOfWork.RunAsync(
+        var (chapter, member, subscription, notifications) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, request.ChapterId));
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, request.ChapterId),
+            x => x.NotificationRepository.GetUnreadByMemberId(request.CurrentMemberId, NotificationType.NewMember, memberId));
 
         OdkAssertions.MemberOf(member, chapter.Id);
+
+        if (notifications.Count > 0)
+        {
+            _unitOfWork.NotificationRepository.MarkAsRead(notifications);
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         return new MemberAdminPageViewModel
         {

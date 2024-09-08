@@ -31,7 +31,13 @@
         </div>,
     BodyContentFunc = @<p class="card-text">@Model.Texts?.Description</p>,
     FooterContentFunc = 
-        @<a class="text-body-secondary" href="@OdkRoutes2.MemberGroups.Group(Model.Platform, chapter)">
-            <i class="fa-solid fa-gear"></i> Manage
-        </a>
+        @<div>
+            @if (Model.IsAdmin || Model.IsOwner)
+            {
+                <a class="text-body-secondary" href="@OdkRoutes2.MemberGroups.Group(Model.Platform, chapter)">
+                    @await Html.PartialAsync("Components/Icons/_Settings") 
+                    <span>Manage</span>
+                </a>
+            }            
+        </div>
 })

@@ -1,0 +1,26 @@
+﻿@using ODK.Core.Notifications
+@using ODK.Web.Razor.Models.Notifications
+@model NotificationSettingsFormViewModel
+
+@for (var i = 0; i < Model.Settings.Count; i++)
+{
+    var setting = Model.Settings[i];
+
+    var labelText = setting.Type switch
+    {
+        NotificationType.ChapterContactMessage => "New contact messages",
+        NotificationType.ConversationAdminMessage => "New conversation messages",
+        NotificationType.ConversationOwnerMessage => "New conversation messages from members",
+        NotificationType.NewEvent => "New events",
+        NotificationType.NewMember => "New members",
+        _ => ""
+    };
+
+    <div class="form-group mb-3">
+        <div class="form-check form-switch">
+            @Html.HiddenFor(x => x.Settings[i].Type)
+            @Html.CheckBoxFor(x => x.Settings[i].Enabled, new { @class = "form-check-input", role = "switch" })
+            @Html.LabelFor(x => x.Settings[i].Enabled, labelText, new { @class = "form-check-label" })
+        </div>                
+    </div>
+}

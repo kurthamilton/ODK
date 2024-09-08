@@ -54,11 +54,15 @@ public interface IEmailService
 
     Task SendNewChapterMemberEmail(Chapter chapter, Member member);
 
-    Task SendNewMemberAdminEmail(Chapter chapter, Member member, 
+    Task SendNewMemberAdminEmail(
+        Chapter chapter, 
+        IReadOnlyCollection<ChapterAdminMember> adminMembers,
+        Member member, 
         IDictionary<string, string> parameters);
 
     Task SendNewMemberAdminEmail(
         Chapter chapter,
+        IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties);

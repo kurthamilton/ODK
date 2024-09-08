@@ -17,8 +17,9 @@
             @await Html.PartialAsync("Header/_SiteMenu")
         </div>
 
-        <div>
-            @await Html.PartialAsync("Header/_SiteAccountMenu")
+        <div class="d-flex gap-4">
+            @await Html.PartialAsync("Header/_NotificationDropdown")
+            @await Html.PartialAsync("Header/_SiteAccountDropdown")
         </div>
     </div>
 </nav>

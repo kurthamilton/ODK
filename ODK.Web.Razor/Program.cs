@@ -40,6 +40,7 @@ builder.Services.AddWebOptimizer(pipeline =>
         "lib/slim-select/slimselect.js",
         "js/site.js",
         "js/odk.forms.js",
+        "js/odk.notifications.js",
         "js/odk.selects.js",
         "js/odk.html-editor.js");
     pipeline.AddJavaScriptBundle(

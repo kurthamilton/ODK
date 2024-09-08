@@ -127,17 +127,13 @@ $navbar-dark-separator: rgba(255, 255, 255, .5);
     }
 }
 
-.account-links {
-    cursor: pointer;
+.account-links--right {
+    right: 0;
+    position: absolute;
+    padding: 1rem;
 
-    &.account-links--right {
-        right: 0;
-        position: absolute;
-        padding: 1rem;
-
-        .dropdown-menu {
-            min-width: inherit;
-        }
+    .dropdown-menu {
+        min-width: inherit;
     }
 }
 
@@ -158,7 +154,7 @@ $navbar-dark-separator: rgba(255, 255, 255, .5);
 
 .chapter {
   @include media-breakpoint-up(sm) {
-    .account-links {
+    .account-links--right {
       position: absolute;
     }
 

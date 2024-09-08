@@ -54,6 +54,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberChapterRepository> _memberChapterRepository;
     private readonly Lazy<IMemberImageRepository> _memberImageRepository;
     private readonly Lazy<IMemberLocationRepository> _memberLocationRepository;
+    private readonly Lazy<IMemberNotificationSettingsRepository> _memberNotificationSettingsRepository;
     private readonly Lazy<IMemberPasswordRepository> _memberPasswordRepository;
     private readonly Lazy<IMemberPasswordResetRequestRepository> _memberPasswordResetRequestRepository;
     private readonly Lazy<IMemberPaymentSettingsRepository> _memberPaymentSettingsRepository;
@@ -63,6 +64,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberRepository> _memberRepository;
     private readonly Lazy<IMemberSiteSubscriptionRepository> _memberSiteSubscriptionRepository;
     private readonly Lazy<IMemberSubscriptionRepository> _memberSubscriptionRepository;
+    private readonly Lazy<INotificationRepository> _notificationRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;    
     private readonly Lazy<ISiteContactMessageReplyRepository> _siteContactMessageReplyRepository;
     private readonly Lazy<ISiteContactMessageRepository> _siteContactMessageRepository;
@@ -121,6 +123,7 @@ public class UnitOfWork : IUnitOfWork
         _memberEmailAddressUpdateTokenRepository = new(() => new MemberEmailAddressUpdateTokenRepository(_context));
         _memberImageRepository = new(() => new MemberImageRepository(_context));
         _memberLocationRepository = new(() => new MemberLocationRepository(_context));
+        _memberNotificationSettingsRepository = new(() => new MemberNotificationSettingsRepository(_context));
         _memberPasswordRepository = new(() => new MemberPasswordRepository(_context));
         _memberPasswordResetRequestRepository = new(() => new MemberPasswordResetRequestRepository(_context));
         _memberPaymentSettingsRepository = new(() => new MemberPaymentSettingsRepository(_context));
@@ -130,6 +133,7 @@ public class UnitOfWork : IUnitOfWork
         _memberRepository = new(() => new MemberRepository(_context));
         _memberSiteSubscriptionRepository = new(() => new MemberSiteSubscriptionRepository(_context));
         _memberSubscriptionRepository = new(() => new MemberSubscriptionRepository(_context));
+        _notificationRepository = new(() => new NotificationRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
         _siteContactMessageReplyRepository = new(() => new SiteContactMessageReplyRepository(_context));
         _siteContactMessageRepository = new(() => new SiteContactMessageRepository(_context));
@@ -184,6 +188,7 @@ public class UnitOfWork : IUnitOfWork
     public IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository => _memberEmailAddressUpdateTokenRepository.Value;
     public IMemberImageRepository MemberImageRepository => _memberImageRepository.Value;
     public IMemberLocationRepository MemberLocationRepository => _memberLocationRepository.Value;
+    public IMemberNotificationSettingsRepository MemberNotificationSettingsRepository => _memberNotificationSettingsRepository.Value;
     public IMemberPasswordRepository MemberPasswordRepository => _memberPasswordRepository.Value;
     public IMemberPasswordResetRequestRepository MemberPasswordResetRequestRepository => _memberPasswordResetRequestRepository.Value;
     public IMemberPaymentSettingsRepository MemberPaymentSettingsRepository => _memberPaymentSettingsRepository.Value;
@@ -193,6 +198,7 @@ public class UnitOfWork : IUnitOfWork
     public IMemberRepository MemberRepository => _memberRepository.Value;
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => _memberSiteSubscriptionRepository.Value;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => _memberSubscriptionRepository.Value;
+    public INotificationRepository NotificationRepository => _notificationRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => _siteContactMessageReplyRepository.Value;
     public ISiteContactMessageRepository SiteContactMessageRepository => _siteContactMessageRepository.Value;
@@ -591,6 +597,57 @@ public class UnitOfWork : IUnitOfWork
             await q12.Run(),
             await q13.Run(),
             await q14.Run());
+    }
+
+    public async Task<(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15)> RunAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
+        Func<IUnitOfWork, IDeferredQuery<T2>> query2,
+        Func<IUnitOfWork, IDeferredQuery<T3>> query3,
+        Func<IUnitOfWork, IDeferredQuery<T4>> query4,
+        Func<IUnitOfWork, IDeferredQuery<T5>> query5,
+        Func<IUnitOfWork, IDeferredQuery<T6>> query6,
+        Func<IUnitOfWork, IDeferredQuery<T7>> query7,
+        Func<IUnitOfWork, IDeferredQuery<T8>> query8,
+        Func<IUnitOfWork, IDeferredQuery<T9>> query9,
+        Func<IUnitOfWork, IDeferredQuery<T10>> query10,
+        Func<IUnitOfWork, IDeferredQuery<T11>> query11,
+        Func<IUnitOfWork, IDeferredQuery<T12>> query12,
+        Func<IUnitOfWork, IDeferredQuery<T13>> query13,
+        Func<IUnitOfWork, IDeferredQuery<T14>> query14,
+        Func<IUnitOfWork, IDeferredQuery<T15>> query15)
+    {
+        var q1 = query1(this);
+        var q2 = query2(this);
+        var q3 = query3(this);
+        var q4 = query4(this);
+        var q5 = query5(this);
+        var q6 = query6(this);
+        var q7 = query7(this);
+        var q8 = query8(this);
+        var q9 = query9(this);
+        var q10 = query10(this);
+        var q11 = query11(this);
+        var q12 = query12(this);
+        var q13 = query13(this);
+        var q14 = query14(this);
+        var q15 = query15(this);
+
+        return (
+            await q1.Run(),
+            await q2.Run(),
+            await q3.Run(),
+            await q4.Run(),
+            await q5.Run(),
+            await q6.Run(),
+            await q7.Run(),
+            await q8.Run(),
+            await q9.Run(),
+            await q10.Run(),
+            await q11.Run(),
+            await q12.Run(),
+            await q13.Run(),
+            await q14.Run(),
+            await q15.Run());
     }
 
     public Task SaveChangesAsync() => _context.SaveChangesAsync();

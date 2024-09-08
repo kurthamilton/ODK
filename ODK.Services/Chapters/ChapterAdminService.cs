@@ -6,6 +6,7 @@ using ODK.Core.Emails;
 using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
@@ -14,6 +15,7 @@ using ODK.Data.Core;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Emails;
+using ODK.Services.Notifications;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 
@@ -27,6 +29,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IInstagramService _instagramService;
+    private readonly INotificationService _notificationService;
     private readonly IPlatformProvider _platformProvider;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly IUnitOfWork _unitOfWork;
@@ -40,7 +43,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         ISiteSubscriptionService siteSubscriptionService,
         IHtmlSanitizer htmlSanitizer,
         IInstagramService instagramService,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        INotificationService notificationService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
@@ -49,6 +53,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _httpRequestProvider = httpRequestProvider;
         _htmlSanitizer = htmlSanitizer;
         _instagramService = instagramService;
+        _notificationService = notificationService;
         _platformProvider = platformProvider;
         _siteSubscriptionService = siteSubscriptionService;
         _unitOfWork = unitOfWork;
@@ -412,12 +417,24 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, ownerSubscription, currentMember, conversation, messages) = await GetChapterAdminRestrictedContent(request,
+        var (
+            chapter, 
+            ownerSubscription, 
+            currentMember, 
+            conversation, 
+            messages,
+            notifications
+        ) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.ChapterConversationRepository.GetById(id),
-            x => x.ChapterConversationMessageRepository.GetByConversationId(id));
+            x => x.ChapterConversationMessageRepository.GetByConversationId(id),
+            x => x.NotificationRepository.GetUnreadByChapterId(request.ChapterId, NotificationType.ConversationOwnerMessage, id));
+
+        var adminMemberNotifications = notifications
+            .Where(x => x.MemberId != conversation.MemberId)
+            .ToArray();
 
         OdkAssertions.BelongsToChapter(conversation, request.ChapterId);
 
@@ -439,7 +456,16 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         if (unread.Length > 0)
         {
             unread.ForEach(x => x.ReadByChapter = true);
-            _unitOfWork.ChapterConversationMessageRepository.UpdateMany(unread);
+            _unitOfWork.ChapterConversationMessageRepository.UpdateMany(unread);            
+        }
+
+        if (notifications.Count > 0)
+        {
+            _unitOfWork.NotificationRepository.MarkAsRead(notifications);
+        }
+
+        if (unread.Length > 0 || notifications.Count > 0)
+        {
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -719,7 +745,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> ReplyToConversation(AdminServiceRequest request, Guid conversationId, string message)
     {
-        var (chapter, currentMember, conversation, messages, adminMembers, ownerSubscription) = await _unitOfWork.RunAsync(
+        var (
+            chapter, 
+            currentMember, 
+            conversation, 
+            messages, 
+            adminMembers, 
+            ownerSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.ChapterConversationRepository.GetById(conversationId),
@@ -741,7 +773,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Not permitted");
         }
 
-        var member = await _unitOfWork.MemberRepository.GetById(conversation.MemberId).Run();
+        var (member, notificationSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(conversation.MemberId),
+            x => x.MemberNotificationSettingsRepository.GetByMemberId(conversation.MemberId, NotificationType.ConversationAdminMessage));
 
         var conversationMessage = new ChapterConversationMessage
         {
@@ -753,6 +787,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
 
         _unitOfWork.ChapterConversationMessageRepository.Add(conversationMessage);
+
+        _notificationService.AddNewConversationAdminMessageNotifications(
+            conversation,
+            member,
+            notificationSettings != null ? [notificationSettings] : []);
 
         await _unitOfWork.SaveChangesAsync();
         
@@ -841,10 +880,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> StartConversation(AdminServiceRequest request, Guid memberId, string subject, string message)
     {
-        var (chapter, ownerSubscription, member) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, member, notificationSettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
-            x => x.MemberRepository.GetById(memberId));
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberNotificationSettingsRepository.GetByMemberId(memberId, NotificationType.ConversationAdminMessage));
 
         OdkAssertions.MemberOf(member, request.ChapterId);
 
@@ -875,6 +915,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
 
         _unitOfWork.ChapterConversationMessageRepository.Add(conversationMessage);
+
+        _notificationService.AddNewConversationAdminMessageNotifications(
+            conversation, 
+            member, 
+            notificationSettings != null ? [notificationSettings] : []);
 
         await _unitOfWork.SaveChangesAsync();
 

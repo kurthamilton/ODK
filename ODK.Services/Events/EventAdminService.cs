@@ -5,6 +5,7 @@ using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
@@ -15,6 +16,7 @@ using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
+using ODK.Services.Notifications;
 
 namespace ODK.Services.Events;
 
@@ -23,6 +25,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     private readonly IAuthorizationService _authorizationService;
     private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;
+    private readonly INotificationService _notificationService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProvider _urlProvider;
@@ -33,12 +36,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IChapterUrlService chapterUrlService,
         IAuthorizationService authorizationService,
         IPlatformProvider platformProvider,
-        IUrlProvider urlProvider)
+        IUrlProvider urlProvider,
+        INotificationService notificationService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _chapterUrlService = chapterUrlService;
         _emailService = emailService;
+        _notificationService = notificationService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
         _urlProvider = urlProvider;
@@ -48,14 +53,26 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
 
-        var (chapter, ownerSubscription, chapterAdminMembers, currentMember, venue, settings, chapterPaymentSettings) = await _unitOfWork.RunAsync(
+        var (
+            chapter, 
+            ownerSubscription, 
+            chapterAdminMembers, 
+            currentMember, 
+            venue, 
+            settings, 
+            chapterPaymentSettings,
+            members,
+            notificationSettings            
+        ) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetById(model.VenueId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetAllByChapterId(chapterId),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.NewEvent));
 
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
@@ -99,6 +116,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         ScheduleEventEmail(@event, chapter, settings);
         
+        if (@event.PublishedUtc != null)
+        {            
+            _notificationService.AddNewEventNotifications(chapter, @event, venue, members, notificationSettings);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -379,8 +401,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return;
         }
 
+        var (chapter, venue, members, notificationSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(@event.ChapterId),
+            x => x.VenueRepository.GetById(@event.VenueId),
+            x => x.MemberRepository.GetAllByChapterId(@event.ChapterId),
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(@event.ChapterId, NotificationType.NewEvent));
+
         @event.PublishedUtc = DateTime.UtcNow;
         _unitOfWork.EventRepository.Update(@event);
+
+        _notificationService.AddNewEventNotifications(chapter, @event, venue, members, notificationSettings);
+
         await _unitOfWork.SaveChangesAsync();
     }
 

@@ -16,6 +16,7 @@ public class AccountRoutes : RoutesBase
     public string Join(Chapter? chapter) => AccountPath(chapter, "/join");
     public string Location() => AccountPath(null, "/location");
     public string Login(Chapter? chapter) => AccountPath(chapter, "/login");
+    public string Notifications(Chapter? chapter) => AccountPath(chapter, "/notifications");
     public string PasswordChange(Chapter? chapter) => AccountPath(chapter, "/password/change");
     public string PasswordReset(Chapter? chapter, string token) 
         => AccountPath(chapter, $"/password/reset?token={HttpUtility.UrlEncode(token)}");

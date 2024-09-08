@@ -1,0 +1,61 @@
+﻿@using Microsoft.AspNetCore.Html
+@using ODK.Core.Notifications
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Notifications
+@model NotificationListItemViewModel
+@{
+    var (notification, platform) = (Model.Notification, Model.Platform);
+
+    var title = notification.Type switch
+    {
+        NotificationType.ChapterContactMessage => "New contact message",
+        NotificationType.ConversationOwnerMessage => "New conversation message",
+        NotificationType.ConversationAdminMessage => "New conversation message",
+        NotificationType.NewEvent => "New event",
+        NotificationType.NewMember => "New member",
+        _ => null
+    };
+
+    var url = notification.Type switch
+    {
+        NotificationType.ChapterContactMessage => notification.Chapter != null && notification.EntityId != null
+            ? OdkRoutes2.MemberGroups.GroupMessage(platform, notification.Chapter, notification.EntityId.Value)
+            : null,
+        NotificationType.ConversationAdminMessage => notification.Chapter != null && notification.EntityId != null
+            ? OdkRoutes2.Groups.Conversation(platform, notification.Chapter, notification.EntityId.Value)
+            : null,
+        NotificationType.ConversationOwnerMessage => notification.Chapter != null && notification.EntityId != null
+            ? OdkRoutes2.MemberGroups.GroupConversation(platform, notification.Chapter, notification.EntityId.Value)
+            : null,
+        NotificationType.NewEvent => notification.Chapter != null && notification.EntityId != null
+            ? OdkRoutes2.Groups.Event(platform, notification.Chapter, notification.EntityId.Value)
+            : null,
+        NotificationType.NewMember => notification.Chapter != null && notification.EntityId != null
+            ? OdkRoutes2.MemberGroups.Member(platform, notification.Chapter, notification.EntityId.Value)
+            : null,
+        _ => null
+    };
+
+    Func<object?, IHtmlContent> notificationContent =
+        @<div>
+            <div class="notification-title">@title</div>
+            <div class="notification-text">@notification.Text</div>
+        </div>;
+}
+
+<div class="position-relative">
+    <button type="button" class="btn-close" aria-label="Dismiss"
+        data-bs-toggle="tooltip" data-bs-title="Dismiss"
+        data-notification-dismiss="/account/notifications/@notification.Id/dismiss"></button>
+
+    @if (!string.IsNullOrEmpty(url))
+    {
+        <a class="notification-link" href="@url">
+            @notificationContent.Invoke(null)
+        </a>
+    }
+    else
+    {
+        @notificationContent.Invoke(null)
+    }
+</div>

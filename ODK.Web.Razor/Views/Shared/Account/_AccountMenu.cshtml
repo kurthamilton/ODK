@@ -3,7 +3,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @model AccountMenuViewModel
-@{    
+@{
     var menuItems = new MenuItem[]
     {
         new MenuItem { Link = OdkRoutes.Account.PersonalDetails(Model.Chapter), Text = "Personal details" },
@@ -24,14 +24,18 @@
         Model.Chapter != null
             ? new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.Chapter), Text = "Email preferences" }
             : new MenuItem(),
+        new MenuItem { Link = OdkRoutes.Account.Notifications(Model.Chapter), Text = "Notifications" },
         new MenuItem { Link = OdkRoutes.Account.Delete(Model.Chapter), Text = "Delete account" }
     }.Where(x => !string.IsNullOrEmpty(x.Link)).ToArray();
+
+    var activeMenuItem = menuItems
+        .FirstOrDefault(x => string.Equals(x.Link, Model.Active, StringComparison.InvariantCultureIgnoreCase));
 }
 
 <ul class="list-group d-none d-md-block">
     @foreach (var menuItem in menuItems)
     {
-        <li class="list-group-item @(string.Equals(menuItem.Link, Model.Active, StringComparison.InvariantCultureIgnoreCase) ? "active" : "")">
+        <li class="list-group-item @(activeMenuItem?.Link == menuItem.Link ? "active" : null)">
             <a class="nav-link text-nowrap" href="@menuItem.Link">
                 @menuItem.Text
             </a>
@@ -41,7 +45,7 @@
 
 <div class="dropdown d-md-none">
     <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-        @menuItems.FirstOrDefault(x => x.Link == Model.Active)?.Text
+        @activeMenuItem?.Text
     </button>
     <ul class="dropdown-menu">
         @foreach (var menuItem in menuItems)
