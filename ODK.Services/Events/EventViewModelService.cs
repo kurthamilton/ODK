@@ -129,7 +129,7 @@ public class EventViewModelService : IEventViewModelService
         {
             Chapter = chapter,
             CurrentMember = member,
-            Events = viewModels,
+            Events = viewModels.OrderBy(x => x.Date).ToArray(),
             Platform = platform
         };
     }

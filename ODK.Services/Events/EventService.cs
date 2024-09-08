@@ -132,7 +132,7 @@ public class EventService : IEventService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, @event.ChapterId));
 
-        if (ownerSubscription?.HasFeature(SiteFeatureType.EventTickets) != null)
+        if (ownerSubscription?.HasFeature(SiteFeatureType.EventTickets) != true)
         {
             return ServiceResult.Failure("Payment not made: this group can no longer receive payments");
         }

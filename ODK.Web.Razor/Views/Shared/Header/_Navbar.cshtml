@@ -15,7 +15,8 @@
         }
         else if (Model.Member.Chapters.Count > 0)
         {
-            memberChapter = await RequestCache.GetChapterAsync(Model.Member.Chapters.First().ChapterId);
+            var chapters = await RequestCache.GetChaptersAsync();
+            memberChapter = chapters.FirstOrDefault(x => Model.Member.IsMemberOf(x.Id));
         }
     }
 
