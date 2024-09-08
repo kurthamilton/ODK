@@ -1,0 +1,10 @@
+﻿@using ODK.Web.Common.Routes
+@model ODK.Web.Razor.Models.Header.AccountMenuViewModel
+
+<div class="anonymous-links">
+    <a class="btn btn-primary anonymous-link" href="@OdkRoutes.Account.Login(Model.CurrentChapter)">Sign in</a>
+    @if (Model.CurrentChapter != null)
+    {
+        <a class="btn btn-success anonymous-link" href="@OdkRoutes.Account.Join(Model.CurrentChapter)">Join</a>
+    }
+</div>

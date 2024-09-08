@@ -1,14 +1,31 @@
-﻿$odk-bg-light: #e9ecef;
+﻿$odk-bg-light-level-0: $body-bg;
+$odk-bg-dark-level-0: $body-bg-dark;
+
+$odk-bg-light-level-1: darken($odk-bg-light-level-0, 5%);
+$odk-bg-dark-level-1: lighten($odk-bg-dark-level-0, 5%);
+
+$odk-bg-light-level-2: darken($odk-bg-light-level-1, 5%);
+$odk-bg-dark-level-2: lighten($odk-bg-dark-level-1, 5%);
+
+$odk-bg-light: #e9ecef;
 $odk-bg-dark: #212529;
 
 :root {
-    --odk-bg-light: #{darken($body-bg, 5%)};
-    --odk-bg-light-hover: #{darken($body-bg, 10%)};
+    --odk-bg-level-0: #{$odk-bg-light-level-0};
+    --odk-bg-level-0-hover: #{lighten($odk-bg-light-level-0, 5%)};
+    --odk-bg-level-1: #{$odk-bg-light-level-1};
+    --odk-bg-level-1-hover: #{lighten($odk-bg-light-level-1, 5%)};
+    --odk-bg-level-2: #{$odk-bg-light-level-2};
+    --odk-bg-level-2-hover: #{lighten($odk-bg-light-level-2, 5%)};
 }
 
 [data-bs-theme="dark"] {
-    --odk-bg-light: #{lighten($body-bg-dark, 5%)};
-    --odk-bg-light-hover: #{lighten($body-bg-dark, 10%)};
+    --odk-bg-level-0: #{$odk-bg-dark-level-0};
+    --odk-bg-level-0-hover: #{lighten($odk-bg-dark-level-0, 5%)};
+    --odk-bg-level-1: #{$odk-bg-dark-level-1};
+    --odk-bg-level-1-hover: #{lighten($odk-bg-dark-level-1, 5%)};
+    --odk-bg-level-2: #{$odk-bg-dark-level-2};
+    --odk-bg-level-2-hover: #{lighten($odk-bg-dark-level-2, 5%)};
 }
 
 @import "odk/_variables";

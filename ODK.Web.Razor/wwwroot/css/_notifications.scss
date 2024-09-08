@@ -6,7 +6,7 @@
     cursor: default;
 
     &:hover {
-        background-color: var(--odk-bg-light) !important;
+        background-color: var(--odk-bg-level-1) !important;
     }
 
     .notification-row {
@@ -36,7 +36,7 @@
 
         &:hover {
             & * {
-                background-color: var(--odk-bg-light-hover) !important;
+                background-color: var(--odk-bg-level-1-hover) !important;
             }
 
             .notification-icon {

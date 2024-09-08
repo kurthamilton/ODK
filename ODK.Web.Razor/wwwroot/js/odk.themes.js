@@ -27,12 +27,12 @@
         }
 
         const theme = getTheme();
-        if (theme === 'dark') {
-            buttons.dark.classList.add('d-none');
-            buttons.light.classList.remove('d-none');
-        } else {
+        if (theme === 'light') {
             buttons.dark.classList.remove('d-none');
             buttons.light.classList.add('d-none');
+        } else {
+            buttons.dark.classList.add('d-none');
+            buttons.light.classList.remove('d-none');            
         }
     };
 
@@ -49,7 +49,9 @@
     };
 
     const theme = getTheme();
-    if (theme === 'dark') {
+    if (theme === 'light') {
+        setTheme('light');
+    } else {
         setTheme('dark');
     }
 

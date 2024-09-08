@@ -1,5 +1,5 @@
 ﻿.panel {
-    background-color: #{darken($body-bg, 5%)};
+    background-color: var(--odk-bg-level-1);
     padding: 1rem;
 
     .panel-header {
@@ -29,10 +29,8 @@
     .panel-body {
         margin-top: 1rem;
     }
-}
 
-[data-bs-theme="dark"] {
-    .panel {
-        background-color: #{lighten($body-bg-dark, 5%)};
+    .list-group-item {
+        background-color: var(--odk-bg-level-2);
     }
 }

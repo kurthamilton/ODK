@@ -11909,13 +11909,21 @@ textarea.form-control-lg {
 }
 
 :root {
-  --odk-bg-light: #f2f2f2;
-  --odk-bg-light-hover: #e6e6e6;
+  --odk-bg-level-0: #fff;
+  --odk-bg-level-0-hover: white;
+  --odk-bg-level-1: #f2f2f2;
+  --odk-bg-level-1-hover: white;
+  --odk-bg-level-2: #e6e6e6;
+  --odk-bg-level-2-hover: #f2f2f2;
 }
 
 [data-bs-theme=dark] {
-  --odk-bg-light: #2c3237;
-  --odk-bg-light-hover: #383f45;
+  --odk-bg-level-0: #212529;
+  --odk-bg-level-0-hover: #2c3237;
+  --odk-bg-level-1: #2c3237;
+  --odk-bg-level-1-hover: #383f45;
+  --odk-bg-level-2: #383f45;
+  --odk-bg-level-2-hover: #434b53;
 }
 
 html[data-platform=odk] {
@@ -11979,7 +11987,7 @@ html[data-platform=odk] {
 }
 
 .breadcrumb {
-  background-color: var(--odk-bg-light);
+  background-color: var(--odk-bg-level-1);
   padding-top: var(--odk-breadcrumbs-padding-top);
   padding-bottom: var(--odk-breadcrumbs-padding-bottom);
   padding-left: var(--odk-breadcrumbs-padding-left);
@@ -12023,6 +12031,10 @@ html[data-platform=odk] {
 .card-body-sm {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
+}
+
+.conversation-message {
+  background-color: var(--odk-bg-level-2);
 }
 
 :root {
@@ -12110,10 +12122,10 @@ html[data-platform=odk] {
 }
 .dropdown .card,
 .dropdown .dropdown-menu {
-  background-color: var(--odk-bg-light);
+  background-color: var(--odk-bg-level-1);
 }
 .dropdown .dropdown-item:hover {
-  background-color: var(--odk-bg-light-hover);
+  background-color: var(--odk-bg-level-1-hover);
 }
 
 .dropdown-item:hover .card {
@@ -12140,7 +12152,7 @@ img {
 }
 
 footer {
-  background-color: var(--odk-bg-light);
+  background-color: var(--odk-bg-level-1);
 }
 
 html[data-platform=odk] {
@@ -12369,7 +12381,7 @@ html[data-platform=odk] {
   cursor: default;
 }
 .notification-item:hover {
-  background-color: var(--odk-bg-light) !important;
+  background-color: var(--odk-bg-level-1) !important;
 }
 .notification-item .notification-row {
   display: flex;
@@ -12393,7 +12405,7 @@ html[data-platform=odk] {
   color: var(--bs-body-color);
 }
 .notification-item .notification-link:hover * {
-  background-color: var(--odk-bg-light-hover) !important;
+  background-color: var(--odk-bg-level-1-hover) !important;
 }
 .notification-item .notification-link:hover .notification-icon {
   opacity: 1;
@@ -12447,7 +12459,7 @@ html[data-platform=odk] {
 }
 
 .panel {
-  background-color: #f2f2f2;
+  background-color: var(--odk-bg-level-1);
   padding: 1rem;
 }
 .panel .panel-header {
@@ -12472,9 +12484,8 @@ html[data-platform=odk] {
 .panel .panel-body {
   margin-top: 1rem;
 }
-
-[data-bs-theme=dark] .panel {
-  background-color: #2c3237;
+.panel .list-group-item {
+  background-color: var(--odk-bg-level-2);
 }
 
 .paragraphs p:last-child {

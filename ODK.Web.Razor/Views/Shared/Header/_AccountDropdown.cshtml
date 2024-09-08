@@ -46,13 +46,3 @@
         </div>
     </div>
 }
-else
-{
-    <div class="anonymous-links">
-        <a class="btn btn-primary anonymous-link" href="@(Model.CurrentChapter != null ? $"/{Model.CurrentChapter.Name}/Account/Login" : "/Account/Login")">Sign in</a>
-        @if (Model.CurrentChapter != null)
-        {
-            <a class="btn btn-success anonymous-link" href="/@Model.CurrentChapter.Name/Account/Join">Join</a>
-        }
-    </div>
-}

@@ -51,10 +51,17 @@
                 
             @if (!Model.HideAccountMenu)
             {
-                <div class="d-flex gap-4 account-links--right">
-                    @await Html.PartialAsync("Header/_NotificationDropdown")
-                    @await Html.PartialAsync("Header/_AccountDropdown", accountMenu)
-                </div>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="d-flex gap-4 account-links--right">
+                        @await Html.PartialAsync("Header/_NotificationDropdown")
+                        @await Html.PartialAsync("Header/_AccountDropdown", accountMenu)
+                    </div>
+                }
+                else
+                {
+                    @await Html.PartialAsync("Header/_AnonymousLinks", accountMenu)
+                }
             }
         </div>
 

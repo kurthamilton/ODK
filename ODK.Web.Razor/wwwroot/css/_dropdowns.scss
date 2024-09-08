@@ -6,12 +6,12 @@
 
     .card,
     .dropdown-menu {
-        background-color: var(--odk-bg-light);
+        background-color: var(--odk-bg-level-1);
     }
 
     .dropdown-item {
         &:hover {
-            background-color: var(--odk-bg-light-hover);
+            background-color: var(--odk-bg-level-1-hover);
         }
     }
 }
