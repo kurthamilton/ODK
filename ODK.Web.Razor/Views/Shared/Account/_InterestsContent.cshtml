@@ -1,0 +1,16 @@
+﻿@using ODK.Services.Members.ViewModels
+@using ODK.Web.Razor.Models.Topics
+@model MemberInterestsPageViewModel
+
+<form action="/account/topics" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group mb-3">
+        @await Html.PartialAsync("Topics/_TopicPicker", new TopicPickerViewModel
+        {
+            TopicIds = Model.MemberTopics.Select(x => x.TopicId).ToList(),
+            TopicGroups = Model.TopicGroups,
+            Topics = Model.Topics
+        })
+    </div>
+    <button class="btn btn-primary">Update</button>
+</form>

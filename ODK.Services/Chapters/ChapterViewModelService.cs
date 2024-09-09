@@ -117,20 +117,26 @@ public class ChapterViewModelService : IChapterViewModelService
             throw new OdkNotFoundException();
         }
 
-        var (current, member, memberSubscription) = await _unitOfWork.RunAsync(
+        var (current, member, memberSubscription, topicGroups, topics, memberTopics) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByOwnerId(currentMemberId),
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform));
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform),
+            x => x.TopicGroupRepository.GetAll(),
+            x => x.TopicRepository.GetAll(),
+            x => x.MemberTopicRepository.GetByMemberId(currentMemberId));
 
         var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(currentMemberId);
 
         return new ChapterCreateViewModel
         {
             ChapterCount = current.Count,
-            ChapterLimit = memberSubscription.SiteSubscription.GroupLimit,
+            ChapterLimit = memberSubscription?.SiteSubscription.GroupLimit ?? 1,
             Member = member,
             MemberLocation = memberLocation,
-            Platform = platform
+            MemberTopics = memberTopics,
+            Platform = platform,
+            TopicGroups = topicGroups,
+            Topics = topics
         };
     }
 

@@ -1,4 +1,6 @@
-﻿@page "/SuperAdmin/EmailProviders/Create"
+﻿@page "/superadmin/emailproviders/create"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model EmailProviderCreateModel

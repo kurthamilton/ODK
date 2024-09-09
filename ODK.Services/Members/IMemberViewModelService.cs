@@ -12,6 +12,8 @@ public interface IMemberViewModelService
 
     Task<MemberConversationsPageViewModel> GetMemberConversationsPage(Guid currentMemberId, Guid chapterId);
 
+    Task<MemberInterestsPageViewModel> GetMemberInterestsPage(Guid currentMemberId);
+
     Task<MemberPageViewModel> GetMemberPage(Guid currentMemberId, string chapterName, Guid memberId);
 
     Task<MembersPageViewModel> GetMembersPage(Guid currentMemberId, string chapterName);    

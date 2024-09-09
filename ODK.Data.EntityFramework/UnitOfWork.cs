@@ -30,6 +30,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterRepository> _chapterRepository;
     private readonly Lazy<IChapterSubscriptionRepository> _chapterSubscriptionRepository;
     private readonly Lazy<IChapterTextsRepository> _chapterTextsRepository;
+    private readonly Lazy<IChapterTopicRepository> _chapterTopicRepository;
     private readonly Lazy<ICountryRepository> _countryRepository;
     private readonly Lazy<ICurrencyRepository> _currencyRepository;
     private readonly Lazy<IDistanceUnitRepository> _distanceUnitRepository;
@@ -45,6 +46,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IEventResponseRepository> _eventResponseRepository;
     private readonly Lazy<IEventTicketPurchaseRepository> _eventTicketPurchaseRepository;
     private readonly Lazy<IEventTicketSettingsRepository> _eventTicketSettingsRepository;
+    private readonly Lazy<IEventTopicRepository> _eventTopicRepository;
     private readonly Lazy<IFeatureRepository> _featureRepository;
     private readonly Lazy<IInstagramImageRepository> _instagramImageRepository;
     private readonly Lazy<IInstagramPostRepository> _instagramPostRepository;
@@ -64,6 +66,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberRepository> _memberRepository;
     private readonly Lazy<IMemberSiteSubscriptionRepository> _memberSiteSubscriptionRepository;
     private readonly Lazy<IMemberSubscriptionRepository> _memberSubscriptionRepository;
+    private readonly Lazy<IMemberTopicRepository> _memberTopicRepository;
     private readonly Lazy<INotificationRepository> _notificationRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;    
     private readonly Lazy<ISiteContactMessageReplyRepository> _siteContactMessageReplyRepository;
@@ -73,6 +76,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<ISiteSettingsRepository> _siteSettingsRepository;
     private readonly Lazy<ISiteSubscriptionPriceRepository> _siteSubscriptionPriceRepository;
     private readonly Lazy<ISiteSubscriptionRepository> _siteSubscriptionRepository;
+    private readonly Lazy<ITopicGroupRepository> _topicGroupRepository;
+    private readonly Lazy<ITopicRepository> _topicRepository;
     private readonly Lazy<IVenueLocationRepository> _venueLocationRepository;
     private readonly Lazy<IVenueRepository> _venueRepository;
 
@@ -99,6 +104,7 @@ public class UnitOfWork : IUnitOfWork
         _chapterRepository = new(() => new ChapterRepository(_context, _platformProvider));
         _chapterSubscriptionRepository = new(() => new ChapterSubscriptionRepository(_context));
         _chapterTextsRepository = new(() => new ChapterTextsRepository(_context));
+        _chapterTopicRepository = new(() => new ChapterTopicRepository(_context));
         _countryRepository = new(() => new CountryRepository(_context));
         _currencyRepository = new(() => new CurrencyRepository(_context));
         _distanceUnitRepository = new(() => new DistanceUnitRepository(_context));
@@ -114,6 +120,7 @@ public class UnitOfWork : IUnitOfWork
         _eventResponseRepository = new(() => new EventResponseRepository(_context));
         _eventTicketPurchaseRepository = new(() => new EventTicketPurchaseRepository(_context));
         _eventTicketSettingsRepository = new(() => new EventTicketSettingsRepository(_context));
+        _eventTopicRepository = new(() => new EventTopicRepository(_context));
         _featureRepository = new(() => new FeatureRepository(_context));
         _instagramImageRepository = new(() => new InstagramImageRepository(_context));
         _instagramPostRepository = new(() => new InstagramPostRepository(_context));
@@ -133,6 +140,7 @@ public class UnitOfWork : IUnitOfWork
         _memberRepository = new(() => new MemberRepository(_context));
         _memberSiteSubscriptionRepository = new(() => new MemberSiteSubscriptionRepository(_context));
         _memberSubscriptionRepository = new(() => new MemberSubscriptionRepository(_context));
+        _memberTopicRepository = new(() => new MemberTopicRepository(_context));
         _notificationRepository = new(() => new NotificationRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
         _siteContactMessageReplyRepository = new(() => new SiteContactMessageReplyRepository(_context));
@@ -142,6 +150,8 @@ public class UnitOfWork : IUnitOfWork
         _siteSettingsRepository = new(() => new SiteSettingsRepository(_context));
         _siteSubscriptionPriceRepository = new(() => new SiteSubscriptionPriceRepository(_context));
         _siteSubscriptionRepository = new(() => new SiteSubscriptionRepository(_context));
+        _topicGroupRepository = new(() => new TopicGroupRepository(_context));
+        _topicRepository = new(() => new TopicRepository(_context));
         _venueLocationRepository = new(() => new VenueLocationRepository(_context));
         _venueRepository = new(() => new VenueRepository(_context));
     }
@@ -164,6 +174,7 @@ public class UnitOfWork : IUnitOfWork
     public IChapterRepository ChapterRepository => _chapterRepository.Value;
     public IChapterSubscriptionRepository ChapterSubscriptionRepository => _chapterSubscriptionRepository.Value;
     public IChapterTextsRepository ChapterTextsRepository => _chapterTextsRepository.Value;
+    public IChapterTopicRepository ChapterTopicRepository => _chapterTopicRepository.Value;
     public ICountryRepository CountryRepository => _countryRepository.Value;
     public ICurrencyRepository CurrencyRepository => _currencyRepository.Value;
     public IDistanceUnitRepository DistanceUnitRepository => _distanceUnitRepository.Value;
@@ -179,6 +190,7 @@ public class UnitOfWork : IUnitOfWork
     public IEventResponseRepository EventResponseRepository => _eventResponseRepository.Value;
     public IEventTicketPurchaseRepository EventTicketPurchaseRepository => _eventTicketPurchaseRepository.Value;
     public IEventTicketSettingsRepository EventTicketSettingsRepository => _eventTicketSettingsRepository.Value;
+    public IEventTopicRepository EventTopicRepository => _eventTopicRepository.Value;
     public IFeatureRepository FeatureRepository => _featureRepository.Value;
     public IInstagramImageRepository InstagramImageRepository => _instagramImageRepository.Value;
     public IInstagramPostRepository InstagramPostRepository => _instagramPostRepository.Value;
@@ -198,6 +210,7 @@ public class UnitOfWork : IUnitOfWork
     public IMemberRepository MemberRepository => _memberRepository.Value;
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => _memberSiteSubscriptionRepository.Value;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => _memberSubscriptionRepository.Value;
+    public IMemberTopicRepository MemberTopicRepository => _memberTopicRepository.Value;
     public INotificationRepository NotificationRepository => _notificationRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => _siteContactMessageReplyRepository.Value;
@@ -207,6 +220,8 @@ public class UnitOfWork : IUnitOfWork
     public ISiteSettingsRepository SiteSettingsRepository => _siteSettingsRepository.Value;
     public ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository => _siteSubscriptionPriceRepository.Value;
     public ISiteSubscriptionRepository SiteSubscriptionRepository => _siteSubscriptionRepository.Value;
+    public ITopicGroupRepository TopicGroupRepository => _topicGroupRepository.Value;
+    public ITopicRepository TopicRepository => _topicRepository.Value;
     public IVenueLocationRepository VenueLocationRepository => _venueLocationRepository.Value;
     public IVenueRepository VenueRepository => _venueRepository.Value;
 

@@ -1,4 +1,6 @@
 ﻿@page "/superadmin/messages/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Contact
 @model MessageModel
 @inject IContactAdminService ContactAdminService

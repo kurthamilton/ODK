@@ -54,4 +54,6 @@ public interface IMemberService
     Task<ServiceResult> UpdateMemberPreferences(Guid id, Guid? distanceUnitId);
 
     Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model);
+
+    Task<ServiceResult> UpdateMemberTopics(Guid id, IReadOnlyCollection<Guid> topicIds);
 }

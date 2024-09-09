@@ -51,7 +51,7 @@ public class MemberGroupRoutes
     public string GroupCreate(PlatformType platform) => platform switch
     {
         PlatformType.DrunkenKnitwits => "/",
-        _ => $"{Index(platform)}"
+        _ => $"{Index(platform)}/new"
     };
 
     public string GroupMessage(PlatformType platform, Chapter chapter, Guid messageId)

@@ -16,11 +16,14 @@
             allowDeselect = !!$placeholder;
         }
 
+        const alwaysOpen = $select.hasAttribute('data-always-open');
+
         slimSelect = new SlimSelect({
             select: $select,
             settings: {
                 // TODO: position deselect
                 allowDeselect: false,
+                closeOnSelect: !alwaysOpen,
                 placeholderText: $select.getAttribute('data-placeholder')
             }
         });

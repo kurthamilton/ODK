@@ -1,4 +1,6 @@
 ﻿@page "/SuperAdmin/Subscriptions/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components

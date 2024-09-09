@@ -1,4 +1,6 @@
-﻿@page "/SuperAdmin/Subscriptions"
+﻿@page "/superadmin/subscriptions"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.SuperAdmin.SubscriptionsModel
 @{

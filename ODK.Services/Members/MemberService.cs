@@ -1,4 +1,5 @@
-﻿using ODK.Core;
+﻿using System.ComponentModel;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
@@ -912,6 +913,18 @@ public class MemberService : IMemberService
 
         _unitOfWork.MemberRepository.Update(member);
         await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateMemberTopics(Guid id, IReadOnlyCollection<Guid> topicIds)
+    {
+        var existing = await _unitOfWork.MemberTopicRepository.GetByMemberId(id).Run();
+
+        if (_unitOfWork.MemberTopicRepository.Merge(existing, id, topicIds) > 0)
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         return ServiceResult.Successful();
     }

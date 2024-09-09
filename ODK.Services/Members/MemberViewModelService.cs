@@ -79,6 +79,21 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
+    public async Task<MemberInterestsPageViewModel> GetMemberInterestsPage(Guid currentMemberId)
+    {
+        var (topicGroups, topics, memberTopics) = await _unitOfWork.RunAsync(
+            x => x.TopicGroupRepository.GetAll(),
+            x => x.TopicRepository.GetAll(),
+            x => x.MemberTopicRepository.GetByMemberId(currentMemberId));
+
+        return new MemberInterestsPageViewModel
+        {
+            MemberTopics = memberTopics,
+            TopicGroups = topicGroups,
+            Topics = topics
+        };
+    }
+
     public async Task<MemberPageViewModel> GetMemberPage(Guid currentMemberId, string chapterName, Guid memberId)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();

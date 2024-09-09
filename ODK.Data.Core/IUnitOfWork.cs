@@ -24,8 +24,9 @@ public interface IUnitOfWork
     IChapterQuestionRepository ChapterQuestionRepository { get; }
     IChapterRepository ChapterRepository { get; }
     IChapterSubscriptionRepository ChapterSubscriptionRepository { get; }
-    ICountryRepository CountryRepository { get; }
     IChapterTextsRepository ChapterTextsRepository { get; }
+    IChapterTopicRepository ChapterTopicRepository { get; }
+    ICountryRepository CountryRepository { get; }
     ICurrencyRepository CurrencyRepository { get; }
     IDistanceUnitRepository DistanceUnitRepository { get; }
     IEmailProviderRepository EmailProviderRepository { get; }
@@ -40,6 +41,7 @@ public interface IUnitOfWork
     IEventResponseRepository EventResponseRepository { get; }
     IEventTicketPurchaseRepository EventTicketPurchaseRepository { get; }
     IEventTicketSettingsRepository EventTicketSettingsRepository { get; }
+    IEventTopicRepository EventTopicRepository { get; }
     IFeatureRepository FeatureRepository { get; }
     IInstagramImageRepository InstagramImageRepository { get; }
     IInstagramPostRepository InstagramPostRepository { get; }
@@ -59,6 +61,7 @@ public interface IUnitOfWork
     IMemberRepository MemberRepository { get; }
     IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository { get; }
     IMemberSubscriptionRepository MemberSubscriptionRepository { get; }
+    IMemberTopicRepository MemberTopicRepository { get; }
     INotificationRepository NotificationRepository { get; }
     IPaymentRepository PaymentRepository { get; }   
     ISiteContactMessageReplyRepository SiteContactMessageReplyRepository { get; }
@@ -68,6 +71,8 @@ public interface IUnitOfWork
     ISiteSettingsRepository SiteSettingsRepository { get; }
     ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository { get; }
     ISiteSubscriptionRepository SiteSubscriptionRepository { get; }
+    ITopicGroupRepository TopicGroupRepository { get; }
+    ITopicRepository TopicRepository { get; }
     IVenueLocationRepository VenueLocationRepository { get; }
     IVenueRepository VenueRepository { get; }
 
