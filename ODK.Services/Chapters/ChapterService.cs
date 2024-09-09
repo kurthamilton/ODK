@@ -56,20 +56,16 @@ public class ChapterService : IChapterService
         var memberChapters = existing
             .Where(x => x.OwnerId == currentMemberId)
             .ToArray();
-
-        if (memberSubscription.SiteSubscription.GroupLimit != null && 
-            memberChapters.Length >= memberSubscription.SiteSubscription.GroupLimit)
+        
+        if (memberChapters.Length >= (memberSubscription?.SiteSubscription.GroupLimit ?? 1))
         {
             return ServiceResult<Chapter?>.Failure("You cannot create any more groups");
         }
 
-        if (memberSubscription.ExpiresUtc < now)
+        if (memberSubscription?.ExpiresUtc < now)
         {
             return ServiceResult<Chapter?>.Failure("Your subscription has expired");
         }
-
-        model.Description = model.Description.Trim();
-        model.Name = model.Name.Trim();        
 
         if (existing.Any(x => string.Equals(x.Name, model.Name, StringComparison.InvariantCultureIgnoreCase)))
         {
@@ -138,6 +134,12 @@ public class ChapterService : IChapterService
             MemberId = currentMemberId,
             CreatedUtc = now            
         });
+
+        _unitOfWork.ChapterTopicRepository.AddMany(model.TopicIds.Select(x => new ChapterTopic
+        {
+            ChapterId = chapter.Id,
+            TopicId = x
+        }));
 
         await _unitOfWork.SaveChangesAsync();
 

@@ -19,4 +19,11 @@ public class MemberPreferencesRepository : WriteRepositoryBase<MemberPreferences
 
     protected override IQueryable<MemberPreferences> Set() => base.Set()
         .Include(x => x.DistanceUnit);
+
+    public override void Update(MemberPreferences entity)
+    {
+        var clone = entity.Clone();
+        clone.DistanceUnit = null;
+        base.Update(clone);
+    }
 }

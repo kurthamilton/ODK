@@ -11860,6 +11860,9 @@ textarea.form-control-lg {
 }
 
 /*Style SlimSelect like Bootstrap 5*/
+.ss-main {
+  display: flex;
+}
 .ss-main .ss-arrow {
   display: none;
 }

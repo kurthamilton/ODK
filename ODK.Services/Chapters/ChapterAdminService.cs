@@ -694,6 +694,26 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
+    public async Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, chapterTopics, topicGroups, topics) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterTopicRepository.GetByChapterId(request.ChapterId),
+            x => x.TopicGroupRepository.GetAll(),
+            x => x.TopicRepository.GetAll());
+
+        return new ChapterTopicsAdminPageViewModel
+        {
+            Chapter = chapter,
+            ChapterTopics = chapterTopics,
+            Platform = platform,
+            TopicGroups = topicGroups,
+            Topics = topics
+        };
+    }
+
     public async Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(AdminServiceRequest request)
     {
         var platform = _platformProvider.GetPlatform();
@@ -1494,6 +1514,21 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterRepository.Update(chapter);
         await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateChapterTopics(AdminServiceRequest request,
+        IReadOnlyCollection<Guid> topicIds)
+    {
+        var chapterTopics = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterTopicRepository.GetByChapterId(request.ChapterId));
+
+        var changes = _unitOfWork.ChapterTopicRepository.Merge(chapterTopics, request.ChapterId, topicIds);
+        if (changes > 0)
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         return ServiceResult.Successful();
     }

@@ -9,4 +9,14 @@ public class MemberPreferences
     public Guid? DistanceUnitId { get; set; }
 
     public Guid MemberId { get; set; }
+
+    public MemberPreferences Clone()
+    {
+        return new MemberPreferences
+        {
+            DistanceUnit = DistanceUnit,
+            DistanceUnitId = DistanceUnitId,
+            MemberId = MemberId
+        };
+    }
 }

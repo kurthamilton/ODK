@@ -15,4 +15,45 @@ public class ChapterTopicRepository : WriteRepositoryBase<ChapterTopic>, IChapte
     public IDeferredQueryMultiple<ChapterTopic> GetByChapterId(Guid chapterId) => Set()
         .Where(x => x.ChapterId == chapterId)
         .DeferredMultiple();
+
+    public IDeferredQueryMultiple<ChapterTopic> GetByChapterIds(IEnumerable<Guid> chapterIds) => Set()
+        .Where(x => chapterIds.Contains(x.ChapterId))
+        .DeferredMultiple();
+
+    public int Merge(IEnumerable<ChapterTopic> existing, Guid chapterId, IEnumerable<Guid> topicIds)
+    {
+        var changes = 0;
+
+        var existingDictionary = existing
+            .ToDictionary(x => x.TopicId);
+
+        foreach (var topicId in topicIds)
+        {
+            if (existingDictionary.ContainsKey(topicId))
+            {
+                continue;
+            }
+
+            Add(new ChapterTopic
+            {
+                ChapterId = chapterId,
+                TopicId = topicId
+            });
+
+            changes++;
+        }
+
+        foreach (var existingChapterTopic in existing)
+        {
+            if (topicIds.Contains(existingChapterTopic.TopicId))
+            {
+                continue;
+            }
+
+            Delete(existingChapterTopic);
+            changes++;
+        }
+
+        return changes;
+    }
 }

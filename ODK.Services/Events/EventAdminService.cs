@@ -62,7 +62,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             settings, 
             chapterPaymentSettings,
             members,
-            notificationSettings            
+            notificationSettings,
+            chapterTopics
         ) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
@@ -72,7 +73,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetAllByChapterId(chapterId),
-            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.NewEvent));
+            x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.NewEvent),
+            x => x.ChapterTopicRepository.GetByChapterId(chapterId));
 
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
@@ -117,9 +119,15 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         ScheduleEventEmail(@event, chapter, settings);
         
         if (@event.PublishedUtc != null)
-        {            
+        {
             _notificationService.AddNewEventNotifications(chapter, @event, venue, members, notificationSettings);
         }
+
+        _unitOfWork.EventTopicRepository.AddMany(chapterTopics.Select(x => new EventTopic
+        {
+            EventId = @event.Id,
+            TopicId = x.TopicId
+        }));
 
         await _unitOfWork.SaveChangesAsync();
 

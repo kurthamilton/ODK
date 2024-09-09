@@ -5,7 +5,7 @@ using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Chapters;
-using ODK.Web.Razor.Models.Contact;
+using ODK.Web.Razor.Models.Topics;
 
 namespace ODK.Web.Razor.Controllers.Admin;
 
@@ -58,7 +58,6 @@ public class GroupAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-
     [HttpPost("admin/groups/{id:guid}/texts/register")]
     public async Task<IActionResult> UpdateRegisterText(Guid id, [FromForm] string text)
     {
@@ -67,11 +66,12 @@ public class GroupAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("admin/groups/{id:guid}/texts/welcome")]
-    public async Task<IActionResult> UpdateWelcomeText(Guid id, [FromForm] string text)
+    [HttpPost("admin/groups/{id:guid}/topics")]
+    public async Task<IActionResult> UpdateTopics(Guid id, [FromForm] TopicPickerViewModel viewModel)
     {
-        await _chapterAdminService.UpdateChapterDescription(
-            new AdminServiceRequest(id, MemberId), text);
+        var result = await _chapterAdminService.UpdateChapterTopics(
+            new AdminServiceRequest(id, MemberId), viewModel.TopicIds);
+        AddFeedback(result, "Topics updated");
         return RedirectToReferrer();
     }
 }

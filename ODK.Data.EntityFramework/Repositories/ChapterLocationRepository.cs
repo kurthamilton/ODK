@@ -30,4 +30,8 @@ public class ChapterLocationRepository : CachingWriteRepositoryBase<ChapterLocat
     public Task<ChapterLocation?> GetByChapterId(Guid chapterId) => Set()
         .Where(x => x.ChapterId == chapterId)
         .FirstOrDefaultAsync();
+
+    public async Task<IReadOnlyCollection<ChapterLocation>> GetByChapterIds(IEnumerable<Guid> chapterIds) => await Set()
+        .Where(x => chapterIds.Contains(x.ChapterId))
+        .ToArrayAsync();
 }

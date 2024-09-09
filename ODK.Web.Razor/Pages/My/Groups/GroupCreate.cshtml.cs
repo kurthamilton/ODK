@@ -39,11 +39,12 @@ public class GroupCreateModel : OdkPageModel
 
         var result = await _chapterService.CreateChapter(CurrentMemberId, new ChapterCreateModel
         {
-            Description = viewModel.Description ?? "",
+            Description = viewModel.Description?.Trim() ?? "",
             Location = new LatLong(viewModel.Location.Lat.Value, viewModel.Location.Long.Value),
             LocationName = viewModel.Location.Name,
-            Name = viewModel.Name ?? "",
-            TimeZoneId = viewModel.Location.TimeZoneId
+            Name = viewModel.Name?.Trim() ?? "",
+            TimeZoneId = viewModel.Location.TimeZoneId,
+            TopicIds = viewModel.TopicIds
         });
 
         if (!result.Success)
