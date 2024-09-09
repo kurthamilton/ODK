@@ -9,14 +9,17 @@ using NUnit.Framework;
 using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Members;
+using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Venues;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
 using ODK.Services.Emails;
 using ODK.Services.Events;
+using ODK.Services.Notifications;
 using ODK.Services.Tests.Helpers;
 
 namespace ODK.Services.Tests.Events;
@@ -183,11 +186,24 @@ public static class EventAdminServiceTests
     {
         var mock = new Mock<IEventRepository>();
         return mock.Object;
+    }    
+
+    private static IMemberNotificationSettingsRepository CreateMockMemberNotificationSettingsRepository()
+    {
+        var mock = new Mock<IMemberNotificationSettingsRepository>();
+
+        mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>(), It.IsAny<NotificationType>()))
+            .Returns(new MockDeferredQueryMultiple<MemberNotificationSettings>([]));
+
+        return mock.Object;
     }
 
     private static IMemberRepository CreateMockMemberRepository()
     {
         var mock = new Mock<IMemberRepository>();
+
+        mock.Setup(x => x.GetAllByChapterId(It.IsAny<Guid>()))
+            .Returns(new MockDeferredQueryMultiple<Member>([]));
 
         mock.Setup(x => x.GetById(It.IsAny<Guid>()))
             .Returns(new MockDeferredQuerySingle<Member>(new Member 
@@ -198,6 +214,15 @@ public static class EventAdminServiceTests
                 },
                 Id = CurrentMemberId
             }));
+
+        return mock.Object;
+    }
+
+    private static IMemberSiteSubscriptionRepository CreateMockMemberSiteSubscriptionRepository()
+    {
+        var mock = new Mock<IMemberSiteSubscriptionRepository>();
+        mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
+            .Returns(new MockDeferredQuerySingleOrDefault<MemberSiteSubscription>(null));
 
         return mock.Object;
     }
@@ -229,9 +254,15 @@ public static class EventAdminServiceTests
 
         mock.Setup(x => x.EventRepository)
             .Returns(CreateMockEventRepository());
+        
+        mock.Setup(x => x.MemberNotificationSettingsRepository)
+            .Returns(CreateMockMemberNotificationSettingsRepository());
 
         mock.Setup(x => x.MemberRepository)
             .Returns(CreateMockMemberRepository());
+
+        mock.Setup(x => x.MemberSiteSubscriptionRepository)
+            .Returns(CreateMockMemberSiteSubscriptionRepository());
 
         mock.Setup(x => x.VenueRepository)
             .Returns(CreateMockVenueRepository());
@@ -254,17 +285,15 @@ public static class EventAdminServiceTests
     }
 
     private static EventAdminService CreateService(
-        IUnitOfWork? unitOfWork = null,
-        EventAdminServiceSettings? settings = null)
+        IUnitOfWork? unitOfWork = null)
     {
         return new EventAdminService(
             unitOfWork: unitOfWork ?? CreateMockUnitOfWork(),
-            settings: settings ?? CreateSettings(),
             emailService: CreateMockEmailService(),
             chapterUrlService: CreateMockChapterUrlService(),
             Mock.Of<IAuthorizationService>(),
-            Mock.Of<IPlatformProvider>());
+            Mock.Of<IPlatformProvider>(),
+            Mock.Of<IUrlProvider>(),
+            Mock.Of<INotificationService>());
     }
-
-    private static EventAdminServiceSettings CreateSettings() => new EventAdminServiceSettings();
 }
