@@ -7,6 +7,7 @@ using ODK.Core.Messages;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 
 namespace ODK.Services.Emails;
 
@@ -85,6 +86,18 @@ public class EmailService : IEmailService
 
         var isToMember = message.MemberId != conversation.MemberId;
 
+        if (isToMember)
+        {
+            var memberEmailPreference = await _unitOfWork.MemberEmailPreferenceRepository
+                .GetByMemberId(conversation.MemberId, MemberEmailPreferenceType.ConversationMessages)
+                .Run();
+
+            if (memberEmailPreference?.Disabled == true)
+            {
+                return;
+            }
+        }
+
         var url = isToMember
             ? _urlProvider.ConversationUrl(chapter, conversation.Id)
             : _urlProvider.ConversationAdminUrl(chapter, conversation.Id);
@@ -155,12 +168,14 @@ public class EmailService : IEmailService
     public async Task SendEventCommentEmail(Chapter chapter, Member? replyToMember, EventComment comment,
         IDictionary<string, string> parameters)
     {
-        var chapterAdminMembers = await _unitOfWork.ChapterAdminMemberRepository
-            .GetByChapterId(chapter.Id)
-            .Run();
+        var (chapterAdminMembers, replyToMemberEmailPreference) = await _unitOfWork.RunAsync(
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => replyToMember != null
+                ? x.MemberEmailPreferenceRepository.GetByMemberId(replyToMember.Id, MemberEmailPreferenceType.EventMessages)
+                : new DefaultDeferredQuerySingleOrDefault<MemberEmailPreference>());
 
         var to = GetAddressees(chapterAdminMembers.Where(x => x.ReceiveEventCommentEmails));
-        if (replyToMember != null)
+        if (replyToMember != null && replyToMemberEmailPreference?.Disabled != true)
         {
             to = to.Append(replyToMember.ToEmailAddressee());
         }

@@ -60,7 +60,7 @@ public class EventService : IEventService
         }
 
         EventComment? parentComment = null;
-        Member? parentCommentMember = null;
+        Member? parentCommentMember = null;        
         if (parentEventCommentId != null)
         {
             parentComment = await _unitOfWork.EventCommentRepository.GetByIdOrDefault(parentEventCommentId.Value).Run();

@@ -21,8 +21,6 @@ public interface IMemberAdminService
 
     Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(AdminServiceRequest request);
 
-    Task<MemberEmailAdminPageViewModel> GetMemberEmailViewModel(AdminServiceRequest request, Guid memberId);
-
     Task<MemberEventsAdminPageViewModel> GetMemberEventsViewModel(AdminServiceRequest request, Guid memberId);
 
     Task<MemberImage?> GetMemberImage(AdminServiceRequest request, Guid memberId);
@@ -42,8 +40,6 @@ public interface IMemberAdminService
     Task SendActivationEmail(AdminServiceRequest request, Guid memberId);
 
     Task<ServiceResult> SendBulkEmail(AdminServiceRequest request, MemberFilter filter, string subject, string body);
-
-    Task<ServiceResult> SendMemberEmail(AdminServiceRequest request, Guid memberId, string subject, string body);
 
     Task SendMemberSubscriptionReminderEmails();
 

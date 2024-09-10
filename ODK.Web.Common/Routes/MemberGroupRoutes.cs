@@ -138,9 +138,6 @@ public class MemberGroupRoutes
     public string MemberConversations(PlatformType platform, Chapter chapter, Guid memberId)
         => $"{Member(platform, chapter, memberId)}/conversations";
 
-    public string MemberEmail(PlatformType platform, Chapter chapter, Guid memberId)
-        => $"{Member(platform, chapter, memberId)}/email";
-
     public string MemberEvents(PlatformType platform, Chapter chapter, Guid memberId)
         => $"{Member(platform, chapter, memberId)}/events";
 

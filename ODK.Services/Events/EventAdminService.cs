@@ -424,12 +424,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task SendEventInviteeEmail(AdminServiceRequest request, Guid eventId, 
         IEnumerable<EventResponseType> responseTypes, string subject, string body)
     {
-        var (chapter, chapterAdminMember, @event, members, memberEmailPreferences, responses, invites) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, chapterAdminMember, @event, members, responses, invites) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByMemberId(request.CurrentMemberId, request.ChapterId),
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetByChapterId(request.ChapterId),
-            x => x.MemberEmailPreferenceRepository.GetByChapterId(request.ChapterId, MemberEmailPreferenceType.Events),
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.EventInviteRepository.GetByEventId(eventId));
 
@@ -457,13 +456,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             }
         }
 
-        var optOutMemberIds = memberEmailPreferences
-            .Where(x => x.Disabled)
-            .Select(x => x.MemberId)
-            .ToHashSet();
-
         var to = members
-            .Where(x => x.IsCurrent() && !optOutMemberIds.Contains(x.Id) && responseDictionary.ContainsKey(x.Id))
+            .Where(x => x.IsCurrent() && responseDictionary.ContainsKey(x.Id))
             .ToArray();
 
         await _emailService.SendBulkEmail(chapterAdminMember, chapter, to, subject, body);

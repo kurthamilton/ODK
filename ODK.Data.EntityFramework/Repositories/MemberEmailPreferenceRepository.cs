@@ -28,4 +28,9 @@ public class MemberEmailPreferenceRepository : WriteRepositoryBase<MemberEmailPr
     public IDeferredQueryMultiple<MemberEmailPreference> GetByMemberId(Guid memberId) => Set()
         .Where(x => x.MemberId == memberId)
         .DeferredMultiple();
+
+    public IDeferredQuerySingleOrDefault<MemberEmailPreference> GetByMemberId(Guid memberId,
+        MemberEmailPreferenceType type) => Set()
+        .Where(x => x.MemberId == memberId && x.Type == type)
+        .DeferredSingleOrDefault();
 }

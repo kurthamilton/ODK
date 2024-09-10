@@ -5,7 +5,11 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IMemberEmailPreferenceRepository : IWriteRepository<MemberEmailPreference>
 {
-    public IDeferredQueryMultiple<MemberEmailPreference> GetByChapterId(Guid chapterId, MemberEmailPreferenceType type);
+    IDeferredQueryMultiple<MemberEmailPreference> GetByChapterId(Guid chapterId, 
+        MemberEmailPreferenceType type);
 
-    public IDeferredQueryMultiple<MemberEmailPreference> GetByMemberId(Guid memberId);
+    IDeferredQueryMultiple<MemberEmailPreference> GetByMemberId(Guid memberId);
+
+    IDeferredQuerySingleOrDefault<MemberEmailPreference> GetByMemberId(Guid memberId, 
+        MemberEmailPreferenceType type);
 }

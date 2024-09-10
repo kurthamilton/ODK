@@ -204,24 +204,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return csv;
     }
 
-    public async Task<MemberEmailAdminPageViewModel> GetMemberEmailViewModel(AdminServiceRequest request, Guid memberId)
-    {
-        var platform = _platformProvider.GetPlatform();
-
-        var (chapter, member) = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(request.ChapterId),
-            x => x.MemberRepository.GetById(memberId));
-
-        OdkAssertions.MemberOf(member, chapter.Id);
-
-        return new MemberEmailAdminPageViewModel
-        {
-            Chapter = chapter,
-            Member = member,
-            Platform = platform
-        };
-    }
-
     public async Task<MemberEventsAdminPageViewModel> GetMemberEventsViewModel(AdminServiceRequest request, Guid memberId)
     {
         var platform = _platformProvider.GetPlatform();
@@ -425,10 +407,19 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
 
-        var (chapterAdminMember, chapter, members, memberSubscriptions, membershipSettings, subscription) = await GetChapterAdminRestrictedContent(request,
+        var (
+            chapterAdminMember, 
+            chapter, 
+            members, 
+            memberEmailPreferences, 
+            memberSubscriptions, 
+            membershipSettings, 
+            subscription) 
+        = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetByChapterId(chapterId),
+            x => x.MemberEmailPreferenceRepository.GetByChapterId(chapterId, MemberEmailPreferenceType.ChapterMessages),
             x => x.MemberSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId));
@@ -442,26 +433,18 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var filteredMembers = FilterMembers(members, memberSubscriptions, membershipSettings, filter)
             .ToArray();
 
+        var optOutMemberIds = memberEmailPreferences
+            .Where(x => x.Type == MemberEmailPreferenceType.ChapterMessages && x.Disabled == true)
+            .Select(x => x.MemberId)
+            .ToHashSet();
+
+        filteredMembers = filteredMembers
+            .Where(x => !optOutMemberIds.Contains(x.Id))
+            .ToArray();
+
         await _emailService.SendBulkEmail(chapterAdminMember, chapter, filteredMembers, subject, body);
 
         return ServiceResult.Successful($"Bulk email sent to {filteredMembers.Length} members");
-    }
-
-    public async Task<ServiceResult> SendMemberEmail(AdminServiceRequest request, Guid memberId, string subject, string body)
-    {
-        var (chapter, chapterAdminMember, member, subscription) = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(request.ChapterId),
-            x => x.ChapterAdminMemberRepository.GetByMemberId(request.CurrentMemberId, request.ChapterId),
-            x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
-
-        var authorized = _authorizationService.ChapterHasAccess(subscription, SiteFeatureType.SendMemberEmails);
-        if (!authorized)
-        {
-            return ServiceResult.Unauthorized(SiteFeatureType.SendMemberEmails);
-        }
-
-        return await _emailService.SendMemberEmail(chapter, chapterAdminMember, member.ToEmailAddressee(), subject, body);
     }
 
     public async Task SendMemberSubscriptionReminderEmails()

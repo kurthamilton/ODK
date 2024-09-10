@@ -85,16 +85,6 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{chapterId:guid}/members/{id:guid}/email")]
-    public async Task<IActionResult> SendEmail(Guid chapterId, Guid id, 
-        [FromForm] SendMemberEmailFormViewModel viewModel)
-    {
-        var request = new AdminServiceRequest(chapterId, MemberId);
-        var result = await _memberAdminService.SendMemberEmail(request, id, viewModel.Subject, viewModel.Body);
-        AddFeedback(result, "Email sent");
-        return RedirectToReferrer();
-    }
-
     [HttpPost("{chapterName}/Admin/Members/{id:guid}/Visibility")]
     public async Task<IActionResult> SetMemberVisibility(string chapterName, Guid id, [FromForm] bool visible)
     {
