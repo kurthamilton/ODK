@@ -1,4 +1,6 @@
-﻿@page "/SuperAdmin/Emails/{type}"
+﻿@page "/superadmin/emails/{type}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.SuperAdmin

@@ -11860,6 +11860,9 @@ textarea.form-control-lg {
 }
 
 /*Style SlimSelect like Bootstrap 5*/
+.ss-main {
+  display: flex;
+}
 .ss-main .ss-arrow {
   display: none;
 }
@@ -11967,12 +11970,15 @@ html[data-platform=odk] {
 html[data-platform=odk] {
   --odk-badges-padding-top: 0.5rem;
   --odk-badges-line-height: 0.5;
+  padding-top: var(--odk-badges-padding-top);
+  line-height: var(--odk-badges-line-height);
 }
 
 .badge {
-  padding-top: var(--odk-badges-padding-top);
   z-index: 1;
-  line-height: var(--odk-badges-line-height);
+}
+.badge.badge-sm {
+  font-size: 0.6em;
 }
 
 html[data-platform=odk] {
@@ -12376,7 +12382,6 @@ html[data-platform=odk] {
 .notification-item {
   --odk-notification-item-padding-y: 1rem;
   --odk-notification-item-padding-x: var(--bs-dropdown-item-padding-x);
-  border-top: 1px solid var(--bs-border-color);
   padding: 0;
   cursor: default;
 }

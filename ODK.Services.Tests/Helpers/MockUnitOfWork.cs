@@ -35,6 +35,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IChapterQuestionRepository ChapterQuestionRepository => Mock.Object.ChapterQuestionRepository;
     public IChapterRepository ChapterRepository => Mock.Object.ChapterRepository;
     public IChapterSubscriptionRepository ChapterSubscriptionRepository => Mock.Object.ChapterSubscriptionRepository;
+    public IChapterTopicRepository ChapterTopicRepository => Mock.Object.ChapterTopicRepository;
     public ICountryRepository CountryRepository => Mock.Object.CountryRepository;
     public IChapterTextsRepository ChapterTextsRepository => Mock.Object.ChapterTextsRepository;
     public ICurrencyRepository CurrencyRepository => Mock.Object.CurrencyRepository;
@@ -51,6 +52,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IEventResponseRepository EventResponseRepository => Mock.Object.EventResponseRepository;
     public IEventTicketPurchaseRepository EventTicketPurchaseRepository => Mock.Object.EventTicketPurchaseRepository;
     public IEventTicketSettingsRepository EventTicketSettingsRepository => Mock.Object.EventTicketSettingsRepository;
+    public IEventTopicRepository EventTopicRepository => Mock.Object.EventTopicRepository;
     public IFeatureRepository FeatureRepository => Mock.Object.FeatureRepository;
     public IInstagramImageRepository InstagramImageRepository => Mock.Object.InstagramImageRepository;
     public IInstagramPostRepository InstagramPostRepository => Mock.Object.InstagramPostRepository;
@@ -70,6 +72,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberRepository MemberRepository => Mock.Object.MemberRepository;
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => Mock.Object.MemberSiteSubscriptionRepository;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => Mock.Object.MemberSubscriptionRepository;
+    public IMemberTopicRepository MemberTopicRepository => Mock.Object.MemberTopicRepository;
     public INotificationRepository NotificationRepository => Mock.Object.NotificationRepository;
     public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;    
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => Mock.Object.SiteContactMessageReplyRepository;
@@ -79,6 +82,8 @@ internal class MockUnitOfWork : IUnitOfWork
     public ISiteSettingsRepository SiteSettingsRepository => Mock.Object.SiteSettingsRepository;
     public ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository => Mock.Object.SiteSubscriptionPriceRepository;
     public ISiteSubscriptionRepository SiteSubscriptionRepository => Mock.Object.SiteSubscriptionRepository;
+    public ITopicGroupRepository TopicGroupRepository => Mock.Object.TopicGroupRepository;
+    public ITopicRepository TopicRepository => Mock.Object.TopicRepository;
     public IVenueLocationRepository VenueLocationRepository => Mock.Object.VenueLocationRepository;
     public IVenueRepository VenueRepository => Mock.Object.VenueRepository;
 

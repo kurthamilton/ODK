@@ -1,5 +1,8 @@
 ﻿/*Style SlimSelect like Bootstrap 5*/
 .ss-main {    
+    // for positioning the deselect icon
+    display: flex;
+
     .ss-arrow {
         display: none;
     }

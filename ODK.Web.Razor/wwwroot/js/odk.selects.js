@@ -1,5 +1,5 @@
 ﻿(function () {
-    const $selects = document.querySelectorAll('select[multiple],select[data-searchable]');
+    const $selects = document.querySelectorAll('select[multiple],select[data-searchable],select[data-select]');
     $selects.forEach($select => {
         const placeholder = $select.getAttribute('data-placeholder');
         const multiple = $select.hasAttribute('multiple');
@@ -16,12 +16,16 @@
             allowDeselect = !!$placeholder;
         }
 
+        const searchable = multiple || $select.hasAttribute('data-searchable');
+        const alwaysOpen = $select.hasAttribute('data-always-open');
+
         slimSelect = new SlimSelect({
             select: $select,
             settings: {
-                // TODO: position deselect
-                allowDeselect: false,
-                placeholderText: $select.getAttribute('data-placeholder')
+                allowDeselect: allowDeselect,
+                closeOnSelect: !alwaysOpen,
+                placeholderText: $select.getAttribute('data-placeholder'),
+                showSearch: searchable
             }
         });
     });

@@ -1,4 +1,6 @@
 ﻿html[data-platform="odk"] {
     --odk-badges-padding-top: 0.5rem;
     --odk-badges-line-height: 0.5;
+    padding-top: var(--odk-badges-padding-top);
+    line-height: var(--odk-badges-line-height);
 }

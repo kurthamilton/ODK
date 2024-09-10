@@ -13,6 +13,7 @@ public class AccountRoutes : RoutesBase
     public string EmailAddressChangeConfirm(Chapter? chapter, string token)
         => AccountPath(chapter, $"/email/change/confirm?token={HttpUtility.UrlEncode(token)}");
     public string EmailPreferences(Chapter? chapter) => AccountPath(chapter, "/emails");
+    public string Interests() => AccountPath(null, "/interests");
     public string Join(Chapter? chapter) => AccountPath(chapter, "/join");
     public string Location() => AccountPath(null, "/location");
     public string Login(Chapter? chapter) => AccountPath(chapter, "/login");

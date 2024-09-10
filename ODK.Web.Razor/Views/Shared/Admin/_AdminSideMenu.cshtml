@@ -27,7 +27,10 @@
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem { Link = $"/{chapter.Name}/admin/chapter/subscription", Text = "Subscription" }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" }
+        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem()
+            : new MenuItem { Link = OdkRoutes2.MemberGroups.GroupTopics(platform, chapter), Text = "Topics" }
     };
 
     var superadminLinks = platform == PlatformType.DrunkenKnitwits && User.IsInRole(OdkRoles.SuperAdmin)

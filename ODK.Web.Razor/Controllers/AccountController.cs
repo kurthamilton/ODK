@@ -16,6 +16,7 @@ using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Account;
 using ODK.Web.Razor.Models.Login;
 using ODK.Web.Razor.Models.Notifications;
+using ODK.Web.Razor.Models.Topics;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -334,6 +335,14 @@ public class AccountController : OdkControllerBase
     {
         var result = await _memberService.PurchaseChapterSubscription(MemberId, id, request.SubscriptionId, request.Token);
         AddFeedback(result, "Purchase complete. Thank you for subscribing.");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("account/topics")]
+    public async Task<IActionResult> UpdateTopics([FromForm] TopicPickerFormSubmitViewModel viewModel)
+    {
+        var result = await _memberService.UpdateMemberTopics(MemberId, viewModel.TopicIds);
+        AddFeedback(result, "Interests updated");
         return RedirectToReferrer();
     }
 

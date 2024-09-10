@@ -1,5 +1,6 @@
 ﻿@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Topics
 @model CreateChapterFormViewModel
 
 <div class="form-group mb-3 required">
@@ -12,6 +13,17 @@
     @Html.LabelFor(x => x.Description, new { @class = "form-label" })
     @Html.TextAreaFor(x => x.Description, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.Description)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.TopicIds, new { @class = "form-label" })
+    @await Html.PartialAsync("Topics/_TopicPicker", new TopicPickerViewModel
+    {
+        TopicIds = Model.TopicIds,
+        TopicGroups = Model.TopicGroups,
+        Topics = Model.Topics
+    })
+    @Html.ValidationMessageFor(x => x.TopicIds)
 </div>
 
 <div class="form-group mb-3 required" data-location-container>

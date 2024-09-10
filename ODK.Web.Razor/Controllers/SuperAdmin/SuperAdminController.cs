@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Contact;
 using ODK.Services.Emails;
@@ -8,6 +7,7 @@ using ODK.Services.Logging;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
+using ODK.Services.Topics;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.SuperAdmin;
@@ -24,6 +24,7 @@ public class SuperAdminController : OdkControllerBase
     private readonly IRequestCache _requestCache;
     private readonly ISettingsService _settingsService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
+    private readonly ITopicAdminService _topicAdminService;
 
     public SuperAdminController(
         IEmailAdminService emailAdminService,
@@ -33,7 +34,8 @@ public class SuperAdminController : OdkControllerBase
         ISettingsService settingsService,
         ISiteSubscriptionAdminService siteSubscriptionAdminService,
         IFeatureService featureService,
-        IContactAdminService contactAdminService)
+        IContactAdminService contactAdminService,
+        ITopicAdminService topicAdminService)
     {
         _contactAdminService = contactAdminService;
         _emailAdminService = emailAdminService;
@@ -43,6 +45,7 @@ public class SuperAdminController : OdkControllerBase
         _requestCache = requestCache;
         _settingsService = settingsService;
         _siteSubscriptionAdminService = siteSubscriptionAdminService;
+        _topicAdminService = topicAdminService;
     }
 
     [HttpGet("SuperAdmin")]
@@ -178,6 +181,13 @@ public class SuperAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("superadmin/topics")]
+    public async Task<IActionResult> AddTopic([FromForm] Guid topicGroupId, [FromForm] string name)
+    {
+        var result = await _topicAdminService.AddTopic(MemberId, topicGroupId, name);
+        AddFeedback(result, "Topic added");
+        return RedirectToReferrer();
+    }
 
     [HttpGet("{chapterName}/Admin/SuperAdmin")]
     public IActionResult Index(string chapterName)

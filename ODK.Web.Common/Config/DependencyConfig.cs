@@ -29,6 +29,7 @@ using ODK.Services.Recaptcha;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
+using ODK.Services.Topics;
 using ODK.Services.Users;
 using ODK.Services.Venues;
 using ODK.Web.Common.Account;
@@ -159,6 +160,7 @@ public static class DependencyConfig
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<ISiteSubscriptionAdminService, SiteSubscriptionAdminService>();
         services.AddScoped<ISiteSubscriptionService, SiteSubscriptionService>();
+        services.AddScoped<ITopicAdminService, TopicAdminService>();
         services.AddScoped<IVenueAdminService, VenueAdminService>();
         services.AddScoped<IVenueService, VenueService>();
     }

@@ -1,4 +1,6 @@
 ﻿@page "/superadmin/messages"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Contact
 @model ODK.Web.Razor.Pages.SuperAdmin.MessagesModel
 @inject IContactAdminService ContactAdminService

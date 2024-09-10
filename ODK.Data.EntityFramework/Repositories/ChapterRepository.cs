@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Core.Topics;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Caching;
@@ -61,6 +62,24 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
             () => _cache.Find(x => string.Equals(x.Slug, slug, StringComparison.InvariantCultureIgnoreCase)),
             _cache.Set,
             _cache.SetAll);
+
+    public IDeferredQueryMultiple<Chapter> GetByTopicGroupId(Guid topicGroupId)
+    {
+        var query = 
+            from chapter in Set()
+            where 
+            (
+                from chapterTopic in Set<ChapterTopic>()
+                from topic in Set<Topic>()
+                where chapterTopic.ChapterId == chapter.Id &&
+                    topic.Id == chapterTopic.TopicId &&
+                    topic.TopicGroupId == topicGroupId
+                select 1
+            ).Any()
+            select chapter;
+
+        return query.DeferredMultiple();
+    }
 
     public override void Update(Chapter entity)
     {

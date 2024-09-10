@@ -1,4 +1,6 @@
 ﻿@page "/superadmin/features"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Web.Razor.Models.Components
 @model FeaturesModel
 @{

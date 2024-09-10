@@ -1,0 +1,33 @@
+﻿@using ODK.Web.Razor.Models.Topics
+@model TopicPickerViewModel
+@{
+    var topicDictionary = Model.Topics
+        .GroupBy(x => x.TopicGroupId)
+        .ToDictionary(x => x.Key, x => x.ToArray());
+
+    var topicOptions = new List<SelectListItem>();
+    foreach (var topicGroup in Model.TopicGroups.OrderBy(x => x.Name))
+    {        
+        if (!topicDictionary.TryGetValue(topicGroup.Id, out var topics))
+        {
+            continue;
+        }
+
+        var selectListGroup = new SelectListGroup
+        {
+            Name = topicGroup.Name
+        };
+
+        foreach (var topic in topics.OrderBy(x => x.Name))
+        {
+            topicOptions.Add(new SelectListItem
+            {
+                Group = selectListGroup,
+                Value = topic.Id.ToString(),
+                Text = topic.Name
+            });
+        }
+    }
+}
+
+@Html.ListBoxFor(x => x.TopicIds, topicOptions, new { @class = "form-select", data_always_open = "" })

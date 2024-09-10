@@ -8,6 +8,7 @@ using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
+using ODK.Core.Topics;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -33,81 +34,113 @@ public class ChapterViewModelService : IChapterViewModelService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<GroupsViewModel> FindGroups(ILocation location, Distance radius)
+    public async Task<GroupsViewModel> FindGroups(Guid? currentMemberId, GroupFilter filter)
     {
         var platform = _platformProvider.GetPlatform();
 
-        var chapters = await _unitOfWork.ChapterRepository.GetAll().Run();
-        var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetAll();
+        MemberLocation? memberLocation = null;
+
+        if (filter.Location == null && currentMemberId != null)
+        {
+            memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(currentMemberId.Value);
+        }
+
+        var topicGroups = await _unitOfWork.TopicGroupRepository.GetAll().Run();
+        var topicGroup = topicGroups
+            .FirstOrDefault(x => string.Equals(x.Name, filter.TopicGroup, StringComparison.InvariantCultureIgnoreCase));
+
+        var (chapters, distanceUnits, preferences) = await _unitOfWork.RunAsync(
+            x => topicGroup != null 
+                ? x.ChapterRepository.GetByTopicGroupId(topicGroup.Id)
+                : x.ChapterRepository.GetAll(),
+            x => x.DistanceUnitRepository.GetAll(),
+            x => currentMemberId != null
+                ? x.MemberPreferencesRepository.GetByMemberId(currentMemberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<MemberPreferences>());
+
+        // TODO: search by location in the database
+        var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetByChapterIds(chapters.Select(x => x.Id));
+        
+        distanceUnits = distanceUnits
+            .OrderBy(x => x.Order)
+            .ToArray();
+
+        var distanceUnit = distanceUnits
+            .FirstOrDefault(x => string.Equals(x.Abbreviation, filter.DistanceUnit, StringComparison.InvariantCultureIgnoreCase))
+            ?? distanceUnits.FirstOrDefault(x => x.Id == preferences?.DistanceUnitId)
+            ?? distanceUnits.First();
+
+        var distance = filter.Distance ?? 30;
+
+        var location = filter.Location != null && filter.LocationName != null
+            ? new Location
+            {
+                LatLong = filter.Location.Value,
+                Name = filter.LocationName
+            }
+            : memberLocation != null
+                ? new Location
+                {
+                    LatLong = memberLocation.LatLong,
+                    Name = memberLocation.Name
+                }
+                : null;
+
+        var chaptersWithDistances = FilterChaptersByDistance(
+            chapters, 
+            chapterLocations, 
+            location?.LatLong, 
+            new Distance { Unit = distanceUnit, Value = distance });
+        
+        var (texts, chapterTopics) = await _unitOfWork.RunAsync(
+            x => chapters.Count > 0 
+                ? x.ChapterTextsRepository.GetByChapterIds(chapters.Select(x => x.Id))
+                : new DefaultDeferredQueryMultiple<ChapterTexts>(),
+            x => chapters.Count > 0
+                ? x.ChapterTopicRepository.GetDtosByChapterIds(chapters.Select(x => x.Id))
+                : new DefaultDeferredQueryMultiple<ChapterTopicDto>());
 
         var chapterDictionary = chapters
             .ToDictionary(x => x.Id);
         var chapterLocationDictionary = chapterLocations
             .ToDictionary(x => x.ChapterId);
 
-        var chapterDistances = new Dictionary<Guid, double>();
-
-        foreach (var chapter in chapters)
-        {
-            if (!chapter.IsOpenForRegistration())
-            {
-                continue;
-            }
-
-            if (!chapterLocationDictionary.TryGetValue(chapter.Id, out var chapterLocation))
-            {
-                continue;
-            }
-
-            var distance = chapterLocation.LatLong.DistanceFrom(location.LatLong, radius.Unit);
-            if (distance > radius.Value)
-            {
-                continue;
-            }
-
-            chapterDistances.Add(chapter.Id, distance);
-        }
-
-        var chapterIds = chapterDistances.Keys.ToArray();
-
-        var texts = chapterIds.Length > 0
-            ? await _unitOfWork.ChapterTextsRepository.GetByChapterIds(chapterIds).Run()
-            : [];
+        var chapterTopicsDictionary = chapterTopics
+            .GroupBy(x => x.ChapterId)
+            .ToDictionary(x => x.Key, x => x.ToArray());
 
         var textsDictionary = texts
             .ToDictionary(x => x.ChapterId);
 
         var groups = new List<ChapterWithDistanceViewModel>();
-        foreach (var chapterId in chapterIds)
+        foreach (var chapterId in chaptersWithDistances.Keys)
         {
+            chapterLocationDictionary.TryGetValue(chapterId, out var chapterLocation);
             textsDictionary.TryGetValue(chapterId, out var chapterTexts);
+            chapterTopicsDictionary.TryGetValue(chapterId, out var topics);
 
             groups.Add(new ChapterWithDistanceViewModel
             {
                 Chapter = chapterDictionary[chapterId],
-                Distance = chapterDistances[chapterId],
+                Distance = chaptersWithDistances[chapterId],
                 Location = chapterLocationDictionary[chapterId],
                 Platform = platform,
-                Texts = chapterTexts
+                Texts = chapterTexts,
+                Topics = topics?.Select(x => x.Topic).ToArray() ?? []
             });
         }
 
         return new GroupsViewModel
         {
-            Distance = radius,
+            Distance = new Distance { Unit = distanceUnit, Value = distance },
+            DistanceUnits = distanceUnits,
+            Groups = groups,
             Location = location,
-            Groups = groups
-                .OrderBy(x => x.Distance)
-                .ToArray()
+            Platform = platform,
+            TopicGroupId = topicGroup?.Id,
+            TopicGroups = topicGroups
         };
     }
-
-    public async Task<GroupsViewModel> FindGroups(Guid currentMemberId, Distance radius)
-    {
-        var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(currentMemberId);
-        return await FindGroups(memberLocation, radius);
-    }
-
 
     public async Task<ChapterCreateViewModel> GetChapterCreate(Guid currentMemberId)
     {
@@ -117,20 +150,26 @@ public class ChapterViewModelService : IChapterViewModelService
             throw new OdkNotFoundException();
         }
 
-        var (current, member, memberSubscription) = await _unitOfWork.RunAsync(
+        var (current, member, memberSubscription, topicGroups, topics, memberTopics) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByOwnerId(currentMemberId),
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform));
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform),
+            x => x.TopicGroupRepository.GetAll(),
+            x => x.TopicRepository.GetAll(),
+            x => x.MemberTopicRepository.GetByMemberId(currentMemberId));
 
         var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(currentMemberId);
 
         return new ChapterCreateViewModel
         {
             ChapterCount = current.Count,
-            ChapterLimit = memberSubscription.SiteSubscription.GroupLimit,
+            ChapterLimit = memberSubscription?.SiteSubscription.GroupLimit ?? 1,
             Member = member,
             MemberLocation = memberLocation,
-            Platform = platform
+            MemberTopics = memberTopics,
+            Platform = platform,
+            TopicGroups = topicGroups,
+            Topics = topics
         };
     }
 
@@ -466,7 +505,10 @@ public class ChapterViewModelService : IChapterViewModelService
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Links = links,
             MemberCount = memberCount,
-            Owners = adminMembers.Select(x => x.Member).ToArray(),
+            Owners = adminMembers
+                .Select(x => x.Member)
+                .Where(x => x.Visible(chapter.Id))
+                .ToArray(),
             OwnerSubscription = ownerSubscription,
             Platform = platform,
             RecentEvents = recentEventViewModels,
@@ -790,5 +832,45 @@ public class ChapterViewModelService : IChapterViewModelService
         }     
         
         return viewModels;
+    }
+
+    private IDictionary<Guid, double> FilterChaptersByDistance(
+        IReadOnlyCollection<Chapter> chapters,
+        IReadOnlyCollection<ChapterLocation> chapterLocations,
+        LatLong? location,
+        Distance distance)
+    {
+        var chaptersWithDistances = new Dictionary<Guid, double>();
+
+        if (location == null)
+        {
+            return chaptersWithDistances;
+        }        
+
+        var chapterLocationDictionary = chapterLocations
+            .ToDictionary(x => x.ChapterId);
+
+        foreach (var chapter in chapters)
+        {
+            if (!chapter.IsOpenForRegistration())
+            {
+                continue;
+            }
+
+            if (!chapterLocationDictionary.TryGetValue(chapter.Id, out var chapterLocation))
+            {
+                continue;
+            }
+
+            var chapterDistance = chapterLocation.LatLong.DistanceFrom(location.Value, distance.Unit);
+            if (chapterDistance > distance.Value)
+            {
+                continue;
+            }
+
+            chaptersWithDistances.Add(chapter.Id, chapterDistance);
+        }
+
+        return chaptersWithDistances;
     }
 }

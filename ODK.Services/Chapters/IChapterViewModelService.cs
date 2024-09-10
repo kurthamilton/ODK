@@ -1,13 +1,10 @@
-﻿using ODK.Core.Countries;
-using ODK.Services.Chapters.ViewModels;
+﻿using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Chapters;
 
 public interface IChapterViewModelService
 {
-    Task<GroupsViewModel> FindGroups(ILocation location, Distance radius);
-
-    Task<GroupsViewModel> FindGroups(Guid currentMemberId, Distance radius);
+    Task<GroupsViewModel> FindGroups(Guid? currentMemberId, GroupFilter filter);
 
     Task<ChapterCreateViewModel> GetChapterCreate(Guid currentMemberId);
 

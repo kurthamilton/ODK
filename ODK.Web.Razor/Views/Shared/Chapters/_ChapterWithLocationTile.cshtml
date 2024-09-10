@@ -14,9 +14,21 @@
         </div>
     </div>    
     <div class="card-body">        
-        @if (!string.IsNullOrEmpty(Model.Texts?.Description))
-        {
-            <p class="card-text">@Model.Texts?.Description</p>
-        }        
+        <div class="d-flex flex-column gap-3">
+            @if (!string.IsNullOrEmpty(Model.Texts?.Description))
+            {
+                <div class="card-text">@Model.Texts?.Description</div>
+            }
+
+            @if (Model.Topics.Count > 0)
+            {
+                <div>
+                    @foreach (var topic in Model.Topics.OrderBy(x => x.Name))
+                    {
+                        <div class="badge text-bg-secondary">@topic.Name</div>
+                    }
+                </div>
+            }
+        </div>        
     </div>    
 </div>

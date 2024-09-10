@@ -1,4 +1,6 @@
-﻿@page "/SuperAdmin/Errors/{id:guid}"
+﻿@page "/superadmin/errors/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.SuperAdmin

@@ -48,8 +48,11 @@
                         Lat = viewModel.MemberLocation?.LatLong.Lat,
                         Long = viewModel.MemberLocation?.LatLong.Long,
                         Name = viewModel.MemberLocation?.Name ?? "",
-                        TimeZoneId = viewModel.Member.TimeZone?.Id ?? Member.DefaultTimeZoneId  
-                    }
+                        TimeZoneId = viewModel.Member.TimeZone?.Id ?? Member.DefaultTimeZoneId                        
+                    },
+                    TopicGroups = viewModel.TopicGroups,
+                    TopicIds = viewModel.MemberTopics.Select(x => x.TopicId).ToList(),
+                    Topics = viewModel.Topics
                 })
 
                 <button class="btn btn-primary">Create</button>

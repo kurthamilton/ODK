@@ -19,7 +19,7 @@
 
 <div class="dropdown position-relative" role="button" data-notifications>
     <span data-notifications-hide-if-empty
-        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger @hideIfEmptyClass">
+        class="position-absolute top-0 start-100 translate-middle badge badge-sm rounded-pill bg-danger @hideIfEmptyClass">
         <span data-notification-count>@(notifications.Count > 9 ? "9+" : notifications.Count.ToString())</span>
         <span class="visually-hidden">unread messages</span>
     </span>
@@ -44,7 +44,7 @@
         {
             foreach (var notification in notifications)
             {
-                <div class="dropdown-item notification-item" data-notification>
+                <div class="dropdown-item notification-item border-top" data-notification>
                     @await Html.PartialAsync("Notifications/_NotificationListItem", new NotificationListItemViewModel
                     {
                         Notification = notification,

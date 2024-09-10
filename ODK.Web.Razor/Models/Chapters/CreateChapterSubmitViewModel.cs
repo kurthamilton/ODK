@@ -14,4 +14,7 @@ public class CreateChapterSubmitViewModel
     [Required]
     [MaxLength(100)]
     public string? Name { get; set; }
+
+    [Display(Name = "Topics")]
+    public List<Guid> TopicIds { get; set; } = new();
 }

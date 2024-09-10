@@ -1,0 +1,43 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Topics
+@model GroupsViewModel
+
+<div class="form-group mb-3" data-location-container>
+    <div class="input-group input-group-sm">
+        <span class="input-group-text">
+            <i class="fa-solid fa-location-dot" data-bs-toggle="tooltip" data-bs-title="Location"></i>
+        </span>
+        <input type="text" name="n" value="@Model.Location?.Name" class="form-control" data-location />
+    </div>
+
+    <input type="hidden" value="@Model.Location?.LatLong.Lat" data-location-lat />
+    <input type="hidden" value="@Model.Location?.LatLong.Long" data-location-long />
+    <input type="hidden" value="@Model.Location?.LatLong.ToString()" data-location-latlong name="l" />
+</div>
+<div class="form-group mb-3">
+    <div class="d-flex form-inline">
+        <input type="number" value="@Model.Distance.Value" name="d" class="form-control form-control-sm" />
+        <select name="u" class="form-select form-select-sm">
+            @foreach (var option in Model.DistanceUnits)
+            {
+                <option selected="@(option.Id == Model.Distance.Unit.Id ? "" : null)">
+                    @option.Abbreviation
+                </option>
+            }
+        </select>
+    </div>
+</div>
+<div class="form-group mb-3">
+    <select name="c" class="form-select form-select-sm" data-select data-placeholder="Category">
+        <option data-placeholder="true"></option>
+        @foreach (var topicGroup in Model.TopicGroups.OrderBy(x => x.Name))
+        {
+            <option selected="@(Model.TopicGroupId == topicGroup.Id ? "" : null)">
+                @topicGroup.Name
+            </option>
+        }
+    </select>
+</div>
+<div class="form-group d-flex justify-content-end">
+    <button class="btn btn-outline-secondary btn-sm">Update</button>
+</div>

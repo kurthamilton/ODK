@@ -14,12 +14,16 @@ public class IndexModel : OdkPageModel
 
     public string? LocationName { get; private set; }        
 
+    public string? TopicGroup { get; private set; }
+
     public void OnGet(
         [FromQuery(Name = "l")] string? latLong,
         [FromQuery(Name = "n")] string? name,
         [FromQuery(Name = "d")] double? distance,
-        [FromQuery(Name = "u")] string? unit)
+        [FromQuery(Name = "u")] string? unit,
+        [FromQuery(Name = "c")] string? topicGroup)
     {
+        TopicGroup = topicGroup;
         UpdateDistance(distance, unit);
         UpdateLocation(latLong, name);
     }

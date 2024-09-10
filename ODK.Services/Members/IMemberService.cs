@@ -15,8 +15,6 @@ public interface IMemberService
 
     Task<Member> GetMember(Guid memberId);
 
-    Task<Member> GetMember(Guid memberId, Guid chapterId);
-
     Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId);
@@ -24,10 +22,6 @@ public interface IMemberService
     Task<MemberLocation?> GetMemberLocation(Guid memberId);
 
     Task<MemberPreferences?> GetMemberPreferences(Guid memberId);
-
-    Task<MemberProfile?> GetMemberProfile(Guid chapterId, Guid currentMemberId, Member member);
-
-    Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId);
 
     Task<ServiceResult> JoinChapter(Guid currentMemberId, Guid chapterId, IEnumerable<UpdateMemberProperty> memberProperties);
 
@@ -51,7 +45,7 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);    
 
-    Task<ServiceResult> UpdateMemberPreferences(Guid id, Guid? distanceUnitId);
-
     Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model);
+
+    Task<ServiceResult> UpdateMemberTopics(Guid id, IReadOnlyCollection<Guid> topicIds);
 }

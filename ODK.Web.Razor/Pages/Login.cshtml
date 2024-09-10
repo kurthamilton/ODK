@@ -1,0 +1,8 @@
+﻿@page "/login"
+@using ODK.Web.Common.Routes
+@model LoginModel
+@{
+    Layout = "_HomeLayout";
+
+    Response.Redirect(OdkRoutes.Account.Login(null));
+}

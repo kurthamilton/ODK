@@ -1,7 +1,9 @@
 ﻿@import "odk/_badges";
 
 .badge {
-    padding-top: var(--odk-badges-padding-top);
     z-index: 1;
-    line-height: var(--odk-badges-line-height);
+
+    &.badge-sm {
+        font-size: 0.6em;
+    }
 }

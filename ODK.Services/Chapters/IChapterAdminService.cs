@@ -67,6 +67,8 @@ public interface IChapterAdminService
 
     Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(AdminServiceRequest request);
 
+    Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(AdminServiceRequest request);
+    
     Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(AdminServiceRequest request);
 
     Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);        
@@ -127,4 +129,7 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterTimeZone(AdminServiceRequest request, 
         string? timeZoneId);
+
+    Task<ServiceResult> UpdateChapterTopics(AdminServiceRequest request,
+        IReadOnlyCollection<Guid> topicIds);
 }

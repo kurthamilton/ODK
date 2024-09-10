@@ -13,7 +13,11 @@
     @await Html.PartialAsync("Components/_panel", new PanelViewModel
     {
         TitleContentFunc = @<h5>Organisers</h5>,
-        TitleEndContentFunc = @<a href="@OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter)">Contact</a>,
+        TitleEndContentFunc = 
+            @<a class="d-flex align-items-center gap-1" href="@OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter)">
+                @await Html.PartialAsync("Components/Icons/_Contact")
+                <span>Contact</span>
+            </a>,
         BodyContentFunc = 
             @<div>
                 @await Html.PartialAsync("Members/_MemberList", new MemberListViewModel

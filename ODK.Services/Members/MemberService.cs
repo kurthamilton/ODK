@@ -1,5 +1,4 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -292,13 +291,6 @@ public class MemberService : IMemberService
         return member;
     }
 
-    public async Task<Member> GetMember(Guid memberId, Guid chapterId)
-    {
-        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();        
-        return OdkAssertions.MeetsCondition(member, 
-            x => x.IsMemberOf(chapterId) && member.Visible(chapterId));
-    }    
-
     public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId)
     {
         var result = await _cacheService.GetOrSetVersionedItem(
@@ -347,46 +339,6 @@ public class MemberService : IMemberService
     public async Task<MemberPreferences?> GetMemberPreferences(Guid memberId)
     {
         return await _unitOfWork.MemberPreferencesRepository.GetByMemberId(memberId).Run();
-    }
-
-    public async Task<MemberProfile?> GetMemberProfile(Guid chapterId, Guid currentMemberId, Member member)
-    {
-        var (currentMember, chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
-            x => x.MemberPropertyRepository.GetByMemberId(member.Id, chapterId));
-
-        if (member == null || !member.CanBeViewedBy(currentMember))
-        {
-            return null;
-        }
-
-        var memberPropertyDictionary = memberProperties
-            .ToDictionary(x => x.ChapterPropertyId);
-
-        var allMemberProperties = chapterProperties
-            .Select(x => memberPropertyDictionary.ContainsKey(x.Id)
-                ? memberPropertyDictionary[x.Id]
-                : new MemberProperty
-                {
-                    ChapterPropertyId = x.Id,
-                    MemberId = member.Id
-                });
-
-        return new MemberProfile(chapterId, member, allMemberProperties, chapterProperties);
-    }
-
-    public async Task<IReadOnlyCollection<Member>> GetMembers(Member? currentMember, Guid chapterId)
-    {
-        if (currentMember?.IsMemberOf(chapterId) != true)
-        {
-            return [];
-        }
-
-        var members = await _unitOfWork.MemberRepository.GetByChapterId(chapterId).Run();
-        return members
-            .Where(x => x.Visible(chapterId))
-            .ToArray();
     }
 
     public async Task<ServiceResult> JoinChapter(Guid currentMemberId, Guid chapterId, IEnumerable<UpdateMemberProperty> properties)
@@ -804,9 +756,7 @@ public class MemberService : IMemberService
     {
         var memberLocation = await _unitOfWork.MemberLocationRepository.GetByMemberId(id);
 
-        var (distanceUnits, memberPreferences) = await _unitOfWork.RunAsync(
-            x => x.DistanceUnitRepository.GetAll(),
-            x => x.MemberPreferencesRepository.GetByMemberId(id));
+        var memberPreferences = await _unitOfWork.MemberPreferencesRepository.GetByMemberId(id).Run();
 
         if (location != null && !string.IsNullOrEmpty(name))
         {
@@ -842,14 +792,11 @@ public class MemberService : IMemberService
 
         if (memberPreferences?.DistanceUnitId != distanceUnitId)
         {
-            var distanceUnit = distanceUnits.FirstOrDefault(x => x.Id == distanceUnitId);
-
             if (memberPreferences == null)
             {
                 memberPreferences = new MemberPreferences();
             }
 
-            memberPreferences.DistanceUnit = distanceUnit;
             memberPreferences.DistanceUnitId = distanceUnitId;
 
             if (memberPreferences.MemberId == default)
@@ -868,41 +815,6 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateMemberPreferences(Guid id, Guid? distanceUnitId)
-    {
-        var (member, memberPreferences, distanceUnits) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(id),
-            x => x.MemberPreferencesRepository.GetByMemberId(id),
-            x => x.DistanceUnitRepository.GetAll());
-
-        var distanceUnit = distanceUnits.FirstOrDefault(x => x.Id == distanceUnitId);
-        if (distanceUnitId != null && distanceUnit == null)
-        {
-            return ServiceResult.Failure("Invalid distance");
-        }
-
-        if (memberPreferences == null)
-        {
-            memberPreferences = new MemberPreferences();
-        }
-
-        memberPreferences.DistanceUnit = distanceUnit;
-        memberPreferences.DistanceUnitId = distanceUnitId;
-
-        if (memberPreferences.MemberId == default)
-        {
-            memberPreferences.MemberId = member.Id;
-            _unitOfWork.MemberPreferencesRepository.Add(memberPreferences);
-        }
-        else
-        {
-            _unitOfWork.MemberPreferencesRepository.Update(memberPreferences);
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-        return ServiceResult.Successful();
-    }
-
     public async Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model)
     {
         var member = await _unitOfWork.MemberRepository.GetById(id).Run();
@@ -912,6 +824,18 @@ public class MemberService : IMemberService
 
         _unitOfWork.MemberRepository.Update(member);
         await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateMemberTopics(Guid id, IReadOnlyCollection<Guid> topicIds)
+    {
+        var existing = await _unitOfWork.MemberTopicRepository.GetByMemberId(id).Run();
+
+        if (_unitOfWork.MemberTopicRepository.Merge(existing, id, topicIds) > 0)
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         return ServiceResult.Successful();
     }

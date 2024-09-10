@@ -1,0 +1,53 @@
+﻿@using ODK.Core.Platforms
+@using ODK.Core.Utils
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@inject IChapterService ChapterService
+@inject IPlatformProvider PlatformProvider
+@{
+    var memberId = User.MemberIdOrDefault();
+
+    var platform = PlatformProvider.GetPlatform();
+
+    var ownedChapters = memberId != null
+        ? await ChapterService.GetChaptersByOwnerId(memberId.Value)
+        : [];
+
+    var notificationCount = 0;
+
+    var chaptersPendingPublication = ownedChapters
+        .Where(x => x.CanBePublished())
+        .ToArray();
+
+    notificationCount += chaptersPendingPublication.Length;    
+}
+
+@if (notificationCount > 0)
+{
+    <div class="dropdown position-relative" role="button">
+        <span class="position-absolute top-0 start-100 translate-middle badge badge-sm rounded-pill bg-danger">
+            <span>@(notificationCount > 9 ? "9+" : notificationCount.ToString())</span>
+            <span class="visually-hidden">pending tasks</span>
+        </span>
+
+        <div class="text-light account-links__user dropdown-toggle"
+             data-bs-toggle="dropdown" data-bs-auto-close="outside">
+            @await Html.PartialAsync("Components/Icons/_TodoList")
+        </div>
+        <div class="dropdown-menu dropdown-menu-end p-0">
+            <div class="dropdown-header">
+                <h5 class="m-0">Pending tasks</h5>
+            </div>
+            @if (chaptersPendingPublication.Length > 0)
+            {
+                @foreach (var chapter in chaptersPendingPublication)
+                {
+                    <a class="dropdown-item border-top p-3" href="@OdkRoutes2.MemberGroups.Group(platform, chapter)">
+                        <strong>@chapter.Name</strong> is waiting to be published
+                    </a>
+                }                
+            }
+        </div>
+    </div>
+}
