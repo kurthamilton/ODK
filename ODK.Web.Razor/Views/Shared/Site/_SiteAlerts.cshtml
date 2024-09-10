@@ -4,44 +4,28 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @inject IChapterService ChapterService
-@inject IHttpContextAccessor HttpContextAccessor
 @inject IPlatformProvider PlatformProvider
 @{
     var memberId = User.MemberIdOrDefault();
 
     var platform = PlatformProvider.GetPlatform();
 
-    var isMyGroupsPath = HttpContextAccessor.ForPath(OdkRoutes2.MemberGroups.Index(platform));
-
-    var ownedChapters = memberId != null && !isMyGroupsPath
+    var ownedChapters = memberId != null 
         ? await ChapterService.GetChaptersByOwnerId(memberId.Value)
         : [];
 
-    var currentChapterPendingPublication = ownedChapters
-        .Where(x => x.CanBePublished() &&
-            (HttpContextAccessor.ForPath(OdkRoutes2.MemberGroups.Group(platform, x)) ||
-            HttpContextAccessor.ForPath(OdkRoutes2.Groups.Group(platform, x))))
-        .FirstOrDefault();
-
     var chaptersPendingPublication = ownedChapters
-        .Where(x => x.CanBePublished() && 
-            !HttpContextAccessor.ForPath(OdkRoutes2.MemberGroups.Group(platform, x)) &&
-            !HttpContextAccessor.ForPath(OdkRoutes2.Groups.Group(platform, x)))
+        .Where(x => x.CanBePublished())
         .ToArray();
 }
 
 @if (chaptersPendingPublication.Length > 0)
 {    
     <div class="page-alert alert alert-warning">
-        You have @chaptersPendingPublication.Length @StringUtils.Pluralise(chaptersPendingPublication.Length, "chapter") waiting to be published.
+        You have 
+        @chaptersPendingPublication.Length 
+        @StringUtils.Pluralise(chaptersPendingPublication.Length, "group") 
+        waiting to be published.
         <a href="@OdkRoutes2.MemberGroups.Index(platform)">My groups</a>
-    </div>
-}
-
-@if (currentChapterPendingPublication != null)
-{
-    <div class="page-alert alert alert-warning">
-        This group is not published.
-        <a href="@OdkRoutes2.MemberGroups.Group(platform, currentChapterPendingPublication)">Publish</a>
     </div>
 }

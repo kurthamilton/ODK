@@ -9,5 +9,7 @@ public interface IChapterTopicRepository : IWriteRepository<ChapterTopic>
 
     IDeferredQueryMultiple<ChapterTopic> GetByChapterIds(IEnumerable<Guid> chapterIds);
 
+    IDeferredQueryMultiple<ChapterTopicDto> GetDtosByChapterIds(IEnumerable<Guid> chapterIds);
+
     int Merge(IEnumerable<ChapterTopic> existing, Guid chapterId, IEnumerable<Guid> topicIds);
 }

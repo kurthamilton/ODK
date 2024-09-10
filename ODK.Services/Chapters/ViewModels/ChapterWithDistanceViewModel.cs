@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Platforms;
+using ODK.Core.Topics;
 
 namespace ODK.Services.Chapters.ViewModels;
 
@@ -14,4 +15,6 @@ public class ChapterWithDistanceViewModel
     public required PlatformType Platform { get; init; }
 
     public required ChapterTexts? Texts { get; init; }
+
+    public required IReadOnlyCollection<Topic> Topics { get; init; }
 }

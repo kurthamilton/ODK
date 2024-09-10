@@ -8,6 +8,7 @@ using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
+using ODK.Core.Topics;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -91,14 +92,22 @@ public class ChapterViewModelService : IChapterViewModelService
             location?.LatLong, 
             new Distance { Unit = distanceUnit, Value = distance });
         
-        var texts = chapters.Count > 0
-            ? await _unitOfWork.ChapterTextsRepository.GetByChapterIds(chapters.Select(x => x.Id)).Run()
-            : [];
+        var (texts, chapterTopics) = await _unitOfWork.RunAsync(
+            x => chapters.Count > 0 
+                ? x.ChapterTextsRepository.GetByChapterIds(chapters.Select(x => x.Id))
+                : new DefaultDeferredQueryMultiple<ChapterTexts>(),
+            x => chapters.Count > 0
+                ? x.ChapterTopicRepository.GetDtosByChapterIds(chapters.Select(x => x.Id))
+                : new DefaultDeferredQueryMultiple<ChapterTopicDto>());
 
         var chapterDictionary = chapters
             .ToDictionary(x => x.Id);
         var chapterLocationDictionary = chapterLocations
             .ToDictionary(x => x.ChapterId);
+
+        var chapterTopicsDictionary = chapterTopics
+            .GroupBy(x => x.ChapterId)
+            .ToDictionary(x => x.Key, x => x.ToArray());
 
         var textsDictionary = texts
             .ToDictionary(x => x.ChapterId);
@@ -108,6 +117,7 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             chapterLocationDictionary.TryGetValue(chapterId, out var chapterLocation);
             textsDictionary.TryGetValue(chapterId, out var chapterTexts);
+            chapterTopicsDictionary.TryGetValue(chapterId, out var topics);
 
             groups.Add(new ChapterWithDistanceViewModel
             {
@@ -115,7 +125,8 @@ public class ChapterViewModelService : IChapterViewModelService
                 Distance = chaptersWithDistances[chapterId],
                 Location = chapterLocationDictionary[chapterId],
                 Platform = platform,
-                Texts = chapterTexts
+                Texts = chapterTexts,
+                Topics = topics?.Select(x => x.Topic).ToArray() ?? []
             });
         }
 

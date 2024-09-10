@@ -11,21 +11,6 @@
     }
 
     var viewModel = await NotificationService.GetUnreadNotificationsViewModel(memberId.Value);
-
-    // viewModel = new UnreadNotificationsViewModel
-    // {
-    //     Platform = viewModel.Platform,
-    //     TotalCount = 5,
-    //     Unread = Enum.GetValues<NotificationType>()
-    //         .Where(x => x != NotificationType.None)
-    //         .Select(x => new Notification
-    //         {
-    //             Chapter = new ODK.Core.Chapters.Chapter { Name = "Chapter", Slug = "chapter", Id = Guid.NewGuid() },
-    //             EntityId = Guid.NewGuid(),
-    //             Text = "Text",
-    //             Type = x
-    //         }).ToArray()
-    // };
 }
 
 @*Only show notifications to users who have seen them before*@
