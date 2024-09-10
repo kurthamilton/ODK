@@ -178,7 +178,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 "LastName",
                 "Joined",
                 "Activated",
-                "EmailOptIn",
                 "SubscriptionExpiryDate",
                 "SubscriptionType"
             }
@@ -197,7 +196,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 member.LastName,
                 member.MemberChapter(request.ChapterId).CreatedUtc.ToString("yyyy-MM-dd"),
                 member.Activated ? "Y" : "",
-                member.EmailOptIn ? "Y" : "",
                 subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "",
                 subscription?.Type.ToString() ?? ""
             ]);
@@ -358,15 +356,17 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, membershipSettings, members, subscriptions) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, membershipSettings, members, memberEmailPreferences, subscriptions) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetAllByChapterId(request.ChapterId),
+            x => x.MemberEmailPreferenceRepository.GetByChapterId(request.ChapterId, MemberEmailPreferenceType.Events),
             x => x.MemberSubscriptionRepository.GetByChapterId(request.ChapterId));
 
         return new MembersAdminPageViewModel
         {
             Chapter = chapter,
+            MemberEventEmailPreferences = memberEmailPreferences,
             Members = members,
             MembershipSettings = membershipSettings,
             Platform = platform,

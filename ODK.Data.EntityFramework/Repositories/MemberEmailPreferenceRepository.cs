@@ -2,6 +2,7 @@
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
+using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
@@ -10,6 +11,18 @@ public class MemberEmailPreferenceRepository : WriteRepositoryBase<MemberEmailPr
     public MemberEmailPreferenceRepository(OdkContext context) 
         : base(context)
     {
+    }
+
+    public IDeferredQueryMultiple<MemberEmailPreference> GetByChapterId(Guid chapterId, MemberEmailPreferenceType type)
+    {
+        var query = 
+            from preference in Set()
+            from member in Set<Member>().InChapter(chapterId)
+            where preference.MemberId == member.Id
+                && preference.Type == type
+            select preference;
+
+        return query.DeferredMultiple();
     }
 
     public IDeferredQueryMultiple<MemberEmailPreference> GetByMemberId(Guid memberId) => Set()

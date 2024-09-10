@@ -7,6 +7,8 @@ public class MembersAdminPageViewModel
 {
     public required Chapter Chapter { get; init; }
 
+    public required IReadOnlyCollection<MemberEmailPreference> MemberEventEmailPreferences { get; init; }
+
     public required IReadOnlyCollection<Member> Members { get; init; }
 
     public required ChapterMembershipSettings? MembershipSettings { get; init; }

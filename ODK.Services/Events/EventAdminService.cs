@@ -424,16 +424,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task SendEventInviteeEmail(AdminServiceRequest request, Guid eventId, 
         IEnumerable<EventResponseType> responseTypes, string subject, string body)
     {
-        var (chapter, chapterAdminMember, @event, members, responses, invites) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, chapterAdminMember, @event, members, memberEmailPreferences, responses, invites) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByMemberId(request.CurrentMemberId, request.ChapterId),
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberEmailPreferenceRepository.GetByChapterId(request.ChapterId, MemberEmailPreferenceType.Events),
             x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.EventInviteRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
-        AssertEventEmailsCanBeSent(@event);
+        AssertEventEmailsCanBeSent(@event);        
 
         responses = responses
             .Where(x => responseTypes.Contains(x.Type))
@@ -456,8 +457,13 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             }
         }
 
+        var optOutMemberIds = memberEmailPreferences
+            .Where(x => x.Disabled)
+            .Select(x => x.MemberId)
+            .ToHashSet();
+
         var to = members
-            .Where(x => x.IsCurrent() && x.EmailOptIn && responseDictionary.ContainsKey(x.Id))
+            .Where(x => x.IsCurrent() && !optOutMemberIds.Contains(x.Id) && responseDictionary.ContainsKey(x.Id))
             .ToArray();
 
         await _emailService.SendBulkEmail(chapterAdminMember, chapter, to, subject, body);
@@ -465,12 +471,24 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> SendEventInvites(AdminServiceRequest request, Guid eventId, bool test = false)
     {
-        var (chapterAdminMembers, currentMember, chapter, venue, members, @event, eventEmail, responses, invites) = await _unitOfWork.RunAsync(
+        var (
+            chapterAdminMembers, 
+            currentMember, 
+            chapter, 
+            venue, 
+            members, 
+            memberEmailPreferences, 
+            @event, 
+            eventEmail, 
+            responses, 
+            invites
+        ) = await _unitOfWork.RunAsync(
             x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.VenueRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberEmailPreferenceRepository.GetByChapterId(request.ChapterId, MemberEmailPreferenceType.Events),
             x => x.EventRepository.GetById(eventId),
             x => x.EventEmailRepository.GetByEventId(eventId),
             x => x.EventResponseRepository.GetByEventId(eventId),
@@ -515,6 +533,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             responses,
             invites,
             members,
+            memberEmailPreferences,
             memberSubscriptions);
     }
 
@@ -563,7 +582,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 continue;
             }
 
-            var (ownerSubscription, membershipSettings, privacySettings, venue, responses, invites, members, memberSubscriptions) = await _unitOfWork.RunAsync(
+            var (
+                ownerSubscription, 
+                membershipSettings, 
+                privacySettings, 
+                venue, 
+                responses, 
+                invites, 
+                members, 
+                memberEmailPreferences, 
+                memberSubscriptions
+            ) = await _unitOfWork.RunAsync(
                 x => x.MemberSiteSubscriptionRepository.GetByChapterId(@event.ChapterId),
                 x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
                 x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
@@ -571,6 +600,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 x => x.EventResponseRepository.GetByEventId(@event.Id),
                 x => x.EventInviteRepository.GetByEventId(@event.Id),
                 x => x.MemberRepository.GetByChapterId(@event.ChapterId),
+                x => x.MemberEmailPreferenceRepository.GetByChapterId(@event.ChapterId, MemberEmailPreferenceType.Events),
                 x => x.MemberSubscriptionRepository.GetByChapterId(@event.ChapterId));
 
             if (ownerSubscription?.HasFeature(SiteFeatureType.ScheduledEventEmails) != true)
@@ -580,7 +610,18 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
             try
             {
-                await SendEventInvites(null, chapter, @event, venue, membershipSettings, privacySettings, responses, invites, members, memberSubscriptions);
+                await SendEventInvites(
+                    chapterAdminMember: null, 
+                    chapter, 
+                    @event, 
+                    venue, 
+                    membershipSettings, 
+                    privacySettings, 
+                    responses, 
+                    invites, 
+                    members, 
+                    memberEmailPreferences, 
+                    memberSubscriptions);
             }            
             catch
             {
@@ -1002,6 +1043,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IReadOnlyCollection<EventResponse> responses,
         IReadOnlyCollection<EventInvite> invites,
         IReadOnlyCollection<Member> members,
+        IReadOnlyCollection<MemberEmailPreference> memberEmailPreferences,
         IReadOnlyCollection<MemberSubscription> memberSubscriptions)
     {
         var parameters = GetEventEmailParameters(chapter, @event, venue);
@@ -1009,6 +1051,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var memberResponses = responses.ToDictionary(x => x.MemberId, x => x);
         var inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
         var memberSubscriptionDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);
+
+        var optOutMemberIds = memberEmailPreferences
+            .Where(x => x.Type == MemberEmailPreferenceType.Events && x.Disabled)
+            .Select(x => x.MemberId)
+            .ToHashSet();
 
         var invitees = members
             .Where(x => 
@@ -1018,7 +1065,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                     memberSubscriptionDictionary.ContainsKey(x.Id) ? memberSubscriptionDictionary[x.Id] : null,
                     membershipSettings,
                     privacySettings) && 
-                x.EmailOptIn && 
+                !optOutMemberIds.Contains(x.Id) && 
                 !inviteDictionary.ContainsKey(x.Id) && 
                 !memberResponses.ContainsKey(x.Id))
             .ToArray();

@@ -23,6 +23,11 @@
         .SelectMany(x => x.Value)
         .Select(x => x?.ToLower() ?? "")
         .ToArray();
+
+    var optOutMemberIds = Model.MemberEventEmailPreferences
+        .Where(x => x.Disabled && x.Type == MemberEmailPreferenceType.Events)
+        .Select(x => x.MemberId)
+        .ToHashSet();
 }
 
 <h2>Members</h2>
@@ -121,7 +126,7 @@
                 </td>
                 <td>@status</td>
                 <td>
-                    @if (member.EmailOptIn)
+                    @if (!optOutMemberIds.Contains(member.Id))
                     {
                         <i class="fas fa-check-circle text-success"></i>
                     }

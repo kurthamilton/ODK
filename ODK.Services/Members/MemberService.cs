@@ -199,7 +199,6 @@ public class MemberService : IMemberService
             Activated = false,
             CreatedUtc = now,
             EmailAddress = model.EmailAddress,
-            EmailOptIn = model.EmailOptIn ?? false,
             FirstName = model.FirstName,
             LastName = model.LastName,            
             SuperAdmin = false,
@@ -207,6 +206,16 @@ public class MemberService : IMemberService
         };                
 
         _unitOfWork.MemberRepository.Add(member);
+
+        if (model.EmailOptIn != true)
+        {
+            _unitOfWork.MemberEmailPreferenceRepository.Add(new MemberEmailPreference
+            {
+                Disabled = true,
+                MemberId = member.Id,
+                Type = MemberEmailPreferenceType.Events
+            });
+        }
 
         var memberProperties = model
             .Properties
@@ -715,13 +724,7 @@ public class MemberService : IMemberService
                     ChapterPropertyId = x.Id,
                     MemberId = member.Id
                 });
-
         
-        if (model.EmailOptIn != null)
-        {
-            member.EmailOptIn = model.EmailOptIn.Value;
-        }
-
         foreach (var chapterProperty in chapterProperties)
         {
             var updateProperty = model.Properties

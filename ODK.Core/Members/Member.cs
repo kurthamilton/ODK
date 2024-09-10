@@ -15,8 +15,6 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public string EmailAddress { get; set; } = "";
 
-    public bool EmailOptIn { get; set; }
-
     public string FirstName { get; set; } = "";
 
     public string FullName => NameUtils.FullName(FirstName, LastName);
