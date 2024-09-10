@@ -596,18 +596,49 @@ public class MemberService : IMemberService
         _cacheService.RemoveVersionedItem<MemberAvatar>(memberId);
     }    
 
-    public async Task UpdateMemberEmailOptIn(Guid memberId, bool optIn)
+    public async Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
-        if (member.EmailOptIn == optIn)
+        var preferences = await _unitOfWork.MemberEmailPreferenceRepository
+            .GetByMemberId(id)
+            .Run();
+
+        var preferenceDictionary = preferences
+            .ToDictionary(x => x.Type);
+
+        foreach (var type in disabledTypes)
         {
-            return;
+            preferenceDictionary.TryGetValue(type, out var preference);
+
+            if (preference == null)
+            {
+                _unitOfWork.MemberEmailPreferenceRepository.Add(new MemberEmailPreference
+                {
+                    Disabled = true,
+                    MemberId = id,
+                    Type = type
+                });
+            }
+            else if (!preference.Disabled)
+            {
+                preference.Disabled = true;
+                _unitOfWork.MemberEmailPreferenceRepository.Update(preference);
+            }
         }
 
-        member.EmailOptIn = optIn;
+        foreach (var type in preferenceDictionary.Keys)
+        {
+            if (disabledTypes.Contains(type))
+            {
+                continue;
+            }
 
-        _unitOfWork.MemberRepository.Update(member);
+            var preference = preferenceDictionary[type];
+            _unitOfWork.MemberEmailPreferenceRepository.Delete(preference);
+        }
+
         await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
     }
 
     public async Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage? model, MemberImageCropInfo cropInfo)

@@ -1,36 +1,31 @@
-﻿@page "/{chapterName}/Account/Emails"
+﻿@page "/account/emails"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Services.Caching
 @using ODK.Services.Users
-@using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model EmailsModel
 @inject IAccountViewModelService AccountViewModelService
-@inject IRequestCache RequestCache
 @{
-    Layout = "_OdkChapterLayout";
+    Layout = "_HomeLayout";
     Model.Title = "Email preferences";
 
-    var chapter = await RequestCache.GetChapterAsync(Model.ChapterName);
     var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.CurrentMemberId);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Account",    
+    Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.EmailPreferences(chapter),
-        Chapter = chapter,
+        Active = OdkRoutes.Account.EmailPreferences(null),
         Content =
-            @<div>
-                <h2>Email preferences</h2>
-                <section class="section">
-                    @await Html.PartialAsync("Account/_EmailPreferencesContent", viewModel)
-                </section>
-            </div>
+    @<div>
+        <h2>Email preferences</h2>
+        <section class="section">
+            @await Html.PartialAsync("Account/_EmailPreferencesContent", viewModel)
+        </section>
+    </div>
     })
 })

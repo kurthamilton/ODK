@@ -49,6 +49,7 @@ public interface IUnitOfWork
     IMemberAvatarRepository MemberAvatarRepository { get; }
     IMemberChapterRepository MemberChapterRepository { get; }
     IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository { get; }    
+    IMemberEmailPreferenceRepository MemberEmailPreferenceRepository { get; }
     IMemberImageRepository MemberImageRepository { get; }
     IMemberLocationRepository MemberLocationRepository { get; }
     IMemberNotificationSettingsRepository MemberNotificationSettingsRepository { get; }

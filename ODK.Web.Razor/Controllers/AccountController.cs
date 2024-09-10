@@ -186,17 +186,18 @@ public class AccountController : OdkControllerBase
         return Redirect($"/{chapterName}/Account");
     }
 
-    [HttpPost("{ChapterName}/Account/Emails/Subscribe")]
-    public async Task<IActionResult> SubscribeToEmails()
+    [HttpPost("account/emails")]
+    public async Task<IActionResult> UpdateEmailPreferences([FromForm] EmailPreferencesFormViewModel viewModel)
     {
-        await _memberService.UpdateMemberEmailOptIn(MemberId, true);
-        return RedirectToReferrer();
-    }
+        var disabledTypes = viewModel.Preferences
+            .Where(x => !x.Enabled)
+            .Select(x => x.Type)
+            .ToArray();
 
-    [HttpPost("{ChapterName}/Account/Emails/Unsubscribe")]
-    public async Task<IActionResult> UnsubscribeFromEmails()
-    {
-        await _memberService.UpdateMemberEmailOptIn(MemberId, false);
+        var result = await _memberService.UpdateMemberEmailPreferences(MemberId, disabledTypes);
+
+        AddFeedback(result, "Email preferences updated");
+
         return RedirectToReferrer();
     }
 

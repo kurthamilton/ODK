@@ -1,29 +1,35 @@
-﻿@model ODK.Web.Razor.Models.Account.EmailPreferencesContentViewModel
+﻿@using ODK.Core.Members
+@using ODK.Services.Users.ViewModels
+@using ODK.Web.Razor.Models.Account
+@model MemberEmailPreferencesPageViewModel
+@{
+    var preferencesDictionary = Model.Preferences
+        .ToDictionary(x => x.Type);
 
-@if (Model.CurrentMember.EmailOptIn)
-{
-    <div class="alert alert-success">You are currently receiving event emails.</div>
+    var types = new[]
+    {
+        MemberEmailPreferenceType.Events,
+        MemberEmailPreferenceType.EventMessages,
+        MemberEmailPreferenceType.ConversationMessages,
+        MemberEmailPreferenceType.ChapterMessages
+    };
 
-    <form method="post" action="/@Model.ChapterName/Account/Emails/Unsubscribe">
-        <button class="btn btn-danger" type="submit"
-                onclick="return confirm('Are you sure you want to stop receiving event emails?');">
-            Unsubscribe
-        </button>
-        <span class="text-danger">
-            You will no longer receive emails informing you of upcoming events
-        </span>
-    </form>
+    var preferenceViewModels = types
+        .Select(x => new EmailPreferenceFormViewModel
+        {
+            Enabled = preferencesDictionary.ContainsKey(x) ? !preferencesDictionary[x].Disabled : true,
+            Type = x
+        })
+        .ToList();
 }
-else
-{
-    <div class="alert alert-danger">You have chosen not to receive event emails.</div>
 
-    <form method="post" action="/@Model.ChapterName/Account/Emails/Subscribe">
-        <button class="btn btn-success" type="submit">
-            Subscribe
-        </button>
-        <span class="text-success">
-            You will receive emails informing you of upcoming events
-        </span>
-    </form>
-}
+<p>Choose whether or not you want to receive the following emails:</p>
+
+<form action="/account/emails" method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Account/_EmailPreferencesForm", new EmailPreferencesFormViewModel
+    {
+        Preferences = preferenceViewModels
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

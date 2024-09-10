@@ -145,6 +145,22 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
+    public async Task<MemberEmailPreferencesPageViewModel> GetMemberEmailPreferencesPage(Guid currentMemberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (member, preferences) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberEmailPreferenceRepository.GetByMemberId(currentMemberId));
+
+        return new MemberEmailPreferencesPageViewModel
+        {
+            CurrentMember = member,
+            Platform = platform,
+            Preferences = preferences
+        };
+    }
+
     public async Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(Guid currentMemberId)
     {
         var platform = _platformProvider.GetPlatform();

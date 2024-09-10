@@ -60,6 +60,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberAvatarRepository MemberAvatarRepository => Mock.Object.MemberAvatarRepository;
     public IMemberChapterRepository MemberChapterRepository => Mock.Object.MemberChapterRepository;
     public IMemberEmailAddressUpdateTokenRepository MemberEmailAddressUpdateTokenRepository => Mock.Object.MemberEmailAddressUpdateTokenRepository;
+    public IMemberEmailPreferenceRepository MemberEmailPreferenceRepository => Mock.Object.MemberEmailPreferenceRepository;
     public IMemberImageRepository MemberImageRepository => Mock.Object.MemberImageRepository;
     public IMemberLocationRepository MemberLocationRepository => Mock.Object.MemberLocationRepository;
     public IMemberNotificationSettingsRepository MemberNotificationSettingsRepository => Mock.Object.MemberNotificationSettingsRepository;

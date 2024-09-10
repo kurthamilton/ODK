@@ -22,9 +22,7 @@
         new MenuItem { Link = OdkRoutes.Account.Payments(Model.Chapter), Text = "My payments" },
         new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(Model.Chapter), Text = "Email address" },
         new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.Chapter), Text = "Password" },
-        Model.Chapter != null
-            ? new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.Chapter), Text = "Email preferences" }
-            : new MenuItem(),
+        new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.Chapter), Text = "Email preferences" },
         new MenuItem { Link = OdkRoutes.Account.Notifications(Model.Chapter), Text = "Notifications" },
         new MenuItem { Link = OdkRoutes.Account.Delete(Model.Chapter), Text = "Delete account" }
     }.Where(x => !string.IsNullOrEmpty(x.Link)).ToArray();

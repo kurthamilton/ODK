@@ -35,7 +35,7 @@ public interface IMemberService
 
     Task RotateMemberImage(Guid memberId);
 
-    Task UpdateMemberEmailOptIn(Guid memberId, bool optIn);
+    Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);
 
     Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage? model, MemberImageCropInfo cropInfo);    
 
