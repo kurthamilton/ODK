@@ -47,8 +47,9 @@ public class ChapterService : IChapterService
         var now = DateTime.UtcNow;
         var platform = _platformProvider.GetPlatform();
 
-        var (memberSubscription, existing, countries, siteEmailSettings) = await _unitOfWork.RunAsync(
+        var (memberSubscription, memberPaymentSettings, existing, countries, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform),
+            x => x.MemberPaymentSettingsRepository.GetByMemberId(currentMemberId),
             x => x.ChapterRepository.GetAll(),
             x => x.CountryRepository.GetAll(),
             x => x.SiteEmailSettingsRepository.Get(platform));
@@ -140,6 +141,17 @@ public class ChapterService : IChapterService
             ChapterId = chapter.Id,
             TopicId = x
         }));
+
+        if (memberPaymentSettings != null)
+        {
+            _unitOfWork.ChapterPaymentSettingsRepository.Add(new ChapterPaymentSettings
+            {
+                ApiPublicKey = memberPaymentSettings.ApiPublicKey,
+                ApiSecretKey = memberPaymentSettings.ApiSecretKey,
+                ChapterId = chapter.Id,
+                CurrencyId = memberPaymentSettings.CurrencyId
+            });
+        }
 
         await _unitOfWork.SaveChangesAsync();
 

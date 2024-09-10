@@ -17,6 +17,10 @@ public class ChapterPaymentSettingsMap : IEntityTypeConfiguration<ChapterPayment
         builder.Property(x => x.Provider)
             .HasConversion<NullableEnumStringConverter<PaymentProviderType>>();
 
+        builder.HasOne<Chapter>()
+            .WithOne()
+            .HasForeignKey<ChapterPaymentSettings>(x => x.ChapterId);
+
         builder.HasOne(x => x.Currency)
             .WithMany()
             .HasForeignKey(x => x.CurrencyId);
