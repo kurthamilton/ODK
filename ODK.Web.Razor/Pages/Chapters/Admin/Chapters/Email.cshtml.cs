@@ -32,6 +32,7 @@ public class EmailModel : AdminPageModel
         var result = await _emailAdminService.UpdateChapterEmail(request, type, new UpdateEmail
         {
             HtmlContent = viewModel.Content,
+            Overridable = false,
             Subject = viewModel.Subject
         });
 

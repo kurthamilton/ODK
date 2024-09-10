@@ -6,6 +6,8 @@ public class Email
 {
     public string HtmlContent { get; set; } = "";
 
+    public bool Overridable { get; set; }
+
     public IDictionary<string, string?> Parameters { get; } = new Dictionary<string, string?>();
 
     public string Subject { get; set; } = "";

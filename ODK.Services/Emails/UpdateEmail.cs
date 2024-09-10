@@ -2,7 +2,9 @@
 
 public class UpdateEmail
 {
-    public string HtmlContent { get; set; } = "";
+    public required string HtmlContent { get; init; }
 
-    public string Subject { get; set; } = "";
+    public required bool Overridable { get; init; }
+
+    public required string Subject { get; init; }
 }

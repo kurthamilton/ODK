@@ -19,4 +19,6 @@
     }
 })
 
-@await Html.PartialAsync("SuperAdmin/_EmailContent", new EmailContentViewModel(Model.Email))
+<section class="section">
+    @await Html.PartialAsync("SuperAdmin/_EmailContent", new EmailContentViewModel(Model.Email))
+</section>

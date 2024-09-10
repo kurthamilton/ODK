@@ -25,11 +25,14 @@ public class EmailModel : SuperAdminPageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(EmailType type, ChapterEmailFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync(EmailType type, 
+        [FromForm] ChapterEmailFormViewModel viewModel,
+        [FromForm] bool overridable)
     {
         var result = await _emailAdminService.UpdateEmail(CurrentMemberId, type, new UpdateEmail
         {
             HtmlContent = viewModel.Content,
+            Overridable = overridable,
             Subject = viewModel.Subject
         });
 

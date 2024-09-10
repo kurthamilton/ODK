@@ -33,7 +33,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 
     public async Task<ChapterEmail> GetChapterEmail(AdminServiceRequest request, EmailType type)
     {
-        var (chapterEmail, email) = await GetChapterAdminRestrictedContent(request,
+        var (chapterEmail, siteEmail) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterEmailRepository.GetByChapterId(request.ChapterId, type),
             x => x.EmailRepository.GetByType(type));
 
@@ -45,51 +45,46 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return new ChapterEmail
         {
             ChapterId = request.ChapterId,
-            HtmlContent = email.HtmlContent,
-            Subject = email.Subject,
-            Type = email.Type
+            HtmlContent = siteEmail.HtmlContent,
+            Subject = siteEmail.Subject,
+            Type = siteEmail.Type
         };
     }
 
     public async Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(AdminServiceRequest request)
     {
-        var (chapterEmails, emails) = await GetChapterAdminRestrictedContent(request,
+        var (chapterEmails, siteEmails) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterEmailRepository.GetByChapterId(request.ChapterId),
             x => x.EmailRepository.GetAll());
 
         var chapterEmailDictionary = chapterEmails.ToDictionary(x => x.Type);
-        var emailDictionary = emails.ToDictionary(x => x.Type);
+        
+        var emails = new List<ChapterEmail>();
 
-        var defaultEmails = new List<ChapterEmail>();
-
-        foreach (EmailType type in Enum.GetValues(typeof(EmailType)))
+        foreach (var siteEmail in siteEmails.OrderBy(x => x.Type))
         {
-            if (type == EmailType.None)
+            if (!siteEmail.Overridable)
             {
                 continue;
             }
 
-            if (!chapterEmailDictionary.ContainsKey(type))
+            if (chapterEmailDictionary.TryGetValue(siteEmail.Type, out var chapterEmail))
             {
-                if (!emailDictionary.TryGetValue(type, out var email))
-                {
-                    continue;
-                }
-
-                defaultEmails.Add(new ChapterEmail
+                emails.Add(chapterEmail);
+            }
+            else
+            {
+                emails.Add(new ChapterEmail
                 {
                     ChapterId = request.ChapterId,
-                    HtmlContent = email.HtmlContent,
-                    Subject = email.Subject,
-                    Type = type
+                    HtmlContent = siteEmail.HtmlContent,
+                    Subject = siteEmail.Subject,
+                    Type = siteEmail.Type
                 });
             }
         }
 
-        return chapterEmails
-            .Union(defaultEmails)
-            .OrderBy(x => x.Type)
-            .ToArray();
+        return emails;
     }
 
     public async Task<Email> GetEmail(Guid currentMemberId, EmailType type)
@@ -136,10 +131,16 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
     }
 
     public async Task<ServiceResult> UpdateChapterEmail(AdminServiceRequest request, EmailType type, 
-        UpdateEmail update)
+        UpdateEmail model)
     {
-        var chapterEmail = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterEmailRepository.GetByChapterId(request.ChapterId, type));
+        var (chapterEmail, siteEmail) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterEmailRepository.GetByChapterId(request.ChapterId, type),
+            x => x.EmailRepository.GetByType(type));
+
+        if (!siteEmail.Overridable)
+        {
+            return ServiceResult.Failure("This email cannot be customised");
+        }
 
         if (chapterEmail == null)
         {
@@ -150,8 +151,8 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             };            
         }
 
-        chapterEmail.HtmlContent = update.HtmlContent;
-        chapterEmail.Subject = update.Subject;
+        chapterEmail.HtmlContent = model.HtmlContent;
+        chapterEmail.Subject = model.Subject;
 
         var validationResult = ValidateChapterEmail(chapterEmail);
         if (!validationResult.Success)
@@ -165,13 +166,14 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateEmail(Guid currentMemberId, EmailType type, UpdateEmail email)
+    public async Task<ServiceResult> UpdateEmail(Guid currentMemberId, EmailType type, UpdateEmail model)
     {
         var existing = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.EmailRepository.GetByType(type));
 
-        existing.HtmlContent = email.HtmlContent;
-        existing.Subject = email.Subject;
+        existing.HtmlContent = model.HtmlContent;
+        existing.Overridable = model.Overridable;
+        existing.Subject = model.Subject;
 
         var validationResult = ValidateEmail(existing);
         if (!validationResult.Success)
