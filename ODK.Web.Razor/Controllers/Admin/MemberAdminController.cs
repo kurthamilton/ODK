@@ -73,7 +73,7 @@ public class MemberAdminController : AdminControllerBase
 
         var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterAdminService.GetChapter(request);
-        return Redirect(OdkRoutes2.MemberGroups.Members(platform, chapter));
+        return Redirect(OdkRoutes.MemberGroups.Members(platform, chapter));
     }
 
     [HttpPost("groups/{chapterId:guid}members/{id:guid}/emails/activation/send")]

@@ -13,7 +13,7 @@
 
     if (!viewModel.IsMember)
     {
-        Response.Redirect(OdkRoutes2.Groups.Join(viewModel.Platform, viewModel.Chapter));
+        Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));
     }
 
     Model.Title = $"Members | {viewModel.Chapter.Name}";

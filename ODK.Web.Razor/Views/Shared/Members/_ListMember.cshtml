@@ -6,7 +6,7 @@
 }
 
 <div class="member-tile @(Model.HideName ? "member-tile-sm" : null)">
-    <a href="@OdkRoutes2.Groups.Member(Model.Platform, Model.Chapter, Model.Member.Id)" 
+    <a href="@OdkRoutes.Groups.Member(Model.Platform, Model.Chapter, Model.Member.Id)" 
        data-bs-toggle="@(showTooltip ? "tooltip" : "")" 
        data-bs-title="@(showTooltip ? Model.Member.FullName : "")" container="body">
 

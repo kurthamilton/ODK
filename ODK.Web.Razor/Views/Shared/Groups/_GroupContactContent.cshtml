@@ -10,7 +10,7 @@
 {
     <h2>Send us a message</h2>
     <p>
-        If the <a href="@OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter)">FAQ</a> page hasn't answered your questions,
+        If the <a href="@OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter)">FAQ</a> page hasn't answered your questions,
         please don't hesitate to get in touch. We'll get back to you as soon as possible.
     </p>
 
@@ -41,7 +41,7 @@
                     {
                         <tr>
                             <td>
-                                <a href="@OdkRoutes2.Groups.Conversation(Model.Platform, Model.Chapter, dto.Conversation.Id)">
+                                <a href="@OdkRoutes.Groups.Conversation(Model.Platform, Model.Chapter, dto.Conversation.Id)">
                                     @dto.Conversation.Subject
                                 </a>
                             </td>

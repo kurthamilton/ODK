@@ -9,7 +9,7 @@
 @using ODK.Web.Razor.Models.Events
 @model GroupEventsPageViewModel
 @{
-    var past = Context.ForPath(OdkRoutes2.Groups.PastEvents(Model.Platform, Model.Chapter));
+    var past = Context.ForPath(OdkRoutes.Groups.PastEvents(Model.Platform, Model.Chapter));
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

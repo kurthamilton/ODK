@@ -1,0 +1,132 @@
+﻿@using ODK.Core.Events
+@using ODK.Core.Members
+@using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Events
+@using ODK.Web.Razor.Models.Members
+@model EventAttendeesAdminPageViewModel
+@{
+    var memberDictionary = Model.Members
+        .ToDictionary(x => x.Id);
+
+    var responseDictionary = Model.Responses
+        .ToDictionary(x => x.MemberId, x => x.Type);
+
+    var responseTypeDictionary = Model.Responses
+        .GroupBy(x => x.Type)
+        .ToDictionary(x => x.Key, x => x.ToArray());
+
+    var responseTypes = new[]
+    {
+        EventResponseType.Yes,
+        EventResponseType.Maybe,
+        EventResponseType.No,
+        EventResponseType.None
+    };
+
+    var responseTitles = new Dictionary<EventResponseType, string>
+    {
+        { EventResponseType.Yes, "Going" },
+        { EventResponseType.Maybe, "Maybe" },
+        { EventResponseType.No, "Declined" },
+        { EventResponseType.None, "No response" }
+    };
+}
+
+@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
+@await Html.PartialAsync("Admin/Events/_EventHeader")
+@await Html.PartialAsync("Admin/Events/_EventAdminTabs")
+
+<div class="d-flex flex-column gap-3">
+    @foreach(var responseType in responseTypes)
+    {
+        if (!responseTypeDictionary.TryGetValue(responseType, out var responses) && responseType != EventResponseType.None)
+        {
+            continue;
+        }
+
+        IReadOnlyCollection<Member> members;
+
+        if (responses != null)
+        {
+            members = responses
+                .Where(x => memberDictionary.ContainsKey(x.MemberId))
+                .Select(x => memberDictionary[x.MemberId])
+                .OrderBy(x => x.GetDisplayName(Model.Chapter.Id))
+                .ToArray();
+        }
+        else
+        {
+            members = Model.Members
+                .Where(x => !responseDictionary.ContainsKey(x.Id))
+                .OrderBy(x => x.GetDisplayName(Model.Chapter.Id))
+                .ToArray();
+        }
+
+        if (members.Count == 0)
+        {
+            continue;
+        }
+
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            TitleContentFunc = @<h5>@responseTitles[responseType]</h5>,
+            BodyContentFunc = 
+                @<div>
+                    <div class="row row-cols-3 row-cols-md-6">
+                        @foreach (var member in members)
+                        {
+                            responseDictionary.TryGetValue(member.Id, out var response);
+
+                            <div class="col mb-3">
+                                <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)"
+                                    class="text-center">
+                                    <div>
+                                        @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
+                                        {
+                                            Member = member
+                                        })  
+                                    </div>
+                                    <div>
+                                        @member.GetDisplayName(Model.Chapter.Id)
+                                    </div>
+                                </a>
+                                <div class="d-flex justify-content-center gap-1">
+                                    <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                                        @Html.AntiForgeryToken()
+                                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                                        {
+                                            Active = response == EventResponseType.Yes,
+                                            ResponseType = EventResponseType.Yes,
+                                            ReadOnly = false
+                                        })
+                                    </form>
+
+                                    <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                                        @Html.AntiForgeryToken()
+                                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                                        {
+                                            Active = response == EventResponseType.Maybe,
+                                            ResponseType = EventResponseType.Maybe,
+                                            ReadOnly = false
+                                        })
+                                    </form>
+
+                                    <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                                        @Html.AntiForgeryToken()
+                                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                                        {
+                                            Active = response == EventResponseType.No,
+                                            ResponseType = EventResponseType.No,
+                                            ReadOnly = false
+                                        })
+                                    </form>
+                                </div>
+                            </div>
+                        }                    
+                    </div>
+                </div>
+        })
+    }
+</div>

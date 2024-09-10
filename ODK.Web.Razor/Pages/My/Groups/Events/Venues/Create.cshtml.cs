@@ -48,7 +48,7 @@ public class CreateModel : OdkGroupAdminPageModel
         var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterService.GetChapterById(ChapterId);
         AddFeedback(new FeedbackViewModel("Venue created", FeedbackType.Success));
-        var url = OdkRoutes2.MemberGroups.Venues(platform, chapter);
+        var url = OdkRoutes.MemberGroups.Venues(platform, chapter);
         return Redirect(url);
     }
 }

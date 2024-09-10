@@ -11,7 +11,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes2.MemberGroups.MembersSubscriptions(Model.Platform, Model.Chapter),
+            Link = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, Model.Chapter),
             Text = "Subscriptions"
         },
         new MenuItem { Text = Model.Subscription.Name }
@@ -22,7 +22,7 @@
 {
     <div class="alert alert-warning">
         You must update your
-        <a href="@OdkRoutes2.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a>
+        <a href="@OdkRoutes.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a>
         before you can edit subscriptions
     </div>
     return;

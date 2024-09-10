@@ -11,9 +11,9 @@
     var breadcrumbs = new[]
     {
         Model.Platform == PlatformType.DrunkenKnitwits
-            ? new MenuItem { Link = OdkRoutes2.Groups.Group(Model.Platform, Model.Chapter), Text = Model.Chapter.Name }
+            ? new MenuItem { Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), Text = Model.Chapter.Name }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter), Text = "Contact" },
+        new MenuItem { Link = OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter), Text = "Contact" },
         new MenuItem { Text = Model.Conversation.Subject }
     }.Where(x => !string.IsNullOrEmpty(x.Text))
     .ToArray();
@@ -72,7 +72,7 @@
                     {
                         <div class="list-group-item">
                             <div>
-                                <a href="@OdkRoutes2.Groups.Conversation(Model.Platform, Model.Chapter, dto.Conversation.Id)">
+                                <a href="@OdkRoutes.Groups.Conversation(Model.Platform, Model.Chapter, dto.Conversation.Id)">
                                     @dto.Conversation.Subject
                                 </a>
                             </div>

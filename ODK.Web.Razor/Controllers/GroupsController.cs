@@ -85,7 +85,7 @@ public class GroupsController : OdkControllerBase
         }                
 
         var platform = _platformProvider.GetPlatform();
-        return Redirect(OdkRoutes2.MemberGroups.Index(platform));
+        return Redirect(OdkRoutes.MemberGroups.Index(platform));
     }
 
     [Authorize]

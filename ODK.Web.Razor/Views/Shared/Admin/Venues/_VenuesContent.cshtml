@@ -22,7 +22,7 @@
 
 <section class="section">
     <p>
-        <a href="@OdkRoutes2.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">Create</a>
+        <a href="@OdkRoutes.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">Create</a>
     </p>
 
     <div class="table-responsive">
@@ -40,7 +40,7 @@
                 {
                     <tr>
                         <td>
-                            <a data-sort-value="@venue.Name" href="@OdkRoutes2.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a>
+                            <a data-sort-value="@venue.Name" href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a>
                         </td>
                         <td>@venue.MapQuery</td>
                         <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>

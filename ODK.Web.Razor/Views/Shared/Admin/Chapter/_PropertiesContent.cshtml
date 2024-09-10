@@ -13,7 +13,7 @@
         The member properties are personal questions asked to members when they sign up. Answers are visible to other members.
     </p>
     <p>
-        <a href="@OdkRoutes2.MemberGroups.GroupPropertyCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
+        <a href="@OdkRoutes.MemberGroups.GroupPropertyCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
             Create property
         </a>
     </p>
@@ -33,7 +33,7 @@
                 {
                     <tr>
                         <td>
-                            <a href="@OdkRoutes2.MemberGroups.GroupProperty(Model.Platform, Model.Chapter, property.Id)">@property.Label</a>
+                            <a href="@OdkRoutes.MemberGroups.GroupProperty(Model.Platform, Model.Chapter, property.Id)">@property.Label</a>
                         </td>
                         <td>@property.Name</td>
                         <td>

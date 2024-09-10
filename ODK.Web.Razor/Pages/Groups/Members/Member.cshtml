@@ -13,7 +13,7 @@
     var viewModel = await MemberViewModelService.GetGroupMemberPage(Model.CurrentMemberId, Model.Slug, Model.MemberId);
     if (!viewModel.IsMember)
     {
-        Response.Redirect(OdkRoutes2.Groups.Join(viewModel.Platform, viewModel.Chapter));
+        Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));
     }
 
     Model.Title = $"{viewModel.Member.GetDisplayName(viewModel.Chapter.Id)} | {viewModel.Chapter.Name}";
@@ -26,7 +26,7 @@
     Group = viewModel,
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = OdkRoutes2.Groups.Members(viewModel.Platform, viewModel.Chapter), Text = "Members" },
+        new MenuItem { Link = OdkRoutes.Groups.Members(viewModel.Platform, viewModel.Chapter), Text = "Members" },
         new MenuItem { Text = viewModel.Member.GetDisplayName(viewModel.Chapter.Id) }
     }
 })

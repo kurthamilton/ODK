@@ -21,12 +21,14 @@
     <p>
         @Model.Invites.Sent invites were sent on @TimeZoneEntityExtensions.ToLocalTime(Model.Chapter, Model.Invites.SentUtc.Value).ToString("dddd, MMMM d, yyyy")
     </p>
-    @await Html.PartialAsync("Admin/Events/_EventResponses")
-    @await Html.PartialAsync("Admin/Events/_EventInviteeUpdate", new EventUpdateViewModel
-    {
-        Chapter = Model.Chapter,
-        EventId = Model.Event.Id
-    })
+
+    <section class="section">
+        @await Html.PartialAsync("Admin/Events/_EventInviteeUpdate", new EventUpdateViewModel
+        {
+            Chapter = Model.Chapter,
+            EventId = Model.Event.Id
+        })
+    </section>
 
     return;
 }

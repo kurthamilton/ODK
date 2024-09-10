@@ -18,7 +18,7 @@
     }
 
     <p>
-        <a href="@OdkRoutes2.MemberGroups.GroupQuestionCreate(Model.Platform, Model.Chapter)" 
+        <a href="@OdkRoutes.MemberGroups.GroupQuestionCreate(Model.Platform, Model.Chapter)" 
             class="btn btn-primary">
             Create question
         </a>
@@ -38,7 +38,7 @@
                 {
                     <tr>
                         <td>
-                            <a href="@OdkRoutes2.MemberGroups.GroupQuestion(Model.Platform, Model.Chapter, question.Id)">@question.Name</a>
+                            <a href="@OdkRoutes.MemberGroups.GroupQuestion(Model.Platform, Model.Chapter, question.Id)">@question.Name</a>
                         </td>
                         <td>
                             <div class="d-flex">

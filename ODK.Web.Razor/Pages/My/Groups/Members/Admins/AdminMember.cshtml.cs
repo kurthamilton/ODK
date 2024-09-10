@@ -45,6 +45,6 @@ public class AdminMemberModel : OdkGroupAdminPageModel
 
         var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
-        return Redirect(OdkRoutes2.MemberGroups.MemberAdmins(platform, chapter));
+        return Redirect(OdkRoutes.MemberGroups.MemberAdmins(platform, chapter));
     }
 }

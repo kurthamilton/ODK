@@ -11,7 +11,7 @@
     HeaderContentFunc = 
         @<div class="d-flex gap-3">
             <div class="me-auto">
-                <a href="@OdkRoutes2.Groups.Group(Model.Platform, chapter)">@chapter.Name</a>
+                <a href="@OdkRoutes.Groups.Group(Model.Platform, chapter)">@chapter.Name</a>
             </div>
             @if (Model.IsOwner || Model.IsAdmin)
             {
@@ -34,7 +34,7 @@
         @<div>
             @if (Model.IsAdmin || Model.IsOwner)
             {
-                <a class="text-body-secondary" href="@OdkRoutes2.MemberGroups.Group(Model.Platform, chapter)">
+                <a class="text-body-secondary" href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
                     @await Html.PartialAsync("Components/Icons/_Settings") 
                     <span>Manage</span>
                 </a>

@@ -1,17 +1,17 @@
-﻿@page "/{chapterName}/Admin/Events/{id:guid}/Attendees"
+﻿@page "/{chapterName}/admin/events/{id:guid}/responses"
 @using ODK.Services
 @using ODK.Services.Events
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Admin.Events
-@model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventAttendeesModel
+@model EventResponsesModel
 @inject IEventAdminService EventAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Event attendees | Admin";
+    Model.Title = "Event responses | Admin";
 
     var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
     var viewModel = await EventAdminService.GetEventAttendeesViewModel(request, Model.Event.Id);
 }
 
-@await Html.PartialAsync("Admin/Events/_EventAttendeesContent", viewModel)
+@await Html.PartialAsync("Admin/Events/_EventResponsesContent", viewModel)

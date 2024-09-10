@@ -12,8 +12,8 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversations(Model.Platform, Model.Chapter), Text = "Conversations" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id), Text = Model.Member.FullName },
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupConversations(Model.Platform, Model.Chapter), Text = "Conversations" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id), Text = Model.Member.FullName },
         new MenuItem { Text = Model.Conversation.Subject }
     }
 })
@@ -75,7 +75,7 @@
                     {
                         <div class="list-group-item">
                             <div>
-                                <a href="@OdkRoutes2.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, dto.Conversation.Id)">
+                                <a href="@OdkRoutes.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, dto.Conversation.Id)">
                                     @dto.Conversation.Subject
                                 </a>
                             </div>

@@ -69,7 +69,7 @@
             </select>
         </div>
         <div class="col ms-auto align-self-end">
-            <a href="@OdkRoutes2.MemberGroups.MembersDownload(Model.Platform, Model.Chapter)">
+            <a href="@OdkRoutes.MemberGroups.MembersDownload(Model.Platform, Model.Chapter)">
                 <i class="fa-solid fa-file-excel icon--excel"></i>
                 Download CSV
             </a>
@@ -107,7 +107,7 @@
                     })
                 </td>
                 <td>
-                    <a href="@OdkRoutes2.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)" data-sort-value="@member.FullName">
+                    <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)" data-sort-value="@member.FullName">
                         @member.GetDisplayName(Model.Chapter.Id)
                     </a>
                 </td>

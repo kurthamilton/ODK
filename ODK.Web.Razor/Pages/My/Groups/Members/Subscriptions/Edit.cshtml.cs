@@ -49,6 +49,6 @@ public class EditModel : OdkGroupAdminPageModel
         var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
 
-        return Redirect(OdkRoutes2.MemberGroups.MembersSubscriptions(platform, chapter));
+        return Redirect(OdkRoutes.MemberGroups.MembersSubscriptions(platform, chapter));
     }
 }

@@ -49,6 +49,6 @@ public class VenueModel : OdkGroupAdminPageModel
 
         var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
-        return Redirect(OdkRoutes2.MemberGroups.Venues(platform, chapter));
+        return Redirect(OdkRoutes.MemberGroups.Venues(platform, chapter));
     }
 }

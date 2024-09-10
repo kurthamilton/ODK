@@ -48,7 +48,7 @@ public class EventAdminController : AdminControllerBase
 
         var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterAdminService.GetChapter(request);
-        return Redirect(OdkRoutes2.MemberGroups.Events(platform, chapter));
+        return Redirect(OdkRoutes.MemberGroups.Events(platform, chapter));
     }
 
     [HttpPost("groups/{chapterId:guid}/events/{id:guid}/invites/send")]

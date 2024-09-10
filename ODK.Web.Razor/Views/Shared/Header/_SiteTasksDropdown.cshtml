@@ -43,7 +43,7 @@
             {
                 @foreach (var chapter in chaptersPendingPublication)
                 {
-                    <a class="dropdown-item border-top p-3" href="@OdkRoutes2.MemberGroups.Group(platform, chapter)">
+                    <a class="dropdown-item border-top p-3" href="@OdkRoutes.MemberGroups.Group(platform, chapter)">
                         <strong>@chapter.Name</strong> is waiting to be published
                     </a>
                 }                

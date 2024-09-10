@@ -6,14 +6,14 @@
 @{
     var menuItems = new List<MenuItem>
     {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.Member(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Subscription" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.MemberEvents(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Events" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Conversations" }
+        new MenuItem { Link = OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Subscription" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.MemberEvents(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Events" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Conversations" }
     };
 
     if (Model.Platform == PlatformType.DrunkenKnitwits)
     {
-        menuItems.Add(new MenuItem { Link = OdkRoutes2.MemberGroups.MemberImage(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Image" });
+        menuItems.Add(new MenuItem { Link = OdkRoutes.MemberGroups.MemberImage(Model.Platform, Model.Chapter, Model.Member.Id), Text = "Image" });
     }
 }
 

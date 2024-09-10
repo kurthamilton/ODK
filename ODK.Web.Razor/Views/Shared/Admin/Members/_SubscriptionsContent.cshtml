@@ -35,12 +35,12 @@
                 {
                     <div class="alert alert-warning">
                         Membership is currently disabled. 
-                        <a href="@OdkRoutes2.MemberGroups.MembershipSettings(Model.Platform, Model.Chapter)">Update membership settings</a>
+                        <a href="@OdkRoutes.MemberGroups.MembershipSettings(Model.Platform, Model.Chapter)">Update membership settings</a>
                     </div>
                 }
 
                 <p>
-                    <a href="@OdkRoutes2.MemberGroups.MembersSubscriptionCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
+                    <a href="@OdkRoutes.MemberGroups.MembersSubscriptionCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
                         Create subscription
                     </a>
                 </p>
@@ -60,7 +60,7 @@
                         {
                             <tr>
                                 <td>
-                                    <a href="@OdkRoutes2.MemberGroups.MembersSubscription(Model.Platform, Model.Chapter, subscription)">@subscription.Name</a>
+                                    <a href="@OdkRoutes.MemberGroups.MembersSubscription(Model.Platform, Model.Chapter, subscription)">@subscription.Name</a>
                                 </td>
                                 <td>
                                     @currency?.ToAmountString(subscription.Amount)

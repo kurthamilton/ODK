@@ -50,6 +50,6 @@ public class PropertyModel : OdkGroupAdminPageModel
         var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
 
-        return Redirect(OdkRoutes2.MemberGroups.GroupProperties(platform, chapter));
+        return Redirect(OdkRoutes.MemberGroups.GroupProperties(platform, chapter));
     }
 }

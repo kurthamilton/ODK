@@ -1,6 +1,6 @@
 namespace ODK.Web.Razor.Pages.My.Groups.Events.Event;
 
-public class AttendeesModel : OdkGroupAdminPageModel
+public class ResponsesModel : OdkGroupAdminPageModel
 {
     public Guid EventId { get; private set; }
 

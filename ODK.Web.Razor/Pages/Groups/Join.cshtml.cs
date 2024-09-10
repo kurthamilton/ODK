@@ -42,6 +42,6 @@ public class JoinModel : OdkGroupPageModel
             return Page();
         }
 
-        return Redirect(OdkRoutes2.Groups.Group(PlatformType.Default, chapter));
+        return Redirect(OdkRoutes.Groups.Group(PlatformType.Default, chapter));
     }
 }

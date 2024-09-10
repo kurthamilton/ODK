@@ -22,8 +22,8 @@
     Breadcrumbs = new[]
     {
         viewModel.Event.HasPassed 
-            ? new MenuItem { Link = OdkRoutes2.Groups.PastEvents(viewModel.Platform, viewModel.Chapter), Text = "Past events" }
-            : new MenuItem { Link = OdkRoutes2.Groups.Events(viewModel.Platform, viewModel.Chapter), Text = "Events" },
+            ? new MenuItem { Link = OdkRoutes.Groups.PastEvents(viewModel.Platform, viewModel.Chapter), Text = "Past events" }
+            : new MenuItem { Link = OdkRoutes.Groups.Events(viewModel.Platform, viewModel.Chapter), Text = "Events" },
         new MenuItem { Text = viewModel.Event.GetDisplayName() }
     }
 })

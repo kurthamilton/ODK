@@ -58,7 +58,7 @@ public class GroupCreateModel : OdkPageModel
         var platform = _platformProvider.GetPlatform();
 
         return result.Value != null
-            ? Redirect(OdkRoutes2.MemberGroups.Group(platform, result.Value))
-            : Redirect(OdkRoutes2.MemberGroups.Index(platform));
+            ? Redirect(OdkRoutes.MemberGroups.Group(platform, result.Value))
+            : Redirect(OdkRoutes.MemberGroups.Index(platform));
     }
 }

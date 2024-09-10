@@ -13,7 +13,7 @@
     var viewModel = await MemberViewModelService.GetMemberPage(Model.CurrentMemberId, Model.ChapterName, Model.MemberId);
     if (!viewModel.IsMember)
     {
-        Response.Redirect(OdkRoutes2.Groups.Join(viewModel.Platform, viewModel.Chapter));
+        Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));
     }
 
     Model.Title = viewModel.Member.FullName;

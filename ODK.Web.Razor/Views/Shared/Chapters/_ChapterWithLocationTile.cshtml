@@ -6,7 +6,7 @@
     <div class="card-header">
         <div class="d-flex">
             <div class="me-auto">
-                <a href="@OdkRoutes2.Groups.Group(Model.Platform, Model.Chapter)">@Model.Chapter.Name</a>
+                <a href="@OdkRoutes.Groups.Group(Model.Platform, Model.Chapter)">@Model.Chapter.Name</a>
             </div>
             <div class="small">
                 @await Html.PartialAsync("Components/_Location", Model.Location.Name)

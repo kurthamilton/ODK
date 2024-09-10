@@ -7,10 +7,7 @@ namespace ODK.Web.Common.Routes;
 public class MemberGroupRoutes
 {
     public string Event(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{Events(platform, chapter)}/{eventId}";
-
-    public string EventAttendees(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{Events(platform, chapter)}/{@eventId}/attendees";
+        => $"{Events(platform, chapter)}/{eventId}";    
 
     public string EventCreate(PlatformType platform, Chapter chapter) => platform switch
     {
@@ -20,6 +17,9 @@ public class MemberGroupRoutes
 
     public string EventInvites(PlatformType platform, Chapter chapter, Guid eventId)
         => $"{Events(platform, chapter)}/{@eventId}/invites";
+
+    public string EventResponses(PlatformType platform, Chapter chapter, Guid eventId)
+        => $"{Events(platform, chapter)}/{@eventId}/responses";
 
     public string Events(PlatformType platform, Chapter chapter) => 
         $"{Group(platform, chapter)}/events";

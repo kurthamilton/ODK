@@ -8,37 +8,37 @@
 @{
     var menuItems = new List<MenuItem>
     {
-        new MenuItem { Text = "About", Link = OdkRoutes2.Groups.Group(Model.Platform, Model.Chapter), ActiveIsExactMatch = true },
-        new MenuItem { Text = "Events", Link = OdkRoutes2.Groups.Events(Model.Platform, Model.Chapter) }
+        new MenuItem { Text = "About", Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), ActiveIsExactMatch = true },
+        new MenuItem { Text = "Events", Link = OdkRoutes.Groups.Events(Model.Platform, Model.Chapter) }
     };
 
     if (Model.IsMember)
     {
-        menuItems.Add(new MenuItem { Text = "Members", Link = OdkRoutes2.Groups.Members(Model.Platform, Model.Chapter) });        
+        menuItems.Add(new MenuItem { Text = "Members", Link = OdkRoutes.Groups.Members(Model.Platform, Model.Chapter) });        
     }
 
     if (Model.HasQuestions)
     {
-        menuItems.Add(new MenuItem { Text = "FAQ", Link = OdkRoutes2.Groups.Questions(Model.Platform, Model.Chapter) });
+        menuItems.Add(new MenuItem { Text = "FAQ", Link = OdkRoutes.Groups.Questions(Model.Platform, Model.Chapter) });
     }
 
     menuItems.Add(new MenuItem 
     { 
         Text = "Contact", 
-        Link = OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter),
+        Link = OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter),
         Active = 
-            Context.ForPath(OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter)) || 
-            Context.ForPath(OdkRoutes2.Groups.Conversations(Model.Platform, Model.Chapter))
+            Context.ForPath(OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter)) || 
+            Context.ForPath(OdkRoutes.Groups.Conversations(Model.Platform, Model.Chapter))
     });    
 
     if (Model.IsMember)
     {
-        menuItems.Add(new MenuItem { Text = "My profile", Link = OdkRoutes2.Groups.Profile.Index(Model.Chapter) });
+        menuItems.Add(new MenuItem { Text = "My profile", Link = OdkRoutes.Groups.Profile.Index(Model.Chapter) });
     }
 
     if (Model.IsAdmin)
     {
-        menuItems.Add(new MenuItem { Text = "Manage", Link = OdkRoutes2.MemberGroups.Group(Model.Platform, Model.Chapter) });
+        menuItems.Add(new MenuItem { Text = "Manage", Link = OdkRoutes.MemberGroups.Group(Model.Platform, Model.Chapter) });
     }
 
     var id = "nav-group";
@@ -72,7 +72,7 @@
 
         @if (!Model.IsMember)
         {
-            <a href="@OdkRoutes2.Groups.Join(Model.Platform, Model.Chapter)" class="btn btn-success">Join</a>
+            <a href="@OdkRoutes.Groups.Join(Model.Platform, Model.Chapter)" class="btn btn-success">Join</a>
         }
     </div>
 </nav>

@@ -25,7 +25,7 @@
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Venue, new { @class = "form-label" })
     @await Html.PartialAsync("Components/_Tooltip", "Select an existing venue or create a new venue first on the venues page")
-    <a href="@OdkRoutes2.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)">Create venue</a>
+    <a href="@OdkRoutes.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)">Create venue</a>
     @Html.DropDownListFor(x => x.Venue, venueOptions, "", new { @class = "form-select", data_searchable = "" })
     @Html.ValidationMessageFor(x => x.Venue)
 </div>
@@ -35,7 +35,7 @@
     <span class="ms-1 text-muted">Event date. Start time defaults to value set in event settings</span>
     @if (Model.Date.Date == Model.Date)
     {
-        <a href="@OdkRoutes2.MemberGroups.EventSettings(Model.Platform, Model.Chapter)">Set default start time</a>
+        <a href="@OdkRoutes.MemberGroups.EventSettings(Model.Platform, Model.Chapter)">Set default start time</a>
     }    
     @Html.TextBoxFor(x => x.Date, format: "{0:dd/MM/yyyy HH:mm}", new 
     { 
@@ -111,7 +111,7 @@
     {
         <div class="alert alert-warning">
             You must update your
-            <a href="@OdkRoutes2.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a>
+            <a href="@OdkRoutes.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a>
             before you can create ticketed events
         </div>
     }

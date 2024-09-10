@@ -3,9 +3,9 @@ using ODK.Services.Events;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
-public class EventAttendeesModel : EventAdminPageModel
+public class EventResponsesModel : EventAdminPageModel
 {
-    public EventAttendeesModel(IRequestCache requestCache, IEventAdminService eventAdminService) 
+    public EventResponsesModel(IRequestCache requestCache, IEventAdminService eventAdminService) 
         : base(requestCache, eventAdminService)
     {
     }

@@ -28,10 +28,10 @@ public class UrlProvider : IUrlProvider
         => GetUrl(OdkRoutes.Account.EmailAddressChangeConfirm(chapter, token));
 
     public string ConversationAdminUrl(Chapter chapter, Guid conversationId)
-        => GetUrl(OdkRoutes2.MemberGroups.GroupConversation(_platform, chapter, conversationId));
+        => GetUrl(OdkRoutes.MemberGroups.GroupConversation(_platform, chapter, conversationId));
 
     public string ConversationUrl(Chapter chapter, Guid conversationId)
-        => GetUrl(OdkRoutes2.Groups.Conversation(_platform, chapter, conversationId));
+        => GetUrl(OdkRoutes.Groups.Conversation(_platform, chapter, conversationId));
 
     public string EmailPreferences(Chapter? chapter)
         => GetUrl(OdkRoutes.Account.EmailPreferences(chapter));
@@ -40,16 +40,16 @@ public class UrlProvider : IUrlProvider
         => $"{EventUrl(chapter, eventId)}?rsvp={response.ToString().ToLowerInvariant()}";
 
     public string EventsUrl(Chapter chapter) 
-        => GetUrl(OdkRoutes2.Groups.Events(_platform, chapter));
+        => GetUrl(OdkRoutes.Groups.Events(_platform, chapter));
 
     public string EventUrl(Chapter chapter, Guid eventId)
-        => GetUrl(OdkRoutes2.Groups.Event(_platform, chapter, eventId));
+        => GetUrl(OdkRoutes.Groups.Event(_platform, chapter, eventId));
 
     public string MessageAdminUrl(Guid messageId)
         => GetUrl($"/superadmin/messages/{messageId}");
 
     public string MessageAdminUrl(Chapter chapter, Guid messageId) 
-        => GetUrl(OdkRoutes2.MemberGroups.GroupMessage(_platform, chapter, messageId));
+        => GetUrl(OdkRoutes.MemberGroups.GroupMessage(_platform, chapter, messageId));
 
     public string PasswordReset(Chapter? chapter, string token)
         => GetUrl(OdkRoutes.Account.PasswordReset(chapter, token));

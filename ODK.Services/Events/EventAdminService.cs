@@ -243,7 +243,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, ownerSubscription, currentMember, @event, eventEmail, members, invites, responses, venue) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, currentMember, @event, eventEmail, members, invites, venue) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
@@ -251,7 +251,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.EventEmailRepository.GetByEventId(eventId),
             x => x.MemberRepository.GetByChapterId(request.ChapterId),
             x => x.EventInviteRepository.GetByEventId(eventId),
-            x => x.EventResponseRepository.GetByEventId(eventId),
             x => x.VenueRepository.GetByEventId(eventId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
@@ -271,7 +270,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             Members = members,
             OwnerSubscription = ownerSubscription,
             Platform = platform,
-            Responses = responses,
             Venue = venue
         };
     }

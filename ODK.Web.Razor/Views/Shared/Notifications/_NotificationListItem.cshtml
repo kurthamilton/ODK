@@ -19,19 +19,19 @@
     var url = notification.Type switch
     {
         NotificationType.ChapterContactMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes2.MemberGroups.GroupMessage(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.MemberGroups.GroupMessage(platform, notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.ConversationAdminMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes2.Groups.Conversation(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.Groups.Conversation(platform, notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.ConversationOwnerMessage => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes2.MemberGroups.GroupConversation(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.MemberGroups.GroupConversation(platform, notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.NewEvent => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes2.Groups.Event(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.Groups.Event(platform, notification.Chapter, notification.EntityId.Value)
             : null,
         NotificationType.NewMember => notification.Chapter != null && notification.EntityId != null
-            ? OdkRoutes2.MemberGroups.Member(platform, notification.Chapter, notification.EntityId.Value)
+            ? OdkRoutes.MemberGroups.Member(platform, notification.Chapter, notification.EntityId.Value)
             : null,
         _ => null
     };

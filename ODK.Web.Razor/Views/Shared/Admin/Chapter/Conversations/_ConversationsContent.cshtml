@@ -10,7 +10,7 @@
     <p>Contact messages sent by logged in members</p>
 
     <p>
-        Your <a href="@OdkRoutes2.MemberGroups.GroupPrivacy(Model.Platform, Model.Chapter)">privacy settings</a> currently allow 
+        Your <a href="@OdkRoutes.MemberGroups.GroupPrivacy(Model.Platform, Model.Chapter)">privacy settings</a> currently allow 
         @switch (Model.PrivacySettings?.Conversations)
         {
             case null:
@@ -49,7 +49,7 @@
                         <td>
                             @if (dto.Member.IsMemberOf(Model.Chapter.Id))
                             {
-                                <a href="@OdkRoutes2.MemberGroups.Member(Model.Platform, Model.Chapter, dto.Member.Id)">
+                                <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, dto.Member.Id)">
                                     @dto.Member.FullName
                                 </a>
                             }      
@@ -59,7 +59,7 @@
                             }
                         </td>
                         <td>
-                            <a href="@OdkRoutes2.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
+                            <a href="@OdkRoutes.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
                                 @dto.Conversation.Subject
                             </a>
                         </td>

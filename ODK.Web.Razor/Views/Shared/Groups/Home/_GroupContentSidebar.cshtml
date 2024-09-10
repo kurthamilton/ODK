@@ -14,7 +14,7 @@
     {
         TitleContentFunc = @<h5>Organisers</h5>,
         TitleEndContentFunc = 
-            @<a class="d-flex align-items-center gap-1" href="@OdkRoutes2.Groups.Contact(Model.Platform, Model.Chapter)">
+            @<a class="d-flex align-items-center gap-1" href="@OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter)">
                 @await Html.PartialAsync("Components/Icons/_Contact")
                 <span>Contact</span>
             </a>,

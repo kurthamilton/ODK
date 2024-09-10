@@ -18,7 +18,7 @@
             {
                 <tr>
                     <td>
-                        <a href="@OdkRoutes2.Groups.Group(Model.Platform, dto.Chapter)">@dto.Chapter.Name</a>
+                        <a href="@OdkRoutes.Groups.Group(Model.Platform, dto.Chapter)">@dto.Chapter.Name</a>
                     </td>
                     <td>
                         @dto.Payment.PaidUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? dto.Chapter.TimeZone)

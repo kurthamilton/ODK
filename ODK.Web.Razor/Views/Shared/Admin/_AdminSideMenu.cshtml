@@ -12,25 +12,25 @@
 
     var groupLinks = new[]
     {
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupConversations(platform, chapter), Text = "Conversations" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupConversations(platform, chapter), Text = "Conversations" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem { Link = $"/{chapter.Name}/admin/chapter/emails", Text = "Emails" }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupQuestions(platform, chapter), Text = "FAQ" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupMessages(platform, chapter), Text = "Messages" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupQuestions(platform, chapter), Text = "FAQ" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupMessages(platform, chapter), Text = "Messages" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
-            : new MenuItem { Link = OdkRoutes2.MemberGroups.GroupPayments(platform, chapter), Text = "Payments" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupProperties(platform, chapter), Text = "Properties" },
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupSocialMedia(platform, chapter), Text = "Social media" },
+            : new MenuItem { Link = OdkRoutes.MemberGroups.GroupPayments(platform, chapter), Text = "Payments" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupProperties(platform, chapter), Text = "Properties" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupSocialMedia(platform, chapter), Text = "Social media" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem { Link = $"/{chapter.Name}/admin/chapter/subscription", Text = "Subscription" }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes2.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
-            : new MenuItem { Link = OdkRoutes2.MemberGroups.GroupTopics(platform, chapter), Text = "Topics" }
+            : new MenuItem { Link = OdkRoutes.MemberGroups.GroupTopics(platform, chapter), Text = "Topics" }
     };
 
     var superadminLinks = platform == PlatformType.DrunkenKnitwits && User.IsInRole(OdkRoles.SuperAdmin)
@@ -45,41 +45,41 @@
 
     var menuItems = new[]
     {
-        new MenuItem { Link = OdkRoutes2.Groups.Group(platform, chapter), Text = "Home" },
+        new MenuItem { Link = OdkRoutes.Groups.Group(platform, chapter), Text = "Home" },
         new MenuItem
         {
-            Link = OdkRoutes2.MemberGroups.Group(platform, chapter),
+            Link = OdkRoutes.MemberGroups.Group(platform, chapter),
             Text = "Group",
             Children = groupLinks.Where(x => !string.IsNullOrEmpty(x.Text)).ToArray()
         },
         new MenuItem
         {
-            Link = OdkRoutes2.MemberGroups.Events(platform, chapter),
+            Link = OdkRoutes.MemberGroups.Events(platform, chapter),
             Text = "Events",
             Children = new[]
             {
                 new MenuItem
                 {
-                    Link = OdkRoutes2.MemberGroups.Venues(platform, chapter),
+                    Link = OdkRoutes.MemberGroups.Venues(platform, chapter),
                     Text = "Venues"
                 },
-                new MenuItem { Link = OdkRoutes2.MemberGroups.EventSettings(platform, chapter), Text = "Settings" }
+                new MenuItem { Link = OdkRoutes.MemberGroups.EventSettings(platform, chapter), Text = "Settings" }
             }
         },
         new MenuItem
         {
-            Link = OdkRoutes2.MemberGroups.Members(platform, chapter),
+            Link = OdkRoutes.MemberGroups.Members(platform, chapter),
             Text = "Members",
             Children = new[]
             {
-                new MenuItem { Link = OdkRoutes2.MemberGroups.MemberAdmins(platform, chapter), Text = "Admins" },
-                new MenuItem { Link = OdkRoutes2.MemberGroups.MembershipSettings(platform, chapter), Text = "Membership" },
+                new MenuItem { Link = OdkRoutes.MemberGroups.MemberAdmins(platform, chapter), Text = "Admins" },
+                new MenuItem { Link = OdkRoutes.MemberGroups.MembershipSettings(platform, chapter), Text = "Membership" },
                 new MenuItem
                 {
-                    Link = OdkRoutes2.MemberGroups.MembersSubscriptions(platform, chapter),
+                    Link = OdkRoutes.MemberGroups.MembersSubscriptions(platform, chapter),
                     Text = "Subscriptions"
                 },
-                new MenuItem { Link = OdkRoutes2.MemberGroups.MembersEmail(platform, chapter), Text = "Bulk email" }
+                new MenuItem { Link = OdkRoutes.MemberGroups.MembersEmail(platform, chapter), Text = "Bulk email" }
             }
         },
         superadminLinks.Length > 0

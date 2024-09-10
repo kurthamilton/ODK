@@ -1,22 +1,29 @@
 ﻿@using ODK.Services.Events.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @model EventAdminPageViewModelBase
-
-<ul class="nav nav-underline my-3">
-    <li class="nav-item">
-        <a class="nav-link" data-menu-link="exact" href="@OdkRoutes2.MemberGroups.Event(Model.Platform, Model.Chapter, Model.Event.Id)">Edit</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.EventInvites(Model.Platform, Model.Chapter, Model.Event.Id)">Invites</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.EventAttendees(Model.Platform, Model.Chapter, Model.Event.Id)">Attendees</a>
-    </li>
-
-    @if (Model.Event.Ticketed)
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var menuItems = new List<MenuItem>
     {
+        new MenuItem { Link = OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, Model.Event.Id), Text = "Edit" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.EventInvites(Model.Platform, Model.Chapter, Model.Event.Id), Text = "Invites" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.EventResponses(Model.Platform, Model.Chapter, Model.Event.Id), Text = "Responses" }
+    };
+
+    if (Model.Event.Ticketed)
+    {
+        menuItems.Add(new MenuItem { Link = OdkRoutes.MemberGroups.EventTickets(Model.Platform, Model.Chapter, Model.Event.Id), Text = "Tickets" });
+    }
+}
+<ul class="nav nav-underline my-3">
+    @foreach (var menuItem in menuItems)
+    {
+        var active = HttpContextAccessor.ForPath(menuItem.Link, exactMatch: true);
+
         <li class="nav-item">
-            <a class="nav-link" data-menu-link href="@OdkRoutes2.MemberGroups.EventTickets(Model.Platform, Model.Chapter, Model.Event.Id)">Tickets</a>
+            <a class="nav-link @(active ? "active" : null)" href="@menuItem.Link">@menuItem.Text</a>
         </li>
     }
 </ul>
