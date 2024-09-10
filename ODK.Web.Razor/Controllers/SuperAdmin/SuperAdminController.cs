@@ -48,33 +48,33 @@ public class SuperAdminController : OdkControllerBase
         _topicAdminService = topicAdminService;
     }
 
-    [HttpGet("SuperAdmin")]
+    [HttpGet("superadmin")]
     public IActionResult Index()
     {
-        return Redirect("/SuperAdmin/Emails");
+        return Redirect("/superadmin/emails");
     }
 
-    [HttpPost("SuperAdmin/Errors/{id:guid}/Delete")]
+    [HttpPost("superadmin/errors/{id:guid}/delete")]
     public async Task<IActionResult> DeleteError(Guid id)
     {
         await _loggingService.DeleteError(MemberId, id);
 
-        return Redirect("/SuperAdmin/Errors");
+        return Redirect("/superadmin/errors");
     }
 
-    [HttpPost("SuperAdmin/Errors/{id:Guid}/DeleteAll")]
+    [HttpPost("superadmin/errors/{id:Guid}/deleteall")]
     public async Task<IActionResult> DeleteAllErrors(Guid id)
     {
         await _loggingService.DeleteAllErrors(MemberId, id);
 
-        return Redirect("/SuperAdmin/Errors");
+        return Redirect("/superAdmin/errors");
     }
 
-    [HttpPost("SuperAdmin/Features/{id:guid}/Delete")]
+    [HttpPost("superadmin/features/{id:guid}/delete")]
     public async Task<IActionResult> DeleteFeature(Guid id)
     {
         await _featureService.DeleteFeature(MemberId, id);
-        return Redirect("/SuperAdmin/Features");
+        return Redirect("/superadmin/features");
     }
 
     [HttpPost("superadmin/messages/{id:guid}/replied")]
@@ -115,7 +115,7 @@ public class SuperAdminController : OdkControllerBase
             AddFeedback("Subscription created", FeedbackType.Success);
         }
 
-        return Redirect("/SuperAdmin/Subscriptions");
+        return Redirect("/superadmin/subscriptions");
     }
 
     [HttpPost("superadmin/subscriptions/{id:guid}")]
@@ -192,7 +192,7 @@ public class SuperAdminController : OdkControllerBase
     [HttpGet("{chapterName}/Admin/SuperAdmin")]
     public IActionResult Index(string chapterName)
     {
-        return Redirect($"/{chapterName}/Admin/SuperAdmin/Payments");
+        return Redirect($"/{chapterName}/admin/superadmin/payments");
     }
 
     [HttpPost("{chapterName}/Admin/SuperAdmin/Instagram/Scrape")]

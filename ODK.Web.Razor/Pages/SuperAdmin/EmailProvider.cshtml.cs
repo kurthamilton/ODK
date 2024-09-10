@@ -53,6 +53,6 @@ public class EmailProviderModel : SuperAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Email provider updated", FeedbackType.Success));
-        return Redirect("/SuperAdmin/EmailProviders");
+        return Redirect("/superadmin/emailproviders");
     }
 }

@@ -44,6 +44,6 @@ public class EmailProviderCreateModel : SuperAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Email provider created", FeedbackType.Success));
-        return Redirect($"/SuperAdmin/EmailProviders");
+        return Redirect("/superadmin/emailproviders");
     }
 }

@@ -9,7 +9,7 @@
 
 <section class="section--admin">
     <h2>Settings</h2>
-    <form action="/SuperAdmin/Emails/Settings" method="post">
+    <form action="/superadmin/emails/settings" method="post">
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("SuperAdmin/_EmailSettingsForm", new SiteEmailSettingsViewModel
         {

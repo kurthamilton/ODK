@@ -1,4 +1,4 @@
-﻿@page "/SuperAdmin/Subscriptions/{id:guid}"
+﻿@page "/superadmin/subscriptions/{id:guid}"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Subscriptions
@@ -17,7 +17,7 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = "/SuperAdmin/Subscriptions", Text = "Subscriptions" },
+        new MenuItem { Link = "/superadmin/subscriptions", Text = "Subscriptions" },
         new MenuItem { Text = dto.Subscription.Name }
     }
 })

@@ -40,6 +40,6 @@ public class FeatureCreateModel : SuperAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Feature created", FeedbackType.Success));
-        return Redirect("/SuperAdmin/Features");
+        return Redirect("/superadmin/features");
     }
 }

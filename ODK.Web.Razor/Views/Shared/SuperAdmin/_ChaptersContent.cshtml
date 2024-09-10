@@ -1,9 +1,8 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @model SuperAdminChaptersViewModel
 
-<section class="section--admin">
-    <h3>Pending approval</h3>
-    
+<h2>Pending approval</h2>
+<section class="section">
     <div class="table-responsive">
         <table class="table table--striped">
             <thead>
@@ -27,8 +26,8 @@
                                 </form>
                                 <form action="/superadmin/groups/@chapter.Id/delete" method="post">
                                     @Html.AntiForgeryToken()
-                                    <button class="btn btn-danger btn-sm" 
-                                        onclick="return confirm('Are you sure you want to delete this group?');">
+                                    <button class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Are you sure you want to delete this group?');">
                                         Delete
                                     </button>
                                 </form>
@@ -37,6 +36,6 @@
                     </tr>
                 }
             </tbody>
-        </table>    
+        </table>
     </div>
-</section>
+</section>            

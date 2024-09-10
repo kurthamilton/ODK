@@ -21,7 +21,7 @@ public class EmailsController : OdkControllerBase
         _settingsService = settingsService;
     }
 
-    [HttpPost("/SuperAdmin/Emails/{type}/Send/Test")]
+    [HttpPost("/superadmin/emails/{type}/send/test")]
     public async Task<IActionResult> SendTestEmail(string chapterName, EmailType type)
     {
         var result = await _emailAdminService.SendTestEmail(MemberId, type);
@@ -29,7 +29,7 @@ public class EmailsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("SuperAdmin/Emails/Providers/{id:guid}/Delete")]
+    [HttpPost("superadmin/emails/providers/{id:guid}/delete")]
     public async Task<IActionResult> DeleteEmailProvider(Guid id)
     {
         await _settingsService.DeleteEmailProvider(MemberId, id);
@@ -37,7 +37,7 @@ public class EmailsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("SuperAdmin/Emails/Settings")]
+    [HttpPost("superadmin/emails/settings")]
     public async Task<IActionResult> UpdateSettings(SiteEmailSettingsViewModel viewModel)
     {
         await _settingsService.UpdateEmailSettings(MemberId, 

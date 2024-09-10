@@ -1,8 +1,26 @@
-﻿@using ODK.Web.Razor.Models.SuperAdmin
+﻿@using ODK.Services.Settings
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.SuperAdmin
+@inject ISettingsService SettingsService
+@{
+    var memberId = User.MemberId();
+    var settings = await SettingsService.GetSitePaymentSettings(memberId);    
+}
 
 <h2>Create subscription</h2>
-<form action="/superadmin/subscriptions" method="post">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("SuperAdmin/_SubscriptionForm", new SiteSubscriptionFormViewModel())
-    <button class="btn btn-primary">Create</button>
-</form>
+
+<section class="section">
+    @if (!settings.HasApiKey)
+    {
+        <div class="alert alert-danger">
+            Set up <a href="/superadmin/payments">payments</a> before creating a subscription
+        </div>
+        return;
+    }
+
+    <form action="/superadmin/subscriptions" method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("SuperAdmin/_SubscriptionForm", new SiteSubscriptionFormViewModel())
+        <button class="btn btn-primary">Create</button>
+    </form>
+</section>

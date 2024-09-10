@@ -10,39 +10,42 @@
 }
 
 <h2>Feature notifications</h2>
-<p>
-    <a class="btn btn-primary" href="/SuperAdmin/Features/Create">
-        Create
-    </a>
-</p>
 
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Added</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var feature in features)
-        {
+<section class="section">
+    <p>
+        <a class="btn btn-primary" href="/superadmin/features/create">
+            Create
+        </a>
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
             <tr>
-                <td>
-                    <a href="/SuperAdmin/Features/@feature.Id">@feature.Name</a>
-                </td>
-                <td>@feature.CreatedUtc.ToString("yyyy-MM-dd")</td>
-                <td>
-                    <form action="/SuperAdmin/Features/@feature.Id/Delete" method="post">
-                        @Html.AntiForgeryToken()
-                        <button class="btn-icon text-danger" onclick="return confirm('Are you sure you want to delete this feature?');">
-                                <i class="fas fa-times"></i>
-                        </button>
-                    </form>
-                </td>
+                <th>Name</th>
+                <th>Added</th>
+                <th></th>
             </tr>
-        }
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody>
+            @foreach (var feature in features)
+            {
+                <tr>
+                    <td>
+                        <a href="/superadmin/features/@feature.Id">@feature.Name</a>
+                    </td>
+                    <td>@feature.CreatedUtc.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <form action="/SuperAdmin/Features/@feature.Id/Delete" method="post">
+                            @Html.AntiForgeryToken()
+                            <button class="btn-icon text-danger" onclick="return confirm('Are you sure you want to delete this feature?');">
+                                    <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
