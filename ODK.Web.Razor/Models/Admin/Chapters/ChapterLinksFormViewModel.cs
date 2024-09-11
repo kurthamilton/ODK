@@ -1,10 +1,11 @@
-﻿namespace ODK.Web.Razor.Models.Admin.Chapters;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Members;
 
-public class ChapterLinksFormViewModel
+namespace ODK.Web.Razor.Models.Admin.Chapters;
+
+public class ChapterLinksFormViewModel : ChapterLinksFormSubmitViewModel
 {
-    public string? Facebook { get; set; }
+    public required Chapter Chapter { get; init; }    
 
-    public string? Instagram { get; set; }
-
-    public string? Twitter { get; set; }
+    public required MemberSiteSubscription? OwnerSubscription { get; init; }
 }

@@ -1,4 +1,7 @@
-﻿@model ODK.Web.Razor.Models.Admin.Chapters.ChapterLinksFormViewModel
+﻿@using ODK.Core.Features
+@using ODK.Web.Razor.Models.Admin.Chapters
+@using ODK.Web.Razor.Models.Components
+@model ChapterLinksFormViewModel
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.Facebook, new { @class = "form-label" })
@@ -18,6 +21,29 @@
         </span>
         @Html.TextBoxFor(x => x.Instagram, new { @class = "form-control" })
     </div>
+</div>
+
+<div class="form-group mb-3">
+    @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
+    {
+        Feature = SiteFeatureType.InstagramFeed,
+        ContentFunc =
+            @<div class="form-check form-switch mb-3">
+                @Html.CheckBoxFor(x => x.ShowInstagramFeed, new { @class = "form-check-input", role = "switch" })
+                @Html.LabelFor(x => x.ShowInstagramFeed, new { @class = "form-check-label" })
+            </div>,
+        DisabledContentFunc = 
+            @<div>
+                <div class="form-check form-switch mb-3">
+                    @Html.HiddenFor(x => x.ShowInstagramFeed)
+                    @Html.CheckBoxFor(x => x.ShowInstagramFeed, new { @class = "form-check-input", role = "switch", disabled = "" })
+                    @Html.LabelFor(x => x.ShowInstagramFeed, new { @class = "form-check-label" })                    
+                </div>
+                <div>
+                    @await Html.PartialAsync("Components/_UpgradeButton")
+                </div>
+            </div>
+    })
 </div>
 
 <div class="form-group mb-3">

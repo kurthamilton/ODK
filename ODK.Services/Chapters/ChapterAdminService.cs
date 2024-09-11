@@ -487,15 +487,21 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, links) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, links, privacySettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
-            x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId));
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId));
 
         return new ChapterLinksAdminPageViewModel
         {
             Chapter = chapter,
             Links = links,
-            Platform = platform
+            OwnerSubscription = ownerSubscription,
+            Platform = platform,
+            ShowInstagramFeed = privacySettings?.InstagramFeed != null
+                ? privacySettings.InstagramFeed.Value
+                : !string.IsNullOrEmpty(links.InstagramName)
         };
     }
 
@@ -974,10 +980,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task UpdateChapterLinks(AdminServiceRequest request, UpdateChapterLinks update)
+    public async Task UpdateChapterLinks(AdminServiceRequest request, UpdateChapterLinks model)
     {
-        var (links, instagramPosts) = await GetChapterAdminRestrictedContent(request,
+        var (links, privacySettings, instagramPosts) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId),
             x => x.InstagramPostRepository.GetByChapterId(request.ChapterId));
 
         if (links == null)
@@ -987,34 +994,37 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var originalInstagramName = links.InstagramName;
 
-        if (update.Facebook != null)
+        if (model.Facebook != null)
         {
-            links.FacebookName = !string.IsNullOrWhiteSpace(update.Facebook) ? update.Facebook : null;
+            links.FacebookName = !string.IsNullOrWhiteSpace(model.Facebook) ? model.Facebook : null;
         }
 
-        if (update.Instagram != null)
+        if (model.Instagram != null)
         {
-            links.InstagramName = !string.IsNullOrWhiteSpace(update.Instagram) ? update.Instagram : null;
+            links.InstagramName = !string.IsNullOrWhiteSpace(model.Instagram) ? model.Instagram : null;
         }
 
-        if (update.Twitter != null)
+        if (model.Twitter != null)
         {
-            links.TwitterName = !string.IsNullOrWhiteSpace(update.Twitter) ? update.Twitter : null;
-        }                
-        
-        if (links.ChapterId == default)
-        {
-            links.ChapterId = request.ChapterId;
-            _unitOfWork.ChapterLinksRepository.Add(links);
+            links.TwitterName = !string.IsNullOrWhiteSpace(model.Twitter) ? model.Twitter : null;
         }
-        else
-        {
-            _unitOfWork.ChapterLinksRepository.Update(links);
-        }
+
+        _unitOfWork.ChapterLinksRepository.Upsert(links, request.ChapterId);
 
         if (links.InstagramName != originalInstagramName)
         {
             _unitOfWork.InstagramPostRepository.DeleteMany(instagramPosts);
+        }
+
+        if (privacySettings == null && model.InstagramFeed == false)
+        {
+            privacySettings = new ChapterPrivacySettings();
+        }
+
+        if (privacySettings != null)
+        {
+            privacySettings.InstagramFeed = model.InstagramFeed;
+            _unitOfWork.ChapterPrivacySettingsRepository.Upsert(privacySettings, request.ChapterId);
         }
 
         await _unitOfWork.SaveChangesAsync();

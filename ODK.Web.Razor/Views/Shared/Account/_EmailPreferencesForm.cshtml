@@ -15,11 +15,9 @@
         _ => ""
     };
 
-    <div class="form-group mb-3">
-        <div class="form-check form-switch">
-            @Html.HiddenFor(x => x.Preferences[i].Type)
-            @Html.CheckBoxFor(x => x.Preferences[i].Enabled, new { @class = "form-check-input", role = "switch" })
-            @Html.LabelFor(x => x.Preferences[i].Enabled, labelText, new { @class = "form-check-label" })
-        </div>
+    <div class="form-check form-switch mb-3">
+        @Html.HiddenFor(x => x.Preferences[i].Type)
+        @Html.CheckBoxFor(x => x.Preferences[i].Enabled, new { @class = "form-check-input", role = "switch" })
+        @Html.LabelFor(x => x.Preferences[i].Enabled, labelText, new { @class = "form-check-label" })
     </div>
 }

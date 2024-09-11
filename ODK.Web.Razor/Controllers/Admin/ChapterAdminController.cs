@@ -27,13 +27,14 @@ public class ChapterAdminController : AdminControllerBase
     }    
 
     [HttpPost("groups/{id:guid}/links")]
-    public async Task<IActionResult> UpdatePrivacySettings(Guid id, [FromForm] ChapterLinksFormViewModel viewModel)
+    public async Task<IActionResult> UpdatePrivacySettings(Guid id, [FromForm] ChapterLinksFormSubmitViewModel viewModel)
     {
         var request = new AdminServiceRequest(id, MemberId);
         await _chapterAdminService.UpdateChapterLinks(request, new UpdateChapterLinks
         {
             Facebook = viewModel.Facebook ?? "",
             Instagram = viewModel.Instagram ?? "",
+            InstagramFeed = viewModel.ShowInstagramFeed,
             Twitter = viewModel.Twitter ?? ""
         });
 

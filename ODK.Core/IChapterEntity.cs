@@ -2,5 +2,5 @@
 
 public interface IChapterEntity
 {
-    Guid ChapterId { get; }
+    Guid ChapterId { get; set; }
 }

@@ -2,9 +2,11 @@
 
 public class UpdateChapterLinks
 {
-    public string? Facebook { get; set; }
+    public required string? Facebook { get; init; }
 
-    public string? Instagram { get; set; }
+    public required string? Instagram { get; init; }
 
-    public string? Twitter { get; set; }
+    public required bool InstagramFeed { get; init; }
+
+    public required string? Twitter { get; init; }
 }

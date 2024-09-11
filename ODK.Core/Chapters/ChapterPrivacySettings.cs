@@ -10,6 +10,8 @@ public class ChapterPrivacySettings : IChapterEntity
 
     public ChapterFeatureVisibilityType? EventVisibility { get; set; }
 
+    public bool? InstagramFeed { get; set; }
+
     public ChapterFeatureVisibilityType? MemberVisibility { get; set; }
 
     public ChapterFeatureVisibilityType? VenueVisibility { get; set; }

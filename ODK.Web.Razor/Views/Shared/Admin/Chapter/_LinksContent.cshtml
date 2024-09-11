@@ -9,8 +9,11 @@
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel
         {
+            Chapter = Model.Chapter,
             Facebook = Model.Links?.FacebookName,
             Instagram = Model.Links?.InstagramName,
+            OwnerSubscription = Model.OwnerSubscription,
+            ShowInstagramFeed = Model.ShowInstagramFeed,
             Twitter = Model.Links?.TwitterName
         })
         <button class="btn btn-primary">Update</button>
