@@ -1,10 +1,13 @@
-﻿using ODK.Core.Events;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Events;
 
 namespace ODK.Services.Events;
 
 public interface IEventService
 {
     Task<ServiceResult> AddComment(Guid currentMemberId, Guid eventId, string comment, Guid? parentEventCommentId);
+
+    Task<(Chapter, Event)> GetEvent(Guid eventId);
 
     Task<ServiceResult> PayDeposit(Guid currentMemberId, Guid eventId, string cardToken);
 

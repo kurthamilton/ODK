@@ -8,7 +8,7 @@
         @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
         {
             ReadOnly = true,
-            ResponseType = Model.Event.Response
+            CurrentResponse = Model.Event.Response
         })
 
         <a href="@OdkRoutes.Groups.Event(Model.Platform, Model.Chapter, Model.Event.EventId)" 

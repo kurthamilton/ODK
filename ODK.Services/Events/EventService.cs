@@ -103,11 +103,20 @@ public class EventService : IEventService
         return ServiceResult.Successful();
     }
 
+    public async Task<(Chapter, Event)> GetEvent(Guid eventId)
+    {
+        var @event = await _unitOfWork.EventRepository.GetById(eventId).Run();
+        var chapter = await _unitOfWork.ChapterRepository.GetById(@event.ChapterId).Run();
+        return (chapter, @event);
+    }
+
     public async Task<ServiceResult> PayDeposit(Guid currentMemberId, Guid eventId, string cardToken)
     {
-        var (member, @event, ticketPurchase) = await _unitOfWork.RunAsync(
+        var (member, memberResponse, @event, numberOfAttendees, ticketPurchase) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),           
+            x => x.EventResponseRepository.GetByMemberId(currentMemberId, eventId),
             x => x.EventRepository.GetById(eventId),
+            x => x.EventResponseRepository.GetNumberOfAttendees(eventId),
             x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId));
 
         if (@event.TicketSettings == null)
@@ -142,7 +151,14 @@ public class EventService : IEventService
             return ServiceResult.Failure("Payment not made: payments not configured");
         }
 
-        var validationResult = MemberCanAttendEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
+        var validationResult = MemberCanAttendEvent(
+            @event, 
+            member,
+            memberResponse,
+            memberSubscription, 
+            membershipSettings, 
+            privacySettings,
+            numberOfAttendees);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -218,10 +234,12 @@ public class EventService : IEventService
 
     public async Task<ServiceResult> PurchaseTicket(Guid currentMemberId, Guid eventId, string cardToken)
     {
-        var (member, @event, ticketPurchase) = await _unitOfWork.RunAsync(
+        var (member, memberResponse, @event, ticketPurchase, numberOfAttendees) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
+            x => x.EventResponseRepository.GetByMemberId(currentMemberId, eventId),
             x => x.EventRepository.GetById(eventId),
-            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId));
+            x => x.EventTicketPurchaseRepository.GetByMemberId(currentMemberId, eventId),
+            x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
 
         if (@event.TicketSettings == null)
         {
@@ -245,7 +263,14 @@ public class EventService : IEventService
             return ServiceResult.Failure("Payment not made: this group can no longer receive payments");
         }
 
-        var validationResult = MemberCanAttendEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
+        var validationResult = MemberCanAttendEvent(
+            @event, 
+            member, 
+            memberResponse,
+            memberSubscription, 
+            membershipSettings, 
+            privacySettings,
+            numberOfAttendees);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -283,11 +308,17 @@ public class EventService : IEventService
     {
         responseType = NormalizeResponseType(responseType);
 
-        var (member, @event, response) = await _unitOfWork.RunAsync(
+        var (member, @event, memberResponse, numerOfAttendees) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetById(eventId),
-            x => x.EventResponseRepository.GetByMemberId(memberId, eventId));
+            x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
+            x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
         
+        if (memberResponse?.Type == responseType)
+        {
+            return ServiceResult.Successful();
+        }
+
         if (@event.TicketSettings != null)
         {
             return ServiceResult.Failure("Ticketed events cannot be responded to");
@@ -298,7 +329,14 @@ public class EventService : IEventService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, @event.ChapterId));
 
-        var validationResult = MemberCanAttendEvent(@event, member, memberSubscription, membershipSettings, privacySettings);
+        var validationResult = MemberCanAttendEvent(
+            @event, 
+            member, 
+            memberResponse,
+            memberSubscription, 
+            membershipSettings, 
+            privacySettings,
+            numerOfAttendees);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -306,13 +344,20 @@ public class EventService : IEventService
 
         if (@event.RsvpDeadlinePassed)
         {
-            if (response?.Type != EventResponseType.Yes)
+            if (memberResponse?.Type != EventResponseType.Yes)
             {
                 return ServiceResult.Failure("The RSVP deadline has passed");
             }
         }
 
-        if (response == null)
+        if (responseType == EventResponseType.None)
+        {
+            if (memberResponse != null)
+            {
+                _unitOfWork.EventResponseRepository.Delete(memberResponse);
+            }
+        }
+        else if (memberResponse == null)
         {
             _unitOfWork.EventResponseRepository.Add(new EventResponse
             {
@@ -323,15 +368,8 @@ public class EventService : IEventService
         }
         else
         {
-            if (response.Type == responseType)
-            {
-                _unitOfWork.EventResponseRepository.Delete(response);
-            }
-            else
-            {
-                response.Type = responseType;
-                _unitOfWork.EventResponseRepository.Update(response);
-            }            
+            memberResponse.Type = responseType;
+            _unitOfWork.EventResponseRepository.Update(memberResponse);
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -341,24 +379,36 @@ public class EventService : IEventService
 
     private static EventResponseType NormalizeResponseType(EventResponseType responseType)
     {
-        if (!Enum.IsDefined(typeof(EventResponseType), responseType) || responseType <= EventResponseType.None)
+        var validResponseTypes = new[]
         {
-            responseType = EventResponseType.No;
-        }
-
-        return responseType;
+            EventResponseType.Yes,
+            EventResponseType.No,
+            EventResponseType.Maybe,
+            EventResponseType.None
+        };
+        
+        return validResponseTypes.Contains(responseType)
+            ? responseType
+            : EventResponseType.None;
     }
 
     private ServiceResult MemberCanAttendEvent(
         Event @event, 
         Member? member, 
+        EventResponse? memberResponse,
         MemberSubscription? subscription, 
         ChapterMembershipSettings? membershipSettings,
-        ChapterPrivacySettings? privacySettings)
+        ChapterPrivacySettings? privacySettings,
+        int numberOfAttendees)
     {
         if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
+        }
+
+        if (@event.NumberOfSpacesLeft(numberOfAttendees) <= 0)
+        {
+            return ServiceResult.Failure("No more spaces left");
         }
 
         return _authorizationService.CanRespondToEvent(@event, member, subscription, membershipSettings, privacySettings)

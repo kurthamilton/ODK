@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
+using ODK.Core.Platforms;
 using ODK.Services.Events;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Events;
 
 namespace ODK.Web.Razor.Controllers;
@@ -9,15 +11,31 @@ namespace ODK.Web.Razor.Controllers;
 public class EventsController : OdkControllerBase
 {
     private readonly IEventService _eventService;
+    private readonly IPlatformProvider _platformProvider;
 
-    public EventsController(IEventService eventService)
+    public EventsController(
+        IEventService eventService,
+        IPlatformProvider platformProvider)
     {
         _eventService = eventService;
-    }    
+        _platformProvider = platformProvider;
+    }
+
+    [Authorize]
+    [HttpGet("events/{id:guid}/attend")]
+    public async Task<IActionResult> AttendEvent(Guid id)
+    {
+        var result = await _eventService.UpdateMemberResponse(MemberId, id, EventResponseType.Yes);
+        AddFeedback(result, "Attendance updated");
+
+        var platform = _platformProvider.GetPlatform();
+        var (chapter, @event) = await _eventService.GetEvent(id);
+        return Redirect(OdkRoutes.Groups.Event(platform, chapter, id));
+    }
 
     [Authorize]
     [HttpPost("events/{id:guid}/comments")]
-    public async Task<IActionResult> AddComment(Guid chapterId, Guid id, EventCommentFormViewModel viewModel)
+    public async Task<IActionResult> AddComment(Guid id, EventCommentFormViewModel viewModel)
     {
         var result = await _eventService.AddComment(MemberId, id, viewModel.Text ?? "", viewModel.Parent);
         if (!result.Success)
@@ -30,16 +48,13 @@ public class EventsController : OdkControllerBase
 
     [Authorize]
     [HttpPost("events/{id:guid}/rsvp")]
-    public async Task<IActionResult> UpdateResponse(Guid id, [FromForm] string? responseType)
+    public async Task<IActionResult> UpdateResponse(Guid id, [FromForm] EventResponseType responseType)
     {
-        if (Enum.TryParse<EventResponseType>(responseType, true, out var type))
+        var result = await _eventService.UpdateMemberResponse(MemberId, id, responseType);
+        if (!result.Success)
         {
-            var result = await _eventService.UpdateMemberResponse(MemberId, id, type);
-            if (!result.Success)
-            {
-                AddFeedback(result);
-            }
-        }
+            AddFeedback(result);
+        }        
 
         return RedirectToReferrer();
     }

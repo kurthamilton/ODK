@@ -50,6 +50,10 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
         .Where(x => x.MemberId == memberId && eventIds.Contains(x.EventId))
         .DeferredMultiple();
 
+    public IDeferredQuery<int> GetNumberOfAttendees(Guid eventId) => Set()
+        .Where(x => x.Type == EventResponseType.Yes)
+        .DeferredCount();
+
     public IDeferredQueryMultiple<EventResponseSummaryDto> GetResponseSummaries(IEnumerable<Guid> eventIds) => Set()
         .Where(x => eventIds.Contains(x.EventId))
         .GroupBy(x => x.EventId)

@@ -28,8 +28,7 @@ public class AuthorizationService : IAuthorizationService
         MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings)
-    {
-        
+    {        
         var memberVisibility = GetMemberVisibilityType(@event.ChapterId, member, subscription, membershipSettings);
         var responseVisibility = privacySettings?.EventResponseVisibility ?? ChapterFeatureVisibilityType.AllMembers;
         return memberVisibility.CanView(responseVisibility);

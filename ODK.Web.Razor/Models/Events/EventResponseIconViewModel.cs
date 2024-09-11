@@ -5,8 +5,10 @@ namespace ODK.Web.Razor.Models.Events;
 public class EventResponseIconViewModel
 {
     public bool Active { get; set; }
-    
-    public string IconClass => ResponseType switch
+
+    public required EventResponseType CurrentResponse { get; set; }
+
+    public string IconClass => CurrentResponse switch
     {
         EventResponseType.Yes => "fa-check-circle",
         EventResponseType.Maybe => "fa-question-circle",
@@ -14,11 +16,11 @@ public class EventResponseIconViewModel
         _ => ""
     };
 
-    public bool ReadOnly { get; set; }
+    public bool ReadOnly { get; set; }    
 
     public EventResponseType? ResponseType { get; set; }
 
-    public string Tooltip => ResponseType switch        {
+    public string Tooltip => CurrentResponse switch        {
         EventResponseType.Yes => ReadOnly ? "Going" : "Yes",
         EventResponseType.Maybe => ReadOnly ? "Maybe going" : "Maybe",
         EventResponseType.No => ReadOnly ? "Not going" : "No",

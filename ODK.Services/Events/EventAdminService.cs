@@ -737,7 +737,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<EventResponse> UpdateMemberResponse(AdminServiceRequest request, Guid eventId, Guid memberId, 
+    public async Task UpdateMemberResponse(AdminServiceRequest request, Guid eventId, Guid memberId, 
         EventResponseType responseType)
     {
         var (@event, response) = await GetChapterAdminRestrictedContent(request,
@@ -746,7 +746,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
-        if (response == null)
+        if (responseType == EventResponseType.None)
+        {
+            if (response != null)
+            {
+                _unitOfWork.EventResponseRepository.Delete(response);
+            }
+        }
+        else if (response == null)
         {
             response = new EventResponse
             {
@@ -763,8 +770,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         }
 
         await _unitOfWork.SaveChangesAsync();
-
-        return response;
     }
 
     public async Task<ServiceResult> UpdateScheduledEmail(AdminServiceRequest request, Guid eventId, DateTime? date)
@@ -974,7 +979,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
 
         var eventUrl = _urlProvider.EventUrl(chapter, @event.Id);
-        var rsvpUrl = _urlProvider.EventRsvpUrl(chapter, @event.Id, EventResponseType.Yes);
+        var rsvpUrl = _urlProvider.EventRsvpUrl(chapter, @event.Id);
         var unsubscribeUrl = _urlProvider.EmailPreferences(chapter);
 
         parameters.Add("event.rsvpurl", rsvpUrl);

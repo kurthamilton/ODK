@@ -44,7 +44,7 @@ public interface IEventAdminService
 
     Task<ServiceResult> UpdateEvent(AdminServiceRequest request, Guid id, CreateEvent @event);
 
-    Task<EventResponse> UpdateMemberResponse(AdminServiceRequest request, Guid eventId, Guid memberId, 
+    Task UpdateMemberResponse(AdminServiceRequest request, Guid eventId, Guid memberId, 
         EventResponseType responseType);
 
     Task<ServiceResult> UpdateScheduledEmail(AdminServiceRequest request, Guid eventId, DateTime? date);

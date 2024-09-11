@@ -93,35 +93,30 @@
                                     </div>
                                 </a>
                                 <div class="d-flex justify-content-center gap-1">
-                                    <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
-                                        @Html.AntiForgeryToken()
-                                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                                    @{
+                                        var responseTypes = new[]
                                         {
-                                            Active = response == EventResponseType.Yes,
-                                            ResponseType = EventResponseType.Yes,
-                                            ReadOnly = false
-                                        })
-                                    </form>
+                                            EventResponseType.Yes,
+                                            EventResponseType.Maybe,
+                                            EventResponseType.No
+                                        };
+                                    }
 
-                                    <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
-                                        @Html.AntiForgeryToken()
-                                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
-                                        {
-                                            Active = response == EventResponseType.Maybe,
-                                            ResponseType = EventResponseType.Maybe,
-                                            ReadOnly = false
-                                        })
-                                    </form>
+                                    @foreach (var responseType in responseTypes)
+                                    {
+                                        var active = response == responseType;
 
-                                    <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
-                                        @Html.AntiForgeryToken()
-                                        @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
-                                        {
-                                            Active = response == EventResponseType.No,
-                                            ResponseType = EventResponseType.No,
-                                            ReadOnly = false
-                                        })
-                                    </form>
+                                        <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
+                                            @Html.AntiForgeryToken()
+                                            @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
+                                            {
+                                                Active = active,
+                                                CurrentResponse = responseType,
+                                                ResponseType = active ? EventResponseType.None : responseType,
+                                                ReadOnly = false
+                                            })
+                                        </form>
+                                    }                                    
                                 </div>
                             </div>
                         }                    

@@ -5,7 +5,7 @@
 @model EventPageViewModel
 @{
     Model.MembersByResponse.TryGetValue(EventResponseType.Yes, out var attendees);
-
+    
     var spacesLeft = Model.SpacesLeft;
     var canRsvp = Model.MemberResponse == EventResponseType.Yes
         || ((spacesLeft == null || spacesLeft > 0) && !Model.Event.RsvpDeadlinePassed);
@@ -25,10 +25,10 @@
             @if (canRsvp)
             {
                 if (Model.Event.RsvpDeadlinePassed)
-                {
+                {                    
                     <form action="/events/@Model.Event.Id/rsvp" method="post">
                         @Html.AntiForgeryToken()
-                        <input type="hidden" name="responseType" value="@EventResponseType.Yes" />
+                        <input type="hidden" name="responseType" value="@EventResponseType.No" />
                         <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your RSVP? This action cannot be undone');">
                             Cancel RSVP
                         </button>
@@ -39,11 +39,14 @@
                     <div class="d-flex justify-content-around">
                         @foreach (var responseType in Model.ResponseTypes)
                         {
+                            var active = responseType == Model.MemberResponse;
+                            
                             <form action="/events/@Model.Event.Id/rsvp" method="post">
                                 @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                                 {
-                                    Active = Model.MemberResponse == responseType,
-                                    ResponseType = responseType
+                                    Active = active,
+                                    CurrentResponse = responseType,
+                                    ResponseType = active ? EventResponseType.None : responseType
                                 })
                             </form>
                         }

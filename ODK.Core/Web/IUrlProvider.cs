@@ -15,7 +15,7 @@ public interface IUrlProvider
 
     string EmailPreferences(Chapter? chapter);
 
-    string EventRsvpUrl(Chapter chapter, Guid eventId, EventResponseType response);
+    string EventRsvpUrl(Chapter chapter, Guid eventId);
 
     string EventsUrl(Chapter chapter);    
 

@@ -12,5 +12,6 @@ public interface IEventResponseRepository : IWriteRepository<EventResponse>
     IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, DateTime? afterUtc);
     IDeferredQuerySingleOrDefault<EventResponse> GetByMemberId(Guid memberId, Guid eventId);
     IDeferredQueryMultiple<EventResponse> GetByMemberId(Guid memberId, IEnumerable<Guid> eventIds);
+    IDeferredQuery<int> GetNumberOfAttendees(Guid eventId);
     IDeferredQueryMultiple<EventResponseSummaryDto> GetResponseSummaries(IEnumerable<Guid> eventIds);
 }

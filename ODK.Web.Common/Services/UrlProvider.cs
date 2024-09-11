@@ -36,8 +36,8 @@ public class UrlProvider : IUrlProvider
     public string EmailPreferences(Chapter? chapter)
         => GetUrl(OdkRoutes.Account.EmailPreferences(chapter));
 
-    public string EventRsvpUrl(Chapter chapter, Guid eventId, EventResponseType response)
-        => $"{EventUrl(chapter, eventId)}?rsvp={response.ToString().ToLowerInvariant()}";
+    public string EventRsvpUrl(Chapter chapter, Guid eventId)
+        => GetUrl($"/events/{eventId}/attend");
 
     public string EventsUrl(Chapter chapter) 
         => GetUrl(OdkRoutes.Groups.Events(_platform, chapter));
