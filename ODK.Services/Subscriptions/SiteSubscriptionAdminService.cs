@@ -1,6 +1,7 @@
 ﻿using ODK.Core;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Payments;
 
@@ -8,6 +9,7 @@ namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscriptionAdminService
 {
+    private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IPaymentService _paymentService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -15,9 +17,11 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     public SiteSubscriptionAdminService(
         IUnitOfWork unitOfWork,
         IPlatformProvider platformProvider,
-        IPaymentService paymentService) 
+        IPaymentService paymentService,
+        IHtmlSanitizer htmlSanitizer) 
         : base(unitOfWork)
     {
+        _htmlSanitizer = htmlSanitizer;
         _paymentService = paymentService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
@@ -204,9 +208,9 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         return ServiceResult.Successful();
     }
 
-    private static void UpdateSiteSubscription(SiteSubscriptionCreateModel model, SiteSubscription subscription)
+    private void UpdateSiteSubscription(SiteSubscriptionCreateModel model, SiteSubscription subscription)
     {
-        subscription.Description = model.Description;
+        subscription.Description = _htmlSanitizer.Sanitize(model.Description);
         subscription.Enabled = model.Enabled;
         subscription.FallbackSiteSubscriptionId = model.FallbackSiteSubscriptionId;
         subscription.GroupLimit = model.GroupLimit;

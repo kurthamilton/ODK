@@ -1,5 +1,4 @@
 ﻿@using ODK.Web.Razor.Models.Chapters
-@using ODK.Web.Razor.Models.Components
 @model ChapterQuestionsViewModel
 
 <div class="accordion" id="questions-accordion">
@@ -22,83 +21,9 @@
             <div id="@id" class="accordion-collapse collapse @(i == 0 ? "show" : null)" 
                 data-bs-parent="#questions-accordion">
                 <div class="accordion-body">
-                    @await Html.PartialAsync("Components/_EditableForm", new EditableFormViewModel
-                    {
-                        Action = $"/groups/{Model.Chapter.Id}/questions/{question.Id}",
-                        ButtonContent = 
-                            @<div class="ms-auto button-container">
-                                <form class="d-flex align-content-center" method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/move/up">
-                                    @Html.AntiForgeryToken()
-                                    <button data-bs-toggle="tooltip" data-bs-title="Move up" 
-                                        class="btn btn-icon text-secondary">
-                                        <i class="fas fa-arrow-circle-up fs-3 d-flex align-content-center"></i>
-                                    </button>
-                                </form>
-                                <form class="d-flex align-content-center" method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/move/down">
-                                    @Html.AntiForgeryToken()
-                                    <button data-bs-toggle="tooltip" data-bs-title="Move down" 
-                                        class="btn btn-icon text-secondary">
-                                        <i class="fas fa-arrow-circle-down fs-3 d-flex align-content-center"></i>
-                                    </button>
-                                </form>
-                                <form class="d-flex align-content-center" method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/delete">
-                                    @Html.AntiForgeryToken()
-                                    <button class="btn btn-danger ms-3"
-                                        onclick="return confirm('Are you sure you want to delete this question?');">
-                                        Delete
-                                    </button>
-                                </form>
-
-                            </div>,
-                        FormContent = 
-                            @<div>
-                                <div class="form-group mb-3 required">
-                                    <label for="@nameInputId" class="form-label">Question</label>
-                                    <input id="@nameInputId" class="form-control" value="@question.Name" 
-                                        name="name" required />
-                                </div>
-                                <div class="form-group mb-3 required">
-                                    <label for="@answerInputId" class="form-label">Answer</label>
-                                    <textarea id="@answerInputId" class="form-control" 
-                                        name="answer" required data-html-editor>
-                                        @question.Answer
-                                    </textarea>
-                                </div>
-                            </div>,
-                        Id = $"question-content-{i}",
-                        IsAdmin = Model.IsAdmin,
-                        Name = "answer",
-                        TextContent = _ => Html.Raw(question.Answer),
-                        Title = ""
-                    })
+                    @Html.Raw(question.Answer)
                 </div>
             </div>            
         </div>
     }
 </div>
-
-@await Html.PartialAsync("Components/_EditableForm", new EditableFormViewModel
-{
-    Action = $"/groups/{Model.Chapter.Id}/questions",
-    Class = "mt-3",
-    FormContent =
-        @<div>
-            <div class="form-group mb-3 required">
-                <label for="question-create-name" class="form-label">Question</label>
-                <input id="question-create-name" class="form-control" 
-                        name="name" required />
-            </div>
-            <div class="form-group mb-3 required">
-                <label for="question-create-answer" class="form-label">Answer</label>
-                <textarea id="question-create-answer" class="form-control" 
-                    name="answer" required data-html-editor>
-                </textarea>
-            </div>
-        </div>,
-    Id = "question-create",
-    IsAdmin = Model.IsAdmin,
-    IsCreate = true,
-    Name = "question-create",
-    TextContent = @<div></div>,
-    Title = ""
-})

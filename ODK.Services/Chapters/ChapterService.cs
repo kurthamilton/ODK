@@ -108,7 +108,7 @@ public class ChapterService : IChapterService
         var texts = new ChapterTexts
         {
             ChapterId = chapter.Id,
-            Description = _htmlSanitizer.Encode(model.Description),
+            Description = _htmlSanitizer.Sanitize(model.Description),
         };
         _unitOfWork.ChapterTextsRepository.Add(texts);
 
@@ -163,7 +163,7 @@ public class ChapterService : IChapterService
             "<p>{url}/superadmin/groups</p>",
             new Dictionary<string, string>
             {
-                { "chapter.description", texts.Description },
+                { "chapter.description", texts.Description ?? "" },
                 { "url", UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl) }
             });
 

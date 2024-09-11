@@ -112,22 +112,6 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("groups/{chapterId:guid}/questions/{questionId:guid}")]
-    public async Task<IActionResult> UpdateQuestion(Guid chapterId, Guid questionId, 
-        [FromForm] string? name, [FromForm] string? answer)
-    {
-        var request = new AdminServiceRequest(chapterId, MemberId);
-        var model = new CreateChapterQuestion
-        {
-            Answer = answer ?? "",
-            Name = name ?? ""
-        };
-        var result = await _chapterAdminService.UpdateChapterQuestion(request, 
-            questionId, model);
-        AddFeedback(result, "Question updated");
-        return RedirectToReferrer();
-    }
-
     [HttpPost("groups/{chapterId:guid}/questions/{questionId:guid}/delete")]
     public async Task<IActionResult> DeleteQuestion(Guid chapterId, Guid questionId)
     {

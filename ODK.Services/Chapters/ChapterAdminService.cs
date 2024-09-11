@@ -193,7 +193,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         
         var question = new ChapterQuestion
         {
-            Answer = model.Answer,
+            Answer = _htmlSanitizer.Sanitize(model.Answer),
             ChapterId = chapterId,
             DisplayOrder = displayOrder,
             Name = model.Name
@@ -230,7 +230,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Amount = model.Amount,
             ChapterId = chapterId,
-            Description = model.Description,
+            Description = _htmlSanitizer.Sanitize(model.Description),
             Months = model.Months,
             Name = model.Name,
             Title = model.Title,
@@ -860,7 +860,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             ChapterContactMessageId = originalMessage.Id,
             CreatedUtc = now,
-            Message = message,
+            Message = _htmlSanitizer.Sanitize(message),
             MemberId = request.CurrentMemberId            
         });
 
@@ -1085,7 +1085,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             texts = new ChapterTexts();
         }
 
-        texts.Description = _htmlSanitizer.Encode(description);
+        texts.Description = _htmlSanitizer.Sanitize(description);
 
         if (texts.ChapterId == default)
         {
@@ -1273,7 +1273,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         property.ApplicationOnly = model.ApplicationOnly;
         property.DisplayName = model.DisplayName;
         property.HelpText = model.HelpText;
-        property.Label = model.Label;
+        property.Label = _htmlSanitizer.Sanitize(model.Label);
         property.Name = model.Name.ToLowerInvariant();
         property.Required = model.Required;
         property.Subtitle = model.Subtitle;
@@ -1358,7 +1358,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var question = await GetChapterQuestion(request, questionId);
 
-        question.Answer = model.Answer;
+        question.Answer = _htmlSanitizer.Sanitize(model.Answer);
         question.Name = model.Name;
 
         var validationResult = ValidateChapterQuestion(question);
@@ -1488,9 +1488,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             texts = new ChapterTexts();
         }
 
-        texts.Description = model.Description != null ? _htmlSanitizer.Encode(model.Description) : null;
-        texts.RegisterText = _htmlSanitizer.Encode(model.RegisterText);
-        texts.WelcomeText = _htmlSanitizer.Encode(model.WelcomeText);
+        texts.Description = model.Description != null ? _htmlSanitizer.Sanitize(model.Description) : null;
+        texts.RegisterText = _htmlSanitizer.Sanitize(model.RegisterText);
+        texts.WelcomeText = _htmlSanitizer.Sanitize(model.WelcomeText);
 
         if (texts.ChapterId == default)
         {

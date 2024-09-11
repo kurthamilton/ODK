@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Emails;
 using ODK.Core.Messages;
 using ODK.Core.Notifications;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Contact.ViewModels;
 using ODK.Services.Emails;
@@ -10,14 +11,17 @@ namespace ODK.Services.Contact;
 public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
 {
     private readonly IEmailService _emailService;
+    private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IUnitOfWork _unitOfWork;
 
     public ContactAdminService(
         IUnitOfWork unitOfWork,
-        IEmailService emailService)
+        IEmailService emailService,
+        IHtmlSanitizer htmlSanitizer)
         : base(unitOfWork)
     {
         _emailService = emailService;
+        _htmlSanitizer = htmlSanitizer;
         _unitOfWork = unitOfWork;
     }
 
@@ -88,7 +92,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         _unitOfWork.SiteContactMessageReplyRepository.Add(new SiteContactMessageReply
         {
             CreatedUtc = now,
-            Message = message,
+            Message = _htmlSanitizer.Sanitize(message) ?? "",
             MemberId = currentMemberId,
             SiteContactMessageId = originalMessage.Id            
         });
