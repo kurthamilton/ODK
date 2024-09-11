@@ -9,6 +9,7 @@
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel
         {
+            Chapter = Model.Chapter,
             Facebook = Model.Links?.FacebookName,
             Instagram = Model.Links?.InstagramName,
             OwnerSubscription = Model.OwnerSubscription,

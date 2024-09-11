@@ -19,12 +19,12 @@
                     @if (!chapter.Approved())
                     {
                         <i class="fa-solid fa-triangle-exclamation text-danger" 
-                            data-bs-toggle="tooltip" data-bs-title="Pending approval"></i>
+                            data-bs-toggle="tooltip" data-bs-title="Not approved"></i>
                     }
                     else if (chapter.CanBePublished())
                     {
                         <i class="fa-solid fa-triangle-exclamation text-warning" 
-                            data-bs-toggle="tooltip" data-bs-title="Pending publication"></i>
+                            data-bs-toggle="tooltip" data-bs-title="Not published"></i>
                     }
                 </div>
             }        

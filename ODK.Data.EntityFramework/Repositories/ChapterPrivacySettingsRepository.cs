@@ -11,9 +11,12 @@ public class ChapterPrivacySettingsRepository :
 {
     private static readonly EntityCache<Guid, ChapterPrivacySettings> _cache = new EntityCache<Guid, ChapterPrivacySettings>(x => x.ChapterId);
 
+    private readonly IChapterEntityRepository<ChapterPrivacySettings> _chapterEntityRepository;
+
     public ChapterPrivacySettingsRepository(OdkContext context) 
         : base(context)
     {
+        _chapterEntityRepository = new ChapterEntityRepositoryHelper<ChapterPrivacySettings>(this);
     }
 
     public IDeferredQuerySingleOrDefault<ChapterPrivacySettings> GetByChapterId(Guid chapterId) => Set()
@@ -21,4 +24,7 @@ public class ChapterPrivacySettingsRepository :
         .DeferredSingleOrDefault(
             () => _cache.Get(chapterId),
             _cache.Set);
+
+    public void Upsert(ChapterPrivacySettings entity, Guid chapterId)
+        => _chapterEntityRepository.Upsert(entity, chapterId);
 }

@@ -8,7 +8,6 @@ using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
-using ODK.Core.Topics;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -492,15 +491,16 @@ public class ChapterViewModelService : IChapterViewModelService
             membershipSettings,
             privacySettings);
 
+        var showInstagramFeed = ownerSubscription?.HasFeature(SiteFeatureType.InstagramFeed) == true &&
+            privacySettings?.InstagramFeed != false;
+
         return new GroupHomePageViewModel
         {
             Chapter = chapter,
             ChapterLocation = location,
             CurrentMember = currentMember,
             HasQuestions = hasQuestions,
-            InstagramPosts = ownerSubscription?.HasFeature(SiteFeatureType.InstagramFeed) == true
-                ? instagramPosts
-                : [],
+            InstagramPosts = showInstagramFeed ? instagramPosts : [],
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
             IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
             Links = links,
@@ -668,6 +668,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var (
             currentMember, 
             memberSubscription, 
+            ownerSubscription,
             membershipSettings, 
             privacySettings, 
             events, 
@@ -681,6 +682,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => currentMemberId != null
                 ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetByChapterId(chapter.Id, today),
@@ -723,12 +725,15 @@ public class ChapterViewModelService : IChapterViewModelService
                 responseSummary: responseSummaryDictionary.ContainsKey(x.Id) ? responseSummaryDictionary[x.Id] : null))
             .ToArray();
 
+        var showInstagramFeed = ownerSubscription?.HasFeature(SiteFeatureType.InstagramFeed) == true &&
+            privacySettings?.InstagramFeed != false;
+
         return new ChapterHomePageViewModel
         {
             Chapter = chapter,
             CurrentMember = currentMember,
             Events = eventResponseViewModels,
-            InstagramPosts = instagramPosts,
+            InstagramPosts = showInstagramFeed ? instagramPosts : [],
             LatestMembers = latestMembers,
             Links = links,
             Platform = platform,

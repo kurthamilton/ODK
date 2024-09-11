@@ -12599,6 +12599,14 @@ html[data-platform=odk] {
   opacity: 0.5;
 }
 
+.social-media-icon--facebook {
+  color: var(--odk-social-media-facebook) !important;
+}
+
+.social-media-icon--instagram {
+  color: var(--odk-social-media-instagram) !important;
+}
+
 .social-media-link {
   display: flex;
   align-items: center;

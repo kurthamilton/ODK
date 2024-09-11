@@ -9,9 +9,12 @@ public class ChapterLinksRepository : CachingWriteRepositoryBase<ChapterLinks, G
 {
     private static readonly EntityCache<Guid, ChapterLinks> _cache = new EntityCache<Guid, ChapterLinks>(x => x.ChapterId);
 
+    private readonly IChapterEntityRepository<ChapterLinks> _chapterEntityRepository;
+
     public ChapterLinksRepository(OdkContext context) 
         : base(context, _cache)
     {
+        _chapterEntityRepository = new ChapterEntityRepositoryHelper<ChapterLinks>(this);
     }
 
     public IDeferredQuerySingleOrDefault<ChapterLinks> GetByChapterId(Guid chapterId) => Set()
@@ -19,4 +22,7 @@ public class ChapterLinksRepository : CachingWriteRepositoryBase<ChapterLinks, G
         .DeferredSingleOrDefault(
             () => _cache.Get(chapterId),
             _cache.Set);
+
+    public void Upsert(ChapterLinks entity, Guid chapterId) 
+        => _chapterEntityRepository.Upsert(entity, chapterId);
 }
