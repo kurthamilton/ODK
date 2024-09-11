@@ -487,15 +487,19 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, links) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, links, privacySettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
-            x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId));
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterLinksRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId));
 
         return new ChapterLinksAdminPageViewModel
         {
             Chapter = chapter,
             Links = links,
-            Platform = platform
+            OwnerSubscription = ownerSubscription,
+            Platform = platform,
+            ShowInstagramFeed = privacySettings?.InstagramFeed != false
         };
     }
 
