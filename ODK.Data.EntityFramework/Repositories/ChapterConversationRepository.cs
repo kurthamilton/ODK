@@ -56,7 +56,7 @@ public class ChapterConversationRepository : ReadWriteRepositoryBase<ChapterConv
                 .Take(1)
             from member in Set<Member>().Include(x => x.Chapters)
             from memberSubscription in Set<MemberSubscription>()
-                .Where(x => x.MemberId == member.Id && x.ChapterId == conversation.ChapterId)
+                .Where(x => x.MemberChapter.MemberId == member.Id && x.MemberChapter.ChapterId == conversation.ChapterId)
                 .DefaultIfEmpty()
             where member.Id == conversation.MemberId
             select new ChapterConversationDto

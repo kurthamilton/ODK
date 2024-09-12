@@ -12,10 +12,13 @@ public class MemberChapterMap : IEntityTypeConfiguration<MemberChapter>
     {
         builder.ToTable("MemberChapters");
 
-        builder.HasKey(x => new { x.ChapterId, x.MemberId });
+        builder.HasKey(x => x.Id);
 
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
+
+        builder.Property(x => x.Id)
+            .HasColumnName("MemberChapterId");
 
         builder.HasOne<Chapter>()
             .WithMany()

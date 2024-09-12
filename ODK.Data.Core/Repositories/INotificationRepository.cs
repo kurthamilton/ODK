@@ -7,6 +7,8 @@ public interface INotificationRepository : IReadWriteRepository<Notification>
 {
     IDeferredQueryMultiple<Notification> GetByMemberId(Guid memberId);
 
+    IDeferredQueryMultiple<Notification> GetByMemberId(Guid memberId, Guid chapterId);
+
     IDeferredQuery<int> GetCountByMemberId(Guid memberId);
 
     IDeferredQueryMultiple<Notification> GetUnreadByChapterId(Guid chapterId, NotificationType type, Guid entityId);

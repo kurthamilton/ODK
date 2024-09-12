@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;

@@ -19,6 +19,10 @@ public class NotificationRepository : ReadWriteRepositoryBase<Notification>, INo
         .Where(x => x.MemberId == memberId)
         .DeferredMultiple();
 
+    public IDeferredQueryMultiple<Notification> GetByMemberId(Guid memberId, Guid chapterId) => Set()
+        .Where(x => x.MemberId == memberId && x.ChapterId == chapterId)
+        .DeferredMultiple();
+
     public IDeferredQuery<int> GetCountByMemberId(Guid memberId) => Set()
         .Where(x => x.MemberId == memberId)
         .DeferredCount();
@@ -61,6 +65,14 @@ public class NotificationRepository : ReadWriteRepositoryBase<Notification>, INo
         }
 
         UpdateMany(notifications);
+    }
+
+    public override void Delete(Notification entity)
+    {
+        var clone = entity.Clone();
+        clone.Chapter = null;
+
+        base.Delete(clone);
     }
 
     protected override IQueryable<Notification> Set() => base.Set()

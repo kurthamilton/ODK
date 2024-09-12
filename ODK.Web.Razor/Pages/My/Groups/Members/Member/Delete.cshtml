@@ -1,0 +1,13 @@
+﻿@page "/my/groups/{id:guid}/members/{memberId:guid}/delete"
+@using ODK.Services.Members
+@model DeleteModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+
+    var viewModel = await MemberAdminService.GetMemberDeleteViewModel(Model.AdminServiceRequest, Model.MemberId);
+
+    Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
+}
+
+@await Html.PartialAsync("Admin/Members/_MemberDeleteContent", viewModel)

@@ -138,6 +138,9 @@ public class MemberGroupRoutes
     public string MemberConversations(PlatformType platform, Chapter chapter, Guid memberId)
         => $"{Member(platform, chapter, memberId)}/conversations";
 
+    public string MemberDelete(PlatformType platform, Chapter chapter, Guid memberId)
+        => $"{Member(platform, chapter, memberId)}/delete";
+
     public string MemberEvents(PlatformType platform, Chapter chapter, Guid memberId)
         => $"{Member(platform, chapter, memberId)}/events";
 

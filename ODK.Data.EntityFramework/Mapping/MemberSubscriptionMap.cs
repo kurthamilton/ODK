@@ -12,7 +12,7 @@ public class MemberSubscriptionMap : IEntityTypeConfiguration<MemberSubscription
     {
         builder.ToTable("MemberSubscriptions");
 
-        builder.HasKey(x => new { x.MemberId, x.ChapterId });
+        builder.HasKey(x => x.MemberChapterId);
 
         builder.Property(x => x.ExpiresUtc)
             .HasColumnName("ExpiryDate")
@@ -25,12 +25,9 @@ public class MemberSubscriptionMap : IEntityTypeConfiguration<MemberSubscription
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
 
-        builder.HasOne<Chapter>()
+        builder.HasOne(x => x.MemberChapter)
             .WithMany()
-            .HasForeignKey(x => x.ChapterId);
-
-        builder.HasOne<Member>()
-            .WithMany()
-            .HasForeignKey(x => x.MemberId);
+            .HasForeignKey(x => x.MemberChapterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

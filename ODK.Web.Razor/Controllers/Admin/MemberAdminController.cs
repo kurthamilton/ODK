@@ -31,20 +31,11 @@ public class MemberAdminController : AdminControllerBase
         _requestCache = requestCache;
     }
 
-    [HttpPost("{chapterName}/Admin/Members/{id:guid}/Delete")]
-    public async Task<IActionResult> DeleteMember(string chapterName, Guid id)
-    {
-        var request = await GetAdminServiceRequest(chapterName);
-        await _memberAdminService.DeleteMember(request, id);
-        AddFeedback("Member deleted", FeedbackType.Success);
-        return Redirect($"/{chapterName}/Admin/Members");
-    }
-
-    [HttpPost("{chapterName}/Admin/Members/{id:guid}/Picture")]
-    public async Task<IActionResult> UpdatePicture(string chapterName, Guid id,
+    [HttpPost("groups/{chapterId:guid}/members/{id:guid}/picture")]
+    public async Task<IActionResult> UpdatePicture(Guid chapterId, Guid id,
         [FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
     {
-        var request = await GetAdminServiceRequest(chapterName);
+        var request = new AdminServiceRequest(chapterId, MemberId);
         var model = image != null ? new UpdateMemberImage
         {
             ImageData = await image.ToByteArrayAsync(),
@@ -56,20 +47,17 @@ public class MemberAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("{chapterName}/Admin/Members/{id:guid}/Picture/Rotate")]
-    public async Task<IActionResult> RotatePicture(string chapterName, Guid id)
-    {
-        var request = await GetAdminServiceRequest(chapterName);
-        await _memberAdminService.RotateMemberImage(request, id);
-        return RedirectToReferrer();
-    }
-
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/delete")]
-    public async Task<IActionResult> DeleteMember(Guid chapterId, Guid id)
+    public async Task<IActionResult> DeleteMember(Guid chapterId, Guid id, [FromForm] string? reason)
     {
         var request = new AdminServiceRequest(chapterId, MemberId);
-        await _memberAdminService.DeleteMember(request, id);
-        AddFeedback("Member deleted", FeedbackType.Success);
+        var result = await _memberAdminService.RemoveMemberFromChapter(request, id, reason);
+        AddFeedback(result, "Member deleted");
+
+        if (!result.Success)
+        {
+            return RedirectToReferrer();
+        }
 
         var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterAdminService.GetChapter(request);
