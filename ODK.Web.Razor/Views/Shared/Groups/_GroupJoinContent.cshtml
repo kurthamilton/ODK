@@ -19,19 +19,16 @@
     return;
 }
 
-@if (!string.IsNullOrEmpty(Model.Texts?.RegisterText) || Model.IsAdmin)
+@if (!string.IsNullOrEmpty(Model.Texts?.RegisterText))
 {
-    <section class="section">
-        @await Html.PartialAsync("Components/_EditableHtml", new EditableTextViewModel
-        {
-            Action = $"/admin/groups/{Model.Chapter.Id}/texts/register",
-            Id = "group-texts-register",
-            IsAdmin = Model.IsAdmin,
-            Name = "text",
-            Text = Model.Texts?.RegisterText,
-            Title = "Join us"
-        })
-    </section>
+    @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+    {
+        TitleContentFunc = @<h3>Join us</h3>,
+        BodyContentFunc = 
+            @<div>
+                @Html.Raw(Model.Texts.RegisterText)
+            </div>
+    })
 }
 
 <section class="section">

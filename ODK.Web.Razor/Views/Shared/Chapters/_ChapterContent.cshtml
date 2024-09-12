@@ -8,7 +8,7 @@
     <h3>Welcome!</h3>
     @if (!string.IsNullOrEmpty(Model.Texts?.WelcomeText))
     {
-        @Html.Raw(Model.Texts?.WelcomeText)
+        @Html.Raw(Model.Texts.WelcomeText)
     }
 }
 else

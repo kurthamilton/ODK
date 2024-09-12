@@ -25,6 +25,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     private readonly IAuthorizationService _authorizationService;
     private readonly IChapterUrlService _chapterUrlService;
     private readonly IEmailService _emailService;
+    private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly INotificationService _notificationService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -37,12 +38,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IAuthorizationService authorizationService,
         IPlatformProvider platformProvider,
         IUrlProvider urlProvider,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IHtmlSanitizer htmlSanitizer)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _chapterUrlService = chapterUrlService;
         _emailService = emailService;
+        _htmlSanitizer = htmlSanitizer;
         _notificationService = notificationService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
@@ -86,7 +89,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             CreatedBy = currentMember.FullName,
             CreatedUtc = DateTime.UtcNow,
             Date = date,
-            Description = model.Description,
+            Description = model.Description != null ? _htmlSanitizer.Sanitize(model.Description) : null,
             EndTime = model.EndTime,
             ImageUrl = model.ImageUrl,
             IsPublic = model.IsPublic,
@@ -650,7 +653,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         @event.AttendeeLimit = model.AttendeeLimit;
         @event.Date = date;
-        @event.Description = model.Description;
+        @event.Description = model.Description != null ? _htmlSanitizer.Sanitize(model.Description) : null;
         @event.EndTime = model.EndTime;
         @event.ImageUrl = model.ImageUrl;
         @event.IsPublic = model.IsPublic;

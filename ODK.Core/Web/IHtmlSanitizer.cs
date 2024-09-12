@@ -2,7 +2,7 @@
 
 public interface IHtmlSanitizer
 {
-    string Encode(string html);
+    string Sanitize(string html);
 
-    string Encode(string html, IEnumerable<string> tagWhitelist);
+    string Sanitize(string html, IEnumerable<string> tagWhitelist);
 }

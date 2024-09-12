@@ -151,6 +151,16 @@ public static class EventAdminServiceTests
         return mock.Object;
     }
 
+    private static IChapterTopicRepository CreateMockChapterTopicRepository()
+    {
+        var mock = new Mock<IChapterTopicRepository>();
+
+        mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
+            .Returns(new MockDeferredQueryMultiple<ChapterTopic>(null));
+
+        return mock.Object;
+    }
+
     private static IChapterUrlService CreateMockChapterUrlService()
     {
         var mock = new Mock<IChapterUrlService>();
@@ -187,6 +197,13 @@ public static class EventAdminServiceTests
         var mock = new Mock<IEventRepository>();
         return mock.Object;
     }    
+
+    private static IEventTopicRepository CreateMockEventTopicRepository()
+    {
+        var mock = new Mock<IEventTopicRepository>();
+
+        return mock.Object;
+    }
 
     private static IMemberNotificationSettingsRepository CreateMockMemberNotificationSettingsRepository()
     {
@@ -246,6 +263,9 @@ public static class EventAdminServiceTests
         mock.Setup(x => x.ChapterRepository)
             .Returns(chapterRepository ?? CreateMockChapterRepository(CreateChapter()));
 
+        mock.Setup(x => x.ChapterTopicRepository)
+            .Returns(CreateMockChapterTopicRepository());
+
         mock.Setup(x => x.EventEmailRepository)
             .Returns(eventEmailRepository ?? CreateMockEventEmailRepository());
 
@@ -263,6 +283,9 @@ public static class EventAdminServiceTests
 
         mock.Setup(x => x.MemberSiteSubscriptionRepository)
             .Returns(CreateMockMemberSiteSubscriptionRepository());
+
+        mock.Setup(x => x.EventTopicRepository)
+            .Returns(CreateMockEventTopicRepository());
 
         mock.Setup(x => x.VenueRepository)
             .Returns(CreateMockVenueRepository());
@@ -294,6 +317,7 @@ public static class EventAdminServiceTests
             Mock.Of<IAuthorizationService>(),
             Mock.Of<IPlatformProvider>(),
             Mock.Of<IUrlProvider>(),
-            Mock.Of<INotificationService>());
+            Mock.Of<INotificationService>(),
+            Mock.Of<IHtmlSanitizer>());
     }
 }
