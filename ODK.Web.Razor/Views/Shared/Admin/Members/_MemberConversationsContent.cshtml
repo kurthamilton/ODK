@@ -9,12 +9,7 @@
 
 @await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
 
-@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", new MemberAdminTabsViewModel
-{
-    Chapter = Model.Chapter,
-    Member = Model.Member,
-    Platform = Model.Platform
-})
+@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 @if (Model.Conversations.Count > 0)
 {

@@ -9,10 +9,10 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Member image | Admin";
 
-    var member = await MemberAdminService.GetMember(Model.AdminServiceRequest, Model.MemberId);
+    var viewModel = await MemberAdminService.GetMemberImageViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
-@await Html.PartialAsync("Admin/Members/_MemberImageContent", new MemberViewModel(Model.Chapter, member))
+@await Html.PartialAsync("Admin/Members/_MemberImageContent", viewModel)
 
 @section styles
 {

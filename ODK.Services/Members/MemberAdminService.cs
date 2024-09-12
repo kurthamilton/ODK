@@ -51,20 +51,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task DeleteMember(AdminServiceRequest request, Guid memberId)
-    {
-        var member = await GetMember(request, memberId);
-
-        var platform = _platformProvider.GetPlatform();
-        if (platform != PlatformType.DrunkenKnitwits)
-        {
-            throw new Exception("Not permitted");
-        }
-
-        _unitOfWork.MemberRepository.Delete(member);
-        await _unitOfWork.SaveChangesAsync();
-    }
-
     public async Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(AdminServiceRequest request, Guid memberId)
     {
         var platform = _platformProvider.GetPlatform();
@@ -204,6 +190,24 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return csv;
     }
 
+    public async Task<MemberDeleteAdminPageViewModel> GetMemberDeleteViewModel(AdminServiceRequest request, Guid memberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, member, subscription) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, request.ChapterId));
+
+        return new MemberDeleteAdminPageViewModel
+        {
+            Chapter = chapter,
+            Member = member,
+            Platform = platform,
+            Subscription = subscription
+        };
+    }
+
     public async Task<MemberEventsAdminPageViewModel> GetMemberEventsViewModel(AdminServiceRequest request, Guid memberId)
     {
         var platform = _platformProvider.GetPlatform();
@@ -253,15 +257,26 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         };
     }
 
-    public async Task<MemberImage?> GetMemberImage(AdminServiceRequest request, Guid memberId)
+    public async Task<MemberImageAdminPageViewModel> GetMemberImageViewModel(AdminServiceRequest request, Guid memberId)
     {
-        var (member, memberImage) = await GetChapterAdminRestrictedContent(request,
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, member, image, avatar) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberImageRepository.GetByMemberId(memberId));
+            x => x.MemberImageRepository.GetByMemberId(memberId),
+            x => x.MemberAvatarRepository.GetByMemberId(memberId));
 
         OdkAssertions.MemberOf(member, request.ChapterId);
 
-        return memberImage;
+        return new MemberImageAdminPageViewModel
+        {
+            Avatar = avatar,
+            Chapter = chapter,
+            Image = image,
+            Member = member,
+            Platform = platform
+        };
     }
 
     public async Task<SubscriptionCreateAdminPageViewModel> GetMemberSubscriptionCreateViewModel(AdminServiceRequest request)
@@ -381,6 +396,38 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             Platform = platform,
             Subscription = subscription
         };
+    }
+
+    public async Task<ServiceResult> RemoveMemberFromChapter(AdminServiceRequest request, Guid memberId, string? reason)
+    {
+        var (chapter, member) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(memberId));
+
+        OdkAssertions.MemberOf(member, chapter.Id);
+
+        var result = await _memberService.DeleteMemberChapterData(memberId, chapter.Id);
+        if (!result.Success)
+        {
+            return result;
+        }
+
+        var subject = "{title} - you have been removed";
+        var body = "<p>You have been removed from the {chapter.name} group</p>";
+
+        if (!string.IsNullOrEmpty(reason))
+        {
+            body +=
+                "<p>The following reason was given:</p>" +
+                "<p>{reason}</p>";
+        }
+
+        await _emailService.SendEmail(chapter, [member.ToEmailAddressee()], subject, body, new Dictionary<string, string>
+        {
+            { "reason", reason ?? "" }
+        });
+
+        return ServiceResult.Successful();
     }
 
     public async Task RotateMemberImage(AdminServiceRequest request, Guid memberId)

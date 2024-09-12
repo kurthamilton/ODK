@@ -13,6 +13,8 @@ public interface IMemberService
 
     Task<ServiceResult> DeleteMember(Guid memberId);
 
+    Task<ServiceResult> DeleteMemberChapterData(Guid memberId, Guid chapterId);
+
     Task<Member> GetMember(Guid memberId);
 
     Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);

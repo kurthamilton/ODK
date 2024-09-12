@@ -1,43 +1,11 @@
-﻿@using ODK.Core.Platforms
-@using ODK.Services
-@using ODK.Services.Members
-@using ODK.Web.Common.Components
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Common.Routes
+﻿@using ODK.Services.Members.ViewModels
 @using ODK.Web.Razor.Models.Account
-@using ODK.Web.Razor.Models.Admin.Members
-@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
-@model ODK.Web.Razor.Models.Admin.Members.MemberViewModel
-@inject IMemberAdminService MemberAdminService
-@inject IPlatformProvider PlatformProvider
-@{
-    var platform = PlatformProvider.GetPlatform();
+@model MemberImageAdminPageViewModel
 
-    var request = new AdminServiceRequest(Model.Chapter.Id, User.MemberId());
-    var memberAvatar = await MemberAdminService.GetMemberAvatar(request, Model.Member.Id);
-    var memberImage = await MemberAdminService.GetMemberImage(request, Model.Member.Id);
-}
+@await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
-{
-    Breadcrumbs = new[]
-    {
-        new MenuItem
-        {
-            Link = OdkRoutes.MemberGroups.Members(platform, Model.Chapter),
-            Text = "Members"
-        },
-        new MenuItem { Text = Model.Member.FullName }
-    }
-})
-
-@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", new MemberAdminTabsViewModel
-{
-    Chapter = Model.Chapter,
-    Member = Model.Member,
-    Platform = platform
-})
+@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <section class="section--admin">
     <h3>Picture</h3>
@@ -55,15 +23,15 @@
 </section>
 <section class="section--admin">
     <h3>Fix</h3>
-    <form action="/@Model.Chapter.Name/Admin/Members/@Model.Member.Id/Picture" method="post" enctype="multipart/form-data">
+    <form action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/picture" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
         {
-            CropHeight = memberAvatar?.CropHeight,
-            CropWidth = memberAvatar?.CropWidth,
-            CropX = memberAvatar?.CropX,
-            CropY = memberAvatar?.CropY,
-            MemberImage = memberImage
+            CropHeight = Model.Avatar?.CropHeight,
+            CropWidth = Model.Avatar?.CropWidth,
+            CropX = Model.Avatar?.CropX,
+            CropY = Model.Avatar?.CropY,
+            MemberImage = Model.Image
         })
         <button class="btn btn-primary">Update</button>
     </form>

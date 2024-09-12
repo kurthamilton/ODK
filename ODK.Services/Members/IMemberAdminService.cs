@@ -4,9 +4,7 @@ using ODK.Services.Members.ViewModels;
 namespace ODK.Services.Members;
 
 public interface IMemberAdminService
-{
-    Task DeleteMember(AdminServiceRequest request, Guid memberId);
-
+{    
     Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(AdminServiceRequest request, Guid memberId);
 
     Task<AdminMembersAdminPageViewModel> GetAdminMembersAdminPageViewModel(AdminServiceRequest request);
@@ -21,9 +19,11 @@ public interface IMemberAdminService
 
     Task<IReadOnlyCollection<IReadOnlyCollection<string>>> GetMemberCsv(AdminServiceRequest request);
 
+    Task<MemberDeleteAdminPageViewModel> GetMemberDeleteViewModel(AdminServiceRequest request, Guid memberId);
+
     Task<MemberEventsAdminPageViewModel> GetMemberEventsViewModel(AdminServiceRequest request, Guid memberId);
 
-    Task<MemberImage?> GetMemberImage(AdminServiceRequest request, Guid memberId);
+    Task<MemberImageAdminPageViewModel> GetMemberImageViewModel(AdminServiceRequest request, Guid memberId);
 
     Task<SubscriptionCreateAdminPageViewModel> GetMemberSubscriptionCreateViewModel(AdminServiceRequest request);
 
@@ -34,6 +34,8 @@ public interface IMemberAdminService
     Task<MembersAdminPageViewModel> GetMembersViewModel(AdminServiceRequest request);
 
     Task<MemberAdminPageViewModel> GetMemberViewModel(AdminServiceRequest request, Guid memberId);
+
+    Task<ServiceResult> RemoveMemberFromChapter(AdminServiceRequest request, Guid memberId, string? reason);
 
     Task RotateMemberImage(AdminServiceRequest request, Guid memberId);
 

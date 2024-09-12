@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -294,6 +295,50 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult> DeleteMemberChapterData(Guid memberId, Guid chapterId)
+    {
+        var (chapter, chapterAdminMembers, currentMember, memberSubscription, memberProperties, notifications) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId),
+            x => x.MemberPropertyRepository.GetByMemberId(memberId, chapterId),
+            x => x.NotificationRepository.GetByMemberId(memberId, chapterId));
+
+        if (chapter.OwnerId == memberId)
+        {
+            return ServiceResult.Failure("Group owners cannot leave their own groups");
+        }
+
+        var memberChapter = currentMember.Chapters
+            .FirstOrDefault(x => x.ChapterId == chapterId);
+        if (memberChapter != null)
+        {
+            _unitOfWork.MemberChapterRepository.Delete(memberChapter);
+        }
+
+        var chapterAdminMember = chapterAdminMembers
+            .FirstOrDefault(x => x.MemberId == memberId);
+        if (chapterAdminMember != null)
+        {
+            _unitOfWork.ChapterAdminMemberRepository.Delete(chapterAdminMember);
+        }
+
+        if (memberSubscription != null)
+        {
+            _unitOfWork.MemberSubscriptionRepository.Delete(memberSubscription);
+        }
+
+        _unitOfWork.MemberPropertyRepository.DeleteMany(memberProperties);
+        _unitOfWork.NotificationRepository.DeleteMany(notifications);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return memberChapter != null
+            ? ServiceResult.Successful()
+            : ServiceResult.Failure("Member is not a member of this group");
+    }
+
     public async Task<Member> GetMember(Guid memberId)
     {
         var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
@@ -409,43 +454,23 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> LeaveChapter(Guid currentMemberId, Guid chapterId, string reason)
     {
-        var (chapter, chapterAdminMembers, currentMember, memberSubscription, memberProperties) = await _unitOfWork.RunAsync(
+        var (chapter, adminMembers, currentMember) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
-            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapterId));                
-        
-        if (chapter.OwnerId == currentMemberId)
+            x => x.MemberRepository.GetById(currentMemberId));
+
+        OdkAssertions.MemberOf(currentMember, chapter.Id);
+
+        var memberChapter = currentMember.MemberChapter(chapter.Id);
+
+        var result = await DeleteMemberChapterData(currentMemberId, chapterId);
+        if (!result.Success)
         {
-            return ServiceResult.Failure("You cannot leave groups you own");
-        }
+            return result;
+        }        
 
-        var memberChapter = currentMember.Chapters
-            .FirstOrDefault(x => x.ChapterId == chapterId);
-        if (memberChapter != null)
-        {
-            _unitOfWork.MemberChapterRepository.Delete(memberChapter);
-        }
-
-        var chapterAdminMember = chapterAdminMembers
-            .FirstOrDefault(x => x.MemberId == currentMemberId);
-        if (chapterAdminMember != null)
-        {
-            _unitOfWork.ChapterAdminMemberRepository.Delete(chapterAdminMember);
-        }
-
-        if (memberSubscription != null)
-        {
-            _unitOfWork.MemberSubscriptionRepository.Delete(memberSubscription);
-        }
-
-        _unitOfWork.MemberPropertyRepository.DeleteMany(memberProperties);
-
-        await _unitOfWork.SaveChangesAsync();
-
-        var emailRecipients = chapterAdminMembers
-            .Where(x => x.ReceiveNewMemberEmails)
+        var emailRecipients = adminMembers
+            .Where(x => x.MemberId != currentMemberId && x.ReceiveNewMemberEmails)
             .Select(x => x.ToEmailAddressee())
             .ToArray();
 
