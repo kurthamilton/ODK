@@ -295,27 +295,28 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> DeleteMemberChapterData(Guid memberId, Guid chapterId)
+    public async Task<ServiceResult<(Member Member, MemberChapter MemberChapter)>> DeleteMemberChapterData(Guid memberId, Guid chapterId)
     {
-        var (chapter, chapterAdminMembers, currentMember, memberSubscription, memberProperties, notifications) = await _unitOfWork.RunAsync(
+        var (chapter, chapterAdminMembers, member, memberProperties, notifications) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(memberId),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId),
             x => x.MemberPropertyRepository.GetByMemberId(memberId, chapterId),
             x => x.NotificationRepository.GetByMemberId(memberId, chapterId));
 
         if (chapter.OwnerId == memberId)
         {
-            return ServiceResult.Failure("Group owners cannot leave their own groups");
+            return ServiceResult<(Member, MemberChapter)>.Failure("Group owners cannot leave their own groups");
         }
 
-        var memberChapter = currentMember.Chapters
-            .FirstOrDefault(x => x.ChapterId == chapterId);
-        if (memberChapter != null)
+        var memberChapter = member.MemberChapter(chapterId);
+        if (memberChapter == null)
         {
-            _unitOfWork.MemberChapterRepository.Delete(memberChapter);
+            return ServiceResult<(Member, MemberChapter)>.Failure("Member is not a member of this group");
         }
+
+        member.Chapters.Remove(memberChapter);
+        _unitOfWork.MemberChapterRepository.Delete(memberChapter);
 
         var chapterAdminMember = chapterAdminMembers
             .FirstOrDefault(x => x.MemberId == memberId);
@@ -324,19 +325,12 @@ public class MemberService : IMemberService
             _unitOfWork.ChapterAdminMemberRepository.Delete(chapterAdminMember);
         }
 
-        if (memberSubscription != null)
-        {
-            _unitOfWork.MemberSubscriptionRepository.Delete(memberSubscription);
-        }
-
         _unitOfWork.MemberPropertyRepository.DeleteMany(memberProperties);
         _unitOfWork.NotificationRepository.DeleteMany(notifications);
 
         await _unitOfWork.SaveChangesAsync();
 
-        return memberChapter != null
-            ? ServiceResult.Successful()
-            : ServiceResult.Failure("Member is not a member of this group");
+        return ServiceResult<(Member, MemberChapter)>.Successful((member, memberChapter));
     }
 
     public async Task<Member> GetMember(Guid memberId)
@@ -454,17 +448,13 @@ public class MemberService : IMemberService
 
     public async Task<ServiceResult> LeaveChapter(Guid currentMemberId, Guid chapterId, string reason)
     {
-        var (chapter, adminMembers, currentMember) = await _unitOfWork.RunAsync(
+        var (chapter, adminMembers) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(currentMemberId));
-
-        OdkAssertions.MemberOf(currentMember, chapter.Id);
-
-        var memberChapter = currentMember.MemberChapter(chapter.Id);
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId));        
 
         var result = await DeleteMemberChapterData(currentMemberId, chapterId);
-        if (!result.Success)
+        var (currentMember, memberChapter) = result.Value;
+        if (currentMember == null)
         {
             return result;
         }        
@@ -496,7 +486,7 @@ public class MemberService : IMemberService
             {
                 { "member.name", currentMember.FullName },
                 { "chapter.name", chapter.Name },
-                { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(chapter.TimeZone) ?? "-" },
+                { "joined", memberChapter.CreatedUtc.ToFriendlyDateString(chapter.TimeZone) ?? "-" },
                 { "reason", reason }
             });
         }
@@ -522,6 +512,8 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Payment not made: you are not a member of this subscription's chapter");
         }
         
+        var memberChapter = member.MemberChapter(chapterSubscription.ChapterId);
+
         var paymentResult = await _paymentService.MakePayment(paymentSettings, 
             paymentSettings.Currency, member, (decimal)chapterSubscription.Amount, cardToken, 
             chapterSubscription.Title);
@@ -540,9 +532,9 @@ public class MemberService : IMemberService
         memberSubscription.ExpiresUtc = expiresUtc;
         memberSubscription.Type = chapterSubscription.Type;
 
-        if (memberSubscription.MemberId == default)
+        if (memberSubscription.MemberChapterId == default)
         {
-            memberSubscription.MemberId = member.Id;
+            memberSubscription.MemberChapterId = memberChapter.Id;
             _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
         }
         else
@@ -972,22 +964,23 @@ public class MemberService : IMemberService
         ChapterMembershipSettings? membershipSettings,
         MemberSiteSubscription? ownerSubscription)
     {
-        _unitOfWork.MemberChapterRepository.Add(new MemberChapter
+        var memberChapter = new MemberChapter
         {
             CreatedUtc = now,
             MemberId = member.Id,
             ChapterId = chapter.Id
-        });
+        };
+
+        _unitOfWork.MemberChapterRepository.Add(memberChapter);
 
         var hasSubscriptions = _authorizationService
             .ChapterHasAccess(ownerSubscription, SiteFeatureType.MemberSubscriptions);
         if (hasSubscriptions && membershipSettings?.Enabled == true)
         {
             _unitOfWork.MemberSubscriptionRepository.Add(new MemberSubscription
-            {
-                ChapterId = chapter.Id,
+            {                
                 ExpiresUtc = membershipSettings?.TrialPeriodMonths > 0 ? now.AddMonths(membershipSettings.TrialPeriodMonths) : null,
-                MemberId = member.Id,
+                MemberChapterId = memberChapter.Id,
                 Type = membershipSettings?.TrialPeriodMonths > 0 ? SubscriptionType.Trial : SubscriptionType.Full
             });
         }        

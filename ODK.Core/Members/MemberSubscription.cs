@@ -4,11 +4,11 @@ namespace ODK.Core.Members;
 
 public class MemberSubscription : IVersioned
 {
-    public Guid ChapterId { get; set; }
-
     public DateTime? ExpiresUtc { get; set; }
 
-    public Guid MemberId { get; set; }
+    public MemberChapter MemberChapter { get; set; } = null!;
+
+    public Guid MemberChapterId { get; set; }
 
     public DateTime? ReminderEmailSentUtc { get; set; }
 

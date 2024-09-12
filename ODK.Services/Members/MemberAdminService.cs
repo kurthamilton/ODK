@@ -169,7 +169,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             }
         };
 
-        var subscriptionDictionary = subscriptions.ToDictionary(x => x.MemberId);
+        var subscriptionDictionary = subscriptions
+            .ToDictionary(x => x.MemberChapter.MemberId);
 
         foreach (var member in members.OrderBy(x => x.FullName))
         {
@@ -400,17 +401,15 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task<ServiceResult> RemoveMemberFromChapter(AdminServiceRequest request, Guid memberId, string? reason)
     {
-        var (chapter, member) = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(request.ChapterId),
-            x => x.MemberRepository.GetById(memberId));
-
-        OdkAssertions.MemberOf(member, chapter.Id);
+        var chapter = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
 
         var result = await _memberService.DeleteMemberChapterData(memberId, chapter.Id);
-        if (!result.Success)
+        var (member, _) = result.Value;
+        if (member == null)
         {
             return result;
-        }
+        }        
 
         var subject = "{title} - you have been removed";
         var body = "<p>You have been removed from the {chapter.name} group</p>";
@@ -509,15 +508,17 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 continue;
             }
 
-            var memberSubscriptionDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);            
+            var memberSubscriptionDictionary = memberSubscriptions
+                .ToDictionary(x => x.MemberChapter.MemberId);            
             foreach (var member in members)
             {
+                var memberChapter = member.MemberChapter(chapter.Id);
+
                 if (!memberSubscriptionDictionary.TryGetValue(member.Id, out var memberSubscription))
                 {
                     memberSubscription = new MemberSubscription
                     {
-                        ChapterId = chapter.Id,
-                        MemberId = member.Id,
+                        MemberChapterId = memberChapter.Id,
                         Type = SubscriptionType.Trial
                     };
                     _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
@@ -685,6 +686,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId));
 
+        var memberChapter = member.MemberChapter(chapterId);
+
         if (memberSubscription == null)
         {
             memberSubscription = new MemberSubscription();
@@ -699,10 +702,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return validationResult;
         }
 
-        if (memberSubscription.MemberId == default)
+        if (memberSubscription.MemberChapterId == default)
         {
-            memberSubscription.ChapterId = chapterId;
-            memberSubscription.MemberId = memberId;
+            memberSubscription.MemberChapterId = memberChapter.Id;
             _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
         }
         else
@@ -724,7 +726,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         ChapterMembershipSettings? membershipSettings,
         MemberFilter filter)
     {
-        var memberSubscriptionsDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);
+        var memberSubscriptionsDictionary = memberSubscriptions
+            .ToDictionary(x => x.MemberChapter.MemberId);
 
         foreach (var member in members)
         {

@@ -1050,9 +1050,12 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     {
         var parameters = GetEventEmailParameters(chapter, @event, venue);
 
-        var memberResponses = responses.ToDictionary(x => x.MemberId, x => x);
-        var inviteDictionary = invites.ToDictionary(x => x.MemberId, x => x);
-        var memberSubscriptionDictionary = memberSubscriptions.ToDictionary(x => x.MemberId);
+        var memberResponses = responses
+            .ToDictionary(x => x.MemberId, x => x);
+        var inviteDictionary = invites
+            .ToDictionary(x => x.MemberId, x => x);
+        var memberSubscriptionDictionary = memberSubscriptions
+            .ToDictionary(x => x.MemberChapter.MemberId);
 
         var optOutMemberIds = memberEmailPreferences
             .Where(x => x.Type == MemberEmailPreferenceType.Events && x.Disabled)
