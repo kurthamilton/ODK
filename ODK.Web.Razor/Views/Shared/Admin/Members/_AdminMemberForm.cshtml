@@ -7,22 +7,22 @@
     @Html.ValidationMessageFor(x => x.AdminEmailAddress)
 </div>
 
-<div class="form-check mb-3">
+<div class="form-check form-switch mb-3">
     @Html.OdkCheckBoxFor(x => x.ReceiveContactEmails, new { @class = "form-check-input" })
     @Html.LabelFor(x => x.ReceiveContactEmails, new { @class = "form-check-label" })
 </div>
 
-<div class="form-check mb-3">
+<div class="form-check form-switch mb-3">
     @Html.OdkCheckBoxFor(x => x.ReceiveNewMemberEmails, new { @class = "form-check-input" })
     @Html.LabelFor(x => x.ReceiveNewMemberEmails, new { @class = "form-check-label" })
 </div>
 
-<div class="form-check mb-3">
+<div class="form-check form-switch mb-3">
     @Html.OdkCheckBoxFor(x => x.SendNewMemberEmails, new { @class = "form-check-input" })
     @Html.LabelFor(x => x.SendNewMemberEmails, new { @class = "form-check-label" })
 </div>
 
-<div class="form-check mb-3">
+<div class="form-check form-switch mb-3">
     @Html.OdkCheckBoxFor(x => x.ReceiveEventCommentEmails, new { @class = "form-check-input" })
     @Html.LabelFor(x => x.ReceiveEventCommentEmails, new { @class = "form-check-label" })
 </div>

@@ -17,8 +17,6 @@ public abstract class RepositoryBase
 
     public void DeleteSingle<T>(T entity) where T : class => _context.Set<T>().Remove(entity);
 
-    public void DeleteMany<T>(IEnumerable<T> entities) where T : class => _context.Set<T>().RemoveRange(entities);
-
     public void UpdateSingle<T>(T entity) where T : class => _context.Set<T>().Update(entity);
 
     protected virtual void OnCommit()

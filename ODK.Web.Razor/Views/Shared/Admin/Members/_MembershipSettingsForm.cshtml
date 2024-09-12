@@ -1,7 +1,7 @@
 ﻿@using ODK.Web.Common.Extensions
 @model ODK.Web.Razor.Models.Admin.Members.MembershipSettingsFormViewModel
 
-<div class="mb-3 form-check">
+<div class="mb-3 form-check form-switch">
     @Html.OdkCheckBoxFor(x => x.Enabled, new { @class = "form-check-input" })
     @Html.LabelFor(x => x.Enabled, new { @class = "form-check-label" })
 

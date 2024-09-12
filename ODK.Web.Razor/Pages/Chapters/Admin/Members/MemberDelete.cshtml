@@ -1,0 +1,12 @@
+﻿@page "/{chapterName}/admin/members/{id:guid}/delete"
+@using ODK.Services.Members
+@model MemberDeleteModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Delete member | Admin";
+
+    var viewModel = await MemberAdminService.GetMemberDeleteViewModel(Model.AdminServiceRequest, Model.MemberId);
+}
+
+@await Html.PartialAsync("Admin/Members/_MemberDeleteContent", viewModel)

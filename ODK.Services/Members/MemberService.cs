@@ -1,5 +1,4 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -323,6 +322,14 @@ public class MemberService : IMemberService
         if (chapterAdminMember != null)
         {
             _unitOfWork.ChapterAdminMemberRepository.Delete(chapterAdminMember);
+        }
+
+        var privacySettings = member.PrivacySettings
+            .FirstOrDefault(x => x.ChapterId == chapter.Id);
+
+        if (privacySettings != null)
+        {
+            _unitOfWork.MemberPrivacySettingsRepository.Delete(privacySettings);
         }
 
         _unitOfWork.MemberPropertyRepository.DeleteMany(memberProperties);

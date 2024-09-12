@@ -2,9 +2,9 @@ using ODK.Services.Caching;
 
 namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
 
-public class MemberEventsModel : AdminPageModel
+public class MemberDeleteModel : AdminPageModel
 {
-    public MemberEventsModel(IRequestCache requestCache)
+    public MemberDeleteModel(IRequestCache requestCache) 
         : base(requestCache)
     {
     }

@@ -67,6 +67,14 @@ public class NotificationRepository : ReadWriteRepositoryBase<Notification>, INo
         UpdateMany(notifications);
     }
 
+    public override void Delete(Notification entity)
+    {
+        var clone = entity.Clone();
+        clone.Chapter = null;
+
+        base.Delete(clone);
+    }
+
     protected override IQueryable<Notification> Set() => base.Set()
         .Include(x => x.Chapter);
 

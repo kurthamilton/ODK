@@ -1,9 +1,6 @@
 ﻿@page "/{chapterName}/Admin/Members/{id:guid}/Events"
 @using ODK.Services.Members
-@using ODK.Web.Razor.Models.Components
-@using ODK.Web.Common.Components
-@using ODK.Web.Razor.Models.Admin.Members
-@model ODK.Web.Razor.Pages.Chapters.Admin.Members.MemberEventsModel
+@model MemberEventsModel
 @inject IMemberAdminService MemberAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
