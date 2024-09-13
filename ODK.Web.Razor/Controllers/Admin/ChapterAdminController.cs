@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
+using ODK.Core.Images;
 using ODK.Core.Subscriptions;
 using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
+using ODK.Services.Chapters.Models;
 using ODK.Services.Emails;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
@@ -24,7 +26,32 @@ public class ChapterAdminController : AdminControllerBase
     {
         _chapterAdminService = chapterAdminService;
         _emailAdminService = emailAdminService;
-    }    
+    }
+
+    [HttpPost("groups/{id:guid}/image")]
+    public async Task<IActionResult> UpdateImage(Guid id, [FromForm] ChapterImageFormViewModel viewModel)
+    {
+        if (string.IsNullOrEmpty(viewModel.ImageDataUrl))
+        {
+            AddFeedback("No image provided", FeedbackType.Warning);
+            return RedirectToReferrer();
+        }
+
+        if (!ImageHelper.TryParseDataUrl(viewModel.ImageDataUrl, out var bytes))
+        {
+            AddFeedback("Image could not be processed", FeedbackType.Error);
+            return RedirectToReferrer();
+        }
+
+        var request = new AdminServiceRequest(id, MemberId);
+        var result = await _chapterAdminService.UpdateChapterImage(request, new UpdateChapterImage
+        {
+            ImageData = bytes
+        });
+
+        AddFeedback(result, "Image updated");
+        return RedirectToReferrer();
+    }
 
     [HttpPost("groups/{id:guid}/links")]
     public async Task<IActionResult> UpdatePrivacySettings(Guid id, [FromForm] ChapterLinksFormSubmitViewModel viewModel)

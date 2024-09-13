@@ -25,6 +25,8 @@ public class GroupRoutes
         _ => $"{Index(platform)}/{chapter.Slug}".ToLowerInvariant()
     };
 
+    public string Image(Guid chapterId) => $"/groups/{chapterId}/image";
+
     public string Index(PlatformType platform) => platform switch
     {
         PlatformType.DrunkenKnitwits => "",

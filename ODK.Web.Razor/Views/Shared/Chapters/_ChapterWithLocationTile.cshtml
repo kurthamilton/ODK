@@ -3,32 +3,38 @@
 @model ChapterWithDistanceViewModel
 
 <div class="card">
-    <div class="card-header">
-        <div class="d-flex">
-            <div class="me-auto">
-                <a href="@OdkRoutes.Groups.Group(Model.Platform, Model.Chapter)">@Model.Chapter.Name</a>
-            </div>
-            <div class="small">
-                @await Html.PartialAsync("Components/_Location", Model.Location.Name)
-            </div>
-        </div>
-    </div>    
     <div class="card-body">        
-        <div class="d-flex flex-column gap-3">
-            @if (!string.IsNullOrEmpty(Model.Texts?.Description))
-            {
-                <div class="card-text">@Model.Texts?.Description</div>
-            }
-
-            @if (Model.Topics.Count > 0)
-            {
-                <div>
-                    @foreach (var topic in Model.Topics.OrderBy(x => x.Name))
+        <a href="@OdkRoutes.Groups.Group(Model.Platform, Model.Chapter)" class="text-body link-hover">
+            <div class="row">
+                <div class="col-4">
+                    @if (Model.HasImage)
                     {
-                        <div class="badge text-bg-secondary">@topic.Name</div>
-                    }
+                        <img src="@OdkRoutes.Groups.Image(Model.Chapter.Id)" />
+                    }                    
                 </div>
-            }
-        </div>        
+                <div class="col-8">
+                    <div class="d-flex flex-column gap-2">
+                        <h6><strong>@Model.Chapter.Name</strong></h6>
+                        <div class="small">
+                            @await Html.PartialAsync("Components/_Location", Model.Location.Name)
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Texts?.Description))
+                        {
+                            <div class="card-text">@Model.Texts?.Description</div>
+                        }
+
+                        @if (Model.Topics.Count > 0)
+                        {
+                            <div>
+                                @foreach (var topic in Model.Topics.OrderBy(x => x.Name))
+                                {
+                                    <div class="badge text-bg-secondary">@topic.Name</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </a>
     </div>    
 </div>

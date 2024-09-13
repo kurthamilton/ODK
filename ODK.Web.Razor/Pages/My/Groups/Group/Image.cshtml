@@ -1,0 +1,22 @@
+﻿@page "/my/groups/{id:guid}/image"
+@using ODK.Services.Chapters
+@model ImageModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Image";
+
+    var viewModel = await ChapterAdminService.GetChapterImageViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Chapter/_ImageContent", viewModel)
+
+@section styles
+{
+    <link rel="stylesheet" href="/lib/cropperjs/cropper.min.css" />
+}
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/_ImagingScripts")
+}

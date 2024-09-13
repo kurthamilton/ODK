@@ -138,6 +138,11 @@
 
         const loadFallback = image => {
             const fallbackUrl = image.getAttribute('data-img-fallback');
+            if (!fallbackUrl) {
+                image.classList.add('d-none');
+                return;
+            }
+
             image.src = fallbackUrl;
             image.onerror = null;
         };

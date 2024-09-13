@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Payments;
 
-namespace ODK.Services.Chapters;
+namespace ODK.Services.Chapters.Models;
 
 public class UpdateChapterPaymentSettings
 {

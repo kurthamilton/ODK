@@ -1,14 +1,11 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Core.Emails;
-using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
-using ODK.Data.Core.Deferred;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
+using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Emails;
 using ODK.Services.Members.ViewModels;
 
@@ -40,135 +37,7 @@ public class ChapterService : IChapterService
         _htmlSanitizer = htmlSanitizer;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
-    }        
-
-    public async Task<ServiceResult<Chapter?>> CreateChapter(Guid currentMemberId, ChapterCreateModel model)
-    {
-        var now = DateTime.UtcNow;
-        var platform = _platformProvider.GetPlatform();
-
-        var (memberSubscription, memberPaymentSettings, existing, countries, siteEmailSettings) = await _unitOfWork.RunAsync(
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform),
-            x => x.MemberPaymentSettingsRepository.GetByMemberId(currentMemberId),
-            x => x.ChapterRepository.GetAll(),
-            x => x.CountryRepository.GetAll(),
-            x => x.SiteEmailSettingsRepository.Get(platform));
-
-        var memberChapters = existing
-            .Where(x => x.OwnerId == currentMemberId)
-            .ToArray();
-        
-        if (memberChapters.Length >= (memberSubscription?.SiteSubscription.GroupLimit ?? 1))
-        {
-            return ServiceResult<Chapter?>.Failure("You cannot create any more groups");
-        }
-
-        if (memberSubscription?.ExpiresUtc < now)
-        {
-            return ServiceResult<Chapter?>.Failure("Your subscription has expired");
-        }
-
-        if (existing.Any(x => string.Equals(x.Name, model.Name, StringComparison.InvariantCultureIgnoreCase)))
-        {
-            return ServiceResult<Chapter?>.Failure($"The name '{model.Name}' is taken");
-        }        
-
-        TimeZoneInfo? timeZone = null;
-        if (model.TimeZoneId != null)
-        {
-            if (!TimeZoneInfo.TryFindSystemTimeZoneById(model.TimeZoneId, out timeZone))
-            {
-                return ServiceResult<Chapter?>.Failure("Invalid time zone");
-            }
-        }
-
-        var originalSlug = model.Name
-            .ToLowerInvariant()
-            .Replace(' ', '-');
-
-        var slug = originalSlug;
-        int version = 2;
-        while (existing.Any(x => string.Equals(x.Slug, slug, StringComparison.InvariantCultureIgnoreCase)))
-        {
-            slug = $"{originalSlug}-{version++}";
-        }
-
-        var chapter = new Chapter
-        {
-            CreatedUtc = now,            
-            Name = model.Name,
-            OwnerId = currentMemberId,
-            Platform = platform,
-            Slug = slug,
-            TimeZone = timeZone
-        };
-
-        _unitOfWork.ChapterRepository.Add(chapter);
-
-        var texts = new ChapterTexts
-        {
-            ChapterId = chapter.Id,
-            Description = _htmlSanitizer.Sanitize(model.Description),
-        };
-        _unitOfWork.ChapterTextsRepository.Add(texts);
-
-        _unitOfWork.ChapterLocationRepository.Add(new ChapterLocation
-        {
-            ChapterId = chapter.Id,
-            LatLong = model.Location,
-            Name = model.LocationName
-        });
-
-        _unitOfWork.ChapterAdminMemberRepository.Add(new ChapterAdminMember
-        {
-            ChapterId = chapter.Id,
-            MemberId = currentMemberId,
-            ReceiveContactEmails = true,
-            ReceiveEventCommentEmails = true,
-            ReceiveNewMemberEmails = true,
-            SendNewMemberEmails = true
-        });
-
-        _unitOfWork.MemberChapterRepository.Add(new MemberChapter
-        {
-            ChapterId = chapter.Id,
-            MemberId = currentMemberId,
-            CreatedUtc = now            
-        });
-
-        _unitOfWork.ChapterTopicRepository.AddMany(model.TopicIds.Select(x => new ChapterTopic
-        {
-            ChapterId = chapter.Id,
-            TopicId = x
-        }));
-
-        if (memberPaymentSettings != null)
-        {
-            _unitOfWork.ChapterPaymentSettingsRepository.Add(new ChapterPaymentSettings
-            {
-                ApiPublicKey = memberPaymentSettings.ApiPublicKey,
-                ApiSecretKey = memberPaymentSettings.ApiSecretKey,
-                ChapterId = chapter.Id,
-                CurrencyId = memberPaymentSettings.CurrencyId
-            });
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-
-        await _emailService.SendMemberEmail(chapter, null, new EmailAddressee(siteEmailSettings.ContactEmailAddress, ""),
-            "{title} - New group",
-            "<p>A group has just been created</p>" +
-            "<p>Name: {chapter.name}</p>" +
-            "<p>{chapter.description}</p>" +
-            "<p>{url}/superadmin/groups</p>",
-            new Dictionary<string, string>
-            {
-                { "chapter.description", texts.Description ?? "" },
-                { "url", UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl) }
-            });
-
-        return ServiceResult<Chapter?>.Successful(chapter);
-    }
+    }            
 
     public async Task<Chapter> GetChapterById(Guid chapterId)
     {
@@ -179,6 +48,24 @@ public class ChapterService : IChapterService
     {
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         return OdkAssertions.Exists(chapter);
+    }
+
+    public async Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId)
+    {
+        var result = await _cacheService.GetOrSetVersionedItem(
+            () => _unitOfWork.ChapterImageRepository.GetByChapterId(chapterId).Run(),
+            chapterId,
+            currentVersion);
+
+        if (currentVersion == result.Version)
+        {
+            return result;
+        }
+
+        var image = result.Value;
+        return image != null
+            ? new VersionedServiceResult<ChapterImage>(BitConverter.ToInt64(image.Version), image)
+            : new VersionedServiceResult<ChapterImage>(0, null);
     }
 
     public async Task<ChapterLinks?> GetChapterLinks(Guid chapterId)
@@ -196,27 +83,6 @@ public class ChapterService : IChapterService
         return paymentSettings;
     }
     
-    public async Task<ChapterMemberPropertiesDto> GetChapterMemberPropertiesDto(Guid? currentMemberId, Guid chapterId)
-    {        
-        var (chapterProperties, chapterPropertyOptions, memberProperties, membershipSettings, siteSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
-            x => x.ChapterPropertyOptionRepository.GetByChapterId(chapterId),
-            x => currentMemberId != null 
-                ? x.MemberPropertyRepository.GetByMemberId(currentMemberId.Value, chapterId)
-                : new DefaultDeferredQueryMultiple<MemberProperty>(),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
-            x => x.SiteSettingsRepository.Get());
-
-        return new ChapterMemberPropertiesDto
-        {
-            ChapterProperties = chapterProperties,
-            ChapterPropertyOptions = chapterPropertyOptions,
-            MemberProperties = memberProperties,
-            MembershipSettings = membershipSettings,
-            SiteSettings = siteSettings
-        };
-    }
-
     public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Chapter chapter)
     {
         var chapterId = chapter.Id;
@@ -252,7 +118,7 @@ public class ChapterService : IChapterService
         return await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).Run();
     }
 
-    public async Task<ChaptersDto> GetChaptersDto()
+    public async Task<ChaptersHomePageViewModel> GetChaptersDto()
     {
         var (chapters, countries) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetAll(),
@@ -266,7 +132,7 @@ public class ChapterService : IChapterService
                 .ToArray();
         }
 
-        return new ChaptersDto
+        return new ChaptersHomePageViewModel
         {
             Chapters = chapters,
             Countries = countries

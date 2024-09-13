@@ -10,7 +10,7 @@
     .panel-title {
         display: inline-block;
         border-bottom: 1px solid var(--bs-body-color);
-        
+
         & > * {
             margin-bottom: 0;
             padding-bottom: 0;
@@ -29,7 +29,12 @@
     .panel-body {
         margin-top: 1rem;
     }
+    // panel children
+    .card-header {
+        background-color: var(--odk-bg-level-2-hover);
+    }
 
+    .card-body,
     .list-group-item {
         background-color: var(--odk-bg-level-2);
     }

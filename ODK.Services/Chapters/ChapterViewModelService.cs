@@ -8,6 +8,7 @@ using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
+using ODK.Core.Subscriptions;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -48,14 +49,20 @@ public class ChapterViewModelService : IChapterViewModelService
         var topicGroup = topicGroups
             .FirstOrDefault(x => string.Equals(x.Name, filter.TopicGroup, StringComparison.InvariantCultureIgnoreCase));
 
-        var (chapters, distanceUnits, preferences) = await _unitOfWork.RunAsync(
+        var (chapters, distanceUnits, currentMember, preferences, adminMembers) = await _unitOfWork.RunAsync(
             x => topicGroup != null 
                 ? x.ChapterRepository.GetByTopicGroupId(topicGroup.Id)
                 : x.ChapterRepository.GetAll(),
             x => x.DistanceUnitRepository.GetAll(),
             x => currentMemberId != null
+                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => currentMemberId != null
                 ? x.MemberPreferencesRepository.GetByMemberId(currentMemberId.Value)
-                : new DefaultDeferredQuerySingleOrDefault<MemberPreferences>());
+                : new DefaultDeferredQuerySingleOrDefault<MemberPreferences>(),
+            x => currentMemberId != null
+                ? x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId.Value)
+                : new DefaultDeferredQueryMultiple<ChapterAdminMember>());
 
         // TODO: search by location in the database
         var chapterLocations = await _unitOfWork.ChapterLocationRepository.GetByChapterIds(chapters.Select(x => x.Id));
@@ -90,14 +97,21 @@ public class ChapterViewModelService : IChapterViewModelService
             chapterLocations, 
             location?.LatLong, 
             new Distance { Unit = distanceUnit, Value = distance });
-        
-        var (texts, chapterTopics) = await _unitOfWork.RunAsync(
-            x => chapters.Count > 0 
-                ? x.ChapterTextsRepository.GetByChapterIds(chapters.Select(x => x.Id))
+
+        var chapterIds = chapters
+            .Select(x => x.Id)
+            .ToArray();
+
+        var (texts, chapterTopics, chapterImageDtos) = await _unitOfWork.RunAsync(
+            x => chapterIds.Length > 0 
+                ? x.ChapterTextsRepository.GetByChapterIds(chapterIds)
                 : new DefaultDeferredQueryMultiple<ChapterTexts>(),
-            x => chapters.Count > 0
-                ? x.ChapterTopicRepository.GetDtosByChapterIds(chapters.Select(x => x.Id))
-                : new DefaultDeferredQueryMultiple<ChapterTopicDto>());
+            x => chapterIds.Length > 0
+                ? x.ChapterTopicRepository.GetDtosByChapterIds(chapterIds)
+                : new DefaultDeferredQueryMultiple<ChapterTopicDto>(),
+            x => chapterIds.Length > 0 
+                ? x.ChapterImageRepository.GetDtosByChapterIds(chapterIds)
+                : new DefaultDeferredQueryMultiple<ChapterImageMetadata>());
 
         var chapterDictionary = chapters
             .ToDictionary(x => x.Id);
@@ -107,6 +121,9 @@ public class ChapterViewModelService : IChapterViewModelService
         var chapterTopicsDictionary = chapterTopics
             .GroupBy(x => x.ChapterId)
             .ToDictionary(x => x.Key, x => x.ToArray());
+
+        var imageDictionary = chapterImageDtos
+            .ToDictionary(x => x.ChapterId);
 
         var textsDictionary = texts
             .ToDictionary(x => x.ChapterId);
@@ -118,10 +135,15 @@ public class ChapterViewModelService : IChapterViewModelService
             textsDictionary.TryGetValue(chapterId, out var chapterTexts);
             chapterTopicsDictionary.TryGetValue(chapterId, out var topics);
 
+            var hasImage = imageDictionary.ContainsKey(chapterId);
+
             groups.Add(new ChapterWithDistanceViewModel
             {
                 Chapter = chapterDictionary[chapterId],
                 Distance = chaptersWithDistances[chapterId],
+                HasImage = hasImage,
+                IsAdmin = adminMembers.Any(x => x.ChapterId == chapterId),
+                IsMember = currentMember?.IsMemberOf(chapterId) == true,
                 Location = chapterLocationDictionary[chapterId],
                 Platform = platform,
                 Texts = chapterTexts,
@@ -162,7 +184,9 @@ public class ChapterViewModelService : IChapterViewModelService
         return new ChapterCreateViewModel
         {
             ChapterCount = current.Count,
-            ChapterLimit = memberSubscription?.SiteSubscription.GroupLimit ?? 1,
+            ChapterLimit = memberSubscription?.SiteSubscription != null
+                ? memberSubscription.SiteSubscription.GroupLimit
+                : SiteSubscription.DefaultGroupLimit,
             Member = member,
             MemberLocation = memberLocation,
             MemberTopics = memberTopics,
@@ -435,6 +459,7 @@ public class ChapterViewModelService : IChapterViewModelService
             links, 
             upcomingEvents, 
             recentEvents, 
+            hasImage,
             hasQuestions, 
             texts
         ) = await _unitOfWork.RunAsync(
@@ -453,6 +478,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
             x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),
             x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 3),
+            x => x.ChapterImageRepository.ExistsForChapterId(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id));
 
@@ -499,6 +525,7 @@ public class ChapterViewModelService : IChapterViewModelService
             Chapter = chapter,
             ChapterLocation = location,
             CurrentMember = currentMember,
+            HasImage = hasImage,
             HasQuestions = hasQuestions,
             InstagramPosts = showInstagramFeed ? instagramPosts : [],
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),

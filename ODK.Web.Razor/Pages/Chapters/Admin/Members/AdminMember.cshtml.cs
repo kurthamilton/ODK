@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
+using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Members;
 

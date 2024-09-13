@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 using ODK.Core.Platforms;
 using ODK.Services.Chapters;
+using ODK.Services.Chapters.Models;
+using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Chapters;
@@ -10,13 +12,13 @@ namespace ODK.Web.Razor.Pages.My.Groups;
 
 public class GroupCreateModel : OdkPageModel
 {
-    private readonly IChapterService _chapterService;
+    private readonly IChapterAdminService _chapterAdminService;
     private readonly IPlatformProvider _platformProvider;
 
-    public GroupCreateModel(IChapterService chapterService,
+    public GroupCreateModel(IChapterAdminService chapterAdminService,
         IPlatformProvider platformProvider)
     {
-        _chapterService = chapterService;
+        _chapterAdminService = chapterAdminService;
         _platformProvider = platformProvider;
     }
 
@@ -37,7 +39,7 @@ public class GroupCreateModel : OdkPageModel
             return Page();
         }
 
-        var result = await _chapterService.CreateChapter(CurrentMemberId, new ChapterCreateModel
+        var result = await _chapterAdminService.CreateChapter(CurrentMemberId, new ChapterCreateModel
         {
             Description = viewModel.Description?.Trim() ?? "",
             Location = new LatLong(viewModel.Location.Lat.Value, viewModel.Location.Long.Value),

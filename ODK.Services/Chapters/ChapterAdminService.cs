@@ -13,8 +13,10 @@ using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Caching;
+using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Emails;
+using ODK.Services.Imaging;
 using ODK.Services.Notifications;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
@@ -28,6 +30,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IEmailService _emailService;
     private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly IImageService _imageService;
     private readonly IInstagramService _instagramService;
     private readonly INotificationService _notificationService;
     private readonly IPlatformProvider _platformProvider;
@@ -44,7 +47,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IHtmlSanitizer htmlSanitizer,
         IInstagramService instagramService,
         IPlatformProvider platformProvider,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IImageService imageService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
@@ -52,6 +56,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _emailService = emailService;
         _httpRequestProvider = httpRequestProvider;
         _htmlSanitizer = htmlSanitizer;
+        _imageService = imageService;
         _instagramService = instagramService;
         _notificationService = notificationService;
         _platformProvider = platformProvider;
@@ -128,6 +133,138 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             });
 
         return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult<Chapter?>> CreateChapter(Guid currentMemberId, ChapterCreateModel model)
+    {
+        var now = DateTime.UtcNow;
+        var platform = _platformProvider.GetPlatform();
+
+        var (memberSubscription, memberPaymentSettings, existing, countries, siteEmailSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform),
+            x => x.MemberPaymentSettingsRepository.GetByMemberId(currentMemberId),
+            x => x.ChapterRepository.GetAll(),
+            x => x.CountryRepository.GetAll(),
+            x => x.SiteEmailSettingsRepository.Get(platform));
+
+        var memberChapters = existing
+            .Where(x => x.OwnerId == currentMemberId)
+            .ToArray();
+
+        var chapterLimit = memberSubscription != null
+            ? memberSubscription.SiteSubscription.GroupLimit
+            : SiteSubscription.DefaultGroupLimit;
+
+        if (memberChapters.Length >= chapterLimit)
+        {
+            return ServiceResult<Chapter?>.Failure("You cannot create any more groups");
+        }
+
+        if (memberSubscription?.ExpiresUtc < now)
+        {
+            return ServiceResult<Chapter?>.Failure("Your subscription has expired");
+        }
+
+        if (existing.Any(x => string.Equals(x.Name, model.Name, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            return ServiceResult<Chapter?>.Failure($"The name '{model.Name}' is taken");
+        }
+
+        TimeZoneInfo? timeZone = null;
+        if (model.TimeZoneId != null)
+        {
+            if (!TimeZoneInfo.TryFindSystemTimeZoneById(model.TimeZoneId, out timeZone))
+            {
+                return ServiceResult<Chapter?>.Failure("Invalid time zone");
+            }
+        }
+
+        var originalSlug = model.Name
+            .ToLowerInvariant()
+            .Replace(' ', '-');
+
+        var slug = originalSlug;
+        int version = 2;
+        while (existing.Any(x => string.Equals(x.Slug, slug, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            slug = $"{originalSlug}-{version++}";
+        }
+
+        var chapter = new Chapter
+        {
+            CreatedUtc = now,
+            Name = model.Name,
+            OwnerId = currentMemberId,
+            Platform = platform,
+            Slug = slug,
+            TimeZone = timeZone
+        };
+
+        _unitOfWork.ChapterRepository.Add(chapter);
+
+        var texts = new ChapterTexts
+        {
+            ChapterId = chapter.Id,
+            Description = _htmlSanitizer.Sanitize(model.Description),
+        };
+        _unitOfWork.ChapterTextsRepository.Add(texts);
+
+        _unitOfWork.ChapterLocationRepository.Add(new ChapterLocation
+        {
+            ChapterId = chapter.Id,
+            LatLong = model.Location,
+            Name = model.LocationName
+        });
+
+        _unitOfWork.ChapterAdminMemberRepository.Add(new ChapterAdminMember
+        {
+            ChapterId = chapter.Id,
+            MemberId = currentMemberId,
+            ReceiveContactEmails = true,
+            ReceiveEventCommentEmails = true,
+            ReceiveNewMemberEmails = true,
+            SendNewMemberEmails = true
+        });
+
+        _unitOfWork.MemberChapterRepository.Add(new MemberChapter
+        {
+            ChapterId = chapter.Id,
+            MemberId = currentMemberId,
+            CreatedUtc = now
+        });
+
+        _unitOfWork.ChapterTopicRepository.AddMany(model.TopicIds.Select(x => new ChapterTopic
+        {
+            ChapterId = chapter.Id,
+            TopicId = x
+        }));
+
+        if (memberPaymentSettings != null)
+        {
+            _unitOfWork.ChapterPaymentSettingsRepository.Add(new ChapterPaymentSettings
+            {
+                ApiPublicKey = memberPaymentSettings.ApiPublicKey,
+                ApiSecretKey = memberPaymentSettings.ApiSecretKey,
+                ChapterId = chapter.Id,
+                CurrencyId = memberPaymentSettings.CurrencyId
+            });
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        await _emailService.SendMemberEmail(chapter, null, new EmailAddressee(siteEmailSettings.ContactEmailAddress, ""),
+            "{title} - New group",
+            "<p>A group has just been created</p>" +
+            "<p>Name: {chapter.name}</p>" +
+            "<p>{chapter.description}</p>" +
+            "<p>{url}/superadmin/groups</p>",
+            new Dictionary<string, string>
+            {
+                { "chapter.description", texts.Description ?? "" },
+                { "url", UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl) }
+            });
+
+        return ServiceResult<Chapter?>.Successful(chapter);
     }
 
     public async Task<ServiceResult> CreateChapterProperty(AdminServiceRequest request, 
@@ -479,6 +616,22 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Messages = messages,
             OtherConversations = otherConversations.Where(x => x.Conversation.Id != id).ToArray(),
             OwnerSubscription = ownerSubscription,
+            Platform = platform
+        };
+    }
+
+    public async Task<ChapterImageAdminPageViewModel> GetChapterImageViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, image) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.ChapterImageRepository.GetByChapterId(request.ChapterId));
+
+        return new ChapterImageAdminPageViewModel
+        {
+            Chapter = chapter,
+            Image = image,
             Platform = platform
         };
     }
@@ -975,6 +1128,28 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         existing.SendNewMemberEmails = model.SendNewMemberEmails;
 
         _unitOfWork.ChapterAdminMemberRepository.Update(existing);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateChapterImage(AdminServiceRequest request, UpdateChapterImage model)
+    {
+        var image = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterImageRepository.GetByChapterId(request.ChapterId));
+
+        if (image == null)
+        {
+            image = new ChapterImage();
+        }
+
+        var result = UpdateChapterImage(image, model.ImageData);
+        if (!result.Success)
+        {
+            return result;
+        }
+
+        _unitOfWork.ChapterImageRepository.Upsert(image, request.ChapterId);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -1539,6 +1714,25 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             await _unitOfWork.SaveChangesAsync();
         }
+
+        return ServiceResult.Successful();
+    }
+
+    private ServiceResult UpdateChapterImage(ChapterImage image, byte[] imageData)
+    {
+        if (!_imageService.IsImage(imageData))
+        {
+            return ServiceResult.Failure("Invalid image");
+        }
+
+        var mimeType = ChapterImage.DefaultMimeType;
+
+        image.ImageData = _imageService.Process(imageData, new ImageProcessingOptions
+        {
+            MaxWidth = ChapterImage.MaxWidth,
+            MimeType = mimeType
+        });
+        image.MimeType = mimeType;
 
         return ServiceResult.Successful();
     }

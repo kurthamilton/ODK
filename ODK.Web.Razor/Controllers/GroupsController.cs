@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Chapters;
 using ODK.Core.Platforms;
+using ODK.Services.Chapters;
 using ODK.Services.Contact;
 using ODK.Services.Members;
 using ODK.Services.Users.ViewModels;
@@ -14,6 +16,7 @@ namespace ODK.Web.Razor.Controllers;
 
 public class GroupsController : OdkControllerBase
 {
+    private readonly IChapterService _chapterService;
     private readonly IContactService _contactService;
     private readonly IMemberService _memberService;
     private readonly IPlatformProvider _platformProvider;
@@ -21,8 +24,10 @@ public class GroupsController : OdkControllerBase
     public GroupsController(
         IMemberService memberService,
         IPlatformProvider platformProvider,
-        IContactService contactService)
+        IContactService contactService,
+        IChapterService chapterService)
     {
+        _chapterService = chapterService;
         _contactService = contactService;
         _memberService = memberService;
         _platformProvider = platformProvider;
@@ -72,6 +77,10 @@ public class GroupsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpGet("groups/{id:guid}/image")]
+    public Task<IActionResult> Image(Guid id)
+        => HandleVersionedRequest(version => _chapterService.GetChapterImage(version, id), ChapterImageResult);
+
     [Authorize]
     [HttpPost("groups/{id:guid}/leave")]
     public async Task<IActionResult> LeaveGroup(Guid id, [FromForm] string reason)
@@ -110,5 +119,15 @@ public class GroupsController : OdkControllerBase
         var result = await _memberService.UpdateMemberChapterProfile(memberId, id, model);
         AddFeedback(result, "Profile updated");
         return result.Success ? RedirectToReferrer() : View();
+    }
+
+    protected IActionResult ChapterImageResult(ChapterImage? image)
+    {
+        if (image == null)
+        {
+            return NoContent();
+        }
+
+        return File(image.ImageData, image.MimeType);
     }
 }

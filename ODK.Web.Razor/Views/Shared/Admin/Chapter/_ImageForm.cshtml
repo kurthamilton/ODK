@@ -1,0 +1,37 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Images
+@using ODK.Web.Razor.Models.Admin.Chapters
+@model ChapterImageFormViewModel
+@{
+    var imageSrc = Model.ChapterImage != null
+        ? ImageHelper.ToDataUrl(Model.ChapterImage.ImageData, Model.ChapterImage.MimeType)
+        : null;
+
+    var htmlAttributes = new Dictionary<string, object>
+    {
+        { "type", "file" },
+        { "accept", "image/*" },
+        { "class", "form-control" },
+        { "data-img-input", "" }        
+    };
+
+    if (Model.Required)
+    {
+        htmlAttributes["data-val"] = "true";
+        htmlAttributes["data-val-required"] = "An image is required";
+    }
+}
+
+<div class="form-group mb-3 @(Model.Required ? "required" : null)">
+    <div data-img-container>
+        @Html.HiddenFor(x => x.ImageDataUrl, new { data_img_dataurl = "" })
+        <input type="hidden" data-img-type value="@Model.ChapterImage?.MimeType" />
+
+        @Html.TextBoxFor(x => x.Image, htmlAttributes)
+        @Html.ValidationMessageFor(x => x.Image)
+
+        <div class="mt-3 @(string.IsNullOrEmpty(imageSrc) ? "d-none" : null)" data-img-preview-container>
+            <img src="@imageSrc" data-img-preview data-img-resize data-img-ratio="" />
+        </div>
+    </div>
+</div>

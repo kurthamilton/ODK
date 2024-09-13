@@ -12,6 +12,8 @@ public struct ImageSize
         Width = width;
     }
 
+    public decimal AspectRatio => (Width * 1.0M) / Height;
+
     public int Height { get; set; }
 
     public int Width { get; set; }

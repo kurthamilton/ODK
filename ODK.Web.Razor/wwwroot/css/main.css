@@ -11906,19 +11906,25 @@ textarea.form-control-lg {
 
 :root {
   --odk-bg-level-0: #fff;
+  --odk-bg-level-0-rgb: 255, 255, 255;
   --odk-bg-level-0-hover: white;
   --odk-bg-level-1: #f2f2f2;
+  --odk-bg-level-1-rgb: 242, 242, 242;
   --odk-bg-level-1-hover: white;
   --odk-bg-level-2: #e6e6e6;
+  --odk-bg-level-2-rgb: 230, 230, 230;
   --odk-bg-level-2-hover: #f2f2f2;
 }
 
 [data-bs-theme=dark] {
   --odk-bg-level-0: #212529;
+  --odk-bg-level-0-rgb: 33, 37, 41;
   --odk-bg-level-0-hover: #2c3237;
   --odk-bg-level-1: #2c3237;
+  --odk-bg-level-1-rgb: 44, 50, 55;
   --odk-bg-level-1-hover: #383f45;
   --odk-bg-level-2: #383f45;
+  --odk-bg-level-2-rgb: 56, 63, 69;
   --odk-bg-level-2-hover: #434b53;
 }
 
@@ -11941,6 +11947,14 @@ html[data-platform=odk] {
 
 .flip-horizontal {
   transform: scaleX(-1);
+}
+
+.text-body {
+  color: var(--bs-body-color);
+}
+
+.link-hover:hover {
+  opacity: 0.8;
 }
 
 /*mimic BS4-style card header*/
@@ -12482,6 +12496,10 @@ html[data-platform=odk] {
 .panel .panel-body {
   margin-top: 1rem;
 }
+.panel .card-header {
+  background-color: var(--odk-bg-level-2-hover);
+}
+.panel .card-body,
 .panel .list-group-item {
   background-color: var(--odk-bg-level-2);
 }
@@ -12852,4 +12870,12 @@ th.sortable.sort-desc:after {
 
 .chapter-theme--oxford {
   --bg-section-header: #e03034;
+}
+
+.bg-level-1 {
+  background-color: var(--odk-bg-level-1);
+}
+
+.bg-level-2 {
+  background-color: var(--odk-bg-level-2);
 }

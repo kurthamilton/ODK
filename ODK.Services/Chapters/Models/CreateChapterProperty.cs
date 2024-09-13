@@ -1,6 +1,6 @@
 ﻿using ODK.Core.DataTypes;
 
-namespace ODK.Services.Chapters;
+namespace ODK.Services.Chapters.Models;
 
 public class CreateChapterProperty : UpdateChapterProperty
 {

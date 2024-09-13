@@ -5,6 +5,7 @@
     function bindContainer(container) {
         const context = {
             container: container,
+            dataUrl: container.querySelector('[data-img-dataurl]'),
             resize: container.querySelector('[data-img-resize]')
         };
 
@@ -60,12 +61,15 @@
         }        
         
         const options = {
-            aspectRatio: 1,
+            aspectRatio: context.resize.hasAttribute('data-img-ratio')
+                ? context.resize.getAttribute('data-img-ratio') || NaN 
+                : 1,
             autoCrop: true,
-            autoCropArea: 1,
+            autoCropArea: 1, // percentage of default crop area, 0 <= x <= 1
             data: getCropData(context),
             viewMode: 1
         };
+        
         context.cropper = new Cropper(context.resize, options);
 
         handleModals(context);
@@ -81,6 +85,7 @@
         context.cropYInput = context.container.querySelector('[data-img-crop-y]');
         context.cropWidthInput = context.container.querySelector('[data-img-crop-width]');
         context.cropHeightInput = context.container.querySelector('[data-img-crop-height]');        
+        context.mimeType = context.container.querySelector('[data-img-type]');
 
         form.addEventListener('submit', (e) => {
             if (!context.cropper) {
@@ -93,6 +98,19 @@
             }
 
             const data = context.cropper.getData(true);
+
+            if (context.dataUrl) {
+                let mimeType = context.mimeType;
+                const [file] = context.fileUpload.files;
+                if (file) {
+                    mimeType = file.type;                    
+                }
+
+                if (mimeType) {
+                    context.dataUrl.value = context.cropper.getCroppedCanvas().toDataURL(mimeType);
+                }
+            }
+            
             setCropData(context, data);
         });
     }

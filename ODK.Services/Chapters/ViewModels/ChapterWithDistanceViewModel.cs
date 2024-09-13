@@ -10,6 +10,12 @@ public class ChapterWithDistanceViewModel
 
     public required double Distance { get; init; }
 
+    public required bool HasImage { get; init; }
+
+    public required bool IsAdmin { get; init; }
+
+    public required bool IsMember { get; init; }
+
     public required ChapterLocation Location { get; init; }
 
     public required PlatformType Platform { get; init; }

@@ -62,9 +62,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             var siteSubscription = await _unitOfWork.SiteSubscriptionRepository
                 .GetById(siteSubscriptionPrice.SiteSubscriptionId)
                 .Run();
-            memberSubscription.SiteSubscription = siteSubscription;
             memberSubscription.SiteSubscriptionId = siteSubscription.Id;
-            memberSubscription.SiteSubscriptionPrice = siteSubscriptionPrice;
             memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
         }
 

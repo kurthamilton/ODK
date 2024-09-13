@@ -1,30 +1,42 @@
 ﻿$odk-bg-light-level-0: $body-bg;
+$odk-bg-light-level-0-rgb: to-rgb($body-bg);
 $odk-bg-dark-level-0: $body-bg-dark;
+$odk-bg-dark-level-0-rgb: to-rgb($body-bg-dark);
 
 $odk-bg-light-level-1: darken($odk-bg-light-level-0, 5%);
+$odk-bg-light-level-1-rgb: to-rgb($odk-bg-light-level-1);
 $odk-bg-dark-level-1: lighten($odk-bg-dark-level-0, 5%);
+$odk-bg-dark-level-1-rgb: to-rgb($odk-bg-dark-level-1); 
 
 $odk-bg-light-level-2: darken($odk-bg-light-level-1, 5%);
+$odk-bg-light-level-2-rgb: to-rgb($odk-bg-light-level-2); 
 $odk-bg-dark-level-2: lighten($odk-bg-dark-level-1, 5%);
+$odk-bg-dark-level-2-rgb: to-rgb($odk-bg-dark-level-2);
 
 $odk-bg-light: #e9ecef;
 $odk-bg-dark: #212529;
 
 :root {
     --odk-bg-level-0: #{$odk-bg-light-level-0};
+    --odk-bg-level-0-rgb: #{$odk-bg-light-level-0-rgb};
     --odk-bg-level-0-hover: #{lighten($odk-bg-light-level-0, 5%)};
     --odk-bg-level-1: #{$odk-bg-light-level-1};
+    --odk-bg-level-1-rgb: #{$odk-bg-light-level-1-rgb};
     --odk-bg-level-1-hover: #{lighten($odk-bg-light-level-1, 5%)};
     --odk-bg-level-2: #{$odk-bg-light-level-2};
+    --odk-bg-level-2-rgb: #{$odk-bg-light-level-2-rgb};
     --odk-bg-level-2-hover: #{lighten($odk-bg-light-level-2, 5%)};
 }
 
 [data-bs-theme="dark"] {
     --odk-bg-level-0: #{$odk-bg-dark-level-0};
+    --odk-bg-level-0-rgb: #{$odk-bg-dark-level-0-rgb};
     --odk-bg-level-0-hover: #{lighten($odk-bg-dark-level-0, 5%)};
     --odk-bg-level-1: #{$odk-bg-dark-level-1};
+    --odk-bg-level-1-rgb: #{$odk-bg-dark-level-1-rgb};
     --odk-bg-level-1-hover: #{lighten($odk-bg-dark-level-1, 5%)};
     --odk-bg-level-2: #{$odk-bg-dark-level-2};
+    --odk-bg-level-2-rgb: #{$odk-bg-dark-level-2-rgb};
     --odk-bg-level-2-hover: #{lighten($odk-bg-dark-level-2, 5%)};
 }
 

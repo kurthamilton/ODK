@@ -5,6 +5,8 @@ namespace ODK.Core.Subscriptions;
 
 public class SiteSubscription : IDatabaseEntity
 {
+    public const int DefaultGroupLimit = 1;
+
     public bool Default { get; set; }
 
     public string Description { get; set; } = "";

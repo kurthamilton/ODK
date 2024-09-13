@@ -54,6 +54,12 @@ public class MemberGroupRoutes
         _ => $"{Index(platform)}/new"
     };
 
+    public string GroupImage(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => "/",
+        _ => $"{Group(platform, chapter)}/image"
+    };
+
     public string GroupMessage(PlatformType platform, Chapter chapter, Guid messageId)
         => $"{GroupMessages(platform, chapter)}/{messageId}";
 

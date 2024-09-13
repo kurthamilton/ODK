@@ -17,6 +17,9 @@
             ? new MenuItem { Link = $"/{chapter.Name}/admin/chapter/emails", Text = "Emails" }
             : new MenuItem(),
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupQuestions(platform, chapter), Text = "FAQ" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem()
+            : new MenuItem { Link = OdkRoutes.MemberGroups.GroupImage(platform, chapter), Text = "Image" },
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupMessages(platform, chapter), Text = "Messages" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()

@@ -8,6 +8,8 @@ public class GroupHomePageViewModel : GroupPageViewModelBase
 {
     public required ChapterLocation? ChapterLocation { get; init; }
 
+    public required bool HasImage { get; init; }
+
     public required IReadOnlyCollection<InstagramPost> InstagramPosts { get; init; }
 
     public required ChapterLinks? Links { get; init; }

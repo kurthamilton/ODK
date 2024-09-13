@@ -1,3 +1,13 @@
 .flip-horizontal {
   transform: scaleX(-1);
 }
+
+.text-body {
+    color: var(--bs-body-color);
+}
+
+.link-hover {
+    &:hover {
+        opacity: 0.8;
+    }
+}

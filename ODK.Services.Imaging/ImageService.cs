@@ -2,11 +2,20 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
+// using static System.Net.Mime.MediaTypeNames;
 
 namespace ODK.Services.Imaging;
 
 public class ImageService : IImageService
 {
+    public byte[] Convert(byte[] data, string mimeType)
+    {
+        return ProcessImage(data, image =>
+        {
+            return ConvertImage(image, mimeType) ?? data;
+        });
+    }
+
     public byte[] Crop(byte[] data, int width, int height) => Crop(data, width, height, 0, 0);
 
     public byte[] Crop(byte[] data, int width, int height, int x, int y)
@@ -74,16 +83,46 @@ public class ImageService : IImageService
         });
     }
 
+    public byte[] Process(byte[] data, ImageProcessingOptions options)
+    {
+        return ProcessImage(data, image =>
+        {
+            var processed = false;
+
+            var imageFormat = Image.DetectFormat(data);
+
+            if (!string.IsNullOrEmpty(options.MimeType))
+            {
+                var converted = ConvertImage(image, options.MimeType);
+                if (converted != null)
+                {
+                    image = Image.Load(converted);
+                    imageFormat = Image.DetectFormat(converted);
+                    processed = true;
+                }                
+            }            
+
+            if (options.AspectRatio != null)
+            {
+                processed = PadImage(image, options.AspectRatio.Value) || processed;
+            }
+            
+            if (options.MaxWidth != null)
+            {
+                ReduceImage(image, options.MaxWidth.Value, image.Size.Height);
+            }
+
+            return processed 
+                ? ImageToBytes(image, imageFormat)
+                : data;
+        });
+    }
+
     public byte[] Reduce(byte[] data, int maxWidth, int maxHeight)
     {
         return ProcessImage(data, image =>
         {
-            if (image.Width <= maxWidth && image.Height <= maxHeight)
-            {
-                return;
-            }
-
-            RescaleImage(image, maxWidth, maxHeight);
+            ReduceImage(image, maxWidth, maxHeight);
         });
     }
 
@@ -114,6 +153,27 @@ public class ImageService : IImageService
         return new ImageSize(image?.Width ?? 0, image?.Height ?? 0);
     }
 
+    private static byte[]? ConvertImage(Image image, string mimeType)
+    {
+        using var ms = new MemoryStream();
+        switch (mimeType)
+        {
+            case "image/jpeg":
+                image.SaveAsJpeg(ms);
+                break;
+            case "image/png":
+                image.SaveAsPng(ms);
+                break;
+            case "image/webp":
+                image.SaveAsWebp(ms);
+                break;
+            default:
+                return null;
+        }
+
+        return ms.ToArray();
+    }
+
     private static Size GetRescaledSize(Size current, Size maxSize, Func<double, double, double> chooseRatio)
     {
         double widthRatio = (double)maxSize.Width / current.Width;
@@ -133,12 +193,67 @@ public class ImageService : IImageService
         return ms.ToArray();
     }
 
+    private static bool PadImage(Image image, decimal aspectRatio)
+    {
+        var size = image.Size;
+        var currentAspectRatio = size.Width * 1.0M / size.Height;
+        var width = currentAspectRatio >= aspectRatio
+            ? size.Width
+            : (int)Math.Ceiling(size.Height * aspectRatio);
+        var height = currentAspectRatio <= aspectRatio
+            ? size.Height
+            : (int)Math.Ceiling(size.Width / aspectRatio);
+
+        if (size.Width == width && size.Height == height)
+        {
+            return false;
+        }
+
+        PadImage(image, width, height);
+        return true;
+    }
+
+    private static void PadImage(Image image, int width, int height)
+    {
+        image.Mutate(context =>
+        {
+            try
+            {
+                context
+                    .AutoOrient()
+                    .Pad(width, height, Color.Transparent);
+            }
+            catch
+            {
+                // do nothing
+            }
+        });
+    }
+
     private static byte[] ProcessImage(byte[] data, Action<Image> action)
-    {            
-        var imageInfo = Image.DetectFormat(data);
+    {
+        return ProcessImage(data, image =>
+        {
+            var imageInfo = Image.DetectFormat(data);
+            action(image);
+            return ImageToBytes(image, imageInfo);
+        });        
+    }
+
+    private static byte[] ProcessImage(byte[] data, Func<Image, byte[]> action)
+    {
         using var image = Image.Load(data);
-        action(image);
-        return ImageToBytes(image, imageInfo);
+        return action(image);
+    }
+
+    private static void ReduceImage(Image image, int maxWidth, int maxHeight)
+    {
+        if (image.Width <= maxWidth && image.Height <= maxHeight)
+        {
+            return;
+        }
+
+        RescaleImage(image, maxWidth, maxHeight);
     }
 
     private static void RescaleImage(Image image, int maxWidth, int maxHeight)
