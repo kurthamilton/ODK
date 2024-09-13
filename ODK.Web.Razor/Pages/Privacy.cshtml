@@ -4,6 +4,8 @@
 @{
     Layout = "Shared/_HomeLayout.cshtml";
     Model.Title = "Privacy";
+    Model.Description = "Privacy policy detailing how we handle data";
+    Model.Path = "/privacy";
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

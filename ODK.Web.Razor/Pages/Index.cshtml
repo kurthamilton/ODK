@@ -4,8 +4,9 @@
 @inject IPlatformProvider PlatformProvider
 @{
     Layout = "_HomeLayout";
+    Model.Path = "/";
 
-    var platform = PlatformProvider.GetPlatform();
+    var platform = PlatformProvider.GetPlatform();    
 }
 
 @if (platform == PlatformType.DrunkenKnitwits)

@@ -1,6 +1,5 @@
 ﻿using System;
 using ODK.Core.Chapters;
-using ODK.Core.Events;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Web;

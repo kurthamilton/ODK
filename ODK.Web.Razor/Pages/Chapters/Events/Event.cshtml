@@ -20,6 +20,8 @@
     Model.Title = viewModel.Event.GetDisplayName();
 
     var chapterName = viewModel.Chapter.Name;
+
+    Model.Path = $"/{viewModel.Chapter.Name}/events/{viewModel.Event.Id}";
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel

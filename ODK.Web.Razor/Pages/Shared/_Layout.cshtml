@@ -1,10 +1,13 @@
 ﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
 @using ODK.Core.Chapters
 @using ODK.Core.Platforms
+@using ODK.Core.Utils
+@using ODK.Core.Web
 @using ODK.Services.Caching
 @using ODK.Web.Razor.Pages.Chapters
 @inject IPlatformProvider PlatformProvider
 @inject IRequestCache RequestCache
+@inject IHttpRequestProvider HttpRequestProvider
 @{
     var platform = PlatformProvider.GetPlatform();
     var context = new ChapterPageContext(RequestCache, Context);
@@ -26,6 +29,11 @@
         title = $"{pageTitle} | {title}";
     }
 
+    var canonicalUrlPath = ViewData["Path"] as string;
+    var canonicalUrl = canonicalUrlPath != null
+        ? UrlUtils.BaseUrl(HttpRequestProvider.RequestUrl) + canonicalUrlPath
+        : null;
+
     var description = ViewData["Description"] as string;
 }
 
@@ -38,6 +46,16 @@
     @if (!string.IsNullOrEmpty(description))
     {
         <meta  name="description" content="@description" />
+    }
+
+    @if (!string.IsNullOrEmpty(canonicalUrl))
+    {
+        if (!canonicalUrl.EndsWith("/"))
+        {
+            canonicalUrl += "/";
+        }
+
+        <link rel="canonical" href="@canonicalUrl.ToLowerInvariant()">
     }
 
     <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon.png">

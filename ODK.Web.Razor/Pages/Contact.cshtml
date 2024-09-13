@@ -4,7 +4,9 @@
 @model ODK.Web.Razor.Pages.ContactModel
 @{
     Layout = "_HomeLayout";
-    Model.Title = "Contact";    
+    Model.Title = "Contact";
+    Model.Description = "Form for sending messages to the site owners";
+    Model.Path = "/contact";
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

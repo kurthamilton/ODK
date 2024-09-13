@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿namespace ODK.Web.Razor.Pages;
 
-namespace ODK.Web.Razor.Pages;
-
-public class IndexModel : PageModel
+public class IndexModel : OdkPageModel
 {
     public void OnGet()
     {

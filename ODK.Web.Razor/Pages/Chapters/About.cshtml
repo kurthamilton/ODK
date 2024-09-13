@@ -9,10 +9,13 @@
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "About";
+    Model.Description = "More information about this Drunken Knitwits chapter, including some frequently asked questions";
 
     OdkAssertions.MeetsCondition(Model.Chapter, x => x.IsOpenForRegistration());
 
     var texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
+
+    Model.Path = $"/{Model.Chapter.Name}/about";
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

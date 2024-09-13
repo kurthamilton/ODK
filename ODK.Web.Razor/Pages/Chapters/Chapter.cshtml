@@ -30,6 +30,7 @@
     }
 
     Model.Description = description;
+    Model.Path = $"/{viewModel.Chapter.Name}";
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel

@@ -6,7 +6,7 @@ using ODK.Web.Common.Feedback;
 namespace ODK.Web.Razor.Pages;
 
 public abstract class OdkPageModel : PageModel
-{
+{    
     public Guid CurrentMemberId => User.MemberId();
 
     public Guid? CurrentMemberIdOrDefault => User.MemberIdOrDefault();
@@ -15,6 +15,12 @@ public abstract class OdkPageModel : PageModel
     {
         get => ViewData["Description"] as string;
         set => ViewData["Description"] = value;
+    }
+
+    public string? Path
+    {
+        get => ViewData["Path"] as string;
+        set => ViewData["Path"] = value;
     }
 
     public string? Title
