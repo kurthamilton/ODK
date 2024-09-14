@@ -1,23 +1,26 @@
 ﻿@using ODK.Core.Chapters
-@model Chapter
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@model ChapterAdminPageViewModel
 
-@if (Model.ApprovedUtc == null)
+@if (!Model.Chapter.Approved())
 {
     <div class="alert alert-danger">
         This group is still pending approval. You can continue to make changes but you won't be able to publish it until after approval.
     </div>
 }
-else if (Model.PublishedUtc == null)
+else if (!Model.Chapter.Published())
 {
     <div class="alert alert-danger">
         This group is not published
     </div>
 }
 
-@if (Model.CanBePublished())
+@if (Model.Chapter.CanBePublished())
 {
     <section class="section--admin">
-        <form action="/my/groups/@Model.Id/publish" method="post">
+        <form action="/groups/@Model.Chapter.Id/publish" method="post">
             <button class="btn btn-success">Publish</button>
         </form>
     </section>

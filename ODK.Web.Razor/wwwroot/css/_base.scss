@@ -7,3 +7,7 @@
         font-size: var(--odk-body-font-size-lg);
     }
 }
+
+p:last-child {
+    margin-bottom: 0;
+}

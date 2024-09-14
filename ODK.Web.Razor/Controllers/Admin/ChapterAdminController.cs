@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Emails;
 using ODK.Core.Images;
+using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Services;
 using ODK.Services.Caching;
@@ -8,6 +9,7 @@ using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Emails;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Admin.Members;
 
@@ -17,15 +19,34 @@ public class ChapterAdminController : AdminControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
     private readonly IEmailAdminService _emailAdminService;
+    private readonly IPlatformProvider _platformProvider;
 
     public ChapterAdminController(
         IChapterAdminService chapterAdminService,
         IEmailAdminService emailAdminService,
-        IRequestCache requestCache)
+        IRequestCache requestCache,
+        IPlatformProvider platformProvider)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;
         _emailAdminService = emailAdminService;
+        _platformProvider = platformProvider;
+    }
+
+    [HttpPost("groups/{id:guid}/delete")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var request = new AdminServiceRequest(id, MemberId);
+        var result = await _chapterAdminService.DeleteChapter(request);
+        AddFeedback(result, "Group deleted");
+
+        if (!result.Success)
+        {
+            return RedirectToReferrer();
+        }
+
+        var platform = _platformProvider.GetPlatform();
+        return Redirect(OdkRoutes.MemberGroups.Index(platform));
     }
 
     [HttpPost("groups/{id:guid}/image")]
@@ -168,7 +189,7 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
-    [HttpPost("my/groups/{id:guid}/publish")]
+    [HttpPost("groups/{id:guid}/publish")]
     public async Task<IActionResult> Publish(Guid id)
     {
         var request = new AdminServiceRequest(id, MemberId);

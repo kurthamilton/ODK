@@ -54,6 +54,12 @@ public class MemberGroupRoutes
         _ => $"{Index(platform)}/new"
     };
 
+    public string GroupDelete(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => "/",
+        _ => $"{Group(platform, chapter)}/delete"
+    };
+
     public string GroupImage(PlatformType platform, Chapter chapter) => platform switch
     {
         PlatformType.DrunkenKnitwits => "/",

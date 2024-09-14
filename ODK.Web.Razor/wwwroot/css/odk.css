@@ -11948,6 +11948,10 @@ html[data-platform=odk] {
     font-size: var(--odk-body-font-size-lg);
   }
 }
+p:last-child {
+  margin-bottom: 0;
+}
+
 .small {
   font-size: 0.875em !important;
 }

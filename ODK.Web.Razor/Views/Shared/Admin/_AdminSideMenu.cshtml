@@ -33,7 +33,10 @@
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
-            : new MenuItem { Link = OdkRoutes.MemberGroups.GroupTopics(platform, chapter), Text = "Topics" }
+            : new MenuItem { Link = OdkRoutes.MemberGroups.GroupTopics(platform, chapter), Text = "Topics" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem()
+            : new MenuItem { Link = OdkRoutes.MemberGroups.GroupDelete(platform, chapter), Text = "Delete" },
     };
 
     var superadminLinks = platform == PlatformType.DrunkenKnitwits && User.IsInRole(OdkRoles.SuperAdmin)

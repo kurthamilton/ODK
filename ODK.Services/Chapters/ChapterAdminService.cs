@@ -527,6 +527,20 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return chapterAdminMembers;
     }
 
+    public async Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var chapter = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
+
+        return new ChapterAdminPageViewModel
+        {
+            Chapter = chapter,
+            Platform = platform
+        };
+    }
+
     public async Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(AdminServiceRequest request, bool readByChapter)
     {
         var platform = _platformProvider.GetPlatform();
@@ -616,6 +630,22 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Messages = messages,
             OtherConversations = otherConversations.Where(x => x.Conversation.Id != id).ToArray(),
             OwnerSubscription = ownerSubscription,
+            Platform = platform
+        };
+    }
+
+    public async Task<ChapterDeleteAdminPageViewModel> GetChapterDeleteViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, memberCount) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetCountByChapterId(request.ChapterId));
+
+        return new ChapterDeleteAdminPageViewModel
+        {
+            Chapter = chapter,
+            MemberCount = memberCount,
             Platform = platform
         };
     }

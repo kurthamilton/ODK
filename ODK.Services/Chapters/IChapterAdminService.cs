@@ -36,9 +36,13 @@ public interface IChapterAdminService
 
     Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(AdminServiceRequest request);
 
+    Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(AdminServiceRequest request);
+
     Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(AdminServiceRequest request, bool readByChapter);
 
     Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(AdminServiceRequest request, Guid id);
+
+    Task<ChapterDeleteAdminPageViewModel> GetChapterDeleteViewModel(AdminServiceRequest request);
 
     Task<ChapterImageAdminPageViewModel> GetChapterImageViewModel(AdminServiceRequest request);
 

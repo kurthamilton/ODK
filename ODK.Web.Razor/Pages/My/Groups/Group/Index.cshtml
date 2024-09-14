@@ -5,9 +5,9 @@
 @{
     Layout = "_GroupAdminLayout";
 
-    var chapter = await ChapterAdminService.GetChapter(Model.AdminServiceRequest);
+    var viewModel = await ChapterAdminService.GetChapterAdminPageViewModel(Model.AdminServiceRequest);
 
-    Model.Title = chapter.Name;
+    Model.Title = viewModel.Chapter.Name;
 }
 
-@await Html.PartialAsync("Groups/_GroupEditContent", chapter)
+@await Html.PartialAsync("Groups/_GroupEditContent", viewModel)
