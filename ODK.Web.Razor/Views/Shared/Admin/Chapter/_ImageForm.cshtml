@@ -27,6 +27,7 @@
         @Html.HiddenFor(x => x.ImageDataUrl, new { data_img_dataurl = "" })
         <input type="hidden" data-img-type value="@Model.ChapterImage?.MimeType" />
 
+        @Html.LabelFor(x => x.Image, new { @class = "form-label" })
         @Html.TextBoxFor(x => x.Image, htmlAttributes)
         @Html.ValidationMessageFor(x => x.Image)
 

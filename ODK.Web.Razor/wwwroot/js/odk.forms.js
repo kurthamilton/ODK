@@ -26,7 +26,10 @@
     function bindSubmits() {
         document.querySelectorAll('[data-submit]').forEach(button => {
             const targetSelector = button.getAttribute('data-submit');
-            const target = document.querySelector(targetSelector);
+            const target = targetSelector === 'parent'
+                ? button.closest('form')
+                : document.querySelector(targetSelector);
+            
             const confirmMessage = button.getAttribute('data-submit-confirm');
 
             if (!target) {

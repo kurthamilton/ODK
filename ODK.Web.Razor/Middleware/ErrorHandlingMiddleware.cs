@@ -41,21 +41,22 @@ public class ErrorHandlingMiddleware
         }
         catch (Exception ex)
         {
-            statusCodeContext.HttpContext.Response.StatusCode = ex switch
-            {
-                OdkNotAuthenticatedException => 401,
-                OdkNotAuthorizedException => 403,
-                OdkNotFoundException => 404,
-                _ => 500
-            };
-
-            await LogError(context, ex, loggingService);
-            await HandleAsync(statusCodeContext.HttpContext, requestCache, unitOfWork);
+            await LogError(context, ex, loggingService);            
 
             if (!settings.Errors.Handle && statusCodeContext.HttpContext.Response.StatusCode == 500)
             {
                 throw;
             }
+
+            await HandleAsync(statusCodeContext.HttpContext, requestCache, unitOfWork);
+
+            // statusCodeContext.HttpContext.Response.StatusCode = ex switch
+            // {
+            //     OdkNotAuthenticatedException => 401,
+            //     OdkNotAuthorizedException => 403,
+            //     OdkNotFoundException => 404,
+            //     _ => 500
+            // };            
         }                
     }
 

@@ -143,4 +143,10 @@ public class ChapterService : IChapterService
     {
         return await _unitOfWork.ChapterTextsRepository.GetByChapterId(chapterId).Run();
     }
+
+    public async Task<bool> NameIsAvailable(string name)
+    {
+        var existing = await _unitOfWork.ChapterRepository.GetByName(name).Run();
+        return existing == null;
+    }
 }

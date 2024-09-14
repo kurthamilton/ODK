@@ -1,0 +1,62 @@
+﻿@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
+@model WizardViewModel
+@{
+    var baseId = Model.Id ?? "wizard";
+    var pageIds = Model.Pages
+        .Select((x, i) => new KeyValuePair<int, string>(i, $"{baseId}-{i + 1}"))
+        .ToDictionary(x => x.Key, x => x.Value);
+
+    var showMenu = Model.Pages
+        .All(x => !string.IsNullOrEmpty(x.Title));
+}
+
+<div class="accordion accordion--transition-0" id="@baseId" data-wizard>
+    @for (var i = 0; i < Model.Pages.Count; i++)
+    {
+        var page = Model.Pages.ElementAt(i);
+        var id = pageIds[i];
+
+        <div id="@id" class="collapse @(i == 0 ? "show" : null)"
+             data-bs-parent="#@baseId" data-wizard-page="@i">
+            
+            @if (showMenu)
+            {
+                <ul class="nav nav-underline mb-3">
+                    @for (var j = 0; j < Model.Pages.Count; j++)
+                    {
+                        var menuPage = Model.Pages.ElementAt(j);
+                        var menuPageId = pageIds[j];
+
+                        var active = j == i;
+                        var disabled = j > i;
+
+                        <li class="nav-item">
+                            <button class="nav-link @(active ? "active" : null) @(disabled ? "disabled" : null)" 
+                                    data-bs-toggle="collapse" data-bs-target="#@menuPageId" type="button">
+                                @menuPage.Title
+                            </button>
+                        </li>
+                    }
+                </ul>
+            }
+
+            @(page.ContentFunc.Invoke(null))
+
+            @if (i < Model.Pages.Count - 1)
+            {
+                var nextId = pageIds[i + 1];
+
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary" 
+                        data-bs-toggle="collapse" data-bs-target="#@nextId"
+                        formNoValidate
+                        data-wizard-validate>
+                        <span>Next</span>
+                        @await Html.PartialAsync("Components/Icons/_ChevronRight")
+                    </button>
+                </div>
+            }
+        </div>
+    }
+</div>

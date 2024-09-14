@@ -2,7 +2,7 @@
 
 namespace ODK.Web.Razor.Models.Admin.Chapters;
 
-public class ChapterImageFormViewModel
+public class ChapterImageFormViewModel : IChapterImageFormViewModel
 {
     public ChapterImage? ChapterImage { get; set; }
     

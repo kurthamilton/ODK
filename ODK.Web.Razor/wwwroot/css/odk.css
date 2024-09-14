@@ -11861,6 +11861,7 @@ textarea.form-control-lg {
 
 /*Style SlimSelect like Bootstrap 5*/
 .ss-main {
+  --ss-border-radius: 0;
   display: flex;
 }
 .ss-main .ss-arrow {
@@ -11870,6 +11871,10 @@ textarea.form-control-lg {
 .ss-placeholder {
   padding: 0 !important;
   line-height: 1.5 !important;
+}
+
+.placeholder-hidden .ss-placeholder {
+  visibility: hidden;
 }
 
 .ss-content {

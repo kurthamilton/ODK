@@ -1,47 +1,105 @@
 ﻿@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Chapters
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Topics
 @model CreateChapterFormViewModel
 
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.Name, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
-    @Html.ValidationMessageFor(x => x.Name)
-</div>
-
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.Description, new { @class = "form-label" })
-    @Html.TextAreaFor(x => x.Description, new { @class = "form-control" })
-    @Html.ValidationMessageFor(x => x.Description)
-</div>
-
-<div class="form-group mb-3">
-    @Html.LabelFor(x => x.TopicIds, new { @class = "form-label" })
-    @await Html.PartialAsync("Topics/_TopicPicker", new TopicPickerViewModel
+@await Html.PartialAsync("Components/_Wizard", new WizardViewModel
+{
+    Pages = new[]
     {
-        TopicIds = Model.TopicIds,
-        TopicGroups = Model.TopicGroups,
-        Topics = Model.Topics
-    })
-    @Html.ValidationMessageFor(x => x.TopicIds)
-</div>
+        new WizardPageViewModel
+        {
+            Title = "Basic details",
+            ContentFunc = 
+                @<div>
+                    <div class="form-group mb-3 required">
+                        @Html.LabelFor(x => x.Name, new { @class = "form-label" })
+                        @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(x => x.Name)
+                    </div>
 
-<div class="form-group mb-3 required" data-location-container>
-    @Html.LabelFor(x => x.Location.Name, new { @class = "form-label" })
-    <div class="input-group">
-        <span class="input-group-text">
-            <i class="fa-solid fa-location-dot" data-bs-toggle="tooltip" data-bs-title="Location"></i>
-        </span>
-        @Html.TextBoxFor(x => x.Location.Name, new { @class = "form-control", data_location = "" })
-    </div>
-    @Html.ValidationMessageFor(x => x.Location.Name)
-    @Html.HiddenFor(x => x.Location.Lat, new { data_location_lat = "" })
-    @Html.HiddenFor(x => x.Location.Long, new { data_location_long = "" })
-</div>
+                    <div class="form-group mb-3 required">
+                        @Html.LabelFor(x => x.Description, new { @class = "form-label" })
+                        @Html.TextAreaFor(x => x.Description, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(x => x.Description)
+                    </div>
+                </div>
+        },
+        new WizardPageViewModel
+        {
+            Title = "Topics",
+            ContentFunc = 
+                @<div>
+                    <div class="form-group mb-3">
+                        @Html.LabelFor(x => x.TopicIds, new { @class = "form-label" })
+                        @await Html.PartialAsync("Topics/_TopicPicker", new TopicPickerViewModel
+                        {
+                            TopicIds = Model.TopicIds,
+                            TopicGroups = Model.TopicGroups,
+                            Topics = Model.Topics
+                        })
+                        @Html.ValidationMessageFor(x => x.TopicIds)
+                    </div>
+                </div>
+        },
+        new WizardPageViewModel
+        {
+            Title = "Location",
+            ContentFunc = 
+                @<div>
+                    <div class="form-group mb-3 required" data-location-container>
+                        @Html.LabelFor(x => x.Location.Name, new { @class = "form-label" })
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa-solid fa-location-dot" data-bs-toggle="tooltip" data-bs-title="Location"></i>
+                            </span>
+                            @Html.TextBoxFor(x => x.Location.Name, new { @class = "form-control", data_location = "" })
+                        </div>
+                        @Html.ValidationMessageFor(x => x.Location.Name)
+                        @Html.HiddenFor(x => x.Location.Lat, new { data_location_lat = "" })
+                        @Html.HiddenFor(x => x.Location.Long, new { data_location_long = "" })
+                    </div>
 
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.Location.TimeZoneId, new { @class = "form-label" })
-    @Html.OdkTimeZoneDropDownFor(x => x.Location.TimeZoneId, new { @class = "form-select", data_searchable = "" })
-    @Html.ValidationMessageFor(x => x.Location.TimeZoneId)
-</div>
+                    <div class="form-group mb-3 required">
+                        @Html.LabelFor(x => x.Location.TimeZoneId, new { @class = "form-label" })
+                        @Html.OdkTimeZoneDropDownFor(x => x.Location.TimeZoneId, new { @class = "form-select", data_searchable = "" })
+                        @Html.ValidationMessageFor(x => x.Location.TimeZoneId)
+                    </div>
+                </div>
+    },
+        new WizardPageViewModel
+        {
+            Title = "Picture",
+            ContentFunc = 
+                @<div>
+                    @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel
+                    {
+                        Required = true
+                    })
+                </div>
+
+        },
+        new WizardPageViewModel
+        {
+            Title = "Finish",
+            ContentFunc = 
+                @<div>                    
+                    <p>
+                        After you create your group we'll take a quick look and let you know when it's approved.                                 
+                    </p>
+                    <p>
+                        In the meantime you can take a look around and continue setting up your group.
+                    </p>
+                    <p>
+                        Your group won't be visible to others until you publish it.
+                    </p>
+                    <button type="button" class="btn btn-primary w-100" data-submit="parent">
+                        <span>Create group</span>
+                        @await Html.PartialAsync("Components/Icons/_Rocket")
+                    </button>                  
+                </div>
+        }
+    }
+})

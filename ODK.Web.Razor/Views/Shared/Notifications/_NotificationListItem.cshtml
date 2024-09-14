@@ -66,7 +66,7 @@
                     @notificationContent.Invoke(null)
                 </div>
                 <div class="notification-col-icon">
-                    <i class="fa-solid fa-chevron-right notification-icon"></i>
+                    @await Html.PartialAsync("Components/Icons/_ChevronRight")
                 </div>
             </a>
         }

@@ -46,6 +46,12 @@ public class GroupsController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpGet("groups/available")]
+    public async Task<bool> Available(string name)
+    {
+        return await _chapterService.NameIsAvailable(name);
+    }
+
     [Authorize]
     [HttpPost("groups/{chapterId:guid}/conversations")]
     public async Task<IActionResult> StartConversation(Guid chapterId, [FromForm] ConversationFormViewModel viewModel)

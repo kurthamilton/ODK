@@ -19,12 +19,17 @@
         const searchable = multiple || $select.hasAttribute('data-searchable');
         const alwaysOpen = $select.hasAttribute('data-always-open');
 
+        if (!placeholder) {
+            // set a dummy placeholder to set height
+            $select.classList.add('placeholder-hidden');
+        }
+
         slimSelect = new SlimSelect({
             select: $select,
             settings: {
                 allowDeselect: allowDeselect,
                 closeOnSelect: !alwaysOpen,
-                placeholderText: $select.getAttribute('data-placeholder'),
+                placeholderText: placeholder || 'Select',
                 showSearch: searchable
             }
         });

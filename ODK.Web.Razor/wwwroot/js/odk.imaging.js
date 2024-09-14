@@ -87,31 +87,36 @@
         context.cropHeightInput = context.container.querySelector('[data-img-crop-height]');        
         context.mimeType = context.container.querySelector('[data-img-type]');
 
-        form.addEventListener('submit', (e) => {
+        const setData = () => {            
             if (!context.cropper) {
                 return;
-            }            
-
-            if (!context.cropper.element.src) {
-                // no image has been loaded
-                return;
             }
-
+            
             const data = context.cropper.getData(true);
 
             if (context.dataUrl) {
                 let mimeType = context.mimeType;
                 const [file] = context.fileUpload.files;
                 if (file) {
-                    mimeType = file.type;                    
+                    mimeType = file.type;
                 }
 
                 if (mimeType) {
                     context.dataUrl.value = context.cropper.getCroppedCanvas().toDataURL(mimeType);
                 }
             }
-            
+
             setCropData(context, data);
+        };
+
+        context.preview.addEventListener('ready', () => {
+            setData();
+        });
+        context.preview.addEventListener('cropend', () => {
+            setData();
+        });
+        context.preview.addEventListener('zoom', () => {
+            setData();
         });
     }
 

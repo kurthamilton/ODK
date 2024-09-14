@@ -44,7 +44,7 @@ builder.Services.AddWebOptimizer(pipeline =>
         "js/odk.selects.js",
         "js/odk.html-editor.js");
     pipeline.AddJavaScriptBundle(
-        "/js/odk.bundle.head.js",
+        route: "/js/odk.bundle.head.js",
         "js/odk.global.js",
         "js/odk.themes.js");
     

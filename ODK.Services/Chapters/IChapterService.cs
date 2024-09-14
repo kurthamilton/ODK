@@ -25,4 +25,6 @@ public interface IChapterService
     Task<ChaptersHomePageViewModel> GetChaptersDto();
 
     Task<ChapterTexts?> GetChapterTexts(Guid chapterId);
+
+    Task<bool> NameIsAvailable(string name);
 }

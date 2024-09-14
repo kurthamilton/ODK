@@ -6,6 +6,8 @@ public class ChapterCreateModel
 {
     public required string Description { get; init; }
 
+    public required byte[] ImageData { get; init; }
+
     public required LatLong Location { get; init; }
 
     public required string LocationName { get; init; }

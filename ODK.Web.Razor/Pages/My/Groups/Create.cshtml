@@ -6,7 +6,7 @@
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Chapters
 @using ODK.Web.Razor.Models.Components
-@model GroupCreateModel
+@model CreateModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
@@ -17,6 +17,8 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
+    Title = "Create group",
+    Narrow = true,
     Breadcrumbs = new[]
     {
         new MenuItem { Link = OdkRoutes.MemberGroups.Index(viewModel.Platform), Text = "My groups" },
@@ -37,7 +39,7 @@
                     TODO: warning
                 </div>
             }
-
+                        
             <form method="post">
                 @Html.AntiForgeryToken()
 
@@ -53,15 +55,19 @@
                     TopicGroups = viewModel.TopicGroups,
                     TopicIds = viewModel.MemberTopics.Select(x => x.TopicId).ToList(),
                     Topics = viewModel.Topics
-                })
-
-                <button class="btn btn-primary">Create</button>
+                })                
             </form>
-        </div>,
-    Title = "Create group"
+        </div>    
 })
+
+@section styles
+{
+    <link rel="stylesheet" href="/lib/cropperjs/cropper.min.css" />
+}
 
 @section scripts
 {
     @await Html.PartialAsync("Components/_GoogleLocationScripts")
+    @await Html.PartialAsync("Components/_ImagingScripts")
+    <script src="~/js/odk.wizard.js" asp-append-version="true"></script>
 }

@@ -16,14 +16,14 @@
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem { Link = $"/{chapter.Name}/admin/chapter/emails", Text = "Emails" }
             : new MenuItem(),
-        new MenuItem { Link = OdkRoutes.MemberGroups.GroupQuestions(platform, chapter), Text = "FAQ" },
-        platform == PlatformType.DrunkenKnitwits
-            ? new MenuItem()
-            : new MenuItem { Link = OdkRoutes.MemberGroups.GroupImage(platform, chapter), Text = "Image" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupQuestions(platform, chapter), Text = "FAQ" },        
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupMessages(platform, chapter), Text = "Messages" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
             : new MenuItem { Link = OdkRoutes.MemberGroups.GroupPayments(platform, chapter), Text = "Payments" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem()
+            : new MenuItem { Link = OdkRoutes.MemberGroups.GroupImage(platform, chapter), Text = "Picture" },
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupProperties(platform, chapter), Text = "Properties" },
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupSocialMedia(platform, chapter), Text = "Social media" },

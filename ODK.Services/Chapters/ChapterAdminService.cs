@@ -20,6 +20,7 @@ using ODK.Services.Imaging;
 using ODK.Services.Notifications;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ODK.Services.Chapters;
 
@@ -179,6 +180,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             }
         }
 
+        var image = new ChapterImage();
+
+        var result = UpdateChapterImage(image, model.ImageData);
+        if (!result.Success)
+        {
+            return ServiceResult<Chapter?>.Failure(result.Message ?? "");
+        }
+
         var originalSlug = model.Name
             .ToLowerInvariant()
             .Replace(' ', '-');
@@ -249,6 +258,9 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 CurrencyId = memberPaymentSettings.CurrencyId
             });
         }
+
+        image.ChapterId = chapter.Id;
+        _unitOfWork.ChapterImageRepository.Add(image);
 
         await _unitOfWork.SaveChangesAsync();
 
