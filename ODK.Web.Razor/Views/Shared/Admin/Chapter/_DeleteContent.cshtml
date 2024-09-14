@@ -1,25 +1,29 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @model ChapterDeleteAdminPageViewModel
 
-<h2>Delete group</h2>
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Delete group",
+    ContentFunc = 
+        @<div>
+        @if (Model.Chapter.CanBeDeleted(Model.MemberCount))
+            {
+                <p>
+                    You can delete this group while there are no other members.
+                </p>
 
-<section class="section">
-    @if (Model.Chapter.CanBeDeleted(Model.MemberCount))
-    {
-        <p>
-            You can delete this group while there are no other members.
-        </p>
-
-        <form action="/groups/@Model.Chapter.Id/delete" method="post">
-            <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this group?');">Delete</button>
-        </form>
-    }
-    else
-    {
-        <p>
-            You cannot delete a group while there are other
-            <a href="@OdkRoutes.MemberGroups.Members(Model.Platform, Model.Chapter)">members</a>.
-        </p>
-    }
-</section>
+                <form action="/groups/@Model.Chapter.Id/delete" method="post">
+                    <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this group?');">Delete</button>
+                </form>
+            }
+            else
+            {
+                <p>
+                    You cannot delete a group while there are other
+                    <a href="@OdkRoutes.MemberGroups.Members(Model.Platform, Model.Chapter)">members</a>.
+                </p>
+            }
+        </div>
+})

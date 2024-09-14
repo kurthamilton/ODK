@@ -2,6 +2,7 @@
 @using ODK.Services
 @using ODK.Services.Emails
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ODK.Core.Chapters.Chapter
 @inject IEmailAdminService EmailAdminService
@@ -12,43 +13,50 @@
     var emails = await EmailAdminService.GetChapterEmails(request);
 }
 
-<h2>Email templates</h2>
-<p>
-    The emails sent by the site use the templates below. 
-    Default templates already exist and can be overridden if you want to include chapter-specific content.
-</p>
-<div class="alert alert-warning">
-    CAUTION: it is best not to update these templates unless you know what you are doing!
-</div>
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Email</th>
-                <th>Custom</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (ChapterEmail email in emails.OrderBy(x => x.Type.ToString()))
-            {
-                <tr>
-                    <td>
-                        <a href="/@Model.Name/Admin/Chapter/Emails/@email.Type">@email.Type</a>
-                    </td>
-                    <td>
-                        @if (email.IsDefault())
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Email templates",
+    ContentFunc = 
+        @<div>
+            <p>
+                The emails sent by the site use the templates below. 
+                Default templates already exist and can be overridden if you want to include chapter-specific content.
+            </p>
+            <div class="alert alert-warning">
+                CAUTION: it is best not to update these templates unless you know what you are doing!
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Custom</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (ChapterEmail email in emails.OrderBy(x => x.Type.ToString()))
                         {
-                            <span class="text-muted">Default</span>
+                            <tr>
+                                <td>
+                                    <a href="/@Model.Name/Admin/Chapter/Emails/@email.Type">@email.Type</a>
+                                </td>
+                                <td>
+                                    @if (email.IsDefault())
+                                    {
+                                        <span class="text-muted">Default</span>
+                                    }
+                                    else
+                                    {
+                                        <span>
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
                         }
-                        else
-                        {
-                            <span>
-                                <i class="fas fa-check-circle text-success"></i>
-                            </span>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+})

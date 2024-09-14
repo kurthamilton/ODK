@@ -1,11 +1,12 @@
 ﻿@using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ChapterPropertyAdminPageViewModel
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Breadcrumbs = new[]
     {
@@ -15,28 +16,27 @@
             Text = "Member properties"
         },
         new MenuItem { Text = Model.Property.Name }
-    }
+    },
+    Title = "Edit member property",
+    ContentFunc = 
+        @<div>
+            <form method="post">
+                @Html.AntiForgeryToken()
+                @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
+                {
+                    ApplicationOnly = Model.Property.ApplicationOnly,
+                    DataType = Model.Property.DataType,
+                    DataTypeEnabled = false,
+                    DisplayName = Model.Property.DisplayName,
+                    HelpText = Model.Property.HelpText,
+                    Label = Model.Property.Label,
+                    Name = Model.Property.Name,
+                    Options = string.Join(Environment.NewLine, 
+                        Model.Options.OrderBy(x => x.DisplayOrder).Select(x => x.Value)),
+                    Required = Model.Property.Required,
+                    Subtitle = Model.Property.Subtitle
+                })
+                <button class="btn btn-primary">Update</button>
+            </form>
+        </div>
 })
-
-<h2>Edit member property</h2>
-
-<section class="section">
-    <form method="post">
-        @Html.AntiForgeryToken()
-        @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
-        {
-            ApplicationOnly = Model.Property.ApplicationOnly,
-            DataType = Model.Property.DataType,
-            DataTypeEnabled = false,
-            DisplayName = Model.Property.DisplayName,
-            HelpText = Model.Property.HelpText,
-            Label = Model.Property.Label,
-            Name = Model.Property.Name,
-            Options = string.Join(Environment.NewLine, 
-                Model.Options.OrderBy(x => x.DisplayOrder).Select(x => x.Value)),
-            Required = Model.Property.Required,
-            Subtitle = Model.Property.Subtitle
-        })
-        <button class="btn btn-primary">Update</button>
-    </form>
-</section>

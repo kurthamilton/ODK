@@ -3,29 +3,32 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @model AdminMemberAdminPageViewModel
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Breadcrumbs = new[]
     {
         new MenuItem { Link = OdkRoutes.MemberGroups.MemberAdmins(Model.Platform, Model.Chapter), Text = "Admins" },
         new MenuItem { Text = Model.AdminMember.Member.FullName }
-    }
+    },
+    ContentFunc = 
+        @<div>
+            <form method="post">
+                @Html.AntiForgeryToken()
+                @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
+                {
+                    AdminEmailAddress = Model.AdminMember.AdminEmailAddress,
+                    Name = Model.AdminMember.Member.FullName,
+                    ReceiveContactEmails = Model.AdminMember.ReceiveContactEmails,
+                    ReceiveEventCommentEmails = Model.AdminMember.ReceiveEventCommentEmails,
+                    ReceiveNewMemberEmails = Model.AdminMember.ReceiveNewMemberEmails,
+                    SendNewMemberEmails = Model.AdminMember.SendNewMemberEmails
+                })
+                <button class="btn btn-primary">Update</button>
+            </form>
+        </div>
 })
-
-<form method="post">
-    @Html.AntiForgeryToken()
-    @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
-    {
-        AdminEmailAddress = Model.AdminMember.AdminEmailAddress,
-        Name = Model.AdminMember.Member.FullName,
-        ReceiveContactEmails = Model.AdminMember.ReceiveContactEmails,
-        ReceiveEventCommentEmails = Model.AdminMember.ReceiveEventCommentEmails,
-        ReceiveNewMemberEmails = Model.AdminMember.ReceiveNewMemberEmails,
-        SendNewMemberEmails = Model.AdminMember.SendNewMemberEmails
-    })
-    <button class="btn btn-primary">Update</button>
-</form>

@@ -2,11 +2,12 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ChapterQuestionAdminPageViewModel
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Breadcrumbs = new[]
     {
@@ -16,19 +17,18 @@
             Text = "FAQ"
         },
         new MenuItem { Text = Model.Question.Name }
-    }
+    },
+    Title = "Edit question",
+    ContentFunc = 
+        @<div>
+            <form method="post">
+                @Html.AntiForgeryToken()
+                @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel
+                {
+                    Answer = Model.Question.Answer,
+                    Question = Model.Question.Name
+                })
+                <button class="btn btn-primary">Update</button>
+            </form>
+        </div>
 })
-
-<h2>Edit question</h2>
-
-<section class="section">
-    <form method="post">
-        @Html.AntiForgeryToken()
-        @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel
-        {
-            Answer = Model.Question.Answer,
-            Question = Model.Question.Name
-        })
-        <button class="btn btn-primary">Update</button>
-    </form>
-</section>

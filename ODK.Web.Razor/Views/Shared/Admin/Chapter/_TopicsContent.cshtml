@@ -1,20 +1,24 @@
 ﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Topics
 @model ChapterTopicsAdminPageViewModel
 
-<h2>Topics</h2>
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Topics",
+    ContentFunc = 
+        @<div>
+            <form action="/admin/groups/@Model.Chapter.Id/topics" method="post">
+                <div class="form-group mb-3">
+                    @await Html.PartialAsync("Topics/_TopicPicker", new TopicPickerViewModel
+                    {
+                        TopicGroups = Model.TopicGroups,
+                        TopicIds = Model.ChapterTopics.Select(x => x.TopicId).ToList(),
+                        Topics = Model.Topics
+                    })
+                </div>        
 
-<section class="section">
-    <form action="/admin/groups/@Model.Chapter.Id/topics" method="post">
-        <div class="form-group mb-3">
-            @await Html.PartialAsync("Topics/_TopicPicker", new TopicPickerViewModel
-            {
-                TopicGroups = Model.TopicGroups,
-                TopicIds = Model.ChapterTopics.Select(x => x.TopicId).ToList(),
-                Topics = Model.Topics
-            })
-        </div>        
-
-        <button class="btn btn-primary">Update</button>
-    </form>
-</section>
+                <button class="btn btn-primary">Update</button>
+            </form>
+        </div>
+})

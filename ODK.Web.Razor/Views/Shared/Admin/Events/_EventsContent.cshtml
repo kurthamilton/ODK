@@ -7,6 +7,7 @@
 @using ODK.Services.Venues
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @model EventsAdminPageViewModel
 @{
     var (events, venues, allInvites, allResponses) = 
@@ -21,56 +22,59 @@
         .ToDictionary(x => x.EventId);
 }
 
-<h2>Events</h2>
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Events",
+    ContentFunc = 
+        @<div>
+            <p>
+                <a class="btn btn-primary" href="@OdkRoutes.MemberGroups.EventCreate(Model.Platform, Model.Chapter)">Create</a>
+            </p>
 
-<section class="section">
-    <p>
-        <a class="btn btn-primary" href="@OdkRoutes.MemberGroups.EventCreate(Model.Platform, Model.Chapter)">Create</a>
-    </p>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Date</th>
+                            <th>Venue</th>
+                            <th><i class="fas fa-envelope"></i></th>
+                            <th><i class="fas fa-check-circle text-success"></i></th>
+                            <th><i class="fas fa-question-circle text-warning"></i></th>
+                            <th><i class="fas fa-times-circle text-danger"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var @event in events)
+                        {
+                            invitesDictionary.TryGetValue(@event.Id, out var eventInvites);
+                            responseDictionary.TryGetValue(@event.Id, out var eventResponses);
 
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Date</th>
-                    <th>Venue</th>
-                    <th><i class="fas fa-envelope"></i></th>
-                    <th><i class="fas fa-check-circle text-success"></i></th>
-                    <th><i class="fas fa-question-circle text-warning"></i></th>
-                    <th><i class="fas fa-times-circle text-danger"></i></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var @event in events)
-                {
-                    invitesDictionary.TryGetValue(@event.Id, out var eventInvites);
-                    responseDictionary.TryGetValue(@event.Id, out var eventResponses);
+                            var venue = venueDictionary[@event.VenueId];
 
-                    var venue = venueDictionary[@event.VenueId];
-
-                    <tr>
-                        <td><a href="@OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
-                        <td>@(@event.Date.EventDate())</td>
-                        <td><a href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a></td>
-                        <td>
-                            @if (eventInvites?.SentUtc == null)
-                            {
-                                <a href="@OdkRoutes.MemberGroups.EventInvites(Model.Platform, Model.Chapter, @event.Id)">
-                                    @(eventInvites?.ScheduledUtc != null ? "Scheduled" : "Send")
-                                </a>
-                            }
-                            else
-                            {
-                                @eventInvites.Sent
-                            }
-                        </td>
-                        <td>@(eventResponses?.Yes ?? 0)</td>
-                        <td>@(eventResponses?.Maybe ?? 0)</td>
-                        <td>@(eventResponses?.No ?? 0)</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</section>
+                            <tr>
+                                <td><a href="@OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
+                                <td>@(@event.Date.EventDate())</td>
+                                <td><a href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a></td>
+                                <td>
+                                    @if (eventInvites?.SentUtc == null)
+                                    {
+                                        <a href="@OdkRoutes.MemberGroups.EventInvites(Model.Platform, Model.Chapter, @event.Id)">
+                                            @(eventInvites?.ScheduledUtc != null ? "Scheduled" : "Send")
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        @eventInvites.Sent
+                                    }
+                                </td>
+                                <td>@(eventResponses?.Yes ?? 0)</td>
+                                <td>@(eventResponses?.Maybe ?? 0)</td>
+                                <td>@(eventResponses?.No ?? 0)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+})

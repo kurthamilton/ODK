@@ -5,6 +5,7 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Events
 @using ODK.Web.Razor.Models.Components
 @model EventCreateAdminPageViewModel
@@ -18,7 +19,7 @@
         .ToArray();
 }
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Breadcrumbs = new[]
     {
@@ -28,32 +29,31 @@
             Text = "Events"
         },
         new MenuItem { Text = "New" }
-    }
-})
-
-<h2>Create event</h2>
-
-<section class="section">
-    <form method="post">
-        @Html.AntiForgeryToken()
+    },
+    Title = "Create event",
+    ContentFunc = 
+        @<div>
+            <form method="post">
+                @Html.AntiForgeryToken()
     
-        @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
-        {
-            Chapter = Model.Chapter,
-            Date = Model.Date,
-            Description = Model.EventSettings?.DefaultDescription,
-            EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
-            HostOptions = hostOptions,
-            OwnerSubscription = Model.OwnerSubscription,
-            PaymentSettings = Model.PaymentSettings,
-            Platform = Model.Platform,
-            Venue = Model.VenueId ?? default,
-            Venues = Model.Venues
-        })
+                @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
+                {
+                    Chapter = Model.Chapter,
+                    Date = Model.Date,
+                    Description = Model.EventSettings?.DefaultDescription,
+                    EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
+                    HostOptions = hostOptions,
+                    OwnerSubscription = Model.OwnerSubscription,
+                    PaymentSettings = Model.PaymentSettings,
+                    Platform = Model.Platform,
+                    Venue = Model.VenueId ?? default,
+                    Venues = Model.Venues
+                })
     
-        <div class="button-container">
-            <button type="submit" class="btn btn-primary">Create</button>
-            <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
+                <div class="button-container">
+                    <button type="submit" class="btn btn-primary">Create</button>
+                    <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
+                </div>
+            </form>
         </div>
-    </form>
-</section>
+})

@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ODK.Core.Chapters.Chapter
@@ -9,7 +10,7 @@
     var platform = PlatformProvider.GetPlatform();
 }
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Breadcrumbs = new[]
     {
@@ -19,15 +20,14 @@
             Text = "FAQ"
         },
         new MenuItem { Text = "New" }
-    }
+    },
+    Title = "Create question",
+    ContentFunc = 
+        @<div>
+            <form method="post">
+                @Html.AntiForgeryToken()
+                @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel())
+                <button class="btn btn-primary">Create</button>
+            </form>
+        </div>
 })
-
-<h2>Create question</h2>
-
-<section class="section">
-    <form method="post">
-        @Html.AntiForgeryToken()
-        @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel())
-        <button class="btn btn-primary">Create</button>
-    </form>
-</section>

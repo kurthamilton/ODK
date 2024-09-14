@@ -2,6 +2,7 @@
 @using ODK.Core.Platforms
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Components
 @model ODK.Core.Chapters.Chapter
@@ -10,7 +11,7 @@
     var platform = PlatformProvider.GetPlatform();
 }
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Breadcrumbs = new[]
     {
@@ -20,19 +21,18 @@
             Text = "Member properties"
         },
         new MenuItem { Text = "New" }
-    }
+    },
+    Title = "Create member property",
+    ContentFunc = 
+        @<div>
+            <form method="post">
+                @Html.AntiForgeryToken()
+                @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
+                {
+                    DataType = DataType.Text,
+                    DataTypeEnabled = true
+                })
+                <button class="btn btn-primary">Create</button>
+            </form>
+        </div>
 })
-
-<h2>Create member property</h2>
-
-<section class="section">
-    <form method="post">
-        @Html.AntiForgeryToken()
-        @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
-        {
-            DataType = DataType.Text,
-            DataTypeEnabled = true
-        })
-        <button class="btn btn-primary">Create</button>
-    </form>
-</section>

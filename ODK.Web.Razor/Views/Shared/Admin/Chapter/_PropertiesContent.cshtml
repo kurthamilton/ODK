@@ -4,66 +4,70 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @model ChapterPropertiesAdminPageViewModel
 
-<h2>Member properties</h2>
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Member properties",
+    ContentFunc = 
+        @<div>
+            <p>
+                The member properties are personal questions asked to members when they sign up. Answers are visible to other members.
+            </p>
+            <p>
+                <a href="@OdkRoutes.MemberGroups.GroupPropertyCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
+                    Create property
+                </a>
+            </p>
 
-<section class="section">
-    <p>
-        The member properties are personal questions asked to members when they sign up. Answers are visible to other members.
-    </p>
-    <p>
-        <a href="@OdkRoutes.MemberGroups.GroupPropertyCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
-            Create property
-        </a>
-    </p>
-
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Label</th>
-                    <th>Name</th>
-                    <th></th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var property in Model.Properties.OrderBy(x => x.DisplayOrder))
-                {
-                    <tr>
-                        <td>
-                            <a href="@OdkRoutes.MemberGroups.GroupProperty(Model.Platform, Model.Chapter, property.Id)">@property.Label</a>
-                        </td>
-                        <td>@property.Name</td>
-                        <td>
-                            <div class="d-flex">
-                                <form method="post" action="/groups/@Model.Chapter.Id/properties/@property.Id/move/up">
-                                    @Html.AntiForgeryToken()
-                                    <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
-                                        <i class="fas fa-arrow-circle-up"></i>
-                                    </button>
-                                </form>
-                                <form method="post" action="/groups/@Model.Chapter.Id/properties/@property.Id/move/down">
-                                    @Html.AntiForgeryToken()
-                                    <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
-                                        <i class="fas fa-arrow-circle-down"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                        <td>
-                            <form method="post" action="/groups/@Model.Chapter.Id/properties/@property.Id/delete">
-                                @Html.AntiForgeryToken()
-                                <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
-                                        onclick="return confirm('Are you sure you want to delete this property?');">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</section>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Label</th>
+                            <th>Name</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var property in Model.Properties.OrderBy(x => x.DisplayOrder))
+                        {
+                            <tr>
+                                <td>
+                                    <a href="@OdkRoutes.MemberGroups.GroupProperty(Model.Platform, Model.Chapter, property.Id)">@property.Label</a>
+                                </td>
+                                <td>@property.Name</td>
+                                <td>
+                                    <div class="d-flex">
+                                        <form method="post" action="/groups/@Model.Chapter.Id/properties/@property.Id/move/up">
+                                            @Html.AntiForgeryToken()
+                                            <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
+                                                <i class="fas fa-arrow-circle-up"></i>
+                                            </button>
+                                        </form>
+                                        <form method="post" action="/groups/@Model.Chapter.Id/properties/@property.Id/move/down">
+                                            @Html.AntiForgeryToken()
+                                            <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
+                                                <i class="fas fa-arrow-circle-down"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                                <td>
+                                    <form method="post" action="/groups/@Model.Chapter.Id/properties/@property.Id/delete">
+                                        @Html.AntiForgeryToken()
+                                        <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                                onclick="return confirm('Are you sure you want to delete this property?');">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+})

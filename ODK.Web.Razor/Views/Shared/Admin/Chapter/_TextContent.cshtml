@@ -3,21 +3,25 @@
 @using ODK.Services.Chapters
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterTextsAdminPageViewModel
 
-<h2>Texts</h2>
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Texts",
+    ContentFunc = 
+        @<div>
+            <form method="post" action="/groups/@Model.Chapter.Id/texts">
+                @Html.AntiForgeryToken()
 
-<section class="section">
-    <form method="post" action="/groups/@Model.Chapter.Id/texts">
-        @Html.AntiForgeryToken()
-
-        @await Html.PartialAsync("Admin/Chapter/_TextForm", new ChapterTextsFormViewModel
-        {
-            Description = Model.Texts?.Description,
-            RegisterMessage = Model.Texts?.RegisterText,
-            WelcomeMessage = Model.Texts?.WelcomeText
-        })
-        <button class="btn btn-primary">Update</button>
-    </form>
-</section>
+                @await Html.PartialAsync("Admin/Chapter/_TextForm", new ChapterTextsFormViewModel
+                {
+                    Description = Model.Texts?.Description,
+                    RegisterMessage = Model.Texts?.RegisterText,
+                    WelcomeMessage = Model.Texts?.WelcomeText
+                })
+                <button class="btn btn-primary">Update</button>
+            </form>
+        </div>
+})
