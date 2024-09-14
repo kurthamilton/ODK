@@ -4,5 +4,5 @@ namespace ODK.Services.Members.ViewModels;
 
 public class MemberDeleteAdminPageViewModel : MemberAdminPageViewModelBase
 {
-    public required MemberSubscription? Subscription { get; init; }
+    public required MemberSubscription? MemberSubscription { get; init; }
 }

@@ -4,9 +4,6 @@ namespace ODK.Data.EntityFramework.Queries;
 
 internal static class MemberQueries
 {
-    private static readonly IReadOnlyCollection<SubscriptionType> ActiveSubscriptionTypes 
-        = [SubscriptionType.Trial, SubscriptionType.Full, SubscriptionType.Partial];
-
     internal static IQueryable<Member> Current(this IQueryable<Member> query, 
         Guid chapterId)
     {        

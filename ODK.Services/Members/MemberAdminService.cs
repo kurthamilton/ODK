@@ -205,7 +205,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             Chapter = chapter,
             Member = member,
             Platform = platform,
-            Subscription = subscription
+            MemberSubscription = subscription
         };
     }
 
@@ -401,8 +401,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
     public async Task<ServiceResult> RemoveMemberFromChapter(AdminServiceRequest request, Guid memberId, string? reason)
     {
-        var chapter = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterRepository.GetById(request.ChapterId));
+        var (chapter, subscription) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, request.ChapterId));
+
+        if (subscription?.Type.IsPaid() == true && subscription?.IsExpired() == false)
+        {
+            return ServiceResult.Failure("You cannot remove members with an active paid subscription");
+        }
 
         var result = await _memberService.DeleteMemberChapterData(memberId, chapter.Id);
         var (member, _) = result.Value;

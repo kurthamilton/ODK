@@ -1,4 +1,5 @@
-﻿@using ODK.Services.Members.ViewModels
+﻿@using ODK.Core.Members
+@using ODK.Services.Members.ViewModels
 @using ODK.Web.Razor.Models.Admin.Members
 @model MemberDeleteAdminPageViewModel
 
@@ -8,14 +9,21 @@
 
 <form method="post" action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/delete">
     @Html.AntiForgeryToken()
+    
+    @if (Model.MemberSubscription?.Type.IsPaid() == true && Model.MemberSubscription?.IsExpired() == false)
+    {
+        <p>You cannot remove members with an active paid subscription</p>
+    }
+    else
+    {
+        <div class="form-group mb-3">
+            <label for="reason" class="form-label">Reason</label>
+            <span class="text-muted ms-1">Let the member know why you are removing them from your group</span>
+            <textarea class="form-control" name="reason" id="reason" rows="5"></textarea>
+        </div>
 
-    <div class="form-group mb-3">
-        <label for="reason" class="form-label">Reason</label>
-        <span class="text-muted ms-1">Let the member know why you are removing them from your group</span>
-        <textarea class="form-control" name="reason" id="reason" rows="5"></textarea>
-    </div>
-
-    <button class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this member from your group?');">
-        Delete
-    </button>
+        <button class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this member from your group?');">
+            Delete
+        </button>
+    }    
 </form>
