@@ -10,13 +10,16 @@ namespace ODK.Services.Users;
 public class AccountViewModelService : IAccountViewModelService
 {
     private readonly IPlatformProvider _platformProvider;
+    private readonly AccountViewModelServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public AccountViewModelService(
         IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        AccountViewModelServiceSettings settings)
     {
         _platformProvider = platformProvider;
+        _settings = settings;
         _unitOfWork = unitOfWork;
     }    
 
@@ -176,6 +179,14 @@ public class AccountViewModelService : IAccountViewModelService
             Platform = platform
         };
     }    
+
+    public Task<SiteLoginPageViewModel> GetSiteLoginPage()
+    {
+        return Task.FromResult(new SiteLoginPageViewModel
+        {
+            GoogleClientId = _settings.GoogleClientId
+        });
+    }
 
     public async Task<SitePicturePageViewModel> GetSitePicturePage(Guid currentMemberId)
     {

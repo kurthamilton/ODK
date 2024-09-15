@@ -7,4 +7,6 @@ public class PageTitleViewModel
     public IHtmlContent? Content { get; init; }
 
     public string? Title { get; init; }
+
+    public string? WidthClass { get; init; }
 }

@@ -4,6 +4,7 @@ using ODK.Core.Countries;
 using ODK.Core.Platforms;
 using ODK.Services;
 using ODK.Services.Authentication;
+using ODK.Services.Authentication.OAuth;
 using ODK.Services.Caching;
 using ODK.Services.Features;
 using ODK.Services.Members;
@@ -88,7 +89,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/login")]
     public async Task<IActionResult> Login([FromForm] LoginViewModel viewModel, string? returnUrl)
     {
-        var result = await _loginHandler.Login(HttpContext, viewModel.Email ?? "",
+        var result = await _loginHandler.Login(viewModel.Email ?? "",
             viewModel.Password ?? "", true);
 
         if (result.Success && result.Member != null)
@@ -107,11 +108,31 @@ public class AccountController : OdkControllerBase
     }
 
     [AllowAnonymous]
+    [HttpPost("account/login/google")]
+    public async Task<IActionResult> GoogleLogin([FromForm] string token, string? returnUrl)
+    {
+        var result = await _loginHandler.OAuthLogin(OAuthProviderType.Google, token);
+        if (result.Success && result.Member != null)
+        {
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect("/");
+            }
+
+            return Redirect(returnUrl);
+        }
+
+        AddFeedback("Account not registered", FeedbackType.Error);
+
+        return RedirectToReferrer();
+    }
+
+    [AllowAnonymous]
     [HttpPost("{chapterName}/Account/Login")]
     public async Task<IActionResult> Login(string chapterName, [FromForm] LoginViewModel viewModel, string? returnUrl)
     {
         var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var result = await _loginHandler.Login(HttpContext, viewModel.Email ?? "",
+        var result = await _loginHandler.Login(viewModel.Email ?? "",
             viewModel.Password ?? "", true);
 
         if (result.Success && result.Member != null)
@@ -140,7 +161,7 @@ public class AccountController : OdkControllerBase
             return RedirectToReferrer();
         }
 
-        await _loginHandler.Logout(HttpContext);
+        await _loginHandler.Logout();
         return Redirect("/");
     }
 

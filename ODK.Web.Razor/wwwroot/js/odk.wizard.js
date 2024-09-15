@@ -27,31 +27,33 @@
             $page.addEventListener('show.bs.collapse', e => {                                                
                 const activePage = parseInt($wizard.getAttribute('data-wizard-active'));
 
-                v.validateForm($form);
+                if (page > activePage) {
+                    v.validateForm($form);
 
-                let pageValid = true;
-                v.elementUIDs.forEach(elementUID => {    
-                    const node = elementUID.node;
-                    const $elementPage = node.closest('[data-wizard-page]');
-                    if (!$elementPage) {
+                    let pageValid = true;
+                    v.elementUIDs.forEach(elementUID => {
+                        const node = elementUID.node;
+                        const $elementPage = node.closest('[data-wizard-page]');
+                        if (!$elementPage) {
+                            return;
+                        }
+
+                        const elementPage = parseInt($elementPage.getAttribute('data-wizard-page'));
+                        if (elementPage !== activePage) {
+                            return;
+                        }
+
+                        const nodeValid = v.isFieldValid(node);
+                        if (!nodeValid) {
+                            pageValid = false;
+                        }
+                    });
+
+                    if (!pageValid) {
+                        e.preventDefault();
                         return;
                     }
-
-                    const elementPage = parseInt($elementPage.getAttribute('data-wizard-page'));
-                    if (elementPage !== activePage) {
-                        return;
-                    }
-
-                    const nodeValid = v.isFieldValid(node);
-                    if (!nodeValid) {
-                        pageValid = false;
-                    }
-                });
-
-                if (!pageValid) {
-                    e.preventDefault();
-                    return;
-                }
+                }                
                 
                 $wizard.setAttribute('data-wizard-active', page);
             });

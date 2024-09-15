@@ -12,6 +12,8 @@ public class AppSettings
 
     public required MembersSettings Members { get; set; }
 
+    public required OAuthSettings OAuth { get; set; }
+
     public required PathSettings Paths { get; set; }
 
     public required PaymentsSettings Payments { get; set; }

@@ -9,6 +9,7 @@ public class PersonalDetailsFormViewModel
     public Chapter? Chapter { get; set; }
 
     [DisplayName("Email address")]
+    [EmailAddress]
     public string EmailAddress { get; set; } = "";
 
     [DisplayName("Receive event emails")]

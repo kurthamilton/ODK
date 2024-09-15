@@ -340,6 +340,11 @@ public class MemberService : IMemberService
         return ServiceResult<(Member, MemberChapter)>.Successful((member, memberChapter));
     }
 
+    public async Task<Member?> FindMemberByEmailAddress(string emailAddress)
+    {
+        return await _unitOfWork.MemberRepository.GetByEmailAddress(emailAddress).Run();
+    }
+
     public async Task<Member> GetMember(Guid memberId)
     {
         var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();

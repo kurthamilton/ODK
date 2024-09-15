@@ -4,6 +4,11 @@
 
 @RenderBody()
 
+@section meta
+{
+    @await RenderSectionAsync("meta", required: false)
+}
+
 @section styles
 {
     @await RenderSectionAsync("styles", required: false)

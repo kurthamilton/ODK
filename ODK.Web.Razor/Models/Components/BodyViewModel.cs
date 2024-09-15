@@ -15,9 +15,9 @@ public class BodyViewModel
 
     public IHtmlContent? Menu { get; set; }
 
-    public bool Narrow { get; set; }
-
     public string? Title { get; set; }
 
     public IHtmlContent? TitleContent { get; set; }
+
+    public string? WidthClass { get; set; }
 }

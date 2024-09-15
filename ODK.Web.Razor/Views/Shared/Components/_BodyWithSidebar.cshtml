@@ -9,25 +9,26 @@
     @await Html.PartialAsync("Components/_PageTitle", new PageTitleViewModel
     {
         Content = Model.TitleContent,
-        Title = Model.Title
+        Title = Model.Title,
+        WidthClass = Model.WidthClass
     })
 
-    <div class="@(Model.Narrow ? "row justify-content-center" : null)">
-        <div class="@(Model.Narrow ? "col-12 col-lg-8" : null)">            
-            @if (Model.Menu != null)
-            {
-                @Model.Menu
-            }
-
-            <div class="container page-alerts">
-                @if (!Model.HideSubscriptionAlert)
+    <div class="container">
+        <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
+            <div class="@(Model.WidthClass ?? "col-12")">
+                @if (Model.Menu != null)
                 {
-                    @await Html.PartialAsync("Members/_SubscriptionAlert")
+                    @Model.Menu
                 }
-            </div>
 
-            <section class="section--main">
-                <div class="container">
+                <div class="page-alerts">
+                    @if (!Model.HideSubscriptionAlert)
+                    {
+                        @await Html.PartialAsync("Members/_SubscriptionAlert")
+                    }
+                </div>
+
+                <section class="section--main">
                     @if (Model.Breadcrumbs != null)
                     {
                         @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
@@ -54,8 +55,8 @@
                             }
                         </div>
                     </div>
-                </div>
-            </section>
-        </div>        
-    </div>    
+                </section>
+            </div>        
+        </div>    
+    </div>
 </main>

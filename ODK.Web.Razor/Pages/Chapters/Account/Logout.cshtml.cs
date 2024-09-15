@@ -16,7 +16,7 @@ public class LogoutModel : ChapterPageModel
 
     public async Task<IActionResult> OnGet()
     {
-        await _loginHandler.Logout(HttpContext);
+        await _loginHandler.Logout();
         return Redirect($"/{Chapter.Name}");
     }
 }

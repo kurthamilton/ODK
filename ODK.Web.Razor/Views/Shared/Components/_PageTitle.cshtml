@@ -9,13 +9,17 @@
 
 <section class="section--header">
     <div class="container">
-        @if (Model.Content != null)
-        {
-            @Model.Content
-        }
-        else
-        {
-            <h1>@Model.Title</h1>
-        }
+        <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
+            <div class="@(Model.WidthClass ?? "col-12")">
+                @if (Model.Content != null)
+                {
+                    @Model.Content
+                }
+                else
+                {
+                    <h1>@Model.Title</h1>
+                }
+            </div>
+        </div>        
     </div>
 </section>

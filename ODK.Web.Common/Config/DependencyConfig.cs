@@ -8,6 +8,7 @@ using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.EntityFramework;
 using ODK.Services.Authentication;
+using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
@@ -20,6 +21,7 @@ using ODK.Services.Files;
 using ODK.Services.Imaging;
 using ODK.Services.Integrations.Emails;
 using ODK.Services.Integrations.Imaging;
+using ODK.Services.Integrations.OAuth;
 using ODK.Services.Integrations.Payments;
 using ODK.Services.Integrations.Payments.PayPal;
 using ODK.Services.Logging;
@@ -144,6 +146,7 @@ public static class DependencyConfig
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IMemberViewModelService, MemberViewModelService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IOAuthProviderFactory, OAuthProviderFactory>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IPlatformProvider, PlatformProvider>();
         services.AddSingleton(new PlatformProviderSettings
@@ -171,9 +174,15 @@ public static class DependencyConfig
     {
         AuthSettings auth = appSettings.Auth;
         MembersSettings members = appSettings.Members;
+        OAuthSettings oauth = appSettings.OAuth;
         PathSettings paths = appSettings.Paths;
         RecaptchaSettings recaptcha = appSettings.Recaptcha;
-        
+
+        services.AddSingleton(new AccountViewModelServiceSettings
+        {
+            GoogleClientId = oauth.Google.ClientId
+        });
+
         services.AddSingleton(new AuthenticationServiceSettings
         {
             PasswordResetTokenLifetimeMinutes = auth.PasswordResetTokenLifetimeMinutes,

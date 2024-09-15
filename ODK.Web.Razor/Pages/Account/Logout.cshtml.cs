@@ -14,7 +14,7 @@ public class LogoutModel : OdkPageModel
 
     public async Task<IActionResult> OnGet()
     {
-        await _loginHandler.Logout(HttpContext);
+        await _loginHandler.Logout();
         return Redirect("/");
     }
 }

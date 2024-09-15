@@ -1,5 +1,16 @@
-﻿<div class="row">
-    <div class="col-lg-6">
-        @await Html.PartialAsync("Account/_LoginForm")
-    </div>
-</div>
+﻿@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Login
+@model LoginViewModel
+
+@await Html.PartialAsync("Account/_LoginForm")
+
+<hr/>
+
+<form action="/account/login/google" method="post" data-oauth-submit>
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("Components/_GoogleLoginButton", new GoogleLoginButtonViewModel
+    {
+        ClientId = Model.GoogleClientId,
+        Text = "Sign in with Google"
+    })
+</form>

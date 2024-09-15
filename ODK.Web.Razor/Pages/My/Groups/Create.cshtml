@@ -18,7 +18,7 @@
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Title = "Create group",
-    Narrow = true,
+    WidthClass = "col-12 col-lg-8",
     Breadcrumbs = new[]
     {
         new MenuItem { Link = OdkRoutes.MemberGroups.Index(viewModel.Platform), Text = "My groups" },
