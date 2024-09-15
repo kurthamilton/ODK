@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using ODK.Web.Common.Config.Settings;
 using Serilog;
 using Serilog.Context;
 using Serilog.Events;
@@ -29,7 +30,7 @@ public static class LoggingConfig
         LogContext.PushProperty(IP, !string.IsNullOrWhiteSpace(ip) ? ip : "unknown");
     }
 
-    public static void Configure(WebApplicationBuilder builder)
+    public static void Configure(WebApplicationBuilder builder, AppSettings appSettings)
     {
         string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
@@ -42,7 +43,7 @@ public static class LoggingConfig
         var connectionString = builtConfig["ConnectionStrings:Default"] ?? "";
 
         var outputTemplate = $"t:{{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}}|ip:{{{IP}}}|u:{{{Name}}}|m:{{Message:lj}}|ex:{{Exception}}{{NewLine}}";
-        Logger = new LoggerConfiguration()
+        var loggerConfiguration = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .Enrich.FromLogContext()
             .WriteTo.Logger(config => config
@@ -56,8 +57,16 @@ public static class LoggingConfig
             )
             .WriteTo.File(Path.Combine(logFileDirectory, $"Trace.{DateTime.Today:yyyyMMdd}.txt"), outputTemplate: outputTemplate)
             .WriteTo.Providers(Providers)
-            .WriteTo.Console()
-            .CreateLogger();
+            .WriteTo.Console();
+
+        if (!string.IsNullOrEmpty(appSettings.BetterStack.SourceToken))
+        {
+            loggerConfiguration = loggerConfiguration
+                .WriteTo
+                .BetterStack(sourceToken: appSettings.BetterStack.SourceToken);
+        }
+
+        Logger = loggerConfiguration.CreateLogger();
 
         builder.Host.UseSerilog(Logger);
     }

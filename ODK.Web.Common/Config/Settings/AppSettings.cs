@@ -4,6 +4,8 @@ public class AppSettings
 {
     public required AuthSettings Auth { get; set; }
     
+    public required BetterStackSettings BetterStack { get; set; }
+
     public required EmailsSettings Emails { get; set; }
 
     public required ErrorsSettings Errors { get; set; }

@@ -9,21 +9,22 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-LoggingConfig.Configure(builder);
-
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<CustomCookieAuthenticationEvents>();
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.EventsType = typeof(CustomCookieAuthenticationEvents);
     });
 
-AppStartup.ConfigureServices(builder.Configuration, builder.Services);
+var appSettings = AppStartup.ConfigureServices(builder.Configuration, builder.Services);
+LoggingConfig.Configure(builder, appSettings);
+
 builder.Services.AddWebOptimizer(pipeline =>
 {
     pipeline.AddCssBundle(

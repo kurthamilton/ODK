@@ -8,7 +8,7 @@ namespace ODK.Web.Common.Config;
 
 public static class AppStartup
 {
-    public static void ConfigureServices(IConfiguration config, IServiceCollection services)
+    public static AppSettings ConfigureServices(IConfiguration config, IServiceCollection services)
     {
         services.AddMemoryCache();
         services.AddControllers().ConfigureJson();
@@ -21,7 +21,9 @@ public static class AppStartup
         });
 
         AppSettings settings = GetAppSettings(config);
-        services.ConfigureDependencies(config, settings);        
+        services.ConfigureDependencies(config, settings);
+
+        return settings;
     }
 
     private static AppSettings GetAppSettings(IConfiguration config)
