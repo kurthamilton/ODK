@@ -23,9 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ODK.Data.Core\ODK.Data.Core.csproj" />
     <ProjectReference Include="..\ODK.Data.EntityFramework\ODK.Data.EntityFramework.csproj" />
-    <ProjectReference Include="..\ODK.Services.Imaging\ODK.Services.Imaging.csproj" />
-    <ProjectReference Include="..\ODK.Services.Mails\ODK.Services.Mails.csproj" />
-    <ProjectReference Include="..\ODK.Services.Payments\ODK.Services.Payments.csproj" />
+    <ProjectReference Include="..\ODK.Services.Integrations\ODK.Services.Integrations.csproj" />
     <ProjectReference Include="..\ODK.Services\ODK.Services.csproj" />
   </ItemGroup>
 

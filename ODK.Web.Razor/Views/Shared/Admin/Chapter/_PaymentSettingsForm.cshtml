@@ -12,8 +12,7 @@
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Provider, new { @class = "form-label" })
-    @Html.OdkEnumDropDownFor(x => x.Provider, new { @class = "form-select" }, 
-        excludeOptions: new[] { PaymentProviderType.Stripe })
+    @Html.OdkEnumDropDownFor(x => x.Provider, new { @class = "form-select" })
     @Html.ValidationMessageFor(x => x.Provider)
 </div>
 

@@ -2,16 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>ODK.Services.Payments</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.7.1.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ODK.Core\ODK.Core.csproj" />
     <ProjectReference Include="..\ODK.Services\ODK.Services.csproj" />
   </ItemGroup>
 

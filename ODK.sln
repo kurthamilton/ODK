@@ -13,12 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Web.Common", "ODK.Web.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Web.Razor", "ODK.Web.Razor\ODK.Web.Razor.csproj", "{3FCDD709-E11E-4118-A7E7-9C53DA55A817}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Services.Payments", "ODK.Services.Payments\ODK.Services.Payments.csproj", "{3B5EEA63-49B6-43B7-B51A-E0D41E4DDF71}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Services.Mails", "ODK.Services.Mails\ODK.Services.Mails.csproj", "{6128A00F-7BD3-4940-8622-7B57065A125E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Services.Imaging", "ODK.Services.Imaging\ODK.Services.Imaging.csproj", "{19B9656C-C11F-4CDB-9962-814454B0F1C5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Services", "ODK.Services\ODK.Services.csproj", "{34FB438D-B846-4C2A-9E38-4AF0BCE3617F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Core", "ODK.Core\ODK.Core.csproj", "{BCD50596-CDBE-458E-AE68-A44607081036}"
@@ -26,6 +20,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Data.EntityFramework", "ODK.Data.EntityFramework\ODK.Data.EntityFramework.csproj", "{2D9588D4-42B8-4930-8FE9-54C0115B8385}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Data.Core", "ODK.Data.Core\ODK.Data.Core.csproj", "{2303190D-27FA-4E44-AEEC-ADA731F26B39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Services.Integrations", "ODK.Services.Integrations\ODK.Services.Integrations.csproj", "{86DE60E0-73E7-4E1E-8A1B-55B4F3D338DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,18 +45,6 @@ Global
 		{3FCDD709-E11E-4118-A7E7-9C53DA55A817}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FCDD709-E11E-4118-A7E7-9C53DA55A817}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FCDD709-E11E-4118-A7E7-9C53DA55A817}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3B5EEA63-49B6-43B7-B51A-E0D41E4DDF71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B5EEA63-49B6-43B7-B51A-E0D41E4DDF71}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B5EEA63-49B6-43B7-B51A-E0D41E4DDF71}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B5EEA63-49B6-43B7-B51A-E0D41E4DDF71}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6128A00F-7BD3-4940-8622-7B57065A125E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6128A00F-7BD3-4940-8622-7B57065A125E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6128A00F-7BD3-4940-8622-7B57065A125E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6128A00F-7BD3-4940-8622-7B57065A125E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{19B9656C-C11F-4CDB-9962-814454B0F1C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{19B9656C-C11F-4CDB-9962-814454B0F1C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{19B9656C-C11F-4CDB-9962-814454B0F1C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{19B9656C-C11F-4CDB-9962-814454B0F1C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{34FB438D-B846-4C2A-9E38-4AF0BCE3617F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{34FB438D-B846-4C2A-9E38-4AF0BCE3617F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34FB438D-B846-4C2A-9E38-4AF0BCE3617F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -77,6 +61,10 @@ Global
 		{2303190D-27FA-4E44-AEEC-ADA731F26B39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2303190D-27FA-4E44-AEEC-ADA731F26B39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2303190D-27FA-4E44-AEEC-ADA731F26B39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86DE60E0-73E7-4E1E-8A1B-55B4F3D338DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86DE60E0-73E7-4E1E-8A1B-55B4F3D338DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86DE60E0-73E7-4E1E-8A1B-55B4F3D338DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86DE60E0-73E7-4E1E-8A1B-55B4F3D338DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

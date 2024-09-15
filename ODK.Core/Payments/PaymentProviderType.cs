@@ -2,6 +2,5 @@
 
 public enum PaymentProviderType
 {
-    Stripe = 1,
     PayPal = 2
 }
