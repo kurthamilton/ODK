@@ -1,7 +1,7 @@
 ﻿(function () {
     const $selects = document.querySelectorAll('select[multiple],select[data-searchable],select[data-select]');
     $selects.forEach($select => {
-        const placeholder = $select.getAttribute('data-placeholder');
+        let placeholder = $select.getAttribute('data-placeholder');
         const multiple = $select.hasAttribute('multiple');
         const required = $select.hasAttribute('data-val-required');
         let allowDeselect = true;
