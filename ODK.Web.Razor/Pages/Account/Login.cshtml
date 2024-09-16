@@ -24,6 +24,6 @@
 
 @section scripts
 {
-    <script src="~/js/odk.google.oauth.js" asp-append-version="true"></script>
+    @await Html.PartialAsync("Components/Scripts/_OAuth")
     <script src="~/js/odk.login.js" asp-append-version="true"></script>
 }

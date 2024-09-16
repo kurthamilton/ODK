@@ -8,4 +8,6 @@ public interface IMemberEmailService
     Task SendActivationEmail(Chapter? chapter, Member member, string activationToken);
 
     Task SendAddressUpdateEmail(Chapter? chapter, Member member, string newEmailAddress, string token);
+
+    Task SendSiteWelcomeEmail(Member member);
 }

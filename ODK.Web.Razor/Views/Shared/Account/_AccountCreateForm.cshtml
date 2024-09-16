@@ -14,6 +14,15 @@
             ContentFunc = 
                 @<div>
                     @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel())                    
+                    <hr class="mt-0" />
+                    @await Html.PartialAsync("Account/_OAuthDetailsForm", new OAuthDetailsFormViewModel())
+                    <div class="form-group mb-3">
+                        @await Html.PartialAsync("Components/_GoogleLoginButton", new GoogleLoginButtonViewModel
+                        {
+                            ClientId = Model.GoogleClientId,
+                            Text = "Sign up with Google"
+                        })
+                    </div>                    
                 </div>
         },
         new WizardPageViewModel
@@ -32,7 +41,30 @@
             Title = "Complete",
             ContentFunc = 
                 @<div>
-                    <button type="submit" class="btn btn-primary">Sign up</button>
+                    <div class="d-none mb-3" data-oauth-show>
+                        <p>
+                            Your account will be ready to use and we will send you a welcome email.
+                        </p>
+                        <p>
+                            Thank you for signing up!
+                        </p>
+                    </div>
+                    <div class="mb-3" data-oauth-hide>
+                        <p>
+                            We will send you an email with an activation link to check that you own the email address you have provided.
+                        </p>
+                        <p>
+                            After you follow the activation link your account will be ready to use.
+                        </p>
+                        <p>
+                            Thank you for signing up!
+                        </p>
+                    </div>
+
+                    <button type="button" class="btn btn-primary w-100" data-submit="parent">
+                        <span>Sign up</span>
+                        @await Html.PartialAsync("Components/Icons/_Rocket")
+                    </button>
                 </div>
         }
     }

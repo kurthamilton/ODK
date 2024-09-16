@@ -7,7 +7,7 @@ public interface IMemberService
 {
     Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
 
-    Task<ServiceResult> CreateAccount(CreateAccountModel model);
+    Task<ServiceResult<Member?>> CreateAccount(CreateAccountModel model);
 
     Task<ServiceResult> CreateChapterAccount(Guid chapterId, CreateMemberProfile model);
 

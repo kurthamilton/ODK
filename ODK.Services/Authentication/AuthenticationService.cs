@@ -126,15 +126,7 @@ public class AuthenticationService : IAuthenticationService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendMemberEmail(null, null, member.ToEmailAddressee(),
-            subject: "{title} - Welcome!",
-            body:
-                "<p>Welcome to {title} {member.firstName}!</p>" +
-                "<p>Enjoy creating your first groups, and please do share amongst your friendship groups.</p>",
-            parameters: new Dictionary<string, string>
-            {
-                { "member.firstName", member.FirstName }
-            });
+        await _memberEmailService.SendSiteWelcomeEmail(member);
 
         return ServiceResult.Successful();
     }

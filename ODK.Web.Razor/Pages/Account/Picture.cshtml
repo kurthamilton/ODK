@@ -41,10 +41,10 @@
 
 @section styles
 {
-    <link rel="stylesheet" href="/lib/cropperjs/cropper.min.css" />
+    @await Html.PartialAsync("Components/Styles/_Imaging")
 }
 
 @section scripts
 {
-    @await Html.PartialAsync("Components/_ImagingScripts")
+    @await Html.PartialAsync("Components/Scripts/_Imaging")
 }

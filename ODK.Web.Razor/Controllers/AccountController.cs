@@ -14,6 +14,7 @@ using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Account;
 using ODK.Web.Razor.Models.Login;
 using ODK.Web.Razor.Models.Notifications;
@@ -58,7 +59,8 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/create")]
     public async Task<IActionResult> Create(
         [FromForm] PersonalDetailsFormViewModel personalDetails,
-        [FromForm] LocationFormViewModel location)
+        [FromForm] LocationFormViewModel location,
+        [FromForm] OAuthDetailsFormViewModel oauth)
     {
         var model = new CreateAccountModel
         {
@@ -69,11 +71,24 @@ public class AccountController : OdkControllerBase
                 ? new LatLong(location.Lat.Value, location.Long.Value)
                 : default(LatLong?),
             LocationName = location.Name,
+            OAuthProviderType = oauth.Provider,
+            OAuthToken = oauth.Token,
             TimeZoneId = location.TimeZoneId
         };
 
-        var result = await _memberService.CreateAccount(model);
-        PostJoin(result);
+        var result = await _memberService.CreateAccount(model);        
+
+        if (result.Value?.Activated == true)
+        {
+            AddFeedback(result, "Your account has been created and is now ready to use");
+            return Redirect(OdkRoutes.Account.Login(null));
+        }
+
+        string successMessage =
+            "Thank you for signing up. " +
+            "An email has been sent to your email address containing a link to activate your account.";
+        AddFeedback(result, successMessage);
+
         return Redirect("/Account/Pending");
     }
 
@@ -366,13 +381,5 @@ public class AccountController : OdkControllerBase
         var result = await _memberService.UpdateMemberTopics(MemberId, viewModel.TopicIds);
         AddFeedback(result, "Interests updated");
         return RedirectToReferrer();
-    }
-
-    private void PostJoin(ServiceResult result)
-    {
-        string successMessage = 
-            "Thank you for signing up. " +
-            "An email has been sent to your email address containing a link to activate your account.";
-        AddFeedback(result, successMessage);
     }
 }

@@ -1,8 +1,8 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Services.Authentication.OAuth
+@using ODK.Web.Razor.Models.Components
 @model GoogleLoginButtonViewModel
 
-<div data-google-oauth data-google-clientid="@Model.ClientId">
-    <input type="hidden" name="token" data-google-token />
+<div data-oauth-button="@OAuthProviderType.Google" data-google-clientid="@Model.ClientId">    
     <button type="button" class="btn btn-outline-primary d-flex align-items-center w-100">
         @await Html.PartialAsync("Components/Icons/_Google")
         <div class="flex-grow-1 d-flex justify-content-center">

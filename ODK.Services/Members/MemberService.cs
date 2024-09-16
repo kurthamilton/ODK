@@ -10,6 +10,7 @@ using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Data.Core;
+using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
@@ -28,6 +29,7 @@ public class MemberService : IMemberService
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly INotificationService _notificationService;
+    private readonly IOAuthProviderFactory _oauthProviderFactory;
     private readonly IPaymentService _paymentService;    
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -42,7 +44,8 @@ public class MemberService : IMemberService
         IChapterUrlService chapterUrlService, 
         IPlatformProvider platformProvider, 
         IMemberEmailService memberEmailService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IOAuthProviderFactory oauthProviderFactory)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
@@ -51,6 +54,7 @@ public class MemberService : IMemberService
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _notificationService = notificationService;
+        _oauthProviderFactory = oauthProviderFactory;
         _paymentService = paymentService;        
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
@@ -88,7 +92,7 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
     
-    public async Task<ServiceResult> CreateAccount(CreateAccountModel model)
+    public async Task<ServiceResult<Member?>> CreateAccount(CreateAccountModel model)
     {
         var platform = _platformProvider.GetPlatform();
         var (existing, siteSubscription, distanceUnits) = await _unitOfWork.RunAsync(
@@ -99,13 +103,13 @@ public class MemberService : IMemberService
         if (existing != null)
         {
             await SendDuplicateMemberEmail(null, existing);
-            return ServiceResult.Successful();
+            return ServiceResult<Member?>.Successful(null);
         }
-
+        
         TimeZoneInfo? timeZone = null;
         if (!TimeZoneInfo.TryFindSystemTimeZoneById(model.TimeZoneId, out timeZone))
         {
-            return ServiceResult<Chapter?>.Failure("Invalid time zone");
+            return ServiceResult<Member?>.Failure("Invalid time zone");
         }
 
         var member = new Member
@@ -116,6 +120,17 @@ public class MemberService : IMemberService
             LastName = model.LastName,
             TimeZone = timeZone
         };
+
+        if (model.OAuthProviderType != null && !string.IsNullOrEmpty(model.OAuthToken))
+        {
+            var oauthProvider = _oauthProviderFactory.GetProvider(model.OAuthProviderType.Value);
+            var oauthUser = await oauthProvider.GetUser(model.OAuthToken);
+            if (string.Equals(oauthUser.Email, model.EmailAddress, StringComparison.InvariantCultureIgnoreCase))
+            {
+                member.Activated = true;
+            }
+        }
+
         _unitOfWork.MemberRepository.Add(member);
 
         if (model.Location != null)
@@ -143,18 +158,29 @@ public class MemberService : IMemberService
             SiteSubscriptionId = siteSubscription.Id
         });
 
-        var activationToken = RandomStringGenerator.Generate(64);
-        _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
+        string? activationToken = null;
+        if (!member.Activated)
         {
-            ActivationToken = activationToken,
-            MemberId = member.Id
-        });
+            activationToken = RandomStringGenerator.Generate(64);
+            _unitOfWork.MemberActivationTokenRepository.Add(new MemberActivationToken
+            {
+                ActivationToken = activationToken,
+                MemberId = member.Id
+            });
+        }        
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendActivationEmail(null, member, activationToken);
+        if (!string.IsNullOrEmpty(activationToken))
+        {
+            await _memberEmailService.SendActivationEmail(null, member, activationToken);
+        }
+        else
+        {
+            await _memberEmailService.SendSiteWelcomeEmail(member);
+        }
 
-        return ServiceResult.Successful();
+        return ServiceResult<Member?>.Successful(member);
     }
 
     public async Task<ServiceResult> CreateChapterAccount(Guid chapterId, CreateMemberProfile model)

@@ -1,0 +1,5 @@
+﻿@using ODK.Services.Users.ViewModels
+@model OAuthDetailsFormViewModel
+
+@Html.HiddenFor(x => x.Provider, new { data_oauth_provider = "" })
+@Html.HiddenFor(x => x.Token, new { data_oauth_token = "" })
