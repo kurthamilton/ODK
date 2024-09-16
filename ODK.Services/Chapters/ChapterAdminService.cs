@@ -12,6 +12,7 @@ using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Data.Core.Deferred;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
@@ -1260,9 +1261,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> UpdateChapterCurrency(AdminServiceRequest request, Guid currencyId)
     {
-        var (chapterPaymentSettings, currencies) = await GetChapterAdminRestrictedContent(request,
+        var chapter = await _unitOfWork.ChapterRepository.GetById(request.ChapterId).Run();
+
+        var (chapterPaymentSettings, currencies, ownerPaymentSettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.CurrencyRepository.GetAll());
+            x => x.CurrencyRepository.GetAll(),
+            x => chapter.OwnerId != null 
+                ? x.MemberPaymentSettingsRepository.GetByMemberId(chapter.OwnerId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<MemberPaymentSettings>());
 
         if (!currencies.Any(x => x.Id == currencyId))
         {
@@ -1272,7 +1278,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         if (chapterPaymentSettings == null)
         {
             chapterPaymentSettings = new ChapterPaymentSettings();
-        }
+        }        
 
         chapterPaymentSettings.CurrencyId = currencyId;
 
@@ -1284,6 +1290,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         else
         {
             _unitOfWork.ChapterPaymentSettingsRepository.Update(chapterPaymentSettings);
+        }
+
+        if (ownerPaymentSettings == null && chapter.OwnerId != null)
+        {
+            _unitOfWork.MemberPaymentSettingsRepository.Add(new MemberPaymentSettings
+            {
+                CurrencyId = currencyId,
+                MemberId = chapter.OwnerId.Value
+            });
         }
 
         await _unitOfWork.SaveChangesAsync();
