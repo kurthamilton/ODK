@@ -10,7 +10,7 @@
 @model ODK.Web.Razor.Pages.Account.PictureModel
 @inject IAccountViewModelService AccountViewModelService
 @{
-    Layout = "_HomeLayout";
+    Layout = "_AccountLayout";
     Model.Title = "Profile";
 
     var viewModel = await AccountViewModelService.GetSitePicturePage(Model.CurrentMemberId);

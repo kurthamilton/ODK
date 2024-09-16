@@ -22,6 +22,7 @@
 @section header
 {
     @await Html.PartialAsync("Header/_HomeHeader")
+    @await RenderSectionAsync("header", required: false)
 }
 
 @section footer

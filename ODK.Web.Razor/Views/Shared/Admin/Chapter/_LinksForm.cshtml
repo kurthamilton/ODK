@@ -26,6 +26,7 @@
 <div class="form-group mb-3">
     @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
     {
+        Chapter = Model.Chapter,
         Feature = SiteFeatureType.InstagramFeed,
         ContentFunc =
             @<div class="form-check form-switch mb-3">
@@ -38,9 +39,6 @@
                     @Html.HiddenFor(x => x.ShowInstagramFeed)
                     @Html.CheckBoxFor(x => x.ShowInstagramFeed, new { @class = "form-check-input", role = "switch", disabled = "" })
                     @Html.LabelFor(x => x.ShowInstagramFeed, new { @class = "form-check-label" })                    
-                </div>
-                <div>
-                    @await Html.PartialAsync("Components/_UpgradeButton")
                 </div>
             </div>
     })

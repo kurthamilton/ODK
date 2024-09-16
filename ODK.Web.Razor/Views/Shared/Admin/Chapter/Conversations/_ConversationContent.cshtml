@@ -58,6 +58,7 @@
                             <p>You have already replied to this conversation</p>
                             @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(false)
                             {
+                                Chapter = Model.Chapter,
                                 Feature = SiteFeatureType.SendMemberEmails
                             })
                         }

@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Account/Subscription"
 @attribute [Authorize]
+@using ODK.Core.Platforms
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
@@ -9,12 +10,14 @@
 @using Microsoft.AspNetCore.Authorization
 @model ODK.Web.Razor.Pages.Chapters.Account.SubscriptionModel
 @inject IChapterService ChapterService
+@inject IPlatformProvider PlatformProvider
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription";
 
     var memberId = User.MemberId();
     var chapterPaymentSettings = await ChapterService.GetChapterPaymentSettings(memberId, Model.Chapter.Id);
+    var platform = PlatformProvider.GetPlatform();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -23,7 +26,7 @@
     HideSubscriptionAlert = true,    
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Subscription(Model.Chapter),
+        Active = OdkRoutes.Account.Subscription(platform, Model.Chapter),
         Chapter = Model.Chapter,
         Content = 
             @<div>

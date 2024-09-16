@@ -5,7 +5,7 @@
 @model LoginModel
 @inject IAccountViewModelService AccountViewModelService
 @{
-    Layout = "_HomeLayout";
+    Layout = "_AccountLayout";
     Model.Title = "Login";
 
     var viewModel = await AccountViewModelService.GetSiteLoginPage();

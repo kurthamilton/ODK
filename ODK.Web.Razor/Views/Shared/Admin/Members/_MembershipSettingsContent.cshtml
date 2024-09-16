@@ -12,6 +12,7 @@
 <section class="section">
     @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)
     {
+        Chapter = Model.Chapter,
         Feature = SiteFeatureType.MemberSubscriptions,
         ContentFunc = 
             @<form action="/groups/@Model.Chapter.Id/membership" method="post">

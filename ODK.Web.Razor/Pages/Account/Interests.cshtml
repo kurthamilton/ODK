@@ -8,7 +8,7 @@
 @model InterestsModel
 @inject IMemberViewModelService MemberViewModelService
 @{
-    Layout = "_HomeLayout";
+    Layout = "_AccountLayout";
     Model.Title = "Interests";
 
     var viewModel = await MemberViewModelService.GetMemberInterestsPage(Model.CurrentMemberId);

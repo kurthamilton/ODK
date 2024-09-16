@@ -8,7 +8,7 @@
 @model NotificationsModel
 @inject INotificationService NotificationService
 @{
-    Layout = "_HomeLayout";
+    Layout = "_AccountLayout";
     Model.Title = "Notifications";
 
     var viewModel = await NotificationService.GetNotificationsPageViewModel(Model.CurrentMemberId);

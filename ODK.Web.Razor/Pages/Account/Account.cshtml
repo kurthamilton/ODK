@@ -8,7 +8,7 @@
 @model ODK.Web.Razor.Pages.Account.AccountModel
 @inject IMemberService MemberService
 @{
-    Layout = "_HomeLayout";
+    Layout = "_AccountLayout";
     Model.Title = "Profile";
 
     var member = await MemberService.GetMember(Model.CurrentMemberId);

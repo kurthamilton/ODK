@@ -1,9 +1,13 @@
-﻿@using ODK.Services.Users.ViewModels
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @model AccountMenuViewModel
+@inject IPlatformProvider PlatformProvider
 @{
+    var platform = PlatformProvider.GetPlatform();
+
     var menuItems = new MenuItem[]
     {
         new MenuItem { Link = OdkRoutes.Account.PersonalDetails(Model.Chapter), Text = "Personal details" },
@@ -18,7 +22,7 @@
             ? new MenuItem { Link = OdkRoutes.Account.Interests(), Text = "My interests" }
             : new MenuItem(),
         new MenuItem { Link = OdkRoutes.Account.Conversations(Model.Chapter), Text = "My conversations" },
-        new MenuItem { Link = OdkRoutes.Account.Subscription(Model.Chapter), Text = "My subscription" },
+        new MenuItem { Link = OdkRoutes.Account.Subscription(platform, Model.Chapter), Text = "My subscription" },
         new MenuItem { Link = OdkRoutes.Account.Payments(Model.Chapter), Text = "My payments" },
         new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(Model.Chapter), Text = "Email address" },
         new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.Chapter), Text = "Password" },

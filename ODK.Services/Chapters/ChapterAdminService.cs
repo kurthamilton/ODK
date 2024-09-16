@@ -20,7 +20,6 @@ using ODK.Services.Imaging;
 using ODK.Services.Notifications;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ODK.Services.Chapters;
 
@@ -696,7 +695,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Platform = platform,
             ShowInstagramFeed = privacySettings?.InstagramFeed != null
                 ? privacySettings.InstagramFeed.Value
-                : !string.IsNullOrEmpty(links.InstagramName)
+                : !string.IsNullOrEmpty(links?.InstagramName)
         };
     }
 

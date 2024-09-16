@@ -22,6 +22,7 @@
         if (!placeholder) {
             // set a dummy placeholder to set height
             $select.classList.add('placeholder-hidden');
+            placeholder = 'Select';
         }
 
         slimSelect = new SlimSelect({
@@ -29,7 +30,7 @@
             settings: {
                 allowDeselect: allowDeselect,
                 closeOnSelect: !alwaysOpen,
-                placeholderText: placeholder || 'Select',
+                placeholderText: placeholder,
                 showSearch: searchable
             }
         });

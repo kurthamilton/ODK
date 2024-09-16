@@ -8,7 +8,7 @@
 @model EmailsModel
 @inject IAccountViewModelService AccountViewModelService
 @{
-    Layout = "_HomeLayout";
+    Layout = "_AccountLayout";
     Model.Title = "Email preferences";
 
     var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.CurrentMemberId);

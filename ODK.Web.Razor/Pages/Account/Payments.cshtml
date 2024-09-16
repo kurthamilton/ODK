@@ -8,7 +8,7 @@
 @model PaymentsModel
 @inject IAccountViewModelService AccountViewModelService
 @{
-    Layout = "_HomeLayout";
+    Layout = "_AccountLayout";
     Model.Title = "Payments";
 
     var viewModel = await AccountViewModelService.GetMemberPaymentsPage(Model.CurrentMemberId);

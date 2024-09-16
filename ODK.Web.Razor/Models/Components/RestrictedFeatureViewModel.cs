@@ -7,9 +7,8 @@ namespace ODK.Web.Razor.Models.Components;
 
 public class RestrictedFeatureViewModel
 {
-    public RestrictedFeatureViewModel(Chapter chapter)
+    public RestrictedFeatureViewModel()
     {
-        Chapter = chapter;
     }
 
     public RestrictedFeatureViewModel(MemberSiteSubscription? ownerSubscription)
@@ -22,7 +21,7 @@ public class RestrictedFeatureViewModel
         Permitted = permitted;
     }
 
-    public Chapter? Chapter { get; }
+    public required Chapter? Chapter { get; init; }
 
     public IHtmlContent? Content { get; init; }
 
