@@ -44,6 +44,15 @@ public class UrlProvider : IUrlProvider
     public string EventUrl(Chapter chapter, Guid eventId)
         => GetUrl(OdkRoutes.Groups.Event(_platform, chapter, eventId));
 
+    public string GroupUrl(Chapter chapter)
+        => GetUrl(OdkRoutes.Groups.Group(_platform, chapter));
+
+    public string GroupsUrl()
+        => GetUrl(OdkRoutes.Groups.Index(_platform));
+
+    public string MemberSiteSubscriptionUrl()
+        => GetUrl(OdkRoutes.Account.Subscription(_platform, null));
+
     public string MessageAdminUrl(Guid messageId)
         => GetUrl($"/superadmin/messages/{messageId}");
 

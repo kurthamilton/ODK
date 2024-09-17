@@ -7,8 +7,8 @@ using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Contact.ViewModels;
-using ODK.Services.Emails;
 using ODK.Services.Exceptions;
+using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Recaptcha;
 
@@ -17,7 +17,7 @@ namespace ODK.Services.Contact;
 public class ContactService : IContactService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IEmailService _emailService;
+    private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IRecaptchaService _recaptchaService;
@@ -26,13 +26,13 @@ public class ContactService : IContactService
     public ContactService(
         IRecaptchaService recaptchaService,
         IUnitOfWork unitOfWork,
-        IEmailService emailService,
         IPlatformProvider platformProvider,
         IAuthorizationService authorizationService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IMemberEmailService memberEmailService)
     {
         _authorizationService = authorizationService;
-        _emailService = emailService;
+        _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _platformProvider = platformProvider;
         _recaptchaService = recaptchaService;
@@ -98,7 +98,11 @@ public class ContactService : IContactService
             .Where(x => x.ReceiveContactEmails)
             .Select(x => x.Member);
 
-        await _emailService.SendChapterConversationEmail(chapter, conversation, conversationMessage, addressees.ToArray(), 
+        await _memberEmailService.SendChapterConversationEmail(
+            chapter, 
+            conversation, 
+            conversationMessage, 
+            addressees.ToArray(), 
             isReply: true);
 
         return ServiceResult.Successful();
@@ -142,12 +146,16 @@ public class ContactService : IContactService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendContactEmail(chapter, contactMessage);
+        await _memberEmailService.SendChapterMessage(chapter, adminMembers, contactMessage);
     }
 
     public async Task SendSiteContactMessage(string fromAddress, string message, string recaptchaToken)
     {
         ValidateRequest(fromAddress, message);
+
+        var platform = _platformProvider.GetPlatform();
+
+        var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
 
         var recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);
         if (!_recaptchaService.Success(recaptchaResponse))
@@ -166,7 +174,7 @@ public class ContactService : IContactService
         _unitOfWork.SiteContactMessageRepository.Add(contactMessage);
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendContactEmail(contactMessage);
+        await _memberEmailService.SendSiteMessage(contactMessage, siteEmailSettings);
     }
 
     public async Task<ServiceResult> StartChapterConversation(Guid currentMemberId, Guid chapterId, 
@@ -230,7 +238,11 @@ public class ContactService : IContactService
             .Where(x => x.ReceiveContactEmails)
             .Select(x => x.Member);
 
-        await _emailService.SendChapterConversationEmail(chapter, conversation, conversationMessage, emailMembers.ToArray(), 
+        await _memberEmailService.SendChapterConversationEmail(
+            chapter, 
+            conversation, 
+            conversationMessage, 
+            emailMembers.ToArray(), 
             isReply: false);
 
         return ServiceResult.Successful();

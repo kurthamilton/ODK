@@ -1,16 +1,13 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
-using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
-using ODK.Services.Emails;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Members.ViewModels;
 
@@ -20,7 +17,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
-    private readonly IEmailService _emailService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
@@ -35,14 +31,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IAuthorizationService authorizationService,
         MemberAdminServiceSettings settings, 
         IMemberImageService memberImageService,
-        IEmailService emailService, 
         IMemberEmailService memberEmailService,
         IPlatformProvider platformProvider)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
-        _emailService = emailService;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _memberService = memberService;
@@ -415,22 +409,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         if (member == null)
         {
             return result;
-        }        
-
-        var subject = "{title} - you have been removed";
-        var body = "<p>You have been removed from the {chapter.name} group</p>";
-
-        if (!string.IsNullOrEmpty(reason))
-        {
-            body +=
-                "<p>The following reason was given:</p>" +
-                "<p>{reason}</p>";
         }
 
-        await _emailService.SendEmail(chapter, [member.ToEmailAddressee()], subject, body, new Dictionary<string, string>
-        {
-            { "reason", reason ?? "" }
-        });
+        await _memberEmailService.SendMemberDeleteEmail(chapter, member, reason);
 
         return ServiceResult.Successful();
     }
@@ -460,7 +441,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
 
         var (
-            chapterAdminMember, 
             chapter, 
             members, 
             memberEmailPreferences, 
@@ -468,7 +448,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             membershipSettings, 
             subscription) 
         = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetByChapterId(chapterId),
             x => x.MemberEmailPreferenceRepository.GetByChapterId(chapterId, MemberEmailPreferenceType.ChapterMessages),
@@ -494,7 +473,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             .Where(x => !optOutMemberIds.Contains(x.Id))
             .ToArray();
 
-        await _emailService.SendBulkEmail(chapterAdminMember, chapter, filteredMembers, subject, body);
+        await _memberEmailService.SendBulkEmail(chapter, filteredMembers, subject, body);
 
         return ServiceResult.Successful($"Bulk email sent to {filteredMembers.Length} members");
     }
@@ -567,27 +546,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 var disabledDate = expires
                     .AddDays(membershipSettings.MembershipDisabledAfterDaysExpired);
 
-                var properties = new Dictionary<string, string>
-                {
-                    { "chapter.name", chapter.Name },
-                    { "member.firstName", member.FirstName },
-                    { "subscription.expiryDate", expires.ToFriendlyDateString(chapter.TimeZone) },
-                    { "subscription.disabledDate", disabledDate.ToFriendlyDateString(chapter.TimeZone) }
-                };
-
-                var emailType = expiring
-                    ? memberSubscription.Type switch
-                    {
-                        SubscriptionType.Trial => EmailType.TrialExpiring,
-                        _ => EmailType.SubscriptionExpiring
-                    }
-                    : memberSubscription.Type switch
-                    {
-                        SubscriptionType.Trial => EmailType.TrialExpired,
-                        _ => EmailType.SubscriptionExpired
-                    };
-
-                await _emailService.SendEmail(chapter, member.ToEmailAddressee(), emailType, properties);
+                await _memberEmailService.SendMemberChapterSubscriptionExpiringEmail(
+                    chapter, 
+                    member, 
+                    memberSubscription,
+                    expires: expires,
+                    disabledDate: disabledDate);
 
                 memberSubscription.ReminderEmailSentUtc = now;
                 _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);

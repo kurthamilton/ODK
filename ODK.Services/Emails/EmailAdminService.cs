@@ -1,20 +1,21 @@
 ﻿using ODK.Core;
 using ODK.Core.Emails;
 using ODK.Data.Core;
+using ODK.Services.Members;
 
 namespace ODK.Services.Emails;
 
 public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
 {
-    private readonly IEmailService _emailService;
+    private readonly IMemberEmailService _memberEmailService;
     private readonly IUnitOfWork _unitOfWork;
 
     public EmailAdminService(
         IUnitOfWork unitOfWork, 
-        IEmailService emailService)
+        IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
-        _emailService = emailService;
+        _memberEmailService = memberEmailService;
         _unitOfWork = unitOfWork;
     }
 
@@ -107,13 +108,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(currentMemberId));
 
-        return await _emailService.SendEmail(chapter, currentMember.ToEmailAddressee(), type, 
-            new Dictionary<string, string>
-            {
-                { "member.emailAddress", currentMember.FirstName },
-                { "member.firstName", currentMember.FirstName },
-                { "member.lastName", currentMember.FirstName }
-            });
+        return await _memberEmailService.SendTestEmail(chapter, currentMember, type);
     }
 
     public async Task<ServiceResult> SendTestEmail(Guid currentMemberId, EmailType type)
@@ -121,13 +116,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         var currentMember = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.MemberRepository.GetById(currentMemberId));
 
-        return await _emailService.SendEmail(null, currentMember.ToEmailAddressee(), type,
-            new Dictionary<string, string>
-            {
-                { "member.emailAddress", currentMember.FirstName },
-                { "member.firstName", currentMember.FirstName },
-                { "member.lastName", currentMember.FirstName }
-            });
+        return await _memberEmailService.SendTestEmail(null, currentMember, type);
     }
 
     public async Task<ServiceResult> UpdateChapterEmail(AdminServiceRequest request, EmailType type, 

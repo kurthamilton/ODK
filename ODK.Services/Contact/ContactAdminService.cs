@@ -1,27 +1,26 @@
-﻿using ODK.Core.Emails;
-using ODK.Core.Messages;
+﻿using ODK.Core.Messages;
 using ODK.Core.Notifications;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Contact.ViewModels;
-using ODK.Services.Emails;
+using ODK.Services.Members;
 
 namespace ODK.Services.Contact;
 
 public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
 {
-    private readonly IEmailService _emailService;
     private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly IMemberEmailService _memberEmailService;
     private readonly IUnitOfWork _unitOfWork;
 
     public ContactAdminService(
         IUnitOfWork unitOfWork,
-        IEmailService emailService,
-        IHtmlSanitizer htmlSanitizer)
+        IHtmlSanitizer htmlSanitizer,
+        IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
-        _emailService = emailService;
         _htmlSanitizer = htmlSanitizer;
+        _memberEmailService = memberEmailService;
         _unitOfWork = unitOfWork;
     }
 
@@ -71,14 +70,8 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
             x => x.SiteContactMessageRepository.GetById(messageId));
 
         AssertMemberIsSuperAdmin(currentMember);
-        
-        var to = new[]
-        {
-            new EmailAddressee(originalMessage.FromAddress, "")
-        };
-        var body = $"{message}<hr/><p>Your original message:</p><p>{originalMessage.Message}</p>";
 
-        var sendResult = await _emailService.SendEmail(null, to, "Re: your message to {title}", body);
+        var sendResult = await _memberEmailService.SendSiteMessageReply(originalMessage, message);
         if (!sendResult.Success)
         {
             return sendResult;

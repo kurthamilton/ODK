@@ -9,8 +9,6 @@ public class SendEmailOptions
 
     public Chapter? Chapter { get; init; }
 
-    public ChapterAdminMember? FromAdminMember { get; init; }
-
     public IDictionary<string, string>? Parameters { get; init; }
 
     public required string Subject { get; init; }

@@ -19,7 +19,7 @@ internal static class ChapterQueries
                     CountryId = x.CountryId,
                     CreatedUtc = x.CreatedUtc,
                     DisplayOrder = x.DisplayOrder,
-                    Name = x.Platform == PlatformType.DrunkenKnitwits ? x.Name + " Drunken Knitwits" : x.Name,
+                    Name = x.Name,
                     OwnerId = x.OwnerId,
                     Platform = platform,
                     PublishedUtc = x.PublishedUtc,

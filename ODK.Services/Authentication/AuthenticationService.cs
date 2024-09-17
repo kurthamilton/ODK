@@ -10,7 +10,6 @@ using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Chapters;
-using ODK.Services.Emails;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
@@ -21,7 +20,6 @@ public class AuthenticationService : IAuthenticationService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IChapterUrlService _chapterUrlService;
-    private readonly IEmailService _emailService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly AuthenticationServiceSettings _settings;
@@ -29,7 +27,6 @@ public class AuthenticationService : IAuthenticationService
     private readonly IUrlProvider _urlProvider;
 
     public AuthenticationService(
-        IEmailService emailService, 
         AuthenticationServiceSettings settings,
         IAuthorizationService authorizationService, 
         IUnitOfWork unitOfWork,
@@ -39,8 +36,7 @@ public class AuthenticationService : IAuthenticationService
         INotificationService notificationService)
     {
         _authorizationService = authorizationService;
-        _chapterUrlService = chapterUrlService;
-        _emailService = emailService;      
+        _chapterUrlService = chapterUrlService;   
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _settings = settings;
@@ -58,12 +54,14 @@ public class AuthenticationService : IAuthenticationService
             return ServiceResult.Failure("The link you followed is no longer valid");
         }
 
-        var (chapter, adminMembers, notificationSettings, member, memberPassword) = await _unitOfWork.RunAsync(
+        var (chapter, adminMembers, notificationSettings, member, memberPassword, chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.NewMember),
             x => x.MemberRepository.GetById(token.MemberId),
-            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId));
+            x => x.MemberPasswordRepository.GetByMemberId(token.MemberId),
+            x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
+            x => x.MemberPropertyRepository.GetByMemberId(token.MemberId, chapterId));
 
         OdkAssertions.MeetsCondition(token, x => x.ChapterId == chapterId);
 
@@ -88,7 +86,12 @@ public class AuthenticationService : IAuthenticationService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await SendNewMemberEmailsAsync(chapter, adminMembers, member);
+        await _memberEmailService.SendNewMemberEmailsAsync(
+            chapter, 
+            adminMembers, 
+            member, 
+            chapterProperties, 
+            memberProperties);
 
         return ServiceResult.Successful();
     }
@@ -318,30 +321,11 @@ public class AuthenticationService : IAuthenticationService
         });
 
         await _unitOfWork.SaveChangesAsync();
-        
-        string url = _urlProvider.PasswordReset(chapter, token);
 
-        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.PasswordReset, new Dictionary<string, string>
-        {
-            { "url", url }
-        });
+        await _memberEmailService.SendPasswordResetEmail(chapter, member, token);
 
         return ServiceResult.Successful();
-    }
-
-    private async Task SendNewMemberEmailsAsync(
-        Chapter chapter, 
-        IReadOnlyCollection<ChapterAdminMember> adminMembers, 
-        Member member)
-    {        
-        await _emailService.SendNewChapterMemberEmail(chapter, member);
-
-        var (chapterProperties, memberProperties) = await _unitOfWork.RunAsync(
-            x => x.ChapterPropertyRepository.GetByChapterId(chapter.Id),
-            x => x.MemberPropertyRepository.GetByMemberId(member.Id, chapter.Id));        
-
-        await _emailService.SendNewMemberAdminEmail(chapter, adminMembers, member, chapterProperties, memberProperties);
-    }
+    }    
 
     private MemberPassword UpdatePassword(MemberPassword? memberPassword, string password)
     {

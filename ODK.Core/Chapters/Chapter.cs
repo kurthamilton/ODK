@@ -46,10 +46,10 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
         CreatedUtc = CreatedUtc,
         DisplayOrder = DisplayOrder,
         Id = Id,
-        Platform = Platform,
-        PublishedUtc = PublishedUtc,
         Name = Name,
         OwnerId = OwnerId,
+        Platform = Platform,
+        PublishedUtc = PublishedUtc,
         RedirectUrl = RedirectUrl,
         Slug = Slug,
         TimeZone = TimeZone

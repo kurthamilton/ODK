@@ -6,7 +6,6 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.ViewModels;
-using ODK.Services.Emails;
 using ODK.Services.Members.ViewModels;
 
 namespace ODK.Services.Chapters;
@@ -15,7 +14,6 @@ public class ChapterService : IChapterService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
-    private readonly IEmailService _emailService;
     private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IPlatformProvider _platformProvider;
@@ -26,13 +24,11 @@ public class ChapterService : IChapterService
         ICacheService cacheService, 
         IAuthorizationService authorizationService,
         IPlatformProvider platformProvider,
-        IEmailService emailService,
         IHttpRequestProvider httpRequestProvider,
         IHtmlSanitizer htmlSanitizer)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
-        _emailService = emailService;
         _httpRequestProvider = httpRequestProvider;
         _htmlSanitizer = htmlSanitizer;
         _platformProvider = platformProvider;

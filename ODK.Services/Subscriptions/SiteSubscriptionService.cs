@@ -5,14 +5,14 @@ using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
-using ODK.Services.Emails;
+using ODK.Services.Members;
 using ODK.Services.Payments;
 
 namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionService : ISiteSubscriptionService
 {
-    private readonly IEmailService _emailService;
+    private readonly IMemberEmailService _memberEmailService;
     private readonly IPaymentService _paymentService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -21,9 +21,9 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         IUnitOfWork unitOfWork, 
         IPlatformProvider platformProvider,
         IPaymentService paymentService,
-        IEmailService emailService)
+        IMemberEmailService memberEmailService)
     { 
-        _emailService = emailService;
+        _memberEmailService = memberEmailService;
         _paymentService = paymentService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
@@ -161,12 +161,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             else
             {
                 var member = await _unitOfWork.MemberRepository.GetById(subscription.MemberId).Run();
-                var subject = "{title} - Subscription Expired";
-                var body = 
-                    "<p>Your subscription has now expired</p>" +
-                    "<p>{platform.baseurl}</p>";
-
-                await _emailService.SendMemberEmail(null, null, member.ToEmailAddressee(), subject, body);
+                await _memberEmailService.SendSiteSubscriptionExpiredEmail(member);
             }
         }
 

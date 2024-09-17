@@ -3,7 +3,6 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
-using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
@@ -106,7 +105,6 @@ public class MailProvider : IMailProvider
         var message = CreateMessage(
             provider,
             siteSettings,
-            options.FromAdminMember,
             subject,
             body, parameters);
 
@@ -149,26 +147,16 @@ public class MailProvider : IMailProvider
         MimeMessage message,
         EmailProvider provider,
         SiteEmailSettings siteSettings,
-        ChapterAdminMember? fromAdminMember,
         IDictionary<string, string> parameters)
     {
-        if (fromAdminMember != null)
-        {
-            var addressee = fromAdminMember.ToEmailAddressee();
-            message.From.Add(new MailboxAddress(addressee.Name, addressee.Address));
-        }
-        else
-        {
-            var name = siteSettings.FromName.Interpolate(parameters);
-            var address = siteSettings.FromEmailAddress;
-            message.From.Add(new MailboxAddress(name, address));
-        }
+        var name = siteSettings.FromName.Interpolate(parameters);
+        var address = siteSettings.FromEmailAddress;
+        message.From.Add(new MailboxAddress(name, address));
     }
 
     private MimeMessage CreateMessage(
         EmailProvider provider,
         SiteEmailSettings siteSettings,
-        ChapterAdminMember? fromAdminMember,
         string subject,
         string body,
         IDictionary<string, string> parameters)
@@ -182,7 +170,7 @@ public class MailProvider : IMailProvider
             Subject = subject
         };
 
-        AddEmailFrom(message, provider, siteSettings, fromAdminMember, parameters);
+        AddEmailFrom(message, provider, siteSettings, parameters);
 
         return message;
     }
