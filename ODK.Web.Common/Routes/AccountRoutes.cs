@@ -28,11 +28,7 @@ public class AccountRoutes : RoutesBase
     public string PictureRotate(Chapter? chapter) => AccountPath(chapter, "/picture/rotate");
     public string PictureUpload(Chapter? chapter) => AccountPath(chapter, "/picture/change");
     public string Profile(Chapter? chapter) => AccountPath(chapter, "/profile");
-    public string Subscription(PlatformType platform, Chapter? chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"/{chapter?.Name}/admin/chapter/subscription",
-        _ => AccountPath(chapter, "/subscription")
-    };
+    public string Subscription(PlatformType platform, Chapter? chapter) => AccountPath(chapter, "/subscription");
 
     private string AccountPath(Chapter? chapter, string path) => GetRoute(chapter, "/account" + path);
 }
