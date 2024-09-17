@@ -9,4 +9,4 @@
     var viewModel = await EventAdminService.GetEventAttendeesViewModel(Model.AdminServiceRequest, Model.EventId);
 }
 
-@await Html.PartialAsync("Admin/Events/_EventResponsesContent", viewModel)
+@await Html.PartialAsync("Admin/Events/Event/_EventResponsesContent", viewModel)

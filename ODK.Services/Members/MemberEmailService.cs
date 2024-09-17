@@ -207,7 +207,9 @@ public class MemberEmailService : IMemberEmailService
         var time = @event.ToLocalTimeString(chapter.TimeZone);
 
         var eventUrl = _urlProvider.EventUrl(chapter, @event.Id);
-        var rsvpUrl = _urlProvider.EventRsvpUrl(chapter, @event.Id);
+        var rsvpUrl = @event.Ticketed 
+            ? _urlProvider.EventUrl(chapter, @event.Id)
+            : _urlProvider.EventRsvpUrl(chapter, @event.Id);
         var unsubscribeUrl = _urlProvider.EmailPreferences(chapter);
 
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

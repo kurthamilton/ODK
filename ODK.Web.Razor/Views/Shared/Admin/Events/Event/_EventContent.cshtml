@@ -16,11 +16,9 @@
         .ToArray() ?? [];
 }
 
-@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
-
-@await Html.PartialAsync("Admin/Events/_EventHeader", Model)
-
-@await Html.PartialAsync("Admin/Events/_EventAdminTabs", Model)
+@await Html.PartialAsync("Admin/Events/Event/_EventBreadcrumbs", Model)
+@await Html.PartialAsync("Admin/Events/Event/_EventHeader", Model)
+@await Html.PartialAsync("Admin/Events/Event/_EventAdminTabs", Model)
 
 @if (Model.Event.PublishedUtc == null)
 {
@@ -37,7 +35,7 @@
 
 <form method="post">
     @Html.AntiForgeryToken()    
-    @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
+    @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
     {
         AttendeeLimit = Model.Event.AttendeeLimit,
         Chapter = Model.Chapter,

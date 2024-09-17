@@ -7,9 +7,9 @@
 @using ODK.Web.Razor.Models.Members
 @model EventTicketsAdminPageViewModel
 
-@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
-@await Html.PartialAsync("Admin/Events/_EventHeader")
-@await Html.PartialAsync("Admin/Events/_EventAdminTabs")
+@await Html.PartialAsync("Admin/Events/Event/_EventBreadcrumbs", Model)
+@await Html.PartialAsync("Admin/Events/Event/_EventHeader")
+@await Html.PartialAsync("Admin/Events/Event/_EventAdminTabs")
 
 @{
     if (Model.Event.TicketSettings == null)
@@ -33,12 +33,20 @@
             <tr>
                 <th></th>
                 <th>Member</th>
-                <th>Paid</th>
+                @if (Model.Event.TicketSettings.Deposit > 0)
+                {
+                    <th>Deposit Paid</th>
+                }                
+                <th>Total Paid</th>
+                <th>
+                    Remaining
+                </th>
             </tr>
         </thead>
         <tbody> 
             @foreach (var ticketPurchase in Model.Purchases.OrderBy(x => x.Member.FullName))
             {
+                
                 <tr>
                     <td width="30px" class="px-0">
                         @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
@@ -50,13 +58,23 @@
                     <td>
                         <a href="/@Model.Chapter.Name/Admin/Members/@ticketPurchase.MemberId">@ticketPurchase.Member.FullName</a>
                     </td>
+                    @if (Model.Event.TicketSettings.Deposit > 0)
+                    {
+                        <td>
+                            @if (ticketPurchase.DepositPaid != null)
+                            {
+                                @Model.PaymentSettings.Currency.ToAmountString(ticketPurchase.DepositPaid.Value)
+                            }                            
+                        </td>
+                    }
                     <td>
-                        @Model.PaymentSettings.Currency.ToAmountString(ticketPurchase.TotalPaid)
-
-                        @if (ticketPurchase.TotalPaid < Model.Event.TicketSettings.Cost)
+                        @Model.PaymentSettings.Currency.ToAmountString(ticketPurchase.TotalPaid)                                                
+                    </td>
+                    <td>
+                        @if (ticketPurchase.PurchasedUtc == null)
                         {
                             var remaining = Model.Event.TicketSettings.Cost - ticketPurchase.TotalPaid;
-                            @:(Remaining: @Model.PaymentSettings.Currency.ToAmountString(remaining))
+                            @Model.PaymentSettings.Currency.ToAmountString(remaining)
                         }
                     </td>
                 </tr>

@@ -36,7 +36,7 @@
             <form method="post">
                 @Html.AntiForgeryToken()
     
-                @await Html.PartialAsync("Admin/Events/_EventForm", new EventFormViewModel
+                @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
                 {
                     Chapter = Model.Chapter,
                     Date = Model.Date,

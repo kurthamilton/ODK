@@ -35,6 +35,7 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th></th>
                             <th>Name</th>
                             <th>Date</th>
                             <th>Venue</th>
@@ -53,6 +54,12 @@
                             var venue = venueDictionary[@event.VenueId];
 
                             <tr>
+                                <td>
+                                    @if (@event.Ticketed)
+                                    {
+                                        @await Html.PartialAsync("Components/Icons/_Ticket")
+                                    }
+                                </td>
                                 <td><a href="@OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
                                 <td>@(@event.Date.EventDate())</td>
                                 <td><a href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a></td>
@@ -67,7 +74,7 @@
                                     {
                                         @eventInvites.Sent
                                     }
-                                </td>
+                                </td>                                
                                 <td>@(eventResponses?.Yes ?? 0)</td>
                                 <td>@(eventResponses?.Maybe ?? 0)</td>
                                 <td>@(eventResponses?.No ?? 0)</td>

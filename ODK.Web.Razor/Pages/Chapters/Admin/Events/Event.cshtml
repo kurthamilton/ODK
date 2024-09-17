@@ -16,4 +16,4 @@
     var viewModel = await EventAdminService.GetEventEditViewModel(serviceRequest, Model.Event.Id);    
 }
 
-@await Html.PartialAsync("Admin/Events/_EventContent", viewModel)
+@await Html.PartialAsync("Admin/Events/Event/_EventContent", viewModel)

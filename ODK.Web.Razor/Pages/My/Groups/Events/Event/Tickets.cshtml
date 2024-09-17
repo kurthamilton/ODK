@@ -9,4 +9,4 @@
     var viewModel = await EventAdminService.GetEventTicketsViewModel(Model.AdminServiceRequest, Model.EventId);
 }
 
-@await Html.PartialAsync("Admin/Events/_EventTicketsContent", viewModel)
+@await Html.PartialAsync("Admin/Events/Event/_EventTicketsContent", viewModel)

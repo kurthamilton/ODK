@@ -11,10 +11,9 @@
 @using ODK.Web.Razor.Models.Components
 @model EventInvitesAdminPageViewModel
 
-@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
-
-@await Html.PartialAsync("Admin/Events/_EventHeader")
-@await Html.PartialAsync("Admin/Events/_EventAdminTabs")
+@await Html.PartialAsync("Admin/Events/Event/_EventBreadcrumbs", Model)
+@await Html.PartialAsync("Admin/Events/Event/_EventHeader")
+@await Html.PartialAsync("Admin/Events/Event/_EventAdminTabs")
 
 @if (Model.Invites.SentUtc != null)
 {
@@ -23,7 +22,7 @@
     </p>
 
     <section class="section">
-        @await Html.PartialAsync("Admin/Events/_EventInviteeUpdate", new EventUpdateViewModel
+        @await Html.PartialAsync("Admin/Events/Event/_EventInviteeUpdate", new EventUpdateViewModel
         {
             Chapter = Model.Chapter,
             EventId = Model.Event.Id
@@ -61,7 +60,7 @@
         {
             Chapter = Model.Chapter,
             Feature = SiteFeatureType.ScheduledEventEmails,
-            Content = await Html.PartialAsync("Admin/Events/_ScheduledEmailForm", new EventScheduledEmailFormViewModel
+            Content = await Html.PartialAsync("Admin/Events/Event/_ScheduledEmailForm", new EventScheduledEmailFormViewModel
             {
                 Chapter = Model.Chapter,
                 EventId = Model.Event.Id,

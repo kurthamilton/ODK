@@ -34,9 +34,9 @@
     };
 }
 
-@await Html.PartialAsync("Admin/Events/_EventBreadcrumbs", Model)
-@await Html.PartialAsync("Admin/Events/_EventHeader")
-@await Html.PartialAsync("Admin/Events/_EventAdminTabs")
+@await Html.PartialAsync("Admin/Events/Event/_EventBreadcrumbs", Model)
+@await Html.PartialAsync("Admin/Events/Event/_EventHeader")
+@await Html.PartialAsync("Admin/Events/Event/_EventAdminTabs")
 
 <div class="d-flex flex-column gap-3">
     @foreach(var responseType in responseTypes)

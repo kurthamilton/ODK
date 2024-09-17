@@ -13,4 +13,4 @@
     var viewModel = await EventAdminService.GetEventInvitesViewModel(request, Model.Event.Id);
 }
 
-@await Html.PartialAsync("Admin/Events/_EventInvitesContent", viewModel)
+@await Html.PartialAsync("Admin/Events/Event/_EventInvitesContent", viewModel)
