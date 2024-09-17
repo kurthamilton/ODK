@@ -6,6 +6,8 @@ public interface IUrlProvider
 {
     string ActivateAccountUrl(Chapter? chapter, string token);
 
+    string BaseUrl();
+
     string ConfirmEmailAddressUpdate(Chapter? chapter, string token);
 
     string ConversationAdminUrl(Chapter chapter, Guid conversationId);

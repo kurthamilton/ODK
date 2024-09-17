@@ -4,7 +4,7 @@ namespace ODK.Services.Emails;
 
 public class EmailBodyBuilder
 {
-    private readonly StringBuilder _body = new StringBuilder();
+    private readonly StringBuilder _body = new();
 
     public EmailBodyBuilder AddLine()
     {

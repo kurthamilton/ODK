@@ -2,7 +2,5 @@
 
 public interface IPlatformProvider
 {
-    string GetBaseUrl();
-
     PlatformType GetPlatform();
 }

@@ -6,7 +6,6 @@ using ODK.Core.Members;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
-using ODK.Services.Chapters;
 using ODK.Services.Members;
 using ODK.Services.Payments;
 
@@ -18,7 +17,6 @@ public class EventService : IEventService
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private readonly IAuthorizationService _authorizationService;
-    private readonly IChapterUrlService _chapterUrlService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IPaymentService _paymentService;
     private readonly IUnitOfWork _unitOfWork;
@@ -26,13 +24,11 @@ public class EventService : IEventService
 
     public EventService(IUnitOfWork unitOfWork,       
         IAuthorizationService authorizationService,
-        IChapterUrlService chapterUrlService,
         IPaymentService paymentService,
         IUrlProvider urlProvider,
         IMemberEmailService memberEmailService)
     {
         _authorizationService = authorizationService;
-        _chapterUrlService = chapterUrlService;
         _memberEmailService = memberEmailService;
         _paymentService = paymentService;
         _unitOfWork = unitOfWork;

@@ -11,7 +11,6 @@ using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
-using ODK.Services.Chapters;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
 
@@ -21,7 +20,6 @@ public class MemberService : IMemberService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
-    private readonly IChapterUrlService _chapterUrlService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly INotificationService _notificationService;
@@ -36,7 +34,6 @@ public class MemberService : IMemberService
         IPaymentService paymentService, 
         ICacheService cacheService, 
         IMemberImageService memberImageService, 
-        IChapterUrlService chapterUrlService, 
         IPlatformProvider platformProvider, 
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
@@ -44,7 +41,6 @@ public class MemberService : IMemberService
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
-        _chapterUrlService = chapterUrlService;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _notificationService = notificationService;

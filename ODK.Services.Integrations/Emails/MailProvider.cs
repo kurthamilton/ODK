@@ -6,6 +6,7 @@ using MimeKit.Text;
 using ODK.Core.Emails;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Emails;
@@ -21,17 +22,20 @@ public class MailProvider : IMailProvider
     private readonly IPlatformProvider _platformProvider;
     private readonly MailProviderSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUrlProvider _urlProvider;
 
     public MailProvider(
         IUnitOfWork unitOfWork,
         ILoggingService loggingService,
         MailProviderSettings settings,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        IUrlProvider urlProvider)
     {
         _loggingService = loggingService;
         _platformProvider = platformProvider;
         _settings = settings;
         _unitOfWork = unitOfWork;
+        _urlProvider = urlProvider;
     }
 
     public async Task<ServiceResult> SendEmail(SendEmailOptions options)
@@ -60,41 +64,38 @@ public class MailProvider : IMailProvider
             parameters["chapter.name"] = options.Chapter?.Name ?? "";
         }
 
-        var platformBaseUrl = _platformProvider.GetBaseUrl();
-
-        var chapterUrl = options.Chapter != null
-            ? platform == PlatformType.DrunkenKnitwits
-                ? $"{platformBaseUrl}/{options.Chapter.Name}"
-                : $"{platformBaseUrl}/groups/{options.Chapter.Slug}"
-            : null;
-        if (chapterUrl != null)
+        if (options.Chapter != null)
         {
-            parameters["chapter.baseurl"] = chapterUrl;
+            parameters["chapter.baseurl"] = _urlProvider.GroupUrl(options.Chapter);
         }
 
         if (!parameters.ContainsKey("platform.baseurl"))
         {
-            if (platform == PlatformType.DrunkenKnitwits && options.Chapter != null)
-            {
-                platformBaseUrl += $"/{options.Chapter.Name}";
-            }
-
-            parameters["platform.baseurl"] = platformBaseUrl;
+            parameters["platform.baseurl"] = _urlProvider.BaseUrl();
         }
 
-        var title = siteSettings.Title.Interpolate(parameters,
-            HttpUtility.HtmlEncode);
+        var title = siteSettings.Title.Interpolate(parameters, HttpUtility.HtmlEncode);
         parameters["title"] = title;
 
-        var subject = (!string.IsNullOrEmpty(options.Subject)
+        var subject = !string.IsNullOrEmpty(options.Subject)
             ? options.Subject
-            : bodyEmail?.Subject ?? "").Interpolate(parameters,
-            HttpUtility.HtmlEncode);
+            : bodyEmail?.Subject ?? ""; 
+        subject = subject.Interpolate(parameters, HttpUtility.HtmlEncode);
 
-        var body = (!string.IsNullOrEmpty(options.Body)
+        var body = !string.IsNullOrEmpty(options.Body)
             ? options.Body
-            : bodyEmail?.HtmlContent ?? "").Interpolate(parameters,
-            HttpUtility.HtmlEncode);
+            : bodyEmail?.HtmlContent ?? "";
+        body = body.Interpolate(parameters, HttpUtility.HtmlEncode);
+
+        foreach (var htmlParameter in parameters.Where(x => x.Key.StartsWith("html:")))
+        {
+            var parameterName = htmlParameter.Key.Substring("html:".Length);
+            body = body.Interpolate(new Dictionary<string, string>
+            {
+                { parameterName, parameters[htmlParameter.Key] }
+            });
+        }
+
         parameters["body"] = body;
 
         var layoutBody = layoutEmail.HtmlContent;

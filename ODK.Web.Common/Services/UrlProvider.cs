@@ -23,6 +23,9 @@ public class UrlProvider : IUrlProvider
     public string ActivateAccountUrl(Chapter? chapter, string token)
         => GetUrl(OdkRoutes.Account.Activate(chapter, token));
 
+    public string BaseUrl()
+        => GetUrl("");
+
     public string ConfirmEmailAddressUpdate(Chapter? chapter, string token)
         => GetUrl(OdkRoutes.Account.EmailAddressChangeConfirm(chapter, token));
 

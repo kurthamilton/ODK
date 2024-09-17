@@ -9,7 +9,6 @@ using ODK.Core.Notifications;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
-using ODK.Services.Chapters;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
@@ -19,7 +18,6 @@ namespace ODK.Services.Authentication;
 public class AuthenticationService : IAuthenticationService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IChapterUrlService _chapterUrlService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly AuthenticationServiceSettings _settings;
@@ -30,13 +28,11 @@ public class AuthenticationService : IAuthenticationService
         AuthenticationServiceSettings settings,
         IAuthorizationService authorizationService, 
         IUnitOfWork unitOfWork,
-        IChapterUrlService chapterUrlService,
         IMemberEmailService memberEmailService,
         IUrlProvider urlProvider,
         INotificationService notificationService)
     {
-        _authorizationService = authorizationService;
-        _chapterUrlService = chapterUrlService;   
+        _authorizationService = authorizationService; 
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _settings = settings;

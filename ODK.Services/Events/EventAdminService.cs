@@ -11,8 +11,6 @@ using ODK.Core.Venues;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
-using ODK.Services.Chapters;
-using ODK.Services.Emails;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
@@ -23,7 +21,6 @@ namespace ODK.Services.Events;
 public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IChapterUrlService _chapterUrlService;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
@@ -33,7 +30,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public EventAdminService(
         IUnitOfWork unitOfWork, 
-        IChapterUrlService chapterUrlService,
         IAuthorizationService authorizationService,
         IPlatformProvider platformProvider,
         IUrlProvider urlProvider,
@@ -43,7 +39,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
-        _chapterUrlService = chapterUrlService;
         _htmlSanitizer = htmlSanitizer;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;

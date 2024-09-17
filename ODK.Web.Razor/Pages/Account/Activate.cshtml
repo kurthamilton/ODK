@@ -10,5 +10,6 @@
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Title = "Activate your account",
+    WidthClass = "col-12 col-md-8 col-lg-6 col-xl-4",
     Content = await Html.PartialAsync("Account/_ActivateContent", new ActivateFormViewModel())
 })

@@ -19,17 +19,6 @@ public class PlatformProvider : IPlatformProvider
         _settings = settings;
     }
 
-    public string GetBaseUrl()
-    {
-        var platform = GetPlatform();
-
-        return platform switch
-        {
-            PlatformType.DrunkenKnitwits => _settings.DrunkenKnitwitsBaseUrls.First(),
-            _ => _settings.DefaultBaseUrls.First()
-        };
-    }
-
     public PlatformType GetPlatform()
     {
         if (_platform != null)
