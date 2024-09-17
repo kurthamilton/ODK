@@ -5,11 +5,11 @@ namespace ODK.Services.Chapters.ViewModels;
 
 public class MemberChaptersViewModel
 {
-    public required IReadOnlyCollection<Chapter> Admin { get; init; }    
+    public required IReadOnlyCollection<ChapterWithDistanceViewModel> Admin { get; init; }    
 
-    public required IReadOnlyCollection<Chapter> Member { get; init; }
+    public required IReadOnlyCollection<ChapterWithDistanceViewModel> Member { get; init; }
 
-    public required IReadOnlyCollection<Chapter> Owned { get; init; }
+    public required IReadOnlyCollection<ChapterWithDistanceViewModel> Owned { get; init; }
 
     public required PlatformType Platform { get; init; }
 

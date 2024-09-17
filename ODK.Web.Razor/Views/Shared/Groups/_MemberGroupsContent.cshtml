@@ -1,0 +1,75 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@model MemberChaptersViewModel
+
+<div>
+    <section class="section--admin">
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+       {
+           TitleContentFunc = @<h5>Owner</h5>,
+           BodyContentFunc =
+                @<div>
+                    @if (Model.Owned.Count > 0)
+                    {
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var group in Model.Owned)
+                            {
+                                @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p>
+                            You haven't created any groups.
+                            <a href="@OdkRoutes.MemberGroups.GroupCreate(Model.Platform)">Create a group</a>
+                        </p>
+                    }
+                </div>
+       })
+    </section>
+
+    @if (Model.Admin.Any())
+    {
+        <section class="section--admin">
+            @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+            {
+                TitleContentFunc = @<h5>Manager</h5>,
+                BodyContentFunc = 
+                    @<div class="d-flex flex-column gap-3">
+                        @foreach (var group in Model.Admin)
+                        {
+                            @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                        }
+                    </div>
+            })                        
+        </section>
+    }
+    
+    <section class="section--admin">
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            TitleContentFunc = @<h5>Member</h5>,
+            BodyContentFunc = 
+                @<div>
+                    @if (Model.Member.Count > 0)
+                    {
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var group in Model.Member)
+                            {
+                                @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p>
+                            You aren't a member of any groups.
+                            <a href="@OdkRoutes.Groups.Index(Model.Platform)">Find a group</a>
+                        </p>
+                    }
+                </div>
+        })                
+    </section>
+</div>

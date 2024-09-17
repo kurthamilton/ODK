@@ -144,7 +144,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 HasImage = hasImage,
                 IsAdmin = adminMembers.Any(x => x.ChapterId == chapterId),
                 IsMember = currentMember?.IsMemberOf(chapterId) == true,
-                Location = chapterLocationDictionary[chapterId],
+                Location = chapterLocation,
                 Platform = platform,
                 Texts = chapterTexts,
                 Topics = topics?.Select(x => x.Topic).ToArray() ?? []
@@ -780,32 +780,63 @@ public class ChapterViewModelService : IChapterViewModelService
             .Select(x => x.Id)
             .ToArray();
 
-        var texts = chapterIds.Length > 0
-            ? await _unitOfWork.ChapterTextsRepository.GetByChapterIds(chapterIds).Run()
-            : [];
+        var (texts, images, topics) = await _unitOfWork.RunAsync(
+            x => chapterIds.Length > 0 
+                ? x.ChapterTextsRepository.GetByChapterIds(chapterIds)
+                : new DefaultDeferredQueryMultiple<ChapterTexts>(),
+            x => chapterIds.Length > 0
+                ? x.ChapterImageRepository.GetDtosByChapterIds(chapterIds)
+                : new DefaultDeferredQueryMultiple<ChapterImageMetadata>(),
+            x => chapterIds.Length > 0
+                ? x.ChapterTopicRepository.GetDtosByChapterIds(chapterIds)
+                : new DefaultDeferredQueryMultiple<ChapterTopicDto>());
 
-        var adminMemberDictionary = adminMembers
-            .ToDictionary(x => x.ChapterId);
-        var textsDictionary = texts
-            .ToDictionary(x => x.ChapterId);
+        var locations = await _unitOfWork.ChapterLocationRepository.GetByChapterIds(chapterIds);
 
-        var admin = new List<Chapter>();
-        var member = new List<Chapter>();
-        var owned = new List<Chapter>();
+        var adminMemberDictionary = adminMembers.ToDictionary(x => x.ChapterId);
+        var imageDictionary = images.ToDictionary(x => x.ChapterId);
+        var locationDictionary = locations.ToDictionary(x => x.ChapterId);
+        var textsDictionary = texts.ToDictionary(x => x.ChapterId);
+        var topicDictionary = topics
+            .GroupBy(x => x.ChapterId)
+            .ToDictionary(x => x.Key, x => x.ToArray());
+
+        var admin = new List<ChapterWithDistanceViewModel>();
+        var member = new List<ChapterWithDistanceViewModel>();
+        var owned = new List<ChapterWithDistanceViewModel>();
 
         foreach (var chapter in chapters)
         {
+            adminMemberDictionary.TryGetValue(chapter.Id, out var adminMember);
+            imageDictionary.TryGetValue(chapter.Id, out var image);
+            locationDictionary.TryGetValue(chapter.Id, out var location);
+            textsDictionary.TryGetValue(chapter.Id, out var chapterTexts);
+            topicDictionary.TryGetValue(chapter.Id, out var chapterTopics);
+
+            var viewModel = new ChapterWithDistanceViewModel
+            {
+                Chapter = chapter,
+                Distance = 0,
+                HasImage = image != null,
+                IsAdmin = adminMember != null,
+                IsMember = true,
+                Location = location,
+                Platform = platform,
+                Texts = chapterTexts,
+                Topics = chapterTopics?.Select(x => x.Topic).ToArray() ?? []
+            };
+
             if (chapter.OwnerId == memberId)
             {
-                owned.Add(chapter);
+                owned.Add(viewModel);
             }
-            else if (adminMemberDictionary.ContainsKey(chapter.Id))
+            else if (viewModel.IsAdmin)
             {
-                admin.Add(chapter);
+                admin.Add(viewModel);
             }
             else
             {
-                member.Add(chapter);
+                admin.Add(viewModel);
             }
         }
 

@@ -14,10 +14,13 @@
                 </div>
                 <div class="col-8">
                     <div class="d-flex flex-column gap-2">
-                        <h6><strong>@Model.Chapter.Name</strong></h6>
-                        <div class="small">
-                            @await Html.PartialAsync("Components/_Location", Model.Location.Name)
-                        </div>
+                        <h5><strong>@Model.Chapter.Name</strong></h5>
+                        @if (Model.Location != null)
+                        {
+                            <div class="small">
+                                @await Html.PartialAsync("Components/_Location", Model.Location.Name)
+                            </div>
+                        }                        
                         @if (!string.IsNullOrEmpty(Model.Texts?.Description))
                         {
                             <div class="card-text">@Model.Texts?.Description</div>

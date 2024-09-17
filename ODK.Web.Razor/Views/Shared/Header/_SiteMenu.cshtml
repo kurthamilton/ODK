@@ -1,7 +1,10 @@
-﻿@using ODK.Web.Common.Extensions
-
+﻿@using ODK.Core.Platforms
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
+@inject IPlatformProvider PlatformProvider
 @{
     var authenticated = User.Authenticated();
+    var platform = PlatformProvider.GetPlatform();
 }
 
 <div class="collapse navbar-collapse">
@@ -10,7 +13,10 @@
             <a class="nav-link" href="/pricing">Pricing</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="/groups">Groups</a>
+            <a class="nav-link" href="@OdkRoutes.Groups.Index(platform)">Groups</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="@OdkRoutes.MemberGroups.Index(platform)">My groups</a>
         </li>
     </ul>
 </div>
