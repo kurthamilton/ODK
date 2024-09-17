@@ -1,7 +1,36 @@
 ﻿(function () {
+    bindClearables();
     bindClientSideValidation();
     bindDatePickers();
     bindSubmits();
+
+    function bindClearables() {
+        const $containers = document.querySelectorAll('[data-clearable-container]');
+        $containers.forEach($container => {
+            const $button = $container.querySelector('[data-clearable-button]');
+            const $input = $container.querySelector('[data-clearable]');
+            if (!$button || !$input) {
+                return;
+            }            
+
+            if (!$input.value) {
+                $button.classList.add('d-none');
+            }
+
+            $input.addEventListener('change', () => {
+                if ($input.value) {
+                    $button.classList.remove('d-none');
+                } else {
+                    $button.classList.add('d-none');
+                }
+            });
+
+            $button.addEventListener('click', () => {
+                $input.value = '';
+                $input.dispatchEvent(new Event('change'));
+            });
+        });
+    }
 
     function bindClientSideValidation() {
         const v = new aspnetValidation.ValidationService();

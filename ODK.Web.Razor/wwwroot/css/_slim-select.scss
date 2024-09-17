@@ -21,6 +21,20 @@
     }
 }
 
+.ss-deselect {
+    svg {
+        display: none;
+    }
+
+    opacity: 0.8;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    @include odk-icons-times
+}
+
 .ss-content {
     overflow-y: auto;
 

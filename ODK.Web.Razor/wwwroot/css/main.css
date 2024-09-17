@@ -11870,6 +11870,25 @@ textarea.form-control-lg {
   visibility: hidden;
 }
 
+.ss-deselect {
+  opacity: 0.8;
+}
+.ss-deselect svg {
+  display: none;
+}
+.ss-deselect:hover {
+  opacity: 1;
+}
+.ss-deselect:before {
+  content: "\f00d";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-rendering: auto;
+}
+
 .ss-content {
   overflow-y: auto;
   /*search*/
@@ -12212,6 +12231,37 @@ html[data-platform=odk] {
 .form-check.required .form-check-label:after {
   content: " *";
   color: #dc3545;
+}
+
+.clearable {
+  position: relative;
+}
+.clearable .form-control {
+  padding-right: 2rem;
+}
+.clearable .icon {
+  position: absolute;
+  top: 0;
+  right: 1rem;
+  height: 100%;
+  display: flex;
+  opacity: 0.8;
+  cursor: pointer;
+}
+.clearable .icon:before {
+  align-self: center;
+}
+.clearable .icon:hover {
+  opacity: 1;
+}
+.clearable .icon:before {
+  content: "\f00d";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-rendering: auto;
 }
 
 .form-control-custom {

@@ -10,12 +10,18 @@
         <div class="row">
             <div class="col-6">
                 @Html.LabelFor(x => x.ScheduledEmailDate, new { @class = "form-label" })
-                @Html.TextBoxFor(x => x.ScheduledEmailDate, format: "{0:dd/MM/yyyy HH:mm}", new 
-                { 
-                    @class = "form-control", 
-                    data_datepicker = "",
-                    data_datepicker_time = ""
-                })
+                
+                <div class="clearable" data-clearable-container>
+                    @Html.TextBoxFor(x => x.ScheduledEmailDate, format: "{0:dd/MM/yyyy HH:mm}", new
+                    {
+                        @class = "form-control clearable",
+                        data_datepicker = "",
+                        data_datepicker_time = "",
+                        data_clearable = ""
+                    })
+                    <i class="icon" data-clearable-button></i>
+                </div>
+                
                 @Html.ValidationMessageFor(x => x.ScheduledEmailDate)
             </div>
         </div>        

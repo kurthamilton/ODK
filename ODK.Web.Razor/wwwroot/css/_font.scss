@@ -3,3 +3,15 @@
 @if $odk == true {
     @include odk-font
 }
+
+@mixin odk-icons-times {
+    &:before {
+        content: "\f00d";
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-style: normal;
+        font-variant: normal;
+        line-height: 1;
+        text-rendering: auto;
+    }
+}

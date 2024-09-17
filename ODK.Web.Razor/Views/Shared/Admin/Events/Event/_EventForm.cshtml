@@ -55,12 +55,17 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.RsvpDeadline, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.RsvpDeadline, format: "{0:dd/MM/yyyy HH:mm}", new 
-    { 
-        @class = "form-control", 
-        data_datepicker = "", 
-        data_datepicker_time = ""
-    })
+    <span class="ms-1 text-muted">Only needed if you need to confirm numbers in advance</span>
+    <div class="clearable" data-clearable-container>
+        @Html.TextBoxFor(x => x.RsvpDeadline, format: "{0:dd/MM/yyyy HH:mm}", new 
+        { 
+            @class = "form-control", 
+            data_datepicker = "", 
+            data_datepicker_time = "",
+            data_clearable = ""
+        })
+        <i class="icon" data-clearable-button></i>
+    </div>
     @Html.ValidationMessageFor(x => x.RsvpDeadline)
 </div>
 

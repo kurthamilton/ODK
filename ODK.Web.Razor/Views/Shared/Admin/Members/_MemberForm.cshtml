@@ -13,6 +13,14 @@
 
 <div class="form-group mb-3">
     @Html.LabelFor(x => x.SubscriptionExpiryDate, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.SubscriptionExpiryDate, new { @class = "form-control", data_datepicker = "" })
+    <div class="clearable" data-clearable-container>
+        @Html.TextBoxFor(x => x.SubscriptionExpiryDate, new 
+        { 
+            @class = "form-control clearable", 
+            data_datepicker = "",
+            data_clearable = ""
+        })
+        <i class="icon" data-clearable-button></i>
+    </div>    
     @Html.ValidationMessageFor(x => x.SubscriptionExpiryDate)
 </div>

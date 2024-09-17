@@ -43,6 +43,34 @@
 	}
 }
 
+.clearable {
+	position: relative;
+
+	.form-control {
+		padding-right: 2rem;
+	}
+
+	.icon {
+		position: absolute;
+		top: 0;
+		right: 1rem;
+		height: 100%;
+		display: flex;
+		opacity: 0.8;
+		cursor: pointer;
+
+		&:before {
+			align-self: center;
+		}
+
+		&:hover {
+			opacity: 1;
+		}
+
+		@include odk-icons-times
+	}
+}
+
 .form-control-custom {
 	height: 100%;
 	padding: 0;
