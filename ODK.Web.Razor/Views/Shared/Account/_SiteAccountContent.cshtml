@@ -19,21 +19,20 @@
     <div class="form-group text-end">
         <div class="d-inline-block">
             <div class="d-flex justify-content-center">
-                @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
+                @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                {                   
-                   HasImage = Model.Image != null,
-                   Image = Model.Image,
+                   Avatar = Model.Avatar,
                    Member = Model.CurrentMember
                })
             </div>
 
-            <div class="d-flex justify-content-center">
-                <div class="d-flex">
-                    <button class="btn btn-link" type="button" data-bs-toggle="modal" data-bs-target="#change-picture-modal">
-                        Change picture
+            <div class="d-flex mt-3">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-link p-0" type="button" data-bs-toggle="modal" data-bs-target="#change-picture-modal">
+                        Change
                     </button>
 
-                    <form class="d-flex align-items-center" method="post" action="/Account/Picture/Rotate">
+                    <form class="d-flex align-items-center" method="post" action="/account/picture/rotate">
                         <button class="btn-icon" data-bs-toggle="tooltip" data-bs-title="Rotate right">
                             <i class="fas fa-undo flip-horizontal"></i>
                         </button>
@@ -52,13 +51,7 @@
     Body =
     @<div>
         <form method="post" action="/account/picture/change" enctype="multipart/form-data">
-            @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
-            {
-                CropHeight = Model.Avatar?.CropHeight,
-                CropWidth = Model.Avatar?.CropWidth,
-                CropX = Model.Avatar?.CropX,
-                CropY = Model.Avatar?.CropY
-            })
+            @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel())
 
             <div class="d-flex justify-content-end mt-3">
                 <button class="btn btn-primary">Update</button>

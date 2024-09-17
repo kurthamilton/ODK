@@ -48,7 +48,7 @@ public interface IMemberAdminService
     Task SetMemberVisibility(AdminServiceRequest request, Guid memberId, bool visible);
 
     Task<ServiceResult> UpdateMemberImage(AdminServiceRequest request, Guid id,
-        UpdateMemberImage? model, MemberImageCropInfo cropInfo);
+        UpdateMemberImage model);
 
     Task<ServiceResult> UpdateMemberSubscription(AdminServiceRequest request, Guid memberId, 
         UpdateMemberSubscription subscription);

@@ -2,26 +2,12 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
-@model MemberPageViewModel
+@model MemberPageViewModel  
 
-@await Html.PartialAsync("Components/_AdminBar", new AdminBarViewModel
-{
-    AdminLink = $"/{Model.Chapter.Name}/Admin/Members/{Model.Member.Id}",
-    AdminLinkText = "Edit",
-    Chapter = Model.Chapter,
-    CurrentMember = Model.CurrentMember
-})
-
-<div class="row">
-    <div class="col-md-4 text-right order-md-2">
-        <div class="d-flex align-items-end justify-content-end">
-            @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
-            {
-                Member = Model.Member
-            })        
-        </div>
-    </div>
-    <div class="col-md-8 order-md-1">
-        @await Html.PartialAsync("Members/_MemberProfile", Model)
-    </div>    
+<div class="mb-3">
+    @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
+    {
+        Member = Model.Member
+    })
 </div>
+@await Html.PartialAsync("Members/_MemberProfile", Model)

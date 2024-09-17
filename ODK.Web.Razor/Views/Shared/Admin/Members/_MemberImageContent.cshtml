@@ -4,35 +4,25 @@
 @model MemberImageAdminPageViewModel
 
 @await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
-
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <section class="section--admin">
     <h3>Picture</h3>
-    @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
-    {
-        Member = Model.Member
-    })
-</section>
-<section class="section--admin">
-    <h3>Avatar</h3>
     @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
     {
         Member = Model.Member
     })
 </section>
 <section class="section--admin">
-    <h3>Fix</h3>
-    <form action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/picture" method="post" enctype="multipart/form-data">
+    <h3>Upload</h3>
+    <div class="alert alert-warning">
+        Only use for fixing squished images
+    </div>
+    <form action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/picture" method="post">
         @Html.AntiForgeryToken()
-        @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
-        {
-            CropHeight = Model.Avatar?.CropHeight,
-            CropWidth = Model.Avatar?.CropWidth,
-            CropX = Model.Avatar?.CropX,
-            CropY = Model.Avatar?.CropY,
-            MemberImage = Model.Image
-        })
+        <div class="form-group mb-3">
+            @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel())
+        </div>
         <button class="btn btn-primary">Update</button>
     </form>
 </section>

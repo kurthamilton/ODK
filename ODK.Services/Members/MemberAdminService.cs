@@ -594,7 +594,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     }
 
     public async Task<ServiceResult> UpdateMemberImage(AdminServiceRequest request, Guid id, 
-        UpdateMemberImage? model, MemberImageCropInfo cropInfo)
+        UpdateMemberImage model)
     {
         var (member, image, avatar) = await GetChapterAdminRestrictedContent(request,
             x => x.MemberRepository.GetById(id),
@@ -613,7 +613,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             avatar = new MemberAvatar();
         }
 
-        var result = _memberImageService.ProcessMemberImage(image, avatar, model, cropInfo);
+        var result = _memberImageService.UpdateMemberImage(image, avatar, model.ImageData);
         if (!result.Success)
         {
             return result;

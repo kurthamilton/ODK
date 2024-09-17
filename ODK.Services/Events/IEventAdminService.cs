@@ -19,10 +19,6 @@ public interface IEventAdminService
 
     Task<EventInvitesAdminPageViewModel> GetEventInvitesViewModel(AdminServiceRequest request, Guid eventId);
 
-    Task<EventResponsesDto> GetEventResponsesDto(AdminServiceRequest request, Guid eventId);
-
-    Task<IReadOnlyCollection<Event>> GetEventsByVenue(AdminServiceRequest request, Guid venueId);
-
     Task<EventsAdminPageViewModel> GetEventsDto(AdminServiceRequest request, int page, int pageSize);    
 
     Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(AdminServiceRequest request);

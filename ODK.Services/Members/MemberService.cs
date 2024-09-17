@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using System.Reflection;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -176,7 +177,15 @@ public class MemberService : IMemberService
     public async Task<ServiceResult> CreateChapterAccount(Guid chapterId, CreateMemberProfile model)
     {
         var platform = _platformProvider.GetPlatform();
-        var (chapter, chapterProperties, membershipSettings, existing, siteSettings, siteSubscription, ownerSubscription) = await _unitOfWork.RunAsync(
+        var (
+            chapter, 
+            chapterProperties, 
+            membershipSettings, 
+            existing, 
+            siteSettings, 
+            siteSubscription, 
+            ownerSubscription
+        ) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
@@ -196,7 +205,7 @@ public class MemberService : IMemberService
         var image = new MemberImage();
         var avatar = new MemberAvatar();
 
-        var imageValidationResult = _memberImageService.ProcessMemberImage(image, avatar, model.Image, model.ImageCropInfo);
+        var imageValidationResult = _memberImageService.UpdateMemberImage(image, avatar, model.ImageData);
         if (!imageValidationResult.Success)
         {
             return imageValidationResult;
@@ -668,58 +677,7 @@ public class MemberService : IMemberService
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
-    }
-
-    public async Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage? model, MemberImageCropInfo cropInfo)
-    {
-        var (member, image, avatar) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(id),
-            x => x.MemberImageRepository.GetByMemberId(id),
-            x => x.MemberAvatarRepository.GetByMemberId(id));
-
-        if (image == null)
-        {
-            image = new MemberImage();
-        }
-
-        if (avatar == null)
-        {
-            avatar = new MemberAvatar();
-        }
-
-        var result = _memberImageService.ProcessMemberImage(image, avatar, model, cropInfo);
-        if (!result.Success)
-        {
-            return result;
-        }
-
-        if (image.MemberId == Guid.Empty)
-        {
-            image.MemberId = member.Id;
-            _unitOfWork.MemberImageRepository.Add(image);
-        }
-        else
-        {
-            _unitOfWork.MemberImageRepository.Update(image);
-        }
-
-        if (avatar.MemberId == Guid.Empty)
-        {
-            avatar.MemberId = member.Id;
-            _unitOfWork.MemberAvatarRepository.Add(avatar);
-        }
-        else
-        {
-            _unitOfWork.MemberAvatarRepository.Update(avatar);
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-
-        _cacheService.RemoveVersionedItem<MemberImage>(id);
-        _cacheService.RemoveVersionedItem<MemberAvatar>(id);
-
-        return ServiceResult.Successful("Picture updated");
-    }
+    }    
 
     public async Task<ServiceResult> UpdateMemberChapterProfile(Guid id, Guid chapterId, UpdateMemberChapterProfile model)
     {
@@ -804,6 +762,57 @@ public class MemberService : IMemberService
         await _unitOfWork.SaveChangesAsync();
         
         return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateMemberImage(Guid id, byte[] imageData)
+    {
+        var (member, image, avatar) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(id),
+            x => x.MemberImageRepository.GetByMemberId(id),
+            x => x.MemberAvatarRepository.GetByMemberId(id));
+
+        if (image == null)
+        {
+            image = new MemberImage();
+        }
+
+        if (avatar == null)
+        {
+            avatar = new MemberAvatar();
+        }
+
+        var result = _memberImageService.UpdateMemberImage(image, avatar, imageData);
+        if (!result.Success)
+        {
+            return result;
+        }
+
+        if (image.MemberId == Guid.Empty)
+        {
+            image.MemberId = member.Id;
+            _unitOfWork.MemberImageRepository.Add(image);
+        }
+        else
+        {
+            _unitOfWork.MemberImageRepository.Update(image);
+        }
+
+        if (avatar.MemberId == Guid.Empty)
+        {
+            avatar.MemberId = member.Id;
+            _unitOfWork.MemberAvatarRepository.Add(avatar);
+        }
+        else
+        {
+            _unitOfWork.MemberAvatarRepository.Update(avatar);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        _cacheService.RemoveVersionedItem<MemberImage>(id);
+        _cacheService.RemoveVersionedItem<MemberAvatar>(id);
+
+        return ServiceResult.Successful("Picture updated");
     }
 
     public async Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId)

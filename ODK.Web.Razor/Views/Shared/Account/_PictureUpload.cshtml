@@ -7,11 +7,9 @@
 @model PictureUploadViewModel
 @{
     var memberId = User.MemberIdOrDefault();
-    var imageSrc = Model.MemberImage != null
-        ? ImageHelper.ToDataUrl(Model.MemberImage.ImageData, Model.MemberImage.MimeType)
-        : memberId != null
-            ? OdkRoutes.Members.Image(memberId.Value)
-            : null;
+    var imageSrc = Model.MemberAvatar != null
+        ? Model.MemberAvatar.ToDataUrl()
+        : null;
 
     var htmlAttributes = new Dictionary<string, object>
     {
@@ -28,12 +26,9 @@
     }
 }
 
-<div data-img-container>
-    @Html.HiddenFor(x => x.CropHeight, new { data_img_crop_height = "" })
-    @Html.HiddenFor(x => x.CropWidth, new { data_img_crop_width = "" })
-    @Html.HiddenFor(x => x.CropX, new { data_img_crop_x = "" })
-    @Html.HiddenFor(x => x.CropY, new { data_img_crop_y = "" })
-    
+<div data-img-container>    
+    @Html.HiddenFor(x => x.ImageDataUrl, new { data_img_dataurl = "" })
+    <input type="hidden" data-img-type value="@Model.MemberAvatar?.MimeType" />
     @Html.TextBoxFor(x => x.Image, htmlAttributes)
     @Html.ValidationMessageFor(x => x.Image)
 

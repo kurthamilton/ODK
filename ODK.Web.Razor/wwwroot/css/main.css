@@ -12884,7 +12884,6 @@ th.sortable.sort-desc:after {
   text-align: center;
 }
 .member-tile .card-img-top {
-  background-color: #eee;
   border-radius: 0;
   max-height: 150px;
   width: inherit;

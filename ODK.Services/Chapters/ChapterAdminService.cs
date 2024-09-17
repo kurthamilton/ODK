@@ -127,7 +127,13 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var now = DateTime.UtcNow;
         var platform = _platformProvider.GetPlatform();
 
-        var (memberSubscription, memberPaymentSettings, existing, countries, siteEmailSettings) = await _unitOfWork.RunAsync(
+        var (
+            memberSubscription, 
+            memberPaymentSettings, 
+            existing, 
+            countries, 
+            siteEmailSettings
+        ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform),
             x => x.MemberPaymentSettingsRepository.GetByMemberId(currentMemberId),
             x => x.ChapterRepository.GetAll(),

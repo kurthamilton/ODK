@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Images;
 using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Members;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Extensions;
+using ODK.Web.Common.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
 
@@ -22,25 +23,28 @@ public class JoinModel : ChapterPageModel2
     public async Task<IActionResult> OnPost(
         string chapterName,
         [FromForm] ChapterProfileFormSubmitViewModel profileViewModel,
-        [FromForm] PersonalDetailsFormViewModel personalDetailsViewModel,
-        [FromForm] MemberImageCropInfo cropInfo,
-        [FromForm] IFormFile image)
+        [FromForm] PersonalDetailsFormViewModel personalDetailsViewModel)
     {
         var chapter = await _requestCache.GetChapterAsync(chapterName);
 
-        var imageModel = new UpdateMemberImage
+        if (string.IsNullOrEmpty(profileViewModel.ImageDataUrl))
         {
-            ImageData = await image.ToByteArrayAsync(),
-            MimeType = image.ContentType
-        };
+            AddFeedback("No image provided", FeedbackType.Warning);
+            return Page();
+        }
+
+        if (!ImageHelper.TryParseDataUrl(profileViewModel.ImageDataUrl, out var bytes))
+        {
+            AddFeedback("Image could not be processed", FeedbackType.Error);
+            return Page();
+        }
 
         var model = new CreateMemberProfile
         {
             EmailAddress = personalDetailsViewModel.EmailAddress,
             EmailOptIn = personalDetailsViewModel.EmailOptIn,
             FirstName = personalDetailsViewModel.FirstName,
-            Image = imageModel,
-            ImageCropInfo = cropInfo,
+            ImageData = bytes,
             LastName = personalDetailsViewModel.LastName,
             Properties = profileViewModel.Properties.Select(x => new UpdateMemberProperty
             {

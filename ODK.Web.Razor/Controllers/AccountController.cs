@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
+using ODK.Core.Images;
 using ODK.Core.Platforms;
 using ODK.Services;
 using ODK.Services.Authentication;
@@ -333,15 +334,21 @@ public class AccountController : OdkControllerBase
     }
 
     [HttpPost("account/picture/change")]
-    public async Task<IActionResult> UpdatePicture([FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
+    public async Task<IActionResult> UpdatePicture([FromForm] string imageDataUrl)
     {
-        var model = image != null ? new UpdateMemberImage
+        if (string.IsNullOrEmpty(imageDataUrl))
         {
-            ImageData = await image.ToByteArrayAsync(),
-            MimeType = image.ContentType
-        } : null;
+            AddFeedback("No image provided", FeedbackType.Warning);
+            return RedirectToReferrer();
+        }
 
-        var result = await _memberService.UpdateMemberImage(MemberId, model, cropInfo);
+        if (!ImageHelper.TryParseDataUrl(imageDataUrl, out var bytes))
+        {
+            AddFeedback("Image could not be processed", FeedbackType.Error);
+            return RedirectToReferrer();
+        }
+
+        var result = await _memberService.UpdateMemberImage(MemberId, bytes);
         AddFeedback(result);
         return RedirectToReferrer();
     }

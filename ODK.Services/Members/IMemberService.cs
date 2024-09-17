@@ -41,11 +41,11 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);
 
-    Task<ServiceResult> UpdateMemberImage(Guid id, UpdateMemberImage? model, MemberImageCropInfo cropInfo);    
-
     Task<ServiceResult> UpdateMemberChapterProfile(Guid id, Guid chapterId, UpdateMemberChapterProfile model);
 
     Task<ServiceResult> UpdateMemberCurrency(Guid id, Guid currencyId);
+
+    Task<ServiceResult> UpdateMemberImage(Guid id, byte[] imageData);    
 
     Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);    
 

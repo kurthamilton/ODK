@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Images;
 using ODK.Core.Platforms;
 using ODK.Services;
 using ODK.Services.Caching;
@@ -33,16 +34,26 @@ public class MemberAdminController : AdminControllerBase
 
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/picture")]
     public async Task<IActionResult> UpdatePicture(Guid chapterId, Guid id,
-        [FromForm] MemberImageCropInfo cropInfo, [FromForm] IFormFile? image)
+        [FromForm] string imageDataUrl)
     {
         var request = new AdminServiceRequest(chapterId, MemberId);
-        var model = image != null ? new UpdateMemberImage
+        
+        if (string.IsNullOrEmpty(imageDataUrl))
         {
-            ImageData = await image.ToByteArrayAsync(),
-            MimeType = image.ContentType
-        } : null;
+            AddFeedback("No image provided", FeedbackType.Warning);
+            return RedirectToReferrer();
+        }
 
-        var result = await _memberAdminService.UpdateMemberImage(request, id, model, cropInfo);
+        if (!ImageHelper.TryParseDataUrl(imageDataUrl, out var bytes))
+        {
+            AddFeedback("Image could not be processed", FeedbackType.Error);
+            return RedirectToReferrer();
+        }
+
+        var result = await _memberAdminService.UpdateMemberImage(request, id, new UpdateMemberImage
+        { 
+            ImageData = bytes
+        });
         AddFeedback(result);
         return RedirectToReferrer();
     }

@@ -1,4 +1,7 @@
-﻿namespace ODK.Core.Members;
+﻿using ODK.Core.Images;
+using System.Reflection;
+
+namespace ODK.Core.Members;
 
 public class MemberAvatar : IVersioned
 {
@@ -15,6 +18,7 @@ public class MemberAvatar : IVersioned
     public int CropWidth { get; set; }
 
     public int CropX { get; set; }
-
     public int CropY { get; set; }
+
+    public string ToDataUrl() => ImageHelper.ToDataUrl(ImageData, MimeType);
 }

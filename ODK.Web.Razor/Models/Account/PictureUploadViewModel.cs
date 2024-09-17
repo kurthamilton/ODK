@@ -4,18 +4,12 @@ namespace ODK.Web.Razor.Models.Account;
 
 public class PictureUploadViewModel
 {
-    public int? CropHeight { get; set; }
-
-    public int? CropWidth { get; set; }
-
-    public int? CropX { get; set; }
-
-    public int? CropY { get; set; }
-
     /// <summary>
     /// Dummy form field
     /// </summary>
     public string? Image { get; set; }
 
-    public MemberImage? MemberImage { get; set; } 
+    public string? ImageDataUrl { get; set; }
+
+    public MemberAvatar? MemberAvatar { get; set; }
 }

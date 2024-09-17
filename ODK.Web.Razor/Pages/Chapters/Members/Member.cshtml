@@ -24,8 +24,8 @@
     Title = viewModel.Member.FullName,
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{viewModel.Chapter.Name}", Text = viewModel.Chapter.Name },
-        new MenuItem { Link = $"/{viewModel.Chapter.Name}/Members", Text = "Knitwits" },
+        new MenuItem { Link = OdkRoutes.Groups.Group(viewModel.Platform, viewModel.Chapter), Text = viewModel.Chapter.Name },
+        new MenuItem { Link = OdkRoutes.Groups.Members(viewModel.Platform, viewModel.Chapter), Text = "Knitwits" },
         new MenuItem { Text = viewModel.Member.FullName }
     },
     Content = await Html.PartialAsync("Members/_MemberContent", viewModel)

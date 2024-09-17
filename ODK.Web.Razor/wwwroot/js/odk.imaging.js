@@ -14,16 +14,16 @@
         bindCropper(context);
     }
 
-    function bindFileUpload(context) {
+    function bindFileUpload(context) {        
         context.fileUpload = context.container.querySelector('[data-img-input]');
         if (!context.fileUpload) {
             return;
         }
-
+        
         context.preview = context.container.querySelector('[data-img-preview]');
         if (!context.preview) {
             return;
-        }
+        }        
 
         context.previewContainer = context.preview.closest('[data-img-preview-container]');
 
@@ -55,10 +55,10 @@
             context.cropper.destroy();
             context.cropper = null;
         }
-
+        
         if (!context.resize || !context.preview.getAttribute('src')) {
             return;            
-        }        
+        }                
         
         const options = {
             aspectRatio: context.resize.hasAttribute('data-img-ratio')
@@ -75,12 +75,12 @@
         handleModals(context);
     }
 
-    function bindForm(context) {
+    function bindForm(context) {        
         const form = context.container.closest('form');
         if (!form) {
             return;
         }
-
+        
         context.cropXInput = context.container.querySelector('[data-img-crop-x]');
         context.cropYInput = context.container.querySelector('[data-img-crop-y]');
         context.cropWidthInput = context.container.querySelector('[data-img-crop-width]');
@@ -95,12 +95,13 @@
             const data = context.cropper.getData(true);
 
             if (context.dataUrl) {
-                let mimeType = context.mimeType;
                 const [file] = context.fileUpload.files;
-                if (file) {
-                    mimeType = file.type;
-                }
-
+                const mimeType = file
+                    ? file.type
+                    : context.mimeType
+                        ? context.mimeType.value
+                        : '';
+                
                 if (mimeType) {
                     context.dataUrl.value = context.cropper.getCroppedCanvas().toDataURL(mimeType);
                 }
@@ -109,10 +110,10 @@
             setCropData(context, data);
         };
 
-        context.preview.addEventListener('ready', () => {
+        context.preview.addEventListener('ready', () => {            
             setData();
         });
-        context.preview.addEventListener('cropend', () => {
+        context.preview.addEventListener('cropend', () => {            
             setData();
         });
         context.preview.addEventListener('zoom', () => {

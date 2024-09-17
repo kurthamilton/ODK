@@ -2,5 +2,5 @@
 
 public class ProfileFormSubmitViewModel
 {
-    
+    public string? ImageDataUrl { get; set; }
 }

@@ -272,22 +272,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<EventResponsesDto> GetEventResponsesDto(AdminServiceRequest request, Guid eventId)
-    {
-        var (@event, responses, members) = await GetChapterAdminRestrictedContent(request,
-            x => x.EventRepository.GetById(eventId),
-            x => x.EventResponseRepository.GetByEventId(eventId),
-            x => x.MemberRepository.GetByChapterId(request.ChapterId));
-
-        OdkAssertions.BelongsToChapter(@event, request.ChapterId);
-
-        return new EventResponsesDto
-        {
-            Members = members,
-            Responses = responses
-        };
-    }
-
     public async Task<EventsAdminPageViewModel> GetEventsDto(AdminServiceRequest request, int page, int pageSize)
     {
         var platform = _platformProvider.GetPlatform();
@@ -322,17 +306,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         };
     }
 
-    public async Task<IReadOnlyCollection<Event>> GetEventsByVenue(AdminServiceRequest request, Guid venueId)
-    {
-        var (venue, events) = await GetChapterAdminRestrictedContent(request,
-            x => x.VenueRepository.GetById(venueId),
-            x => x.EventRepository.GetByVenueId(venueId));
-
-        OdkAssertions.BelongsToChapter(venue, request.ChapterId);
-
-        return events;
-    }
-    
     public async Task<EventSettingsAdminPageViewModel> GetEventSettingsViewModel(AdminServiceRequest request)
     {
         var platform = _platformProvider.GetPlatform();

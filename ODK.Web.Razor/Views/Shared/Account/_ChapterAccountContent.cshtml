@@ -10,7 +10,7 @@
 <div class="form-group">
     <div class="d-inline-block">
         <div>
-            @await Html.PartialAsync("Members/_MemberImage", new MemberImageViewModel
+            @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
             {
                 Member = Model.CurrentMember
             })
@@ -40,10 +40,7 @@
         <form method="post" action="@OdkRoutes.Account.PictureUpload(Model.Chapter)" enctype="multipart/form-data">
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel
             {
-                CropHeight = Model.Avatar?.CropHeight,
-                CropWidth = Model.Avatar?.CropWidth,
-                CropX = Model.Avatar?.CropX,
-                CropY = Model.Avatar?.CropY
+                MemberAvatar = Model.Avatar
             })
 
             <div class="d-flex justify-content-end mt-3">
