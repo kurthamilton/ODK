@@ -2,21 +2,17 @@
 using ODK.Core.Media;
 using ODK.Core.Utils;
 using ODK.Data.Core;
-using ODK.Services.Chapters;
 
 namespace ODK.Services.Media;
 
 public class MediaFileProvider : IMediaFileProvider
 {
-    private readonly IChapterUrlService _chapterUrlService;
     private readonly MediaFileProviderSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public MediaFileProvider(IUnitOfWork unitOfWork,
-        MediaFileProviderSettings settings,
-        IChapterUrlService chapterUrlService)
+        MediaFileProviderSettings settings)
     {        
-        _chapterUrlService = chapterUrlService;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }
@@ -116,10 +112,6 @@ public class MediaFileProvider : IMediaFileProvider
 
     private string GetMediaUrl(string chapter, string name)
     {
-        return _chapterUrlService.GetChapterUrl(null, _settings.RootMediaUrlPath, new Dictionary<string, string>
-        {
-            { "name", name.ToLowerInvariant() },
-            { "chapter.name", chapter.ToLowerInvariant() }
-        });
+        throw new NotImplementedException();
     }
 }

@@ -6,8 +6,7 @@ using ODK.Core.Members;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
-using ODK.Services.Chapters;
-using ODK.Services.Emails;
+using ODK.Services.Members;
 using ODK.Services.Payments;
 
 namespace ODK.Services.Events;
@@ -18,22 +17,19 @@ public class EventService : IEventService
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private readonly IAuthorizationService _authorizationService;
-    private readonly IChapterUrlService _chapterUrlService;
-    private readonly IEmailService _emailService;
+    private readonly IMemberEmailService _memberEmailService;
     private readonly IPaymentService _paymentService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProvider _urlProvider;
 
     public EventService(IUnitOfWork unitOfWork,       
         IAuthorizationService authorizationService,
-        IEmailService emailService,
-        IChapterUrlService chapterUrlService,
         IPaymentService paymentService,
-        IUrlProvider urlProvider)
+        IUrlProvider urlProvider,
+        IMemberEmailService memberEmailService)
     {
         _authorizationService = authorizationService;
-        _chapterUrlService = chapterUrlService;
-        _emailService = emailService;
+        _memberEmailService = memberEmailService;
         _paymentService = paymentService;
         _unitOfWork = unitOfWork;
         _urlProvider = urlProvider;
@@ -89,16 +85,7 @@ public class EventService : IEventService
         _unitOfWork.EventCommentRepository.Add(eventComment);
         await _unitOfWork.SaveChangesAsync();
 
-        var parameters = new Dictionary<string, string>
-        {
-            { "comment.text", eventComment.Text },
-            { "event.id", @event.Id.ToString() }
-        };
-
-        var url = _urlProvider.EventUrl(chapter, @event.Id);
-        parameters.Add("event.url", url);
-
-        await _emailService.SendEventCommentEmail(chapter, parentCommentMember, eventComment, parameters);
+        await _memberEmailService.SendEventCommentEmail(chapter, @event, eventComment, parentCommentMember);
 
         return ServiceResult.Successful();
     }

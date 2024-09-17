@@ -2,22 +2,20 @@
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.DataTypes;
-using ODK.Core.Emails;
 using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
-using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
-using ODK.Services.Emails;
 using ODK.Services.Imaging;
+using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
@@ -28,11 +26,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 {
     private readonly ICacheService _cacheService;
     private readonly IChapterService _chapterService;
-    private readonly IEmailService _emailService;
     private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IImageService _imageService;
     private readonly IInstagramService _instagramService;
+    private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IPlatformProvider _platformProvider;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
@@ -42,23 +40,23 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IUnitOfWork unitOfWork, 
         ICacheService cacheService,
         IChapterService chapterService,
-        IEmailService emailService,
         IHttpRequestProvider httpRequestProvider,
         ISiteSubscriptionService siteSubscriptionService,
         IHtmlSanitizer htmlSanitizer,
         IInstagramService instagramService,
         IPlatformProvider platformProvider,
         INotificationService notificationService,
-        IImageService imageService)
+        IImageService imageService,
+        IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
         _chapterService = chapterService;
-        _emailService = emailService;
         _httpRequestProvider = httpRequestProvider;
         _htmlSanitizer = htmlSanitizer;
         _imageService = imageService;
         _instagramService = instagramService;
+        _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _platformProvider = platformProvider;
         _siteSubscriptionService = siteSubscriptionService;
@@ -119,19 +117,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _unitOfWork.ChapterRepository.Update(chapter);
         await _unitOfWork.SaveChangesAsync();
 
-        var baseUrl = UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl);
-        var body =
-            "<p>Thank you for starting the group '{chapter.name}'. It has now been approved and you are ready to go!</p>" +
-            "<p><a href=\"{url}\">{url}</a></p>" +
-            "<p>{url}</p>";
-
-        await _emailService.SendMemberEmail(chapter, null, owner.ToEmailAddressee(),
-            "{title} - Your group has been approved",
-            body,
-            new Dictionary<string, string>
-            {
-                { "url", baseUrl }
-            });
+        await _memberEmailService.SendGroupApprovedEmail(chapter, owner);
 
         return ServiceResult.Successful();
     }
@@ -264,17 +250,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendMemberEmail(chapter, null, new EmailAddressee(siteEmailSettings.ContactEmailAddress, ""),
-            "{title} - New group",
-            "<p>A group has just been created</p>" +
-            "<p>Name: {chapter.name}</p>" +
-            "<p>{chapter.description}</p>" +
-            "<p>{url}/superadmin/groups</p>",
-            new Dictionary<string, string>
-            {
-                { "chapter.description", texts.Description ?? "" },
-                { "url", UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl) }
-            });
+        await _memberEmailService.SendNewGroupEmail(chapter, texts, siteEmailSettings);
 
         return ServiceResult<Chapter?>.Successful(chapter);
     }
@@ -1016,7 +992,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         await _unitOfWork.SaveChangesAsync();
         
-        await _emailService.SendChapterConversationEmail(chapter, conversation, conversationMessage, [member], isReply: true);
+        await _memberEmailService.SendChapterConversationEmail(chapter, conversation, conversationMessage, [member], isReply: true);
 
         return ServiceResult.Successful();
     }
@@ -1033,14 +1009,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         OdkAssertions.Exists(adminMember);
         OdkAssertions.BelongsToChapter(originalMessage, request.ChapterId);
 
-        var to = new[]
-        {
-            new EmailAddressee(originalMessage.FromAddress, "")
-        };
-
-        var body = $"{message}<hr/><p>Your original message:</p><p>{originalMessage.Message}</p>";
-
-        var sendResult = await _emailService.SendEmail(chapter, to, "Re: your message to {title}", body);
+        var sendResult = await _memberEmailService.SendChapterMessageReply(chapter, originalMessage, message);
         if (!sendResult.Success)
         {
             return sendResult;
@@ -1144,7 +1113,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendChapterConversationEmail(chapter, conversation, conversationMessage, [member], 
+        await _memberEmailService.SendChapterConversationEmail(chapter, conversation, conversationMessage, [member], 
             isReply: false);
 
         return ServiceResult.Successful();

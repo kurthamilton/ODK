@@ -16,9 +16,8 @@ using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Repositories;
 using ODK.Services.Authorization;
-using ODK.Services.Chapters;
-using ODK.Services.Emails;
 using ODK.Services.Events;
+using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Tests.Helpers;
 
@@ -161,23 +160,6 @@ public static class EventAdminServiceTests
         return mock.Object;
     }
 
-    private static IChapterUrlService CreateMockChapterUrlService()
-    {
-        var mock = new Mock<IChapterUrlService>();
-
-        mock.Setup(x => x.GetChapterUrl(It.IsAny<Chapter?>(), It.IsAny<string>(), It.IsAny<IDictionary<string, string>>()))
-            .Returns("");
-
-        return mock.Object;
-    }
-
-    private static IEmailService CreateMockEmailService()
-    {
-        var mock = new Mock<IEmailService>();
-
-        return mock.Object;
-    }
-
     private static IEventEmailRepository CreateMockEventEmailRepository()
     {
         var mock = new Mock<IEventEmailRepository>();
@@ -312,12 +294,11 @@ public static class EventAdminServiceTests
     {
         return new EventAdminService(
             unitOfWork: unitOfWork ?? CreateMockUnitOfWork(),
-            emailService: CreateMockEmailService(),
-            chapterUrlService: CreateMockChapterUrlService(),
             Mock.Of<IAuthorizationService>(),
             Mock.Of<IPlatformProvider>(),
             Mock.Of<IUrlProvider>(),
             Mock.Of<INotificationService>(),
-            Mock.Of<IHtmlSanitizer>());
+            Mock.Of<IHtmlSanitizer>(),
+            Mock.Of<IMemberEmailService>());
     }
 }

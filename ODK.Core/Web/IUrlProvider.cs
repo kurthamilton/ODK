@@ -1,11 +1,12 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Events;
 
 namespace ODK.Core.Web;
 
 public interface IUrlProvider
 {
     string ActivateAccountUrl(Chapter? chapter, string token);
+
+    string BaseUrl();
 
     string ConfirmEmailAddressUpdate(Chapter? chapter, string token);
 
@@ -20,6 +21,12 @@ public interface IUrlProvider
     string EventsUrl(Chapter chapter);    
 
     string EventUrl(Chapter chapter, Guid eventId);
+
+    string GroupUrl(Chapter chapter);
+
+    string GroupsUrl();
+
+    string MemberSiteSubscriptionUrl();
 
     string MessageAdminUrl(Guid messageId);
 

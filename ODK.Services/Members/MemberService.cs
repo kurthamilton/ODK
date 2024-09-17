@@ -3,18 +3,14 @@ using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
 using ODK.Core.Emails;
-using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Platforms;
-using ODK.Core.Utils;
 using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
-using ODK.Services.Chapters;
-using ODK.Services.Emails;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
 
@@ -24,8 +20,6 @@ public class MemberService : IMemberService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
-    private readonly IChapterUrlService _chapterUrlService;
-    private readonly IEmailService _emailService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly INotificationService _notificationService;
@@ -37,11 +31,9 @@ public class MemberService : IMemberService
     public MemberService(
         IUnitOfWork unitOfWork, 
         IAuthorizationService authorizationService,
-        IEmailService emailService, 
         IPaymentService paymentService, 
         ICacheService cacheService, 
         IMemberImageService memberImageService, 
-        IChapterUrlService chapterUrlService, 
         IPlatformProvider platformProvider, 
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
@@ -49,8 +41,6 @@ public class MemberService : IMemberService
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
-        _chapterUrlService = chapterUrlService;
-        _emailService = emailService;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _notificationService = notificationService;
@@ -102,7 +92,7 @@ public class MemberService : IMemberService
 
         if (existing != null)
         {
-            await SendDuplicateMemberEmail(null, existing);
+            await _memberEmailService.SendDuplicateMemberEmail(null, existing);
             return ServiceResult<Member?>.Successful(null);
         }
         
@@ -214,7 +204,7 @@ public class MemberService : IMemberService
 
         if (existing != null)
         {
-            await SendDuplicateMemberEmail(chapter, existing);
+            await _memberEmailService.SendDuplicateMemberEmail(chapter, existing);
             return ServiceResult.Successful();
         }
 
@@ -479,7 +469,7 @@ public class MemberService : IMemberService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendNewMemberAdminEmail(chapter, adminMembers, currentMember, chapterProperties, memberProperties);
+        await _memberEmailService.SendNewMemberAdminEmail(chapter, adminMembers, currentMember, chapterProperties, memberProperties);
 
         return ServiceResult.Successful();
     }
@@ -495,39 +485,13 @@ public class MemberService : IMemberService
         if (currentMember == null)
         {
             return result;
-        }        
-
-        var emailRecipients = adminMembers
-            .Where(x => x.MemberId != currentMemberId && x.ReceiveNewMemberEmails)
-            .Select(x => x.ToEmailAddressee())
-            .ToArray();
-
-        if (emailRecipients.Length > 0)
-        {
-            var subject = "{title} - {member.name} has left {chapter.name}";
-            var body =
-                "<p>{member.name} has left {chapter.name}</p>" +
-                "<p>They had been a member since {joined}</p>";
-
-            if (!string.IsNullOrEmpty(reason))
-            {
-                body +=
-                    "<p>They gave the following reason:</p>" +
-                    "<p>{reason}</p>";
-            }
-            else
-            {
-                body += "<p>They did not give a reason</p>";
-            }
-
-            await _emailService.SendEmail(chapter, emailRecipients, subject: subject, body: body, parameters: new Dictionary<string, string>
-            {
-                { "member.name", currentMember.FullName },
-                { "chapter.name", chapter.Name },
-                { "joined", memberChapter.CreatedUtc.ToFriendlyDateString(chapter.TimeZone) ?? "-" },
-                { "reason", reason }
-            });
         }
+
+        await _memberEmailService.SendMemberLeftChapterEmail(
+            chapter,
+            adminMembers,
+            currentMember,
+            reason);
 
         return ServiceResult.Successful();
     }
@@ -595,12 +559,13 @@ public class MemberService : IMemberService
         var (chapter, chapterPaymentSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterSubscription.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId));
-        
-        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.SubscriptionConfirmation, new Dictionary<string, string>
-        {
-            { "subscription.amount", chapterPaymentSettings.Currency.ToAmountString(chapterSubscription.Amount) },
-            { "subscription.end", chapter.ToLocalTime(expiresUtc).ToString("d MMMM yyyy") }
-        });
+
+        await _memberEmailService.SendMemberChapterSubscriptionConfirmationEmail(
+            chapter,
+            chapterPaymentSettings,
+            chapterSubscription,
+            member,
+            expiresUtc);
 
         return ServiceResult.Successful();
     }
@@ -1059,15 +1024,6 @@ public class MemberService : IMemberService
         await _memberEmailService.SendAddressUpdateEmail(chapter, member, newEmailAddress, activationToken);
 
         return ServiceResult.Successful();
-    }
-
-    private async Task SendDuplicateMemberEmail(Chapter? chapter, Member member)
-    {
-        await _emailService.SendEmail(
-            chapter, 
-            member.ToEmailAddressee(), 
-            EmailType.DuplicateEmail, 
-            new Dictionary<string, string>());
     }
 
     private ServiceResult ValidateMemberProfile(

@@ -1,6 +1,5 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Features;
@@ -12,10 +11,9 @@ using ODK.Core.Venues;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
-using ODK.Services.Chapters;
-using ODK.Services.Emails;
 using ODK.Services.Events.ViewModels;
 using ODK.Services.Exceptions;
+using ODK.Services.Members;
 using ODK.Services.Notifications;
 
 namespace ODK.Services.Events;
@@ -23,9 +21,8 @@ namespace ODK.Services.Events;
 public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IChapterUrlService _chapterUrlService;
-    private readonly IEmailService _emailService;
     private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -33,19 +30,17 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public EventAdminService(
         IUnitOfWork unitOfWork, 
-        IEmailService emailService,
-        IChapterUrlService chapterUrlService,
         IAuthorizationService authorizationService,
         IPlatformProvider platformProvider,
         IUrlProvider urlProvider,
         INotificationService notificationService,
-        IHtmlSanitizer htmlSanitizer)
+        IHtmlSanitizer htmlSanitizer,
+        IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
         _authorizationService = authorizationService;
-        _chapterUrlService = chapterUrlService;
-        _emailService = emailService;
         _htmlSanitizer = htmlSanitizer;
+        _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
@@ -427,9 +422,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
     public async Task SendEventInviteeEmail(AdminServiceRequest request, Guid eventId, 
         IEnumerable<EventResponseType> responseTypes, string subject, string body)
     {
-        var (chapter, chapterAdminMember, @event, members, responses, invites) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, @event, members, responses, invites) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
-            x => x.ChapterAdminMemberRepository.GetByMemberId(request.CurrentMemberId, request.ChapterId),
             x => x.EventRepository.GetById(eventId),
             x => x.MemberRepository.GetByChapterId(request.ChapterId),
             x => x.EventResponseRepository.GetByEventId(eventId),
@@ -463,7 +457,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             .Where(x => x.IsCurrent() && responseDictionary.ContainsKey(x.Id))
             .ToArray();
 
-        await _emailService.SendBulkEmail(chapterAdminMember, chapter, to, subject, body);
+        await _memberEmailService.SendBulkEmail(chapter, to, subject, body);
     }
 
     public async Task<ServiceResult> SendEventInvites(AdminServiceRequest request, Guid eventId, bool test = false)
@@ -507,11 +501,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         var chapterAdminMember = chapterAdminMembers.First(x => x.MemberId == request.CurrentMemberId);
 
-        var parameters = GetEventEmailParameters(chapter, @event, venue);
-
         if (test)
         {            
-            await _emailService.SendEmail(chapter, currentMember.ToEmailAddressee(), EmailType.EventInvite, parameters);
+            await _memberEmailService.SendEventInvites(chapter, @event, venue, [currentMember]);
             return ServiceResult.Successful();
         }
 
@@ -966,31 +958,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         {
             throw new OdkServiceException("Events with responses cannot be deleted");
         }
-    }
-
-    private IDictionary<string, string> GetEventEmailParameters(Chapter chapter, Event @event, Venue venue)
-    {
-        var time = @event.ToLocalTimeString(chapter.TimeZone);
-
-        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            {"event.date", @event.Date.ToString("dddd dd MMMM, yyyy")},
-            {"event.id", @event.Id.ToString()},
-            {"event.location", venue.Name},
-            {"event.name", @event.Name},
-            {"event.time", time}
-        };
-
-        var eventUrl = _urlProvider.EventUrl(chapter, @event.Id);
-        var rsvpUrl = _urlProvider.EventRsvpUrl(chapter, @event.Id);
-        var unsubscribeUrl = _urlProvider.EmailPreferences(chapter);
-
-        parameters.Add("event.rsvpurl", rsvpUrl);
-        parameters.Add("event.url", eventUrl);
-        parameters.Add("unsubscribeUrl", unsubscribeUrl);
-
-        return parameters;
-    }
+    }    
 
     private IReadOnlyCollection<EventInvitesDto> GetEventInvitesDtos(IEnumerable<Guid> eventIds,
         IEnumerable<EventInviteSummaryDto> invites, IEnumerable<EventEmail> emails)
@@ -1048,8 +1016,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         IReadOnlyCollection<MemberEmailPreference> memberEmailPreferences,
         IReadOnlyCollection<MemberSubscription> memberSubscriptions)
     {
-        var parameters = GetEventEmailParameters(chapter, @event, venue);
-
         var memberResponses = responses
             .ToDictionary(x => x.MemberId, x => x);
         var inviteDictionary = invites
@@ -1075,12 +1041,11 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 !memberResponses.ContainsKey(x.Id))
             .ToArray();
 
-        await _emailService.SendBulkEmail(
-            chapterAdminMember,
+        await _memberEmailService.SendEventInvites(
             chapter,
-            invitees,
-            EmailType.EventInvite,
-            parameters);
+            @event,
+            venue,
+            invitees);
 
         var sentDate = DateTime.UtcNow;
 
