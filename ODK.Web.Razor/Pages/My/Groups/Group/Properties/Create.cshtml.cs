@@ -32,7 +32,7 @@ public class CreateModel : OdkGroupAdminPageModel
             HelpText = viewModel.HelpText,
             Label = viewModel.Label,
             Name = viewModel.Name,
-            Options = viewModel.Options.Split(Environment.NewLine),
+            Options = viewModel.Options?.Split(Environment.NewLine),
             Required = viewModel.Required,
             Subtitle = viewModel.Subtitle
         });

@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Data.EntityFramework", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Data.Core", "ODK.Data.Core\ODK.Data.Core.csproj", "{2303190D-27FA-4E44-AEEC-ADA731F26B39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ODK.Services.Integrations", "ODK.Services.Integrations\ODK.Services.Integrations.csproj", "{86DE60E0-73E7-4E1E-8A1B-55B4F3D338DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODK.Services.Integrations", "ODK.Services.Integrations\ODK.Services.Integrations.csproj", "{86DE60E0-73E7-4E1E-8A1B-55B4F3D338DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

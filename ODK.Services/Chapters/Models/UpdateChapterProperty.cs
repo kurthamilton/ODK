@@ -12,7 +12,7 @@ public class UpdateChapterProperty
 
     public string Name { get; set; } = "";
 
-    public IReadOnlyCollection<string> Options { get; set; } = [];
+    public IReadOnlyCollection<string>? Options { get; set; }
 
     public bool Required { get; set; }
 

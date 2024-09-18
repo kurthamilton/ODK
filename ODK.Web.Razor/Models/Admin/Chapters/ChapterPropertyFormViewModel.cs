@@ -26,7 +26,7 @@ public class ChapterPropertyFormViewModel
     [Required]
     public string Name { get; set; } = "";
 
-    public string Options { get; set; } = "";
+    public string? Options { get; set; }
 
     public bool Required { get; set; }
 

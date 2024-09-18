@@ -293,7 +293,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         _unitOfWork.ChapterPropertyRepository.Add(property);
         
-        if (property.DataType == DataType.DropDown && model.Options.Count > 0)
+        if (property.DataType == DataType.DropDown && model.Options?.Count > 0)
         {
             var options = model.Options
                 .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -1494,17 +1494,20 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             _unitOfWork.ChapterPropertyOptionRepository.DeleteMany(options);
 
-            options = model.Options
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Select((x, i) => new ChapterPropertyOption
-                {
-                    ChapterPropertyId = property.Id,
-                    DisplayOrder = i + 1,
-                    Value = x
-                })
-                .ToArray();
+            if (model.Options != null)
+            {
+                options = model.Options
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select((x, i) => new ChapterPropertyOption
+                    {
+                        ChapterPropertyId = property.Id,
+                        DisplayOrder = i + 1,
+                        Value = x
+                    })
+                    .ToArray();
 
-            _unitOfWork.ChapterPropertyOptionRepository.AddMany(options);
+                _unitOfWork.ChapterPropertyOptionRepository.AddMany(options);
+            }                        
         }
 
         _unitOfWork.ChapterPropertyRepository.Update(property);
@@ -1624,6 +1627,17 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _cacheService.RemoveVersionedCollection<ChapterQuestion>(question.ChapterId);
 
         return questions.OrderBy(x => x.DisplayOrder).ToArray();
+    }
+
+    public async Task UpdateChapterRedirectUrl(AdminServiceRequest request, string? redirectUrl)
+    {
+        var chapter = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
+
+        chapter.RedirectUrl = redirectUrl;
+
+        _unitOfWork.ChapterRepository.Update(chapter);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<ServiceResult> UpdateChapterSiteSubscription(AdminServiceRequest request,

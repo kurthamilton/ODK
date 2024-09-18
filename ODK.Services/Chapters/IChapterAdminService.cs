@@ -129,6 +129,8 @@ public interface IChapterAdminService
     Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(AdminServiceRequest request,
         Guid questionId, int moveBy);
 
+    Task UpdateChapterRedirectUrl(AdminServiceRequest request, string? redirectUrl);
+
     Task<ServiceResult> UpdateChapterSiteSubscription(AdminServiceRequest request, 
         Guid siteSubscriptionId, SiteSubscriptionFrequency frequency);
 

@@ -36,7 +36,7 @@ public class PropertyEditModel : AdminPageModel
             HelpText = viewModel.HelpText,
             Label = viewModel.Label,
             Name = viewModel.Name,
-            Options = viewModel.Options.Split(Environment.NewLine),
+            Options = viewModel.Options?.Split(Environment.NewLine),
             Required = viewModel.Required,
             Subtitle = viewModel.Subtitle
         });

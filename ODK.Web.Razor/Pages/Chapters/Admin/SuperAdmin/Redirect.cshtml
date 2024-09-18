@@ -1,0 +1,8 @@
+﻿@page "/{chapterName}/Admin/SuperAdmin/Redirect"
+@model RedirectModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Redirect | SuperAdmin";
+}
+
+@await Html.PartialAsync("Chapters/SuperAdmin/_RedirectContent", Model.Chapter)
