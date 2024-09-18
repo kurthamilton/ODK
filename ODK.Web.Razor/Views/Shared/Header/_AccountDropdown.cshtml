@@ -22,10 +22,18 @@
                 @if (Model.MemberChapters.Count == 1)
                 {
                     var memberChapter = Model.MemberChapters.First();
+                    var adminChapter = adminChapters.FirstOrDefault(x => x.Id == memberChapter.Id);
 
                     <a class="dropdown-item" href="/@memberChapter.Name/Account">My profile</a>
                     <a class="dropdown-item" href="/@memberChapter.Name">@memberChapter.Name</a>
                     <a class="dropdown-item" href="/@memberChapter.Name/Account/Logout">Sign Out</a>
+                    
+                    @if (adminChapter != null)
+                    {
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/@adminChapter.Name/Admin/Chapter/Text">@adminChapter.Name Admin</a>
+                        <a class="dropdown-item" href="/@adminChapter.Name/Admin/Events/Create">Create event</a>
+                    }
                 }
                 else if (Model.MemberChapters.Count > 1)
                 {
