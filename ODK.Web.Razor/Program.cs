@@ -28,18 +28,21 @@ LoggingConfig.Configure(builder, appSettings);
 builder.Services.AddWebOptimizer(pipeline =>
 {
     pipeline.AddCssBundle(
-        "/css/odk.bundle.lib.css",
+        route: "/css/odk.bundle.lib.css",        
         "lib/font-awesome/css/all.css",
         "lib/flatpickr/dist/flatpickr.css",
         "lib/aspnet-client-validation/dist/aspnet-validation.css",
         "lib/slim-select/slimselect.css");
     pipeline.AddJavaScriptBundle(
         route: "/js/odk.bundle.js",        
+        "lib/cookieconsent/cookieconsent.min.js",
         "lib/bootstrap/js/bootstrap.bundle.js",
         "lib/flatpickr/dist/flatpickr.js",
         "lib/aspnet-client-validation/dist/aspnet-validation.js",
         "lib/slim-select/slimselect.js",
         "js/site.js",
+        "js/odk.cookieconsent.js",
+        "js/odk.dropdowns.js",
         "js/odk.forms.js",
         "js/odk.notifications.js",
         "js/odk.selects.js",

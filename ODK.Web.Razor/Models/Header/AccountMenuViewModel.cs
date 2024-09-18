@@ -5,9 +5,9 @@ namespace ODK.Web.Razor.Models.Header;
 
 public class AccountMenuViewModel
 {
-    public Chapter? CurrentChapter { get; set; }
+    public Chapter? CurrentChapter { get; init; }
     
-    public Member? Member { get; set; }
+    public Member? Member { get; init; }
 
-    public Chapter? MemberChapter { get; set; }
+    public required IReadOnlyCollection<Chapter> MemberChapters { get; init; }
 }

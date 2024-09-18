@@ -12012,6 +12012,8 @@ p:last-child {
 html[data-platform=odk] {
   --odk-badges-padding-top: 0.5rem;
   --odk-badges-line-height: 0.5;
+}
+html[data-platform=odk] .badge {
   padding-top: var(--odk-badges-padding-top);
   line-height: var(--odk-badges-line-height);
 }
@@ -12083,6 +12085,25 @@ html[data-platform=odk] {
 
 .conversation-message {
   background-color: var(--odk-bg-level-2);
+}
+
+.cc-window {
+  background-color: var(--odk-bg-level-2);
+  color: var(--odk-body-color);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 1em 1.8em;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 1s ease;
+}
+
+.cc-message {
+  flex: 1 1 auto;
 }
 
 :root {
@@ -12174,6 +12195,9 @@ html[data-platform=odk] {
 }
 .dropdown .dropdown-item:hover {
   background-color: var(--odk-bg-level-1-hover);
+}
+.dropdown .dropdown.dropstart .dropdown-menu[data-bs-popper] {
+  margin-right: 0;
 }
 
 .dropdown-item:hover .card {

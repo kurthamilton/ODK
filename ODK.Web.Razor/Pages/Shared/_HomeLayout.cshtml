@@ -1,5 +1,14 @@
-﻿@{
+﻿@using ODK.Core.Platforms
+@using ODK.Services.Caching
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Header
+@using ODK.Web.Razor.Pages.Chapters
+@inject IPlatformProvider PlatformProvider
+@inject IRequestCache RequestCache
+@{
     Layout = "_Layout";
+
+    var platform = PlatformProvider.GetPlatform();
 }
 
 @RenderBody()
@@ -22,6 +31,28 @@
 @section header
 {
     @await Html.PartialAsync("Header/_HomeHeader")
+
+    @if (platform == PlatformType.DrunkenKnitwits)
+    {
+        var chapterContext = new ChapterPageContext(RequestCache, Context);
+        var member = await chapterContext.GetMemberAsync();
+
+        <div class="mb-1">
+            @await Html.PartialAsync("Header/_Navbar", new NavbarViewModel
+            {
+                Breakpoint = "md",
+                Color = "dark",
+                Compact = false,
+                CssClass = null,
+                Member = member,
+                MenuItems = 
+                [
+                    [new MenuItem { Hidden = true, Text = "" }]
+                ]
+            })
+        </div>
+    }
+
     @await RenderSectionAsync("header", required: false)
 }
 

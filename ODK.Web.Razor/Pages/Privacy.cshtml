@@ -1,8 +1,9 @@
-﻿@page
+﻿@page "/privacy"
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Header
 @model PrivacyModel
 @{
-    Layout = "Shared/_HomeLayout.cshtml";
+    Layout = "_HomeLayout";
     Model.Title = "Privacy";
     Model.Description = "Privacy policy detailing how we handle data";
     Model.Path = "/privacy";

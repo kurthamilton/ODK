@@ -5,26 +5,22 @@
 @model ODK.Web.Razor.Models.Header.NavbarViewModel
 @inject IRequestCache RequestCache
 @{
-    Chapter? memberChapter = null;
+    IReadOnlyCollection<Chapter> memberChapters = [];
 
     if (Model.Member != null)
     {
-        if (Model.Chapter != null && Model.Member.IsMemberOf(Model.Chapter.Id))
-        {
-            memberChapter = Model.Chapter;
-        }
-        else if (Model.Member.Chapters.Count > 0)
-        {
-            var chapters = await RequestCache.GetChaptersAsync();
-            memberChapter = chapters.FirstOrDefault(x => Model.Member.IsMemberOf(x.Id));
-        }
+        var chapters = await RequestCache.GetChaptersAsync();
+        memberChapters = chapters
+            .Where(x => Model.Member.IsMemberOf(x.Id))
+            .OrderBy(x => x.Name)
+            .ToArray();
     }
 
     var accountMenu = new AccountMenuViewModel
     {
         CurrentChapter = Model.Chapter,
         Member = Model.Member,
-        MemberChapter = memberChapter
+        MemberChapters = memberChapters
     };
 
     var id = Model.Id ?? "navbar-main";

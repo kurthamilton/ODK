@@ -1,8 +1,17 @@
 ﻿@using ODK.Services.Authentication
 @using ODK.Web.Razor.Models.Header
 @model AccountMenuViewModel
+@{
+    var adminChapters = Model.MemberChapters
+        .Where(x => Model.Member?.IsMemberOf(x.Id) == true)
+        .ToArray();
 
-@if (Model.MemberChapter != null)
+    var defaultChapter = Model.CurrentChapter != null && Model.Member != null && Model.Member.IsMemberOf(Model.CurrentChapter.Id)
+        ? Model.CurrentChapter
+        : Model.MemberChapters.FirstOrDefault();
+}
+
+@if (Model.MemberChapters.Count > 0)
 {
     <div class="account-links" role="button">
         <div class="dropdown">
@@ -10,36 +19,59 @@
                 <i class="fas fa-user"></i>
             </div>
             <div class="dropdown-menu dropdown-menu-end text-end">
-                <a class="dropdown-item" href="/@Model.MemberChapter.Name/Account">My profile</a>
-                <a class="dropdown-item" href="/@Model.MemberChapter.Name">@Model.MemberChapter.Name</a>
-                <a class="dropdown-item" href="/@Model.MemberChapter.Name/Account/Logout">Sign Out</a>
+                @if (Model.MemberChapters.Count == 1)
+                {
+                    var memberChapter = Model.MemberChapters.First();
+
+                    <a class="dropdown-item" href="/@memberChapter.Name/Account">My profile</a>
+                    <a class="dropdown-item" href="/@memberChapter.Name">@memberChapter.Name</a>
+                    <a class="dropdown-item" href="/@memberChapter.Name/Account/Logout">Sign Out</a>
+                }
+                else if (Model.MemberChapters.Count > 1)
+                {
+                    for (var i = 0; i < Model.MemberChapters.Count; i++)
+                    {
+                        var memberChapter = Model.MemberChapters.ElementAt(i);
+                        var adminChapter = adminChapters
+                            .FirstOrDefault(x => x.Id == memberChapter.Id);
+
+                        <div class="dropdown dropstart">
+                            <div class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown">
+                                @memberChapter.Name
+                            </div>
+                            <div class="dropdown-menu text-end">
+                                <a class="dropdown-item" href="/@memberChapter.Name">Home</a>
+                                <a class="dropdown-item" href="/@memberChapter.Name/Account">My profile</a>
+
+                                @if (adminChapter != null)
+                                {
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="/@adminChapter.Name/Admin/Chapter/Text">Admin</a>
+                                    <a class="dropdown-item" href="/@adminChapter.Name/Admin/Events/Create">Create event</a>
+
+                                    if (Model.Member?.SuperAdmin == true)
+                                    {
+                                        <a class="dropdown-item" href="/@adminChapter.Name/Admin/Superadmin">Super admin</a>
+                                    }
+                                }
+                            </div>                            
+                        </div>                                                                        
+                    }
+
+                    <div class="dropdown-divider"></div>
+
+                    @if (defaultChapter != null)
+                    {
+                        <a class="dropdown-item" href="/@defaultChapter.Name/Account/Logout">Sign Out</a>
+                    }                    
+                }
 
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="#" data-theme-selector="dark">Dark mode</a>
-                <a class="dropdown-item" href="#" data-theme-selector="light">Light mode</a>
-
-                @if (User.IsInRole(OdkRoles.Admin))
-                {
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="/@Model.MemberChapter.Name/Admin/Chapter/Text">@Model.MemberChapter.Name admin</a>
-                    <a class="dropdown-item" href="/@Model.MemberChapter.Name/Admin/Events/Create">Create event</a>
-                }
+                <a class="dropdown-item" href="#" data-theme-selector="light">Light mode</a>                
             
                 @if (Model.Member?.SuperAdmin == true)
-                {
-                    if (Model.CurrentChapter != null && Model.CurrentChapter.Id != Model.MemberChapter.Id)
-                    {
-                        <a class="dropdown-item" href="/@Model.CurrentChapter.Name/Admin/Chapter/Text">@Model.CurrentChapter.Name admin</a>
-                    }                    
-
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="/@Model.MemberChapter.Name/Admin/SuperAdmin">@Model.MemberChapter.Name Super admin</a>
-
-                    if (Model.CurrentChapter != null && Model.CurrentChapter.Id != Model.MemberChapter.Id)
-                    {
-                        <a class="dropdown-item" href="/@Model.CurrentChapter.Name/Admin/SuperAdmin">@Model.CurrentChapter.Name Super admin</a>
-                    }
-
+                {                                        
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="/SuperAdmin">Site admin</a>
                 }

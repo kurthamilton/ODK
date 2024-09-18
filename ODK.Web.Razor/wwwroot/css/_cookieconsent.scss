@@ -1,0 +1,24 @@
+﻿.cc-window {
+    background-color: var(--odk-bg-level-2);
+    color: var(--odk-body-color);
+    
+    // recreate default styles
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    
+    display: flex;
+    align-items: center;
+    
+    padding: 1em 1.8em;
+    
+    z-index: 9999;
+
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+
+.cc-message {
+    flex: 1 1 auto;
+}
