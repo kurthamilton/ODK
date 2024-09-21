@@ -1,13 +1,36 @@
-﻿@using ODK.Web.Razor.Models.Topics
+﻿@using Microsoft.AspNetCore.Html
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Topics
 @model TopicPickerViewModel
 @{
     var topicDictionary = Model.Topics
         .GroupBy(x => x.TopicGroupId)
         .ToDictionary(x => x.Key, x => x.ToArray());
 
+    var topicGroupOptions = Model.TopicGroups
+        .OrderBy(x => x.Name)
+        .Select(x => new SelectListItem { Text = x.Name, Value = x.Id.ToString() })
+        .ToArray();
+
+    var newTopicGroupOptions = topicGroupOptions
+        .Select(x => new SelectListItem { Text = x.Text, Value = x.Text })
+        .ToArray();
+
+    if (Model.NewTopicGroups == null || Model.NewTopicGroups.Count == 0)
+    {
+        Model.NewTopicGroups = Enumerable.Repeat(default(string?), 10).ToList();
+    }
+
+    if (Model.NewTopics == null || Model.NewTopics.Count == 0)
+    {
+        Model.NewTopics = Enumerable.Repeat(default(string?), 10).ToList();
+    }
+
+    var newTopicCount = Math.Min(Model.NewTopicGroups.Count, Model.NewTopics.Count);
+
     var topicOptions = new List<SelectListItem>();
     foreach (var topicGroup in Model.TopicGroups.OrderBy(x => x.Name))
-    {        
+    {
         if (!topicDictionary.TryGetValue(topicGroup.Id, out var topics))
         {
             continue;
@@ -30,4 +53,81 @@
     }
 }
 
-@Html.ListBoxFor(x => x.TopicIds, topicOptions, new { @class = "form-select", data_always_open = "" })
+@Html.ListBoxFor(x => x.TopicIds, topicOptions, new 
+{ 
+    @class = "form-select expandable-select", 
+    data_always_open = "", 
+    data_expandable_select = "topics" 
+})    
+
+<div class="d-flex">
+    <div class="me-auto">
+        @if (Model.Addable)
+        {
+            <button type="button" class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#new-topic-list">
+                Add new
+            </button>
+        }        
+    </div>
+    <div>
+        <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#topics-modal">
+            @await Html.PartialAsync("Components/Icons/_Maximize")
+            Show all
+        </button>
+    </div>
+</div>
+
+@if (Model.Addable)
+{
+    <div id="new-topic-list" class="collapse mt-3" data-new-topic-list>
+        <p>Suggest new topics below. Once approved they will be added to the site.</p>
+        @for (var i = 0; i <= newTopicCount; i++)
+        {
+            <div class="row mt-3 @(i > 0 ? "d-none" : null)" data-new-topic-row="@i">
+                @if (i < newTopicCount)
+                {
+                    <div class="col-6">
+                        @Html.DropDownListFor(x => x.NewTopicGroups![i], newTopicGroupOptions, "", new
+                        {
+                            @class = "form-select",
+                            data_searchable = "",
+                            data_addable = "",
+                            data_new_topic_group = "",
+                            data_placeholder = "Category"
+                        })
+                    </div>
+                    <div class="col-6">
+                        @Html.TextBoxFor(x => x.NewTopics![i], new 
+                        { 
+                            @class = "form-control", 
+                            data_new_topic = "",
+                            placeholder = "Topic"
+                        })
+                    </div>
+                }         
+                else
+                {
+                    <div class="col-12">
+                        That'll do for now! Submit the new topics above and go again.
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
+
+@await Html.PartialAsync("Components/_Modal", new ModalViewModel
+{
+    Id = "topics-modal",
+    Title = "Topics",
+    Size = "modal-xl",
+    Body = 
+        @<div>
+            @await Html.PartialAsync("Components/_ExpandedListBox", new ExpandedListBoxViewModel
+            {
+                Id = "topics",
+                Items = topicOptions
+            })
+        </div>
+})

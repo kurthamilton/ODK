@@ -6,6 +6,8 @@ public class MemberInterestsPageViewModel
 {
     public required IReadOnlyCollection<MemberTopic> MemberTopics { get; init; }
 
+    public required IReadOnlyCollection<NewMemberTopic> NewTopics { get; init; }
+
     public required IReadOnlyCollection<TopicGroup> TopicGroups { get; init; }
 
     public required IReadOnlyCollection<Topic> Topics { get; init; }

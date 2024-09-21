@@ -9,6 +9,7 @@ using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Events.ViewModels;
+using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 
 namespace ODK.Services.Members;

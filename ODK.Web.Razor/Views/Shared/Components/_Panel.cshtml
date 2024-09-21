@@ -15,6 +15,14 @@
         }
     </div>    
     <div class="panel-body">
-        @Model.BodyContentFunc.Invoke(null)
+        @if (Model.BodyContentFunc != null)
+        {
+            @Model.BodyContentFunc.Invoke(null)
+        }        
+
+        @if (Model.BodyContent != null)
+        {
+            @Model.BodyContent
+        }
     </div>    
 </section>

@@ -33,4 +33,6 @@ public interface IUrlProvider
     string MessageAdminUrl(Chapter chapter, Guid messageId);
 
     string PasswordReset(Chapter? chapter, string token);
+
+    string TopicApprovalUrl();
 }

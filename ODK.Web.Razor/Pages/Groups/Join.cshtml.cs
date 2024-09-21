@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Platforms;
 using ODK.Services.Chapters;
 using ODK.Services.Members;
+using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Routes;
 

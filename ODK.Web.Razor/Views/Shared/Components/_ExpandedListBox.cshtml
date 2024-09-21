@@ -1,0 +1,57 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model ExpandedListBoxViewModel
+@{
+    var itemGroups = new List<KeyValuePair<SelectListGroup, List<SelectListItem>>>();
+
+    foreach (var grouping in Model.Items.GroupBy(x => x.Group))
+    {
+        var group = grouping.Key;
+        var groupItems = new List<SelectListItem>();
+
+        itemGroups.Add(new KeyValuePair<SelectListGroup, List<SelectListItem>>(group, groupItems));
+
+        foreach (var item in grouping)
+        {
+            if (string.IsNullOrEmpty(item.Text))
+            {
+                continue;
+            }
+
+            groupItems.Add(item);
+        }
+    }
+}
+
+<div class="d-flex flex-column gap-3" data-expanded-select-for="@Model.Id">
+    <div class="input-group">
+        <div class="input-group-text">
+            @await Html.PartialAsync("Components/Icons/_MagnifyingGlass")
+        </div>
+        <input class="form-control" placeholder="Search" data-expanded-select-search />
+    </div>
+
+    @foreach (var kvp in itemGroups)
+    {
+        var group = kvp.Key;
+        var items = kvp.Value;
+
+        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+        {
+            TitleContentFunc = @<h6>@group.Name</h6>,
+            BodyContentFunc = 
+                @<div class="expanded-select-group" data-expanded-select-group="@group.Name">
+                    <div class="d-flex gap-2 flex-wrap">
+                        @foreach (var item in items)
+                        {
+                            <div data-expanded-select-option-for="@item.Value" 
+                                 data-expanded-select-option-text="@item.Text" 
+                                 class="expanded-select-item">
+                                <span class="badge border" data-inactive>@item.Text</span>
+                                <span class="badge border border-transparent active d-none" data-active>@item.Text</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+        })
+    }
+</div>

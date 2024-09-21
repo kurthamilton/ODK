@@ -26,6 +26,33 @@
                 <section class="section">
                     @await Html.PartialAsync("Account/_InterestsContent", viewModel)
                 </section>
+
+                @if (viewModel.NewTopics.Count > 0)
+                {
+                    <section class="section">
+                        <h3>New topics</h3>
+                        <p>The following topics are pending approval</p>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Topic</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var newTopic in viewModel.NewTopics.OrderBy(x => x.TopicGroup).ThenBy(x => x.Topic))
+                                    {
+                                        <tr>
+                                            <td>@newTopic.TopicGroup</td>
+                                            <td>@newTopic.Topic</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>                    
+                }
             </div>
     })
 })

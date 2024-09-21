@@ -65,6 +65,9 @@ public class UrlProvider : IUrlProvider
     public string PasswordReset(Chapter? chapter, string token)
         => GetUrl(OdkRoutes.Account.PasswordReset(chapter, token));
 
+    public string TopicApprovalUrl()
+        => GetUrl("/superadmin/topics");
+
     private string GetUrl(string path) 
         => $"{UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl)}{path}";
 }

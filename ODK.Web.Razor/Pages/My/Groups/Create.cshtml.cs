@@ -4,9 +4,11 @@ using ODK.Core.Images;
 using ODK.Core.Platforms;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
+using ODK.Services.Topics.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Chapters;
+using ODK.Web.Razor.Models.Topics;
 
 namespace ODK.Web.Razor.Pages.My.Groups;
 
@@ -26,7 +28,9 @@ public class CreateModel : OdkPageModel
     {
     }
 
-    public async Task<IActionResult> OnPostAsync([FromForm] CreateChapterSubmitViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync(
+        [FromForm] CreateChapterSubmitViewModel viewModel,
+        [FromForm] TopicPickerFormSubmitViewModel topics)
     {
         if (!ModelState.IsValid)
         {
@@ -58,8 +62,16 @@ public class CreateModel : OdkPageModel
             Location = new LatLong(viewModel.Location.Lat.Value, viewModel.Location.Long.Value),
             LocationName = viewModel.Location.Name,
             Name = viewModel.Name?.Trim() ?? "",
+            NewTopics = topics.NewTopics
+                ?.Where((x, i) => !string.IsNullOrEmpty(x) && !string.IsNullOrEmpty(topics.NewTopicGroups![i]))
+                ?.Select((x, i) => new NewTopicModel
+                {
+                    Topic = x ?? "",
+                    TopicGroup = topics.NewTopicGroups![i] ?? ""
+                })
+                .ToArray() ?? [],
             TimeZoneId = viewModel.Location.TimeZoneId,
-            TopicIds = viewModel.TopicIds
+            TopicIds = viewModel.TopicIds ?? []
         });
 
         if (!result.Success)

@@ -60,7 +60,7 @@ public class GroupAdminController : OdkControllerBase
     public async Task<IActionResult> UpdateTopics(Guid id, [FromForm] TopicPickerViewModel viewModel)
     {
         var result = await _chapterAdminService.UpdateChapterTopics(
-            new AdminServiceRequest(id, MemberId), viewModel.TopicIds);
+            new AdminServiceRequest(id, MemberId), viewModel.TopicIds ?? []);
         AddFeedback(result, "Topics updated");
         return RedirectToReferrer();
     }

@@ -8,6 +8,7 @@ using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
+using ODK.Services.Topics.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.SuperAdmin;
@@ -186,6 +187,60 @@ public class SuperAdminController : OdkControllerBase
     {
         var result = await _topicAdminService.AddTopic(MemberId, topicGroupId, name);
         AddFeedback(result, "Topic added");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("superadmin/topics/approve")]
+    public async Task<IActionResult> ApproveTopics(NewTopicsFormViewModel viewModel)
+    {
+        var approved = new ApproveTopicsModel
+        {
+            Chapters = viewModel.Chapters
+                .Where(x => x.Approved && !x.Rejected)
+                .Select(x => new ApproveTopicsItemModel
+                {
+                    NewTopicId = x.NewTopicId,
+                    Topic = x.Topic,
+                    TopicGroup = x.TopicGroup
+                })
+                .ToArray(),
+            Members = viewModel.Members
+                .Where(x => x.Approved && !x.Rejected)
+                .Select(x => new ApproveTopicsItemModel
+                {
+                    NewTopicId = x.NewTopicId,
+                    Topic = x.Topic,
+                    TopicGroup = x.TopicGroup
+                })
+                .ToArray()
+        };
+
+        var rejected = new ApproveTopicsModel
+        {
+            Chapters = viewModel.Chapters
+                .Where(x => x.Rejected && !x.Approved)
+                .Select(x => new ApproveTopicsItemModel
+                {
+                    NewTopicId = x.NewTopicId,
+                    Topic = x.Topic,
+                    TopicGroup = x.TopicGroup
+                })
+                .ToArray(),
+            Members = viewModel.Members
+                .Where(x => x.Rejected && !x.Approved)
+                .Select(x => new ApproveTopicsItemModel
+                {
+                    NewTopicId = x.NewTopicId,
+                    Topic = x.Topic,
+                    TopicGroup = x.TopicGroup
+                })
+                .ToArray()
+        };
+
+        await _topicAdminService.ApproveTopics(MemberId, approved, rejected);
+
+        AddFeedback("Topics processed", FeedbackType.Success);
+
         return RedirectToReferrer();
     }
 

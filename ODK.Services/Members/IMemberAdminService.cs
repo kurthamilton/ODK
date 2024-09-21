@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Members;
+using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 
 namespace ODK.Services.Members;

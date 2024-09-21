@@ -34,6 +34,12 @@ public class EmailBodyBuilder
         return this;
     }
 
+    public EmailBodyBuilder AddTable(EmailTableBuilder tableBuilder)
+    {
+        AddText(tableBuilder.ToString());
+        return this;
+    }
+
     public EmailBodyBuilder AddText(string text)
     {
         _body.Append(text);

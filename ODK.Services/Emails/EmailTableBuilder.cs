@@ -12,6 +12,41 @@ public class EmailTableBuilder
         return this;
     }
 
+    public EmailTableBuilder AddRow<T>(T value, Func<T, IEnumerable<string>> cellsFunc)
+    {
+        var cells = cellsFunc(value);
+        return AddRow(cells.ToArray());
+    }
+
+    public EmailTableBuilder AddRow(params string[] cells)
+    {
+        if (cells.Length == 0)
+        {
+            return this;
+        }
+
+        OpenRow();
+
+        foreach (var cell in cells)
+        {
+            AddCell(cell);
+        }
+
+        CloseRow();
+
+        return this;
+    }
+
+    public EmailTableBuilder AddRows<T>(IEnumerable<T> values, Func<T, IEnumerable<string>> cellsFunc)
+    {
+        foreach (var value in values)
+        {
+            AddRow(value, cellsFunc);
+        }
+
+        return this;
+    }
+
     public EmailTableBuilder CloseRow()
     {
         _html.AppendLine("</tr>");

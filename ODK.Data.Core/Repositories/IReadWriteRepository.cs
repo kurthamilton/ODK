@@ -6,5 +6,6 @@ public interface IReadWriteRepository<T> : IWriteRepository<T> where T : IDataba
 {
     IDeferredQuerySingle<T> GetById(Guid id);
     IDeferredQuerySingleOrDefault<T> GetByIdOrDefault(Guid id);
+    IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids);
     void Upsert(T entity);
 }

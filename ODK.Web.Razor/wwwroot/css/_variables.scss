@@ -26,6 +26,8 @@ $odk-bg-dark: #212529;
     --odk-bg-level-2: #{$odk-bg-light-level-2};
     --odk-bg-level-2-rgb: #{$odk-bg-light-level-2-rgb};
     --odk-bg-level-2-hover: #{lighten($odk-bg-light-level-2, 5%)};
+    
+    --odk-color-placeholder: var(--bs-secondary-color);
 }
 
 [data-bs-theme="dark"] {

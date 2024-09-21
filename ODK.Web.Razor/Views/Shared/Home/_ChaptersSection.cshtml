@@ -23,58 +23,59 @@
 @await Html.PartialAsync("Components/_Section", new SectionViewModel
 {
    Class = "bg-dark text-light section--chapters d-none d-md-flex",
-   Content = @<div class="container navbar--home">
-                <div class="d-none d-md-block">
-                    <div class="row">
-                        @foreach (var continent in continents)
-                        {
-                            <div class="col mx-2">
-                                <h3>@continent</h3>
-                            </div>
-                        }
+   Content = 
+    @<div class="container navbar--home">
+        <div class="d-none d-md-block">
+            <div class="row">
+                @foreach (var continent in continents)
+                {
+                    <div class="col mx-2">
+                        <h3>@continent</h3>
                     </div>
+                }
+            </div>
 
-                    <div class="row">
-                        @foreach (var continent in continents)
-                         {
-                             <div class="col mx-2 navbar navbar-dark">   
-                                <ul class="navbar-nav">
-                                    @foreach (var chapter in chapterDictionary[continent])
-                                    {
-                                        var external = !string.IsNullOrEmpty(chapter.RedirectUrl);
-                                        var url = string.IsNullOrEmpty(chapter.RedirectUrl) ? $"/{chapter.Name}" : chapter.RedirectUrl;
-                                        <li class="nav-item">
-                                            <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">@chapter.Name</a>
-                                        </li>
-                                    }
-                                </ul>
-                             </div>
-                         }
-                    </div>  
-                </div>
-
-                <div class="d-md-none">                    
-                    @foreach (var continent in continents)
-                    {      
-                        <div class="mb-3">
-                            <h3>@continent</h3>                            
-
-                            <div class="col mx-2 navbar navbar-dark">   
-                                <ul class="navbar-nav">
-                                    @foreach (var chapter in chapterDictionary[continent])
-                                    {
-                                        var external = !string.IsNullOrEmpty(chapter.RedirectUrl);
-                                        var url = string.IsNullOrEmpty(chapter.RedirectUrl) ? $"/{chapter.Name}" : chapter.RedirectUrl;
-                                        <li class="nav-item">
-                                            <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">@chapter.Name</a>
-                                        </li>
-                                    }
-                                </ul>
-                             </div>
+            <div class="row">
+                @foreach (var continent in continents)
+                    {
+                        <div class="col mx-2 navbar navbar-dark">   
+                        <ul class="navbar-nav">
+                            @foreach (var chapter in chapterDictionary[continent])
+                            {
+                                var external = !string.IsNullOrEmpty(chapter.RedirectUrl);
+                                var url = string.IsNullOrEmpty(chapter.RedirectUrl) ? $"/{chapter.Name}" : chapter.RedirectUrl;
+                                <li class="nav-item">
+                                    <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">@chapter.Name</a>
+                                </li>
+                            }
+                        </ul>
                         </div>
-                    }                    
-                </div>                               
-             </div>,
+                    }
+            </div>  
+        </div>
+
+        <div class="d-md-none">                    
+            @foreach (var continent in continents)
+            {      
+                <div class="mb-3">
+                    <h3>@continent</h3>                            
+
+                    <div class="col mx-2 navbar navbar-dark">   
+                        <ul class="navbar-nav">
+                            @foreach (var chapter in chapterDictionary[continent])
+                            {
+                                var external = !string.IsNullOrEmpty(chapter.RedirectUrl);
+                                var url = string.IsNullOrEmpty(chapter.RedirectUrl) ? $"/{chapter.Name}" : chapter.RedirectUrl;
+                                <li class="nav-item">
+                                    <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">@chapter.Name</a>
+                                </li>
+                            }
+                        </ul>
+                        </div>
+                </div>
+            }                    
+        </div>                               
+        </div>,
    Hero = true,
    Id = "chapters"
 })

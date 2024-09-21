@@ -1,4 +1,4 @@
-﻿namespace ODK.Services.Members;
+﻿namespace ODK.Services.Members.Models;
 
 public class CreateMemberProfile : UpdateMemberChapterProfile
 {

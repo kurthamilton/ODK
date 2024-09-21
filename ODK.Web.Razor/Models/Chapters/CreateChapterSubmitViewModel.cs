@@ -21,5 +21,5 @@ public class CreateChapterSubmitViewModel : IChapterImageFormViewModel
     public string? Name { get; set; }
 
     [Display(Name = "Topics")]
-    public List<Guid> TopicIds { get; set; } = new();
+    public List<Guid>? TopicIds { get; set; }
 }

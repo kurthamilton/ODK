@@ -1,5 +1,7 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Members;
+using ODK.Services.Members.Models;
+using ODK.Services.Topics.Models;
 
 namespace ODK.Services.Members;
 
@@ -51,5 +53,8 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model);
 
-    Task<ServiceResult> UpdateMemberTopics(Guid id, IReadOnlyCollection<Guid> topicIds);
+    Task<ServiceResult> UpdateMemberTopics(
+        Guid id, 
+        IReadOnlyCollection<Guid> topicIds,
+        IReadOnlyCollection<NewTopicModel> newTopics);
 }
