@@ -3,14 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 using ODK.Core.Images;
 using ODK.Core.Platforms;
-using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Caching;
 using ODK.Services.Features;
 using ODK.Services.Members;
+using ODK.Services.Members.Models;
 using ODK.Services.Notifications;
 using ODK.Services.Subscriptions;
+using ODK.Services.Topics.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Extensions;
@@ -61,8 +62,11 @@ public class AccountController : OdkControllerBase
     public async Task<IActionResult> Create(
         [FromForm] PersonalDetailsFormViewModel personalDetails,
         [FromForm] LocationFormViewModel location,
-        [FromForm] OAuthDetailsFormViewModel oauth)
+        [FromForm] OAuthDetailsFormViewModel oauth,
+        [FromForm] TopicPickerFormSubmitViewModel topics)
     {
+        var newTopics = NewTopicModel.Build(topics.NewTopicGroups, topics.NewTopics);
+
         var model = new CreateAccountModel
         {
             EmailAddress = personalDetails.EmailAddress,            
@@ -72,9 +76,11 @@ public class AccountController : OdkControllerBase
                 ? new LatLong(location.Lat.Value, location.Long.Value)
                 : default(LatLong?),
             LocationName = location.Name,
+            NewTopics = newTopics,
             OAuthProviderType = oauth.Provider,
             OAuthToken = oauth.Token,
-            TimeZoneId = location.TimeZoneId
+            TimeZoneId = location.TimeZoneId,
+            TopicIds = topics.TopicIds ?? []
         };
 
         var result = await _memberService.CreateAccount(model);        
@@ -384,8 +390,13 @@ public class AccountController : OdkControllerBase
 
     [HttpPost("account/topics")]
     public async Task<IActionResult> UpdateTopics([FromForm] TopicPickerFormSubmitViewModel viewModel)
-    {
-        var result = await _memberService.UpdateMemberTopics(MemberId, viewModel.TopicIds);
+    {        
+        var newTopics = NewTopicModel.Build(viewModel.NewTopicGroups, viewModel.NewTopics);
+
+        var result = await _memberService.UpdateMemberTopics(
+            MemberId, 
+            viewModel.TopicIds ?? [],
+            newTopics);
         AddFeedback(result, "Interests updated");
         return RedirectToReferrer();
     }

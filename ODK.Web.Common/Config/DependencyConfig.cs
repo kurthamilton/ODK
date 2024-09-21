@@ -165,6 +165,7 @@ public static class DependencyConfig
         services.AddScoped<ISiteSubscriptionAdminService, SiteSubscriptionAdminService>();
         services.AddScoped<ISiteSubscriptionService, SiteSubscriptionService>();
         services.AddScoped<ITopicAdminService, TopicAdminService>();
+        services.AddScoped<ITopicService, TopicService>();
         services.AddScoped<IVenueAdminService, VenueAdminService>();
         services.AddScoped<IVenueService, VenueService>();
     }

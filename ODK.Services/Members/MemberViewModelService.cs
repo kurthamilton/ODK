@@ -81,14 +81,16 @@ public class MemberViewModelService : IMemberViewModelService
 
     public async Task<MemberInterestsPageViewModel> GetMemberInterestsPage(Guid currentMemberId)
     {
-        var (topicGroups, topics, memberTopics) = await _unitOfWork.RunAsync(
+        var (topicGroups, topics, memberTopics, newTopics) = await _unitOfWork.RunAsync(
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll(),
-            x => x.MemberTopicRepository.GetByMemberId(currentMemberId));
+            x => x.MemberTopicRepository.GetByMemberId(currentMemberId),
+            x => x.NewMemberTopicRepository.GetByMemberId(currentMemberId));
 
         return new MemberInterestsPageViewModel
         {
             MemberTopics = memberTopics,
+            NewTopics = newTopics,
             TopicGroups = topicGroups,
             Topics = topics
         };

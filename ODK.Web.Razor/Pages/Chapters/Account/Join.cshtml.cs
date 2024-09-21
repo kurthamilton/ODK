@@ -3,8 +3,8 @@ using ODK.Core.Images;
 using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Members;
+using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
-using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;

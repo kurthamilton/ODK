@@ -1,6 +1,7 @@
 ﻿@using ODK.Services.Topics
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.SuperAdmin
 @inject ITopicAdminService TopicAdminService
 @{
     var memberId = User.MemberId();
@@ -8,6 +9,38 @@
     var topicDictionary = viewModel.Topics
         .GroupBy(x => x.TopicGroupId)
         .ToDictionary(x => x.Key, x => x.ToArray());
+}
+
+@if (viewModel.NewMemberTopics.Count > 0 || viewModel.NewChapterTopics.Count > 0)
+{
+    <h2>New topics</h2>
+    <section class="section section--admin">
+        <form action="/superadmin/topics/approve" method="post">
+            @Html.AntiForgeryToken()
+            @await Html.PartialAsync("SuperAdmin/_NewTopicsForm", new NewTopicsFormViewModel
+            {
+                Chapters = viewModel.NewChapterTopics
+                    .OrderBy(x => x.Topic)
+                    .Select(x => new NewTopicsFormItemViewModel
+                    {
+                        NewTopicId = x.Id,
+                        Topic = x.Topic,
+                        TopicGroup = x.TopicGroup
+                    })
+                    .ToList(),
+                Members = viewModel.NewMemberTopics
+                    .OrderBy(x => x.Topic)
+                    .Select(x => new NewTopicsFormItemViewModel
+                    {
+                        NewTopicId = x.Id,
+                        Topic = x.Topic,
+                        TopicGroup = x.TopicGroup
+                    })
+                    .ToList()
+            })
+            <button class="btn btn-primary">Approve</button>
+        </form>
+    </section>
 }
 
 <h2>Topics</h2>

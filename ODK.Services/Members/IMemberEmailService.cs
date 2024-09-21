@@ -3,6 +3,7 @@ using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Messages;
+using ODK.Core.Topics;
 using ODK.Core.Venues;
 
 namespace ODK.Services.Members;
@@ -90,6 +91,8 @@ public interface IMemberEmailService
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties);
 
+    Task SendNewTopicEmail(IReadOnlyCollection<INewTopic> newTopics, SiteEmailSettings settings);
+
     Task SendPasswordResetEmail(Chapter? chapter, Member member, string token);
 
     Task SendSiteMessage(SiteContactMessage message, SiteEmailSettings settings);
@@ -101,4 +104,8 @@ public interface IMemberEmailService
     Task SendSiteWelcomeEmail(Member member);
 
     Task<ServiceResult> SendTestEmail(Chapter? chapter, Member to, EmailType type);
+
+    Task SendTopicApprovedEmails(IReadOnlyCollection<INewTopic> newTopics, IReadOnlyCollection<Member> members);
+
+    Task SendTopicRejectedEmails(IReadOnlyCollection<INewTopic> newTopics, IReadOnlyCollection<Member> members);
 }

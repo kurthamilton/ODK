@@ -36,6 +36,7 @@
                         @Html.LabelFor(x => x.TopicIds, new { @class = "form-label" })
                         @await Html.PartialAsync("Topics/_TopicPicker", new TopicPickerViewModel
                         {
+                            Addable = true,
                             TopicIds = Model.TopicIds,
                             TopicGroups = Model.TopicGroups,
                             Topics = Model.Topics

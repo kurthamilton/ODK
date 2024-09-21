@@ -6,7 +6,6 @@ namespace ODK.Data.Core.Repositories;
 public interface IChapterRepository : IReadWriteRepository<Chapter>
 {    
     IDeferredQueryMultiple<Chapter> GetAll();    
-    IDeferredQueryMultiple<Chapter> GetByIds(IEnumerable<Guid> ids);
     IDeferredQueryMultiple<Chapter> GetByMemberId(Guid memberId);
     IDeferredQuerySingleOrDefault<Chapter> GetByName(string name);
     IDeferredQueryMultiple<Chapter> GetByOwnerId(Guid ownerId);    

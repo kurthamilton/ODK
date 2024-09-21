@@ -27,10 +27,6 @@ public class EventRepository : ReadWriteRepositoryBase<Event>, IEventRepository
         .Page(page, pageSize)
         .DeferredMultiple();
 
-    public IDeferredQueryMultiple<Event> GetByIds(IEnumerable<Guid> ids) => Set()
-        .Where(x => ids.Contains(x.Id))
-        .DeferredMultiple();
-
     public IDeferredQueryMultiple<Event> GetByVenueId(Guid venueId) => Set()
         .Where(x => x.VenueId == venueId)
         .DeferredMultiple();    

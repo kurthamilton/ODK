@@ -5,6 +5,7 @@ using ODK.Core.Platforms;
 using ODK.Services.Chapters;
 using ODK.Services.Contact;
 using ODK.Services.Members;
+using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;

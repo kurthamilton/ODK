@@ -44,6 +44,13 @@ public abstract class CachingReadWriteRepositoryBase<T> : CachingWriteRepository
             () => _cache.Get(id),
             _cache.Set);
 
+    public IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids) => 
+        ids.Count > 0 
+            ? Set()
+                .Where(x => ids.Contains(x.Id))
+                .DeferredMultiple()
+            : new DefaultDeferredQueryMultiple<T>();
+
     public void Upsert(T entity)
     {
         if (entity.Id == default)

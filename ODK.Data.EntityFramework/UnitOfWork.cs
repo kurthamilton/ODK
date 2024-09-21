@@ -69,6 +69,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IMemberSiteSubscriptionRepository> _memberSiteSubscriptionRepository;
     private readonly Lazy<IMemberSubscriptionRepository> _memberSubscriptionRepository;
     private readonly Lazy<IMemberTopicRepository> _memberTopicRepository;
+    private readonly Lazy<INewChapterTopicRepository> _newChapterTopicRepository;
+    private readonly Lazy<INewMemberTopicRepository> _newMemberTopicRepository;
     private readonly Lazy<INotificationRepository> _notificationRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;    
     private readonly Lazy<ISiteContactMessageReplyRepository> _siteContactMessageReplyRepository;
@@ -145,6 +147,8 @@ public class UnitOfWork : IUnitOfWork
         _memberSiteSubscriptionRepository = new(() => new MemberSiteSubscriptionRepository(_context));
         _memberSubscriptionRepository = new(() => new MemberSubscriptionRepository(_context));
         _memberTopicRepository = new(() => new MemberTopicRepository(_context));
+        _newChapterTopicRepository = new(() => new NewChapterTopicRepository(_context));
+        _newMemberTopicRepository = new(() => new NewMemberTopicRepository(_context));
         _notificationRepository = new(() => new NotificationRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
         _siteContactMessageReplyRepository = new(() => new SiteContactMessageReplyRepository(_context));
@@ -217,6 +221,8 @@ public class UnitOfWork : IUnitOfWork
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => _memberSiteSubscriptionRepository.Value;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => _memberSubscriptionRepository.Value;
     public IMemberTopicRepository MemberTopicRepository => _memberTopicRepository.Value;
+    public INewChapterTopicRepository NewChapterTopicRepository => _newChapterTopicRepository.Value;
+    public INewMemberTopicRepository NewMemberTopicRepository => _newMemberTopicRepository.Value;
     public INotificationRepository NotificationRepository => _notificationRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => _siteContactMessageReplyRepository.Value;

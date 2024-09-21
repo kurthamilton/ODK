@@ -19,6 +19,7 @@ using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
+using ODK.Services.Topics;
 
 namespace ODK.Services.Chapters;
 
@@ -34,6 +35,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly INotificationService _notificationService;
     private readonly IPlatformProvider _platformProvider;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
+    private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterAdminService(
@@ -47,7 +49,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IPlatformProvider platformProvider,
         INotificationService notificationService,
         IImageService imageService,
-        IMemberEmailService memberEmailService)
+        IMemberEmailService memberEmailService,
+        ITopicService topicService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
@@ -60,6 +63,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _notificationService = notificationService;
         _platformProvider = platformProvider;
         _siteSubscriptionService = siteSubscriptionService;
+        _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
     
@@ -255,6 +259,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _unitOfWork.ChapterImageRepository.Add(image);
 
         await _unitOfWork.SaveChangesAsync();
+
+        await _topicService.AddNewChapterTopics(currentMemberId, chapter.Id, model.NewTopics);
 
         await _memberEmailService.SendNewGroupEmail(chapter, texts, siteEmailSettings);
 

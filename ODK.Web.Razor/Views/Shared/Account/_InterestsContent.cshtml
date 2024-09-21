@@ -5,8 +5,12 @@
 <form action="/account/topics" method="post">
     @Html.AntiForgeryToken()
     <div class="form-group mb-3">
+        <p>
+            We use your interests to help you find groups relevant to you
+        </p>
         @await Html.PartialAsync("Topics/_TopicPicker", new TopicPickerViewModel
         {
+            Addable = true,
             TopicIds = Model.MemberTopics.Select(x => x.TopicId).ToList(),
             TopicGroups = Model.TopicGroups,
             Topics = Model.Topics

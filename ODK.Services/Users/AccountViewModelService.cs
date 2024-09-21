@@ -23,6 +23,20 @@ public class AccountViewModelService : IAccountViewModelService
         _unitOfWork = unitOfWork;
     }    
 
+    public async Task<AccountCreatePageViewModel> GetAccountCreatePage()
+    {
+        var (topicGroups, topics) = await _unitOfWork.RunAsync(
+            x => x.TopicGroupRepository.GetAll(),
+            x => x.TopicRepository.GetAll());
+
+        return new AccountCreatePageViewModel
+        {
+            GoogleClientId = _settings.GoogleClientId,
+            TopicGroups = topicGroups,
+            Topics = topics
+        };
+    }
+
     public async Task<ChapterAccountViewModel> GetChapterAccountViewModel(Guid currentMemberId, string chapterName)
     {
         var (member, chapter) = await _unitOfWork.RunAsync(

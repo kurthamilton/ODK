@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -12,8 +11,11 @@ using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
+using ODK.Services.Members.Models;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Topics;
+using ODK.Services.Topics.Models;
 
 namespace ODK.Services.Members;
 
@@ -27,6 +29,7 @@ public class MemberService : IMemberService
     private readonly IOAuthProviderFactory _oauthProviderFactory;
     private readonly IPaymentService _paymentService;    
     private readonly IPlatformProvider _platformProvider;
+    private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberService(
@@ -38,7 +41,8 @@ public class MemberService : IMemberService
         IPlatformProvider platformProvider, 
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
-        IOAuthProviderFactory oauthProviderFactory)
+        IOAuthProviderFactory oauthProviderFactory,
+        ITopicService topicService)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
@@ -48,6 +52,7 @@ public class MemberService : IMemberService
         _oauthProviderFactory = oauthProviderFactory;
         _paymentService = paymentService;        
         _platformProvider = platformProvider;
+        _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
 
@@ -86,10 +91,11 @@ public class MemberService : IMemberService
     public async Task<ServiceResult<Member?>> CreateAccount(CreateAccountModel model)
     {
         var platform = _platformProvider.GetPlatform();
-        var (existing, siteSubscription, distanceUnits) = await _unitOfWork.RunAsync(
+        var (existing, siteSubscription, distanceUnits, topics) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
             x => x.SiteSubscriptionRepository.GetDefault(platform),
-            x => x.DistanceUnitRepository.GetAll());
+            x => x.DistanceUnitRepository.GetAll(),
+            x => x.TopicRepository.GetByIds(model.TopicIds));
 
         if (existing != null)
         {
@@ -158,9 +164,20 @@ public class MemberService : IMemberService
                 ActivationToken = activationToken,
                 MemberId = member.Id
             });
-        }        
+        }
+
+        if (topics.Count > 0)
+        {
+            _unitOfWork.MemberTopicRepository.AddMany(topics.Select(x => new MemberTopic
+            {
+                MemberId = member.Id,
+                TopicId = x.Id
+            }));
+        }
 
         await _unitOfWork.SaveChangesAsync();
+
+        await _topicService.AddNewMemberTopics(member.Id, model.NewTopics);
 
         if (!string.IsNullOrEmpty(activationToken))
         {
@@ -891,7 +908,10 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateMemberTopics(Guid id, IReadOnlyCollection<Guid> topicIds)
+    public async Task<ServiceResult> UpdateMemberTopics(
+        Guid id, 
+        IReadOnlyCollection<Guid> topicIds, 
+        IReadOnlyCollection<NewTopicModel> newTopics)
     {
         var existing = await _unitOfWork.MemberTopicRepository.GetByMemberId(id).Run();
 
@@ -899,6 +919,8 @@ public class MemberService : IMemberService
         {
             await _unitOfWork.SaveChangesAsync();
         }
+
+        await _topicService.AddNewMemberTopics(id, newTopics);
 
         return ServiceResult.Successful();
     }

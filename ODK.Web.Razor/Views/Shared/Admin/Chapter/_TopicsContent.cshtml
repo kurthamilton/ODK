@@ -12,6 +12,7 @@
                 <div class="form-group mb-3">
                     @await Html.PartialAsync("Topics/_TopicPicker", new TopicPickerViewModel
                     {
+                        Addable = true,
                         TopicGroups = Model.TopicGroups,
                         TopicIds = Model.ChapterTopics.Select(x => x.TopicId).ToList(),
                         Topics = Model.Topics

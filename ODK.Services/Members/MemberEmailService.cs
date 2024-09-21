@@ -1,9 +1,11 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Messages;
+using ODK.Core.Topics;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Core.Web;
@@ -419,19 +421,15 @@ public class MemberEmailService : IMemberEmailService
             .ToDictionary(x => x.ChapterPropertyId);
 
         var memberPropertiesBuilder = new EmailTableBuilder()
-            .OpenRow()
-            .AddCell("Name")
-            .AddCell(member.FullName)
-            .CloseRow();
+            .AddRow("Name", member.FullName);
 
         foreach (var chapterProperty in chapterProperties.Where(x => !x.ApplicationOnly).OrderBy(x => x.DisplayOrder))
         {
             memberPropertyDictionary.TryGetValue(chapterProperty.Id, out var memberProperty);
 
-            memberPropertiesBuilder.OpenRow();
-            memberPropertiesBuilder.AddCell(chapterProperty.Label);
-            memberPropertiesBuilder.AddCell(memberProperty?.Value ?? "-");
-            memberPropertiesBuilder.CloseRow();
+            memberPropertiesBuilder.AddRow(
+                chapterProperty.Label,
+                memberProperty?.Value ?? "-");
         }
 
         var parameters = new Dictionary<string, string>
@@ -465,6 +463,38 @@ public class MemberEmailService : IMemberEmailService
         await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.NewMember, parameters);
 
         await SendNewMemberAdminEmail(chapter, adminMembers, member, chapterProperties, memberProperties);
+    }
+
+    public async Task SendNewTopicEmail(IReadOnlyCollection<INewTopic> newTopics, SiteEmailSettings settings)
+    {
+        var url = _urlProvider.TopicApprovalUrl();
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "url", url }
+        };
+
+        var subject = "{title} - New topics";
+
+        var tableBuilder = new EmailTableBuilder();
+        for (var i = 0; i < newTopics.Count; i++)
+        {
+            tableBuilder.AddRow($"{{topicgroup-{i}}}", $"{{topic-{i}}}");
+
+            var newTopic = newTopics.ElementAt(i);
+            parameters.Add($"topicgroup-{i}", newTopic.TopicGroup);
+            parameters.Add($"topic-{i}", newTopic.Topic);
+        }
+
+        var body = new EmailBodyBuilder()
+            .AddParagraph("The following topics require approval")
+            .AddTable(tableBuilder)
+            .AddParagraphLink("url")
+            .ToString();
+
+        var to = new EmailAddressee(settings.ContactEmailAddress, "");
+
+        await _emailService.SendMemberEmail(null, to, subject, body, parameters);
     }
 
     public async Task SendPasswordResetEmail(Chapter? chapter, Member member, string token)
@@ -564,5 +594,113 @@ public class MemberEmailService : IMemberEmailService
         };
 
         return await _emailService.SendEmail(chapter, to.ToEmailAddressee(), type, parameters);
+    }
+
+    public async Task SendTopicApprovedEmails(
+        IReadOnlyCollection<INewTopic> newTopics, 
+        IReadOnlyCollection<Member> members)
+    {
+        if (newTopics.Count == 0)
+        {
+            return;
+        }
+
+        var memberDictionary = members.ToDictionary(x => x.Id);
+        var newTopicDictionary = newTopics
+            .Where(x => memberDictionary.ContainsKey(x.MemberId))
+            .GroupBy(x => x.MemberId)
+            .ToDictionary(x => x.Key, x => x.ToArray());        
+
+        foreach (var member in members)
+        {
+            newTopicDictionary.TryGetValue(member.Id, out var memberTopics);
+
+            if (memberTopics == null || memberTopics.Length == 0)
+            {
+                continue;
+            }
+
+            var subject = $"{{title}} - {StringUtils.Pluralise(memberTopics.Length, "Topic")} approved";
+
+            var parameters = new Dictionary<string, string>();
+
+            var topicTableBuilder = new EmailTableBuilder();
+            for (var i = 0; i < memberTopics.Length; i++)
+            {
+                var topicGroupParam = $"topicgroup-{i}";
+                var topicParam = $"topic-{i}";
+
+                topicTableBuilder.AddRow($"{{{topicGroupParam}}}", $"{{{topicParam}}}");
+
+                var memberTopic = memberTopics.ElementAt(i);
+                parameters.Add(topicGroupParam, memberTopic.TopicGroup);
+                parameters.Add(topicParam, memberTopic.Topic);
+            }
+
+            var message = 
+                $"The following {StringUtils.Pluralise(memberTopics.Length, "topic")} " +
+                $"{(memberTopics.Length == 1 ? "has" : "have")} been approved";
+
+            var body = new EmailBodyBuilder()
+                .AddParagraph(message)
+                .AddTable(topicTableBuilder)
+                .ToString();
+
+            await _emailService.SendMemberEmail(null, member.ToEmailAddressee(), subject, body, parameters);
+        }
+    }
+
+    public async Task SendTopicRejectedEmails(
+        IReadOnlyCollection<INewTopic> newTopics,
+        IReadOnlyCollection<Member> members)
+    {
+        if (newTopics.Count == 0)
+        {
+            return;
+        }
+
+        var memberDictionary = members.ToDictionary(x => x.Id);
+        var newTopicDictionary = newTopics
+            .Where(x => memberDictionary.ContainsKey(x.MemberId))
+            .GroupBy(x => x.MemberId)
+            .ToDictionary(x => x.Key, x => x.ToArray());
+
+        foreach (var member in members)
+        {
+            newTopicDictionary.TryGetValue(member.Id, out var memberTopics);
+
+            if (memberTopics == null || memberTopics.Length == 0)
+            {
+                continue;
+            }
+
+            var subject = $"{{title}} - {StringUtils.Pluralise(memberTopics.Length, "Topic")} rejected";
+
+            var parameters = new Dictionary<string, string>();
+
+            var topicTableBuilder = new EmailTableBuilder();
+            for (var i = 0; i < memberTopics.Length; i++)
+            {
+                var topicGroupParam = $"topicgroup-{i}";
+                var topicParam = $"topic-{i}";
+
+                topicTableBuilder.AddRow($"{{{topicGroupParam}}}", $"{{{topicParam}}}");
+
+                var memberTopic = memberTopics.ElementAt(i);
+                parameters.Add(topicGroupParam, memberTopic.TopicGroup);
+                parameters.Add(topicParam, memberTopic.Topic);
+            }
+
+            var message =
+                $"The following {StringUtils.Pluralise(memberTopics.Length, "topic")} " +
+                $"{(memberTopics.Length == 1 ? "has" : "have")} been rejected";
+
+            var body = new EmailBodyBuilder()
+                .AddParagraph(message)
+                .AddTable(topicTableBuilder)
+                .ToString();
+
+            await _emailService.SendMemberEmail(null, member.ToEmailAddressee(), subject, body, parameters);
+        }
     }
 }

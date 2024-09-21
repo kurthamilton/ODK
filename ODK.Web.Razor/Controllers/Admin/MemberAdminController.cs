@@ -5,7 +5,7 @@ using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Members;
-using ODK.Web.Common.Extensions;
+using ODK.Services.Members.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Members;

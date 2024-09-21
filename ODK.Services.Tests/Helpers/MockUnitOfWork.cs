@@ -75,6 +75,8 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository => Mock.Object.MemberSiteSubscriptionRepository;
     public IMemberSubscriptionRepository MemberSubscriptionRepository => Mock.Object.MemberSubscriptionRepository;
     public IMemberTopicRepository MemberTopicRepository => Mock.Object.MemberTopicRepository;
+    public INewChapterTopicRepository NewChapterTopicRepository => Mock.Object.NewChapterTopicRepository;
+    public INewMemberTopicRepository NewMemberTopicRepository => Mock.Object.NewMemberTopicRepository;
     public INotificationRepository NotificationRepository => Mock.Object.NotificationRepository;
     public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;    
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => Mock.Object.SiteContactMessageReplyRepository;

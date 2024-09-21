@@ -1,10 +1,14 @@
 ﻿@page "/account/create"
+@using ODK.Services.Users
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model CreateModel
+@inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_AccountLayout";
     Model.Title = "Create account";
+
+    var viewModel = await AccountViewModelService.GetAccountCreatePage();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -17,7 +21,9 @@
                 @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Account/_AccountCreateForm", new AccountCreateFormViewModel
                 {
-                    GoogleClientId = Model.GoogleClientId
+                    GoogleClientId = viewModel.GoogleClientId,
+                    TopicGroups = viewModel.TopicGroups,
+                    Topics = viewModel.Topics
                 })
             </form>
         </div>
