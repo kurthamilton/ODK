@@ -91,17 +91,6 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         };
     }
 
-    public async Task<VenueLocation?> GetVenueLocation(AdminServiceRequest request, Venue venue)
-    {
-        return await _unitOfWork.VenueLocationRepository.GetByVenueId(venue.Id);
-    }
-
-    public async Task<IReadOnlyCollection<Venue>> GetVenues(AdminServiceRequest request)
-    {
-        return await GetChapterAdminRestrictedContent(request,
-            x => x.VenueRepository.GetByChapterId(request.ChapterId));
-    }
-
     public async Task<VenuesAdminPageViewModel> GetVenuesViewModel(AdminServiceRequest request)
     {
         var platform = _platformProvider.GetPlatform();

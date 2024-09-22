@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using ODK.Core.Countries;
 using ODK.Services;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
@@ -15,6 +16,18 @@ public abstract class OdkPageModel : PageModel
     {
         get => ViewData["Description"] as string;
         set => ViewData["Description"] = value;
+    }
+
+    public ILocation? Location
+    {
+        get => ViewData["Location"] as ILocation;
+        set => ViewData["Location"] = value;
+    }
+
+    public IReadOnlyCollection<string>? Keywords
+    {
+        get => ViewData["Keywords"] as IReadOnlyCollection<string>;
+        set => ViewData["Keywords"] = value;
     }
 
     public string? Path

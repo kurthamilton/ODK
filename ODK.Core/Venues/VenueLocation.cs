@@ -2,11 +2,14 @@
 
 namespace ODK.Core.Venues;
 
-public class VenueLocation
+public class VenueLocation : ILocation
 {
     public LatLong LatLong { get; set; }
 
     public string Name { get; set; } = "";
 
     public Guid VenueId { get; set; }
+
+    public double DistanceFrom(ILocation other, DistanceUnit unit)
+        => LatLong.DistanceFrom(other.LatLong, unit);
 }

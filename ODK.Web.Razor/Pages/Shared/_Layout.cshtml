@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
 @using ODK.Core.Chapters
+@using ODK.Core.Countries
 @using ODK.Core.Platforms
 @using ODK.Core.Utils
 @using ODK.Core.Web
@@ -35,6 +36,25 @@
         : null;
 
     var description = ViewData["Description"] as string;
+
+    var keywords = ViewData["Keywords"] as IReadOnlyCollection<string>;
+
+    var location = ViewData["Location"] as ILocation;
+
+    var keywordDescription = "";
+    if (keywords != null && keywords.Count > 0)
+    {
+        keywordDescription = string.Join(", ", keywords);
+
+        if (location != null)
+        {
+            keywordDescription += $" in {location.Name}";
+        }
+
+        keywordDescription += ".";
+    }    
+
+    description = $"{keywordDescription} {description}".Trim();
 }
 
 <!DOCTYPE html>
@@ -45,7 +65,7 @@
     <title>@title</title>    
     @if (!string.IsNullOrEmpty(description))
     {
-        <meta  name="description" content="@description" />
+        <meta name="description" content="@description" />
     }
 
     @if (!string.IsNullOrEmpty(canonicalUrl))
@@ -56,6 +76,13 @@
         }
 
         <link rel="canonical" href="@canonicalUrl.ToLowerInvariant()">
+    }
+
+    @if (location != null)
+    {
+        <meta name="geo.placename" content="@location.Name" />
+        <meta name="geo.position" content="@location.LatLong.Lat;@location.LatLong.Long" />
+        <meta name="ICBM" content="@location.LatLong.Lat,@location.LatLong.Long" />
     }
 
     @await RenderSectionAsync("meta", required: false)

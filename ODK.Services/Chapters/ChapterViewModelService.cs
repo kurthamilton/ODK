@@ -461,7 +461,8 @@ public class ChapterViewModelService : IChapterViewModelService
             recentEvents, 
             hasImage,
             hasQuestions, 
-            texts
+            texts,
+            chapterTopics
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null 
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
@@ -480,7 +481,8 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.EventRepository.GetRecentEventsByChapterId(chapter.Id, 3),
             x => x.ChapterImageRepository.ExistsForChapterId(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id));
+            x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterTopicRepository.GetByChapterId(chapter.Id));
 
         var location = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
 
@@ -540,6 +542,7 @@ public class ChapterViewModelService : IChapterViewModelService
             Platform = platform,
             RecentEvents = recentEventViewModels,
             Texts = texts,
+            Topics = chapterTopics.Select(x => x.Topic).ToArray(),
             UpcomingEvents = upcomingEventViewModels
         };
     }
@@ -702,7 +705,8 @@ public class ChapterViewModelService : IChapterViewModelService
             links, 
             texts, 
             instagramPosts, 
-            latestMembers) = await _unitOfWork.RunAsync(
+            latestMembers,
+            chapterTopics) = await _unitOfWork.RunAsync(
             x => currentMemberId != null 
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value) 
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
@@ -716,7 +720,10 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterLinksRepository.GetByChapterId(chapter.Id),
             x => x.ChapterTextsRepository.GetByChapterId(chapter.Id),
             x => x.InstagramPostRepository.GetByChapterId(chapter.Id, 8),
-            x => x.MemberRepository.GetLatestByChapterId(chapter.Id, 8));
+            x => x.MemberRepository.GetLatestByChapterId(chapter.Id, 8),
+            x => x.ChapterTopicRepository.GetByChapterId(chapter.Id));
+
+        var chapterLocation = await _unitOfWork.ChapterLocationRepository.GetByChapterId(chapter.Id);
 
         var eventIds = events.Select(x => x.Id).ToArray();
 
@@ -758,13 +765,15 @@ public class ChapterViewModelService : IChapterViewModelService
         return new ChapterHomePageViewModel
         {
             Chapter = chapter,
+            ChapterLocation = chapterLocation,
             CurrentMember = currentMember,
             Events = eventResponseViewModels,
             InstagramPosts = showInstagramFeed ? instagramPosts : [],
             LatestMembers = latestMembers,
             Links = links,
             Platform = platform,
-            Texts = texts
+            Texts = texts,
+            Topics = chapterTopics.Select(x => x.Topic).ToArray()
         };
     }
 

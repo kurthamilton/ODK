@@ -9,6 +9,12 @@
     var viewModel = await ChapterViewModelService.GetGroupHomePage(Model.CurrentMemberIdOrDefault, Model.Slug);
 
     Model.Title = viewModel.Chapter.Name;
+
+    Model.Keywords = viewModel.Topics
+        .Select(x => x.Name)
+        .ToArray();
+
+    Model.Location = viewModel.ChapterLocation;
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.SocialMedia;
+using ODK.Core.Topics;
 
 namespace ODK.Services.Chapters.ViewModels;
 
@@ -21,6 +22,8 @@ public class GroupHomePageViewModel : GroupPageViewModelBase
     public required IReadOnlyCollection<GroupPageListEventViewModel> RecentEvents { get; init; }
 
     public required ChapterTexts? Texts { get; init; }
+
+    public required IReadOnlyCollection<Topic> Topics { get; init; }
 
     public required IReadOnlyCollection<GroupPageListEventViewModel> UpcomingEvents { get; init; }
 }

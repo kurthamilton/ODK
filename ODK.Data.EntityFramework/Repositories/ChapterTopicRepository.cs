@@ -75,4 +75,8 @@ public class ChapterTopicRepository : WriteRepositoryBase<ChapterTopic>, IChapte
 
         return changes;
     }
+
+    protected override IQueryable<ChapterTopic> Set() => base.Set()
+        .Include(x => x.Topic)
+        .ThenInclude(x => x.TopicGroup);
 }

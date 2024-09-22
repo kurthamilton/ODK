@@ -11,11 +11,9 @@ public abstract class VenueAdminPageModel : AdminPageModel
         : base(requestCache)
     {
         VenueAdminService = venueAdminService;
-    }
+    }    
 
-    public VenueLocation? Location { get; private set; }
-
-    public Venue Venue { get; private set; } = null!;    
+    public Venue Venue { get; private set; } = null!;
 
     public Guid VenueId => Guid.TryParse(Request.RouteValues["id"]?.ToString(), out Guid id) ? id : Guid.Empty;
 
@@ -32,7 +30,5 @@ public abstract class VenueAdminPageModel : AdminPageModel
             Response.Redirect($"{Request.RouteValues["chapterName"]}/Admin/Events/Venues");
             return;
         }
-
-        Location = await VenueAdminService.GetVenueLocation(request, Venue);        
     }
 }

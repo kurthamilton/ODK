@@ -21,7 +21,7 @@ public abstract class ChapterPageModel : OdkPageModel
         var chapter = await new ChapterPageContext(_requestCache, HttpContext).GetChapterAsync();
         OdkAssertions.Exists(chapter);
 
-        Chapter = chapter;
+        Chapter = chapter;        
 
         await base.OnPageHandlerExecutionAsync(context, next);
     }

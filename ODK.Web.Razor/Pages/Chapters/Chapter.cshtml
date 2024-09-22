@@ -31,6 +31,10 @@
 
     Model.Description = description;
     Model.Path = $"/{viewModel.Chapter.Name}";
+    Model.Keywords = viewModel.Topics
+        .Select(x => x.Name)
+        .ToArray();
+    Model.Location = viewModel.ChapterLocation;
 }
 
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel

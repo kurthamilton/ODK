@@ -17,7 +17,7 @@ public class ChapterTopicMap : IEntityTypeConfiguration<ChapterTopic>
             .WithMany()
             .HasForeignKey(x => x.ChapterId);
 
-        builder.HasOne<Topic>()
+        builder.HasOne(x => x.Topic)
             .WithMany()
             .HasForeignKey(x => x.TopicId);
     }
