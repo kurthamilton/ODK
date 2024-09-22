@@ -32,7 +32,7 @@
         @Html.ValidationMessageFor(x => x.Image)
 
         <div class="mt-3 @(string.IsNullOrEmpty(imageSrc) ? "d-none" : null)" data-img-preview-container>
-            <img src="@imageSrc" data-img-preview data-img-resize data-img-ratio="" />
+            <img src="@imageSrc" data-img-preview data-img-resize data-img-ratio="@ChapterImage.AspectRatio" />
         </div>
     </div>
 </div>
