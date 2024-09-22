@@ -13,7 +13,7 @@
                     @if (Model.Owned.Count > 0)
                     {
                         <div class="d-flex flex-column gap-3">
-                            @foreach (var group in Model.Owned)
+                            @foreach (var group in Model.Owned.OrderBy(x => x.Chapter.Name))
                             {
                                 @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
                             }
@@ -38,7 +38,7 @@
                 TitleContentFunc = @<h5>Manager</h5>,
                 BodyContentFunc = 
                     @<div class="d-flex flex-column gap-3">
-                        @foreach (var group in Model.Admin)
+                        @foreach (var group in Model.Admin.OrderBy(x => x.Chapter.Name))
                         {
                             @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
                         }
@@ -56,7 +56,7 @@
                     @if (Model.Member.Count > 0)
                     {
                         <div class="d-flex flex-column gap-3">
-                            @foreach (var group in Model.Member)
+                            @foreach (var group in Model.Member.OrderBy(x => x.Chapter.Name))
                             {
                                 @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
                             }
