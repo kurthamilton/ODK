@@ -916,7 +916,8 @@ public class ChapterViewModelService : IChapterViewModelService
 
         if (location == null)
         {
-            return chaptersWithDistances;
+            return chapters
+                .ToDictionary(x => x.Id, x => 0.0);
         }        
 
         var chapterLocationDictionary = chapterLocations
