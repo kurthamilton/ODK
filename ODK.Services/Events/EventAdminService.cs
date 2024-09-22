@@ -539,7 +539,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
                 continue;
             }
 
-            if (email.ScheduledUtc > DateTime.Now)
+            if (email.ScheduledUtc > DateTime.UtcNow)
             {
                 continue;
             }
@@ -957,7 +957,8 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             return;
         }
 
-        var scheduledDate = @event.Date.Previous(settings.DefaultScheduledEmailDayOfWeek.Value);
+        var localEventDate = chapter.ToChapterTime(@event.Date).Date;
+        var scheduledDate = localEventDate.Previous(settings.DefaultScheduledEmailDayOfWeek.Value);
         var scheduledDateTimeLocal = settings.GetScheduledDateTime(scheduledDate);
         if (scheduledDateTimeLocal == null)
         {

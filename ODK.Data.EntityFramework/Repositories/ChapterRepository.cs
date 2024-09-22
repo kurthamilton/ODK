@@ -77,6 +77,17 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
         return query.DeferredMultiple();
     }
 
+    public override void Update(Chapter entity)
+    {
+        var clone = entity.Clone();
+        if (clone.Platform == PlatformType.DrunkenKnitwits && !clone.Name.EndsWith(" Drunken Knitwits"))
+        {
+            clone.Name += " Drunken Knitwits";
+        }
+
+        base.Update(clone);
+    }
+
     protected override void PreCommit(IEnumerable<Chapter> pending)
     {
         base.PreCommit(pending);
