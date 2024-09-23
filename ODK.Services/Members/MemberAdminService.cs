@@ -46,6 +46,27 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<ServiceResult> ApproveMember(AdminServiceRequest request, Guid memberId)
+    {
+        var (chapter, member) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(memberId));
+
+        var memberChapter = member.MemberChapter(request.ChapterId);
+
+        OdkAssertions.MemberOf(member, request.ChapterId);
+        OdkAssertions.Exists(memberChapter);
+
+        memberChapter.Approved = true;
+
+        _unitOfWork.MemberChapterRepository.Update(memberChapter);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _memberEmailService.SendMemberApprovedEmail(chapter, member);
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(AdminServiceRequest request, Guid memberId)
     {
         var platform = _platformProvider.GetPlatform();
@@ -110,6 +131,26 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         return member;
     }
     
+    public async Task<MemberApprovalsAdminPageViewModel> GetMemberApprovalsViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, members, membershipSettings) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetAllByChapterId(request.ChapterId),
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId));
+
+        return new MemberApprovalsAdminPageViewModel
+        {
+            Chapter = chapter,
+            MembershipSettings = membershipSettings,
+            Pending = members
+                .Where(x => x.MemberChapter(request.ChapterId)?.Approved == false)
+                .ToArray(),
+            Platform = platform
+        };
+    }
+
     public async Task<MemberAvatar?> GetMemberAvatar(AdminServiceRequest request, Guid memberId)
     {
         var (member, memberAvatar) = await GetChapterAdminRestrictedContent(request,
@@ -176,7 +217,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
                 member.Id.ToString(),
                 member.FirstName,
                 member.LastName,
-                member.MemberChapter(request.ChapterId).CreatedUtc.ToString("yyyy-MM-dd"),
+                member.MemberChapter(request.ChapterId)?.CreatedUtc.ToString("yyyy-MM-dd") ?? "",
                 member.Activated ? "Y" : "",
                 subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "",
                 subscription?.Type.ToString() ?? ""
@@ -499,6 +540,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             foreach (var member in members)
             {
                 var memberChapter = member.MemberChapter(chapter.Id);
+                if (memberChapter  == null)
+                {
+                    continue;
+                }
 
                 if (!memberSubscriptionDictionary.TryGetValue(member.Id, out var memberSubscription))
                 {
@@ -658,6 +703,10 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId));
 
         var memberChapter = member.MemberChapter(chapterId);
+        if (memberChapter == null)
+        {
+            return ServiceResult.Failure("Member chapter not found");
+        }
 
         if (memberSubscription == null)
         {

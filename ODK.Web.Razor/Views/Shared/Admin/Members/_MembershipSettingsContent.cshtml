@@ -19,6 +19,7 @@
                 @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Admin/Members/_MembershipSettingsForm", new MembershipSettingsFormViewModel
                 {
+                    ApproveNewMembers = membershipSettings?.ApproveNewMembers ?? false,
                     Enabled = membershipSettings?.Enabled ?? false,
                     MembershipDisabledAfter = membershipSettings?.MembershipDisabledAfterDaysExpired ?? 0,
                     MembershipExpiringWarningDays = membershipSettings?.MembershipExpiringWarningDays ?? 0,

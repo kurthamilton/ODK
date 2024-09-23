@@ -1362,16 +1362,32 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ServiceResult> UpdateChapterMembershipSettings(AdminServiceRequest request, 
         UpdateChapterMembershipSettings model)
     {
-        var settings = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId));
+        var (settings, ownerSubscription) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
+
+        if (ownerSubscription?.HasFeature(SiteFeatureType.MemberSubscriptions) != true)
+        {
+            return ServiceResult.Failure("Not permitted");
+        }
+
         if (settings == null)
         {
             settings = new ChapterMembershipSettings();
         }
 
-        settings.Enabled = model.Enabled;
-        settings.MembershipDisabledAfterDaysExpired = model.MembershipDisabledAfterDaysExpired;
-        settings.MembershipExpiringWarningDays = model.MembershipExpiringWarningDays;
+        if (ownerSubscription?.HasFeature(SiteFeatureType.ApproveMembers) == true)
+        {
+            settings.ApproveNewMembers = model.ApproveNewMembers;
+        }
+        
+        if (ownerSubscription?.HasFeature(SiteFeatureType.MemberSubscriptions) == true)
+        {
+            settings.Enabled = model.Enabled;
+            settings.MembershipDisabledAfterDaysExpired = model.MembershipDisabledAfterDaysExpired;
+            settings.MembershipExpiringWarningDays = model.MembershipExpiringWarningDays;
+        }
+        
         settings.TrialPeriodMonths = model.TrialPeriodMonths;
 
         var validationResult = ValidateChapterMembershipSettings(settings);

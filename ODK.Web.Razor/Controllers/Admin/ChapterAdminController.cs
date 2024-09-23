@@ -99,6 +99,7 @@ public class ChapterAdminController : AdminControllerBase
         var result = await _chapterAdminService.UpdateChapterMembershipSettings(request,
             new UpdateChapterMembershipSettings
             {
+                ApproveNewMembers = viewModel.ApproveNewMembers,
                 Enabled = viewModel.Enabled,
                 MembershipDisabledAfterDaysExpired = viewModel.MembershipDisabledAfter,
                 MembershipExpiringWarningDays = viewModel.MembershipExpiringWarningDays,

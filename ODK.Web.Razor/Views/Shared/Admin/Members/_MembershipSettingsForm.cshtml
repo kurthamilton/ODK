@@ -1,5 +1,11 @@
-﻿@using ODK.Web.Common.Extensions
-@model ODK.Web.Razor.Models.Admin.Members.MembershipSettingsFormViewModel
+﻿@using ODK.Core.Platforms
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin.Members
+@model MembershipSettingsFormViewModel
+@inject IPlatformProvider PlatformProvider
+@{
+    var platform = PlatformProvider.GetPlatform();
+}
 
 <div class="mb-3 form-check form-switch">
     @Html.OdkCheckBoxFor(x => x.Enabled, new { @class = "form-check-input" })
@@ -9,6 +15,18 @@
         @await Html.PartialAsync("Components/_Tooltip", "Whether or not membership is enforced")
     </span>
 </div>
+
+@if (platform != PlatformType.DrunkenKnitwits)
+{
+    <div class="mb-3 form-check form-switch">
+        @Html.OdkCheckBoxFor(x => x.ApproveNewMembers, new { @class = "form-check-input" })
+        @Html.LabelFor(x => x.ApproveNewMembers, new { @class = "form-check-label" })
+
+        <span>
+            @await Html.PartialAsync("Components/_Tooltip", "New members need approval before they are able to access protected content")
+        </span>
+    </div>
+}
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.TrialPeriodMonths, new { @class = "form-label" })

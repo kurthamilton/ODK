@@ -2,6 +2,8 @@
 
 public class UpdateChapterMembershipSettings
 {
+    public required bool ApproveNewMembers { get; set; }
+
     public required bool Enabled { get; init; }
 
     public required int MembershipDisabledAfterDaysExpired { get; init; }

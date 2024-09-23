@@ -1,0 +1,12 @@
+﻿@page "/my/groups/{id:guid}/members/approvals"
+@using ODK.Services.Members
+@model ApprovalsModel
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Member approvals | Admin";
+
+    var viewModel = await MemberAdminService.GetMemberApprovalsViewModel(Model.AdminServiceRequest);
+}
+
+@await Html.PartialAsync("Admin/Members/_ApprovalsContent", viewModel)

@@ -50,13 +50,18 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public EmailAddressee ToEmailAddressee() => new EmailAddressee(EmailAddress, FullName);    
 
-    public MemberChapter MemberChapter(Guid chapterId) => Chapters.First(x => x.ChapterId == chapterId);
+    public MemberChapter? MemberChapter(Guid chapterId) => Chapters
+        .FirstOrDefault(x => x.ChapterId == chapterId);
 
-    public bool IsMemberOf(Guid chapterId) => Chapters.Any(x => x.ChapterId == chapterId);
+    public bool IsApprovedMemberOf(Guid chapterId) => MemberChapter(chapterId)?.Approved == true;
+
+    public bool IsMemberOf(Guid chapterId) => MemberChapter(chapterId) != null;
 
     public bool IsCurrent() => Activated;
 
-    public bool SharesChapterWith(Member other) => other.Chapters.Any(x => IsMemberOf(x.ChapterId));
+    public bool SharesChapterWith(Member other) => other.Chapters
+        .Where(x => x.Approved)
+        .Any(x => IsApprovedMemberOf(x.ChapterId));
 
     public bool Visible(Guid chapterId) => !PrivacySettings.Any(x => x.ChapterId == chapterId && x.HideProfile);
 }

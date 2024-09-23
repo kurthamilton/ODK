@@ -132,7 +132,7 @@ public class AuthorizationService : IAuthorizationService
         MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings)
     {        
-        var subscriptionStatus = member?.IsMemberOf(chapterId) == true 
+        var subscriptionStatus = member?.IsApprovedMemberOf(chapterId) == true 
             ? GetSubscriptionStatus(member, subscription, membershipSettings)
             : SubscriptionStatus.None;
 

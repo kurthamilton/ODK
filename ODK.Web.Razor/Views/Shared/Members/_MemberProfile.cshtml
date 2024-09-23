@@ -12,7 +12,13 @@
         .OrderBy(x => chapterPropertyDictionary[x.ChapterPropertyId].DisplayOrder)
         .ToArray();
 
-    var joined = Model.Member.MemberChapter(Model.Chapter.Id).CreatedUtc;
+    var memberChapter = Model.Member.MemberChapter(Model.Chapter.Id);
+    if (memberChapter == null)
+    {
+        return;
+    }
+
+    var joined = memberChapter.CreatedUtc;
 }
 
 <form>

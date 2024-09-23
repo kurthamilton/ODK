@@ -53,6 +53,8 @@ public interface IMemberEmailService
 
     Task SendGroupApprovedEmail(Chapter chapter, Member owner);
 
+    Task SendMemberApprovedEmail(Chapter chapter, Member member);
+
     Task SendMemberChapterSubscriptionConfirmationEmail(
         Chapter chapter,
         ChapterPaymentSettings chapterPaymentSettings,
@@ -80,7 +82,7 @@ public interface IMemberEmailService
     Task SendNewMemberAdminEmail(
         Chapter chapter,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
-        Member member,
+        Member member,        
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties);
 

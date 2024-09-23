@@ -6,6 +6,8 @@ namespace ODK.Services.Members;
 
 public interface IMemberAdminService
 {    
+    Task<ServiceResult> ApproveMember(AdminServiceRequest request, Guid memberId);
+
     Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(AdminServiceRequest request, Guid memberId);
 
     Task<AdminMembersAdminPageViewModel> GetAdminMembersAdminPageViewModel(AdminServiceRequest request);
@@ -13,6 +15,8 @@ public interface IMemberAdminService
     Task<BulkEmailAdminPageViewModel> GetBulkEmailViewModel(AdminServiceRequest request);
 
     Task<Member> GetMember(AdminServiceRequest request, Guid memberId);
+
+    Task<MemberApprovalsAdminPageViewModel> GetMemberApprovalsViewModel(AdminServiceRequest request);
 
     Task<MemberAvatar?> GetMemberAvatar(AdminServiceRequest request, Guid memberId);
 

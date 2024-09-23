@@ -53,6 +53,9 @@ public class UrlProvider : IUrlProvider
     public string GroupsUrl()
         => GetUrl(OdkRoutes.Groups.Index(_platform));
 
+    public string MemberAdminUrl(Chapter chapter, Guid memberId)
+        => GetUrl(OdkRoutes.MemberGroups.Member(_platform, chapter, memberId));
+
     public string MemberSiteSubscriptionUrl()
         => GetUrl(OdkRoutes.Account.Subscription(_platform, null));
 

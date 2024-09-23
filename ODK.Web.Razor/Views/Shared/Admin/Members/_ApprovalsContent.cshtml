@@ -1,0 +1,61 @@
+﻿@using ODK.Core.Utils
+@using ODK.Services.Members.ViewModels
+@using ODK.Web.Common.Routes
+@model MemberApprovalsAdminPageViewModel
+
+<h2>Members waiting for approval</h2>
+
+@if (Model.MembershipSettings?.ApproveNewMembers != true)
+{
+    <p>
+        Members don't require approval at the moment. 
+        <a href="@OdkRoutes.MemberGroups.MembershipSettings(Model.Platform, Model.Chapter)">Membership settings</a>
+    </p>
+
+    if (Model.Pending.Count == 0)
+    {
+        return;
+    }
+}
+
+<section class="section">
+    @if (Model.Pending.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Joined</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var member in Model.Pending.OrderBy(x => x.FullName))
+                    {
+                        <tr>
+                            <td>
+                                <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)" target="_blank">
+                                    @member.FullName
+                                </a>
+                            </td>
+                            <td>
+                                @member.MemberChapter(Model.Chapter.Id)?.CreatedUtc.ToFriendlyDateString(Model.Chapter.TimeZone)
+                            </td>
+                            <td>
+                                <form action="/groups/@Model.Chapter.Id/members/@member.Id/approve" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-success">Approve</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>There are no members waiting for approval</p>
+    }
+</section>

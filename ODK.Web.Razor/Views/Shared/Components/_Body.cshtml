@@ -15,14 +15,14 @@
         WidthClass = Model.WidthClass
     })
 
+    @if (Model.Menu != null)
+    {
+        @Model.Menu
+    }
+
     <div class="container">
         <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
-            <div class="@(Model.WidthClass ?? "col-12")">
-                @if (Model.Menu != null)
-                {
-                    @Model.Menu
-                }
-
+            <div class="@(Model.WidthClass ?? "col-12")">                
                 <div class="page-alerts">
                     @if (!Model.HideSubscriptionAlert)
                     {

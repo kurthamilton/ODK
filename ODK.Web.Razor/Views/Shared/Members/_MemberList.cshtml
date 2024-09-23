@@ -9,7 +9,7 @@
 
 <div class="row g-0 
             @(Model.Cols == 6 ? "row-cols-6" : null)
-            @(Model.Cols == 4 ? "row-cols-md-3 row-cols-4" : null)
+            @(Model.Cols == 4 ? "row-cols-4" : null)
             @(Model.Cols == 3 ? "row-cols-md-6 row-cols-3" : null)
             @(Model.Cols == 2 ? "row-cols-lg-4 row-cols-2" : null)">
     @foreach (ListMemberViewModel member in Model.Members)

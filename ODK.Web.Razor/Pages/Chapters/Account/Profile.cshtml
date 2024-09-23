@@ -14,7 +14,13 @@
     Model.Title = "Profile";
 
     var viewModel = await AccountViewModelService.GetChapterProfilePage(Model.CurrentMemberId, Model.ChapterName);
-    var dateJoined = viewModel.CurrentMember.MemberChapter(viewModel.Chapter.Id).CreatedUtc;
+    var memberChapter = viewModel.CurrentMember.MemberChapter(viewModel.Chapter.Id);
+    if (memberChapter == null)
+    {
+        return;
+    }
+
+    var dateJoined = memberChapter.CreatedUtc;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

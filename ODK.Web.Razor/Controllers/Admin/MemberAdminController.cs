@@ -32,6 +32,16 @@ public class MemberAdminController : AdminControllerBase
         _requestCache = requestCache;
     }
 
+    [HttpPost("groups/{chapterId:guid}/members/{id:guid}/approve")]
+    public async Task<IActionResult> ApproveMember(Guid chapterId, Guid id)
+    {
+        var request = new AdminServiceRequest(chapterId, MemberId);
+
+        var result = await _memberAdminService.ApproveMember(request, id);
+        AddFeedback(result, "Member approved");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/picture")]
     public async Task<IActionResult> UpdatePicture(Guid chapterId, Guid id,
         [FromForm] string imageDataUrl)

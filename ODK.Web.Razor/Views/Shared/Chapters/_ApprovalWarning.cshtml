@@ -1,0 +1,11 @@
+﻿@using ODK.Core.Members
+@model MemberChapter
+
+@if (Model.Approved)
+{
+    return;
+}
+
+<div class="alert alert-warning">
+    Your membership is pending approval
+</div>

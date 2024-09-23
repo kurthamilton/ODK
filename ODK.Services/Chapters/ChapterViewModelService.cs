@@ -845,7 +845,7 @@ public class ChapterViewModelService : IChapterViewModelService
             }
             else
             {
-                admin.Add(viewModel);
+                member.Add(viewModel);
             }
         }
 

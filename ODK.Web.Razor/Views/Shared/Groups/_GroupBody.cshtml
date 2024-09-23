@@ -1,6 +1,9 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
 @model GroupBodyViewModel
+@{
+    var memberChapter = Model.Group.CurrentMember?.MemberChapter(Model.Group.Chapter.Id);
+}
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
@@ -9,6 +12,11 @@
     Title = Model.Group.Chapter.Name,
     ContentFunc = 
         @<div>
+            @if (memberChapter != null)
+            {
+                @await Html.PartialAsync("Chapters/_ApprovalWarning", memberChapter)
+            }
+
             @if (!string.IsNullOrEmpty(Model.Title))
             {
                 <h2>@Model.Title</h2>

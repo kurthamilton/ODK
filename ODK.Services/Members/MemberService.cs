@@ -535,12 +535,11 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Payment not made: subscription not found");
         }
 
-        if (!member.IsMemberOf(chapterSubscription.ChapterId))
+        var memberChapter = member.MemberChapter(chapterSubscription.ChapterId);
+        if (memberChapter == null)
         {
             return ServiceResult.Failure("Payment not made: you are not a member of this subscription's chapter");
         }
-        
-        var memberChapter = member.MemberChapter(chapterSubscription.ChapterId);
 
         var paymentResult = await _paymentService.MakePayment(paymentSettings, 
             paymentSettings.Currency, member, (decimal)chapterSubscription.Amount, cardToken, 
@@ -990,16 +989,18 @@ public class MemberService : IMemberService
         }
     }        
     
-    private void AddMemberToChapter(
+    private MemberChapter AddMemberToChapter(
         DateTime now, 
         Member member, 
         Chapter chapter, 
         IEnumerable<MemberProperty> memberProperties, 
         ChapterMembershipSettings? membershipSettings,
         MemberSiteSubscription? ownerSubscription)
-    {
+    {        
         var memberChapter = new MemberChapter
         {
+            Approved = ownerSubscription?.HasFeature(SiteFeatureType.ApproveMembers) != true ||
+                membershipSettings?.ApproveNewMembers != true,
             CreatedUtc = now,
             MemberId = member.Id,
             ChapterId = chapter.Id
@@ -1020,6 +1021,8 @@ public class MemberService : IMemberService
         }        
 
         _unitOfWork.MemberPropertyRepository.AddMany(memberProperties);
+
+        return memberChapter;
     }
 
     private async Task<ServiceResult> RequestMemberEmailAddressUpdate(

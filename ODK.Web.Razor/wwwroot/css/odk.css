@@ -12440,6 +12440,9 @@ html[data-platform=odk] {
   padding-right: 0.5rem;
 }
 
+.navbar--group {
+  background-color: var(--odk-bg-level-2);
+}
 .navbar--group .navbar-nav {
   display: flex;
   gap: 1rem;

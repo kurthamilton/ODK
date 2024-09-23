@@ -147,6 +147,9 @@ public class MemberGroupRoutes
     public string MemberAdmins(PlatformType platform, Chapter chapter) 
         => $"{Members(platform, chapter)}/admins";
 
+    public string MemberApprovals(PlatformType platform, Chapter chapter)
+        => $"{Members(platform, chapter)}/approvals";
+
     public string MemberConversations(PlatformType platform, Chapter chapter, Guid memberId)
         => $"{Member(platform, chapter, memberId)}/conversations";
 

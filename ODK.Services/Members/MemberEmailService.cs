@@ -1,5 +1,4 @@
-﻿using System;
-using System.Web;
+﻿using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
@@ -259,6 +258,24 @@ public class MemberEmailService : IMemberEmailService
             parameters);
     }
 
+    public async Task SendMemberApprovedEmail(Chapter chapter, Member member)
+    {
+        var url = _urlProvider.GroupUrl(chapter);
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "url", url }
+        };
+
+        var subject = "{title} - You have been approved by {chapter.name}";
+        var body = new EmailBodyBuilder()
+            .AddParagraph("Your application to join {chapter.name} has been approved")
+            .AddParagraphLink("url")
+            .ToString();
+
+        await _emailService.SendMemberEmail(chapter, member.ToEmailAddressee(), subject, body, parameters);
+    }
+
     public async Task SendMemberChapterSubscriptionConfirmationEmail(
         Chapter chapter,
         ChapterPaymentSettings chapterPaymentSettings,
@@ -309,7 +326,7 @@ public class MemberEmailService : IMemberEmailService
 
     public async Task SendMemberDeleteEmail(Chapter chapter, Member member, string? reason)
     {
-        var subject = "{title} - you have been removed";
+        var subject = "{title} - you have been removed from a group";
 
         var bodyBuilder = new EmailBodyBuilder()
             .AddParagraph("You have been removed from the {chapter.name} group");
@@ -372,7 +389,7 @@ public class MemberEmailService : IMemberEmailService
             {
                 { "member.name", member.FullName },
                 { "chapter.name", chapter.Name },
-                { "joined", memberChapter.CreatedUtc.ToFriendlyDateString(chapter.TimeZone) ?? "-" },
+                { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(chapter.TimeZone) ?? "-" },
                 { "reason", reason ?? "" }
             };
 
@@ -432,9 +449,12 @@ public class MemberEmailService : IMemberEmailService
                 memberProperty?.Value ?? "-");
         }
 
+        var url = _urlProvider.MemberAdminUrl(chapter, member.Id);
+
         var parameters = new Dictionary<string, string>
         {
-            { "html:member.properties", memberPropertiesBuilder.ToString() }
+            { "html:member.properties", memberPropertiesBuilder.ToString() },
+            { "url", url }
         };
 
         var to = adminMembers

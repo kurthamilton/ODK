@@ -4,6 +4,7 @@ public enum SiteFeatureType
 {
     None,
     AdminMembers,
+    ApproveMembers,
     EventTickets,
     InstagramFeed,
     MemberSubscriptions,

@@ -2,6 +2,8 @@
 
 public class MemberChapter : IDatabaseEntity, IChapterEntity
 {
+    public bool Approved { get; set; }
+
     public Guid ChapterId { get; set; }
 
     public DateTime CreatedUtc { get; set; }

@@ -96,7 +96,7 @@ public class Event : IDatabaseEntity, IChapterEntity
         }
 
         return member?.SuperAdmin == true || 
-            (member?.IsCurrent() == true && member?.IsMemberOf(ChapterId) == true);
+            (member?.IsCurrent() == true && member?.IsApprovedMemberOf(ChapterId) == true);
     }
 
     public int? NumberOfSpacesLeft(int numberOfAttendees)

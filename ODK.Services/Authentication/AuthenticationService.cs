@@ -54,7 +54,7 @@ public class AuthenticationService : IAuthenticationService
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.NewMember),
-            x => x.MemberRepository.GetById(token.MemberId),
+            x => x.MemberRepository.GetById(token.MemberId),            
             x => x.MemberPasswordRepository.GetByMemberId(token.MemberId),
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
             x => x.MemberPropertyRepository.GetByMemberId(token.MemberId, chapterId));
