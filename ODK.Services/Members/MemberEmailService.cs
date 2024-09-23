@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
+using ODK.Core.Issues;
 using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Topics;
@@ -276,6 +277,14 @@ public class MemberEmailService : IMemberEmailService
         await _emailService.SendMemberEmail(chapter, member.ToEmailAddressee(), subject, body, parameters);
     }
 
+    public async Task<ServiceResult> SendIssueReply(
+        Issue issue,
+        IssueMessage reply,
+        Member member)
+    {
+
+    }
+
     public async Task SendMemberChapterSubscriptionConfirmationEmail(
         Chapter chapter,
         ChapterPaymentSettings chapterPaymentSettings,
@@ -425,6 +434,27 @@ public class MemberEmailService : IMemberEmailService
             subject,
             body,
             parameters);
+    }
+
+    public async Task SendNewIssueEmail(Member member, Issue issue, IssueMessage message, SiteEmailSettings settings)
+    {
+        var subject = "{title} - New issue";
+
+        var body = new EmailBodyBuilder()
+            .AddParagraph("A new issue has been created by {member.name}:")
+            .AddParagraph("{issue.title}")
+            .AddParagraph("{issue.message}")
+            .AddParagraphLink("url")
+            .ToString();
+
+        var to = new EmailAddressee(settings.ContactEmailAddress, "");
+        await _emailService.SendMemberEmail(null, to, subject, body, new Dictionary<string, string>
+        {
+            { "issue.title", issue.Title },
+            { "issue.title", issue.Title },
+            { "member.name", member.FullName },
+            { "url", _urlProvider.IssueAdminUrl(issue.Id) }
+        });
     }
 
     public async Task SendNewMemberAdminEmail(

@@ -57,6 +57,8 @@ internal class MockUnitOfWork : IUnitOfWork
     public IFeatureRepository FeatureRepository => Mock.Object.FeatureRepository;
     public IInstagramImageRepository InstagramImageRepository => Mock.Object.InstagramImageRepository;
     public IInstagramPostRepository InstagramPostRepository => Mock.Object.InstagramPostRepository;
+    public IIssueMessageRepository IssueMessageRepository => Mock.Object.IssueMessageRepository;
+    public IIssueRepository IssueRepository => Mock.Object.IssueRepository;
     public IMemberActivationTokenRepository MemberActivationTokenRepository => Mock.Object.MemberActivationTokenRepository;
     public IMemberAvatarRepository MemberAvatarRepository => Mock.Object.MemberAvatarRepository;
     public IMemberChapterRepository MemberChapterRepository => Mock.Object.MemberChapterRepository;
