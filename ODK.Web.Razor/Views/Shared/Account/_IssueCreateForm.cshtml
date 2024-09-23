@@ -1,0 +1,23 @@
+﻿@using ODK.Core.Issues
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Account
+@model IssueCreateFormViewModel
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Type, new { @class = "form-label" })
+    @Html.OdkEnumDropDownFor(x => x.Type, new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.Type)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Title, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Title, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Title)
+</div>
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Message, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.Message, new { @class = "form-control", rows = 5 })
+    @Html.ValidationMessageFor(x => x.Message)
+</div>
+

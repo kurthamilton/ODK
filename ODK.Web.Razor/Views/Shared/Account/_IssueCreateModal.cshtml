@@ -1,0 +1,16 @@
+﻿@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+
+@await Html.PartialAsync("Components/_Modal", new ModalViewModel
+{
+    Title = "New issue",
+    Id = "issue-create-modal",
+    Body = 
+        @<div>
+            <form action="/account/issues" method="post">
+                @Html.AntiForgeryToken()
+                @await Html.PartialAsync("Account/_IssueCreateForm", new IssueCreateFormViewModel())
+                <button class="btn btn-primary">Create</button>
+            </form>
+        </div>
+})

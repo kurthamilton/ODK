@@ -1,0 +1,8 @@
+﻿@using ODK.Web.Razor.Models.Account
+@model IssueReplyFormViewModel
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Message, new { @class = "form-label" })
+    @Html.TextAreaFor(x => x.Message, new { @class = "form-control", rows = 3 })
+    @Html.ValidationMessageFor(x => x.Message)
+</div>

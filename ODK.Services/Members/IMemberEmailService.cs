@@ -56,10 +56,11 @@ public interface IMemberEmailService
 
     Task SendMemberApprovedEmail(Chapter chapter, Member member);
 
-    Task<ServiceResult> SendIssueReply(
+    Task SendIssueReply(
         Issue issue,
         IssueMessage reply,
-        Member member);
+        Member? toMember,
+        SiteEmailSettings siteEmailSettings);
 
     Task SendMemberChapterSubscriptionConfirmationEmail(
         Chapter chapter,

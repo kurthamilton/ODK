@@ -1,0 +1,56 @@
+﻿@using ODK.Services.Issues.Models
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model IssuePageViewModel
+@{
+    var breadcrumbs = new[]
+    {
+        new MenuItem { Link = OdkRoutes.Account.Issues(), Text = "Issues" },
+        new MenuItem { Text = Model.Issue.Title }
+    };
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = breadcrumbs
+})
+
+<section class="section">
+    @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+    {
+        TitleContentFunc = @<h5>Messages</h5>,
+        BodyContentFunc = 
+            @<div>
+                @await Html.PartialAsync("Components/_Messages", new MessagesViewModel
+                {
+                    CurrentMember = Model.CurrentMember,
+                    Messages = Model.Messages
+                        .Select(x => new MessageViewModel
+                        {
+                            CreatedUtc = x.CreatedUtc,
+                            Member = x.Member,
+                            Text = x.Text
+                        })
+                        .ToArray(),
+                    TimeZone = Model.CurrentMember.TimeZone
+                })
+            </div>
+    })
+</section>
+
+<section class="section">
+    @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+    {
+        TitleContentFunc = @<h5>Reply</h5>,
+        BodyContentFunc = 
+            @<div>
+                <form action="/account/issues/@Model.Issue.Id/reply" method="post">
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("Account/_IssueReplyForm", new IssueReplyFormViewModel())
+                    <button class="btn btn-primary">Send</button>
+                </form>
+            </div>
+    })
+</section>

@@ -24,6 +24,7 @@ using ODK.Services.Integrations.Imaging;
 using ODK.Services.Integrations.OAuth;
 using ODK.Services.Integrations.Payments;
 using ODK.Services.Integrations.Payments.PayPal;
+using ODK.Services.Issues;
 using ODK.Services.Logging;
 using ODK.Services.Media;
 using ODK.Services.Members;
@@ -119,6 +120,8 @@ public static class DependencyConfig
         services.AddScoped<IEventViewModelService, EventViewModelService>();
         services.AddScoped<IFeatureService, FeatureService>();
         services.AddScoped<IImageService, ImageService>();
+        services.AddScoped<IIssueAdminService, IssueAdminService>();
+        services.AddScoped<IIssueService, IssueService>();
         services.AddScoped<ILoggingService, LoggingService>();
         services.AddScoped<IMailProvider, MailProvider>();
         services.AddSingleton(new MailProviderSettings

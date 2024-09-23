@@ -62,10 +62,10 @@ builder.Services.AddWebOptimizer(pipeline =>
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 app.UseSerilogRequestLogging();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");

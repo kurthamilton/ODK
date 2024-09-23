@@ -1,4 +1,5 @@
-﻿using ODK.Core.Issues;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Issues;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -15,4 +16,7 @@ public class IssueMessageRepository : ReadWriteRepositoryBase<IssueMessage>, IIs
     public IDeferredQueryMultiple<IssueMessage> GetByIssueId(Guid issueId) => Set()
         .Where(x => x.IssueId == issueId)
         .DeferredMultiple();
+
+    protected override IQueryable<IssueMessage> Set() => base.Set()
+        .Include(x => x.Member);
 }

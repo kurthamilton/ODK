@@ -1,0 +1,30 @@
+﻿@page "/account/issues/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Issues
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@model IssueModel
+@inject IIssueService IssueService
+@{
+    Layout = "_AccountLayout";
+    Model.Title = "Issue";
+
+    var viewModel = await IssueService.GetIssuePageViewModel(Model.CurrentMemberId, Model.IssueId);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Account",
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = OdkRoutes.Account.Issue(viewModel.Issue.Id),
+        Content =
+            @<div>
+                <section class="section">                    
+                    @await Html.PartialAsync("Account/_IssueContent", viewModel)
+                </section>
+            </div>
+    })
+})

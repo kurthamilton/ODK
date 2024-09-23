@@ -1,4 +1,5 @@
-﻿using ODK.Core.Issues;
+﻿using ODK.Core;
+using ODK.Core.Issues;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Issues.Models;
@@ -26,7 +27,7 @@ public class IssueService : IIssueService
     {
         if (string.IsNullOrWhiteSpace(model.Title) || string.IsNullOrWhiteSpace(model.Message))
         {
-            return ServiceResult.Failure("Title and message must be set");
+            return ServiceResult.Failure("Title and message cannot be empty");
         }
 
         var platform = _platformProvider.GetPlatform();
@@ -59,5 +60,65 @@ public class IssueService : IIssueService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendNewIssueEmail(member, issue, issueMessage, siteEmailSettings);
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<IssuePageViewModel> GetIssuePageViewModel(Guid currentMemberId, Guid issueId)
+    {
+        var (currentMember, issue, messages) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.IssueRepository.GetById(issueId),
+            x => x.IssueMessageRepository.GetByIssueId(issueId));
+
+        OdkAssertions.MeetsCondition(issue, x => x.MemberId == currentMemberId);
+
+        return new IssuePageViewModel
+        {
+            CurrentMember = currentMember,
+            Issue = issue,
+            Messages = messages
+        };
+    }
+
+    public async Task<IssuesPageViewModel> GetIssuesPageViewModel(Guid currentMemberId)
+    {
+        var issues = await _unitOfWork.IssueRepository.GetByMemberId(currentMemberId).Run();
+
+        return new IssuesPageViewModel
+        {
+            Issues = issues
+        };
+    }
+
+    public async Task<ServiceResult> ReplyToIssue(Guid currentMemberId, Guid issueId, string message)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (issue, siteEmailSettings) = await _unitOfWork.RunAsync(
+            x => x.IssueRepository.GetById(issueId),
+            x => x.SiteEmailSettingsRepository.Get(platform));
+
+        OdkAssertions.MeetsCondition(issue, x => x.MemberId == currentMemberId);
+
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return ServiceResult.Failure("Message cannot be empty");
+        }
+
+        var issueMessage = new IssueMessage
+        {
+            CreatedUtc = DateTime.UtcNow,
+            IssueId = issueId,
+            MemberId = currentMemberId,
+            Text = message
+        };
+
+        _unitOfWork.IssueMessageRepository.Add(issueMessage);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _memberEmailService.SendIssueReply(issue, issueMessage, null, siteEmailSettings);
+
+        return ServiceResult.Successful();
     }
 }

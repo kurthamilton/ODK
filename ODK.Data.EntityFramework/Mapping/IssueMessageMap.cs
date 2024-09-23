@@ -25,7 +25,7 @@ public class IssueMessageMap : IEntityTypeConfiguration<IssueMessage>
             .HasForeignKey(x => x.IssueId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<Member>()
+        builder.HasOne(x => x.Member)
             .WithMany()
             .HasForeignKey(x => x.MemberId);
     }

@@ -1,4 +1,6 @@
-﻿namespace ODK.Core.Issues;
+﻿using ODK.Core.Members;
+
+namespace ODK.Core.Issues;
 
 public class IssueMessage : IDatabaseEntity
 {
@@ -7,6 +9,8 @@ public class IssueMessage : IDatabaseEntity
     public Guid Id { get; set; }
 
     public Guid IssueId { get; set; }
+
+    public Member Member { get; set; } = null!;
 
     public Guid MemberId { get; set; }
 

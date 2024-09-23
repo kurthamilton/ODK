@@ -56,6 +56,9 @@ public class UrlProvider : IUrlProvider
     public string IssueAdminUrl(Guid issueId)
         => GetUrl($"/superadmin/issues/{issueId}");
 
+    public string IssueUrl(Guid issueId)
+        => GetUrl(OdkRoutes.Account.Issue(issueId));
+
     public string MemberAdminUrl(Chapter chapter, Guid memberId)
         => GetUrl(OdkRoutes.MemberGroups.Member(_platform, chapter, memberId));
 

@@ -2,11 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 using ODK.Core.Images;
+using ODK.Core.Issues;
 using ODK.Core.Platforms;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Caching;
 using ODK.Services.Features;
+using ODK.Services.Issues;
+using ODK.Services.Issues.Models;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Notifications;
@@ -30,6 +33,7 @@ public class AccountController : OdkControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly IFeatureService _featureService;
+    private readonly IIssueService _issueService;
     private readonly ILoginHandler _loginHandler;
     private readonly IMemberService _memberService;
     private readonly INotificationService _notificationService;
@@ -45,10 +49,12 @@ public class AccountController : OdkControllerBase
         IFeatureService featureService,
         ISiteSubscriptionService siteSubscriptionService,
         IPlatformProvider platformProvider,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IIssueService issueService)
     {
         _authenticationService = authenticationService;
         _featureService = featureService;
+        _issueService = issueService;
         _loginHandler = loginHandler;
         _memberService = memberService;
         _notificationService = notificationService;
@@ -303,7 +309,30 @@ public class AccountController : OdkControllerBase
     {
         await _featureService.MarkAsSeen(MemberId, name);
         return Ok();
-    }    
+    }
+
+    [HttpPost("account/issues")]
+    public async Task<IActionResult> CreateIssue([FromForm] IssueCreateFormViewModel viewModel)
+    {
+        var result = await _issueService.CreateIssue(MemberId, new IssueCreateModel
+        {
+            Message = viewModel.Message ?? "",
+            Title = viewModel.Title ?? "",
+            Type = viewModel.Type ?? IssueType.None
+        });
+
+        AddFeedback(result, "Issue created");
+
+        return Redirect(OdkRoutes.Account.Issues());
+    }
+
+    [HttpPost("account/issues/{id:guid}/reply")]
+    public async Task<IActionResult> ReplyToIssue(Guid id, [FromForm] IssueReplyFormViewModel viewModel)
+    {
+        var result = await _issueService.ReplyToIssue(MemberId, id, viewModel.Message ?? "");
+        AddFeedback(result, "Reply sent");
+        return RedirectToReferrer();
+    }
 
     [HttpPost("account/password/change")]
     public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordFormViewModel viewModel)

@@ -1,0 +1,32 @@
+﻿@using ODK.Services.Issues.Models
+@using ODK.Web.Common.Routes
+@model IssuesPageViewModel
+
+<p>
+    <button type="button" class="btn btn-primary" 
+            data-bs-toggle="modal" data-bs-target="#issue-create-modal">
+        New issue
+    </button>
+</p>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Issue</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var issue in Model.Issues.OrderByDescending(x => x.CreatedUtc))
+            {
+                <tr>
+                    <td>
+                        <a href="@OdkRoutes.Account.Issue(issue.Id)">@issue.Title</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@await Html.PartialAsync("Account/_IssueCreateModal")
