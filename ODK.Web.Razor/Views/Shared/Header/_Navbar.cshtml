@@ -39,7 +39,7 @@
     <div class="position-relative
                 @(Model.Fluid ? "container-fluid" : "container")">
         <div class="d-flex align-items-center">
-            @if (Model.MenuItems.Any(x => x.Any(y => y.Hidden)))    
+            @if (Model.MenuItems.Any(x => x.Any(y => !y.Hidden)))    
             {
                 <button class="navbar-toggler @(Model.MenuItems.Length == 0 ? "invisible" : "")"
                         type="button" data-bs-toggle="collapse" data-bs-target="#@id"

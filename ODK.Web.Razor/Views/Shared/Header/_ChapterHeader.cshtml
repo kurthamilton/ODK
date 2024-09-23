@@ -23,7 +23,7 @@
 
 @await Html.PartialAsync("Header/_Header", new HeaderViewModel
 {
-    ImageAltText = $"{platform.ChapterDisplayName(Model.Chapter)} Header Image",
+    ImageAltText = $"{Model.Chapter.Name} Header Image",
     ImageLink = $"/{Model.Chapter.Name}",
     ImageUrl = Model.Chapter.BannerImageUrl,
     Navbar = new NavbarViewModel

@@ -6,6 +6,8 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
 {
     public const string DefaultTimeZoneId = "GMT Standard Time";
 
+    public const string DrunkenKnitwitsSuffix = " Drunken Knitwits";
+
     public DateTime? ApprovedUtc { get; set; }
 
     public string? BannerImageUrl { get; set; }
