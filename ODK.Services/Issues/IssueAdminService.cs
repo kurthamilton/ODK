@@ -25,13 +25,18 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
 
     public async Task<IssueAdminPageViewModel> GetIssueAdminPageViewModel(Guid currentMemberId, Guid issueId)
     {
-        var (issue, messages) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (currentMember, issue, messages) = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.MemberRepository.GetById(currentMemberId),
             x => x.IssueRepository.GetById(issueId),
             x => x.IssueMessageRepository.GetByIssueId(issueId));
 
+        var member = await _unitOfWork.MemberRepository.GetById(issue.MemberId).Run();
+
         return new IssueAdminPageViewModel
         {
+            CurrentMember = currentMember,
             Issue = issue,
+            Member = member,
             Messages = messages
         };
     }

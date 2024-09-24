@@ -1,0 +1,14 @@
+﻿@page "/superadmin/issues"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Issues
+@model IssuesModel
+@inject IIssueAdminService IssueAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Issues";
+
+    var viewModel = await IssueAdminService.GetIssuesAdminPageViewModel(Model.CurrentMemberId);
+}
+
+@await Html.PartialAsync("SuperAdmin/_IssuesContent", viewModel)

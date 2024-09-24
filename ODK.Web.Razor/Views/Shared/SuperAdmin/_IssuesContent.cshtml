@@ -1,0 +1,30 @@
+﻿@using ODK.Services.Issues.Models
+@model IssuesAdminPageViewModel
+
+<h2>Issues</h2>
+
+<section class="section">
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var issue in Model.Issues.OrderByDescending(x => x.CreatedUtc))
+                {
+                    <tr>
+                        <td>
+                            <a href="/superadmin/issues/@issue.Id">@issue.Title</a>
+                        </td>
+                        <td>@issue.Type</td>
+                        <td>@issue.Status</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
