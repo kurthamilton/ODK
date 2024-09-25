@@ -57,6 +57,25 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
         TimeZone = TimeZone
     };
 
+    public string GetDisplayName(PlatformType currentPlatform)
+    {
+        if (Platform != PlatformType.DrunkenKnitwits)
+        {
+            return Name;
+        }
+
+        if (currentPlatform == PlatformType.DrunkenKnitwits)
+        {
+            return Name.EndsWith(DrunkenKnitwitsSuffix, StringComparison.InvariantCultureIgnoreCase)
+                ? Name.Substring(0, Name.Length - DrunkenKnitwitsSuffix.Length) 
+                : Name;
+        }
+        
+        return !Name.EndsWith(DrunkenKnitwitsSuffix, StringComparison.InvariantCultureIgnoreCase)
+            ? Name + DrunkenKnitwitsSuffix
+            : Name;
+    }
+
     public bool IsOpenForRegistration() => Approved() && Published();
 
     public bool Published() => PublishedUtc != null;

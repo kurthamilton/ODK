@@ -120,8 +120,6 @@
 
     @await RenderSectionAsync("footer", required: false)
     
-    @await Html.PartialAsync("Feedback/_Notifications")
-
     <script src="~/lib/tinymce/tinymce.min.js" asp-append-version="true"></script>
     <script src="~/js/odk.bundle.js" asp-append-version="true"></script>
     @await RenderSectionAsync("scripts", required: false)

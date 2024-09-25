@@ -13,7 +13,7 @@ public abstract class RoutesBase
 
     private string BaseUrl(PlatformType platform, Chapter chapter) => platform switch
     {
-        PlatformType.DrunkenKnitwits => $"/{chapter.Name.ToLowerInvariant()}",
+        PlatformType.DrunkenKnitwits => $"/{chapter.GetDisplayName(platform).ToLowerInvariant()}",
         _ => $"/groups/{chapter.Slug}"
     };
 

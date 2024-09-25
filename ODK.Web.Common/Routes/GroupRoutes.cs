@@ -21,7 +21,7 @@ public class GroupRoutes
 
     public string Group(PlatformType platform, Chapter chapter) => platform switch
     {
-        PlatformType.DrunkenKnitwits => $"{Index(platform)}/{chapter.Name}".ToLowerInvariant(),
+        PlatformType.DrunkenKnitwits => $"{Index(platform)}/{chapter.GetDisplayName(platform)}".ToLowerInvariant(),
         _ => $"{Index(platform)}/{chapter.Slug}".ToLowerInvariant()
     };
 

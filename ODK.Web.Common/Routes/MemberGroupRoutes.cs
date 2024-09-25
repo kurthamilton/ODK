@@ -32,7 +32,7 @@ public class MemberGroupRoutes
 
     public string Group(PlatformType platform, Chapter chapter) => platform switch
     {
-        PlatformType.DrunkenKnitwits => $"/{chapter.Name.ToLowerInvariant()}/admin",
+        PlatformType.DrunkenKnitwits => $"/{chapter.GetDisplayName(platform).ToLowerInvariant()}/admin",
         _ => $"{Index(platform)}/{chapter.Id}"
     };
 
