@@ -84,7 +84,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             CreatedBy = currentMember.FullName,
             CreatedUtc = DateTime.UtcNow,
             Date = date,
-            Description = model.Description != null ? _htmlSanitizer.Sanitize(model.Description) : null,
+            Description = model.Description != null 
+                ? _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions) 
+                : null,
             EndTime = model.EndTime,
             ImageUrl = model.ImageUrl,
             IsPublic = model.IsPublic,
@@ -618,7 +620,9 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
         @event.AttendeeLimit = model.AttendeeLimit;
         @event.Date = date;
-        @event.Description = model.Description != null ? _htmlSanitizer.Sanitize(model.Description) : null;
+        @event.Description = model.Description != null 
+            ? _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions) 
+            : null;
         @event.EndTime = model.EndTime;
         @event.ImageUrl = model.ImageUrl;
         @event.IsPublic = model.IsPublic;

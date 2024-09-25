@@ -4,5 +4,5 @@ public interface IHtmlSanitizer
 {
     string Sanitize(string html);
 
-    string Sanitize(string html, IEnumerable<string> tagWhitelist);
+    string Sanitize(string html, HtmlSanitizerOptions options);
 }

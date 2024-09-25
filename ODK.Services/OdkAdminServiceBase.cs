@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Exceptions;
@@ -8,6 +9,11 @@ namespace ODK.Services;
 
 public abstract class OdkAdminServiceBase
 {
+    protected static readonly HtmlSanitizerOptions DefaultHtmlSantizerOptions = new HtmlSanitizerOptions
+    {
+        AllowLinks = true
+    };
+
     private readonly IUnitOfWork _unitOfWork;
     protected OdkAdminServiceBase(IUnitOfWork unitOfWork)
     {
