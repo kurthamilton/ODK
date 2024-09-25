@@ -20,10 +20,10 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-   Title = $"{Model.ChapterName} Knitwits",
+   Title = $"{viewModel.Chapter.Name} Knitwits",
    Breadcrumbs = new []
    {
-       new MenuItem { Link = $"/{Model.ChapterName}", Text = Model.ChapterName },
+       new MenuItem { Link = $"/{viewModel.Chapter.Name}", Text = viewModel.Chapter.Name },
        new MenuItem { Text = "Knitwits" }
    },
    Content = await Html.PartialAsync("Members/_MembersContent", viewModel)
