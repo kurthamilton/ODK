@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
-using ODK.Core.Chapters;
 using ODK.Core.Exceptions;
 using ODK.Data.Core;
 using ODK.Services.Caching;
@@ -41,22 +40,24 @@ public class ErrorHandlingMiddleware
         }
         catch (Exception ex)
         {
-            await LogError(context, ex, loggingService);            
+            await LogError(context, ex, loggingService);
 
-            if (!settings.Errors.Handle && statusCodeContext.HttpContext.Response.StatusCode == 500)
+            if (context.Response.HasStarted)
             {
                 throw;
             }
+            else
+            {
+                await HandleAsync(statusCodeContext.HttpContext, requestCache, unitOfWork);
 
-            await HandleAsync(statusCodeContext.HttpContext, requestCache, unitOfWork);
-
-            // statusCodeContext.HttpContext.Response.StatusCode = ex switch
-            // {
-            //     OdkNotAuthenticatedException => 401,
-            //     OdkNotAuthorizedException => 403,
-            //     OdkNotFoundException => 404,
-            //     _ => 500
-            // };            
+                statusCodeContext.HttpContext.Response.StatusCode = ex switch
+                {
+                    OdkNotAuthenticatedException => 401,
+                    OdkNotAuthorizedException => 403,
+                    OdkNotFoundException => 404,
+                    _ => 500
+                };
+            }            
         }                
     }
 

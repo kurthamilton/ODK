@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
+using ODK.Core.Issues;
 using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Topics;
@@ -55,6 +56,12 @@ public interface IMemberEmailService
 
     Task SendMemberApprovedEmail(Chapter chapter, Member member);
 
+    Task SendIssueReply(
+        Issue issue,
+        IssueMessage reply,
+        Member? toMember,
+        SiteEmailSettings siteEmailSettings);
+
     Task SendMemberChapterSubscriptionConfirmationEmail(
         Chapter chapter,
         ChapterPaymentSettings chapterPaymentSettings,
@@ -78,6 +85,8 @@ public interface IMemberEmailService
         string? reason);
 
     Task SendNewGroupEmail(Chapter chapter, ChapterTexts texts, SiteEmailSettings settings);
+
+    Task SendNewIssueEmail(Member member, Issue issue, IssueMessage message, SiteEmailSettings settings);
 
     Task SendNewMemberAdminEmail(
         Chapter chapter,

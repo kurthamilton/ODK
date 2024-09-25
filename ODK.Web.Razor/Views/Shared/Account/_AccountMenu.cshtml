@@ -28,6 +28,9 @@
         new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.Chapter), Text = "Password" },
         new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.Chapter), Text = "Email preferences" },
         new MenuItem { Link = OdkRoutes.Account.Notifications(Model.Chapter), Text = "Notifications" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem()
+            : new MenuItem { Link = OdkRoutes.Account.Issues(), Text = "Issues" },
         new MenuItem { Link = OdkRoutes.Account.Delete(Model.Chapter), Text = "Delete account" }
     }.Where(x => !string.IsNullOrEmpty(x.Link)).ToArray();
 

@@ -14,7 +14,7 @@ public class HtmlSanitizer : IHtmlSanitizer
 
     private static readonly IReadOnlyCollection<string> AttributeBlacklist = 
     [ 
-        "onload", "onclick", "onerror", "href", "src" 
+        "onload", "onclick", "onerror", "src"
     ];
 
     private static readonly IReadOnlyCollection<string> DefaultTagWhitelist =
@@ -27,9 +27,12 @@ public class HtmlSanitizer : IHtmlSanitizer
         "script", "iframe", "object", "embed", "form" 
     ];
 
-    public string Sanitize(string html) => Sanitize(html, DefaultTagWhitelist);
+    public string Sanitize(string html) => Sanitize(html, new HtmlSanitizerOptions
+    {
+        TagWhitelist = DefaultTagWhitelist
+    });
 
-    public string Sanitize(string html, IEnumerable<string> allowedTags)
+    public string Sanitize(string html, HtmlSanitizerOptions options)
     {
         if (string.IsNullOrEmpty(html))
         {
@@ -37,14 +40,14 @@ public class HtmlSanitizer : IHtmlSanitizer
         }
 
         // Remove blacklisted tags
-        foreach (var tag in TagBlacklist)
+        foreach (var tag in TagBlacklist.Except(options.TagWhitelist ?? []))
         {
             var tagRegex = new Regex($"<\\/?\\s*{tag}\\s*[^>]*>", RegexOptions.IgnoreCase);
             html = tagRegex.Replace(html, (Match match) => HttpUtility.HtmlEncode(match.Value));
         }
 
         // Remove blacklisted attributes
-        foreach (var attr in AttributeBlacklist)
+        foreach (var attr in AttributeBlacklist.Except(options.AttributeWhitelist ?? []))
         {
             var attrRegex = new Regex($"{attr}\\s*=\\s*['\"].*?['\"]", RegexOptions.IgnoreCase);
             html = attrRegex.Replace(html, (Match match) => HttpUtility.HtmlEncode(match.Value));
@@ -54,7 +57,10 @@ public class HtmlSanitizer : IHtmlSanitizer
         html = JavascriptLinkRegex.Replace(html, (Match match) => HttpUtility.HtmlEncode(match.Value));
 
         // Remove plain http and https links
-        html = HttpLinkRegex.Replace(html, (Match match) => HttpUtility.HtmlEncode(match.Value));
+        if (!options.AllowLinks)
+        {
+            html = HttpLinkRegex.Replace(html, (Match match) => HttpUtility.HtmlEncode(match.Value));
+        }
 
         return html;
     }

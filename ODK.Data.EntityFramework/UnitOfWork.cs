@@ -51,6 +51,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IFeatureRepository> _featureRepository;
     private readonly Lazy<IInstagramImageRepository> _instagramImageRepository;
     private readonly Lazy<IInstagramPostRepository> _instagramPostRepository;
+    private readonly Lazy<IIssueMessageRepository> _issueMessageRepository;
+    private readonly Lazy<IIssueRepository> _issueRepository;
     private readonly Lazy<IMemberActivationTokenRepository> _memberActivationTokenRepository;
     private readonly Lazy<IMemberAvatarRepository> _memberAvatarRepository;
     private readonly Lazy<IMemberEmailAddressUpdateTokenRepository> _memberEmailAddressUpdateTokenRepository;
@@ -129,6 +131,8 @@ public class UnitOfWork : IUnitOfWork
         _featureRepository = new(() => new FeatureRepository(_context));
         _instagramImageRepository = new(() => new InstagramImageRepository(_context));
         _instagramPostRepository = new(() => new InstagramPostRepository(_context));
+        _issueMessageRepository = new(() => new IssueMessageRepository(_context));
+        _issueRepository = new(() => new IssueRepository(_context));
         _memberActivationTokenRepository = new(() => new MemberActivationTokenRepository(_context));
         _memberAvatarRepository = new(() => new MemberAvatarRepository(_context));
         _memberChapterRepository = new(() => new MemberChapterRepository(_context));
@@ -203,6 +207,8 @@ public class UnitOfWork : IUnitOfWork
     public IFeatureRepository FeatureRepository => _featureRepository.Value;
     public IInstagramImageRepository InstagramImageRepository => _instagramImageRepository.Value;
     public IInstagramPostRepository InstagramPostRepository => _instagramPostRepository.Value;
+    public IIssueMessageRepository IssueMessageRepository => _issueMessageRepository.Value;
+    public IIssueRepository IssueRepository => _issueRepository.Value;
     public IMemberActivationTokenRepository MemberActivationTokenRepository => _memberActivationTokenRepository.Value;
     public IMemberAvatarRepository MemberAvatarRepository => _memberAvatarRepository.Value;
     public IMemberChapterRepository MemberChapterRepository => _memberChapterRepository.Value;

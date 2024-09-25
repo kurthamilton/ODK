@@ -85,7 +85,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         _unitOfWork.SiteContactMessageReplyRepository.Add(new SiteContactMessageReply
         {
             CreatedUtc = now,
-            Message = _htmlSanitizer.Sanitize(message) ?? "",
+            Message = _htmlSanitizer.Sanitize(message, DefaultHtmlSantizerOptions) ?? "",
             MemberId = currentMemberId,
             SiteContactMessageId = originalMessage.Id            
         });

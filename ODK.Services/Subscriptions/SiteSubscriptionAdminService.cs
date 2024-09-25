@@ -210,7 +210,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
     private void UpdateSiteSubscription(SiteSubscriptionCreateModel model, SiteSubscription subscription)
     {
-        subscription.Description = _htmlSanitizer.Sanitize(model.Description);
+        subscription.Description = _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions);
         subscription.Enabled = model.Enabled;
         subscription.FallbackSiteSubscriptionId = model.FallbackSiteSubscriptionId;
         subscription.GroupLimit = model.GroupLimit;

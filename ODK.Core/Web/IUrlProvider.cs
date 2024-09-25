@@ -26,6 +26,10 @@ public interface IUrlProvider
 
     string GroupsUrl();
 
+    string IssueAdminUrl(Guid issueId);
+
+    string IssueUrl(Guid issueId);
+
     string MemberAdminUrl(Chapter chapter, Guid memberId);
 
     string MemberSiteSubscriptionUrl();

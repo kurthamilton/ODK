@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using ODK.Core.Chapters;
 using ODK.Core.Platforms;
 
@@ -15,6 +16,8 @@ public class AccountRoutes : RoutesBase
         => AccountPath(chapter, $"/email/change/confirm?token={HttpUtility.UrlEncode(token)}");
     public string EmailPreferences(Chapter? chapter) => AccountPath(chapter, "/emails");
     public string Interests() => AccountPath(null, "/interests");
+    public string Issue(Guid issueId) => $"{Issues()}/{issueId}";
+    public string Issues() => AccountPath(null, $"/issues");
     public string Join(Chapter? chapter) => AccountPath(chapter, "/join");
     public string Location() => AccountPath(null, "/location");
     public string Login(Chapter? chapter) => AccountPath(chapter, "/login");

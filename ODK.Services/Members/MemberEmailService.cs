@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
+using ODK.Core.Issues;
 using ODK.Core.Members;
 using ODK.Core.Messages;
 using ODK.Core.Topics;
@@ -276,6 +277,50 @@ public class MemberEmailService : IMemberEmailService
         await _emailService.SendMemberEmail(chapter, member.ToEmailAddressee(), subject, body, parameters);
     }
 
+    public async Task SendIssueReply(
+        Issue issue,
+        IssueMessage reply,
+        Member? toMember,
+        SiteEmailSettings siteEmailSettings)
+    {
+        var subject = "Re: {issue.title} - issue updated - {title}";
+
+        var isToMember = toMember != null;
+
+        var bodyBuilder = new EmailBodyBuilder();
+
+        if (isToMember)
+        {
+            bodyBuilder
+                .AddParagraph("Your issue {issue.title} has been updated with the following message:");
+        }
+        else
+        {
+            bodyBuilder
+                .AddParagraph("The owner of the issue {issue.title} has sent the following message:");
+        }
+
+        var body = bodyBuilder            
+            .AddParagraph("{issue.message}")
+            .AddParagraphLink("url")
+            .ToString();
+        
+        var url = isToMember
+            ? _urlProvider.IssueUrl(issue.Id)
+            : _urlProvider.IssueAdminUrl(issue.Id);
+
+        var to = toMember?.ToEmailAddressee() ?? new EmailAddressee(siteEmailSettings.ContactEmailAddress, "");
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "issue.title", issue.Title },
+            { "issue.message", reply.Text },
+            { "url", url }
+        };
+
+        await _emailService.SendEmail(null, [to], subject, body, parameters);
+    }
+
     public async Task SendMemberChapterSubscriptionConfirmationEmail(
         Chapter chapter,
         ChapterPaymentSettings chapterPaymentSettings,
@@ -425,6 +470,27 @@ public class MemberEmailService : IMemberEmailService
             subject,
             body,
             parameters);
+    }
+
+    public async Task SendNewIssueEmail(Member member, Issue issue, IssueMessage message, SiteEmailSettings settings)
+    {
+        var subject = "{title} - New issue";
+
+        var body = new EmailBodyBuilder()
+            .AddParagraph("A new issue has been created by {member.name}:")
+            .AddParagraph("{issue.title}")
+            .AddParagraph("{issue.message}")
+            .AddParagraphLink("url")
+            .ToString();
+
+        var to = new EmailAddressee(settings.ContactEmailAddress, "");
+        await _emailService.SendMemberEmail(null, to, subject, body, new Dictionary<string, string>
+        {
+            { "issue.title", issue.Title },
+            { "issue.title", issue.Title },
+            { "member.name", member.FullName },
+            { "url", _urlProvider.IssueAdminUrl(issue.Id) }
+        });
     }
 
     public async Task SendNewMemberAdminEmail(

@@ -1,0 +1,26 @@
+﻿@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Components
+@model MessagesViewModel
+
+<div class="container d-flex flex-column gap-3">
+    @foreach (var message in Model.Messages.OrderBy(x => x.CreatedUtc))
+    {
+        <div class="row list-group">
+            <div class="conversation-message list-group-item
+                        col-10 col-md-8 @(message.Member?.Id != Model.CurrentMember.Id ? "offset-2 offset-md-4" : null)">
+                <div class="d-flex gap-2 small">
+                    <div>
+                        @(message.Member?.Id == Model.CurrentMember.Id ? "You" : message.Member?.FullName ?? "[deleted]")
+                    </div>
+                    <div>&#8226;</div>
+                    <div>
+                        @message.CreatedUtc.ToFriendlyDateTimeString(Model.TimeZone)
+                    </div>
+                </div>
+                <div>
+                    @message.Text
+                </div>
+            </div>
+        </div>
+    }
+</div>

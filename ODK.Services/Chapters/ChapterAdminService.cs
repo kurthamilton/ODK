@@ -24,7 +24,7 @@ using ODK.Services.Topics;
 namespace ODK.Services.Chapters;
 
 public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
-{
+{    
     private readonly ICacheService _cacheService;
     private readonly IChapterService _chapterService;
     private readonly IHttpRequestProvider _httpRequestProvider;
@@ -210,7 +210,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var texts = new ChapterTexts
         {
             ChapterId = chapter.Id,
-            Description = _htmlSanitizer.Sanitize(model.Description),
+            Description = _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions),
         };
         _unitOfWork.ChapterTextsRepository.Add(texts);
 
@@ -330,7 +330,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         
         var question = new ChapterQuestion
         {
-            Answer = _htmlSanitizer.Sanitize(model.Answer),
+            Answer = _htmlSanitizer.Sanitize(model.Answer, DefaultHtmlSantizerOptions),
             ChapterId = chapterId,
             DisplayOrder = displayOrder,
             Name = model.Name
@@ -367,7 +367,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             Amount = model.Amount,
             ChapterId = chapterId,
-            Description = _htmlSanitizer.Sanitize(model.Description),
+            Description = _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions),
             Months = model.Months,
             Name = model.Name,
             Title = model.Title,
@@ -1036,7 +1036,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             ChapterContactMessageId = originalMessage.Id,
             CreatedUtc = now,
-            Message = _htmlSanitizer.Sanitize(message),
+            Message = _htmlSanitizer.Sanitize(message, DefaultHtmlSantizerOptions),
             MemberId = request.CurrentMemberId            
         });
 
@@ -1297,7 +1297,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             texts = new ChapterTexts();
         }
 
-        texts.Description = _htmlSanitizer.Sanitize(description);
+        texts.Description = _htmlSanitizer.Sanitize(description, DefaultHtmlSantizerOptions);
 
         if (texts.ChapterId == default)
         {
@@ -1501,7 +1501,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         property.ApplicationOnly = model.ApplicationOnly;
         property.DisplayName = model.DisplayName;
         property.HelpText = model.HelpText;
-        property.Label = _htmlSanitizer.Sanitize(model.Label);
+        property.Label = _htmlSanitizer.Sanitize(model.Label, DefaultHtmlSantizerOptions);
         property.Name = model.Name.ToLowerInvariant();
         property.Required = model.Required;
         property.Subtitle = model.Subtitle;
@@ -1589,7 +1589,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         var question = await GetChapterQuestion(request, questionId);
 
-        question.Answer = _htmlSanitizer.Sanitize(model.Answer);
+        question.Answer = _htmlSanitizer.Sanitize(model.Answer, DefaultHtmlSantizerOptions);
         question.Name = model.Name;
 
         var validationResult = ValidateChapterQuestion(question);
@@ -1730,9 +1730,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             texts = new ChapterTexts();
         }
 
-        texts.Description = model.Description != null ? _htmlSanitizer.Sanitize(model.Description) : null;
-        texts.RegisterText = _htmlSanitizer.Sanitize(model.RegisterText);
-        texts.WelcomeText = _htmlSanitizer.Sanitize(model.WelcomeText);
+        texts.Description = model.Description != null 
+            ? _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions) 
+            : null;
+        texts.RegisterText = _htmlSanitizer.Sanitize(model.RegisterText, DefaultHtmlSantizerOptions);
+        texts.WelcomeText = _htmlSanitizer.Sanitize(model.WelcomeText, DefaultHtmlSantizerOptions);
 
         if (texts.ChapterId == default)
         {

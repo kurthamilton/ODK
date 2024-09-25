@@ -1,11 +1,9 @@
 ﻿@using ODK.Core.Platforms
-@using ODK.Services.Caching
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @inject IPlatformProvider PlatformProvider
-@inject IRequestCache RequestCache
 @{
     Layout = "_HomeLayout";
 
@@ -17,6 +15,7 @@
         new MenuItem { Link = "/superadmin/errors", Text = "Error log" },
         new MenuItem { Link = "/superadmin/features", Text = "Features" },
         new MenuItem { Link = "/superadmin/groups", Text = "Groups" },
+        new MenuItem { Link = "/superadmin/issues", Text = "Issues" },
         new MenuItem { Link = "/superadmin/messages", Text = "Messages" },
         new MenuItem { Link = "/superadmin/payments", Text = "Payments" },
         new MenuItem { Link = "/superadmin/subscriptions", Text = "Subscriptions" },

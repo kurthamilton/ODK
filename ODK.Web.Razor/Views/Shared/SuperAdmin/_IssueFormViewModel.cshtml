@@ -1,0 +1,16 @@
+﻿@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.SuperAdmin
+@model IssueFormViewModel
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Type, new { @class = "form-label" })
+    @Html.OdkEnumDropDownFor(x => x.Type, new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.Type)
+</div>
+
+<div class="form-group mb-3">
+    @Html.LabelFor(x => x.Status, new { @class = "form-label" })
+    @Html.OdkEnumDropDownFor(x => x.Status, new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.Status)
+</div>
