@@ -26,7 +26,6 @@
 <p>Choose whether or not you want to receive the following:</p>
 
 <form action="/account/emails" method="post">
-    @Html.AntiForgeryToken()
     @await Html.PartialAsync("Account/_EmailPreferencesForm", new EmailPreferencesFormViewModel
     {
         Preferences = preferenceViewModels

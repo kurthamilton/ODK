@@ -4,8 +4,6 @@
 @model ChapterAccountViewModel
 
 <form method="post" action="/account/email/change">
-    @Html.AntiForgeryToken()        
-    
     @await Html.PartialAsync("Account/_ChangeEmailForm", new ChangeEmailFormViewModel
     {
         Current = Model.CurrentMember.EmailAddress

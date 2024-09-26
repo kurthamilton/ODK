@@ -10,7 +10,6 @@
 <h2>Instagram</h2>
 
 <form method="post" class="mb-3">
-    @Html.AntiForgeryToken()
     @await Html.PartialAsync("SuperAdmin/_InstagramForm", new InstagramFormViewModel
     {
         ScraperUserAgent = settings.InstagramScraperUserAgent
@@ -19,7 +18,6 @@
 </form>
 
 <form method="post" action="/@Model.Name/Admin/SuperAdmin/Instagram/Scrape">
-    @Html.AntiForgeryToken()
     <button class="btn btn-secondary">Scrape</button>
 </form>
 <p class="text-muted">

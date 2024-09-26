@@ -32,27 +32,6 @@
 {
     @await Html.PartialAsync("Header/_HomeHeader")
 
-    @if (platform == PlatformType.DrunkenKnitwits)
-    {
-        var chapterContext = new ChapterPageContext(RequestCache, Context);
-        var member = await chapterContext.GetMemberAsync();
-
-        <div class="mb-1">
-            @await Html.PartialAsync("Header/_Navbar", new NavbarViewModel
-            {
-                Breakpoint = "md",
-                Color = "dark",
-                Compact = false,
-                CssClass = null,
-                Member = member,
-                MenuItems = 
-                [
-                    [new MenuItem { Hidden = true, Text = "" }]
-                ]
-            })
-        </div>
-    }
-
     @await RenderSectionAsync("header", required: false)
 }
 

@@ -15,11 +15,10 @@
     <h3>Time zone</h3>
 
     <form action="/@Model.Name/Admin/SuperAdmin/TimeZone" method="post">
-        @Html.AntiForgeryToken()
         @await Html.PartialAsync("Chapters/SuperAdmin/_TimeZoneForm", new ChapterTimeZoneFormViewModel
-       {
-           TimeZone = Model.TimeZone?.Id
-       })
+        {
+            TimeZone = Model.TimeZone?.Id
+        })
         <button class="btn btn-primary">Update</button>
     </form>
 </section>
@@ -28,7 +27,6 @@
     <h3>Location</h3>
 
     <form action="/@Model.Name/Admin/SuperAdmin/Location" method="post">
-        @Html.AntiForgeryToken()
         @await Html.PartialAsync("Chapters/SuperAdmin/_LocationForm", new ChapterLocationFormViewModel
         {
             Lat = location?.LatLong.Lat,

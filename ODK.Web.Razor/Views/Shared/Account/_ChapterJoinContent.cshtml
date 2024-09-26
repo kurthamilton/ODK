@@ -15,8 +15,6 @@
 }
 
 <form method="post" action="/@Model.Chapter.Name/Account/Join" enctype="multipart/form-data">
-    @Html.AntiForgeryToken()
-    
     @if (memberId == null)
     {
         @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel

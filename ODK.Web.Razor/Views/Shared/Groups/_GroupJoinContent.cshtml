@@ -33,7 +33,6 @@
 
 <section class="section">
     <form method="post">
-        @Html.AntiForgeryToken()
         @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
         {
             ChapterName = "",

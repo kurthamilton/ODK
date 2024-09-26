@@ -9,7 +9,6 @@
     ContentFunc = 
         @<div>
             <form method="post">
-                @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Admin/Chapter/_PaymentSettingsForm", new ChapterPaymentSettingsFormViewModel
                 {
                     ChapterPaymentSettings = Model.PaymentSettings,

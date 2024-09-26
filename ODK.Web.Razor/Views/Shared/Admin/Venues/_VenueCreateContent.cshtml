@@ -28,8 +28,6 @@
 
 <section class="section">
     <form method="post">
-        @Html.AntiForgeryToken()
-
         @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel())
 
         <button type="submit" class="btn btn-primary">Create</button>

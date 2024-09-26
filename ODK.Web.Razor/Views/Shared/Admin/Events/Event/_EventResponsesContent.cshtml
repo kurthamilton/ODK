@@ -107,7 +107,6 @@
                                         var active = response == responseType;
 
                                         <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/attendees/@member.Id">
-                                            @Html.AntiForgeryToken()
                                             @await Html.PartialAsync("Events/_EventResponseIcon", new EventResponseIconViewModel
                                             {
                                                 Active = active,

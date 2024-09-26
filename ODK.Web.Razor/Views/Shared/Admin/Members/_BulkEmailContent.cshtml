@@ -15,8 +15,6 @@
     Feature = SiteFeatureType.SendMemberEmails,
     ContentFunc = 
         @<form method="post" action="/groups/@Model.Chapter.Id/members/email" data-live-url-container>
-            @Html.AntiForgeryToken()
-
             <p>
                 <div class="row row-cols-lg-auto g-3 align-items-center">
                     <div class="col-12">

@@ -46,7 +46,6 @@
             .ToArray();
     
         <form action="/@Model.Chapter.Name/Admin/Chapter/Currency" method="post">
-            @Html.AntiForgeryToken()
             <div class="form-group mb-3">
                 @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
                 @Html.DropDownList("currencyId", currencyOptions, "", new { @class = "form-select" })

@@ -33,7 +33,6 @@
                 else
                 {
                     <form action="/groups/@Model.Chapter.Id/leave" method="post">
-                        @Html.AntiForgeryToken()
                         <p>If you leave the group we will delete your data associated with this group, including any subscriptions you currently have.</p>
                         <div class="form-group mb-3">
                             <label for="reason" class="form-label">Reason you want to leave this group</label>

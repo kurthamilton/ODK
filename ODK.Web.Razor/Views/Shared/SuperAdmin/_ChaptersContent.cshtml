@@ -21,11 +21,9 @@
                         <td>
                             <div class="button-container">
                                 <form action="/superadmin/groups/@chapter.Id/approve" method="post">
-                                    @Html.AntiForgeryToken()
                                     <button class="btn btn-success btn-sm">Approve</button>
                                 </form>
                                 <form action="/superadmin/groups/@chapter.Id/delete" method="post">
-                                    @Html.AntiForgeryToken()
                                     <button class="btn btn-danger btn-sm"
                                             onclick="return confirm('Are you sure you want to delete this group?');">
                                         Delete

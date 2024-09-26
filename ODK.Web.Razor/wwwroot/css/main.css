@@ -12685,6 +12685,7 @@ html[data-platform=odk] {
   top: 0;
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 .side-menu .nav-link {
   color: var(--odk-side-menu-color);

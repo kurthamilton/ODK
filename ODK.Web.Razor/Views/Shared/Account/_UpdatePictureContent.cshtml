@@ -36,8 +36,6 @@
     Body =
     @<div>
         <form method="post" action="/account/picture/change">
-            @Html.AntiForgeryToken()
-            
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel())
 
             <div class="d-flex justify-content-end mt-3">

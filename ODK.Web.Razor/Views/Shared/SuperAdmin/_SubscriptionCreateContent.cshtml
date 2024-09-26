@@ -19,7 +19,6 @@
     }
 
     <form action="/superadmin/subscriptions" method="post">
-        @Html.AntiForgeryToken()
         @await Html.PartialAsync("SuperAdmin/_SubscriptionForm", new SiteSubscriptionFormViewModel())
         <button class="btn btn-primary">Create</button>
     </form>

@@ -4,8 +4,6 @@
 <h2>Redirect</h2>
 
 <form method="post">
-    @Html.AntiForgeryToken()
-
     <div class="form-group mb-3">
         <label class="form-label" for="redirecturl">Redirect URL</label>
         <input type="text" name="redirectUrl" id="redirecturl" value="@Model.RedirectUrl" class="form-control" />
