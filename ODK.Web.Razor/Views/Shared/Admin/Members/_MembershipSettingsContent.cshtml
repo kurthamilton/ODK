@@ -7,7 +7,7 @@
     var membershipSettings = Model.MembershipSettings;
 }
 
-<h2>Membership settings</h2>
+<h2 class="d-none d-md-block">Membership settings</h2>
 
 <section class="section">
     @await Html.PartialAsync("Components/_RestrictedFeature", new RestrictedFeatureViewModel(Model.OwnerSubscription)

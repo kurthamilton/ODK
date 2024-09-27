@@ -85,7 +85,7 @@ public static class MenuItemExtensions
 
     public static bool DescendantOf(this MenuItem descendant, MenuItem ancestor)
     {
-        if (ancestor == descendant)
+        if (ancestor.Link == descendant.Link)
         {
             return true;
         }

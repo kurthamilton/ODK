@@ -2,6 +2,7 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @model MemberAdminPageViewModelBase
 @{
     var menuItems = new List<MenuItem>
@@ -18,4 +19,7 @@
     }
 }
 
-@await Html.PartialAsync("Components/_Tabs", menuItems)
+@await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+{
+    MenuItems = menuItems
+})

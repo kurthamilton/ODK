@@ -2,6 +2,7 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @{
     var menuItems = new[]
     {
@@ -10,4 +11,7 @@
     };
 }
 
-@await Html.PartialAsync("Components/_Tabs", menuItems)
+@await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+{
+    MenuItems = menuItems
+})

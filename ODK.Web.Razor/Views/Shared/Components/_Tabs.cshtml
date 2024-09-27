@@ -1,12 +1,20 @@
 ﻿@using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
-@model IReadOnlyCollection<MenuItem>
+@using ODK.Web.Razor.Models.Components
+@model TabsViewModel
 @{
-    var activeMenuItem = Model.FirstOrDefault(x => Context.ForPath(x.Link, exactMatch: true));
+    var activeMenuItem = Model.MenuItems
+        .FirstOrDefault(x => x.Active);
+
+    if (activeMenuItem == null)
+    {
+        activeMenuItem = Model.MenuItems
+            .FirstOrDefault(x => Context.ForPath(x.Link, exactMatch: true));
+    }
 }
 
-<ul class="nav nav-underline my-3">
-    @foreach (var menuItem in Model)
+<ul class="nav nav-underline my-3 @Model.Class">
+    @foreach (var menuItem in Model.MenuItems)
     {
         var active = menuItem.Link == activeMenuItem?.Link;
 
