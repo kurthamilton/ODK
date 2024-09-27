@@ -5,6 +5,7 @@
 {
     if (!Model.ReadOnly)
     {
+        @Html.AntiForgeryToken()
         @Html.HiddenFor(x => x.ResponseType)
     }
 

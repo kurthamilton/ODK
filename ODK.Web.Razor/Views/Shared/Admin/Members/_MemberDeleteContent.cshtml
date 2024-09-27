@@ -8,6 +8,8 @@
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <form method="post" action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/delete">
+    @Html.AntiForgeryToken()
+    
     @if (Model.MemberSubscription?.Type.IsPaid() == true && Model.MemberSubscription?.IsExpired() == false)
     {
         <p>You cannot remove members with an active paid subscription</p>

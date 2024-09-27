@@ -8,6 +8,7 @@
 }
 
 <form method="post">
+    @Html.AntiForgeryToken()
     @await Html.PartialAsync("SuperAdmin/_FeatureForm", new FeatureFormViewModel
     {
         Description = Model.Feature.Description,

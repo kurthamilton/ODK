@@ -43,6 +43,8 @@
             }
                         
             <form method="post">
+                @Html.AntiForgeryToken()
+
                 @await Html.PartialAsync("Groups/_GroupCreateForm", new CreateChapterFormViewModel
                 {
                     Location = new LocationFormViewModel

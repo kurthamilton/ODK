@@ -9,6 +9,7 @@
 @if (!Model.Sent)
 {
     <form method="post">
+        @Html.AntiForgeryToken()
         @await Html.PartialAsync("Contact/_ContactForm", new ContactFormViewModel())
         <button class="btn btn-primary">Send</button>
     </form>

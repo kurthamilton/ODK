@@ -40,6 +40,7 @@
                     </td>
                     <td>
                         <form method="post" action="/superadmin/messages/@message.Id/delete">
+                            @Html.AntiForgeryToken()
                             <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
                                     onclick="return confirm('Are you sure you want to delete this message?');">
                                 <i class="fas fa-times"></i>

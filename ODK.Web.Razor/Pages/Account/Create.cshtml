@@ -18,6 +18,7 @@
     ContentFunc = 
         @<div>
             <form method="post" action="/account/create" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Account/_AccountCreateForm", new AccountCreateFormViewModel
                 {
                     GoogleClientId = viewModel.GoogleClientId,

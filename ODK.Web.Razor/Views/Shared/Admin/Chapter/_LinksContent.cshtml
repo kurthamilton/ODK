@@ -9,6 +9,7 @@
     ContentFunc = 
         @<div>
             <form action="/groups/@Model.Chapter.Id/links" method="post">
+                @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel
                 {
                     Chapter = Model.Chapter,

@@ -41,6 +41,7 @@
             @<div>
                 <form method="post" action="/groups/@Model.Chapter.Id/members/admins"
                       class="row g-3 mb-3">
+                    @Html.AntiForgeryToken()
                     <div class="col-lg-6 col-12 d-flex gap-1">
                         <div class="flex-grow-1">
                             @await Html.PartialAsync("Admin/Members/_AdminMemberAddForm", new AdminMemberAddFormViewModel

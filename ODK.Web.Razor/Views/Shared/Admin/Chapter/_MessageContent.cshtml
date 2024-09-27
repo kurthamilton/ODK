@@ -83,6 +83,7 @@
             <button type="button" class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#mark-replied">Already replied?</button>
             <div class="collapse" id="mark-replied">
                 <form action="/groups/@Model.Chapter.Id/messages/@Model.Message.Id/replied" method="post">
+                    @Html.AntiForgeryToken()
                     <button class="btn btn-primary">Set message as replied</button>
                 </form>
             </div>            
@@ -90,6 +91,7 @@
     }    
 
     <form action="/groups/@Model.Chapter.Id/messages/@Model.Message.Id/reply" method="post">
+        @Html.AntiForgeryToken()
         @await Html.PartialAsync("Admin/Chapter/_MessageForm", new ChapterMessageReplyFormViewModel
         {
             Message = ""

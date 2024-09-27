@@ -27,6 +27,7 @@
 
 <p>Show notifications for:</p>
 <form method="post" action="/account/notifications">
+    @Html.AntiForgeryToken()
     @await Html.PartialAsync("Account/_NotificationSettingsForm", new NotificationSettingsFormViewModel
     {
         Settings = settingsViewModels

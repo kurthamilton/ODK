@@ -6,6 +6,8 @@
 
 <h4>Send update</h4>
 <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.EventId/invites/send/update">
+    @Html.AntiForgeryToken()
+    
     <div class="form-group mb-3 required">
         @Html.LabelFor(x => x.ResponseTypes, new { @class = "form-label" })
         @Html.ListBoxFor(x => x.ResponseTypes, new[]

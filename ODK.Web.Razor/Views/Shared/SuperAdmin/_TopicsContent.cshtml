@@ -16,6 +16,7 @@
     <h2>New topics</h2>
     <section class="section section--admin">
         <form action="/superadmin/topics/approve" method="post">
+            @Html.AntiForgeryToken()
             @await Html.PartialAsync("SuperAdmin/_NewTopicsForm", new NewTopicsFormViewModel
             {
                 Chapters = viewModel.NewChapterTopics
@@ -64,6 +65,7 @@
                         }
 
                         <form action="/superadmin/topics" method="post">
+                            @Html.AntiForgeryToken()
                             @Html.Hidden("TopicGroupId", topicGroup.Id.ToString())
 
                             <div class="input-group mt-3">

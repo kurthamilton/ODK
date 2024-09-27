@@ -34,6 +34,8 @@
     ContentFunc = 
         @<div>
             <form method="post">
+                @Html.AntiForgeryToken()
+    
                 @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
                 {
                     Chapter = Model.Chapter,

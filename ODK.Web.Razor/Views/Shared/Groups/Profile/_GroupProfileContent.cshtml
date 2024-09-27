@@ -27,6 +27,7 @@
                 <h3>My profile</h3>
                 <section class="section">                    
                     <form action="/groups/@Model.Chapter.Id/profile" method="post">
+                        @Html.AntiForgeryToken()
                         @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
                         {
                             ChapterName = Model.Chapter.Name,

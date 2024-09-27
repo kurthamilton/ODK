@@ -21,6 +21,7 @@
     ContentFunc = 
         @<div>
             <form method="post">
+                @Html.AntiForgeryToken()
                 @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
                 {
                     ApplicationOnly = Model.Property.ApplicationOnly,

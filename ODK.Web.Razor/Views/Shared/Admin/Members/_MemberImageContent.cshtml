@@ -19,6 +19,7 @@
         Only use for fixing squished images
     </div>
     <form action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/picture" method="post">
+        @Html.AntiForgeryToken()
         <div class="form-group mb-3">
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel())
         </div>
