@@ -1,7 +1,7 @@
 ﻿@model ODK.Web.Razor.Models.Login.LoginViewModel
 
 <form method="post" action="@(Model.Chapter != null ? $"/{Model.Chapter.Name}" : "")/Account/Login?ReturnUrl=@Model.ReturnUrl">
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()*@
 
     <div class="form-group required mb-3">
         @Html.LabelFor(x => x.Email, new { @class = "form-label" })

@@ -36,7 +36,7 @@
     Body =
     @<div>
         <form method="post" action="/account/picture/change">
-            @Html.AntiForgeryToken()
+            @*@Html.AntiForgeryToken()*@
             
             @await Html.PartialAsync("Account/_PictureUpload", new PictureUploadViewModel())
 

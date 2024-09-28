@@ -64,7 +64,7 @@
                 BodyContentFunc = 
                     @<div>
                         <form action="/admin/groups/@Model.Chapter.Id/conversations" method="post">
-                            @Html.AntiForgeryToken()
+                            @*@Html.AntiForgeryToken()*@
                 @Html.Hidden(nameof(ChapterAdminStartConversationFormViewModel.MemberId), Model.Member.Id)
                             @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
                             <button class="btn btn-primary">Send</button>
@@ -85,7 +85,7 @@ else
             ContentFunc = 
                 @<div>
                     <form action="/admin/groups/@Model.Chapter.Id/conversations" method="post">
-                        @Html.AntiForgeryToken()
+                        @*@Html.AntiForgeryToken()*@
                         @Html.Hidden(nameof(ChapterAdminStartConversationFormViewModel.MemberId), Model.Member.Id)
                         @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
                         <button class="btn btn-primary">Send</button>

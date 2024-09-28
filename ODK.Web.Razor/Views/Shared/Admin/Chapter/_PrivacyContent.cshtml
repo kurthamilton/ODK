@@ -12,7 +12,7 @@
     ContentFunc = 
         @<div>
             <form action="/groups/@Model.Chapter.Id/privacy" method="post">
-                @Html.AntiForgeryToken()
+                @*@Html.AntiForgeryToken()*@
                 @await Html.PartialAsync("Admin/Chapter/_PrivacyForm", new ChapterPrivacySettingsFormViewModel
                 {
                     Conversations = Model.PrivacySettings?.Conversations,

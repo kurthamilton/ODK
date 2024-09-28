@@ -18,7 +18,7 @@
     ContentFunc = 
         @<div>
             <form action="/groups/@Model.Chapter.Id/events/settings" method="post">
-                @Html.AntiForgeryToken()
+                @*@Html.AntiForgeryToken()*@
                 @await Html.PartialAsync("Admin/Events/_SettingsForm", new EventSettingsFormViewModel
                 {
                     DefaultDayOfWeek = Model.Settings?.DefaultDayOfWeek,

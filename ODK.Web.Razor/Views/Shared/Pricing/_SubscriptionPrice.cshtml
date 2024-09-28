@@ -31,7 +31,7 @@
                 @Model.Currency.ToAmountString(Model.Amount)/@periodUnit
             </p>
             <form action="/account/subscription/confirm" method="post">
-                @Html.AntiForgeryToken()
+                @*@Html.AntiForgeryToken()*@
                 @await Html.PartialAsync("Payments/_PaymentSubscriptionForm", new PaymentSubscriptionFormViewModel
                 {
                     CurrencyCode = Model.Currency.Code,

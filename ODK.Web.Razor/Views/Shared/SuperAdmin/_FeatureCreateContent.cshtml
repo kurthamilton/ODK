@@ -2,7 +2,7 @@
 
 <h2>Create feature notification</h2>
 <form method="post">
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("SuperAdmin/_FeatureForm", new FeatureFormViewModel())
     <button class="btn btn-primary">Create</button>
 </form>

@@ -28,7 +28,7 @@
 })
 
 <form method="post">
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Admin/Venues/_VenueForm", new VenueFormViewModel
     {
         Address = Model.Venue.Address,

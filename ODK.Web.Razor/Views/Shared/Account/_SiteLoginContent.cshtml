@@ -7,7 +7,7 @@
 <hr/>
 
 <form action="/account/login/google" method="post" data-oauth-submit>
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()*@
     <input type="hidden" name="token" data-oauth-token />
     @await Html.PartialAsync("Components/_GoogleLoginButton", new GoogleLoginButtonViewModel
     {

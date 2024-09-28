@@ -26,7 +26,7 @@
                 <h2>Change email address</h2>
                 <section class="section">
                     <form method="post" action="/account/email/change">
-                        @Html.AntiForgeryToken()        
+                        @*@Html.AntiForgeryToken()*@        
     
                         @await Html.PartialAsync("Account/_ChangeEmailForm", new ChangeEmailFormViewModel
                         {

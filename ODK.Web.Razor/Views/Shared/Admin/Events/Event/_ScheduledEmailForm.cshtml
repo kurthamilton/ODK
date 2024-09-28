@@ -4,7 +4,7 @@
 @model ODK.Web.Razor.Models.Admin.Events.EventScheduledEmailFormViewModel
 
 <form method="post" action="/groups/@Model.Chapter.Id/events/@Model.EventId/invites/scheduled">
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()*@
 
     <div class="form-group mb-3">        
         <div class="row">

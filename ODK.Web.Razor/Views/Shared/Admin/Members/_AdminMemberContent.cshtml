@@ -18,7 +18,7 @@
     ContentFunc = 
         @<div>
             <form method="post">
-                @Html.AntiForgeryToken()
+                @*@Html.AntiForgeryToken()*@
                 @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
                 {
                     AdminEmailAddress = Model.AdminMember.AdminEmailAddress,

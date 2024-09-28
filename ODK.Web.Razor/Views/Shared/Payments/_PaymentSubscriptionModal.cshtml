@@ -13,7 +13,7 @@
         @if (Model.PaymentSettings?.Provider == PaymentProviderType.PayPal)
         {
             <form method="post" action="@Model.Action">
-                @Html.AntiForgeryToken()
+                @*@Html.AntiForgeryToken()*@
                 @Model.FormContentFunc?.Invoke(null)
                 @await Html.PartialAsync("Payments/_PaymentSubscriptionForm", Model.PaymentForm)
             </form>

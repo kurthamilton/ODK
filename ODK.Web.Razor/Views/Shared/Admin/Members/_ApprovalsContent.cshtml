@@ -44,7 +44,7 @@
                             </td>
                             <td>
                                 <form action="/groups/@Model.Chapter.Id/members/@member.Id/approve" method="post">
-                                    @Html.AntiForgeryToken()
+                                    @*@Html.AntiForgeryToken()*@
                                     <button class="btn btn-success">Approve</button>
                                 </form>
                             </td>

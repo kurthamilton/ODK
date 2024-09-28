@@ -2,7 +2,7 @@
 @model ODK.Core.Emails.EmailProvider
 
 <form method="post">
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("SuperAdmin/_EmailProviderForm", new EmailProviderFormViewModel
     {
         BatchSize = Model.BatchSize,

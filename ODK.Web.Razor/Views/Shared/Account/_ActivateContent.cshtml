@@ -1,7 +1,7 @@
 ﻿@model ODK.Web.Razor.Models.Account.ActivateFormViewModel
 
 <form method="post">
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()*@
     <div class="form-group mb-3 required">
         @Html.LabelFor(x => x.Password, new { @class = "form-label" })
         @Html.PasswordFor(x => x.Password, new { @class = "form-control" })

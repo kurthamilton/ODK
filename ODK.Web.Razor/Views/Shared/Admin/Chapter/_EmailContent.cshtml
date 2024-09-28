@@ -27,7 +27,7 @@
             }
 
             <form method="post">
-                @Html.AntiForgeryToken()
+                @*@Html.AntiForgeryToken()*@
                 @await Html.PartialAsync("Admin/Chapter/_EmailForm", new ChapterEmailFormViewModel
                 {
                      Content = Model.Email.HtmlContent,

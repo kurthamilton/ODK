@@ -23,7 +23,7 @@
 @if (Model.Event.PublishedUtc == null)
 {
     <form action="/groups/@Model.Chapter.Id/events/@Model.Event.Id/publish" method="post">
-        @Html.AntiForgeryToken()
+        @*@Html.AntiForgeryToken()*@
         <div class="mb-3">
             <button class="btn btn-primary" type="submit">
                 <i class="fa-solid fa-upload"></i>
@@ -34,7 +34,7 @@
 }
 
 <form method="post">
-    @Html.AntiForgeryToken()    
+    @*@Html.AntiForgeryToken()*@    
     @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
     {
         AttendeeLimit = Model.Event.AttendeeLimit,

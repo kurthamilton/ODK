@@ -9,7 +9,7 @@
     ContentFunc = 
         @<div>
             <form action="/groups/@Model.Chapter.Id/image" method="post">
-                @Html.AntiForgeryToken()
+                @*@Html.AntiForgeryToken()*@
                 @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel
                 {
                     ChapterImage = Model.Image

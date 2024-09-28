@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ODK.Web.Common.Config;
 using ODK.Web.Razor.Authentication;
@@ -9,7 +10,11 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages().AddRazorPagesOptions(o =>
+{
+    o.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
+});
+
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<CustomCookieAuthenticationEvents>();

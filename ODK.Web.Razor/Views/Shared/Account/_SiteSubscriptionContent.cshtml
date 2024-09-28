@@ -28,7 +28,7 @@
         .ToArray();
 
     <form action="/account/currency" method="post">
-        @Html.AntiForgeryToken()
+        @*@Html.AntiForgeryToken()*@
         <div class="form-group mb-3 required">
             @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
             @Html.DropDownList("currencyId", currencyOptions, "", new 

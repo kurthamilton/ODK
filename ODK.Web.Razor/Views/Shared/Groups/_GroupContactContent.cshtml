@@ -15,7 +15,7 @@
     </p>
 
     <form action="/groups/@Model.Chapter.Id/contact" method="post">
-        @Html.AntiForgeryToken()
+        @*@Html.AntiForgeryToken()*@
         @await Html.PartialAsync("Contact/_ContactForm", new ContactFormViewModel())
         <button class="btn btn-primary">Send</button>
     </form>
@@ -65,7 +65,7 @@
             BodyContentFunc = 
                 @<div>
                     <form action="/groups/@Model.Chapter.Id/conversations" method="post">
-                        @Html.AntiForgeryToken()
+                        @*@Html.AntiForgeryToken()*@
                         @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
                         <button class="btn btn-primary">Send</button>
                     </form>
@@ -78,7 +78,7 @@ else
     <h2>Start new conversation</h2>
     <section class="section">
         <form action="/groups/@Model.Chapter.Id/conversations" method="post">
-            @Html.AntiForgeryToken()
+            @*@Html.AntiForgeryToken()*@
             @await Html.PartialAsync("Contact/_ConversationForm", new ConversationFormViewModel())
             <button class="btn btn-primary">Send</button>
         </form>
