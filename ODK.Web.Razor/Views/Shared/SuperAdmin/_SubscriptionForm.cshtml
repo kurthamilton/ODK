@@ -10,7 +10,25 @@
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
         .OrderBy(x => x.Text)
         .ToArray();
+
+    var sitePaymentSettingsOptions = Model
+        .SitePaymentSettings
+        .Select(x => new SelectListItem
+        {
+            Value = x.Id.ToString(),
+            Text = x.Name
+        })
+        .ToArray();
 }
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.SitePaymentSettingId, new { @class = "form-label" })
+    @Html.DropDownListFor(x => x.SitePaymentSettingId, sitePaymentSettingsOptions, 
+        Model.SitePaymentSettingId != null 
+            ? new { @class = "form-select", disabled = "" }
+            : new { @class = "form-select" })
+    @Html.ValidationMessageFor(x => x.SitePaymentSettingId)
+</div>
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Name, new { @class = "form-label" })

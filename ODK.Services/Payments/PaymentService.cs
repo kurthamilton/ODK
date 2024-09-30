@@ -65,7 +65,7 @@ public class PaymentService : IPaymentService
     public async Task<ServiceResult> MakePayment(ChapterPaymentSettings chapterPaymentSettings, 
         Currency currency, Member member, decimal amount, string cardToken, string reference)
     {
-        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository.Get().Run();
+        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository.GetActive().Run();
 
         var sitePaymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings);
 

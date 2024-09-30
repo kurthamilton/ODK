@@ -14,7 +14,7 @@
 @inject ISiteSubscriptionService SiteSubscriptionService
 @{
     var memberId = User.MemberId();
-    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto(memberId);
+    var dto = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(memberId);
     
     var (currency, currentMember, memberSubscription, subscriptions, paymentSettings) = 
         (dto.Currency, dto.CurrentMember, dto.CurrentMemberSubscription, dto.Subscriptions, dto.PaymentSettings!);

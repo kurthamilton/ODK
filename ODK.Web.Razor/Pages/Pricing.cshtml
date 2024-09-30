@@ -8,7 +8,7 @@
     Model.Title = "Pricing";
     Model.Path = "/pricing";
 
-    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto(Model.CurrentMemberIdOrDefault);
+    var dto = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(Model.CurrentMemberIdOrDefault);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

@@ -24,6 +24,7 @@ using ODK.Services.Integrations.Imaging;
 using ODK.Services.Integrations.OAuth;
 using ODK.Services.Integrations.Payments;
 using ODK.Services.Integrations.Payments.PayPal;
+using ODK.Services.Integrations.Payments.Stripe;
 using ODK.Services.Issues;
 using ODK.Services.Logging;
 using ODK.Services.Media;
@@ -97,7 +98,11 @@ public static class DependencyConfig
         var payments = appSettings.Payments;
 
         services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
-        services.AddSingleton(new PayPalPaymentProviderSettings(payments.PayPal.ApiBaseUrl));
+        services.AddSingleton(new PayPalPaymentProviderSettings
+        {
+            ApiBaseUrl = payments.PayPal.ApiBaseUrl
+        });
+        services.AddSingleton(new StripePaymentProviderSettings());
     }
 
     private static void ConfigureServices(this IServiceCollection services, AppSettings appSettings)

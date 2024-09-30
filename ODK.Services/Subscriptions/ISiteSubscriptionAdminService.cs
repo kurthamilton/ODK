@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Subscriptions;
+using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Subscriptions;
 
@@ -13,7 +14,7 @@ public interface ISiteSubscriptionAdminService
 
     Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(Guid currentMemberId);
 
-    Task<SiteSubscriptionDto> GetSubscriptionDto(Guid currentMemberId, Guid siteSubscriptionId);
+    Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(Guid currentMemberId, Guid siteSubscriptionId);
 
     Task MakeDefault(Guid currentMemberId, Guid siteSubscriptionId);
 

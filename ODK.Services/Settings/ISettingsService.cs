@@ -6,7 +6,12 @@ namespace ODK.Services.Settings;
 
 public interface ISettingsService
 {
+    Task<ServiceResult> ActivatePaymentSettings(Guid currentMemberId, Guid id);
+
     Task<ServiceResult> AddEmailProvider(Guid currentMemberId, UpdateEmailProvider model);
+
+    Task<ServiceResult> CreatePaymentSettings(Guid currentMemberId,
+        PaymentProviderType provider, string name, string publicKey, string secretKey);
 
     Task<ServiceResult> DeleteEmailProvider(Guid currentMemberId, Guid emailProviderId);
 
@@ -18,7 +23,9 @@ public interface ISettingsService
 
     Task<SiteEmailSettings> GetSiteEmailSettings();
 
-    Task<SitePaymentSettings> GetSitePaymentSettings(Guid currentMemberId);
+    Task<IReadOnlyCollection<SitePaymentSettings>> GetSitePaymentSettings(Guid currentMemberId);
+
+    Task<SitePaymentSettings> GetSitePaymentSettings(Guid currentMemberId, Guid id);
 
     Task<ServiceResult> UpdateEmailProvider(Guid currentMemberId, Guid emailProviderId, UpdateEmailProvider model);
 
@@ -30,5 +37,6 @@ public interface ISettingsService
 
     Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent);
 
-    Task<ServiceResult> UpdatePaymentSettings(Guid currentMemberId, string publicKey, string secretKey);
+    Task<ServiceResult> UpdatePaymentSettings(Guid currentMemberId, Guid id,
+        string name, string publicKey, string secretKey);
 }

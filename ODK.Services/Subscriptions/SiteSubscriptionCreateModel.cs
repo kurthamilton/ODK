@@ -2,21 +2,23 @@
 
 public class SiteSubscriptionCreateModel
 {
-    public string Description { get; set; } = "";
+    public required string Description { get; init; } = "";
 
-    public bool Enabled { get; set; }
+    public required bool Enabled { get; init; }
 
-    public Guid? FallbackSiteSubscriptionId { get; set; }
+    public required Guid? FallbackSiteSubscriptionId { get; init; }
 
-    public int? GroupLimit { get; set; }
+    public required int? GroupLimit { get; init; }
 
-    public int? MemberLimit { get; set; }
+    public required int? MemberLimit { get; init; }
 
-    public bool MemberSubscriptions { get; set; }
+    public required bool MemberSubscriptions { get; init; }
 
-    public string Name { get; set; } = "";
+    public required string Name { get; init; } = "";
 
-    public bool Premium { get; set; }
+    public required bool Premium { get; init; }
 
-    public bool SendMemberEmails { get; set; }
+    public required bool SendMemberEmails { get; init; }
+
+    public required Guid SitePaymentSettingId { get; init; }
 }

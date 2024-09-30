@@ -22,7 +22,9 @@ public class PayPalPaymentProvider : IPaymentProvider
         _settings = settings;
     }
 
-    public bool HasExternalGateway => false;
+    public bool HasCustomers => false;
+
+    public bool HasExternalGateway => false;    
 
     public async Task<ServiceResult> ActivateSubscriptionPlan(string externalId)
     {
@@ -37,6 +39,11 @@ public class PayPalPaymentProvider : IPaymentProvider
     {
         var client = GetClient();
         return await client.CancelSubscription(externalId);
+    }
+
+    public Task<string?> CreateCustomer(string emailAddress)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<string?> CreateProduct(string name)

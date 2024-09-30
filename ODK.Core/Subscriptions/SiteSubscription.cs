@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Features;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 
 namespace ODK.Core.Subscriptions;
@@ -32,6 +33,10 @@ public class SiteSubscription : IDatabaseEntity
     public bool Premium { get; set; }
 
     public bool SendMemberEmails { get; set; }
+
+    public SitePaymentSettings SitePaymentSettings { get; set; } = null!;
+
+    public Guid SitePaymentSettingId { get; set; }
 
     public bool HasCapacity(int memberCount) => MemberLimit == null || memberCount < MemberLimit;
 

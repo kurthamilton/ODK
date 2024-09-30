@@ -1,7 +1,7 @@
-﻿@using ODK.Services.Subscriptions
+﻿@using ODK.Services.Subscriptions.ViewModels
 @using ODK.Web.Common.Extensions;
 @using ODK.Web.Razor.Models.SuperAdmin
-@model SiteSubscriptionDto
+@model SiteSubscriptionViewModel
 @{
     var currencyDictionary = Model.Currencies.ToDictionary(x => x.Id);
 }
@@ -21,6 +21,8 @@
             Name = Model.Subscription.Name,
             Premium = Model.Subscription.Premium,
             SendMemberEmails = Model.Subscription.SendMemberEmails,
+            SitePaymentSettingId = Model.Subscription.SitePaymentSettingId,
+            SitePaymentSettings = Model.SitePaymentSettings,
             SiteSubscriptionId = Model.Subscription.Id
         })
         <button class="btn btn-primary">Update</button>

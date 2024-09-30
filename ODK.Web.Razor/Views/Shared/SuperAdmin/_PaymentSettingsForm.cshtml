@@ -1,15 +1,17 @@
-﻿@using ODK.Web.Razor.Models.SuperAdmin
+﻿@using ODK.Core.Payments
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.SuperAdmin
 @model PaymentSettingsFormViewModel
-@{
-    var providerOptions = new[]
-    {
-        new SelectListItem { Text = "PayPal" }
-    };
-}
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Name, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Name)
+</div>
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Provider, new { @class = "form-label" })
-    @Html.DropDownListFor(x => x.Provider, providerOptions, new { @class = "form-select" })
+    @Html.OdkEnumDropDownFor(x => x.Provider, new { @class = "form-select" })
 </div>
 
 <div class="form-group mb-3 required">

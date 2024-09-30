@@ -2,11 +2,15 @@
 
 public interface IPaymentProvider
 {
+    bool HasCustomers { get; }
+
     bool HasExternalGateway { get; }
 
     Task<ServiceResult> ActivateSubscriptionPlan(string externalId);
 
     Task<bool> CancelSubscription(string externalId);
+
+    Task<string?> CreateCustomer(string emailAddress);
 
     Task<string?> CreateProduct(string name);
 

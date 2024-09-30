@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Payments;
 using ODK.Services.Caching;
 using ODK.Services.Contact;
 using ODK.Services.Emails;
@@ -95,6 +96,45 @@ public class SuperAdminController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("superadmin/payments")]
+    public async Task<IActionResult> CreatePaymentSettings([FromForm] PaymentSettingsFormViewModel viewModel)
+    {
+        var result = await _settingsService.CreatePaymentSettings(MemberId,
+            viewModel.Provider ?? PaymentProviderType.None,
+            viewModel.Name ?? "",
+            viewModel.PublicKey ?? "",
+            viewModel.SecretKey ?? "");
+
+        AddFeedback(result, "Payment settings created");
+
+        return Redirect("/superadmin/payments");
+    }
+
+    [HttpPost("superadmin/payments/{id:guid}")]
+    public async Task<IActionResult> UpdatePaymentSettings(Guid id, 
+        [FromForm] PaymentSettingsFormViewModel viewModel)
+    {
+        var result = await _settingsService.UpdatePaymentSettings(MemberId,
+            id,
+            viewModel.Name ?? "",
+            viewModel.PublicKey ?? "",
+            viewModel.SecretKey ?? "");
+
+        AddFeedback(result, "Payment settings updated");
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("superadmin/payments/{id:guid}/activate")]
+    public async Task<IActionResult> ActivatePaymentSettings(Guid id)
+    {
+        var result = await _settingsService.ActivatePaymentSettings(MemberId, id);
+
+        AddFeedback(result, "Active payment settings updated");
+
+        return RedirectToReferrer();
+    }
+
     [HttpPost("superadmin/subscriptions")]
     public async Task<IActionResult> CreateSubscription(SiteSubscriptionFormViewModel viewModel)
     {
@@ -108,13 +148,11 @@ public class SuperAdminController : OdkControllerBase
             MemberLimit = viewModel.MemberLimit,
             MemberSubscriptions = viewModel.MemberSubscriptions,
             Premium = viewModel.Premium,
-            SendMemberEmails = viewModel.SendMemberEmails
+            SendMemberEmails = viewModel.SendMemberEmails,
+            SitePaymentSettingId = viewModel.SitePaymentSettingId ?? Guid.Empty
         });
 
-        if (result.Success)
-        {
-            AddFeedback("Subscription created", FeedbackType.Success);
-        }
+        AddFeedback(result, "Subscription created");
 
         return Redirect("/superadmin/subscriptions");
     }
@@ -132,7 +170,8 @@ public class SuperAdminController : OdkControllerBase
             MemberLimit = viewModel.MemberLimit,
             MemberSubscriptions = viewModel.MemberSubscriptions,
             Premium = viewModel.Premium,
-            SendMemberEmails = viewModel.SendMemberEmails
+            SendMemberEmails = viewModel.SendMemberEmails,
+            SitePaymentSettingId = viewModel.SitePaymentSettingId ?? Guid.Empty
         });
 
         if (result.Success)

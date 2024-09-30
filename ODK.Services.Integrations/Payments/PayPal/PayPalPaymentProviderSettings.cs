@@ -2,10 +2,5 @@
 
 public class PayPalPaymentProviderSettings
 {
-    public PayPalPaymentProviderSettings(string apiBaseUrl)
-    {
-        ApiBaseUrl = apiBaseUrl;
-    }
-
-    public string ApiBaseUrl { get; }
+    public required string ApiBaseUrl { get; init; }
 }

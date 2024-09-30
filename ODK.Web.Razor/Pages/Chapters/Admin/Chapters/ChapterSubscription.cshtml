@@ -19,7 +19,7 @@
     }
 
     var subscription = await SiteSubscriptionService.GetMemberSiteSubscription(memberId.Value);
-    var siteSubscriptions = await SiteSubscriptionService.GetSiteSubscriptionsDto(memberId.Value);
+    var siteSubscriptions = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(memberId.Value);
 }
 
 @await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", new ChapterSubscriptionViewModel

@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
-using ODK.Services.Subscriptions;
+using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Web.Razor.Models.Admin.Chapters;
 
@@ -10,5 +10,5 @@ public class ChapterSubscriptionViewModel
 
     public required MemberSiteSubscription? Current { get; init; }
 
-    public required SiteSubscriptionsDto SiteSubscriptions { get; init; }
+    public required SiteSubscriptionsViewModel SiteSubscriptions { get; init; }
 }

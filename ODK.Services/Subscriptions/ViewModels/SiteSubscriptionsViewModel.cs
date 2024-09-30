@@ -2,9 +2,9 @@
 using ODK.Core.Members;
 using ODK.Core.Payments;
 
-namespace ODK.Services.Subscriptions;
+namespace ODK.Services.Subscriptions.ViewModels;
 
-public class SiteSubscriptionsDto
+public class SiteSubscriptionsViewModel
 {
     public required IReadOnlyCollection<Currency> Currencies { get; init; }
 
@@ -15,6 +15,6 @@ public class SiteSubscriptionsDto
     public required MemberSiteSubscription? CurrentMemberSubscription { get; init; }
 
     public required IPaymentSettings? PaymentSettings { get; init; }
-    
-    public required IReadOnlyCollection<SiteSubscriptionDto> Subscriptions { get; init; }
+
+    public required IReadOnlyCollection<SiteSubscriptionViewModel> Subscriptions { get; init; }
 }

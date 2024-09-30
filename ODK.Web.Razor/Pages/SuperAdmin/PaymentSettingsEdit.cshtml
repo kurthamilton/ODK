@@ -1,0 +1,38 @@
+﻿@page "/superadmin/payments/{id:guid}"
+@using ODK.Services.Settings
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.SuperAdmin
+@model PaymentSettingsEditModel
+@inject ISettingsService SettingsService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Payments | SuperAdmin";
+
+    var memberId = User.MemberId();
+    var settings = await SettingsService.GetSitePaymentSettings(memberId, Model.Id);
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = "/superadmin/payments", Text = "Payments" },
+        new MenuItem { Text = settings.Name }
+    }
+})
+
+<section class="section">
+    <form action="/superadmin/payments/@settings.Id" method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
+        {        
+            Name = settings.Name,
+            Provider = settings.Provider,
+            PublicKey = settings.ApiPublicKey,
+            SecretKey = settings.ApiSecretKey
+        })
+        <button class="btn btn-primary">Update</button>
+    </form>
+</section>

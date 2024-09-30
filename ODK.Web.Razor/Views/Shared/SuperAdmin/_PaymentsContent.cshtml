@@ -5,19 +5,48 @@
 @using ODK.Services.Payments
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.SuperAdmin
-@model SitePaymentSettings
+@model IReadOnlyCollection<SitePaymentSettings>
 
 <h2 class="d-none d-md-block">Payment settings</h2>
 
 <section class="section">
-    <form method="post">
-        @*@Html.AntiForgeryToken()*@
-        @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
-        {        
-            Provider = Model.Provider,
-            PublicKey = Model.ApiPublicKey,
-            SecretKey = Model.ApiSecretKey
-        })
-        <button class="btn btn-primary">Update</button>
-    </form>
+    <p>
+        <a class="btn btn-primary" href="/superadmin/payments/new">
+            Create
+        </a>
+    </p>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Provider</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var paymentSetting in Model)
+                {
+                    <tr>
+                        <td>
+                            <a href="/superadmin/payments/@paymentSetting.Id">@paymentSetting.Name</a>
+                        </td>
+                        <td>@paymentSetting.Provider</td>
+                        <td>
+                            @if (paymentSetting.Active)
+                            {
+                                @:Active
+                            }
+                            else
+                            {
+                                <form action="/superadmin/payments/@paymentSetting.Id/activate" method="post">
+                                    <button class="btn btn-primary">Activate</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>        
 </section>

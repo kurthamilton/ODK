@@ -1,7 +1,7 @@
 ﻿@using ODK.Core.Subscriptions
-@using ODK.Services.Subscriptions
+@using ODK.Services.Subscriptions.ViewModels
 @using ODK.Web.Razor.Models.Pricing
-@model SiteSubscriptionsDto
+@model SiteSubscriptionsViewModel
 @{
     var subscriptions = Model
         .Subscriptions
@@ -18,10 +18,10 @@
 }
 
 <div class="row gap-3">
-    @foreach (var subscriptionDto in subscriptions)
+    @foreach (var subscriptionViewModel in subscriptions)
     {
-        var subscription = subscriptionDto.Subscription;
-        var prices = subscriptionDto.Prices.Where(x => x.CurrencyId == currency.Id);
+        var subscription = subscriptionViewModel.Subscription;
+        var prices = subscriptionViewModel.Prices.Where(x => x.CurrencyId == currency.Id);
 
         <div class="col">
             <div class="card h-100">

@@ -10,7 +10,7 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Subscription | SuperAdmin";
 
-    var dto = await SiteSubscriptionAdminService.GetSubscriptionDto(Model.CurrentMemberId, Model.SubscriptionId);
+    var viewModel = await SiteSubscriptionAdminService.GetSubscriptionViewModel(Model.CurrentMemberId, Model.SubscriptionId);
 }
 
 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
@@ -18,8 +18,8 @@
     Breadcrumbs = new[]
     {
         new MenuItem { Link = "/superadmin/subscriptions", Text = "Subscriptions" },
-        new MenuItem { Text = dto.Subscription.Name }
+        new MenuItem { Text = viewModel.Subscription.Name }
     }
 })
 
-@await Html.PartialAsync("SuperAdmin/_SubscriptionContent", dto)
+@await Html.PartialAsync("SuperAdmin/_SubscriptionContent", viewModel)

@@ -13,6 +13,9 @@ public class PaymentSettingsFormViewModel
     [DisplayName("Currency")]
     public Guid? CurrencyId { get; set; }
 
+    [Required]
+    public string? Name { get; set; }
+
     public PaymentProviderType? Provider { get; set; }
 
     [Required]
