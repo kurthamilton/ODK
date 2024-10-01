@@ -37,7 +37,7 @@
         var chapterContext = new ChapterPageContext(RequestCache, Context);
         var member = await chapterContext.GetMemberAsync();
 
-        <div class="mb-1">
+        <div class="mb-1 d-none d-md-block">
             @await Html.PartialAsync("Header/_Navbar", new NavbarViewModel
             {
                 Breakpoint = "md",

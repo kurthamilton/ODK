@@ -21,3 +21,32 @@
         margin-bottom: 0;
     }
 }
+
+.site-nav {
+    flex-basis: 100% !important;
+}
+
+@include media-breakpoint-up(md) {
+    .site-nav {
+        flex-basis: auto !important;
+
+        align-self: stretch;
+        display: flex;
+        align-items: stretch;
+
+        .navbar-nav {
+            display: flex;
+            align-items: stretch;
+
+            .nav-item {
+                display: flex;
+                align-items: stretch;
+
+                .nav-link {
+                    display: flex;
+                    align-items: center;
+                }
+            }
+        }
+    }
+}
