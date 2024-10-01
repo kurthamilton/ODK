@@ -1,4 +1,4 @@
-﻿(function () {
+﻿(function () {    
     document.querySelectorAll('[data-paypal-container]').forEach(container => {        
         const amount = container.getAttribute('data-paypal-amount');        
         const type = container.getAttribute('data-paypal-type');
@@ -53,6 +53,8 @@
                     $form.submit();
                 }
             });
-        buttons.render(`[data-paypal-container="${containerId}"]`);
+        
+        // buttons.render(`[data-paypal-container="${containerId}"]`);
+        buttons.render(container);
     });    
 })();

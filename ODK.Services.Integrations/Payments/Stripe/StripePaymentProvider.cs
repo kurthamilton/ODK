@@ -1,7 +1,10 @@
 ﻿using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
+using ODK.Core.Utils;
+using ODK.Core.Web;
 using ODK.Services.Payments;
 using Stripe;
+using Stripe.Checkout;
 
 namespace ODK.Services.Integrations.Payments.Stripe;
 
@@ -9,12 +12,15 @@ public class StripePaymentProvider : IPaymentProvider
 {
     private readonly IStripeClient _client;
     private readonly IPaymentSettings _paymentSettings;
+    private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly StripePaymentProviderSettings _settings;
 
     public StripePaymentProvider(
         StripePaymentProviderSettings settings,
-        IPaymentSettings paymentSettings)
+        IPaymentSettings paymentSettings,
+        IHttpRequestProvider httpRequestProvider)
     {        
+        _httpRequestProvider = httpRequestProvider;
         _paymentSettings = paymentSettings;
         _settings = settings;
         _client = new StripeClient(paymentSettings.ApiSecretKey);
@@ -142,14 +148,65 @@ public class StripePaymentProvider : IPaymentProvider
         }
     }
 
-    public Task<ServiceResult> MakePayment(string currencyCode, decimal amount, string cardToken, string description, string memberName)
+    public async Task<ServiceResult> MakePayment(string currencyCode, decimal amount, 
+        string cardToken, string description, string memberName)
+    {
+        var service = CreatePaymentIntentService();
+        var intent = await service.CreateAsync(new PaymentIntentCreateOptions
+        {
+            Amount = (int)(amount * 100),
+            Currency = currencyCode.ToLowerInvariant(),
+            Description = $"{memberName}: {description}",
+            ExtraParams = new Dictionary<string, object>
+            {
+                {
+                    "payment_method_data", new Dictionary<string, object>
+                    {
+                        { "type", "card" },
+                        {
+                            "card", new Dictionary<string, object>
+                            {
+                                { "token", cardToken }
+                            }
+                        }
+                    }
+
+                }
+            }
+        });
+
+        intent = await service.ConfirmAsync(intent.Id);
+        return ServiceResult.Successful();
+    }
+
+    public Task<string?> SendPayment(string currencyCode, decimal amount, 
+        string emailAddress, string paymentId, string note)
     {
         throw new NotImplementedException();
     }
 
-    public Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress, string paymentId, string note)
+    public async Task<string> StartCheckout(ExternalSubscriptionPlan subscriptionPlan)
     {
-        throw new NotImplementedException();
+        var baseUrl = UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl);
+        
+        var service = CreateSessionServicee();
+        var session = await service.CreateAsync(new SessionCreateOptions
+        {
+            UiMode = "embedded",
+            LineItems = new List<SessionLineItemOptions>
+            {
+                new SessionLineItemOptions
+                {
+                    Price = subscriptionPlan.ExternalId,
+                    Quantity = 1
+                },
+            },
+            Mode = "payment",
+            ReturnUrl = baseUrl + "/return.html?session_id={CHECKOUT_SESSION_ID}",
+            AutomaticTax = new SessionAutomaticTaxOptions { Enabled = true },
+        });
+
+        return session.RawJObject["client_secret"]?.ToString() ?? "";
     }
 
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
@@ -158,10 +215,9 @@ public class StripePaymentProvider : IPaymentProvider
     }
 
     private CustomerService CreateCustomerService() => new CustomerService(_client);
-
+    private PaymentIntentService CreatePaymentIntentService() => new PaymentIntentService(_client);
     private PriceService CreatePriceService() => new PriceService(_client);
-
     private ProductService CreateProductService() => new ProductService(_client);
-
+    private SessionService CreateSessionServicee() => new SessionService(_client);
     private SubscriptionService CreateSubscriptionService() => new SubscriptionService(_client);
 }

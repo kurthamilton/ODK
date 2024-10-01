@@ -2,12 +2,12 @@
 @using ODK.Web.Razor.Models.Payments
 @model PaymentScriptsViewModel
 
-@if (Model?.Provider == PaymentProviderType.PayPal)
+@if (Model.Provider == PaymentProviderType.PayPal)
 {
     var currency = Model.CurrencyCode;
     var clientId = Model.ApiPublicKey;
 
-    var scriptUrl = $"https://www.paypal.com/sdk/js?client-id={clientId}";
+    var scriptUrl = $"https://www.paypal.com/sdk/js?client-id={clientId}&components=buttons";
     if (Model.IsSubscription)
     {
         scriptUrl += $"&vault=true&intent=subscription";        
@@ -19,4 +19,9 @@
 
     <script src="@scriptUrl"></script>
     <script src="~/js/odk.paypal.js" asp-append-version="true"></script>
+}
+else if (Model.Provider == PaymentProviderType.Stripe)
+{
+    <script src="https://js.stripe.com/v3"></script>
+    <script src="~/js/odk.stripe.js" asp-append-version="true"></script>
 }

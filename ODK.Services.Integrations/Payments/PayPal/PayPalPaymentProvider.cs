@@ -201,6 +201,11 @@ public class PayPalPaymentProvider : IPaymentProvider
         return response?.BatchHeader?.PayoutBatchId;
     }
 
+    public Task<string> StartCheckout(ExternalSubscriptionPlan subscriptionPlan)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
     {
         throw new NotImplementedException();

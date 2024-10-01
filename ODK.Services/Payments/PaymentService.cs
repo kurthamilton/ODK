@@ -69,11 +69,11 @@ public class PaymentService : IPaymentService
 
         var sitePaymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings);
 
-        var chapterPaymentProvider = chapterPaymentSettings.HasApiKey
+        var paymentProvider = chapterPaymentSettings.HasApiKey
             ? _paymentProviderFactory.GetPaymentProvider(chapterPaymentSettings)
             : sitePaymentProvider;
 
-        var paymentResult = await sitePaymentProvider.MakePayment(currency.Code, amount, cardToken, reference,
+        var paymentResult = await paymentProvider.MakePayment(currency.Code, amount, cardToken, reference,
             member.FullName);
         if (!paymentResult.Success)
         {

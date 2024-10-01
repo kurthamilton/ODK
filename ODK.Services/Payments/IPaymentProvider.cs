@@ -28,5 +28,7 @@ public interface IPaymentProvider
     Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
         string paymentId, string note);
 
+    Task<string> StartCheckout(ExternalSubscriptionPlan subscriptionPlan);
+
     Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken);
 }
