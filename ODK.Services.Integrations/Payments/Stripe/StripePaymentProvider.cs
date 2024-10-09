@@ -47,7 +47,7 @@ public class StripePaymentProvider : IPaymentProvider
         throw new NotImplementedException();
     }
 
-    public Task<string> CreateCustomer(string emailAddress)
+    public Task<string?> CreateCustomer(string emailAddress)
     {
         throw new NotImplementedException();
     }
