@@ -11,7 +11,6 @@ namespace ODK.Services.Integrations.Payments.Stripe;
 public class StripePaymentProvider : IPaymentProvider
 {
     private readonly IStripeClient _client;
-    private readonly IPaymentSettings _paymentSettings;
     private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly StripePaymentProviderSettings _settings;
 
@@ -21,7 +20,6 @@ public class StripePaymentProvider : IPaymentProvider
         IHttpRequestProvider httpRequestProvider)
     {        
         _httpRequestProvider = httpRequestProvider;
-        _paymentSettings = paymentSettings;
         _settings = settings;
         _client = new StripeClient(paymentSettings.ApiSecretKey);
     }
@@ -94,7 +92,12 @@ public class StripePaymentProvider : IPaymentProvider
                     SiteSubscriptionFrequency.Yearly => "year",
                     _ => ""
                 },
-                IntervalCount = 1
+                IntervalCount = subscriptionPlan.Frequency switch
+                {
+                    SiteSubscriptionFrequency.Monthly => subscriptionPlan.NumberOfMonths,
+                    SiteSubscriptionFrequency.Yearly => subscriptionPlan.NumberOfMonths / 12,
+                    _ => 1
+                }
             },
             UnitAmountDecimal = subscriptionPlan.Amount * 100
         });
@@ -114,6 +117,15 @@ public class StripePaymentProvider : IPaymentProvider
         return ServiceResult.Successful();
     }
 
+    public async Task<string?> GetProductId(string name)
+    {
+        var service = CreateProductService();
+        var products = await service.ListAsync();
+        return products
+            .FirstOrDefault(x => string.Equals(name, x.Name, StringComparison.InvariantCultureIgnoreCase))
+            ?.Id;
+    }
+
     public Task<ExternalSubscription?> GetSubscription(string externalId)
     {
         throw new NotImplementedException();
@@ -127,21 +139,30 @@ public class StripePaymentProvider : IPaymentProvider
         {
             var price = await service.GetAsync(externalId);
 
+            var frequency = price.Recurring.Interval switch
+            {
+                "month" => SiteSubscriptionFrequency.Monthly,
+                "year" => SiteSubscriptionFrequency.Yearly,
+                _ => SiteSubscriptionFrequency.None
+            };
+
+            var intervalCount = (int)price.Recurring.IntervalCount;
+
             return new ExternalSubscriptionPlan
             {
                 Amount = price.UnitAmountDecimal ?? 0,
                 CurrencyCode = price.Currency,
                 ExternalId = price.Id,
                 ExternalProductId = price.ProductId,
-                Frequency = price.Recurring.Interval switch
+                Frequency = frequency,
+                Name = price.Nickname,
+                NumberOfMonths = frequency switch
                 {
-                    "month" => SiteSubscriptionFrequency.Monthly,
-                    "year" => SiteSubscriptionFrequency.Yearly,
-                    _ => SiteSubscriptionFrequency.None
-                },
-                Name = price.Nickname
+                    SiteSubscriptionFrequency.Yearly => intervalCount * 12,
+                    _ => intervalCount
+                }
             };
-        }     
+        }
         catch
         {
             return null;
@@ -199,11 +220,11 @@ public class StripePaymentProvider : IPaymentProvider
                 {
                     Price = subscriptionPlan.ExternalId,
                     Quantity = 1
-                },
+                }
             },
-            Mode = "payment",
+            Mode = "subscription",
             ReturnUrl = baseUrl + "/return.html?session_id={CHECKOUT_SESSION_ID}",
-            AutomaticTax = new SessionAutomaticTaxOptions { Enabled = true },
+            AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false }
         });
 
         return session.RawJObject["client_secret"]?.ToString() ?? "";

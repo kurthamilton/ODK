@@ -1,7 +1,8 @@
 ﻿@using ODK.Core.Members
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Payments
-@model ODK.Web.Razor.Models.Admin.Members.SubscriptionFormViewModel
+@model SubscriptionFormViewModel
 @{
     var typeOptions = new[]
     {
@@ -30,32 +31,61 @@
     @Html.ValidationMessageFor(x => x.Title)
 </div>
 
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.Amount, new { @class = "form-label" })
-    <div class="input-group">
-        <span class="input-group-text">
-            @Model.PaymentSettings.Currency.Symbol
-        </span>
-        @Html.TextBoxFor(x => x.Amount, new { @class = "form-control", type = "number", min = 0, step = 0.5 })        
-    </div>    
-    <div>
-        @await Html.PartialAsync("Payments/_PaymentCommissionText", new PaymentCommissionTextViewModel
-        {
-            ChapterPaymentSettings = Model.PaymentSettings,
-            OwnerSubscription = Model.OwnerSubscription
-        })
+@if (Model.Id == null)
+{
+    <div class="form-group mb-3 required">
+        @Html.LabelFor(x => x.Amount, new { @class = "form-label" })
+        <div class="input-group">
+            <span class="input-group-text">
+                @Model.PaymentSettings.Currency.Symbol
+            </span>
+            @Html.TextBoxFor(x => x.Amount, new { @class = "form-control", type = "number", min = 0, step = 0.5 })
+        </div>
+        <div>
+           @await Html.PartialAsync("Payments/_PaymentCommissionText", new PaymentCommissionTextViewModel
+           {
+               ChapterPaymentSettings = Model.PaymentSettings,
+               OwnerSubscription = Model.OwnerSubscription
+           })
+        </div>
+        @Html.ValidationMessageFor(x => x.Amount)
     </div>
-    @Html.ValidationMessageFor(x => x.Amount)
-</div>
 
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.DurationMonths, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.DurationMonths, new { @class = "form-control", type = "number", min = 1 })
-    @Html.ValidationMessageFor(x => x.DurationMonths)
-</div>
+    <div class="form-group mb-3 required">
+        @Html.LabelFor(x => x.DurationMonths, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.DurationMonths, new { @class = "form-control", type = "number", min = 1 })
+        @Html.ValidationMessageFor(x => x.DurationMonths)
+    </div>
+}
+else if (Model.Amount != null)
+{
+    <div class="form-group mb-3">
+        @Html.HiddenFor(x => x.Amount)
+        @Html.LabelFor(x => x.Amount, new { @class = "form-label" })
+        <input type="text" readonly class="form-control-plaintext" value="@Model.PaymentSettings.Currency.ToAmountString((decimal)Model.Amount.Value)" />
+        <div>
+           @await Html.PartialAsync("Payments/_PaymentCommissionText", new PaymentCommissionTextViewModel
+           {
+               ChapterPaymentSettings = Model.PaymentSettings,
+               OwnerSubscription = Model.OwnerSubscription
+           })
+        </div>
+    </div>
+
+    <div class="form-group mb-3">
+        @Html.LabelFor(x => x.DurationMonths, new { @class = "form-label" })
+        @Html.TextBoxFor(x => x.DurationMonths, new { @class = "form-control-plaintext", @readonly = "" })
+        @Html.ValidationMessageFor(x => x.DurationMonths)
+    </div>
+}
 
 <div class="form-group mb-3 required">
     @Html.LabelFor(x => x.Description, new { @class = "form-label" })
     @Html.TextAreaFor(x => x.Description, new { @class = "form-control", rows = 5, data_html_editor = "" })
     @Html.ValidationMessageFor(x => x.Description)
+</div>
+
+<div class="form-check form-switch mb-3">
+    @Html.CheckBoxFor(x => x.Enabled, new { @class = "form-check-input", role = "switch" })
+    @Html.LabelFor(x => x.Enabled, new { @class = "form-check-label" })
 </div>

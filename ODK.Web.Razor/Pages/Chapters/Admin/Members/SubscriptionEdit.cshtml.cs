@@ -34,6 +34,7 @@ public class SubscriptionEditModel : AdminPageModel
             Amount = viewModel.Amount ?? 0,
             ChapterId = Chapter.Id,
             Description = viewModel.Description,
+            Disabled = !viewModel.Enabled,
             Name = viewModel.Name,
             Months = viewModel.DurationMonths ?? 0,
             Title = viewModel.Title,

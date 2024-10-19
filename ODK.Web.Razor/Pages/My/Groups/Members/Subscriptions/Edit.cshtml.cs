@@ -33,6 +33,7 @@ public class EditModel : OdkGroupAdminPageModel
             Amount = viewModel.Amount ?? 0,
             ChapterId = ChapterId,
             Description = viewModel.Description,
+            Disabled = !viewModel.Enabled,
             Name = viewModel.Name,
             Months = viewModel.DurationMonths ?? 0,
             Title = viewModel.Title,

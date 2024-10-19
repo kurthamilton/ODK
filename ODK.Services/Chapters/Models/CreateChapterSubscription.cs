@@ -10,6 +10,8 @@ public class CreateChapterSubscription
 
     public required string Description { get; set; } = "";
 
+    public required bool Disabled { get; set; }
+
     public required int Months { get; set; }
 
     public required string Name { get; set; } = "";

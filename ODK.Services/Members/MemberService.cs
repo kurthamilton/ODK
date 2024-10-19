@@ -549,10 +549,7 @@ public class MemberService : IMemberService
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
         }
 
-        if (memberSubscription == null)
-        {
-            memberSubscription = new MemberSubscription();
-        }
+        memberSubscription ??= new MemberSubscription();
 
         var now = memberSubscription.ExpiresUtc > DateTime.UtcNow ? memberSubscription.ExpiresUtc.Value : DateTime.UtcNow;
         var expiresUtc = now.AddMonths(chapterSubscription.Months);
@@ -625,10 +622,7 @@ public class MemberService : IMemberService
             return;
         }
 
-        if (avatar == null)
-        {
-            avatar = new MemberAvatar();
-        }
+        avatar ??= new MemberAvatar();
 
         _memberImageService.RotateMemberImage(image, avatar);
 
@@ -758,10 +752,7 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Invalid currency");
         }
 
-        if (paymentSettings == null)
-        {
-            paymentSettings = new MemberPaymentSettings();
-        }
+        paymentSettings ??= new MemberPaymentSettings();
         
         paymentSettings.CurrencyId = currencyId;
 
@@ -787,15 +778,9 @@ public class MemberService : IMemberService
             x => x.MemberImageRepository.GetByMemberId(id),
             x => x.MemberAvatarRepository.GetByMemberId(id));
 
-        if (image == null)
-        {
-            image = new MemberImage();
-        }
+        image ??= new MemberImage();
 
-        if (avatar == null)
-        {
-            avatar = new MemberAvatar();
-        }
+        avatar ??= new MemberAvatar();
 
         var result = _memberImageService.UpdateMemberImage(image, avatar, imageData);
         if (!result.Success)
@@ -839,10 +824,7 @@ public class MemberService : IMemberService
 
         if (location != null && !string.IsNullOrEmpty(name))
         {
-            if (memberLocation == null)
-            {
-                memberLocation = new MemberLocation();
-            }
+            memberLocation ??= new MemberLocation();
 
             memberLocation.LatLong = location.Value;
             memberLocation.Name = name;
@@ -871,10 +853,7 @@ public class MemberService : IMemberService
 
         if (memberPreferences?.DistanceUnitId != distanceUnitId)
         {
-            if (memberPreferences == null)
-            {
-                memberPreferences = new MemberPreferences();
-            }
+            memberPreferences ??= new MemberPreferences();
 
             memberPreferences.DistanceUnitId = distanceUnitId;
 

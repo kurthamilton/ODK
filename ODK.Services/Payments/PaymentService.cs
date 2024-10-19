@@ -50,6 +50,12 @@ public class PaymentService : IPaymentService
         return await provider.DeactivateSubscriptionPlan(externalId);
     }
 
+    public async Task<string?> GetProductId(IPaymentSettings settings, string name)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.GetProductId(name);
+    }
+
     public async Task<ExternalSubscription?> GetSubscription(IPaymentSettings settings, string externalId)
     {
         var provider = _paymentProviderFactory.GetPaymentProvider(settings);

@@ -24,7 +24,8 @@
         CurrencyId = paymentSettings?.CurrencyId,
         Provider = paymentSettings?.Provider,
         PublicKey = paymentSettings?.ApiPublicKey,
-        SecretKey = paymentSettings?.ApiSecretKey
+        SecretKey = paymentSettings?.ApiSecretKey,
+        UseSitePaymentProvider = paymentSettings?.UseSitePaymentProvider ?? false
     })
     <button class="btn btn-primary">Update</button>
 </form>

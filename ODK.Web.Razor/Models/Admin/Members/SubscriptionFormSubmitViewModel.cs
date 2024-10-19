@@ -18,6 +18,9 @@ public class SubscriptionFormSubmitViewModel
     public int? DurationMonths { get; set; }
 
     [Required]
+    public bool Enabled { get; set; }
+
+    [Required]
     public string Name { get; set; } = "";
 
     [Required]

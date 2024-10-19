@@ -22,7 +22,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     private readonly IMemberImageService _memberImageService;
     private readonly IMemberService _memberService;
     private readonly IPlatformProvider _platformProvider;
-    private readonly MemberAdminServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberAdminService(
@@ -30,7 +29,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         IMemberService memberService, 
         ICacheService cacheService, 
         IAuthorizationService authorizationService,
-        MemberAdminServiceSettings settings, 
         IMemberImageService memberImageService,
         IMemberEmailService memberEmailService,
         IPlatformProvider platformProvider)
@@ -42,7 +40,6 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         _memberImageService = memberImageService;
         _memberService = memberService;
         _platformProvider = platformProvider;
-        _settings = settings;
         _unitOfWork = unitOfWork;
     }
 
@@ -341,16 +338,32 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
 
-        var (chapter, ownerSubscription, chapterAdminMembers, currentMember, chapterSubscriptions, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
+        var (
+            chapter, 
+            ownerSubscription, 
+            chapterAdminMembers, 
+            currentMember, 
+            chapterSubscriptions, 
+            chapterPaymentSettings, 
+            membershipSettings,
+            sitePaymentSettings
+        ) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
+            x => x.SitePaymentSettingsRepository.GetActive());
 
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
+
+        chapterSubscriptions = chapterSubscriptions
+            .Where(x => chapterPaymentSettings.UseSitePaymentProvider
+                ? x.SitePaymentSettingId == sitePaymentSettings.Id
+                : x.SitePaymentSettingId == null)
+            .ToArray();
 
         return new SubscriptionsAdminPageViewModel
         {
@@ -359,7 +372,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = null,
             OwnerSubscription = ownerSubscription,
-            PaymentSettings = paymentSettings,
+            PaymentSettings = chapterPaymentSettings,
             Platform = platform,
         };
     }
@@ -618,10 +631,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         var privacySettings = member.PrivacySettings
             .FirstOrDefault(x => x.ChapterId == chapterId);
 
-        if (privacySettings == null)
-        {
-            privacySettings = new MemberChapterPrivacySettings();
-        }
+        privacySettings ??= new MemberChapterPrivacySettings();
 
         privacySettings.HideProfile = !visible;
 
@@ -649,15 +659,9 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         OdkAssertions.MemberOf(member, request.ChapterId);
 
-        if (image == null)
-        {
-            image = new MemberImage();
-        }
+        image ??= new MemberImage();
 
-        if (avatar == null)
-        {
-            avatar = new MemberAvatar();
-        }
+        avatar ??= new MemberAvatar();
 
         var result = _memberImageService.UpdateMemberImage(image, avatar, model.ImageData);
         if (!result.Success)
@@ -708,10 +712,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             return ServiceResult.Failure("Member chapter not found");
         }
 
-        if (memberSubscription == null)
-        {
-            memberSubscription = new MemberSubscription();
-        }
+        memberSubscription ??= new MemberSubscription();
 
         memberSubscription.ExpiresUtc = model.ExpiryDate;
         memberSubscription.Type = model.Type;

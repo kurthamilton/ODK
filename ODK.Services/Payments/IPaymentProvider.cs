@@ -18,6 +18,8 @@ public interface IPaymentProvider
 
     Task<ServiceResult> DeactivateSubscriptionPlan(string externalId);
 
+    Task<string?> GetProductId(string name);
+
     Task<ExternalSubscription?> GetSubscription(string externalId);
 
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);

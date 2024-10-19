@@ -26,4 +26,7 @@ public class ChapterPaymentSettingsFormViewModel
 
     [Required]
     public PaymentProviderType? Provider { get; set; }
+
+    [DisplayName("Use site payment provider")]
+    public bool UseSitePaymentProvider { get; set; }
 }

@@ -49,9 +49,12 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             return ServiceResult.Failure($"Fallback subscription not found");
         }
 
-        var subscription = new SiteSubscription();
-        subscription.Platform = _platformProvider.GetPlatform();
-        subscription.SitePaymentSettingId = model.SitePaymentSettingId;
+        var subscription = new SiteSubscription
+        {
+            Platform = _platformProvider.GetPlatform(),
+            SitePaymentSettingId = model.SitePaymentSettingId
+        };
+
         UpdateSiteSubscription(model, subscription);
 
         subscription.ExternalProductId = await _paymentService.CreateProduct(paymentSettings, subscription.Name);
@@ -98,7 +101,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 ExternalId = "",
                 ExternalProductId = siteSubscription.ExternalProductId,
                 Frequency = model.Frequency,
-                Name = $"{siteSubscription.Name} - {model.Frequency} [{currency.Code}]"
+                Name = $"{siteSubscription.Name} - {model.Frequency} [{currency.Code}]",
+                NumberOfMonths = model.Frequency == SiteSubscriptionFrequency.Yearly ? 12 : 1
             });
         }
 

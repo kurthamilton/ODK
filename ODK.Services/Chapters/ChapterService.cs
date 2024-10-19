@@ -83,14 +83,26 @@ public class ChapterService : IChapterService
     {
         var chapterId = chapter.Id;
 
-        var (currentMember, memberSubscription, chapterSubscriptions, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
+        var (
+            currentMember, 
+            memberSubscription, 
+            chapterSubscriptions, 
+            paymentSettings, 
+            membershipSettings,
+            sitePaymentSettings
+        ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
+            x => x.SitePaymentSettingsRepository.GetActive());
 
         OdkAssertions.MemberOf(currentMember, chapterId);
+
+        chapterSubscriptions = chapterSubscriptions
+            .Where(x => x.Use(paymentSettings, sitePaymentSettings))
+            .ToArray();
 
         return new SubscriptionsPageViewModel
         {

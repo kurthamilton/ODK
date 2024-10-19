@@ -28,7 +28,8 @@ public class PaymentSettingsModel : ChapterSuperAdminPageModel
                 ApiSecretKey = viewModel.SecretKey,
                 CurrencyId = viewModel.CurrencyId,
                 EmailAddress = existing?.EmailAddress,
-                Provider = viewModel.Provider
+                Provider = viewModel.Provider,
+                UseSitePaymentProvider = viewModel.UseSitePaymentProvider
             });
 
         if (!result.Success)

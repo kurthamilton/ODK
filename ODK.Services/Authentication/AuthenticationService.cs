@@ -329,10 +329,7 @@ public class AuthenticationService : IAuthenticationService
 
         (string hash, string salt) = PasswordHasher.ComputeHash(password);
 
-        if (memberPassword == null)
-        {
-            memberPassword = new MemberPassword();
-        }
+        memberPassword ??= new MemberPassword();
 
         memberPassword.Hash = hash;
         memberPassword.Salt = salt;

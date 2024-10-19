@@ -17,6 +17,8 @@ public interface IPaymentService
 
     Task<ServiceResult> DeactivateSubscriptionPlan(IPaymentSettings settings, string externalId);
 
+    Task<string?> GetProductId(IPaymentSettings settings, string name);
+
     Task<ExternalSubscription?> GetSubscription(IPaymentSettings settings, string externalId);
 
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(IPaymentSettings settings, string externalId);

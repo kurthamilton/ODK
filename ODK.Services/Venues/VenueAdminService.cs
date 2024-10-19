@@ -144,10 +144,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         venue.MapQuery = model.LocationName;
         venue.Name = model.Name;                
 
-        if (location == null)
-        {
-            location = new VenueLocation();
-        }
+        location ??= new VenueLocation();
 
         location.Name = model.LocationName ?? "";
         location.LatLong = model.Location ?? new LatLong();

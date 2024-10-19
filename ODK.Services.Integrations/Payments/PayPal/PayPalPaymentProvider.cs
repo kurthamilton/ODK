@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Payments;
+using ODK.Core.Subscriptions;
 using ODK.Services.Integrations.Payments.PayPal.Client;
 using ODK.Services.Integrations.Payments.PayPal.Client.Models;
 using ODK.Services.Payments;
@@ -99,6 +100,11 @@ public class PayPalPaymentProvider : IPaymentProvider
             : ServiceResult.Failure("Subscription plan could not be deactivated");
     }
 
+    public Task<string?> GetProductId(string name)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<ExternalSubscription?> GetSubscription(string externalId)
     {
         var client = GetClient();
@@ -138,7 +144,10 @@ public class PayPalPaymentProvider : IPaymentProvider
             ExternalId = externalId,
             ExternalProductId = plan.ProductId,
             Frequency = billingCycle.Frequency.OdkFrequency,
-            Name = plan.Name
+            Name = plan.Name,
+            NumberOfMonths = billingCycle.Frequency.OdkFrequency == SiteSubscriptionFrequency.Yearly
+                ? 12
+                : 1
         };
     }
 

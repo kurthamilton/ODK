@@ -51,10 +51,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             return ServiceResult.Failure("Error confirming subscription");
         }        
 
-        if (memberSubscription == null)
-        {
-            memberSubscription = new MemberSiteSubscription();
-        }        
+        memberSubscription ??= new MemberSiteSubscription();        
         
         memberSubscription.ExternalId = externalSubscription.ExternalId;
         memberSubscription.ExpiresUtc = externalSubscription.NextBillingDate;
