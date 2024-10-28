@@ -1,0 +1,28 @@
+﻿@page "/{chapterName}/account/subscription/{id:guid}/checkout"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Payments
+@using ODK.Services.Members
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Payments
+@model SubscriptionCheckoutModel
+@inject IMemberService MemberService
+@{
+    Layout = "_OdkChapterLayout";
+    Model.Title = "Subscription checkout";
+
+    var memberId = User.MemberId();
+
+    var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(memberId, Model.SubscriptionId);    
+}
+
+@section scripts
+{
+    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+    {
+        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? "",
+        CurrencyCode = viewModel.CurrencyCode,
+        IsSubscription = true,
+        Provider = viewModel.PaymentSettings.Provider ?? PaymentProviderType.None
+    })
+}

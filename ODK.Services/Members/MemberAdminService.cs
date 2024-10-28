@@ -369,11 +369,14 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         {
             Chapter = chapter,
             ChapterSubscriptions = chapterSubscriptions,
+            Currency = chapterPaymentSettings?.Currency,
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = null,
             OwnerSubscription = ownerSubscription,
-            PaymentSettings = chapterPaymentSettings,
-            Platform = platform,
+            PaymentSettings = chapterPaymentSettings?.UseSitePaymentProvider == true
+                ? sitePaymentSettings
+                : chapterPaymentSettings,
+            Platform = platform
         };
     }
 

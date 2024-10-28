@@ -25,4 +25,6 @@ public interface IPaymentService
 
     Task<ServiceResult> MakePayment(ChapterPaymentSettings chapterPaymentSettings, 
         Currency currency, Member member, decimal amount, string cardToken, string reference);
+
+    Task<string> StartCheckoutSession(IPaymentSettings settings, ExternalSubscriptionPlan subscriptionPlan);
 }

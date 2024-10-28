@@ -107,9 +107,12 @@ public class ChapterService : IChapterService
         return new SubscriptionsPageViewModel
         {
             ChapterSubscriptions = chapterSubscriptions,
+            Currency = paymentSettings?.Currency,
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = memberSubscription,
-            PaymentSettings = paymentSettings
+            PaymentSettings = paymentSettings?.UseSitePaymentProvider == true
+                ? sitePaymentSettings
+                : paymentSettings
         };
     }
 

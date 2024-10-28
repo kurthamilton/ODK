@@ -20,7 +20,9 @@
                 @await Html.PartialAsync("Account/_ChapterSubscriptionContent", new ChapterSubscriptionContentViewModel
                 {
                     Chapter = Model.Chapter,
-                    ChapterPaymentSettings = Model.ChapterPaymentSettings                    
+                    ChapterPaymentSettings = Model.ChapterPaymentSettings?.UseSitePaymentProvider == true
+                        ? Model.SitePaymentSettings
+                        : Model.ChapterPaymentSettings
                 })
             </section>
             <section class="section">

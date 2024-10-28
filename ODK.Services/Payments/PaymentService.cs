@@ -107,4 +107,10 @@ public class PaymentService : IPaymentService
 
         return ServiceResult.Successful();
     }
+
+    public async Task<string> StartCheckoutSession(IPaymentSettings settings, ExternalSubscriptionPlan subscriptionPlan)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.StartCheckout(subscriptionPlan);
+    }
 }

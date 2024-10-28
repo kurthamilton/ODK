@@ -212,7 +212,7 @@ public class PayPalPaymentProvider : IPaymentProvider
 
     public Task<string> StartCheckout(ExternalSubscriptionPlan subscriptionPlan)
     {
-        throw new NotImplementedException();
+        return Task.FromResult("");
     }
 
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)

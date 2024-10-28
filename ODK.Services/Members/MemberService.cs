@@ -6,12 +6,14 @@ using ODK.Core.Emails;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Members.Models;
+using ODK.Services.Members.ViewModels;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Topics;
@@ -643,6 +645,41 @@ public class MemberService : IMemberService
         _cacheService.RemoveVersionedItem<MemberImage>(memberId);
         _cacheService.RemoveVersionedItem<MemberAvatar>(memberId);
     }    
+
+    public async Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(Guid memberId, Guid chapterSubscriptionId)
+    {
+        var (member, chapterSubscription) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterSubscriptionRepository.GetById(chapterSubscriptionId));
+
+        var (chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId),
+            x => x.SitePaymentSettingsRepository.GetActive());
+
+        IPaymentSettings paymentSettings = chapterPaymentSettings.UseSitePaymentProvider
+            ? sitePaymentSettings
+            : chapterPaymentSettings;        
+
+        if (string.IsNullOrEmpty(chapterSubscription.ExternalId))
+        {
+            throw new Exception("Error starting checkout session: chapterSubscription.ExternalId missing");
+        }
+
+        var subscriptionPlan = await _paymentService.GetSubscriptionPlan(paymentSettings, chapterSubscription.ExternalId);
+        if (subscriptionPlan == null)
+        {
+            throw new Exception("Error starting checkout session: subscriptionPlan not found");
+        }
+
+        var sessionId = await _paymentService.StartCheckoutSession(paymentSettings, subscriptionPlan);
+
+        return new ChapterSubscriptionCheckoutViewModel
+        {
+            CurrencyCode = subscriptionPlan.CurrencyCode,
+            PaymentSettings = paymentSettings,
+            SessionId = sessionId
+        };
+    }
 
     public async Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes)
     {

@@ -13,7 +13,7 @@
 @model SubscriptionsAdminPageViewModel
 @{        
     var (subscriptions, currency, membershipSettings) = 
-        (Model.ChapterSubscriptions, Model.PaymentSettings?.Currency, Model.MembershipSettings);
+        (Model.ChapterSubscriptions, Model.Currency, Model.MembershipSettings);
 }
 
 <h2 class="d-none d-md-block">Subscriptions</h2>

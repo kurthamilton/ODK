@@ -1,5 +1,7 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Members;
+using ODK.Core.Payments;
 
 namespace ODK.Services.Members.ViewModels;
 
@@ -7,9 +9,11 @@ public class SubscriptionsPageViewModel
 {
     public required IReadOnlyCollection<ChapterSubscription> ChapterSubscriptions { get; init; }
 
+    public required Currency? Currency { get; init; }
+
     public required ChapterMembershipSettings MembershipSettings { get; init; }
 
     public required MemberSubscription? MemberSubscription { get; init; }
 
-    public required ChapterPaymentSettings? PaymentSettings { get; init; }
+    public required IPaymentSettings? PaymentSettings { get; init; }
 }
