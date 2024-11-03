@@ -42,7 +42,11 @@ public interface IMemberService
 
     Task RotateMemberImage(Guid memberId);
 
-    Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(Guid memberId, Guid chapterSubscriptionId);
+    Task<bool> CompleteChapterSubscriptionCheckoutSession(
+        Guid memberId, Guid chapterSubscriptionId, string sessionId);
+
+    Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
+        Guid memberId, Guid chapterSubscriptionId, string returnPath);    
 
     Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);
 

@@ -74,6 +74,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<INewChapterTopicRepository> _newChapterTopicRepository;
     private readonly Lazy<INewMemberTopicRepository> _newMemberTopicRepository;
     private readonly Lazy<INotificationRepository> _notificationRepository;
+    private readonly Lazy<IPaymentCheckoutSessionRepository> _paymentCheckoutSessionRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;    
     private readonly Lazy<ISiteContactMessageReplyRepository> _siteContactMessageReplyRepository;
     private readonly Lazy<ISiteContactMessageRepository> _siteContactMessageRepository;
@@ -154,6 +155,7 @@ public class UnitOfWork : IUnitOfWork
         _newChapterTopicRepository = new(() => new NewChapterTopicRepository(_context));
         _newMemberTopicRepository = new(() => new NewMemberTopicRepository(_context));
         _notificationRepository = new(() => new NotificationRepository(_context));
+        _paymentCheckoutSessionRepository = new(() => new PaymentCheckoutSessionRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
         _siteContactMessageReplyRepository = new(() => new SiteContactMessageReplyRepository(_context));
         _siteContactMessageRepository = new(() => new SiteContactMessageRepository(_context));
@@ -230,6 +232,7 @@ public class UnitOfWork : IUnitOfWork
     public INewChapterTopicRepository NewChapterTopicRepository => _newChapterTopicRepository.Value;
     public INewMemberTopicRepository NewMemberTopicRepository => _newMemberTopicRepository.Value;
     public INotificationRepository NotificationRepository => _notificationRepository.Value;
+    public IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository => _paymentCheckoutSessionRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => _siteContactMessageReplyRepository.Value;
     public ISiteContactMessageRepository SiteContactMessageRepository => _siteContactMessageRepository.Value;

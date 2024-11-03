@@ -100,6 +100,11 @@ public class PayPalPaymentProvider : IPaymentProvider
             : ServiceResult.Failure("Subscription plan could not be deactivated");
     }
 
+    public Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
+    {
+        return Task.FromResult<ExternalCheckoutSession?>(null);
+    }
+
     public Task<string?> GetProductId(string name)
     {
         throw new NotImplementedException();
@@ -210,9 +215,9 @@ public class PayPalPaymentProvider : IPaymentProvider
         return response?.BatchHeader?.PayoutBatchId;
     }
 
-    public Task<string> StartCheckout(ExternalSubscriptionPlan subscriptionPlan)
+    public Task<ExternalCheckoutSession> StartCheckout(ExternalSubscriptionPlan subscriptionPlan, string returnPath)
     {
-        return Task.FromResult("");
+        throw new NotImplementedException();
     }
 
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)

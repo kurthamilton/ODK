@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Payments;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Members.ViewModels;
 
@@ -16,7 +17,7 @@ public interface IChapterService
 
     Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Chapter chapter);
 
-    Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);                
+    Task<IPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);                
 
     Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);
 

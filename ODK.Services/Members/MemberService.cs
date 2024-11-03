@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -646,8 +647,90 @@ public class MemberService : IMemberService
         _cacheService.RemoveVersionedItem<MemberAvatar>(memberId);
     }    
 
-    public async Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(Guid memberId, Guid chapterSubscriptionId)
+    public async Task<bool> CompleteChapterSubscriptionCheckoutSession(
+        Guid memberId, Guid chapterSubscriptionId, string sessionId)
     {
+        var platform = _platformProvider.GetPlatform();
+
+        var (member, chapterSubscription, paymentCheckoutSession) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterSubscriptionRepository.GetById(chapterSubscriptionId),
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(memberId, sessionId));
+
+        if (paymentCheckoutSession == null || paymentCheckoutSession.CompletedUtc != null)
+        {
+            return false;
+        }
+
+        var memberChapter = member.MemberChapter(chapterSubscription.ChapterId);
+        OdkAssertions.Exists(memberChapter);
+
+        var (chapterPaymentSettings, sitePaymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId),
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterSubscription.ChapterId));
+
+        IPaymentSettings paymentSettings = chapterPaymentSettings.UseSitePaymentProvider
+            ? sitePaymentSettings
+            : chapterPaymentSettings;
+
+        if (string.IsNullOrEmpty(chapterSubscription.ExternalId))
+        {
+            throw new Exception("Error completing checkout session: chapterSubscription.ExternalId missing");
+        }
+
+        var subscriptionPlan = await _paymentService.GetSubscriptionPlan(paymentSettings, chapterSubscription.ExternalId);
+        if (subscriptionPlan == null)
+        {
+            throw new Exception("Error completing checkout session: subscriptionPlan not found");
+        }
+
+        var checkoutSession = await _paymentService.GetCheckoutSession(paymentSettings, sessionId);
+        if (checkoutSession?.Complete != true)
+        {
+            return false;
+        }
+
+        memberSubscription ??= new MemberSubscription();
+
+        var now = memberSubscription.ExpiresUtc > DateTime.UtcNow ? memberSubscription.ExpiresUtc.Value : DateTime.UtcNow;
+        var expiresUtc = now.AddMonths(chapterSubscription.Months);
+        memberSubscription.ExpiresUtc = expiresUtc;
+        memberSubscription.Type = chapterSubscription.Type;
+
+        if (memberSubscription.MemberChapterId == default)
+        {
+            memberSubscription.MemberChapterId = memberChapter.Id;
+            _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
+        }
+        else
+        {
+            _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
+        }
+
+        _unitOfWork.MemberSubscriptionRepository.AddMemberSubscriptionRecord(new MemberSubscriptionRecord
+        {
+            Amount = chapterSubscription.Amount,
+            ChapterId = chapterSubscription.ChapterId,
+            MemberId = memberId,
+            Months = chapterSubscription.Months,
+            PurchasedUtc = DateTime.UtcNow,
+            Type = chapterSubscription.Type
+        });
+
+        paymentCheckoutSession.CompletedUtc = DateTime.UtcNow;
+        _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
+        Guid memberId, Guid chapterSubscriptionId, string returnPath)
+    {
+        var platform = _platformProvider.GetPlatform();
+
         var (member, chapterSubscription) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.ChapterSubscriptionRepository.GetById(chapterSubscriptionId));
@@ -671,13 +754,24 @@ public class MemberService : IMemberService
             throw new Exception("Error starting checkout session: subscriptionPlan not found");
         }
 
-        var sessionId = await _paymentService.StartCheckoutSession(paymentSettings, subscriptionPlan);
+        var session = await _paymentService.StartCheckoutSession(paymentSettings, subscriptionPlan, returnPath);
+
+        _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
+        {
+            MemberId = memberId,
+            PaymentId = chapterSubscriptionId,
+            SessionId = session.SessionId,
+            StartedUtc = DateTime.UtcNow
+        });
+
+        await _unitOfWork.SaveChangesAsync();
 
         return new ChapterSubscriptionCheckoutViewModel
         {
+            ClientSecret = session.ClientSecret,
             CurrencyCode = subscriptionPlan.CurrencyCode,
             PaymentSettings = paymentSettings,
-            SessionId = sessionId
+            Platform = platform
         };
     }
 

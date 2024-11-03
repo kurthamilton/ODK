@@ -117,6 +117,29 @@ public class StripePaymentProvider : IPaymentProvider
         return ServiceResult.Successful();
     }
 
+    public async Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
+    {
+        var service = CreateSessionService();
+
+        try
+        {
+            var session = await service.GetAsync(externalId);
+            
+            return new ExternalCheckoutSession
+            {
+                Amount = session.AmountTotal ?? 0,
+                ClientSecret = session.ClientSecret,
+                Complete = session.Status == "complete",
+                Currency = session.Currency,
+                SessionId = session.Id
+            };
+        }     
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task<string?> GetProductId(string name)
     {
         var service = CreateProductService();
@@ -206,11 +229,11 @@ public class StripePaymentProvider : IPaymentProvider
         throw new NotImplementedException();
     }
 
-    public async Task<string> StartCheckout(ExternalSubscriptionPlan subscriptionPlan)
+    public async Task<ExternalCheckoutSession> StartCheckout(ExternalSubscriptionPlan subscriptionPlan, string returnPath)
     {
         var baseUrl = UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl);
         
-        var service = CreateSessionServicee();
+        var service = CreateSessionService();
         var session = await service.CreateAsync(new SessionCreateOptions
         {
             UiMode = "embedded",
@@ -223,11 +246,18 @@ public class StripePaymentProvider : IPaymentProvider
                 }
             },
             Mode = "subscription",
-            ReturnUrl = baseUrl + "/return.html?session_id={CHECKOUT_SESSION_ID}",
+            ReturnUrl = baseUrl + returnPath.Replace("{sessionId}", "{CHECKOUT_SESSION_ID}"),
             AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false }
         });
 
-        return session.RawJObject["client_secret"]?.ToString() ?? "";
+        return new ExternalCheckoutSession
+        {
+            Amount = session.AmountTotal ?? 0,
+            ClientSecret = session.ClientSecret,
+            Complete = false,
+            Currency = session.Currency,
+            SessionId = session.Id
+        };
     }
 
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
@@ -239,6 +269,6 @@ public class StripePaymentProvider : IPaymentProvider
     private PaymentIntentService CreatePaymentIntentService() => new PaymentIntentService(_client);
     private PriceService CreatePriceService() => new PriceService(_client);
     private ProductService CreateProductService() => new ProductService(_client);
-    private SessionService CreateSessionServicee() => new SessionService(_client);
+    private SessionService CreateSessionService() => new SessionService(_client);
     private SubscriptionService CreateSubscriptionService() => new SubscriptionService(_client);
 }

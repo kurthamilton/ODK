@@ -1,15 +1,17 @@
 ﻿(function () {
     const $forms = document.querySelectorAll('[data-stripe-checkout]');
     $forms.forEach($form => {
+        const publicKey = $form.getAttribute('data-stripe');
+        const stripe = Stripe(publicKey);
         const sessionId = $form.getAttribute('data-stripe-checkout');
 
         const fetchClientSecret = () => Promise.resolve(sessionId);
 
-        const checkout = await stripe.initEmbeddedCheckout({
+        stripe.initEmbeddedCheckout({
             fetchClientSecret
-        });
-
-        // Mount Checkout
-        checkout.mount($form);
+        }).then(checkout => {
+            // Mount Checkout
+            checkout.mount($form);
+        });                
     });
 })();

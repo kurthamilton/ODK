@@ -73,7 +73,7 @@
                     @Html.Raw(chapterSubscription.Description)
                 </div>
                 <div>
-                    @if (Model.ChapterPaymentSettings?.Provider == PaymentProviderType.Stripe)
+                    @if (Model.PaymentSettings?.Provider == PaymentProviderType.Stripe)
                     {
                         <a class="btn btn-primary mr-1" href="/@Model.Chapter.Name/account/subscription/@chapterSubscription.Id/checkout">
                             Purchase
@@ -92,7 +92,7 @@
                     @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                     {
                         Action = $"/Chapters/{Model.Chapter.Id}/Account/Subscription/Purchase",
-                        PaymentSettings = Model.ChapterPaymentSettings,
+                        PaymentSettings = Model.PaymentSettings,
                         FormContentFunc =
                             @<input type="hidden" name="subscriptionId" value="@chapterSubscription.Id" />,
                         Id = modalId,
@@ -112,10 +112,13 @@
     </div>
 }
 
-@await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+@if (paymentSettings?.Provider?.HasCheckout() != true)
 {
-    ApiPublicKey = paymentSettings?.ApiPublicKey ?? "",
-    CurrencyCode = currency?.Code ?? "",
-    IsSubscription = false,
-    Provider = paymentSettings?.Provider ?? default
-})
+    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+    {
+        ApiPublicKey = paymentSettings?.ApiPublicKey ?? "",
+        CurrencyCode = currency?.Code ?? "",
+        IsSubscription = false,
+        Provider = paymentSettings?.Provider ?? default
+    })
+}

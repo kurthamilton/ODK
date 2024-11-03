@@ -102,7 +102,10 @@ public static class DependencyConfig
         {
             ApiBaseUrl = payments.PayPal.ApiBaseUrl
         });
-        services.AddSingleton(new StripePaymentProviderSettings());
+        services.AddSingleton(new StripePaymentProviderSettings
+        {
+            ChapterSubscriptionCheckoutReturnPath = appSettings.Payments.Stripe.ChapterSubscriptionCheckoutReturnPath
+        });
     }
 
     private static void ConfigureServices(this IServiceCollection services, AppSettings appSettings)

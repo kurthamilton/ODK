@@ -8,7 +8,7 @@ public interface IPaymentProvider
 
     Task<ServiceResult> ActivateSubscriptionPlan(string externalId);
 
-    Task<bool> CancelSubscription(string externalId);
+    Task<bool> CancelSubscription(string externalId);    
 
     Task<string?> CreateCustomer(string emailAddress);
 
@@ -17,6 +17,8 @@ public interface IPaymentProvider
     Task<string?> CreateSubscriptionPlan(ExternalSubscriptionPlan subscriptionPlan);
 
     Task<ServiceResult> DeactivateSubscriptionPlan(string externalId);
+
+    Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId);
 
     Task<string?> GetProductId(string name);
 
@@ -30,7 +32,7 @@ public interface IPaymentProvider
     Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
         string paymentId, string note);
 
-    Task<string> StartCheckout(ExternalSubscriptionPlan subscriptionPlan);
+    Task<ExternalCheckoutSession> StartCheckout(ExternalSubscriptionPlan subscriptionPlan, string returnPath);
 
     Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken);
 }

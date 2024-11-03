@@ -30,7 +30,7 @@ public class PaymentService : IPaymentService
         return result
             ? ServiceResult.Successful()
             : ServiceResult.Failure("Error canceling subscription");
-    }
+    }    
 
     public async Task<string?> CreateProduct(IPaymentSettings settings, string name)
     {
@@ -48,6 +48,12 @@ public class PaymentService : IPaymentService
     {
         var provider = _paymentProviderFactory.GetPaymentProvider(settings);
         return await provider.DeactivateSubscriptionPlan(externalId);
+    }
+
+    public async Task<ExternalCheckoutSession?> GetCheckoutSession(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.GetCheckoutSession(externalId);
     }
 
     public async Task<string?> GetProductId(IPaymentSettings settings, string name)
@@ -108,9 +114,12 @@ public class PaymentService : IPaymentService
         return ServiceResult.Successful();
     }
 
-    public async Task<string> StartCheckoutSession(IPaymentSettings settings, ExternalSubscriptionPlan subscriptionPlan)
+    public async Task<ExternalCheckoutSession> StartCheckoutSession(
+        IPaymentSettings settings, 
+        ExternalSubscriptionPlan subscriptionPlan,
+        string returnPath)
     {
         var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.StartCheckout(subscriptionPlan);
+        return await provider.StartCheckout(subscriptionPlan, returnPath);
     }
 }
