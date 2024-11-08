@@ -6,7 +6,6 @@ using ODK.Data.Core;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
-using ODK.Web.Common.Config.Settings;
 using HttpRequest = ODK.Services.Logging.HttpRequest;
 
 namespace ODK.Web.Razor.Middleware;
@@ -24,8 +23,7 @@ public class ErrorHandlingMiddleware
         HttpContext context, 
         IRequestCache requestCache, 
         ILoggingService loggingService,
-        IUnitOfWork unitOfWork,
-        AppSettings settings)
+        IUnitOfWork unitOfWork)
     {
         var statusCodeContext = new StatusCodeContext(context, new StatusCodePagesOptions(), _next);
 

@@ -5,18 +5,6 @@
 @{
     var authenticated = User.Authenticated();
     var platform = PlatformProvider.GetPlatform();
+    
 }
 
-<div class="collapse navbar-collapse">
-    <ul class="navbar-nav">
-        <li class="nav-item">
-            <a class="nav-link" href="/pricing">Pricing</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="@OdkRoutes.Groups.Index(platform)">Groups</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="@OdkRoutes.MemberGroups.Index(platform)">My groups</a>
-        </li>
-    </ul>
-</div>

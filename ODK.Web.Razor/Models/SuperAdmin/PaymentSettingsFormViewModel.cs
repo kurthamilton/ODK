@@ -6,6 +6,9 @@ namespace ODK.Web.Razor.Models.SuperAdmin;
 
 public class PaymentSettingsFormViewModel
 {
+    [Required]
+    public string? Name { get; set; }
+
     public PaymentProviderType? Provider { get; set; }
 
     [Required]

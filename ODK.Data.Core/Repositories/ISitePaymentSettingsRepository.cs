@@ -5,5 +5,7 @@ namespace ODK.Data.Core.Repositories;
 
 public interface ISitePaymentSettingsRepository : IReadWriteRepository<SitePaymentSettings>
 {
-    IDeferredQuerySingle<SitePaymentSettings> Get();
+    IDeferredQuerySingle<SitePaymentSettings> GetActive();
+
+    IDeferredQueryMultiple<SitePaymentSettings> GetAll();
 }

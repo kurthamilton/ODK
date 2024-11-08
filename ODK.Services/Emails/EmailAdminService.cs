@@ -131,14 +131,11 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             return ServiceResult.Failure("This email cannot be customised");
         }
 
-        if (chapterEmail == null)
-        {
-            chapterEmail = new ChapterEmail
+        chapterEmail ??= new ChapterEmail
             {
                 ChapterId = request.ChapterId,                
                 Type = type
-            };            
-        }
+            };
 
         chapterEmail.HtmlContent = model.HtmlContent;
         chapterEmail.Subject = model.Subject;

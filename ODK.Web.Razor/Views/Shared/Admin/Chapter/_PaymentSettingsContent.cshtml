@@ -17,7 +17,8 @@
                     CurrencyOptions = Model.CurrencyOptions,
                     EmailAddress = Model.PaymentSettings?.EmailAddress,
                     OwnerSubscription = Model.OwnerSubscription,
-                    Provider = Model.PaymentSettings?.Provider
+                    Provider = Model.PaymentSettings?.Provider,   
+                    UseSitePaymentProvider = Model.PaymentSettings?.UseSitePaymentProvider ?? false
                 })
                 <button class="btn btn-primary">Update</button>
             </form>

@@ -76,6 +76,18 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
             : Name;
     }
 
+    public string GetFullName(PlatformType currentPlatform)
+    {
+        if (Platform != PlatformType.DrunkenKnitwits)
+        {
+            return Name;
+        }
+
+        return !Name.EndsWith(DrunkenKnitwitsSuffix, StringComparison.InvariantCultureIgnoreCase)
+            ? Name + DrunkenKnitwitsSuffix
+            : Name;
+    }
+
     public bool IsOpenForRegistration() => Approved() && Published();
 
     public bool Published() => PublishedUtc != null;

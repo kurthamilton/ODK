@@ -7,5 +7,5 @@ public class ChapterSubscriptionContentViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    public required IPaymentSettings? ChapterPaymentSettings { get; init; }
+    public required IPaymentSettings? PaymentSettings { get; init; }
 }

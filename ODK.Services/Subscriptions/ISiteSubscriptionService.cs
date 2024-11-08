@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Members;
 using ODK.Core.Subscriptions;
+using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Subscriptions;
 
@@ -9,7 +10,7 @@ public interface ISiteSubscriptionService
 
     Task<MemberSiteSubscription?> GetMemberSiteSubscription(Guid memberId);
 
-    Task<SiteSubscriptionsDto> GetSiteSubscriptionsDto(Guid? memberId);
+    Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(Guid? memberId);
 
     Task SyncExpiredSubscriptions();
 

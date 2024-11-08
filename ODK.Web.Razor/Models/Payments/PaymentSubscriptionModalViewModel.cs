@@ -15,5 +15,7 @@ public class PaymentSubscriptionModalViewModel
 
     public required IPaymentSettings? PaymentSettings { get; init; }
 
+    public string? StripeSessionId { get; init; }
+
     public required string Title { get; init; }
 }

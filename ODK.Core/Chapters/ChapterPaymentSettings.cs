@@ -9,6 +9,8 @@ public class ChapterPaymentSettings : IChapterEntity, IPaymentSettings
 
     public string? ApiSecretKey { get; set; }
 
+    public bool UseSitePaymentProvider { get; set; }
+
     public Guid ChapterId { get; set; }
 
     public Currency Currency { get; set; } = null!;

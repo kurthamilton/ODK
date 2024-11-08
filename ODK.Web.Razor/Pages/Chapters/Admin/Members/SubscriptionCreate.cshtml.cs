@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
@@ -30,6 +29,7 @@ public class SubscriptionCreateModel : AdminPageModel
             Amount = viewModel.Amount ?? 0,
             ChapterId = Chapter.Id,
             Description = viewModel.Description,
+            Disabled = !viewModel.Enabled,
             Months = viewModel.DurationMonths ?? 0,
             Name = viewModel.Name,
             Title = viewModel.Title,

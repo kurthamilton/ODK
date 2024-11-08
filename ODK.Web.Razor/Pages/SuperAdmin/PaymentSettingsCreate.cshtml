@@ -1,0 +1,26 @@
+﻿@page "/superadmin/payments/new"
+@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.SuperAdmin
+@using ODK.Web.Razor.Models.Components
+@model PaymentSettingsCreateModel
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Payments | SuperAdmin";    
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = "/superadmin/payments", Text = "Payments" },
+        new MenuItem { Text = "New" }
+    }
+})
+
+<section class="section">
+    <form action="/superadmin/payments" method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel())
+        <button class="btn btn-primary">Create</button>
+    </form>
+</section>

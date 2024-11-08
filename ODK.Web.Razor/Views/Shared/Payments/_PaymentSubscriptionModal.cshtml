@@ -18,6 +18,11 @@
                 @await Html.PartialAsync("Payments/_PaymentSubscriptionForm", Model.PaymentForm)
             </form>
         }
+        else if (Model.PaymentSettings?.Provider == PaymentProviderType.Stripe)
+        {
+            <div data-stripe-checkout="@Model.StripeSessionId">
+            </div>
+        }
         else
         {
             <div class="alert alert-danger">

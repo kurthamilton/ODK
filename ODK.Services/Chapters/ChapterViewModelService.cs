@@ -642,7 +642,7 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.SitePaymentSettingsRepository.Get());
+            x => x.SitePaymentSettingsRepository.GetActive());
 
         return new GroupProfileSubscriptionPageViewModel
         {

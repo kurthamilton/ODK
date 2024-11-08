@@ -13,13 +13,17 @@ public class PaymentSettingsFormViewModel
     [DisplayName("Currency")]
     public Guid? CurrencyId { get; set; }
 
-    public PaymentProviderType? Provider { get; set; }
-
     [Required]
+    public string? Name { get; set; }
+
+    public PaymentProviderType? Provider { get; set; }
+    
     [DisplayName("Public key")]
     public string? PublicKey { get; set; }
 
-    [Required]
     [DisplayName("Secret key")]
     public string? SecretKey { get; set; }
+
+    [DisplayName("Use site payment provider")]
+    public bool UseSitePaymentProvider { get; set; }
 }

@@ -23,14 +23,16 @@ public class PaymentsModel : OdkGroupAdminPageModel
     {
         // temp while transitioning from Api keys to emails
         var existing = await _chapterAdminService.GetChapterPaymentSettings(AdminServiceRequest);
-        var result = await _chapterAdminService.UpdateChapterPaymentSettings(AdminServiceRequest, new UpdateChapterPaymentSettings
-        {
-            ApiPublicKey = existing?.ApiPublicKey,
-            ApiSecretKey = existing?.ApiSecretKey,
-            CurrencyId = viewModel.CurrencyId,
-            EmailAddress = viewModel.EmailAddress,
-            Provider = viewModel.Provider
-        });
+        var result = await _chapterAdminService.UpdateChapterPaymentSettings(AdminServiceRequest, 
+            new UpdateChapterPaymentSettings
+            {
+                ApiPublicKey = existing?.ApiPublicKey,
+                ApiSecretKey = existing?.ApiSecretKey,
+                CurrencyId = viewModel.CurrencyId,
+                EmailAddress = viewModel.EmailAddress,
+                Provider = viewModel.Provider,
+                UseSitePaymentProvider = existing?.UseSitePaymentProvider ?? false
+            });
 
         AddFeedback(result, "Payment settings updated");
 

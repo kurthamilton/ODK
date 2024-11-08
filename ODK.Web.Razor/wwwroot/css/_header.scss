@@ -3,6 +3,10 @@
     --color-section-header: #FFF;
 }
 
+.site-logo {
+    width: 150px;
+}
+
 .section--header,
 .section--footer {
     padding: 1rem 0;
@@ -15,5 +19,34 @@
     h1 {
         font-size: 2rem;
         margin-bottom: 0;
+    }
+}
+
+.site-nav {
+    flex-basis: 100% !important;
+}
+
+@include media-breakpoint-up(md) {
+    .site-nav {
+        flex-basis: auto !important;
+
+        align-self: stretch;
+        display: flex;
+        align-items: stretch;
+
+        .navbar-nav {
+            display: flex;
+            align-items: stretch;
+
+            .nav-item {
+                display: flex;
+                align-items: stretch;
+
+                .nav-link {
+                    display: flex;
+                    align-items: center;
+                }
+            }
+        }
     }
 }

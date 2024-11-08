@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Payments;
+using ODK.Core.Subscriptions;
 using ODK.Services.Integrations.Payments.PayPal.Client;
 using ODK.Services.Integrations.Payments.PayPal.Client.Models;
 using ODK.Services.Payments;
@@ -22,7 +23,9 @@ public class PayPalPaymentProvider : IPaymentProvider
         _settings = settings;
     }
 
-    public bool HasExternalGateway => false;
+    public bool HasCustomers => false;
+
+    public bool HasExternalGateway => false;    
 
     public async Task<ServiceResult> ActivateSubscriptionPlan(string externalId)
     {
@@ -37,6 +40,11 @@ public class PayPalPaymentProvider : IPaymentProvider
     {
         var client = GetClient();
         return await client.CancelSubscription(externalId);
+    }
+
+    public Task<string?> CreateCustomer(string emailAddress)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<string?> CreateProduct(string name)
@@ -92,6 +100,16 @@ public class PayPalPaymentProvider : IPaymentProvider
             : ServiceResult.Failure("Subscription plan could not be deactivated");
     }
 
+    public Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
+    {
+        return Task.FromResult<ExternalCheckoutSession?>(null);
+    }
+
+    public Task<string?> GetProductId(string name)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<ExternalSubscription?> GetSubscription(string externalId)
     {
         var client = GetClient();
@@ -131,7 +149,10 @@ public class PayPalPaymentProvider : IPaymentProvider
             ExternalId = externalId,
             ExternalProductId = plan.ProductId,
             Frequency = billingCycle.Frequency.OdkFrequency,
-            Name = plan.Name
+            Name = plan.Name,
+            NumberOfMonths = billingCycle.Frequency.OdkFrequency == SiteSubscriptionFrequency.Yearly
+                ? 12
+                : 1
         };
     }
 
@@ -192,6 +213,11 @@ public class PayPalPaymentProvider : IPaymentProvider
         });
 
         return response?.BatchHeader?.PayoutBatchId;
+    }
+
+    public Task<ExternalCheckoutSession> StartCheckout(ExternalSubscriptionPlan subscriptionPlan, string returnPath)
+    {
+        throw new NotImplementedException();
     }
 
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)

@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using ODK.Core.Payments;
 
 namespace ODK.Web.Razor.Models.SuperAdmin;
 
@@ -29,6 +31,12 @@ public class SiteSubscriptionFormViewModel
 
     [DisplayName("Send member emails")]
     public bool SendMemberEmails { get; set; }
+
+    [Required]
+    [DisplayName("Site payment settings")]
+    public Guid? SitePaymentSettingId { get; set; }
+
+    public IReadOnlyCollection<SitePaymentSettings> SitePaymentSettings { get; set; } = [];
 
     public Guid? SiteSubscriptionId { get; set; }
 }

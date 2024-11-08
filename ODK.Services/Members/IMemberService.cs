@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Services.Members.Models;
+using ODK.Services.Members.ViewModels;
 using ODK.Services.Topics.Models;
 
 namespace ODK.Services.Members;
@@ -40,6 +41,12 @@ public interface IMemberService
     Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress);
 
     Task RotateMemberImage(Guid memberId);
+
+    Task<bool> CompleteChapterSubscriptionCheckoutSession(
+        Guid memberId, Guid chapterSubscriptionId, string sessionId);
+
+    Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
+        Guid memberId, Guid chapterSubscriptionId, string returnPath);    
 
     Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);
 

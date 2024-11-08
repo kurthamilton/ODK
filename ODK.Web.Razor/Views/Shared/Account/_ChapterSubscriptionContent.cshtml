@@ -2,6 +2,7 @@
 @using ODK.Core.Countries
 @using ODK.Core.Extensions
 @using ODK.Core.Members
+@using ODK.Core.Payments
 @using ODK.Services.Chapters
 @using ODK.Services.Members
 @using ODK.Web.Common.Extensions
@@ -15,7 +16,7 @@
     var dto = await ChapterService.GetChapterMemberSubscriptionsDto(memberId, Model.Chapter);
     
     var (memberSubscription, chapterSubscriptions, paymentSettings, currency) = 
-        (dto.MemberSubscription, dto.ChapterSubscriptions, dto.PaymentSettings, dto.PaymentSettings?.Currency);
+        (dto.MemberSubscription, dto.ChapterSubscriptions, dto.PaymentSettings, dto.Currency);
     
     if (memberSubscription == null)
     {
@@ -63,7 +64,7 @@
 @foreach (var chapterSubscription in chapterSubscriptions)
 {
     var modalId = $"payment-modal-{chapterSubscription.Id}";
-
+    
     <div class="mb-3">
         <div class="card">
             <div class="card-body">
@@ -72,13 +73,26 @@
                     @Html.Raw(chapterSubscription.Description)
                 </div>
                 <div>
-                    <button class="btn btn-primary mr-1" data-bs-toggle="modal" data-bs-target="#@modalId">Purchase</button>
+                    @if (Model.PaymentSettings?.Provider == PaymentProviderType.Stripe)
+                    {
+                        <a class="btn btn-primary mr-1" href="/@Model.Chapter.Name/account/subscription/@chapterSubscription.Id/checkout">
+                            Purchase
+                        </a>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary mr-1"
+                                data-bs-toggle="modal" data-bs-target="#@modalId">
+                            Purchase
+                        </button>
+                    }
+                    
                     <span>@currency.ToAmountString(chapterSubscription.Amount)</span>
                     
                     @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                     {
                         Action = $"/Chapters/{Model.Chapter.Id}/Account/Subscription/Purchase",
-                        PaymentSettings = Model.ChapterPaymentSettings,
+                        PaymentSettings = Model.PaymentSettings,
                         FormContentFunc =
                             @<input type="hidden" name="subscriptionId" value="@chapterSubscription.Id" />,
                         Id = modalId,
@@ -98,10 +112,13 @@
     </div>
 }
 
-@await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+@if (paymentSettings?.Provider?.HasCheckout() != true)
 {
-    ApiPublicKey = paymentSettings?.ApiPublicKey ?? "",
-    CurrencyCode = paymentSettings?.Currency.Code ?? "",
-    IsSubscription = false,
-    Provider = paymentSettings?.Provider ?? default
-})
+    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+    {
+        ApiPublicKey = paymentSettings?.ApiPublicKey ?? "",
+        CurrencyCode = currency?.Code ?? "",
+        IsSubscription = false,
+        Provider = paymentSettings?.Provider ?? default
+    })
+}

@@ -1,22 +1,21 @@
 ﻿using ODK.Core.Payments;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
-using ODK.Data.EntityFramework.Caching;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class SitePaymentSettingsRepository : CachingReadWriteRepositoryBase<SitePaymentSettings>, ISitePaymentSettingsRepository
+public class SitePaymentSettingsRepository : ReadWriteRepositoryBase<SitePaymentSettings>, ISitePaymentSettingsRepository
 {
-    private static readonly EntityCache<Guid, SitePaymentSettings> _cache = new DatabaseEntityCache<SitePaymentSettings>();
-
     public SitePaymentSettingsRepository(OdkContext context) 
-        : base(context, _cache)
+        : base(context)
     {
     }
 
-    public IDeferredQuerySingle<SitePaymentSettings> Get() => Set()
-        .DeferredSingle(
-            () => _cache.GetAll()?.FirstOrDefault(),
-            x => _cache.SetAll([x]));
+    public IDeferredQuerySingle<SitePaymentSettings> GetActive() => Set()
+        .Where(x => x.Active)
+        .DeferredSingle();
+
+    public IDeferredQueryMultiple<SitePaymentSettings> GetAll() => Set()
+        .DeferredMultiple();
 }

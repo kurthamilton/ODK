@@ -19,6 +19,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Payment settings</th>
                     <th>Enabled</th>
                     <th>Group limit</th>
                     <th>Member limit</th>
@@ -27,11 +28,20 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var subscription in subscriptions)
+                @foreach (var subscription in subscriptions.OrderBy(x => x.SitePaymentSettings.Name).ThenBy(x => x.Name))
                 {
                     <tr>
                         <td>
                             <a href="/superadmin/subscriptions/@subscription.Id">@subscription.Name</a>
+                        </td>
+                        <td>
+                            <span>
+                                @subscription.SitePaymentSettings.Name
+                            </span>
+                            @if (subscription.SitePaymentSettings.Active)
+                            {
+                                <i class="fa-solid fa-circle-check text-success"></i>
+                            }
                         </td>
                         <td>
                             @if (subscription.Enabled)

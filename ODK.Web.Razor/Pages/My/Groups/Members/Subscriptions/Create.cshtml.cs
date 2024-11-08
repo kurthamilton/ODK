@@ -31,6 +31,7 @@ public class CreateModel : OdkGroupAdminPageModel
             Amount = viewModel.Amount ?? 0,
             ChapterId = ChapterId,
             Description = viewModel.Description,
+            Disabled = !viewModel.Enabled,
             Months = viewModel.DurationMonths ?? 0,
             Name = viewModel.Name,
             Title = viewModel.Title,

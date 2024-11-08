@@ -1,5 +1,6 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
 using ODK.Data.Core;
@@ -67,38 +68,56 @@ public class ChapterService : IChapterService
     public async Task<ChapterLinks?> GetChapterLinks(Guid chapterId)
     {
         return await _unitOfWork.ChapterLinksRepository.GetByChapterId(chapterId).Run();
-    }
-
-    public async Task<ChapterPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
-    {
-        var (currentMember, paymentSettings) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId));
-
-        OdkAssertions.MemberOf(currentMember, chapterId);
-        return paymentSettings;
-    }
+    }    
     
     public async Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsDto(Guid currentMemberId, Chapter chapter)
     {
         var chapterId = chapter.Id;
 
-        var (currentMember, memberSubscription, chapterSubscriptions, paymentSettings, membershipSettings) = await _unitOfWork.RunAsync(
+        var (
+            currentMember, 
+            memberSubscription, 
+            chapterSubscriptions, 
+            paymentSettings, 
+            membershipSettings,
+            sitePaymentSettings
+        ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
+            x => x.SitePaymentSettingsRepository.GetActive());
 
         OdkAssertions.MemberOf(currentMember, chapterId);
+
+        chapterSubscriptions = chapterSubscriptions
+            .Where(x => x.Use(paymentSettings, sitePaymentSettings))
+            .ToArray();
 
         return new SubscriptionsPageViewModel
         {
             ChapterSubscriptions = chapterSubscriptions,
+            Currency = paymentSettings?.Currency,
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = memberSubscription,
-            PaymentSettings = paymentSettings
+            PaymentSettings = paymentSettings?.UseSitePaymentProvider == true
+                ? sitePaymentSettings
+                : paymentSettings
         };
+    }
+
+    public async Task<IPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
+    {
+        var (currentMember, chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.SitePaymentSettingsRepository.GetActive());
+
+        OdkAssertions.MemberOf(currentMember, chapterId);
+        return chapterPaymentSettings?.UseSitePaymentProvider == true
+            ? sitePaymentSettings
+            : chapterPaymentSettings;
     }
 
     public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId)

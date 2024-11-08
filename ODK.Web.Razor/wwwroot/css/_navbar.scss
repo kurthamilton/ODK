@@ -1,9 +1,12 @@
 $navbar-dark-separator: rgba(255, 255, 255, .5);
+$navbar-light-separator: rgba(0, 0, 0, 0.5);
 
-@mixin nav-item-separator($color) {
-    .nav-item:not(:first-child) {
-        border-left: 1px solid $color;
-    }
+.navbar-dark {
+    --odk-navbar-separator: #{$navbar-dark-separator};
+}
+
+.navbar-light {
+    --odk-navbar-separator: #{$navbar-light-separator};
 }
 
 @mixin nav-link-vertical-padding() {
@@ -34,12 +37,8 @@ $navbar-dark-separator: rgba(255, 255, 255, .5);
     }
 
     @include media-breakpoint-up(md) {
-        &.navbar-dark {
-            @include nav-item-separator($navbar-dark-separator);
-        }
-
-        &.navbar-light {
-            @include nav-item-separator(rgba(0, 0, 0, 0.5));
+        .nav-item:not(:first-child) {
+            border-left: 1px solid var(--odk-navbar-separator);
         }
     }
 }

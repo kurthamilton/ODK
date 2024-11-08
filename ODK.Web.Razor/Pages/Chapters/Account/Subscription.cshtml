@@ -16,7 +16,7 @@
     Model.Title = "Subscription";
 
     var memberId = User.MemberId();
-    var chapterPaymentSettings = await ChapterService.GetChapterPaymentSettings(memberId, Model.Chapter.Id);
+    var paymentSettings = await ChapterService.GetChapterPaymentSettings(memberId, Model.Chapter.Id);
     var platform = PlatformProvider.GetPlatform();
 }
 
@@ -35,7 +35,7 @@
                     @await Html.PartialAsync("Account/_ChapterSubscriptionContent", new ChapterSubscriptionContentViewModel
                     {
                         Chapter = Model.Chapter,
-                        ChapterPaymentSettings = chapterPaymentSettings
+                        PaymentSettings = paymentSettings
                     })
                 </section>
             </div>

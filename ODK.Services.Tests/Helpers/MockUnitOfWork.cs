@@ -80,6 +80,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public INewChapterTopicRepository NewChapterTopicRepository => Mock.Object.NewChapterTopicRepository;
     public INewMemberTopicRepository NewMemberTopicRepository => Mock.Object.NewMemberTopicRepository;
     public INotificationRepository NotificationRepository => Mock.Object.NotificationRepository;
+    public IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository => Mock.Object.PaymentCheckoutSessionRepository;
     public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;    
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => Mock.Object.SiteContactMessageReplyRepository;
     public ISiteContactMessageRepository SiteContactMessageRepository => Mock.Object.SiteContactMessageRepository;

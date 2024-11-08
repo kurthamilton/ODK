@@ -17,8 +17,8 @@ using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Imaging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
+using ODK.Services.Payments;
 using ODK.Services.SocialMedia;
-using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
 
 namespace ODK.Services.Chapters;
@@ -26,43 +26,37 @@ namespace ODK.Services.Chapters;
 public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 {    
     private readonly ICacheService _cacheService;
-    private readonly IChapterService _chapterService;
-    private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IImageService _imageService;
     private readonly IInstagramService _instagramService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
+    private readonly IPaymentService _paymentService;
     private readonly IPlatformProvider _platformProvider;
-    private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterAdminService(
         IUnitOfWork unitOfWork, 
         ICacheService cacheService,
-        IChapterService chapterService,
-        IHttpRequestProvider httpRequestProvider,
-        ISiteSubscriptionService siteSubscriptionService,
         IHtmlSanitizer htmlSanitizer,
         IInstagramService instagramService,
         IPlatformProvider platformProvider,
         INotificationService notificationService,
         IImageService imageService,
         IMemberEmailService memberEmailService,
-        ITopicService topicService)
+        ITopicService topicService,
+        IPaymentService paymentService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
-        _chapterService = chapterService;
-        _httpRequestProvider = httpRequestProvider;
         _htmlSanitizer = htmlSanitizer;
         _imageService = imageService;
         _instagramService = instagramService;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
+        _paymentService = paymentService;
         _platformProvider = platformProvider;
-        _siteSubscriptionService = siteSubscriptionService;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
@@ -352,11 +346,19 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         CreateChapterSubscription model)
     {
         var chapterId = request.ChapterId;
-
-        var (ownerSubscription, existing, paymentSettings) = await GetChapterAdminRestrictedContent(request,
+        
+        var (
+            chapter,
+            ownerSubscription, 
+            existing, 
+            chapterPaymentSettings,
+            sitePaymentSettings
+        ) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.SitePaymentSettingsRepository.GetActive());
 
         if (ownerSubscription?.HasFeature(SiteFeatureType.MemberSubscriptions) != true)
         {
@@ -371,13 +373,57 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Months = model.Months,
             Name = model.Name,
             Title = model.Title,
-            Type = model.Type
-        };
+            Type = model.Type,
+            SitePaymentSettingId = chapterPaymentSettings?.UseSitePaymentProvider == true
+                ? sitePaymentSettings.Id
+                : null
+        };        
 
         var validationResult = ValidateChapterSubscription(subscription, existing);
         if (!validationResult.Success)
         {
             return validationResult;
+        }
+
+        if (chapterPaymentSettings?.UseSitePaymentProvider == true)
+        {      
+            var platform = _platformProvider.GetPlatform();
+            var productName = chapter.GetFullName(platform);
+
+            var productId = await _paymentService.GetProductId(sitePaymentSettings, productName);
+            if (string.IsNullOrEmpty(productId))
+            {
+                productId = await _paymentService.CreateProduct(sitePaymentSettings, productName);
+            }
+
+            if (productId == null)
+            {
+                throw new Exception("Error creating product");
+            }
+
+            subscription.ExternalProductId = productId;
+
+            var externalId = await _paymentService.CreateSubscriptionPlan(
+                sitePaymentSettings,
+                new ExternalSubscriptionPlan
+                {
+                    Amount = (decimal)subscription.Amount,
+                    CurrencyCode = chapterPaymentSettings.Currency.Code,
+                    ExternalId = "",
+                    ExternalProductId = productId,
+                    Frequency = SiteSubscriptionFrequency.Monthly,
+                    Name = subscription.Name,
+                    NumberOfMonths = subscription.Months
+                });
+
+            if (externalId == null)
+            {
+                throw new Exception("Error creating subscription");
+            }
+
+            subscription.ExternalId = externalId;
+
+            await _paymentService.ActivateSubscriptionPlan(sitePaymentSettings, externalId);
         }
 
         _unitOfWork.ChapterSubscriptionRepository.Add(subscription);
@@ -1161,10 +1207,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var image = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterImageRepository.GetByChapterId(request.ChapterId));
 
-        if (image == null)
-        {
-            image = new ChapterImage();
-        }
+        image ??= new ChapterImage();
 
         var result = UpdateChapterImage(image, model.ImageData);
         if (!result.Success)
@@ -1185,10 +1228,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId),
             x => x.InstagramPostRepository.GetByChapterId(request.ChapterId));
 
-        if (links == null)
-        {
-            links = new ChapterLinks();            
-        }
+        links ??= new ChapterLinks();
 
         var originalInstagramName = links.InstagramName;
 
@@ -1256,10 +1296,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Currency not found");
         }
 
-        if (chapterPaymentSettings == null)
-        {
-            chapterPaymentSettings = new ChapterPaymentSettings();
-        }        
+        chapterPaymentSettings ??= new ChapterPaymentSettings();        
 
         chapterPaymentSettings.CurrencyId = currencyId;
 
@@ -1292,10 +1329,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var texts = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterTextsRepository.GetByChapterId(request.ChapterId));
 
-        if (texts == null)
-        {
-            texts = new ChapterTexts();
-        }
+        texts ??= new ChapterTexts();
 
         texts.Description = _htmlSanitizer.Sanitize(description, DefaultHtmlSantizerOptions);
 
@@ -1324,10 +1358,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         if (location != null && !string.IsNullOrEmpty(name))
         {
-            if (chapterLocation == null)
-            {
-                chapterLocation = new ChapterLocation();
-            }            
+            chapterLocation ??= new ChapterLocation();            
 
             chapterLocation.LatLong = location.Value;
             chapterLocation.Name = name;
@@ -1371,10 +1402,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Not permitted");
         }
 
-        if (settings == null)
-        {
-            settings = new ChapterMembershipSettings();
-        }
+        settings ??= new ChapterMembershipSettings();
 
         if (ownerSubscription?.HasFeature(SiteFeatureType.ApproveMembers) == true)
         {
@@ -1427,16 +1455,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.CurrencyRepository.GetById(model.CurrencyId.Value));
 
-        if (settings == null)
-        {
-            settings = new();
-        }
+        settings ??= new();
 
         settings.ApiPublicKey = model.ApiPublicKey;
         settings.ApiSecretKey = model.ApiSecretKey;
         settings.CurrencyId = model.CurrencyId.Value;
         settings.Provider = model.Provider;
         settings.EmailAddress = model.EmailAddress;
+        settings.UseSitePaymentProvider = model.UseSitePaymentProvider;
 
         if (settings.ChapterId == default)
         {
@@ -1460,10 +1486,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var settings = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(request.ChapterId));
 
-        if (settings == null)
-        {
-            settings = new ChapterPrivacySettings();
-        }
+        settings ??= new ChapterPrivacySettings();
 
         settings.Conversations = model.Conversations;
         settings.EventResponseVisibility = model.EventResponseVisibility == null || model.EventResponseVisibility.Value.IsMember() 
@@ -1692,9 +1715,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var subscription = subscriptions.FirstOrDefault(x => x.Id == id);
         OdkAssertions.Exists(subscription);
 
-        subscription.Amount = model.Amount;
+        // subscription.Amount = model.Amount;
         subscription.Description = model.Description;
-        subscription.Months = model.Months;
+        subscription.Disabled = model.Disabled;
+        // subscription.Months = model.Months;
         subscription.Name = model.Name;
         subscription.Title = model.Title;
         subscription.Type = model.Type;
@@ -1706,7 +1730,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         }
 
         _unitOfWork.ChapterSubscriptionRepository.Update(subscription);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();        
 
         return ServiceResult.Successful();
     }
@@ -1725,10 +1749,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult.Failure("Some required fields are missing");
         }
 
-        if (texts == null)
-        {
-            texts = new ChapterTexts();
-        }
+        texts ??= new ChapterTexts();
 
         texts.Description = model.Description != null 
             ? _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions) 
@@ -1870,6 +1891,10 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         {
             return ServiceResult.Failure("Subscription must be for at least 1 month");
         }
+
+        subscriptions = subscriptions
+            .Where(x => x.SitePaymentSettingId == subscription.SitePaymentSettingId)
+            .ToArray();
 
         if (subscriptions.Any(x => x.Id != subscription.Id && x.Name.Equals(subscription.Name)))
         {

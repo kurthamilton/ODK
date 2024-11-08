@@ -190,9 +190,12 @@ public class PayPalClient
 
     private async Task<T?> MapJsonResponse<T>(HttpResponseMessage response) where T : class
     {
-        response.EnsureSuccessStatusCode();
-
         var json = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"PayPal API error response: {json}");
+        }
+
         return JsonConvert.DeserializeObject<T>(json);
     }
 }

@@ -4,6 +4,7 @@ using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Payments;
+using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Subscriptions;
 
@@ -31,10 +32,12 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = _platformProvider.GetPlatform();
         var (paymentSettings, existing) = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.SitePaymentSettingsRepository.Get(),
+            x => x.SitePaymentSettingsRepository.GetById(model.SitePaymentSettingId),
             x => x.SiteSubscriptionRepository.GetAll(platform));
 
-        if (existing.Any(x => x.Platform == platform && 
+        if (existing.Any(x => 
+            x.Platform == platform && 
+            x.SitePaymentSettingId == model.SitePaymentSettingId &&
             string.Equals(x.Name, model.Name, StringComparison.InvariantCultureIgnoreCase)))
         {
             return ServiceResult.Failure($"Subscription '{model.Name}' already exists");
@@ -46,8 +49,12 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             return ServiceResult.Failure($"Fallback subscription not found");
         }
 
-        var subscription = new SiteSubscription();
-        subscription.Platform = _platformProvider.GetPlatform();
+        var subscription = new SiteSubscription
+        {
+            Platform = _platformProvider.GetPlatform(),
+            SitePaymentSettingId = model.SitePaymentSettingId
+        };
+
         UpdateSiteSubscription(model, subscription);
 
         subscription.ExternalProductId = await _paymentService.CreateProduct(paymentSettings, subscription.Name);
@@ -62,8 +69,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     public async Task<ServiceResult> AddSiteSubscriptionPrice(Guid currentMemberId, Guid siteSubscriptionId,
         SiteSubscriptionPriceCreateModel model)
     {
-        var (paymentSettings, siteSubscription, existing, currency) = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.SitePaymentSettingsRepository.Get(),
+        var (siteSubscription, existing, currency) = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
             x => x.CurrencyRepository.GetById(model.CurrencyId));
@@ -88,14 +94,15 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         if (!string.IsNullOrEmpty(siteSubscription.ExternalProductId) && model.Amount > 0)
         {
-            price.ExternalId = await _paymentService.CreateSubscriptionPlan(paymentSettings, new ExternalSubscriptionPlan
+            price.ExternalId = await _paymentService.CreateSubscriptionPlan(siteSubscription.SitePaymentSettings, new ExternalSubscriptionPlan
             {
                 Amount = model.Amount,
                 CurrencyCode = currency.Code,
                 ExternalId = "",
                 ExternalProductId = siteSubscription.ExternalProductId,
                 Frequency = model.Frequency,
-                Name = $"{siteSubscription.Name} - {model.Frequency} [{currency.Code}]"
+                Name = $"{siteSubscription.Name} - {model.Frequency} [{currency.Code}]",
+                NumberOfMonths = model.Frequency == SiteSubscriptionFrequency.Yearly ? 12 : 1
             });
         }
 
@@ -104,7 +111,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         if (!string.IsNullOrEmpty(price.ExternalId))
         {
-            await _paymentService.ActivateSubscriptionPlan(paymentSettings, price.ExternalId);
+            await _paymentService.ActivateSubscriptionPlan(siteSubscription.SitePaymentSettings, price.ExternalId);
         }
 
         return ServiceResult.Successful();
@@ -112,8 +119,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
     public async Task DeleteSiteSubscriptionPrice(Guid currentMemberId, Guid siteSubscriptionId, Guid siteSubscriptionPriceId)
     {
-        var (paymentSettings, price) = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.SitePaymentSettingsRepository.Get(),
+        var (siteSubscription, price) = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
             x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId));
 
         OdkAssertions.MeetsCondition(price, x => x.SiteSubscriptionId == siteSubscriptionId);
@@ -123,7 +130,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         if (!string.IsNullOrEmpty(price.ExternalId))
         {
-            await _paymentService.DeactivateSubscriptionPlan(paymentSettings, price.ExternalId);
+            await _paymentService.DeactivateSubscriptionPlan(siteSubscription.SitePaymentSettings, price.ExternalId);
         }
     }
 
@@ -134,17 +141,19 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             x => x.SiteSubscriptionRepository.GetAll(platform));
     }
 
-    public async Task<SiteSubscriptionDto> GetSubscriptionDto(Guid currentMemberId, Guid siteSubscriptionId)
+    public async Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(Guid currentMemberId, Guid siteSubscriptionId)
     {
-        var (subscription, prices, currencies) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (subscription, prices, currencies, sitePaymentSettings) = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
-            x => x.CurrencyRepository.GetAll());
+            x => x.CurrencyRepository.GetAll(),
+            x => x.SitePaymentSettingsRepository.GetAll());
 
-        return new SiteSubscriptionDto
+        return new SiteSubscriptionViewModel
         {
             Currencies = currencies,
             Prices = prices,
+            SitePaymentSettings = sitePaymentSettings,
             Subscription = subscription
         };
     }
@@ -160,7 +169,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         OdkAssertions.Exists(subscription);
 
         var existingDefaults = subscriptions
-            .Where(x => x.Default)
+            .Where(x => x.Default && x.SitePaymentSettingId == subscription.SitePaymentSettingId)
             .ToArray();
 
         foreach (var existingDefault in existingDefaults)
@@ -218,6 +227,6 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         subscription.MemberSubscriptions = model.MemberSubscriptions;
         subscription.Name = model.Name;
         subscription.Premium = model.Premium;
-        subscription.SendMemberEmails = model.SendMemberEmails;        
+        subscription.SendMemberEmails = model.SendMemberEmails;                
     }
 }

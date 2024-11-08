@@ -674,10 +674,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(request.ChapterId));
 
-        if (settings == null)
-        {
-            settings = new();
-        }
+        settings ??= new();
 
         settings.DefaultDayOfWeek = model.DefaultDayOfWeek;
         settings.DefaultDescription = model.DefaultDescription;
@@ -1028,10 +1025,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
         var sentDate = DateTime.UtcNow;
 
         var eventEmail = await _unitOfWork.EventEmailRepository.GetByEventId(@event.Id).Run();
-        if (eventEmail == null)
-        {
-            eventEmail = new();
-        }
+        eventEmail ??= new();
 
         eventEmail.SentUtc = sentDate;
 

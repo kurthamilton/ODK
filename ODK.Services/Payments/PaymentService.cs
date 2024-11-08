@@ -30,7 +30,7 @@ public class PaymentService : IPaymentService
         return result
             ? ServiceResult.Successful()
             : ServiceResult.Failure("Error canceling subscription");
-    }
+    }    
 
     public async Task<string?> CreateProduct(IPaymentSettings settings, string name)
     {
@@ -50,6 +50,18 @@ public class PaymentService : IPaymentService
         return await provider.DeactivateSubscriptionPlan(externalId);
     }
 
+    public async Task<ExternalCheckoutSession?> GetCheckoutSession(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.GetCheckoutSession(externalId);
+    }
+
+    public async Task<string?> GetProductId(IPaymentSettings settings, string name)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.GetProductId(name);
+    }
+
     public async Task<ExternalSubscription?> GetSubscription(IPaymentSettings settings, string externalId)
     {
         var provider = _paymentProviderFactory.GetPaymentProvider(settings);
@@ -65,15 +77,15 @@ public class PaymentService : IPaymentService
     public async Task<ServiceResult> MakePayment(ChapterPaymentSettings chapterPaymentSettings, 
         Currency currency, Member member, decimal amount, string cardToken, string reference)
     {
-        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository.Get().Run();
+        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository.GetActive().Run();
 
         var sitePaymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings);
 
-        var chapterPaymentProvider = chapterPaymentSettings.HasApiKey
+        var paymentProvider = chapterPaymentSettings.HasApiKey
             ? _paymentProviderFactory.GetPaymentProvider(chapterPaymentSettings)
             : sitePaymentProvider;
 
-        var paymentResult = await sitePaymentProvider.MakePayment(currency.Code, amount, cardToken, reference,
+        var paymentResult = await paymentProvider.MakePayment(currency.Code, amount, cardToken, reference,
             member.FullName);
         if (!paymentResult.Success)
         {
@@ -100,5 +112,14 @@ public class PaymentService : IPaymentService
         }        
 
         return ServiceResult.Successful();
+    }
+
+    public async Task<ExternalCheckoutSession> StartCheckoutSession(
+        IPaymentSettings settings, 
+        ExternalSubscriptionPlan subscriptionPlan,
+        string returnPath)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.StartCheckout(subscriptionPlan, returnPath);
     }
 }

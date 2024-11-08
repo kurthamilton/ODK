@@ -14,15 +14,15 @@
 @inject ISiteSubscriptionService SiteSubscriptionService
 @{
     var memberId = User.MemberId();
-    var dto = await SiteSubscriptionService.GetSiteSubscriptionsDto(memberId);
+    var viewModel = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(memberId);
     
     var (currency, currentMember, memberSubscription, subscriptions, paymentSettings) = 
-        (dto.Currency, dto.CurrentMember, dto.CurrentMemberSubscription, dto.Subscriptions, dto.PaymentSettings!);
+        (viewModel.Currency, viewModel.CurrentMember, viewModel.CurrentMemberSubscription, viewModel.Subscriptions, viewModel.PaymentSettings!);
 }
 
 @if (currency == null)
 {
-    var currencyOptions = dto.Currencies
+    var currencyOptions = viewModel.Currencies
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.ToString() })
         .OrderBy(x => x.Text)
         .ToArray();
@@ -68,7 +68,7 @@
     </div>
 </div>
 
-@if (dto.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid != true)
+@if (viewModel.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid != true)
 {
     <h3>Upgrade</h3>
     
@@ -112,7 +112,7 @@
                                         @await Html.PartialAsync("Payments/_PaymentSubscriptionModal", new PaymentSubscriptionModalViewModel
                                         {
                                             Action = "/account/subscription/confirm",
-                                            PaymentSettings = dto.PaymentSettings,
+                                            PaymentSettings = viewModel.PaymentSettings,
                                             FormContentFunc =
                                                 @<input type="hidden" name="siteSubscriptionPriceId" value="@price.Id" />,
                                             Id = modalId,

@@ -69,6 +69,7 @@ public interface IUnitOfWork
     INewChapterTopicRepository NewChapterTopicRepository { get; }
     INewMemberTopicRepository NewMemberTopicRepository { get; }
     INotificationRepository NotificationRepository { get; }
+    IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository { get; }
     IPaymentRepository PaymentRepository { get; }   
     ISiteContactMessageReplyRepository SiteContactMessageReplyRepository { get; }
     ISiteContactMessageRepository SiteContactMessageRepository { get; }
