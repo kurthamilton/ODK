@@ -23,7 +23,7 @@
     },
     {
       "provider": "cdnjs",
-      "library": "slim-select@2.9.0",
+      "library": "slim-select@2.9.2",
       "destination": "wwwroot/lib/slim-select/"
     },
     {
@@ -33,7 +33,7 @@
     },
     {
       "provider": "cdnjs",
-      "library": "tinymce@7.3.0",
+      "library": "tinymce@7.5.0",
       "destination": "wwwroot/lib/tinymce/"
     },
     {
