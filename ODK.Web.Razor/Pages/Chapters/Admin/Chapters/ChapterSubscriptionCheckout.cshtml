@@ -1,0 +1,67 @@
+﻿@page "/{chapterName}/Admin/Chapter/Subscription/Checkout"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Payments
+@using ODK.Services.Subscriptions
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
+@model ChapterSubscriptionCheckoutModel
+@inject ISiteSubscriptionService SiteSubscriptionService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Subscription | Admin";
+
+    var memberId = Model.Chapter.OwnerId;
+    if (memberId == null)
+    {
+        return;
+    }
+
+    var returnPath = $"/{Model.ChapterName}/account/subscription/{Model.PriceId}/confirm?sessionId={{sessionId}}";
+
+    var viewModel = await SiteSubscriptionService.StartSiteSubscriptionCheckout(
+        memberId.Value, Model.PriceId, returnPath);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Account",
+    HideSubscriptionAlert = true,
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = OdkRoutes.Account.Subscription(viewModel.Platform, null),
+        Content =
+            @<div>
+                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+                {
+                    Breadcrumbs = new[]
+                    {
+                        new MenuItem { Text = "My subscription", Link = OdkRoutes.Account.Subscription(viewModel.Platform, null) },
+                        new MenuItem { Text = "Checkout" }
+                    }
+                })
+                <h2>Checkout</h2>
+                <section class="section">
+                    <div id="checkout"
+                         data-stripe="@viewModel.PaymentSettings.ApiPublicKey"
+                         data-stripe-checkout="@viewModel.ClientSecret">
+                        <!-- Checkout will insert the payment form here -->
+                    </div>
+                </section>
+            </div>
+    })
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+{
+    ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? "",
+    CurrencyCode = viewModel.CurrencyCode,
+    IsSubscription = true,
+    Provider = viewModel.PaymentSettings.Provider ?? PaymentProviderType.None
+})
+}

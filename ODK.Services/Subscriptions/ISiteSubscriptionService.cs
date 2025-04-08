@@ -12,6 +12,9 @@ public interface ISiteSubscriptionService
 
     Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(Guid? memberId);
 
+    Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
+        Guid memberId, Guid priceId, string returnPath);
+
     Task SyncExpiredSubscriptions();
 
     Task<ServiceResult> UpdateMemberSiteSubscription(Guid memberId, Guid siteSubscriptionId, 

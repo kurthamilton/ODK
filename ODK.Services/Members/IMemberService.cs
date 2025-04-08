@@ -45,6 +45,7 @@ public interface IMemberService
     Task<bool> CompleteChapterSubscriptionCheckoutSession(
         Guid memberId, Guid chapterSubscriptionId, string sessionId);
 
+
     Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
         Guid memberId, Guid chapterSubscriptionId, string returnPath);    
 

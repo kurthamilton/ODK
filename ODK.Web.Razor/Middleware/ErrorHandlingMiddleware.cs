@@ -40,6 +40,8 @@ public class ErrorHandlingMiddleware
         {
             await LogError(context, ex, loggingService);
 
+            throw;
+
             if (context.Response.HasStarted)
             {
                 throw;

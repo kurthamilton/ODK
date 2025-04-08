@@ -135,6 +135,48 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         };
     }
 
+    public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
+        Guid memberId, Guid priceId, string returnPath)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (member, price, paymentSettings) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.SiteSubscriptionPriceRepository.GetById(priceId),
+            x => x.SitePaymentSettingsRepository.GetActive());
+
+        if (string.IsNullOrEmpty(price.ExternalId))
+        {
+            throw new Exception("Error starting checkout session: siteSubscriptionPrice.ExternalId missing");
+        }
+
+        var subscriptionPlan = await _paymentService.GetSubscriptionPlan(paymentSettings, price.ExternalId);
+        if (subscriptionPlan == null)
+        {
+            throw new Exception("Error starting checkout session: subscriptionPlan not found");
+        }
+
+        var session = await _paymentService.StartCheckoutSession(paymentSettings, subscriptionPlan, returnPath);
+
+        _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
+        {
+            MemberId = memberId,
+            PaymentId = priceId,
+            SessionId = session.SessionId,
+            StartedUtc = DateTime.UtcNow
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return new SiteSubscriptionCheckoutViewModel
+        {
+            ClientSecret = session.ClientSecret,
+            CurrencyCode = subscriptionPlan.CurrencyCode,
+            PaymentSettings = paymentSettings,
+            Platform = platform
+        };
+    }
+
     public async Task SyncExpiredSubscriptions()
     {
         var subscriptions = await _unitOfWork.MemberSiteSubscriptionRepository.GetExpired().Run();
