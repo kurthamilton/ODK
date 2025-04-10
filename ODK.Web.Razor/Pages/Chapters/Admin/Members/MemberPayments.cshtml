@@ -1,0 +1,12 @@
+﻿@page "/{chapterName}/Admin/Members/{id:guid}/Payments"
+@model MemberPaymentsModel
+@using ODK.Services.Members
+@inject IMemberAdminService MemberAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Member events | Admin";
+
+    var viewModel = await MemberAdminService.GetMemberPaymentsViewModel(Model.AdminServiceRequest, Model.MemberId);
+}
+
+@await Html.PartialAsync("Admin/Members/_MemberPaymentsContent", viewModel)

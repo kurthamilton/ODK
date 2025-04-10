@@ -1,0 +1,60 @@
+﻿@using ODK.Services.Members.ViewModels
+@model MemberPaymentsAdminPageViewModel
+@{
+    var payments = Model.Payments
+        .OrderByDescending(x => x.Payment.PaidUtc);
+}
+
+@await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
+
+@await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Reference</th>
+
+                @if (Model.ChapterPaymentSettings?.UseSitePaymentProvider == true)
+                {
+                    <th>Reconciliation</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dto in payments)
+            {
+                var (payment, currency, reconciliation) = (dto.Payment, dto.Currency, dto.PaymentReconciliation);
+
+                <tr>
+                    <td>
+                        @Model.Chapter.ToChapterTime(payment.PaidUtc).ToString("yyyy-MM-dd HH:mm:ss")
+                    </td>
+                    <td>
+                        @currency.ToAmountString(payment.Amount)
+                    </td>
+                    <td>
+                        @payment.Reference
+                    </td>
+
+                    @if (Model.ChapterPaymentSettings?.UseSitePaymentProvider == true)
+                    {
+                        <td>
+                            @if (reconciliation != null)
+                            {
+                                <span>@currency.ToAmountString(payment.PaymentReconciliationAmount ?? 0)</span>
+                                <span>(@reconciliation.PaymentReference)</span>
+                            }
+                            else
+                            {
+                                @:-
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

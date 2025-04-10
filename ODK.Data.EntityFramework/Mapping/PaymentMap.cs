@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ODK.Core.Countries;
 using ODK.Core.Payments;
 using ODK.Data.EntityFramework.Converters;
 
@@ -18,10 +19,14 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
 
         builder.Property(x => x.PaidUtc)
             .HasColumnName("PaidDate")
-            .HasConversion<UtcDateTimeConverter>();
+            .HasConversion<UtcDateTimeConverter>();        
 
-        builder.HasOne(x => x.Currency)
+        builder.HasOne<Currency>()
             .WithMany()
             .HasForeignKey(x => x.CurrencyId);
+
+        builder.HasOne<PaymentReconciliation>()
+            .WithMany()
+            .HasForeignKey(x => x.PaymentReconciliationId);
     }
 }

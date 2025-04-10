@@ -30,6 +30,8 @@ public interface IMemberAdminService
 
     Task<MemberImageAdminPageViewModel> GetMemberImageViewModel(AdminServiceRequest request, Guid memberId);
 
+    Task<MemberPaymentsAdminPageViewModel> GetMemberPaymentsViewModel(AdminServiceRequest request, Guid memberId);
+
     Task<SubscriptionCreateAdminPageViewModel> GetMemberSubscriptionCreateViewModel(AdminServiceRequest request);
 
     Task<SubscriptionsAdminPageViewModel> GetMemberSubscriptionsViewModel(AdminServiceRequest request);

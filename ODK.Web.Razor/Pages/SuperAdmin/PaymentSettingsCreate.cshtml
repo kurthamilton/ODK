@@ -20,7 +20,7 @@
 <section class="section">
     <form action="/superadmin/payments" method="post">
         @Html.AntiForgeryToken()
-        @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel())
+        @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new SitePaymentSettingsFormViewModel())
         <button class="btn btn-primary">Create</button>
     </form>
 </section>

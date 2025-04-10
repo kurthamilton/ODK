@@ -1,0 +1,8 @@
+﻿@page "/{chapterName}/Admin/SuperAdmin/Reconciliations"
+@model ODK.Web.Razor.Pages.Chapters.Admin.SuperAdmin.ReconciliationsModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Reconciliations | SuperAdmin";
+}
+
+@await Html.PartialAsync("Chapters/SuperAdmin/_ReconciliationsContent", Model.Chapter)

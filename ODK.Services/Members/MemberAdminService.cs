@@ -313,6 +313,26 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         };
     }
 
+    public async Task<MemberPaymentsAdminPageViewModel> GetMemberPaymentsViewModel(AdminServiceRequest request, Guid memberId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, member, chapterPaymentSettings, payments) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberRepository.GetById(memberId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.PaymentRepository.GetMemberChapterPayments(memberId, request.ChapterId));
+
+        return new MemberPaymentsAdminPageViewModel
+        {
+            Chapter = chapter,
+            ChapterPaymentSettings = chapterPaymentSettings,
+            Member = member,
+            Payments = payments,
+            Platform = platform,
+        };
+    }
+
     public async Task<SubscriptionCreateAdminPageViewModel> GetMemberSubscriptionCreateViewModel(AdminServiceRequest request)
     {
         var platform = _platformProvider.GetPlatform();

@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -14,22 +15,84 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
     {
     }
 
-    public IDeferredQueryMultiple<PaymentDto> GetDtosByMemberId(Guid memberId)
+    public IDeferredQueryMultiple<PaymentChapterDto> GetChapterDtosByMemberId(Guid memberId)
     {
         var query =
-            from payment in Set()
+            from dto in DtoQuery()
             from chapter in Set<Chapter>()
-            where chapter.Id == payment.ChapterId
-                && payment.MemberId == memberId
-            select new PaymentDto
+                .Where(x => x.Id == dto.Payment.ChapterId)
+            where dto.Payment.MemberId == memberId
+            select new PaymentChapterDto
             {
                 Chapter = chapter,
-                Payment = payment
+                Currency = dto.Currency,
+                Payment = dto.Payment,
+                PaymentReconciliation = dto.PaymentReconciliation
             };
 
         return query.DeferredMultiple();
     }
 
-    protected override IQueryable<Payment> Set() => base.Set()
-        .Include(x => x.Currency);
+    public IDeferredQueryMultiple<PaymentDto> GetMemberChapterPayments(Guid memberId, Guid chapterId)
+        => DtoQuery()
+            .Where(x => x.Payment.ChapterId == chapterId && x.Payment.MemberId == memberId)
+            .DeferredMultiple();
+
+    public IDeferredQueryMultiple<PaymentMemberDto> GetMemberDtosByChapterId(Guid chapterId)
+    {
+        var query =
+            from dto in DtoQuery()
+            from member in Set<Member>()
+                .Where(x => x.Id == dto.Payment.MemberId)
+            where dto.Payment.ChapterId == chapterId
+            select new PaymentMemberDto
+            {
+                Currency = dto.Currency,
+                Member = member,
+                Payment = dto.Payment,
+                PaymentReconciliation = dto.PaymentReconciliation
+            };
+
+        return query.DeferredMultiple();
+    }
+
+    public IDeferredQueryMultiple<PaymentMemberDto> GetMemberDtosPendingReconciliation(Guid chapterId)
+    {
+        var query =
+            from dto in DtoQuery()
+            from member in Set<Member>()
+                .Where(x => x.Id == dto.Payment.MemberId)
+            where 
+                dto.Payment.ChapterId == chapterId &&
+                dto.PaymentReconciliation == null && 
+                !dto.Payment.ExemptFromReconciliation
+            select new PaymentMemberDto
+            {
+                Currency = dto.Currency,
+                Member = member,
+                Payment = dto.Payment,
+                PaymentReconciliation = null
+            };
+        
+        return query.DeferredMultiple();
+    }
+
+    private IQueryable<PaymentDto> DtoQuery()
+    {
+        var query =
+            from payment in Set()
+            from currency in Set<Currency>()
+                .Where(x => x.Id == payment.CurrencyId)
+            from paymentReconciliation in Set<PaymentReconciliation>()
+                .Where(x => x.Id == payment.PaymentReconciliationId)
+                .DefaultIfEmpty()
+            select new PaymentDto
+            {
+                Currency = currency,
+                Payment = payment,
+                PaymentReconciliation = paymentReconciliation
+            };
+
+        return query;
+    }
 }

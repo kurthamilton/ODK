@@ -75,7 +75,8 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<INewMemberTopicRepository> _newMemberTopicRepository;
     private readonly Lazy<INotificationRepository> _notificationRepository;
     private readonly Lazy<IPaymentCheckoutSessionRepository> _paymentCheckoutSessionRepository;
-    private readonly Lazy<IPaymentRepository> _paymentRepository;    
+    private readonly Lazy<IPaymentReconciliationRepository> _paymentReconciliationRepository;
+    private readonly Lazy<IPaymentRepository> _paymentRepository;
     private readonly Lazy<ISiteContactMessageReplyRepository> _siteContactMessageReplyRepository;
     private readonly Lazy<ISiteContactMessageRepository> _siteContactMessageRepository;
     private readonly Lazy<ISiteEmailSettingsRepository> _siteEmailSettingsRepository;
@@ -156,6 +157,7 @@ public class UnitOfWork : IUnitOfWork
         _newMemberTopicRepository = new(() => new NewMemberTopicRepository(_context));
         _notificationRepository = new(() => new NotificationRepository(_context));
         _paymentCheckoutSessionRepository = new(() => new PaymentCheckoutSessionRepository(_context));
+        _paymentReconciliationRepository = new(() => new PaymentReconciliationRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
         _siteContactMessageReplyRepository = new(() => new SiteContactMessageReplyRepository(_context));
         _siteContactMessageRepository = new(() => new SiteContactMessageRepository(_context));
@@ -233,6 +235,7 @@ public class UnitOfWork : IUnitOfWork
     public INewMemberTopicRepository NewMemberTopicRepository => _newMemberTopicRepository.Value;
     public INotificationRepository NotificationRepository => _notificationRepository.Value;
     public IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository => _paymentCheckoutSessionRepository.Value;
+    public IPaymentReconciliationRepository PaymentReconciliationRepository => _paymentReconciliationRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => _siteContactMessageReplyRepository.Value;
     public ISiteContactMessageRepository SiteContactMessageRepository => _siteContactMessageRepository.Value;

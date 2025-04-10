@@ -7,4 +7,5 @@ public static class OdkRoutes
 
     public static MemberGroupRoutes MemberGroups { get; } = new MemberGroupRoutes();
     public static MemberRoutes Members { get; } = new MemberRoutes();
+    public static PaymentsRoutes Payments { get; } = new PaymentsRoutes();
 }

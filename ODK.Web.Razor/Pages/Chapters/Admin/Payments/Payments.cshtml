@@ -1,0 +1,14 @@
+﻿@page "/{chapterName}/Admin/Payments"
+@using ODK.Services
+@using ODK.Services.Payments
+@model ODK.Web.Razor.Pages.Chapters.Admin.Payments.PaymentsModel
+@inject IPaymentAdminService PaymentAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Payments | Admin";
+
+    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
+    var viewModel = await PaymentAdminService.GetPayments(request);
+}
+
+@await Html.PartialAsync("Admin/Payments/_PaymentsContent", viewModel)

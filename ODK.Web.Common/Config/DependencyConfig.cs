@@ -157,6 +157,7 @@ public static class DependencyConfig
         services.AddScoped<IMemberViewModelService, MemberViewModelService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IOAuthProviderFactory, OAuthProviderFactory>();
+        services.AddScoped<IPaymentAdminService, PaymentAdminService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IPlatformProvider, PlatformProvider>();
         services.AddSingleton(new PlatformProviderSettings

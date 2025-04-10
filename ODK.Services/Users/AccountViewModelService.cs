@@ -151,7 +151,7 @@ public class AccountViewModelService : IAccountViewModelService
 
         var (member, payments) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.PaymentRepository.GetDtosByMemberId(currentMemberId));
+            x => x.PaymentRepository.GetChapterDtosByMemberId(currentMemberId));
 
         return new MemberChapterPaymentsPageViewModel
         {
@@ -184,7 +184,7 @@ public class AccountViewModelService : IAccountViewModelService
 
         var (member, payments) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.PaymentRepository.GetDtosByMemberId(currentMemberId));
+            x => x.PaymentRepository.GetChapterDtosByMemberId(currentMemberId));
 
         return new MemberPaymentsPageViewModel
         {

@@ -5,5 +5,11 @@ namespace ODK.Data.Core.Repositories;
 
 public interface IPaymentRepository : IReadWriteRepository<Payment>
 {
-    IDeferredQueryMultiple<PaymentDto> GetDtosByMemberId(Guid memberId);
+    IDeferredQueryMultiple<PaymentChapterDto> GetChapterDtosByMemberId(Guid memberId);
+
+    IDeferredQueryMultiple<PaymentDto> GetMemberChapterPayments(Guid memberId, Guid chapterId);
+
+    IDeferredQueryMultiple<PaymentMemberDto> GetMemberDtosByChapterId(Guid chapterId);
+
+    IDeferredQueryMultiple<PaymentMemberDto> GetMemberDtosPendingReconciliation(Guid chapterId);    
 }

@@ -8,6 +8,8 @@ public class SitePaymentSettings : IDatabaseEntity, IPaymentSettings
 
     public string ApiSecretKey { get; set; } = "";
 
+    public decimal Commission { get; set; }
+
     public bool HasApiKey => !string.IsNullOrEmpty(ApiPublicKey) && !string.IsNullOrEmpty(ApiSecretKey);
 
     public Guid Id { get; set; }

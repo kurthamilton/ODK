@@ -162,6 +162,9 @@ public class MemberGroupRoutes
     public string MemberImage(PlatformType platform, Chapter chapter, Guid memberId)
         => $"{Member(platform, chapter, memberId)}/image";
 
+    public string MemberPayments(PlatformType platform, Chapter chapter, Guid memberId)
+        => $"{Member(platform, chapter, memberId)}/payments";
+
     public string MembersDownload(PlatformType platform, Chapter chapter)
         => $"{Members(platform, chapter)}/download";
 

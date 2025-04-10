@@ -11,7 +11,7 @@ public interface ISettingsService
     Task<ServiceResult> AddEmailProvider(Guid currentMemberId, UpdateEmailProvider model);
 
     Task<ServiceResult> CreatePaymentSettings(Guid currentMemberId,
-        PaymentProviderType provider, string name, string publicKey, string secretKey);
+        PaymentProviderType provider, string name, string publicKey, string secretKey, decimal commission);
 
     Task<ServiceResult> DeleteEmailProvider(Guid currentMemberId, Guid emailProviderId);
 
@@ -38,5 +38,5 @@ public interface ISettingsService
     Task<ServiceResult> UpdateInstagramSettings(Guid currentMemberId, string scraperUserAgent);
 
     Task<ServiceResult> UpdatePaymentSettings(Guid currentMemberId, Guid id,
-        string name, string publicKey, string secretKey);
+        string name, string publicKey, string secretKey, decimal commission);
 }

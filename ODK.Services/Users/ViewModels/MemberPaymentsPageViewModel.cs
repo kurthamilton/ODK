@@ -8,7 +8,7 @@ public class MemberPaymentsPageViewModel
 {
     public required Member CurrentMember { get; init; }
 
-    public required IReadOnlyCollection<PaymentDto> Payments { get; init; }
+    public required IReadOnlyCollection<PaymentChapterDto> Payments { get; init; }
 
     public required PlatformType Platform { get; init; }
 }

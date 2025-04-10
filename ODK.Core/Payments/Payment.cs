@@ -1,6 +1,4 @@
-﻿using ODK.Core.Countries;
-
-namespace ODK.Core.Payments;
+﻿namespace ODK.Core.Payments;
 
 public class Payment : IDatabaseEntity
 {
@@ -8,9 +6,9 @@ public class Payment : IDatabaseEntity
 
     public Guid ChapterId { get; set; }
 
-    public Currency Currency { get; set; } = null!;
-
     public Guid CurrencyId { get; set; }
+
+    public bool ExemptFromReconciliation { get; set; }
 
     public Guid Id { get; set; }
 
@@ -18,5 +16,19 @@ public class Payment : IDatabaseEntity
 
     public DateTime PaidUtc { get; set; }
 
+    public decimal? PaymentReconciliationAmount { get; set; }
+
+    public Guid? PaymentReconciliationId { get; set; }
+
     public string Reference { get; set; } = "";
+
+    public decimal CalculateReconciliationAmount(decimal commission)
+    {
+        if (commission < 0 || commission > 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(commission), "Commission must be between 0 and 1");
+        }
+
+        return Math.Round(Amount * (1 - commission), 2);
+    }
 }

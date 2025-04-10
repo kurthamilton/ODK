@@ -13,6 +13,9 @@ public class SitePaymentSettingsMap : IEntityTypeConfiguration<SitePaymentSettin
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Commission)
+            .HasPrecision(19, 4);
+
         builder.Property(x => x.Provider)
             .HasConversion<EnumStringConverter<PaymentProviderType>>();
     }

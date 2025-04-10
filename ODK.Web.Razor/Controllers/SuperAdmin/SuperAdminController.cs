@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Payments;
+using ODK.Services.Authentication;
 using ODK.Services.Caching;
 using ODK.Services.Contact;
-using ODK.Services.Emails;
 using ODK.Services.Features;
 using ODK.Services.Logging;
+using ODK.Services.Payments;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
@@ -16,10 +18,10 @@ using ODK.Web.Razor.Models.SuperAdmin;
 
 namespace ODK.Web.Razor.Controllers.SuperAdmin;
 
+[Authorize(Roles = OdkRoles.SuperAdmin)]
 public class SuperAdminController : OdkControllerBase
 {
     private readonly IContactAdminService _contactAdminService;
-    private readonly IEmailAdminService _emailAdminService;
     private readonly IFeatureService _featureService;
     private readonly IInstagramService _instagramService;
     private readonly ILoggingService _loggingService;
@@ -29,7 +31,6 @@ public class SuperAdminController : OdkControllerBase
     private readonly ITopicAdminService _topicAdminService;
 
     public SuperAdminController(
-        IEmailAdminService emailAdminService,
         ILoggingService loggingService, 
         IInstagramService instagramService,
         IRequestCache requestCache, 
@@ -37,10 +38,10 @@ public class SuperAdminController : OdkControllerBase
         ISiteSubscriptionAdminService siteSubscriptionAdminService,
         IFeatureService featureService,
         IContactAdminService contactAdminService,
-        ITopicAdminService topicAdminService)
+        ITopicAdminService topicAdminService,
+        IPaymentAdminService paymentAdminService)
     {
         _contactAdminService = contactAdminService;
-        _emailAdminService = emailAdminService;
         _featureService = featureService;
         _instagramService = instagramService;
         _loggingService = loggingService;
@@ -97,13 +98,14 @@ public class SuperAdminController : OdkControllerBase
     }
 
     [HttpPost("superadmin/payments")]
-    public async Task<IActionResult> CreatePaymentSettings([FromForm] PaymentSettingsFormViewModel viewModel)
+    public async Task<IActionResult> CreatePaymentSettings([FromForm] SitePaymentSettingsFormViewModel viewModel)
     {
         var result = await _settingsService.CreatePaymentSettings(MemberId,
             viewModel.Provider ?? PaymentProviderType.None,
             viewModel.Name ?? "",
             viewModel.PublicKey ?? "",
-            viewModel.SecretKey ?? "");
+            viewModel.SecretKey ?? "",
+            viewModel.Commission / 100);
 
         AddFeedback(result, "Payment settings created");
 
@@ -112,13 +114,14 @@ public class SuperAdminController : OdkControllerBase
 
     [HttpPost("superadmin/payments/{id:guid}")]
     public async Task<IActionResult> UpdatePaymentSettings(Guid id, 
-        [FromForm] PaymentSettingsFormViewModel viewModel)
+        [FromForm] SitePaymentSettingsFormViewModel viewModel)
     {
         var result = await _settingsService.UpdatePaymentSettings(MemberId,
             id,
             viewModel.Name ?? "",
             viewModel.PublicKey ?? "",
-            viewModel.SecretKey ?? "");
+            viewModel.SecretKey ?? "",
+            viewModel.Commission / 100);
 
         AddFeedback(result, "Payment settings updated");
 
@@ -133,7 +136,7 @@ public class SuperAdminController : OdkControllerBase
         AddFeedback(result, "Active payment settings updated");
 
         return RedirectToReferrer();
-    }
+    }    
 
     [HttpPost("superadmin/subscriptions")]
     public async Task<IActionResult> CreateSubscription(SiteSubscriptionFormViewModel viewModel)

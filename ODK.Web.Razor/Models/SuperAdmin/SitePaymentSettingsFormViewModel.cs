@@ -4,8 +4,11 @@ using ODK.Core.Payments;
 
 namespace ODK.Web.Razor.Models.SuperAdmin;
 
-public class PaymentSettingsFormViewModel
+public class SitePaymentSettingsFormViewModel
 {
+    [DisplayName("Commission (%)")]
+    public decimal Commission { get; set; }
+
     [Required]
     public string? Name { get; set; }
 

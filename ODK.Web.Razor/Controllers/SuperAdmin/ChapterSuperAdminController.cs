@@ -5,8 +5,11 @@ using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
+using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Controllers.Admin;
+using ODK.Web.Razor.Models.Chapters.SuperAdmin;
 using ODK.Web.Razor.Models.SuperAdmin;
 
 namespace ODK.Web.Razor.Controllers.SuperAdmin;
@@ -15,11 +18,16 @@ namespace ODK.Web.Razor.Controllers.SuperAdmin;
 public class ChapterSuperAdminController : AdminControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
+    private readonly IPaymentAdminService _paymentAdminService;
 
-    public ChapterSuperAdminController(IChapterAdminService chapterAdminService, IRequestCache requestCache)
+    public ChapterSuperAdminController(
+        IChapterAdminService chapterAdminService, 
+        IRequestCache requestCache,
+        IPaymentAdminService paymentAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;
+        _paymentAdminService = paymentAdminService;
     }
 
     [HttpPost("/superadmin/groups/{id:guid}/approve")]
@@ -54,6 +62,32 @@ public class ChapterSuperAdminController : AdminControllerBase
         await _chapterAdminService.UpdateChapterLocation(request, location, viewModel.Name);
 
         AddFeedback("Location updated", FeedbackType.Success);
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("/{chapterName}/Admin/SuperAdmin/Payments/{id:guid}/Reconciliation-Status")]
+    public async Task<IActionResult> AddReconciliationExemption(string chapterName, Guid id)
+    {
+        var request = await GetAdminServiceRequest(chapterName);
+
+        await _paymentAdminService.SetPaymentReconciliationExemption(request, id, true);
+
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("/{chapterName}/Admin/SuperAdmin/Payments/Reconciliations")]
+    public async Task<IActionResult> CreateReconciliation(string chapterName, ReconciliationFormViewModel viewModel)
+    {
+        var request = await GetAdminServiceRequest(chapterName);
+
+        var model = new CreateReconciliationModel
+        {
+            PaymentIds = viewModel.PaymentIds,
+            PaymentReference = viewModel.PaymentReference
+        };
+
+        await _paymentAdminService.CreateReconciliation(request, model);
 
         return RedirectToReferrer();
     }

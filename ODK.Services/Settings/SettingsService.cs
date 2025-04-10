@@ -68,12 +68,13 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
     }
 
     public async Task<ServiceResult> CreatePaymentSettings(Guid currentMemberId,
-        PaymentProviderType provider, string name, string publicKey, string secretKey)
+        PaymentProviderType provider, string name, string publicKey, string secretKey, decimal commission)
     {
         _unitOfWork.SitePaymentSettingsRepository.Add(new SitePaymentSettings
         {
             ApiPublicKey = publicKey,
             ApiSecretKey = secretKey,
+            Commission = commission,
             Name = name,
             Provider = provider
         });
@@ -188,11 +189,12 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
     }
 
     public async Task<ServiceResult> UpdatePaymentSettings(Guid currentMemberId, 
-        Guid id, string name, string publicKey, string secretKey)
+        Guid id, string name, string publicKey, string secretKey, decimal commission)
     {
         var settings = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SitePaymentSettingsRepository.GetById(id));
 
+        settings.Commission = commission;
         settings.Name = name;
         settings.ApiPublicKey = publicKey;
         settings.ApiSecretKey = secretKey;

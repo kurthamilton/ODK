@@ -26,12 +26,13 @@
 <section class="section">
     <form action="/superadmin/payments/@settings.Id" method="post">
         @Html.AntiForgeryToken()
-        @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new PaymentSettingsFormViewModel
-        {        
+        @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new SitePaymentSettingsFormViewModel
+        {         
+            Commission = 100 * settings.Commission,
             Name = settings.Name,
             Provider = settings.Provider,
             PublicKey = settings.ApiPublicKey,
-            SecretKey = settings.ApiSecretKey
+            SecretKey = settings.ApiSecretKey            
         })
         <button class="btn btn-primary">Update</button>
     </form>

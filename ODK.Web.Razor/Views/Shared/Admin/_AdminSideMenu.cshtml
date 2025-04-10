@@ -60,6 +60,7 @@
         {
             new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Members", Text = "Members" },
             new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Payments", Text = "Payments" },
+            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Reconciliations", Text = "Reconciliations" },
             new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Location", Text = "Location" },
             new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Instagram", Text = "Instagram" },
             new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Redirect", Text = "Redirect" }
@@ -94,6 +95,12 @@
             Link = OdkRoutes.MemberGroups.Members(platform, chapter),
             Text = "Members",
             Children = membersLinks.Where(x => !string.IsNullOrEmpty(x.Text)).ToArray()
+        },
+        new MenuItem
+        {
+            Link = OdkRoutes.Payments.Payments(platform, chapter),
+            Text = "Payments",
+            Children = []
         },
         superadminLinks.Length > 0
             ? new MenuItem
