@@ -4,6 +4,7 @@ using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
 using ODK.Core.Emails;
+using ODK.Core.Exceptions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
@@ -30,6 +31,7 @@ public class MemberService : IMemberService
     private readonly IMemberImageService _memberImageService;
     private readonly INotificationService _notificationService;
     private readonly IOAuthProviderFactory _oauthProviderFactory;
+    private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IPaymentService _paymentService;    
     private readonly IPlatformProvider _platformProvider;
     private readonly ITopicService _topicService;
@@ -45,7 +47,8 @@ public class MemberService : IMemberService
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
         IOAuthProviderFactory oauthProviderFactory,
-        ITopicService topicService)
+        ITopicService topicService,
+        IPaymentProviderFactory paymentProviderFactory)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
@@ -53,10 +56,51 @@ public class MemberService : IMemberService
         _memberImageService = memberImageService;
         _notificationService = notificationService;
         _oauthProviderFactory = oauthProviderFactory;
+        _paymentProviderFactory = paymentProviderFactory;
         _paymentService = paymentService;        
         _platformProvider = platformProvider;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<ServiceResult> CancelChapterSubscription(Guid memberId, string externalId)
+    {
+        var (member, memberSubscriptionRecord) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.MemberSubscriptionRecordRepository.GetByExternalId(externalId));
+
+        if (memberSubscriptionRecord.MemberId != member.Id)
+        {
+            throw new OdkNotFoundException();
+        }
+
+        if (memberSubscriptionRecord.ChapterSubscriptionId == null || string.IsNullOrEmpty(memberSubscriptionRecord.ExternalId))
+        {
+            return ServiceResult.Failure("Error cancelling subscription");
+        }
+
+        var (chapterSubscription, chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterSubscriptionRepository.GetById(memberSubscriptionRecord.ChapterSubscriptionId.Value),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(memberSubscriptionRecord.ChapterId),
+            x => x.SitePaymentSettingsRepository.GetActive());
+
+        IPaymentSettings? paymentSettings = chapterPaymentSettings?.UseSitePaymentProvider == true
+            ? chapterSubscription.Uses(chapterPaymentSettings, sitePaymentSettings)
+                ? sitePaymentSettings
+                : null
+            : chapterPaymentSettings;
+
+        if (paymentSettings == null)
+        {
+            return ServiceResult.Failure("Error cancelling subscription");
+        }
+
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(paymentSettings);
+
+        var result = await paymentProvider.CancelSubscription(memberSubscriptionRecord.ExternalId);
+        return result
+            ? ServiceResult.Successful("Subscription cancelled")
+            : ServiceResult.Failure("Error cancelling subscription");
     }
 
     public async Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken)
@@ -569,10 +613,11 @@ public class MemberService : IMemberService
             _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
         }        
 
-        _unitOfWork.MemberSubscriptionRepository.AddMemberSubscriptionRecord(new MemberSubscriptionRecord
+        _unitOfWork.MemberSubscriptionRecordRepository.Add(new MemberSubscriptionRecord
         {
             Amount = chapterSubscription.Amount,
-            ChapterId = chapterId,
+            ChapterId = chapterSubscription.ChapterId,
+            ChapterSubscriptionId = chapterSubscription.Id,
             MemberId = memberId,
             Months = chapterSubscription.Months,
             PurchasedUtc = DateTime.UtcNow,
@@ -712,14 +757,15 @@ public class MemberService : IMemberService
         {
             Amount = chapterSubscription.Amount,
             ChapterId = chapterSubscription.ChapterId,
-            ExternalId = checkoutSession.PaymentId,
+            ChapterSubscriptionId = chapterSubscription.Id,
+            ExternalId = checkoutSession.SubscriptionId,
             MemberId = memberId,
             Months = chapterSubscription.Months,
             PaymentId = Guid.NewGuid(),
             PurchasedUtc = DateTime.UtcNow,
             Type = chapterSubscription.Type
         };
-        _unitOfWork.MemberSubscriptionRepository.AddMemberSubscriptionRecord(memberSubscriptionRecord);
+        _unitOfWork.MemberSubscriptionRecordRepository.Add(memberSubscriptionRecord);
 
         paymentCheckoutSession.CompletedUtc = DateTime.UtcNow;
         _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);

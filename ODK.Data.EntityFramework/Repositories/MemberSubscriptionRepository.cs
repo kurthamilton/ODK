@@ -12,16 +12,6 @@ public class MemberSubscriptionRepository : WriteRepositoryBase<MemberSubscripti
     {
     }
 
-    public void AddMemberSubscriptionRecord(MemberSubscriptionRecord record)
-    {
-        if (record.Id == default)
-        {
-            record.Id = Guid.NewGuid();
-        }
-
-        AddSingle(record);
-    }
-
     public IDeferredQueryMultiple<MemberSubscription> GetByChapterId(Guid chapterId) => Set()
         .Where(x => x.MemberChapter.ChapterId ==  chapterId)
         .DeferredMultiple();

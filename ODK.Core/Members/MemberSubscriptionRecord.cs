@@ -6,6 +6,8 @@ public class MemberSubscriptionRecord : IDatabaseEntity
 
     public Guid ChapterId { get; set; }
 
+    public Guid? ChapterSubscriptionId { get; set; }
+
     public string? ExternalId { get; set; }
 
     public Guid Id { get; set; }

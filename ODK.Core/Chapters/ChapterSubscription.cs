@@ -29,9 +29,9 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public SubscriptionType Type { get; set; }
 
-    public bool Use(ChapterPaymentSettings chapterPaymentSettings, SitePaymentSettings sitePaymentSettings)
+    public bool Uses(ChapterPaymentSettings? chapterPaymentSettings, SitePaymentSettings sitePaymentSettings)
     {
-        return chapterPaymentSettings.UseSitePaymentProvider
+        return chapterPaymentSettings?.UseSitePaymentProvider == true
             ? SitePaymentSettingId == sitePaymentSettings.Id
             : SitePaymentSettingId == null;
     }

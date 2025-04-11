@@ -118,9 +118,9 @@ public class PayPalPaymentProvider : IPaymentProvider
         {
             ExternalId = subscription.Id,
             ExternalSubscriptionPlanId = subscription.PlanId,
-            IsActive = subscription.Status == "ACTIVE",
             LastPaymentDate = subscription.BillingInfo?.LastPayment?.Date,
-            NextBillingDate = subscription.BillingInfo?.NextBillingDate
+            NextBillingDate = subscription.BillingInfo?.NextBillingDate,
+            Status = subscription.Status == "ACTIVE" ? ExternalSubscriptionStatus.Active : ExternalSubscriptionStatus.Cancelled,
         } : null;
     }
 

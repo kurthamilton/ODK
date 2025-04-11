@@ -390,6 +390,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             Chapter = chapter,
             ChapterSubscriptions = chapterSubscriptions,
             Currency = chapterPaymentSettings?.Currency,
+            ExternalSubscription = null,
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = null,
             OwnerSubscription = ownerSubscription,

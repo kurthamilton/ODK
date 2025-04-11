@@ -27,6 +27,10 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
             .WithMany()
             .HasForeignKey(x => x.ChapterId);
 
+        builder.HasOne<ChapterSubscription>()
+            .WithMany()
+            .HasForeignKey(x => x.ChapterSubscriptionId);
+
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(x => x.MemberId);

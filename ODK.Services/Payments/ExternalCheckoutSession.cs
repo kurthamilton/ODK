@@ -10,7 +10,7 @@ public class ExternalCheckoutSession
 
     public required string Currency { get; init; }
 
-    public required string? PaymentId { get; init; }
-
     public required string SessionId { get; init; }
+
+    public required string? SubscriptionId { get; init; }
 }

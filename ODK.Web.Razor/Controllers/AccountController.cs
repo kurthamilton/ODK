@@ -409,13 +409,21 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("Chapters/{id:guid}/Account/Subscription/Cancel")]
+    public async Task<IActionResult> CancelChapterSubscription(Guid id, [FromForm] CancelSubscriptionRequest request)
+    {
+        var result = await _memberService.CancelChapterSubscription(MemberId, request.ExternalId);
+        AddFeedback(result, "Purchase complete. Thank you for subscribing.");
+        return RedirectToReferrer();
+    }
+
     [HttpPost("Chapters/{id:guid}/Account/Subscription/Purchase")]
     public async Task<IActionResult> PurchaseChapterSubscription(Guid id, [FromForm] PurchaseSubscriptionRequest request)
     {
         var result = await _memberService.PurchaseChapterSubscription(MemberId, id, request.SubscriptionId, request.Token);
         AddFeedback(result, "Purchase complete. Thank you for subscribing.");
         return RedirectToReferrer();
-    }
+    }    
 
     [HttpPost("account/topics")]
     public async Task<IActionResult> UpdateTopics([FromForm] TopicPickerFormSubmitViewModel viewModel)

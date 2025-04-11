@@ -8,6 +8,11 @@ namespace ODK.Services.Members;
 
 public interface IMemberService
 {
+    Task<ServiceResult> CancelChapterSubscription(Guid memberId, string externalId);
+
+    Task<bool> CompleteChapterSubscriptionCheckoutSession(
+        Guid memberId, Guid chapterSubscriptionId, string sessionId);
+
     Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
 
     Task<ServiceResult<Member?>> CreateAccount(CreateAccountModel model);
@@ -40,11 +45,7 @@ public interface IMemberService
 
     Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress);
 
-    Task RotateMemberImage(Guid memberId);
-
-    Task<bool> CompleteChapterSubscriptionCheckoutSession(
-        Guid memberId, Guid chapterSubscriptionId, string sessionId);
-
+    Task RotateMemberImage(Guid memberId);    
 
     Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
         Guid memberId, Guid chapterSubscriptionId, string returnPath);    

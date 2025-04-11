@@ -4,8 +4,7 @@ using ODK.Data.Core.Deferred;
 namespace ODK.Data.Core.Repositories;
 
 public interface IMemberSubscriptionRepository : IWriteRepository<MemberSubscription>
-{
-    void AddMemberSubscriptionRecord(MemberSubscriptionRecord record);
+{    
     IDeferredQueryMultiple<MemberSubscription> GetByChapterId(Guid chapterId);
     IDeferredQuerySingleOrDefault<MemberSubscription> GetByMemberId(Guid memberId, Guid chapterId);
 }

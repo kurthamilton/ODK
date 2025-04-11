@@ -1,5 +1,6 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
+using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
@@ -8,6 +9,7 @@ using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Members.ViewModels;
+using ODK.Services.Payments;
 
 namespace ODK.Services.Chapters;
 
@@ -17,6 +19,7 @@ public class ChapterService : IChapterService
     private readonly ICacheService _cacheService;
     private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly IHtmlSanitizer _htmlSanitizer;
+    private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
     
@@ -26,12 +29,14 @@ public class ChapterService : IChapterService
         IAuthorizationService authorizationService,
         IPlatformProvider platformProvider,
         IHttpRequestProvider httpRequestProvider,
-        IHtmlSanitizer htmlSanitizer)
+        IHtmlSanitizer htmlSanitizer,
+        IPaymentProviderFactory paymentProviderFactory)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
         _httpRequestProvider = httpRequestProvider;
         _htmlSanitizer = htmlSanitizer;
+        _paymentProviderFactory = paymentProviderFactory;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }            
@@ -78,32 +83,41 @@ public class ChapterService : IChapterService
             currentMember, 
             memberSubscription, 
             chapterSubscriptions, 
-            paymentSettings, 
+            chapterPaymentSettings, 
             membershipSettings,
-            sitePaymentSettings
+            sitePaymentSettings,
+            memberSubscriptionRecord
         ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
-            x => x.SitePaymentSettingsRepository.GetActive());
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.MemberSubscriptionRecordRepository.GetLatest(currentMemberId, chapterId));
 
         OdkAssertions.MemberOf(currentMember, chapterId);
 
         chapterSubscriptions = chapterSubscriptions
-            .Where(x => x.Use(paymentSettings, sitePaymentSettings))
+            .Where(x => x.Uses(chapterPaymentSettings, sitePaymentSettings))
             .ToArray();
+
+        var externalSubscription = await GetExternalSubscription(
+            chapterPaymentSettings, 
+            sitePaymentSettings, 
+            memberSubscriptionRecord,
+            chapterSubscriptions);
 
         return new SubscriptionsPageViewModel
         {
             ChapterSubscriptions = chapterSubscriptions,
-            Currency = paymentSettings?.Currency,
+            Currency = chapterPaymentSettings?.Currency,
+            ExternalSubscription = externalSubscription,
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = memberSubscription,
-            PaymentSettings = paymentSettings?.UseSitePaymentProvider == true
+            PaymentSettings = chapterPaymentSettings?.UseSitePaymentProvider == true
                 ? sitePaymentSettings
-                : paymentSettings
+                : chapterPaymentSettings
         };
     }
 
@@ -163,5 +177,41 @@ public class ChapterService : IChapterService
     {
         var existing = await _unitOfWork.ChapterRepository.GetByName(name).Run();
         return existing == null;
+    }
+
+    private async Task<ExternalSubscription?> GetExternalSubscription(
+        ChapterPaymentSettings? chapterPaymentSettings,
+        SitePaymentSettings sitePaymentSettings,
+        MemberSubscriptionRecord? memberSubscriptionRecord,
+        IReadOnlyCollection<ChapterSubscription> chapterSubscriptions)
+    {
+        if (memberSubscriptionRecord?.ExternalId == null || 
+            memberSubscriptionRecord.ChapterSubscriptionId == null)
+        {
+            return null;
+        }
+
+        var chapterSubscription = chapterSubscriptions
+            .FirstOrDefault(x => x.Id == memberSubscriptionRecord.ChapterSubscriptionId);
+
+        if (chapterSubscription == null)
+        {
+            return null;
+        }
+
+        IPaymentSettings? paymentSettings = chapterSubscription.SitePaymentSettingId != null
+            ? chapterSubscription.SitePaymentSettingId == sitePaymentSettings.Id
+                ? sitePaymentSettings
+                : null
+            : chapterPaymentSettings;
+
+        if (paymentSettings == null)
+        {
+            return null;
+        }
+
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(paymentSettings);
+
+        return await paymentProvider.GetSubscription(memberSubscriptionRecord.ExternalId);
     }
 }

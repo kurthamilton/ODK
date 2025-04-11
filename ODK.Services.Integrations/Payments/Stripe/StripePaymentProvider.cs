@@ -37,9 +37,19 @@ public class StripePaymentProvider : IPaymentProvider
         return ServiceResult.Successful();
     }
 
-    public Task<bool> CancelSubscription(string externalId)
+    public async Task<bool> CancelSubscription(string externalId)
     {
-        throw new NotImplementedException();
+        var subscriptionService = CreateSubscriptionService();
+
+        try
+        {
+            await subscriptionService.CancelAsync(externalId);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public Task<string?> CreateCustomer(string emailAddress)
@@ -124,21 +134,14 @@ public class StripePaymentProvider : IPaymentProvider
 
             var complete = session.Status == "complete";
 
-            Invoice? invoice = null;
-            if (complete)
-            {
-                var invoiceService = CreateInvoiceService();
-                invoice = await invoiceService.GetAsync(session.InvoiceId);
-            }            
-            
             return new ExternalCheckoutSession
             {
                 Amount = session.AmountTotal ?? 0,
                 ClientSecret = session.ClientSecret,
                 Complete = complete,
                 Currency = session.Currency,
-                PaymentId = invoice?.PaymentIntentId,
-                SessionId = session.Id
+                SessionId = session.Id,
+                SubscriptionId = session.SubscriptionId
             };
         }     
         catch
@@ -156,9 +159,29 @@ public class StripePaymentProvider : IPaymentProvider
             ?.Id;
     }
 
-    public Task<ExternalSubscription?> GetSubscription(string externalId)
+    public async Task<ExternalSubscription?> GetSubscription(string externalId)
     {
-        throw new NotImplementedException();
+        var service = CreateSubscriptionService();
+        
+        try
+        {
+            var subscription = await service.GetAsync(externalId);
+            
+            return new ExternalSubscription
+            {
+                ExternalId = subscription.Id,
+                ExternalSubscriptionPlanId = "",
+                LastPaymentDate = subscription.CurrentPeriodStart,
+                NextBillingDate = subscription.CurrentPeriodEnd,
+                Status = subscription.Status == "active" 
+                    ? ExternalSubscriptionStatus.Active 
+                    : ExternalSubscriptionStatus.Cancelled
+            };
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public async Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId)
@@ -263,8 +286,8 @@ public class StripePaymentProvider : IPaymentProvider
             ClientSecret = session.ClientSecret,
             Complete = false,
             Currency = session.Currency,
-            PaymentId = null,
-            SessionId = session.Id
+            SessionId = session.Id,
+            SubscriptionId = null
         };
     }
 
@@ -278,4 +301,5 @@ public class StripePaymentProvider : IPaymentProvider
     private PriceService CreatePriceService() => new PriceService(_client);
     private ProductService CreateProductService() => new ProductService(_client);
     private SessionService CreateSessionService() => new SessionService(_client);
+    private SubscriptionService CreateSubscriptionService() => new SubscriptionService(_client);
 }

@@ -64,6 +64,7 @@ public interface IUnitOfWork
     IMemberPropertyRepository MemberPropertyRepository { get; }
     IMemberRepository MemberRepository { get; }
     IMemberSiteSubscriptionRepository MemberSiteSubscriptionRepository { get; }
+    IMemberSubscriptionRecordRepository MemberSubscriptionRecordRepository { get; }
     IMemberSubscriptionRepository MemberSubscriptionRepository { get; }
     IMemberTopicRepository MemberTopicRepository { get; }
     INewChapterTopicRepository NewChapterTopicRepository { get; }
