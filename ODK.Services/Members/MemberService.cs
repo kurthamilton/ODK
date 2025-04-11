@@ -708,20 +708,43 @@ public class MemberService : IMemberService
             _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
         }
 
-        _unitOfWork.MemberSubscriptionRepository.AddMemberSubscriptionRecord(new MemberSubscriptionRecord
+        var memberSubscriptionRecord = new MemberSubscriptionRecord
         {
             Amount = chapterSubscription.Amount,
             ChapterId = chapterSubscription.ChapterId,
             MemberId = memberId,
             Months = chapterSubscription.Months,
+            PaymentId = Guid.NewGuid(),
             PurchasedUtc = DateTime.UtcNow,
             Type = chapterSubscription.Type
-        });
+        };
+        _unitOfWork.MemberSubscriptionRepository.AddMemberSubscriptionRecord(memberSubscriptionRecord);
 
         paymentCheckoutSession.CompletedUtc = DateTime.UtcNow;
         _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
 
+        var payment = new Payment
+        {
+            Amount = (decimal)memberSubscriptionRecord.Amount,
+            ChapterId = memberSubscriptionRecord.ChapterId,
+            CurrencyId = chapterPaymentSettings.CurrencyId,
+            Id = memberSubscriptionRecord.PaymentId.Value,
+            MemberId = memberSubscriptionRecord.MemberId,
+            PaidUtc = memberSubscriptionRecord.PurchasedUtc,
+            Reference = $"Subscription: {chapterSubscription.Name}"
+        };
+
+        _unitOfWork.PaymentRepository.Add(payment);
+
         await _unitOfWork.SaveChangesAsync();
+
+        if (chapterPaymentSettings?.UseSitePaymentProvider == true)
+        {
+            var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
+            var currency = chapterPaymentSettings.Currency;
+
+            await _memberEmailService.SendPaymentNotification(payment, currency, siteEmailSettings);
+        }
 
         return true;
     }

@@ -1,10 +1,12 @@
 ﻿using System.Web;
 using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Issues;
 using ODK.Core.Members;
 using ODK.Core.Messages;
+using ODK.Core.Payments;
 using ODK.Core.Topics;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
@@ -593,6 +595,17 @@ public class MemberEmailService : IMemberEmailService
         };
 
         await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.PasswordReset, parameters);
+    }
+
+    public async Task SendPaymentNotification(Payment payment, Currency currency, SiteEmailSettings settings)
+    {
+        var to = new EmailAddressee(settings.ContactEmailAddress, "");
+        var subject = "{title} - Payment Received";
+        var body = 
+            $"<p>A payment has been received for {currency.ToAmountString(payment.Amount)}</p>" +
+            $"<p>Reference: {payment.Reference}</p>";
+
+        await _emailService.SendEmail(null, [to], subject, body);
     }
 
     public async Task SendSiteMessage(SiteContactMessage message, SiteEmailSettings settings)

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Payments;
 using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
@@ -29,5 +30,9 @@ public class MemberSubscriptionRecordMap : IEntityTypeConfiguration<MemberSubscr
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(x => x.MemberId);
+
+        builder.HasOne<Payment>()
+            .WithOne()
+            .HasForeignKey<MemberSubscriptionRecord>(x => x.PaymentId);
     }
 }

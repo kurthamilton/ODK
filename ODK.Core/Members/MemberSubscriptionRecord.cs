@@ -12,6 +12,8 @@ public class MemberSubscriptionRecord : IDatabaseEntity
 
     public int Months { get; set; }
 
+    public Guid? PaymentId { get; set; }
+
     public DateTime PurchasedUtc { get; set; }
 
     public SubscriptionType Type { get; set; }

@@ -1,9 +1,11 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Issues;
 using ODK.Core.Members;
 using ODK.Core.Messages;
+using ODK.Core.Payments;
 using ODK.Core.Topics;
 using ODK.Core.Venues;
 
@@ -105,6 +107,8 @@ public interface IMemberEmailService
     Task SendNewTopicEmail(IReadOnlyCollection<INewTopic> newTopics, SiteEmailSettings settings);
 
     Task SendPasswordResetEmail(Chapter? chapter, Member member, string token);
+
+    Task SendPaymentNotification(Payment payment, Currency currency, SiteEmailSettings settings);
 
     Task SendSiteMessage(SiteContactMessage message, SiteEmailSettings settings);
 
