@@ -12,15 +12,12 @@ public class StripePaymentProvider : IPaymentProvider
 {
     private readonly IStripeClient _client;
     private readonly IHttpRequestProvider _httpRequestProvider;
-    private readonly StripePaymentProviderSettings _settings;
 
     public StripePaymentProvider(
-        StripePaymentProviderSettings settings,
         IPaymentSettings paymentSettings,
         IHttpRequestProvider httpRequestProvider)
     {        
         _httpRequestProvider = httpRequestProvider;
-        _settings = settings;
         _client = new StripeClient(paymentSettings.ApiSecretKey);
     }
 
@@ -119,18 +116,28 @@ public class StripePaymentProvider : IPaymentProvider
 
     public async Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
     {
-        var service = CreateSessionService();
+        var service = CreateSessionService();        
 
         try
         {
             var session = await service.GetAsync(externalId);
+
+            var complete = session.Status == "complete";
+
+            Invoice? invoice = null;
+            if (complete)
+            {
+                var invoiceService = CreateInvoiceService();
+                invoice = await invoiceService.GetAsync(session.InvoiceId);
+            }            
             
             return new ExternalCheckoutSession
             {
                 Amount = session.AmountTotal ?? 0,
                 ClientSecret = session.ClientSecret,
-                Complete = session.Status == "complete",
+                Complete = complete,
                 Currency = session.Currency,
+                PaymentId = invoice?.PaymentIntentId,
                 SessionId = session.Id
             };
         }     
@@ -249,13 +256,14 @@ public class StripePaymentProvider : IPaymentProvider
             ReturnUrl = baseUrl + returnPath.Replace("{sessionId}", "{CHECKOUT_SESSION_ID}"),
             AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false }
         });
-
+        
         return new ExternalCheckoutSession
         {
             Amount = session.AmountTotal ?? 0,
             ClientSecret = session.ClientSecret,
             Complete = false,
             Currency = session.Currency,
+            PaymentId = null,
             SessionId = session.Id
         };
     }
@@ -265,10 +273,9 @@ public class StripePaymentProvider : IPaymentProvider
         throw new NotImplementedException();
     }
 
-    private CustomerService CreateCustomerService() => new CustomerService(_client);
+    private InvoiceService CreateInvoiceService() => new InvoiceService(_client);
     private PaymentIntentService CreatePaymentIntentService() => new PaymentIntentService(_client);
     private PriceService CreatePriceService() => new PriceService(_client);
     private ProductService CreateProductService() => new ProductService(_client);
     private SessionService CreateSessionService() => new SessionService(_client);
-    private SubscriptionService CreateSubscriptionService() => new SubscriptionService(_client);
 }

@@ -712,6 +712,7 @@ public class MemberService : IMemberService
         {
             Amount = chapterSubscription.Amount,
             ChapterId = chapterSubscription.ChapterId,
+            ExternalId = checkoutSession.PaymentId,
             MemberId = memberId,
             Months = chapterSubscription.Months,
             PaymentId = Guid.NewGuid(),

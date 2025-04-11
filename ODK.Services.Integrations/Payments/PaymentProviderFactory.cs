@@ -11,18 +11,15 @@ public class PaymentProviderFactory : IPaymentProviderFactory
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly PayPalPaymentProviderSettings _payPalSettings;
-    private readonly StripePaymentProviderSettings _stripeSettings;
 
     public PaymentProviderFactory(
         IHttpClientFactory httpClientFactory,
         PayPalPaymentProviderSettings payPalSettings,
-        StripePaymentProviderSettings stripeSettings,
         IHttpRequestProvider httpRequestProvider)
     {
         _httpClientFactory = httpClientFactory;
         _httpRequestProvider = httpRequestProvider;
         _payPalSettings = payPalSettings;
-        _stripeSettings = stripeSettings;
     }
 
     public IPaymentProvider GetPaymentProvider(IPaymentSettings settings)
@@ -37,7 +34,6 @@ public class PaymentProviderFactory : IPaymentProviderFactory
                     );
             case PaymentProviderType.Stripe:
                 return new StripePaymentProvider(
-                    _stripeSettings,
                     settings,
                     _httpRequestProvider);
             default:
