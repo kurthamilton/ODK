@@ -9,6 +9,8 @@
     var defaultChapter = Model.CurrentChapter != null && Model.Member != null && Model.Member.IsMemberOf(Model.CurrentChapter.Id)
         ? Model.CurrentChapter
         : Model.MemberChapters.FirstOrDefault();
+
+    var isAdmin = User.IsInRole(OdkRoles.Admin);
 }
 
 @if (Model.MemberChapters.Count > 0)
@@ -22,7 +24,8 @@
                 @if (Model.MemberChapters.Count == 1)
                 {
                     var memberChapter = Model.MemberChapters.First();
-                    var adminChapter = adminChapters.FirstOrDefault(x => x.Id == memberChapter.Id);
+                    var adminChapter = isAdmin ? adminChapters
+                        .FirstOrDefault(x => x.Id == memberChapter.Id) : null;
 
                     <a class="dropdown-item" href="/@memberChapter.Name/Account">My profile</a>
                     <a class="dropdown-item" href="/@memberChapter.Name">@memberChapter.Name</a>
@@ -40,8 +43,8 @@
                     for (var i = 0; i < Model.MemberChapters.Count; i++)
                     {
                         var memberChapter = Model.MemberChapters.ElementAt(i);
-                        var adminChapter = adminChapters
-                            .FirstOrDefault(x => x.Id == memberChapter.Id);
+                        var adminChapter = isAdmin ? adminChapters
+                            .FirstOrDefault(x => x.Id == memberChapter.Id) : null;
 
                         <div class="dropdown dropstart">
                             <div class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown">
