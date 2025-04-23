@@ -51,7 +51,7 @@ public class EventResponseRepository : WriteRepositoryBase<EventResponse>, IEven
         .DeferredMultiple();
 
     public IDeferredQuery<int> GetNumberOfAttendees(Guid eventId) => Set()
-        .Where(x => x.Type == EventResponseType.Yes)
+        .Where(x => x.EventId == eventId && x.Type == EventResponseType.Yes)
         .DeferredCount();
 
     public IDeferredQueryMultiple<EventResponseSummaryDto> GetResponseSummaries(IEnumerable<Guid> eventIds) => Set()
