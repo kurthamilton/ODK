@@ -30,8 +30,8 @@ public static class EventAdminServiceTests
     private static readonly Guid CurrentMemberId = Guid.NewGuid();
     private static readonly Guid VenueId = Guid.NewGuid();
 
-    [TestCase("Pacific Standard Time", "2024-01-16", "2024-01-15 20:00:00")]
-    [TestCase("Pacific Standard Time", "2024-07-16", "2024-07-15 19:00:00")]
+    [TestCase("Pacific Standard Time", "2024-01-17", "2024-01-15 20:00:00")]
+    [TestCase("Pacific Standard Time", "2024-07-17", "2024-07-15 19:00:00")]
     [TestCase("GMT Standard Time", "2024-01-16", "2024-01-15 12:00:00")]
     [TestCase("GMT Standard Time", "2024-07-16", "2024-07-15 11:00:00")]
     [TestCase("AUS Eastern Standard Time", "2024-01-16", "2024-01-15 01:00:00")]

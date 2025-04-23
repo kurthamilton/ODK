@@ -171,8 +171,9 @@ public class StripePaymentProvider : IPaymentProvider
             {
                 ExternalId = subscription.Id,
                 ExternalSubscriptionPlanId = "",
-                LastPaymentDate = subscription.CurrentPeriodStart,
-                NextBillingDate = subscription.CurrentPeriodEnd,
+                // TODO: get last/next payment date
+                LastPaymentDate = null,
+                NextBillingDate = null,
                 Status = subscription.Status == "active" 
                     ? ExternalSubscriptionStatus.Active 
                     : ExternalSubscriptionStatus.Cancelled

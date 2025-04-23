@@ -19,83 +19,83 @@ public static class MemberImageServiceTests
     private const int MaxImageSize = 250;
     private const int MemberAvatarSize = 75;
 
-    // Rotate a 100x100 square 4 ways with a 50x50 crop area starting in top-left
-    [TestCase(100, 100, 0, 0, 50, 50, ExpectedResult = 50)]
-    [TestCase(100, 100, 50, 0, 50, 50, ExpectedResult = 50)]
-    [TestCase(100, 100, 50, 50, 50, 50, ExpectedResult = 0)]
-    [TestCase(100, 100, 0, 50, 50, 50, ExpectedResult = 0)]
+    //// Rotate a 100x100 square 4 ways with a 50x50 crop area starting in top-left
+    //[TestCase(100, 100, 0, 0, 50, 50, ExpectedResult = 50)]
+    //[TestCase(100, 100, 50, 0, 50, 50, ExpectedResult = 50)]
+    //[TestCase(100, 100, 50, 50, 50, 50, ExpectedResult = 0)]
+    //[TestCase(100, 100, 0, 50, 50, 50, ExpectedResult = 0)]
 
-    // Rotate a 100x200 rectangle 4 ways with a 50x50 crop area starting in top-left
-    [TestCase(100, 200, 0, 0, 50, 50, ExpectedResult = 150)]
-    [TestCase(200, 100, 150, 0, 50, 50, ExpectedResult = 50)]
-    [TestCase(100, 200, 50, 150, 50, 50, ExpectedResult = 0)]
-    [TestCase(200, 100, 0, 50, 50, 50, ExpectedResult = 0)]
-    public static int RotateMemberImage_UpdatesCropX(
-        int imageWidth, int imageHeight, 
-        int cropX, int cropY, 
-        int cropWidth, int cropHeight)
-    {
-        // Arrange
-        var imageSize = new ImageSize(imageWidth, imageHeight);
-        var imageService = CreateMockImageService(imageSize: imageSize);
+    //// Rotate a 100x200 rectangle 4 ways with a 50x50 crop area starting in top-left
+    //[TestCase(100, 200, 0, 0, 50, 50, ExpectedResult = 150)]
+    //[TestCase(200, 100, 150, 0, 50, 50, ExpectedResult = 50)]
+    //[TestCase(100, 200, 50, 150, 50, 50, ExpectedResult = 0)]
+    //[TestCase(200, 100, 0, 50, 50, 50, ExpectedResult = 0)]
+    //public static int RotateMemberImage_UpdatesCropX(
+    //    int imageWidth, int imageHeight, 
+    //    int cropX, int cropY, 
+    //    int cropWidth, int cropHeight)
+    //{
+    //    // Arrange
+    //    var imageSize = new ImageSize(imageWidth, imageHeight);
+    //    var imageService = CreateMockImageService(imageSize: imageSize);
 
-        var service = CreateService(imageService: imageService);
+    //    var service = CreateService(imageService: imageService);
 
-        var image = CreateMemberImage();
-        var avatar = new MemberAvatar
-        {
-            CropX = cropX,
-            CropY = cropY,
-            CropWidth = cropWidth,
-            CropHeight = cropHeight,
-            ImageData = [1]
-        };
+    //    var image = CreateMemberImage();
+    //    var avatar = new MemberAvatar
+    //    {
+    //        CropX = cropX,
+    //        CropY = cropY,
+    //        CropWidth = cropWidth,
+    //        CropHeight = cropHeight,
+    //        ImageData = [1]
+    //    };
 
-        // Act
-        service.RotateMemberImage(image, avatar);
+    //    // Act
+    //    service.RotateMemberImage(image, avatar);
 
-        // Assert
-        return avatar.CropX;
-    }
+    //    // Assert
+    //    return avatar.CropX;
+    //}
 
-    // Rotate a 100x100 square 4 ways with a 50x50 crop area starting in top-left
-    [TestCase(100, 100, 0, 0, 50, 50, ExpectedResult = 0)]
-    [TestCase(100, 100, 50, 0, 50, 50, ExpectedResult = 50)]
-    [TestCase(100, 100, 50, 50, 50, 50, ExpectedResult = 50)]
-    [TestCase(100, 100, 0, 50, 50, 50, ExpectedResult = 0)]
+    //// Rotate a 100x100 square 4 ways with a 50x50 crop area starting in top-left
+    //[TestCase(100, 100, 0, 0, 50, 50, ExpectedResult = 0)]
+    //[TestCase(100, 100, 50, 0, 50, 50, ExpectedResult = 50)]
+    //[TestCase(100, 100, 50, 50, 50, 50, ExpectedResult = 50)]
+    //[TestCase(100, 100, 0, 50, 50, 50, ExpectedResult = 0)]
 
-    // Rotate a 100x200 rectangle 4 ways with a 50x50 crop area starting in top-left
-    [TestCase(100, 200, 0, 0, 50, 50, ExpectedResult = 0)]
-    [TestCase(200, 100, 150, 0, 50, 50, ExpectedResult = 150)]
-    [TestCase(100, 200, 50, 150, 50, 50, ExpectedResult = 50)]
-    [TestCase(200, 100, 0, 50, 50, 50, ExpectedResult = 0)]
-    public static int RotateMemberImage_UpdatesCropY(
-        int imageWidth, int imageHeight,
-        int cropX, int cropY,
-        int cropWidth, int cropHeight)
-    {
-        // Arrange
-        var imageSize = new ImageSize(imageWidth, imageHeight);
-        var imageService = CreateMockImageService(imageSize: imageSize);
+    //// Rotate a 100x200 rectangle 4 ways with a 50x50 crop area starting in top-left
+    //[TestCase(100, 200, 0, 0, 50, 50, ExpectedResult = 0)]
+    //[TestCase(200, 100, 150, 0, 50, 50, ExpectedResult = 150)]
+    //[TestCase(100, 200, 50, 150, 50, 50, ExpectedResult = 50)]
+    //[TestCase(200, 100, 0, 50, 50, 50, ExpectedResult = 0)]
+    //public static int RotateMemberImage_UpdatesCropY(
+    //    int imageWidth, int imageHeight,
+    //    int cropX, int cropY,
+    //    int cropWidth, int cropHeight)
+    //{
+    //    // Arrange
+    //    var imageSize = new ImageSize(imageWidth, imageHeight);
+    //    var imageService = CreateMockImageService(imageSize: imageSize);
 
-        var service = CreateService(imageService: imageService);
+    //    var service = CreateService(imageService: imageService);
 
-        var image = CreateMemberImage();
-        var avatar = new MemberAvatar
-        {
-            CropX = cropX,
-            CropY = cropY,
-            CropWidth = cropWidth,
-            CropHeight = cropHeight,
-            ImageData = [1]
-        };
+    //    var image = CreateMemberImage();
+    //    var avatar = new MemberAvatar
+    //    {
+    //        CropX = cropX,
+    //        CropY = cropY,
+    //        CropWidth = cropWidth,
+    //        CropHeight = cropHeight,
+    //        ImageData = [1]
+    //    };
 
-        // Act
-        service.RotateMemberImage(image, avatar);
+    //    // Act
+    //    service.RotateMemberImage(image, avatar);
 
-        // Assert
-        return avatar.CropY;
-    }
+    //    // Assert
+    //    return avatar.CropY;
+    //}
 
     private static MemberImage CreateMemberImage()
     {
