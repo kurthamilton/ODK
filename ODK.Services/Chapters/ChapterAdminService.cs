@@ -33,6 +33,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly INotificationService _notificationService;
     private readonly IPaymentService _paymentService;
     private readonly IPlatformProvider _platformProvider;
+    private readonly ChapterAdminServiceSettings _settings;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -46,7 +47,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IImageService imageService,
         IMemberEmailService memberEmailService,
         ITopicService topicService,
-        IPaymentService paymentService)
+        IPaymentService paymentService,
+        ChapterAdminServiceSettings settings)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
@@ -57,6 +59,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _notificationService = notificationService;
         _paymentService = paymentService;
         _platformProvider = platformProvider;
+        _settings = settings;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
@@ -743,19 +746,35 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return location;
     }
 
-    public async Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(AdminServiceRequest request)
+    public async Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(
+        AdminServiceRequest request, bool spam)
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (chapter, messages) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, allMessages) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.ChapterContactMessageRepository.GetByChapterId(request.ChapterId));
+
+        var messagesBySpaminess = new Dictionary<bool, List<ChapterContactMessage>>
+        {
+            { false, new() },
+            { true, new() }
+        };
+
+        foreach (var message in allMessages)
+        {
+            var spamMessage = message.RecaptchaScore < _settings.ContactMessageRecaptchaScoreThreshold;
+            messagesBySpaminess[spamMessage].Add(message);
+        }
 
         return new ChapterMessagesAdminPageViewModel
         {
             Chapter = chapter,
-            Messages = messages,
-            Platform = platform
+            IsSpam = spam,
+            MessageCount = messagesBySpaminess[false].Count,
+            Messages = messagesBySpaminess[spam],
+            Platform = platform,
+            SpamMessageCount = messagesBySpaminess[true].Count
         };
     }
 

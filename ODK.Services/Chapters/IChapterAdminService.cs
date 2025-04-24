@@ -50,7 +50,7 @@ public interface IChapterAdminService
 
     Task<ChapterLocation?> GetChapterLocation(AdminServiceRequest request);
 
-    Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(AdminServiceRequest request);
+    Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(AdminServiceRequest request, bool spam);
 
     Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(AdminServiceRequest request, Guid id);
 

@@ -75,6 +75,9 @@ public class MemberGroupRoutes
         _ => $"{Group(platform, chapter)}/messages"
     };
 
+    public string GroupMessagesSpam(PlatformType platform, Chapter chapter) 
+        => $"{GroupMessages(platform, chapter)}/spam";
+
     public string GroupPayments(PlatformType platform, Chapter chapter)
         => $"{Group(platform, chapter)}/payments";
 
