@@ -119,7 +119,8 @@ public class ContactService : IContactService
         ValidateRequest(fromAddress, message);
 
         var recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);
-        if (!_recaptchaService.Success(recaptchaResponse))
+        var flagged = !_recaptchaService.Success(recaptchaResponse);
+        if (flagged)
         {
             message = $"[FLAGGED AS SPAM: {recaptchaResponse.Score} / 1.0] {message}";
         }
@@ -139,14 +140,20 @@ public class ContactService : IContactService
 
         _unitOfWork.ChapterContactMessageRepository.Add(contactMessage);
 
-        _notificationService.AddNewChapterContactMessageNotifications(
+        if (!flagged)
+        {
+            _notificationService.AddNewChapterContactMessageNotifications(
             contactMessage,
             adminMembers,
             notificationSettings);
+        }        
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendChapterMessage(chapter, adminMembers, contactMessage);
+        if (!flagged)
+        {
+            await _memberEmailService.SendChapterMessage(chapter, adminMembers, contactMessage);
+        }        
     }
 
     public async Task SendSiteContactMessage(string fromAddress, string message, string recaptchaToken)

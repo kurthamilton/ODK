@@ -9,6 +9,8 @@
 @using ODK.Web.Razor.Models.Admin
 @model ChapterMessagesAdminPageViewModel
 
+@await Html.PartialAsync("Admin/Chapter/_MessagesTabs", Model)
+
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Messages",

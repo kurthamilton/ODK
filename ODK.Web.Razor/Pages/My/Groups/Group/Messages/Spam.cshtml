@@ -1,12 +1,12 @@
-﻿@page "/my/groups/{id:guid}/messages"
+﻿@page "/my/groups/{id:guid}/messages/spam"
 @using ODK.Services.Chapters
-@model IndexModel
+@model SpamModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_GroupAdminLayout";
     Model.Title = "Messages";
 
-    var viewModel = await ChapterAdminService.GetChapterMessagesViewModel(Model.AdminServiceRequest, false);
+    var viewModel = await ChapterAdminService.GetChapterMessagesViewModel(Model.AdminServiceRequest, true);
 }
 
 @await Html.PartialAsync("Admin/Chapter/_MessagesContent", viewModel)

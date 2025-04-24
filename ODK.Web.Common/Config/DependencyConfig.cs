@@ -24,7 +24,6 @@ using ODK.Services.Integrations.Imaging;
 using ODK.Services.Integrations.OAuth;
 using ODK.Services.Integrations.Payments;
 using ODK.Services.Integrations.Payments.PayPal;
-using ODK.Services.Integrations.Payments.Stripe;
 using ODK.Services.Issues;
 using ODK.Services.Logging;
 using ODK.Services.Media;
@@ -111,6 +110,10 @@ public static class DependencyConfig
         services.AddScoped<IAuthorizationService, AuthorizationService>();
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IChapterAdminService, ChapterAdminService>();
+        services.AddSingleton(new ChapterAdminServiceSettings
+        {
+            ContactMessageRecaptchaScoreThreshold = appSettings.Recaptcha.ScoreThreshold
+        });
         services.AddScoped<IChapterService, ChapterService>();
         services.AddScoped<IChapterViewModelService, ChapterViewModelService>();
         services.AddScoped<IContactAdminService, ContactAdminService>();
