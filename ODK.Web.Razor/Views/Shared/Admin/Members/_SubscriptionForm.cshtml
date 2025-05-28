@@ -42,7 +42,7 @@
             @Html.TextBoxFor(x => x.Amount, new { @class = "form-control", type = "number", min = 0, step = 0.5 })
         </div>
         <div>
-           @await Html.PartialAsync("Payments/_PaymentCommissionText", new PaymentCommissionTextViewModel
+            @await Html.PartialAsync("Payments/_PaymentCommissionText", new PaymentCommissionTextViewModel
            {
                ChapterPaymentSettings = Model.PaymentSettings,
                OwnerSubscription = Model.OwnerSubscription
@@ -56,6 +56,20 @@
         @Html.TextBoxFor(x => x.DurationMonths, new { @class = "form-control", type = "number", min = 1 })
         @Html.ValidationMessageFor(x => x.DurationMonths)
     </div>
+
+    @if (Model.SupportsRecurringPayments)
+    {
+        <div class="mb-3 form-check">
+            @Html.CheckBoxFor(x => x.Recurring, new { @class = "form-check-input" })
+            @Html.LabelFor(x => x.Recurring, new { @class = "form-check-label" })
+
+            <span class="ms-1 text-muted">Payments will automatically be taken at the start of the next subscription period</span>
+        </div>
+    }    
+    else
+    {
+        @Html.HiddenFor(x => x.Recurring)
+    }
 }
 else if (Model.Amount != null)
 {
@@ -77,6 +91,16 @@ else if (Model.Amount != null)
         @Html.TextBoxFor(x => x.DurationMonths, new { @class = "form-control-plaintext", @readonly = "" })
         @Html.ValidationMessageFor(x => x.DurationMonths)
     </div>
+
+    @if (Model.SupportsRecurringPayments)
+    {
+        <div class="mb-3 form-check">
+            @Html.CheckBoxFor(x => x.Recurring, new { @class = "form-check-input", disabled = "" })
+            @Html.LabelFor(x => x.Recurring, new { @class = "form-check-label" })
+
+            <span class="ms-1 text-muted">Payments will automatically be taken at the start of the next subscription period</span>
+        </div>
+    }
 }
 
 <div class="form-group mb-3 required">

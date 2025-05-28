@@ -25,7 +25,9 @@ public class PayPalPaymentProvider : IPaymentProvider
 
     public bool HasCustomers => false;
 
-    public bool HasExternalGateway => false;    
+    public bool HasExternalGateway => false;
+
+    public bool SupportsRecurringPayments => PaymentProviderType.PayPal.SupportsRecurringPayments();
 
     public async Task<ServiceResult> ActivateSubscriptionPlan(string externalId)
     {
@@ -152,7 +154,8 @@ public class PayPalPaymentProvider : IPaymentProvider
             Name = plan.Name,
             NumberOfMonths = billingCycle.Frequency.OdkFrequency == SiteSubscriptionFrequency.Yearly
                 ? 12
-                : 1
+                : 1,
+            Recurring = false
         };
     }
 

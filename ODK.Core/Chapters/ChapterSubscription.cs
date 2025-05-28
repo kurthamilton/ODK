@@ -23,6 +23,8 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public string Name { get; set; } = "";
 
+    public bool Recurring { get; set; }
+
     public Guid? SitePaymentSettingId { get; set; }
 
     public string Title { get; set; } = "";

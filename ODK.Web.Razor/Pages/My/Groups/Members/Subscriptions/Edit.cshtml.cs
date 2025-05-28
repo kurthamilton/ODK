@@ -36,6 +36,7 @@ public class EditModel : OdkGroupAdminPageModel
             Disabled = !viewModel.Enabled,
             Name = viewModel.Name,
             Months = viewModel.DurationMonths ?? 0,
+            Recurring = viewModel.Recurring,
             Title = viewModel.Title,
             Type = viewModel.Type
         });

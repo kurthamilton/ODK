@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
+using ODK.Services.Payments;
 
 namespace ODK.Services.Members.ViewModels;
 
@@ -13,4 +14,6 @@ public class SubscriptionCreateAdminPageViewModel
     public required ChapterPaymentSettings? PaymentSettings { get; init; }
 
     public required PlatformType Platform { get; init; }
+
+    public required bool SupportsRecurringPayments { get; init; }
 }

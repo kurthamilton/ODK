@@ -20,12 +20,7 @@
     var (memberSubscription, chapterSubscriptions, paymentSettings, currency, externalSubscription) = 
         (dto.MemberSubscription, dto.ChapterSubscriptions, dto.PaymentSettings, dto.Currency, dto.ExternalSubscription);
 
-    if (memberSubscription == null)
-    {
-        return;
-    }
-
-    var title = memberSubscription.Type == SubscriptionType.Trial 
+    var title = memberSubscription == null || memberSubscription.Type == SubscriptionType.Trial 
         ? "Purchase membership" 
         : "Renew membership";
 }
@@ -41,14 +36,21 @@
 <div class="form-group mb-3">
     <label class="form-label">Membership type</label>
     <div class="form-control-plaintext">
-        @memberSubscription.Type
+        @if (memberSubscription != null)
+        {
+            <span>@memberSubscription.Type</span>
+        }
+        else
+        {
+            <span>-</span>
+        }
     </div>
 </div>
 
 <div class="form-group mb-3">
     <label class="form-label">End date</label>
     <div class="form-control-plaintext">
-        @if (memberSubscription.ExpiresUtc != null)
+        @if (memberSubscription?.ExpiresUtc != null)
         {
             <span>
                 @Model.Chapter.ToLocalTime(memberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")

@@ -22,6 +22,8 @@ public class SubscriptionFormSubmitViewModel
 
     [Required]
     public string Name { get; set; } = "";
+    
+    public bool Recurring { get; set; }
 
     [Required]
     public string Title { get; set; } = "";

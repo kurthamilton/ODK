@@ -10,4 +10,6 @@ public class SubscriptionFormViewModel : SubscriptionFormSubmitViewModel
     public required MemberSiteSubscription? OwnerSubscription { get; init; }
 
     public required ChapterPaymentSettings PaymentSettings { get; init; }
+
+    public required bool SupportsRecurringPayments { get; init; }
 }

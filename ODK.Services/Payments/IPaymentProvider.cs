@@ -6,6 +6,8 @@ public interface IPaymentProvider
 
     bool HasExternalGateway { get; }
 
+    bool SupportsRecurringPayments { get; }
+
     Task<ServiceResult> ActivateSubscriptionPlan(string externalId);
 
     Task<bool> CancelSubscription(string externalId);    

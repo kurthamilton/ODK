@@ -375,6 +375,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Description = _htmlSanitizer.Sanitize(model.Description, DefaultHtmlSantizerOptions),
             Months = model.Months,
             Name = model.Name,
+            Recurring = model.Recurring,
             Title = model.Title,
             Type = model.Type,
             SitePaymentSettingId = chapterPaymentSettings?.UseSitePaymentProvider == true
@@ -416,7 +417,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                     ExternalProductId = productId,
                     Frequency = SiteSubscriptionFrequency.Monthly,
                     Name = subscription.Name,
-                    NumberOfMonths = subscription.Months
+                    NumberOfMonths = subscription.Months,
+                    Recurring = model.Recurring
                 });
 
             if (externalId == null)

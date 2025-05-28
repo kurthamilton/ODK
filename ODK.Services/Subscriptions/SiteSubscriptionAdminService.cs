@@ -102,7 +102,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 ExternalProductId = siteSubscription.ExternalProductId,
                 Frequency = model.Frequency,
                 Name = $"{siteSubscription.Name} - {model.Frequency} [{currency.Code}]",
-                NumberOfMonths = model.Frequency == SiteSubscriptionFrequency.Yearly ? 12 : 1
+                NumberOfMonths = model.Frequency == SiteSubscriptionFrequency.Yearly ? 12 : 1,
+                Recurring = true
             });
         }
 

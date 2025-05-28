@@ -25,6 +25,8 @@ public class StripePaymentProvider : IPaymentProvider
 
     public bool HasExternalGateway => true;
 
+    public bool SupportsRecurringPayments => PaymentProviderType.Stripe.SupportsRecurringPayments();
+
     public async Task<ServiceResult> ActivateSubscriptionPlan(string externalId)
     {
         var service = CreatePriceService();
@@ -91,7 +93,7 @@ public class StripePaymentProvider : IPaymentProvider
             Currency = subscriptionPlan.CurrencyCode.ToLowerInvariant(),
             Nickname = subscriptionPlan.Name,
             Product = subscriptionPlan.ExternalProductId,
-            Recurring = new PriceRecurringOptions
+            Recurring = subscriptionPlan.Recurring ? new PriceRecurringOptions
             {
                 Interval = subscriptionPlan.Frequency switch
                 {
@@ -105,7 +107,7 @@ public class StripePaymentProvider : IPaymentProvider
                     SiteSubscriptionFrequency.Yearly => subscriptionPlan.NumberOfMonths / 12,
                     _ => 1
                 }
-            },
+            } : null,
             UnitAmountDecimal = subscriptionPlan.Amount * 100
         });
         
@@ -193,14 +195,14 @@ public class StripePaymentProvider : IPaymentProvider
         {
             var price = await service.GetAsync(externalId);
 
-            var frequency = price.Recurring.Interval switch
+            var frequency = price.Recurring?.Interval switch
             {
                 "month" => SiteSubscriptionFrequency.Monthly,
                 "year" => SiteSubscriptionFrequency.Yearly,
                 _ => SiteSubscriptionFrequency.None
             };
 
-            var intervalCount = (int)price.Recurring.IntervalCount;
+            var intervalCount = (int?)price.Recurring?.IntervalCount;
 
             return new ExternalSubscriptionPlan
             {
@@ -212,9 +214,10 @@ public class StripePaymentProvider : IPaymentProvider
                 Name = price.Nickname,
                 NumberOfMonths = frequency switch
                 {
-                    SiteSubscriptionFrequency.Yearly => intervalCount * 12,
-                    _ => intervalCount
-                }
+                    SiteSubscriptionFrequency.Yearly => intervalCount != null ? intervalCount.Value * 12 : 0,
+                    _ => intervalCount ?? 0
+                },
+                Recurring = price.Recurring != null
             };
         }
         catch
@@ -276,7 +279,7 @@ public class StripePaymentProvider : IPaymentProvider
                     Quantity = 1
                 }
             },
-            Mode = "subscription",
+            Mode = subscriptionPlan.Recurring ? "subscription" : "payment",
             ReturnUrl = baseUrl + returnPath.Replace("{sessionId}", "{CHECKOUT_SESSION_ID}"),
             AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false }
         });

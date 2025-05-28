@@ -7,4 +7,10 @@ public static class PaymentProviderTypeExtensions
         PaymentProviderType.Stripe => true,
         _ => false
     };
+
+    public static bool SupportsRecurringPayments(this PaymentProviderType provider) => provider switch
+    {
+        PaymentProviderType.Stripe => true,
+        _ => false
+    };
 }

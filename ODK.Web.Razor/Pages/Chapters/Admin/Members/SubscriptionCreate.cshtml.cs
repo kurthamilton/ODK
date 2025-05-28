@@ -32,6 +32,7 @@ public class SubscriptionCreateModel : AdminPageModel
             Disabled = !viewModel.Enabled,
             Months = viewModel.DurationMonths ?? 0,
             Name = viewModel.Name,
+            Recurring = viewModel.Recurring,
             Title = viewModel.Title,
             Type = viewModel.Type            
         });
