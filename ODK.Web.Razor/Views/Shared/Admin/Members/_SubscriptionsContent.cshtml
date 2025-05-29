@@ -50,6 +50,7 @@
                     <table class="table table-striped mb-5">
                         <thead>
                         <tr>
+                            <th width="16px"></th>
                             <th>Name</th>
                             <th>Amount</th>
                             <th>Months</th>
@@ -61,8 +62,14 @@
                         {
                             <tr>
                                 <td>
+                                    @if (subscription.Recurring)
+                                    {
+                                        <i class="fa-solid fa-arrows-spin" data-bs-toggle="tooltip" title="Recurring susbcription"></i>
+                                    }
+                                </td>    
+                                <td>
                                     <a href="@OdkRoutes.MemberGroups.MembersSubscription(Model.Platform, Model.Chapter, subscription)">@subscription.Name</a>
-                                </td>
+                                </td>                                
                                 <td>
                                     @currency?.ToAmountString(subscription.Amount)
                                 </td>
