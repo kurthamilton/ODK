@@ -11,7 +11,16 @@ public class ChapterSubscriptionRepository : ReadWriteRepositoryBase<ChapterSubs
     {
     }
 
-    public IDeferredQueryMultiple<ChapterSubscription> GetByChapterId(Guid chapterId) => Set()
-        .Where(x => x.ChapterId == chapterId)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<ChapterSubscription> GetByChapterId(Guid chapterId, bool includeDisabled)
+    {
+        var query = Set()
+            .Where(x => x.ChapterId == chapterId);
+
+        if (!includeDisabled)
+        {
+            query = query.Where(x => !x.Disabled);
+        }
+
+        return query.DeferredMultiple();
+    }
 }

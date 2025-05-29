@@ -90,7 +90,7 @@ public class ChapterService : IChapterService
         ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
-            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
+            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId, includeDisabled: false),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
             x => x.SitePaymentSettingsRepository.GetActive(),

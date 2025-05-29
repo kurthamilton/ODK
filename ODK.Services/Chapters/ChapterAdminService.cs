@@ -359,7 +359,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         ) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
-            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId),
+            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId, includeDisabled: true),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.SitePaymentSettingsRepository.GetActive());
 
@@ -1731,7 +1731,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         Guid id, CreateChapterSubscription model)
     {
         var subscriptions = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterSubscriptionRepository.GetByChapterId(request.ChapterId));
+            x => x.ChapterSubscriptionRepository.GetByChapterId(request.ChapterId, includeDisabled: true));
 
         var subscription = subscriptions.FirstOrDefault(x => x.Id == id);
         OdkAssertions.Exists(subscription);
