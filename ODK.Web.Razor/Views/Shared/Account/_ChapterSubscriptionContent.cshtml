@@ -101,6 +101,16 @@ else
                     <div class="card-text">
                         @Html.Raw(chapterSubscription.Description)
                     </div>
+
+                    @if (chapterSubscription.Recurring)
+                    {
+                        <div class="alert alert-warning mt-3">
+                            This is a recurring subscription. Payment will be taken automatically on the renewal date. 
+                            <br/>
+                            You will be able to cancel your subscription at any time on this page.
+                        </div>
+                    }
+
                     <div>
                         @if (Model.PaymentSettings?.Provider == PaymentProviderType.Stripe)
                         {
