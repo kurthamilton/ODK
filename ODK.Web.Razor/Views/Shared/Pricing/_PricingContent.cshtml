@@ -1,17 +1,18 @@
 ﻿@using ODK.Core.Subscriptions
 @using ODK.Services.Subscriptions.ViewModels
 @using ODK.Web.Razor.Models.Pricing
-@model SiteSubscriptionsViewModel
+@model PricingContentViewModel
 @{
     var subscriptions = Model
+        .SiteSubscriptions
         .Subscriptions
-        .OrderBy(subscription => subscription.Prices.Min(x => x.Amount))
+        .OrderBy(subscription => subscription.Prices.Count > 0 ? subscription.Prices.Min(x => x.Amount) : 0)
         .ToArray();
 
-    var currency = Model.Currency 
-        ?? Model.Currencies.FirstOrDefault() 
-        ?? Model.Subscriptions.SelectMany(x => x.Prices).Select(x => x.Currency).FirstOrDefault();
-    if (currency == null || Model.PaymentSettings?.Provider == null)
+    var currency = Model.SiteSubscriptions.Currency
+        ?? Model.SiteSubscriptions.Currencies.FirstOrDefault()
+        ?? Model.SiteSubscriptions.Subscriptions.SelectMany(x => x.Prices).Select(x => x.Currency).FirstOrDefault();
+    if (currency == null || Model.SiteSubscriptions.PaymentSettings.Count == 0)
     {
         return;
     }
@@ -30,44 +31,43 @@
                     <div class="card-text d-flex flex-column flex-grow-1">
                         @Html.Raw(subscription.Description)
 
-                        @if (Model.CurrentMemberSubscription?.SiteSubscriptionId == subscription.Id)
+                        @if (Model.SiteSubscriptions.CurrentMemberSubscription?.SiteSubscriptionId == subscription.Id)
                         {
                             <div class="mt-auto">
                                 <i class="fa-solid fa-star text-warning"></i>
                                 <span>Current plan</span>
                             </div>
                         }
-                        else
-                        {                            
-                            <div class="d-flex flex-column gap-3 mt-auto">
-                                @if (prices.Any(x => x.IsPaid) &&
-                                    Model.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid == true)
+                                                 
+                        <div class="d-flex flex-column gap-3 mt-auto">
+                            @if (prices.Any(x => x.IsPaid) &&
+                                Model.SiteSubscriptions.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid == true)
+                            {
+                                <p>
+                                    Purchasing this subscription will cancel your existing subscription.
+                                </p>
+                            }
+
+                            @foreach (var price in prices.OrderBy(x => x.Amount))
+                            {
+                                if (price.ExternalId == null)
                                 {
-                                    <p>
-                                        Purchasing this subscription will cancel your existing subscription.
-                                    </p>
+                                    continue;
                                 }
 
-                                @foreach (var price in prices.OrderBy(x => x.Amount))
+                                @await Html.PartialAsync("Pricing/_SubscriptionPrice", new SiteSubscriptionPriceViewModel
                                 {
-                                    if (price.ExternalId == null)
-                                    {
-                                        continue;
-                                    }
-
-                                    @await Html.PartialAsync("Pricing/_SubscriptionPrice", new SiteSubscriptionPriceViewModel
-                                    {
-                                        Amount = price.Amount,
-                                        Currency = currency,
-                                        Frequency = price.Frequency,
-                                        ExternalId = price.ExternalId,
-                                        Provider = Model.PaymentSettings.Provider.Value,
-                                        SiteSubscription = subscription,
-                                        SiteSubscriptionPriceId = price.Id
-                                    })   
-                                }                        
-                            </div>
-                        }
+                                    Amount = price.Amount,
+                                    CheckoutUrl = Model.CheckoutUrl.Replace("{price.id}", price.Id.ToString()),
+                                    Currency = currency,
+                                    Frequency = price.Frequency,
+                                    ExternalId = price.ExternalId,
+                                    Provider = subscription.SitePaymentSettings.Provider,
+                                    SiteSubscription = subscription,
+                                    SiteSubscriptionPriceId = price.Id
+                                })   
+                            }                        
+                        </div>
                     </div>
                 </div>            
             </div>

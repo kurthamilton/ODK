@@ -1,6 +1,7 @@
 ﻿@page "/Pricing"
 @using ODK.Services.Subscriptions
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Pricing
 @model ODK.Web.Razor.Pages.PricingModel
 @inject ISiteSubscriptionService SiteSubscriptionService
 @{
@@ -8,11 +9,16 @@
     Model.Title = "Pricing";
     Model.Path = "/pricing";
 
-    var dto = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(Model.CurrentMemberIdOrDefault);
+    var siteSubscriptions = await SiteSubscriptionService
+        .GetSiteSubscriptionsViewModel(Model.CurrentMemberIdOrDefault);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Pricing/_PricingContent", dto),
+    Content = await Html.PartialAsync("Pricing/_PricingContent", new PricingContentViewModel
+    {
+        CheckoutUrl = "",
+        SiteSubscriptions = siteSubscriptions
+    }),
     Title = "Pricing"
 })

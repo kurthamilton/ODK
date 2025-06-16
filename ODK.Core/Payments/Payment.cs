@@ -4,7 +4,7 @@ public class Payment : IDatabaseEntity
 {
     public decimal Amount { get; set; }
 
-    public Guid ChapterId { get; set; }
+    public Guid? ChapterId { get; set; }
 
     public Guid CurrencyId { get; set; }
 

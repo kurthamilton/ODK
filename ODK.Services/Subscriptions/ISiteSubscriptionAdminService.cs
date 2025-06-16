@@ -20,4 +20,7 @@ public interface ISiteSubscriptionAdminService
 
     Task<ServiceResult> UpdateSiteSubscription(Guid currentMemberId, Guid siteSubscriptionId, 
         SiteSubscriptionCreateModel model);
+
+    Task<ServiceResult> UpdateSiteSubscriptionEnabled(Guid currentMemberId, Guid siteSubscriptionId,
+        bool enabled);
 }

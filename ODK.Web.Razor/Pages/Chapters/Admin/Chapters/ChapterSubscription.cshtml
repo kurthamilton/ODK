@@ -31,11 +31,26 @@
 
 @section scripts
 {
-    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+    @{
+        var added = new List<Guid>();
+    }
+
+    @foreach (var dto in siteSubscriptions.Subscriptions)
     {
-        ApiPublicKey = siteSubscriptions.PaymentSettings?.ApiPublicKey ?? "",
-        CurrencyCode = "",
-        IsSubscription = true,
-        Provider = siteSubscriptions.PaymentSettings?.Provider ?? default
-    })
+        var paymentSettings = dto.Subscription.SitePaymentSettings;
+        if (added.Contains(paymentSettings.Id))
+        {
+            continue;
+        }
+
+        added.Add(paymentSettings.Id);
+
+        @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+       {
+           ApiPublicKey = paymentSettings.ApiPublicKey ?? "",
+           CurrencyCode = "",
+           IsSubscription = true,
+           Provider = paymentSettings.Provider
+       })
+    }    
 }

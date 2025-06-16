@@ -28,9 +28,7 @@
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupProperties(platform, chapter), Text = "Properties" },
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupSocialMedia(platform, chapter), Text = "Social media" },
-        platform == PlatformType.DrunkenKnitwits
-            ? new MenuItem { Link = $"/{chapter.Name}/admin/chapter/subscription", Text = "Subscription" }
-            : new MenuItem(),
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupSubscription(platform, chapter), Text = "Subscription" },
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()

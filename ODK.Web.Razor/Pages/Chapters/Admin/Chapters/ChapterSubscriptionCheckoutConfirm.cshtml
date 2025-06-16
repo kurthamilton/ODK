@@ -1,0 +1,8 @@
+﻿@page "/{chapterName}/admin/chapter/subscription/{id:guid}/confirm"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@model ChapterSubscriptionCheckoutConfirmModel
+@{
+    Layout = "_OdkChapterLayout";
+    Model.Title = "Subscription checkout";
+}

@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/Admin/Chapter/Subscription/Checkout"
+﻿@page "/{chapterName}/admin/chapter/subscription/{id:guid}/checkout"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Payments
@@ -20,40 +20,13 @@
         return;
     }
 
-    var returnPath = $"/{Model.ChapterName}/account/subscription/{Model.PriceId}/confirm?sessionId={{sessionId}}";
+    var returnPath = $"/{Model.ChapterName}/admin/chapter/subscription/{Model.PriceId}/confirm?sessionId={{sessionId}}";
 
     var viewModel = await SiteSubscriptionService.StartSiteSubscriptionCheckout(
         memberId.Value, Model.PriceId, returnPath);
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Title = "Account",
-    HideSubscriptionAlert = true,
-    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
-    {
-        Active = OdkRoutes.Account.Subscription(viewModel.Platform, null),
-        Content =
-            @<div>
-                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
-                {
-                    Breadcrumbs = new[]
-                    {
-                        new MenuItem { Text = "My subscription", Link = OdkRoutes.Account.Subscription(viewModel.Platform, null) },
-                        new MenuItem { Text = "Checkout" }
-                    }
-                })
-                <h2>Checkout</h2>
-                <section class="section">
-                    <div id="checkout"
-                         data-stripe="@viewModel.PaymentSettings.ApiPublicKey"
-                         data-stripe-checkout="@viewModel.ClientSecret">
-                        <!-- Checkout will insert the payment form here -->
-                    </div>
-                </section>
-            </div>
-    })
-})
+@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionCheckoutContent", viewModel)
 
 @section scripts
 {

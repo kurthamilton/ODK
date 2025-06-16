@@ -46,11 +46,19 @@
                         <td>
                             @if (subscription.Enabled)
                             {
-                                <i class="fa-solid fa-circle-check text-success"></i>
+                                <form action="/superadmin/subscriptions/@subscription.Id/disable" method="post">
+                                    <button class="btn btn-icon">
+                                        <i class="fa-solid fa-circle-check text-success"></i>
+                                    </button>                                    
+                                </form>                                
                             }
                             else
                             {
-                                <i class="fa-regular fa-circle-xmark text-danger"></i>
+                                <form action="/superadmin/subscriptions/@subscription.Id/enable" method="post">
+                                    <button class="btn btn-icon">
+                                        <i class="fa-regular fa-circle-xmark text-danger"></i>
+                                    </button>
+                                </form>                                
                             }
                         </td>
                         <td>@subscription.GroupLimit</td>

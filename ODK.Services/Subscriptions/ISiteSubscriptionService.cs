@@ -5,7 +5,9 @@ using ODK.Services.Subscriptions.ViewModels;
 namespace ODK.Services.Subscriptions;
 
 public interface ISiteSubscriptionService
-{    
+{
+    Task<bool> CompleteSiteSubscriptionCheckoutSession(Guid memberId, Guid siteSubscriptionPriceId, string sessionId);
+
     Task<ServiceResult> ConfirmMemberSiteSubscription(Guid memberId, Guid siteSubscriptionId, string externalId);
 
     Task<MemberSiteSubscription?> GetMemberSiteSubscription(Guid memberId);

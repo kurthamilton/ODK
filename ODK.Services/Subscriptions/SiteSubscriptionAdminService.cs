@@ -1,4 +1,5 @@
-﻿using ODK.Core;
+﻿using System.Reflection;
+using ODK.Core;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Web;
@@ -211,6 +212,20 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         }
 
         UpdateSiteSubscription(model, subscription);
+
+        _unitOfWork.SiteSubscriptionRepository.Update(subscription);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateSiteSubscriptionEnabled(Guid currentMemberId, Guid siteSubscriptionId,
+        bool enabled)
+    {
+        var subscription = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId));
+
+        subscription.Enabled = enabled;
 
         _unitOfWork.SiteSubscriptionRepository.Update(subscription);
         await _unitOfWork.SaveChangesAsync();

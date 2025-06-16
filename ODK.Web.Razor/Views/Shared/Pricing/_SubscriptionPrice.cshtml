@@ -1,4 +1,5 @@
-﻿@using ODK.Core.Subscriptions
+﻿@using ODK.Core.Payments
+@using ODK.Core.Subscriptions
 @using ODK.Core.Utils
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
@@ -11,13 +12,25 @@
 }
 
 <div class="d-flex gap-2 align-items-center">
-    <button class="btn btn-primary" type="button"
-        data-bs-toggle="modal" data-bs-target="#@modalId">
-        Buy
-    </button>
-    <span>
-        @Model.Currency.ToAmountString(Model.Amount)/@periodUnit
-    </span>
+    @if (Model.Provider == PaymentProviderType.Stripe && !string.IsNullOrEmpty(Model.CheckoutUrl))
+    {
+        <a class="btn btn-primary" href="@Model.CheckoutUrl">
+            Buy
+        </a>
+        <span>
+            @Model.Currency.ToAmountString(Model.Amount)/@periodUnit
+        </span>
+    }
+    else
+    {
+        <button class="btn btn-primary" type="button"
+                data-bs-toggle="modal" data-bs-target="#@modalId">
+            Buy
+        </button>
+        <span>
+            @Model.Currency.ToAmountString(Model.Amount)/@periodUnit
+        </span>
+    }    
 </div>    
 
 @await Html.PartialAsync("Components/_Modal", new ModalViewModel

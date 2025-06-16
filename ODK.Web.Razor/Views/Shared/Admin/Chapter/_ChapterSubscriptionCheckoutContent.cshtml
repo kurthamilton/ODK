@@ -1,0 +1,24 @@
+﻿@using ODK.Services.Subscriptions.ViewModels
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@model SiteSubscriptionCheckoutViewModel
+
+<div>
+    @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+    {
+        Breadcrumbs = new[]
+        {
+            new MenuItem { Text = "My subscription", Link = OdkRoutes.Account.Subscription(Model.Platform, null) },
+            new MenuItem { Text = "Checkout" }
+        }
+    })
+    <h2>Checkout</h2>
+    <section class="section">
+        <div id="checkout"
+             data-stripe="@Model.PaymentSettings.ApiPublicKey"
+             data-stripe-checkout="@Model.ClientSecret">
+            <!-- Checkout will insert the payment form here -->
+        </div>
+    </section>
+</div>

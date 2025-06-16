@@ -1,5 +1,4 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Countries;
+﻿using ODK.Core.Countries;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 
@@ -8,6 +7,8 @@ namespace ODK.Web.Razor.Models.Pricing;
 public class SiteSubscriptionPriceViewModel
 {
     public required decimal Amount { get; init; }
+
+    public required string CheckoutUrl { get; init; }
 
     public required Currency Currency { get; init; }
 

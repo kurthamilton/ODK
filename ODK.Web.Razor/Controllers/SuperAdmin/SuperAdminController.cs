@@ -13,6 +13,7 @@ using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
 using ODK.Services.Topics.Models;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.SuperAdmin;
 
@@ -180,6 +181,9 @@ public class SuperAdminController : OdkControllerBase
         if (result.Success)
         {
             AddFeedback("Subscription updated", FeedbackType.Success);
+
+            var url = "/superadmin/subscriptions";
+            return Redirect(url);
         }
 
         return RedirectToReferrer();
@@ -190,6 +194,22 @@ public class SuperAdminController : OdkControllerBase
     {
         await _siteSubscriptionAdminService.MakeDefault(MemberId, id);
         AddFeedback("Default subscription updated", FeedbackType.Success);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("superadmin/subscriptions/{id:guid}/disable")]
+    public async Task<IActionResult> DisableSubscription(Guid id)
+    {
+        await _siteSubscriptionAdminService.UpdateSiteSubscriptionEnabled(MemberId, id, false);
+        AddFeedback("Subscription disabled", FeedbackType.Success);
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("superadmin/subscriptions/{id:guid}/enable")]
+    public async Task<IActionResult> EnableSubscription(Guid id)
+    {
+        await _siteSubscriptionAdminService.UpdateSiteSubscriptionEnabled(MemberId, id, true);
+        AddFeedback("Subscription enabled", FeedbackType.Success);
         return RedirectToReferrer();
     }
 

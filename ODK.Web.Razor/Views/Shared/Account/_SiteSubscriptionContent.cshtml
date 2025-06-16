@@ -16,7 +16,7 @@
 @{
     var memberId = User.MemberId();
     var viewModel = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(memberId);
-    
+
     var (currency, currentMember, memberSubscription, subscriptions, paymentSettings) = 
         (viewModel.Currency, viewModel.CurrentMember, viewModel.CurrentMemberSubscription, viewModel.Subscriptions, viewModel.PaymentSettings!);
 }
@@ -33,11 +33,11 @@
         <div class="form-group mb-3 required">
             @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })
             @Html.DropDownList("currencyId", currencyOptions, "", new 
-            { 
-                @class = "form-select", 
-                data_val = "true", 
-                data_val_required = "The Currency field is required" 
-            })
+                { 
+                    @class = "form-select", 
+                    data_val = "true", 
+                    data_val_required = "The Currency field is required" 
+                })
             @Html.ValidationMessage("currencyId")
         </div>
 
@@ -72,7 +72,7 @@
 @if (viewModel.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid != true)
 {
     <h3>Upgrade</h3>
-    
+
     <div class="d-flex gap-3">
         @foreach (var subscriptionDto in subscriptions)
         {
@@ -105,7 +105,7 @@
                                     var periodUnit = price.Frequency.PeriodUnit();
 
                                     <div class="d-flex align-items-center gap-1">
-                                        @if (viewModel.PaymentSettings?.Provider == PaymentProviderType.Stripe)
+                                        @if (subscription.SitePaymentSettings.Provider == PaymentProviderType.Stripe)
                                         {
                                             <a class="btn btn-primary mr-1" href="/account/subscription/@price.Id/checkout">
                                                 Purchase
@@ -117,13 +117,13 @@
                                                 Subscribe
                                             </button>
                                         }
-                                        
+
                                         <span>@price.Currency.ToAmountString(price.Amount)/@periodUnit</span>
-                    
+
                                         @await Html.PartialAsync("Payments/_PaymentSubscriptionModal", new PaymentSubscriptionModalViewModel
                                         {
                                             Action = "/account/subscription/confirm",
-                                            PaymentSettings = viewModel.PaymentSettings,
+                                            PaymentSettings = subscription.SitePaymentSettings,
                                             FormContentFunc =
                                                 @<input type="hidden" name="siteSubscriptionPriceId" value="@price.Id" />,
                                             Id = modalId,
@@ -131,7 +131,7 @@
                                             {
                                                 CurrencyCode = price.Currency.Code,
                                                 ExternalId = price.ExternalId,
-                                                Provider = paymentSettings.Provider,
+                                                Provider = subscription.SitePaymentSettings.Provider,
                                                 SiteSubscriptionPriceId = price.Id
                                             },
                                             Title = subscriptionDto.Subscription.Name
@@ -148,10 +148,25 @@
     </div>
 }
 
-@await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
-{
-    ApiPublicKey = paymentSettings.ApiPublicKey ?? "",
-    CurrencyCode = "",
-    IsSubscription = true,
-    Provider = paymentSettings.Provider ?? default
-}) 
+@{
+    var added = new List<Guid>();
+
+    @foreach (var subscriptionDto in viewModel.Subscriptions)
+    {
+        var subscriptionPaymentSettings = subscriptionDto.Subscription.SitePaymentSettings;
+        if (added.Contains(subscriptionPaymentSettings.Id))
+        {
+            continue;
+        }
+
+        added.Add(subscriptionPaymentSettings.Id);
+
+        @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+        {
+            ApiPublicKey = subscriptionPaymentSettings.ApiPublicKey ?? "",
+            CurrencyCode = "",
+            IsSubscription = true,
+            Provider = subscriptionPaymentSettings.Provider
+        }) 
+    }
+}

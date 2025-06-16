@@ -5,6 +5,7 @@ using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
+using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments;
 using ODK.Services.Subscriptions.ViewModels;
@@ -13,6 +14,7 @@ namespace ODK.Services.Subscriptions;
 
 public class SiteSubscriptionService : ISiteSubscriptionService
 {
+    private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IPaymentService _paymentService;
     private readonly IPlatformProvider _platformProvider;
@@ -22,12 +24,107 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         IUnitOfWork unitOfWork, 
         IPlatformProvider platformProvider,
         IPaymentService paymentService,
-        IMemberEmailService memberEmailService)
+        IMemberEmailService memberEmailService,
+        ILoggingService loggingService)
     { 
+        _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _paymentService = paymentService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<bool> CompleteSiteSubscriptionCheckoutSession(
+        Guid memberId, Guid siteSubscriptionPriceId, string sessionId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (member, siteSubscriptionPrice, paymentCheckoutSession) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(memberId),
+            x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId),
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(memberId, sessionId));
+
+        var siteSubscription = await _unitOfWork.SiteSubscriptionRepository
+            .GetById(siteSubscriptionPrice.SiteSubscriptionId)
+            .Run();
+
+        if (paymentCheckoutSession == null || paymentCheckoutSession.CompletedUtc != null)
+        {
+            return false;
+        }
+
+        var (paymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform));
+
+        if (string.IsNullOrEmpty(siteSubscriptionPrice.ExternalId))
+        {
+            throw new Exception("Error completing checkout session: siteSubscriptionPrice.ExternalId missing");
+        }
+
+        var subscriptionPlan = await _paymentService.GetSubscriptionPlan(
+            paymentSettings, siteSubscriptionPrice.ExternalId);
+        if (subscriptionPlan == null)
+        {
+            throw new Exception("Error completing checkout session: subscriptionPlan not found");
+        }
+
+        var checkoutSession = await _paymentService.GetCheckoutSession(paymentSettings, sessionId);
+        if (checkoutSession?.Complete != true)
+        {
+            return false;
+        }
+
+        memberSubscription ??= new MemberSiteSubscription();
+
+        var now = memberSubscription.ExpiresUtc > DateTime.UtcNow 
+            ? memberSubscription.ExpiresUtc.Value 
+            : DateTime.UtcNow;
+        var months = siteSubscriptionPrice.Frequency == SiteSubscriptionFrequency.Yearly
+            ? 12
+            : 1;
+
+        var expiresUtc = now.AddMonths(months);
+        memberSubscription.ExpiresUtc = expiresUtc;
+        memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
+        memberSubscription.SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId;
+        memberSubscription.PaymentProvider = paymentSettings.Provider;
+
+        if (memberSubscription.Id == default)
+        {
+            memberSubscription.Id = Guid.NewGuid();
+            memberSubscription.MemberId = memberId;            
+            _unitOfWork.MemberSiteSubscriptionRepository.Add(memberSubscription);
+        }
+        else
+        {
+            _unitOfWork.MemberSiteSubscriptionRepository.Update(memberSubscription);
+        }
+
+        paymentCheckoutSession.CompletedUtc = DateTime.UtcNow;
+        _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
+
+        var payment = new Payment
+        {
+            Amount = siteSubscriptionPrice.Amount,
+            ChapterId = null,
+            CurrencyId = siteSubscriptionPrice.CurrencyId,
+            Id = Guid.NewGuid(),
+            MemberId = memberId,
+            PaidUtc = DateTime.UtcNow,
+            Reference = $"Subscription: {siteSubscription.Name}"
+        };
+
+        _unitOfWork.PaymentRepository.Add(payment);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
+        var currency = siteSubscriptionPrice.Currency;
+
+        await _memberEmailService.SendPaymentNotification(payment, currency, siteEmailSettings);
+
+        return true;
     }
 
     public async Task<ServiceResult> ConfirmMemberSiteSubscription(
@@ -86,10 +183,10 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     }
 
     public async Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(Guid? memberId)
-    {
+    {        
         var platform = _platformProvider.GetPlatform();
-        var (paymentSettings, subscriptions, prices, currentMember, memberPaymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
+
+        var (subscriptions, prices, currentMember, memberPaymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
             x => x.SiteSubscriptionRepository.GetAllEnabled(platform),
             x => x.SiteSubscriptionPriceRepository.GetAllEnabled(platform),
             x => memberId != null
@@ -113,7 +210,22 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         var priceDictionary = prices
             .Where(x => currency == null || x.CurrencyId == currency.Id || x.Amount == 0)
             .GroupBy(x => x.SiteSubscriptionId)
-            .ToDictionary(x => x.Key, x => x.ToArray());        
+            .ToDictionary(x => x.Key, x => x.ToArray());
+
+        await _loggingService.LogDebug(
+            $"Getting site subscription view models: " +
+            $"found {subscriptions.Count} total subscriptions, " +
+            $"found {subscriptions.Count(x => x.SitePaymentSettings.Active)} active subscriptions");
+
+        var siteSubscriptionViewModels = subscriptions
+            .Select(x => new SiteSubscriptionViewModel
+            {
+                Currencies = [],
+                Prices = priceDictionary.ContainsKey(x.Id) ? priceDictionary[x.Id] : [],
+                SitePaymentSettings = [],
+                Subscription = x
+            })
+            .ToArray();
 
         return new SiteSubscriptionsViewModel
         {
@@ -121,17 +233,12 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             Currency = currency,
             CurrentMember = currentMember,
             CurrentMemberSubscription = memberSubscription,
-            PaymentSettings = paymentSettings,
-            Subscriptions = subscriptions
-                .Where(x => x.SitePaymentSettings.Active)
-                .Select(x => new SiteSubscriptionViewModel
-                {
-                    Currencies = [],
-                    Prices = priceDictionary.ContainsKey(x.Id) ? priceDictionary[x.Id] : [],
-                    SitePaymentSettings = [],
-                    Subscription = x
-                })
-                .ToArray()
+            PaymentSettings = subscriptions
+                .Select(x => x.SitePaymentSettings)
+                .GroupBy(x => x.Id)
+                .Select(x => x.First())
+                .ToArray(),
+            Subscriptions = siteSubscriptionViewModels
         };
     }
 

@@ -26,23 +26,30 @@ public abstract class AdminPageModel : ChapterPageModel2
 
     protected async Task<AdminServiceRequest> GetAdminServiceRequest()
     {
-        var chapter = Chapter;
-        if (chapter == null)
-        {
-            Chapter = await _requestCache.GetChapterAsync(ChapterName);
-        }
+        await LoadChapter();
 
         return new AdminServiceRequest(Chapter.Id, CurrentMemberId);
     }
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, 
         PageHandlerExecutionDelegate next)
-    {
+    {        
         await base.OnPageHandlerExecutionAsync(context, next);
 
-        Chapter = await _requestCache.GetChapterAsync(ChapterName);
+        await LoadChapter();
         var member = await _requestCache.GetMemberAsync(CurrentMemberId);
         OdkAssertions.Exists(member);
         CurrentMember = member;        
+    }
+
+    protected async Task<Chapter> LoadChapter()
+    {
+        if (Chapter != null)
+        {
+            return Chapter;
+        }
+
+        Chapter = await _requestCache.GetChapterAsync(ChapterName);
+        return Chapter;
     }
 }
