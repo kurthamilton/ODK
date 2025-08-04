@@ -13,15 +13,27 @@
     }
 }
 
-<ul class="nav nav-underline my-3 @Model.Class">
+<ul class="nav nav-underline my-3 @Model.Class" data-odk-tabs>
     @foreach (var menuItem in Model.MenuItems)
     {
         var active = menuItem.Link == activeMenuItem?.Link;
 
+        var isJsTab = menuItem.Link?.StartsWith("#") == true;
+
         <li class="nav-item">
-            <a class="nav-link @(active ? "active" : null)" href="@menuItem.Link">
-                @menuItem.Text
-            </a>
+            @if (isJsTab)
+            {
+                <button class="nav-link @(active ? "active" : null)" type="button"
+                        data-bs-toggle="tab" data-bs-target="@menuItem.Link">
+                    @menuItem.Text
+                </button>
+            }
+            else
+            {
+                <a class="nav-link @(active ? "active" : null)" href="@menuItem.Link">
+                    @menuItem.Text
+                </a>
+            }            
         </li>
     }    
 </ul>

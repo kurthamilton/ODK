@@ -80,7 +80,9 @@ public interface IChapterAdminService
     
     Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(AdminServiceRequest request);
 
-    Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);        
+    Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);
+
+    Task<SuperAdminChapterViewModel> GetSuperAdminChapterViewModel(Guid currentMemberId, Guid chapterId);
 
     Task<ServiceResult> PublishChapter(AdminServiceRequest request);
 
@@ -145,4 +147,7 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterTopics(AdminServiceRequest request,
         IReadOnlyCollection<Guid> topicIds);
+
+    Task<ServiceResult> UpdateSuperAdminChapter(AdminServiceRequest request, 
+        SuperAdminChapterUpdateViewModel viewModel);
 }
