@@ -15,6 +15,16 @@ public class MemberSiteSubscriptionRepository : WriteRepositoryBase<MemberSiteSu
     {
     }
 
+    public IDeferredQueryMultiple<MemberSiteSubscription> GetAllChapterOwnerSubscriptions(PlatformType platform)
+    {
+        var query =
+            from chapter in Set<Chapter>()
+            from subscription in Set()
+                .Where(x => x.MemberId == chapter.OwnerId && x.SiteSubscription.Platform == platform)
+            select subscription;
+        return query.DeferredMultiple();
+    }
+
     public IDeferredQuerySingleOrDefault<MemberSiteSubscription> GetByChapterId(Guid chapterId)
     {
         var query = 

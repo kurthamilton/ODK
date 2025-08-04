@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core;
-using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Services.Caching;
 using ODK.Services.Settings;

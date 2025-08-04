@@ -1,0 +1,17 @@
+﻿@page "/superadmin/groups/{id}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.SuperAdmin.GroupModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Group | SuperAdmin";
+
+    var memberId = User.MemberId();
+    var viewModel = await ChapterAdminService.GetSuperAdminChapterViewModel(memberId, Model.ChapterId);
+}
+
+@await Html.PartialAsync("SuperAdmin/_ChapterContent", viewModel)

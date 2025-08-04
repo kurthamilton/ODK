@@ -14,6 +14,7 @@ using ODK.Data.Core.Deferred;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
+using ODK.Services.Exceptions;
 using ODK.Services.Imaging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
@@ -990,15 +991,75 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId)
     {
-        var chapters = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.ChapterRepository.GetAll());
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapters, subscriptions) = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.ChapterRepository.GetAll(),
+            x => x.MemberSiteSubscriptionRepository.GetAllChapterOwnerSubscriptions(platform));
+
+        var subscriptionDictionary = subscriptions
+            .GroupBy(x => x.MemberId)
+            .ToDictionary(x => x.Key, x => x.ToArray());
+
+        var approved = new List<SuperAdminChaptersRowViewModel>();
+        var pending = new List<SuperAdminChaptersRowViewModel>();
+
+        foreach (var chapter in chapters)
+        {
+            MemberSiteSubscription? chapterSubscription = null;
+            if (chapter.OwnerId != null &&
+                subscriptionDictionary.TryGetValue(chapter.OwnerId.Value, out var memberSubscriptions))
+            {
+                chapterSubscription = memberSubscriptions
+                    .OrderByDescending(x => x.ExpiresUtc ?? DateTime.MaxValue)
+                    .FirstOrDefault();
+            }
+            
+            var rowViewModel = new SuperAdminChaptersRowViewModel
+            {
+                CreatedUtc = chapter.CreatedUtc,
+                Id = chapter.Id,
+                Name = chapter.GetDisplayName(platform),
+                SiteSubscriptionExpiresUtc = chapterSubscription?.ExpiresUtc,
+                SiteSubscriptionName = chapterSubscription?.SiteSubscription.Name
+            };
+
+            if (chapter.Approved())
+            {
+                approved.Add(rowViewModel);
+            }
+            else
+            {
+                pending.Add(rowViewModel);
+            }
+        }
 
         return new SuperAdminChaptersViewModel
         {
-            PendingApproval = chapters
-                .Where(x => !x.Approved())
+            Approved = approved
+                .OrderBy(x => x.Name)
+                .ToArray(),
+            Pending = pending
                 .OrderBy(x => x.CreatedUtc)
                 .ToArray()
+        };
+    }
+
+    public async Task<SuperAdminChapterViewModel> GetSuperAdminChapterViewModel(Guid currentMemberId, Guid chapterId)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var (chapter, subscription, siteSubscriptions) = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
+            x => x.SiteSubscriptionRepository.GetAllEnabled(platform));
+
+        return new SuperAdminChapterViewModel
+        {
+            Chapter = chapter,
+            Platform = platform,
+            SiteSubscriptions = siteSubscriptions,
+            Subscription = subscription
         };
     }
 
@@ -1826,6 +1887,45 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             await _unitOfWork.SaveChangesAsync();
         }
 
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateSuperAdminChapter(
+        AdminServiceRequest request, SuperAdminChapterUpdateViewModel viewModel)
+    {
+        var (chapter, subscription) = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId));
+
+        if (chapter.OwnerId == null)
+        {
+            throw new OdkServiceException($"Error updating group '{chapter.Name}': owner not found");
+        }
+
+        if (viewModel.SiteSubscriptionId == null)
+        {
+            throw new OdkServiceException($"Error updating group '{chapter.Name}': subscription not provided");
+        }
+
+        subscription ??= new MemberSiteSubscription
+        {
+            MemberId = chapter.OwnerId.Value,
+            SiteSubscriptionId = viewModel.SiteSubscriptionId.Value            
+        };
+
+        subscription.ExpiresUtc = viewModel.SubscriptionExpiresUtc;
+
+        if (subscription.Id == default)
+        {
+            subscription.Id = Guid.NewGuid();
+            _unitOfWork.MemberSiteSubscriptionRepository.Add(subscription);
+        }
+        else
+        {
+            _unitOfWork.MemberSiteSubscriptionRepository.Update(subscription);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
         return ServiceResult.Successful();
     }
 

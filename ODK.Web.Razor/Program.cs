@@ -51,6 +51,7 @@ builder.Services.AddWebOptimizer(pipeline =>
         "js/odk.forms.js",
         "js/odk.notifications.js",
         "js/odk.selects.js",
+        "js/odk.tabs.js",
         "js/odk.topics.js",
         "js/odk.html-editor.js");
     pipeline.AddJavaScriptBundle(
