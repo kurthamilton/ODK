@@ -6,6 +6,8 @@ namespace ODK.Web.Common.Routes;
 
 public class GroupRoutes
 {
+    public string About(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/about");
+
     public string Contact(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/contact");
 
     public string Conversation(PlatformType platform, Chapter chapter, Guid conversationId) 

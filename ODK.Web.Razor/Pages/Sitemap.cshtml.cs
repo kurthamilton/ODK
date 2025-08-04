@@ -54,7 +54,7 @@ public class SitemapModel : PageModel
 
             nodes.Add(new SitemapNodeModel
             {
-                Url = GetUrl(OdkRoutes.Groups.Join(platform, chapter))
+                Url = GetUrl(OdkRoutes.Account.Join(chapter))
             });
 
             nodes.Add(new SitemapNodeModel
@@ -69,7 +69,7 @@ public class SitemapModel : PageModel
 
             nodes.Add(new SitemapNodeModel
             {
-                Url = GetUrl(OdkRoutes.Groups.Questions(platform, chapter))
+                Url = GetUrl(OdkRoutes.Groups.About(platform, chapter))
             });
         }
 
