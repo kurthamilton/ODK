@@ -8,6 +8,8 @@ public static class OdkAssertions
 {
     public static T Exists<T>([NotNull] T? value) => value ?? throw new OdkNotFoundException();
 
+    public static T Exists<T>([NotNull] T? value, string message) => value ?? throw new OdkNotFoundException(message);
+
     public static T BelongsToChapter<T>([NotNull] T? value, Guid chapterId) where T : IChapterEntity
         => MeetsCondition(value, x => x.ChapterId == chapterId);    
 

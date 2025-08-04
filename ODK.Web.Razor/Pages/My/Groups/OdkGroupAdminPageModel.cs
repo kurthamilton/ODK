@@ -18,7 +18,7 @@ public abstract class OdkGroupAdminPageModel : OdkPageModel
         PageHandlerExecutionDelegate next)
     {
         var chapterId = ChapterPageContext.GetChapterId(HttpContext);
-        OdkAssertions.Exists(chapterId);
+        OdkAssertions.Exists(chapterId, "ChapterId missing");
 
         ChapterId = chapterId.Value;
 

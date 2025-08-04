@@ -49,7 +49,7 @@ public class ChapterService : IChapterService
     public async Task<Chapter> GetChapterBySlug(string slug)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        return OdkAssertions.Exists(chapter);
+        return OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
     }
 
     public async Task<VersionedServiceResult<ChapterImage>> GetChapterImage(long? currentVersion, Guid chapterId)

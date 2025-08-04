@@ -20,10 +20,10 @@ public static class AppStartup
             options.AutomaticAuthentication = false;
         });
 
-        AppSettings settings = GetAppSettings(config);
-        services.ConfigureDependencies(config, settings);
+        var appSettings = GetAppSettings(config);
+        services.ConfigureDependencies(appSettings);
 
-        return settings;
+        return appSettings;
     }
 
     private static AppSettings GetAppSettings(IConfiguration config)

@@ -13,7 +13,7 @@ public abstract class OdkGroupPageModel : OdkPageModel
         PageHandlerExecutionDelegate next)
     {
         var slug = ChapterPageContext.GetChapterSlug(HttpContext);
-        OdkAssertions.Exists(slug);
+        OdkAssertions.Exists(slug, "Chapter slug missing");
 
         Slug = slug;
 

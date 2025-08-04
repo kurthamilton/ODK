@@ -63,6 +63,8 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
     public async Task LogError(Exception exception, HttpRequest request)
     {
+        _logger.Error(exception, exception.Message);
+
         // Create new unit of work to avoid re-instigating any previous context errors
         var unitOfWork = _unitOfWorkFactory.Create();
 

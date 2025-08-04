@@ -8,6 +8,7 @@ using Serilog;
 using Serilog.Context;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
+using Serilog.Filters;
 using Serilog.Sinks.MSSqlServer;
 
 namespace ODK.Web.Common.Config;
@@ -32,19 +33,20 @@ public static class LoggingConfig
 
     public static void Configure(WebApplicationBuilder builder, AppSettings appSettings)
     {
-        string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        // required in order for app.UseSerilogRequestLogging to work,
+        // which uses more condensed request logging instead of asp.net's "spammy" version
+        builder.Services.AddSerilog();
 
-        IConfigurationRoot builtConfig = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .AddJsonFile($"appsettings.{environment}.json")
-            .Build();
-
-        var logFileDirectory = builtConfig["Logging:Path"] ?? "";
-        var connectionString = builtConfig["ConnectionStrings:Default"] ?? "";
+        var logFileDirectory = appSettings.Logging.Path;
+        var connectionString = appSettings.ConnectionStrings.Default;
 
         var outputTemplate = $"t:{{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}}|ip:{{{IP}}}|u:{{{Name}}}|m:{{Message:lj}}|ex:{{Exception}}{{NewLine}}";
+
+        ///        
+
         var loggerConfiguration = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+            .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
             .Enrich.FromLogContext()
             .WriteTo.Logger(config => config
                 .Filter
@@ -63,7 +65,11 @@ public static class LoggingConfig
         {
             loggerConfiguration = loggerConfiguration
                 .WriteTo
-                .BetterStack(sourceToken: appSettings.BetterStack.SourceToken);
+                .BetterStack(sourceToken: appSettings.BetterStack.SourceToken)
+                .Filter
+                    .ByExcluding(Matching.WithProperty<string>("RequestPath", v => v.EndsWith(".css")))
+                .Filter
+                    .ByExcluding(Matching.WithProperty<string>("RequestPath", v => v.EndsWith(".js")));
         }
 
         Logger = loggerConfiguration.CreateLogger();

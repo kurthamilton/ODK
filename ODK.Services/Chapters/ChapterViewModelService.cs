@@ -201,7 +201,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -252,7 +252,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -317,7 +317,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -380,7 +380,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -445,7 +445,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember, 
@@ -552,7 +552,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (currentMember, adminMembers, ownerSubscription, hasQuestions, properties, propertyOptions, texts, membershipSettings) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
@@ -588,7 +588,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember, 
@@ -627,7 +627,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (
             currentMember,
@@ -663,7 +663,7 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         var (currentMember, adminMembers, ownerSubscription, questions) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
@@ -862,7 +862,7 @@ public class ChapterViewModelService : IChapterViewModelService
     private async Task<Chapter> GetChapter(string name)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(name).Run();
-        return OdkAssertions.Exists(chapter);        
+        return OdkAssertions.Exists(chapter, $"Chapter not found: '{name}'");
     }
 
     private IReadOnlyCollection<GroupPageListEventViewModel> ToGroupPageListEvents(

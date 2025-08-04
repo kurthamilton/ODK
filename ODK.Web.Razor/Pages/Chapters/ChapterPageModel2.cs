@@ -10,7 +10,7 @@ public abstract class ChapterPageModel2 : OdkPageModel
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
         var chapterName = ChapterPageContext.GetChapterName(HttpContext);
-        OdkAssertions.Exists(chapterName);
+        OdkAssertions.Exists(chapterName, $"Chapter name missing");
 
         ChapterName = chapterName;
 

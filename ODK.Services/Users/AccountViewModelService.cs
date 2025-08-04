@@ -43,7 +43,7 @@ public class AccountViewModelService : IAccountViewModelService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterRepository.GetByName(chapterName));
 
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
         OdkAssertions.MemberOf(member, chapter.Id);
 
         return new ChapterAccountViewModel
@@ -56,7 +56,7 @@ public class AccountViewModelService : IAccountViewModelService
     public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
         OdkAssertions.MeetsCondition(chapter, x => x.IsOpenForRegistration());
 
         var (
@@ -84,7 +84,7 @@ public class AccountViewModelService : IAccountViewModelService
     public async Task<ChapterPicturePageViewModel> GetChapterPicturePage(Guid currentMemberId, string chapterName)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
         var (
                 member,
@@ -109,7 +109,7 @@ public class AccountViewModelService : IAccountViewModelService
     public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(Guid currentMemberId, string chapterName)
     {        
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
         var member = await _unitOfWork.MemberRepository.GetById(currentMemberId).Run();
 
@@ -147,7 +147,7 @@ public class AccountViewModelService : IAccountViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
         var (member, payments) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),

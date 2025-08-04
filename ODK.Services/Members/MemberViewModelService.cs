@@ -22,7 +22,7 @@ public class MemberViewModelService : IMemberViewModelService
     public async Task<MemberPageViewModel> GetGroupMemberPage(Guid currentMemberId, string slug, Guid memberId)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         return await GetMemberPage(currentMemberId, chapter, memberId);
     }
@@ -30,7 +30,7 @@ public class MemberViewModelService : IMemberViewModelService
     public async Task<MembersPageViewModel> GetGroupMembersPage(Guid currentMemberId, string slug)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         return await GetMembersPage(currentMemberId, chapter);
     }
@@ -99,7 +99,7 @@ public class MemberViewModelService : IMemberViewModelService
     public async Task<MemberPageViewModel> GetMemberPage(Guid currentMemberId, string chapterName, Guid memberId)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
         return await GetMemberPage(currentMemberId, chapter, memberId);
     }
@@ -107,7 +107,7 @@ public class MemberViewModelService : IMemberViewModelService
     public async Task<MembersPageViewModel> GetMembersPage(Guid currentMemberId, string chapterName)
     {        
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
         return await GetMembersPage(currentMemberId, chapter);
     }

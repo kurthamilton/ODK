@@ -34,7 +34,7 @@ public class EventViewModelService : IEventViewModelService
         Guid eventId)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
         return await GetEventPageViewModel(currentMemberId, chapter, eventId);
     }
@@ -44,7 +44,7 @@ public class EventViewModelService : IEventViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
         var currentTime = chapter.CurrentTime();
         var afterUtc = currentTime.StartOfDay();
@@ -137,7 +137,7 @@ public class EventViewModelService : IEventViewModelService
     public async Task<EventPageViewModel> GetGroupEventPageViewModel(Guid? currentMemberId, string slug, Guid eventId)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter);
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
         return await GetEventPageViewModel(currentMemberId, chapter, eventId);
     }

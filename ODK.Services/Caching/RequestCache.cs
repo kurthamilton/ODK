@@ -38,7 +38,7 @@ public class RequestCache : IRequestCache
     {
         var chapters = await GetChaptersAsync();
         var chapter = chapters.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
-        return OdkAssertions.Exists(chapter);
+        return OdkAssertions.Exists(chapter, $"Chapter not found: '{name}'");
     }
 
     public async Task<IReadOnlyCollection<Chapter>> GetChaptersAsync()

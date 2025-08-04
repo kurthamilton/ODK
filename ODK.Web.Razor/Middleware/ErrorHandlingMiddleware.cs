@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http.Features;
 using ODK.Core.Exceptions;
 using ODK.Data.Core;
 using ODK.Services.Caching;
-using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using HttpRequest = ODK.Services.Logging.HttpRequest;
 
@@ -33,30 +32,28 @@ public class ErrorHandlingMiddleware
 
             if (context.Response.StatusCode == 404)
             {
-                throw new OdkNotFoundException();
+                throw new OdkNotFoundException($"Path not found: {context.Request.Path}");
             }
         }
         catch (Exception ex)
         {
             await LogError(context, ex, loggingService);
-
-            throw;
-
+            await HandleAsync(statusCodeContext.HttpContext, requestCache, unitOfWork);
+            return;
+            
             if (context.Response.HasStarted)
             {
                 throw;
             }
             else
-            {
-                await HandleAsync(statusCodeContext.HttpContext, requestCache, unitOfWork);
-
-                statusCodeContext.HttpContext.Response.StatusCode = ex switch
-                {
-                    OdkNotAuthenticatedException => 401,
-                    OdkNotAuthorizedException => 403,
-                    OdkNotFoundException => 404,
-                    _ => 500
-                };
+            {                
+                // statusCodeContext.HttpContext.Response.StatusCode = ex switch
+                // {
+                //     OdkNotAuthenticatedException => 401,
+                //     OdkNotAuthorizedException => 403,
+                //     OdkNotFoundException => 404,
+                //     _ => 500
+                // };
             }            
         }                
     }
@@ -133,13 +130,8 @@ public class ErrorHandlingMiddleware
 
     private async Task LogError(HttpContext httpContext, Exception ex, ILoggingService loggingService)
     {
-        if (ex is OdkNotFoundException)
-        {
-            return;
-        }
-
         var headers = httpContext.Request.Headers
-                .ToDictionary(x => x.Key, x => x.Value.ToString());
+            .ToDictionary(x => x.Key, x => x.Value.ToString());
 
         var form = new Dictionary<string, string>();
 

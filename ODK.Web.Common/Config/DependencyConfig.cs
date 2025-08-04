@@ -46,8 +46,7 @@ namespace ODK.Web.Common.Config;
 
 public static class DependencyConfig
 {
-    public static void ConfigureDependencies(this IServiceCollection services, IConfiguration configuration,
-        AppSettings appSettings)
+    public static void ConfigureDependencies(this IServiceCollection services, AppSettings appSettings)
     {
         ConfigureApi(services);
         ConfigureAuthentication(services, appSettings);
@@ -55,7 +54,7 @@ public static class DependencyConfig
         ConfigurePayments(services, appSettings);
         ConfigureServiceSettings(services, appSettings);
         ConfigureServices(services, appSettings);
-        ConfigureData(services, configuration);
+        ConfigureData(services, appSettings);
 
         services.AddSingleton(appSettings);
     }
@@ -83,9 +82,9 @@ public static class DependencyConfig
         services.AddScoped<IUrlProvider, UrlProvider>();
     }
 
-    private static void ConfigureData(IServiceCollection services, IConfiguration configuration)
+    private static void ConfigureData(IServiceCollection services, AppSettings appSettings)
     {
-        var connectionString = configuration.GetConnectionString("Default") ?? "";
+        var connectionString = appSettings.ConnectionStrings.Default;
         services.AddScoped<OdkContext>();
         services.AddSingleton(new OdkContextSettings(connectionString));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
