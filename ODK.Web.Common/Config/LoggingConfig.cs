@@ -2,7 +2,6 @@
 using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using ODK.Web.Common.Config.Settings;
 using Serilog;
 using Serilog.Context;
@@ -47,6 +46,8 @@ public static class LoggingConfig
         var loggerConfiguration = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
+            .Enrich.WithClientIp()
+            .Enrich.WithRequestHeader("User-Agent", "UserAgent")
             .Enrich.FromLogContext()
             .WriteTo.Logger(config => config
                 .Filter
