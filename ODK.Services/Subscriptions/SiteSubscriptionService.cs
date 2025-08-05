@@ -212,7 +212,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             .GroupBy(x => x.SiteSubscriptionId)
             .ToDictionary(x => x.Key, x => x.ToArray());
 
-        await _loggingService.LogDebug(
+        await _loggingService.Info(
             $"Getting site subscription view models: " +
             $"found {subscriptions.Count} total subscriptions, " +
             $"found {subscriptions.Count(x => x.SitePaymentSettings.Active)} active subscriptions");

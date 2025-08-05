@@ -199,15 +199,15 @@ public class MailProvider : IMailProvider
     {
         if (message.To.Count == 0)
         {
-            await _loggingService.LogDebug("Not sending email, no recipients set");
+            await _loggingService.Info("Not sending email, no recipients set");
             return ServiceResult.Failure("No recipients set");
         }
 
-        await _loggingService.LogDebug($"Sending email to {string.Join(", ", message.To)}");
+        await _loggingService.Info($"Sending email to {string.Join(", ", message.To)}");
 
         if (!string.IsNullOrEmpty(_settings.DebugEmailAddress))
         {
-            await _loggingService.LogDebug($"Sending to debug email address {_settings.DebugEmailAddress}");
+            await _loggingService.Info($"Sending to debug email address {_settings.DebugEmailAddress}");
             message.To.Clear();
             message.Cc.Clear();
             message.Bcc.Clear();
@@ -239,12 +239,12 @@ public class MailProvider : IMailProvider
 
             await _unitOfWork.SaveChangesAsync();
 
-            await _loggingService.LogDebug($"Email sent to {string.Join(", ", message.To)}");
+            await _loggingService.Info($"Email sent to {string.Join(", ", message.To)}");
             return ServiceResult.Successful();
         }
         catch (Exception ex)
         {
-            await _loggingService.LogError(ex, new Dictionary<string, string>
+            await _loggingService.Error(ex, new Dictionary<string, string>
             {
                 { "MAIL.TO", string.Join(", ", message.To) },
                 { "MAIL.HTMLBODY", message.HtmlBody },

@@ -24,8 +24,6 @@ public class ErrorHandlingMiddleware
         ILoggingService loggingService,
         IUnitOfWork unitOfWork)
     {
-        var statusCodeContext = new StatusCodeContext(context, new StatusCodePagesOptions(), _next);
-
         try
         {
             await _next(context);
@@ -36,9 +34,9 @@ public class ErrorHandlingMiddleware
             }
         }
         catch (Exception ex)
-        {
+        {            
             await LogError(context, ex, loggingService);
-            await HandleAsync(statusCodeContext.HttpContext, requestCache, unitOfWork);
+            await HandleAsync(context, requestCache, unitOfWork);
             return;
             
             if (context.Response.HasStarted)
@@ -65,7 +63,6 @@ public class ErrorHandlingMiddleware
 
         var originalMethod = request.Method;
         var originalPath = request.Path;
-        var statusCode = response.StatusCode;
 
         var path = await GetErrorPath(httpContext, requestCache, unitOfWork);
 
@@ -154,7 +151,7 @@ public class ErrorHandlingMiddleware
 
         try
         {
-            await loggingService.LogError(ex, request);
+            await loggingService.Error(ex, request);
         }
         catch
         {

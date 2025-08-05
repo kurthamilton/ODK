@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}"
+﻿@page "/{chapterName:regex(^[A-Za-z-]+$)}"
 @using ODK.Core.Platforms
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Extensions

@@ -1,9 +1,21 @@
-﻿@page
-@model ErrorModel
+﻿@page "/Error"
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Extensions
+@using System.Net
+@model ODK.Web.Razor.Pages.ErrorModel
 @{
-    Layout = "_HomeLayout";
-    ViewData["Title"] = "Error";
+    Layout = "Shared/_HomeLayout";
+    Model.Title = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Breadcrumbs = new[]
+    {
+        new MenuItem { Link = "/", Text = "Home" },
+        new MenuItem { Text = "An error has occurred" }
+    },
+    Content = await Html.PartialAsync("Errors/_ErrorPage", HttpStatusCode.InternalServerError),
+    Title = "An error has occurred"
+})

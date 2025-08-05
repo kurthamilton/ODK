@@ -35,40 +35,14 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         throw new NotImplementedException();
     }
 
-    public async Task<ErrorDto> GetErrorDto(Guid currentMemberId, Guid errorId)
-    {
-        var (error, properties) = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.ErrorRepository.GetById(errorId),
-            x => x.ErrorPropertyRepository.GetByErrorId(errorId));
-
-        return new ErrorDto
-        {
-            Error = error,
-            Properties = properties
-        };
-    }
-
-    public async Task<IReadOnlyCollection<Error>> GetErrors(Guid currentMemberId, int page, int pageSize)
-    {
-        return await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.ErrorRepository.GetErrors(page, pageSize));
-    }
-
-    public Task LogDebug(string message)
-    {
-        _logger.Information(message);
-
-        return Task.CompletedTask;
-    }
-
-    public async Task LogError(Exception exception, HttpRequest request)
+    public async Task Error(Exception exception, HttpRequest request)
     {
         _logger.Error(exception, exception.Message);
 
         // Create new unit of work to avoid re-instigating any previous context errors
         var unitOfWork = _unitOfWorkFactory.Create();
 
-        var error = Error.FromException(exception);
+        var error = Core.Logging.Error.FromException(exception);
         unitOfWork.ErrorRepository.Add(error);
 
         var properties = new List<ErrorProperty>
@@ -136,22 +110,22 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
                 Name = $"EXCEPTION.INNEREXCEPTION[{innerExceptionCount}].MESSAGE",
                 Value = innerException.Message
             });
-            
+
             innerException = innerException.InnerException;
             innerExceptionCount++;
         }
-        
+
         unitOfWork.ErrorPropertyRepository.AddMany(properties);
 
         await unitOfWork.SaveChangesAsync();
     }
 
-    public async Task LogError(Exception exception, IDictionary<string, string> data)
+    public async Task Error(Exception exception, IDictionary<string, string> data)
     {
         // Create new unit of work to avoid re-instigating any previous context errors
         var unitOfWork = _unitOfWorkFactory.Create();
 
-        var error = Error.FromException(exception);
+        var error = Core.Logging.Error.FromException(exception);
         unitOfWork.ErrorRepository.Add(error);
 
         var properties = data
@@ -167,4 +141,30 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
         await unitOfWork.SaveChangesAsync();
     }
+
+    public async Task<ErrorDto> GetErrorDto(Guid currentMemberId, Guid errorId)
+    {
+        var (error, properties) = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.ErrorRepository.GetById(errorId),
+            x => x.ErrorPropertyRepository.GetByErrorId(errorId));
+
+        return new ErrorDto
+        {
+            Error = error,
+            Properties = properties
+        };
+    }
+
+    public async Task<IReadOnlyCollection<Error>> GetErrors(Guid currentMemberId, int page, int pageSize)
+    {
+        return await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.ErrorRepository.GetErrors(page, pageSize));
+    }
+
+    public Task Info(string message)
+    {
+        _logger.Information(message);
+
+        return Task.CompletedTask;
+    }    
 }

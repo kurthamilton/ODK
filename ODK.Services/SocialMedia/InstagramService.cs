@@ -144,7 +144,7 @@ public class InstagramService : IInstagramService
             json = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                await _loggingService.LogError(new Exception($"Error fetching from Instagram: {json}"), new Dictionary<string, string>());
+                await _loggingService.Error(new Exception($"Error fetching from Instagram: {json}"), new Dictionary<string, string>());
                 return;
             }
         }

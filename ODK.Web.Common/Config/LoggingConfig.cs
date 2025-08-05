@@ -41,13 +41,12 @@ public static class LoggingConfig
 
         var outputTemplate = $"t:{{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}}|ip:{{{IP}}}|u:{{{Name}}}|m:{{Message:lj}}|ex:{{Exception}}{{NewLine}}";
 
-        ///        
-
         var loggerConfiguration = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
             .Enrich.WithClientIp()
             .Enrich.WithRequestHeader("User-Agent", "UserAgent")
+            .Enrich.WithProperty("ContentRootPath", builder.Environment.ContentRootPath)
             .Enrich.FromLogContext()
             .WriteTo.Logger(config => config
                 .Filter

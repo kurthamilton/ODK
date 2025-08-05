@@ -8,13 +8,13 @@ public interface ILoggingService
 
     Task DeleteAllErrors(Guid currentMemberId, Guid id);
 
+    Task Error(Exception exception, HttpRequest request);
+
+    Task Error(Exception exception, IDictionary<string, string> data);
+
     Task<ErrorDto> GetErrorDto(Guid currentMemberId, Guid errorId);
 
     Task<IReadOnlyCollection<Error>> GetErrors(Guid currentMemberId, int page, int pageSize);
 
-    Task LogDebug(string message);
-
-    Task LogError(Exception exception, HttpRequest request);
-
-    Task LogError(Exception exception, IDictionary<string, string> data);
+    Task Info(string message);    
 }

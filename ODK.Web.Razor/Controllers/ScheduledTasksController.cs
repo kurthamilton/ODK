@@ -39,7 +39,7 @@ public class ScheduledTasksController : Controller
     [HttpPost("chapters/subscriptions/reminders")]
     public async Task SyncChapterSubscriptionReminders()
     {
-        await _loggingService.LogDebug("Scheduled tasks: sending chapter subscription reminders");
+        await _loggingService.Info("Scheduled tasks: sending chapter subscription reminders");
 
         AssertAuthorised();
 
@@ -56,7 +56,7 @@ public class ScheduledTasksController : Controller
     [HttpPost("emails")]
     public async Task SendScheduledEmails()
     {
-        await _loggingService.LogDebug("Scheduled tasks: sending scheduled emails");
+        await _loggingService.Info("Scheduled tasks: sending scheduled emails");
 
         AssertAuthorised();
 
@@ -73,7 +73,7 @@ public class ScheduledTasksController : Controller
     [HttpPost("instagram")]
     public async Task ScrapeInstagramImages()
     {
-        await _loggingService.LogDebug("Scheduled tasks: scraping Instagram images");
+        await _loggingService.Info("Scheduled tasks: scraping Instagram images");
 
         AssertAuthorised();
 
@@ -90,7 +90,7 @@ public class ScheduledTasksController : Controller
     [HttpPost("subscriptions/expired/sync")]
     public async Task SyncExpiredSubscriptions()
     {
-        await _loggingService.LogDebug("Scheduled tasks: syncing expired subscriptions");
+        await _loggingService.Info("Scheduled tasks: syncing expired subscriptions");
 
         AssertAuthorised();
 
