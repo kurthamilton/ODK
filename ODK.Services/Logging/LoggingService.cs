@@ -164,7 +164,12 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
     public Task Info(string message)
     {
         _logger.Information(message);
-
         return Task.CompletedTask;
-    }    
+    }
+
+    public Task Warn(string message)
+    {
+        _logger.Warning(message);
+        return Task.CompletedTask;
+    }
 }

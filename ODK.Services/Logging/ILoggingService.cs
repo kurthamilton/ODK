@@ -16,5 +16,7 @@ public interface ILoggingService
 
     Task<IReadOnlyCollection<Error>> GetErrors(Guid currentMemberId, int page, int pageSize);
 
-    Task Info(string message);    
+    Task Info(string message);
+
+    Task Warn(string message);
 }

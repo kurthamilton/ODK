@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.Features;
 using ODK.Core.Exceptions;
 using ODK.Data.Core;
 using ODK.Services.Caching;
+using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using HttpRequest = ODK.Services.Logging.HttpRequest;
 
@@ -36,23 +37,16 @@ public class ErrorHandlingMiddleware
         catch (Exception ex)
         {            
             await LogError(context, ex, loggingService);
-            await HandleAsync(context, requestCache, unitOfWork);
-            return;
-            
-            if (context.Response.HasStarted)
+
+            context.Response.StatusCode = ex switch
             {
-                throw;
-            }
-            else
-            {                
-                // statusCodeContext.HttpContext.Response.StatusCode = ex switch
-                // {
-                //     OdkNotAuthenticatedException => 401,
-                //     OdkNotAuthorizedException => 403,
-                //     OdkNotFoundException => 404,
-                //     _ => 500
-                // };
-            }            
+                OdkNotAuthenticatedException => 401,
+                OdkNotAuthorizedException => 403,
+                OdkNotFoundException => 404,
+                _ => 500
+            };
+
+            await HandleAsync(context, requestCache, unitOfWork);            
         }                
     }
 

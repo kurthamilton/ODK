@@ -24,6 +24,8 @@ public class AppSettings
 
     public required PlatformSettings[] Platforms { get; init; }
 
+    public required RateLimitingSettings RateLimiting { get; init; }
+
     public required RecaptchaSettings Recaptcha { get; init; }
 
     public required ScheduledTasksSettings ScheduledTasks { get; init; }
