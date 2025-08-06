@@ -60,10 +60,17 @@ public abstract class OdkControllerBase : Controller
         return map(result.Value);
     }
 
-    protected IActionResult RedirectToReferrer()
+    protected IActionResult RedirectToReferrer(string? fallback = null)
     {
-        string referrer = Request.Headers["Referer"].ToString();
-        return Redirect(referrer);
+        var url = Request.Headers["Referer"].ToString();
+        if (string.IsNullOrEmpty(url))
+        {
+            url = !string.IsNullOrEmpty(fallback) 
+                ? fallback
+                : Request.Path;
+        }
+
+        return Redirect(url);
     }
 
     private void AddVersionHeader(long version)

@@ -352,7 +352,9 @@ public class AccountController : OdkControllerBase
             "An email containing password reset instructions has been sent to that email address " +
             "if it is associated with an account";
         AddFeedback(result, successMessage);
-        return RedirectToReferrer();
+
+        var fallback = OdkRoutes.Account.Login(null);
+        return RedirectToReferrer(fallback);
     }
 
     [AllowAnonymous]
