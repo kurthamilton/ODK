@@ -44,6 +44,11 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions
+        {
+            Authorization = [new HangfireAuthorizationFilter()]
+        });
+
         app.MapRazorPages();
         app.MapControllers();
 
