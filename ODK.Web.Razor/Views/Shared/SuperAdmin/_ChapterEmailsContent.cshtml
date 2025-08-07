@@ -1,0 +1,42 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Services
+@using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Extensions
+@model Chapter
+@inject IChapterAdminService ChapterAdminService
+@{
+    var memberId = User.MemberId();
+    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
+    var viewModel = await ChapterAdminService.GetSuperAdminChapterEmailsViewModel(serviceRequest);
+}
+
+<h2 class="d-none d-md-block">Email Providers</h2>
+<p>
+    <a class="btn btn-primary" href="/@Model.Name/admin/superadmin/emailproviders/create">
+        Create
+    </a>
+</p>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Provider</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var emailProvider in viewModel.EmailProviders.OrderBy(x => x.Order))
+            {
+                <tr>
+                    <td>
+                        <a href="/@Model.Name/admin/superadmin/emailproviders/@emailProvider.Id">@emailProvider.SmtpServer</a>
+                    </td>
+                    <td>                        
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

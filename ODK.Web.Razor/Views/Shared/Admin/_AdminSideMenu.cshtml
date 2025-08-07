@@ -56,6 +56,7 @@
     var superadminLinks = platform == PlatformType.DrunkenKnitwits && User.IsInRole(OdkRoles.SuperAdmin)
         ? new[]
         {
+            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Emails", Text = "Emails" },
             new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Members", Text = "Members" },
             new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Payments", Text = "Payments" },
             new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Reconciliations", Text = "Reconciliations" },

@@ -1,0 +1,25 @@
+﻿@page "/{chapterName}/admin/superadmin/emailproviders/{id:guid}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Common.Components
+@model EmailProviderModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Edit email provider | SuperAdmin";
+
+    var provider = await ChapterAdminService.GetChapterEmailProvider(Model.AdminServiceRequest, Model.ChapterEmailProviderId);
+}
+
+@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+{
+    Breadcrumbs = new []
+    {
+        new MenuItem { Link = $"/{Model.ChapterName}/admin/superadmin/emails", Text = "Emails" },
+        new MenuItem { Text = provider.SmtpServer ?? "SMTP" }
+    }
+})
+
+@await Html.PartialAsync("SuperAdmin/_EmailProviderContent", provider)

@@ -1,30 +1,28 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core;
-using ODK.Core.Emails;
+using ODK.Services;
 using ODK.Services.Caching;
+using ODK.Services.Chapters;
 using ODK.Services.Settings;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
 
-namespace ODK.Web.Razor.Pages.SuperAdmin;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.SuperAdmin;
 
-public class EmailProviderModel : SuperAdminPageModel
+public class EmailProviderModel : ChapterSuperAdminPageModel
 {
-    private readonly ISettingsService _settingsService;
+    private readonly IChapterAdminService _chapterAdminService;
 
-    public EmailProviderModel(IRequestCache requestCache, ISettingsService settingsService)
+    public EmailProviderModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
-        _settingsService = settingsService;
+        _chapterAdminService = chapterAdminService;
     }
 
-    public EmailProvider Provider { get; private set; } = null!;
+    public Guid ChapterEmailProviderId { get; private set; }
 
-    public async Task<IActionResult> OnGetAsync(Guid id)
+    public IActionResult OnGet(Guid id)
     {
-        Provider = await _settingsService.GetEmailProvider(CurrentMemberId, id);
-        OdkAssertions.Exists(Provider);
-
+        ChapterEmailProviderId = id;
         return Page();
     }
 
@@ -32,10 +30,11 @@ public class EmailProviderModel : SuperAdminPageModel
     {
         if (!ModelState.IsValid)
         {
-            return await OnGetAsync(id);
+            return OnGet(id);
         }
 
-        var result = await _settingsService.UpdateEmailProvider(CurrentMemberId, id, new UpdateEmailProvider
+        var serviceRequest = await GetAdminServiceRequest();
+        var result = await _chapterAdminService.UpdateChapterEmailProvider(serviceRequest, id, new UpdateEmailProvider
         {
             BatchSize = viewModel.BatchSize,
             DailyLimit = viewModel.DailyLimit ?? 0,
@@ -48,10 +47,10 @@ public class EmailProviderModel : SuperAdminPageModel
         if (!result.Success)
         {
             AddFeedback(new FeedbackViewModel(result));
-            return await OnGetAsync(id);
+            return OnGet(id);
         }
 
         AddFeedback(new FeedbackViewModel("Email provider updated", FeedbackType.Success));
-        return Redirect("/superadmin/emails");
+        return Redirect($"/{ChapterName}/admin/superadmin/emails");
     }
 }

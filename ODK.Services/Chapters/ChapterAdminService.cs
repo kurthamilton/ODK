@@ -2,6 +2,7 @@
 using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.DataTypes;
+using ODK.Core.Emails;
 using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
@@ -19,6 +20,7 @@ using ODK.Services.Imaging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Topics;
 
@@ -95,6 +97,35 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
 
         _unitOfWork.ChapterAdminMemberRepository.Add(adminMember);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> AddChapterEmailProvider(AdminServiceRequest request, UpdateEmailProvider model)
+    {
+        var existing = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterEmailProviderRepository.GetByChapterId(request.ChapterId));
+
+        var provider = new ChapterEmailProvider
+        {
+            BatchSize = model.BatchSize,
+            ChapterId = request.ChapterId,
+            DailyLimit = model.DailyLimit,
+            Order = existing.Count + 1,
+            SmtpLogin = model.SmtpLogin,
+            SmtpPassword = model.SmtpPassword,
+            SmtpPort = model.SmtpPort,
+            SmtpServer = model.SmtpServer
+        };
+
+        var isValid = provider.IsValid();
+        if (!isValid)
+        {
+            return ServiceResult.Failure("Some required fields are missing");
+        }
+
+        _unitOfWork.ChapterEmailProviderRepository.Add(provider);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -989,6 +1020,29 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         };
     }
 
+    public async Task<ChapterEmailProvider> GetChapterEmailProvider(AdminServiceRequest request, Guid emailProviderId)
+    {
+        var provider = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterEmailProviderRepository.GetById(emailProviderId));
+
+        OdkAssertions.BelongsToChapter(provider, request.ChapterId);
+
+        return provider;
+    }
+
+    public async Task<SuperAdminChapterEmailsViewModel> GetSuperAdminChapterEmailsViewModel(AdminServiceRequest request)
+    {
+        var platform = _platformProvider.GetPlatform();
+
+        var emailProviders = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterEmailProviderRepository.GetByChapterId(request.ChapterId));
+
+        return new SuperAdminChapterEmailsViewModel
+        {
+            EmailProviders = emailProviders
+        };
+    }
+
     public async Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId)
     {
         var platform = _platformProvider.GetPlatform();
@@ -1279,6 +1333,32 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         existing.SendNewMemberEmails = model.SendNewMemberEmails;
 
         _unitOfWork.ChapterAdminMemberRepository.Update(existing);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> UpdateChapterEmailProvider(AdminServiceRequest request, Guid emailProviderId, UpdateEmailProvider model)
+    {
+        var provider = await GetSuperAdminRestrictedContent(request, 
+            x => x.ChapterEmailProviderRepository.GetById(emailProviderId));
+
+        OdkAssertions.BelongsToChapter(provider, request.ChapterId);
+
+        provider.BatchSize = model.BatchSize;
+        provider.DailyLimit = model.DailyLimit;
+        provider.SmtpLogin = model.SmtpLogin;
+        provider.SmtpPassword = model.SmtpPassword;
+        provider.SmtpPort = model.SmtpPort;
+        provider.SmtpServer = model.SmtpServer;
+
+        var isValid = provider.IsValid();
+        if (!isValid)
+        {
+            return ServiceResult.Failure("Some required fields are missing");
+        }
+
+        _unitOfWork.ChapterEmailProviderRepository.Update(provider);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();

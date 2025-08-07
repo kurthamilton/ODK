@@ -16,5 +16,19 @@ public class EmailProvider : IDatabaseEntity
 
     public int SmtpPort { get; set; }
 
-    public string SmtpServer { get; set; } = "";    
+    public string SmtpServer { get; set; } = "";   
+    
+    public bool IsValid()
+    {
+        if (string.IsNullOrWhiteSpace(SmtpLogin) ||
+            string.IsNullOrWhiteSpace(SmtpPassword) ||
+            SmtpPort == 0 ||
+            DailyLimit <= 0 ||
+            BatchSize <= 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

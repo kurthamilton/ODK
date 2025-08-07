@@ -1,23 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
+using ODK.Services.Chapters;
 using ODK.Services.Settings;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
 
-namespace ODK.Web.Razor.Pages.SuperAdmin;
+namespace ODK.Web.Razor.Pages.Chapters.Admin.SuperAdmin;
 
-public class EmailProviderCreateModel : SuperAdminPageModel
+public class EmailProviderCreateModel : ChapterSuperAdminPageModel
 {
-    private readonly ISettingsService _settingsService;
+    private readonly IChapterAdminService _chapterAdminService;
 
-    public EmailProviderCreateModel(IRequestCache requestCache, ISettingsService settingsService)
+    public EmailProviderCreateModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
-        _settingsService = settingsService;
-    }
-
-    public void OnGet()
-    {
+        _chapterAdminService = chapterAdminService;
     }
 
     public async Task<IActionResult> OnPostAsync(EmailProviderFormViewModel viewModel)
@@ -27,7 +24,8 @@ public class EmailProviderCreateModel : SuperAdminPageModel
             return Page();
         }
 
-        var result = await _settingsService.AddEmailProvider(CurrentMemberId, new UpdateEmailProvider
+        var serviceRequest = await GetAdminServiceRequest();
+        var result = await _chapterAdminService.AddChapterEmailProvider(serviceRequest, new UpdateEmailProvider
         {
             BatchSize = viewModel.BatchSize,
             DailyLimit = viewModel.DailyLimit ?? 0,
@@ -44,6 +42,6 @@ public class EmailProviderCreateModel : SuperAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Email provider created", FeedbackType.Success));
-        return Redirect("/superadmin/emails");
+        return Redirect($"/{Chapter.Name}/admin/superadmin/emails");
     }
 }

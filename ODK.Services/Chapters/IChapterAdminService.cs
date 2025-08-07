@@ -1,14 +1,18 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
+using ODK.Core.Emails;
 using ODK.Core.Subscriptions;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
+using ODK.Services.Settings;
 
 namespace ODK.Services.Chapters;
 
 public interface IChapterAdminService
 {
     Task<ServiceResult> AddChapterAdminMember(AdminServiceRequest request, Guid memberId);
+
+    Task<ServiceResult> AddChapterEmailProvider(AdminServiceRequest request, UpdateEmailProvider model);
 
     Task<ServiceResult> ApproveChapter(AdminServiceRequest request);
 
@@ -80,6 +84,10 @@ public interface IChapterAdminService
     
     Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(AdminServiceRequest request);
 
+    Task<ChapterEmailProvider> GetChapterEmailProvider(AdminServiceRequest request, Guid emailProviderId);
+
+    Task<SuperAdminChapterEmailsViewModel> GetSuperAdminChapterEmailsViewModel(AdminServiceRequest request);
+
     Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);
 
     Task<SuperAdminChapterViewModel> GetSuperAdminChapterViewModel(Guid currentMemberId, Guid chapterId);
@@ -101,7 +109,9 @@ public interface IChapterAdminService
 
     Task<ServiceResult> UpdateChapterCurrency(AdminServiceRequest request, Guid currencyId);
 
-    Task<ServiceResult> UpdateChapterDescription(AdminServiceRequest request, string description);    
+    Task<ServiceResult> UpdateChapterDescription(AdminServiceRequest request, string description);
+
+    Task<ServiceResult> UpdateChapterEmailProvider(AdminServiceRequest request, Guid emailProviderId, UpdateEmailProvider model);
 
     Task<ServiceResult> UpdateChapterImage(AdminServiceRequest request, UpdateChapterImage model);
 

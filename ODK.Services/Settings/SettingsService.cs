@@ -55,10 +55,10 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
             SmtpServer = model.SmtpServer
         };
 
-        var validationResult = ValidateEmailProvider(provider);
-        if (!validationResult.Success)
+        var isValid = provider.IsValid();
+        if (!isValid)
         {
-            return validationResult;
+            return ServiceResult.Failure("Some required fields are missing");
         }
 
         _unitOfWork.EmailProviderRepository.Add(provider);
@@ -163,10 +163,10 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         provider.SmtpPort = model.SmtpPort;
         provider.SmtpServer = model.SmtpServer;
 
-        var validationResult = ValidateEmailProvider(provider);
-        if (!validationResult.Success)
+        var isValid = provider.IsValid();
+        if (!isValid)
         {
-            return validationResult;
+            return ServiceResult.Failure("Some required fields are missing");
         }
 
         _unitOfWork.EmailProviderRepository.Update(provider);
@@ -201,20 +201,6 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
         _unitOfWork.SitePaymentSettingsRepository.Update(settings);
         await _unitOfWork.SaveChangesAsync();
-
-        return ServiceResult.Successful();
-    }
-
-    private static ServiceResult ValidateEmailProvider(EmailProvider provider)
-    {
-        if (string.IsNullOrWhiteSpace(provider.SmtpLogin) ||
-            string.IsNullOrWhiteSpace(provider.SmtpPassword) ||
-            provider.SmtpPort == 0 ||
-            provider.DailyLimit <= 0 ||
-            provider.BatchSize <= 0)
-        {
-            return ServiceResult.Failure("Some required fields are missing");
-        }
 
         return ServiceResult.Successful();
     }

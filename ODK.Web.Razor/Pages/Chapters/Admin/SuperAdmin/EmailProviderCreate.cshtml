@@ -1,11 +1,11 @@
-﻿@page "/superadmin/emailproviders/create"
+﻿@page "/{chapterName}/admin/superAdmin/emailproviders/create"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model EmailProviderCreateModel
 @{
-    Layout = "_SiteAdminLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create email provider | SuperAdmin";
 }
 
@@ -13,7 +13,7 @@
 {
     Breadcrumbs = new []
     {
-        new MenuItem { Link = "/superadmin/emails", Text = "Emails" },
+        new MenuItem { Link = $"/{Model.ChapterName}/admin/superadmin/emails", Text = "Emails" },
         new MenuItem { Text = "New provider" }
     }
 })
