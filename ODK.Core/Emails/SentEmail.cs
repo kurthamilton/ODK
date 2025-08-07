@@ -2,7 +2,9 @@
 
 public class SentEmail : IDatabaseEntity
 {
-    public Guid EmailProviderId { get; set; }
+    public Guid? ChapterEmailProviderId { get; set; }
+
+    public Guid? EmailProviderId { get; set; }
 
     public Guid Id { get; set; }
 

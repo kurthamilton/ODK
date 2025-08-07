@@ -3,6 +3,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
+using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
@@ -42,14 +43,20 @@ public class MailProvider : IMailProvider
     {
         var platform = _platformProvider.GetPlatform();
 
-        var (emails, chapterEmails, providers, siteSettings, summary) = await _unitOfWork.RunAsync(
+        var (emails, chapterEmails, chapterProviders, siteProviders, siteSettings, siteSummary, chapterSummary) = await _unitOfWork.RunAsync(
             x => x.EmailRepository.GetAll(),
             x => options.Chapter != null
                 ? x.ChapterEmailRepository.GetByChapterId(options.Chapter.Id)
                 : new DefaultDeferredQueryMultiple<ChapterEmail>(),
+            x => options.Chapter != null
+                ? x.ChapterEmailProviderRepository.GetByChapterId(options.Chapter.Id)
+                : new DefaultDeferredQueryMultiple<ChapterEmailProvider>(),
             x => x.EmailProviderRepository.GetAll(),
             x => x.SiteEmailSettingsRepository.Get(platform),
-            x => x.EmailProviderRepository.GetEmailsSentToday());
+            x => x.EmailProviderRepository.GetEmailsSentToday(),
+            x => options.Chapter != null
+                ? x.ChapterEmailProviderRepository.GetEmailsSentToday(options.Chapter.Id)
+                : new DefaultDeferredQueryMultiple<EmailProviderSummaryDto>());
 
         var layoutEmail = chapterEmails.FirstOrDefault(x => x.Type == EmailType.Layout)?.ToEmail()
             ?? emails.First(x => x.Type == EmailType.Layout);
@@ -101,7 +108,7 @@ public class MailProvider : IMailProvider
         var layoutBody = layoutEmail.HtmlContent;
         body = layoutBody.Interpolate(parameters);
 
-        var (provider, _) = GetProvider(providers, summary);
+        var (provider, _) = GetProvider(siteProviders, chapterProviders, siteSummary, chapterSummary);
 
         var message = CreateMessage(
             provider,
@@ -177,15 +184,28 @@ public class MailProvider : IMailProvider
     }
 
     private (EmailProvider Provider, int Remaining) GetProvider(
-        IReadOnlyCollection<EmailProvider> providers,
-        IReadOnlyCollection<EmailProviderSummaryDto> summary)
+        IReadOnlyCollection<EmailProvider> siteProviders,
+        IReadOnlyCollection<ChapterEmailProvider> chapterProviders,
+        IReadOnlyCollection<EmailProviderSummaryDto> siteSummary,
+        IReadOnlyCollection<EmailProviderSummaryDto> chapterSummary)
     {
-        var summaryDictionary = summary
+        var chapterSummaryDictionary = chapterSummary
+            .ToDictionary(x => x.EmailProviderId, x => x.Sent);
+        var siteSummaryDictionary = siteSummary
             .ToDictionary(x => x.EmailProviderId, x => x.Sent);
 
-        foreach (var provider in providers)
+        foreach (var provider in chapterProviders.OrderBy(x => x.Order))
         {
-            summaryDictionary.TryGetValue(provider.Id, out var sentToday);
+            chapterSummaryDictionary.TryGetValue(provider.Id, out var sentToday);
+            if (sentToday < provider.DailyLimit)
+            {
+                return (provider, provider.DailyLimit - sentToday);
+            }
+        }
+
+        foreach (var provider in siteProviders.OrderBy(x => x.Order))
+        {
+            siteSummaryDictionary.TryGetValue(provider.Id, out var sentToday);
             if (sentToday < provider.DailyLimit)
             {
                 return (provider, provider.DailyLimit - sentToday);
@@ -226,12 +246,15 @@ public class MailProvider : IMailProvider
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
 
+            var chapterProvider = provider as ChapterEmailProvider;
+
             foreach (var to in message.To.Union(message.Cc).Union(message.Bcc))
             {
                 _unitOfWork.EmailRepository.AddSentEmail(new SentEmail
                 {
                     SentUtc = DateTime.UtcNow,
-                    EmailProviderId = provider.Id,
+                    ChapterEmailProviderId = chapterProvider?.Id,
+                    EmailProviderId = chapterProvider == null ? provider.Id : null,
                     Subject = message.Subject,
                     To = to.ToString()
                 });

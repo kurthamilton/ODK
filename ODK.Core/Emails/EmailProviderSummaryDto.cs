@@ -2,7 +2,7 @@
 
 public class EmailProviderSummaryDto
 {
-    public Guid EmailProviderId { get; set; }
+    public required Guid EmailProviderId { get; set; }
 
-    public int Sent { get; set; }
+    public required int Sent { get; set; }
 }

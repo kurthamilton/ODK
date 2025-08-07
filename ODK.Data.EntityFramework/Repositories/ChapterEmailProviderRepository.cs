@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Emails;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -16,4 +17,22 @@ public class ChapterEmailProviderRepository : ReadWriteRepositoryBase<ChapterEma
         .Where(x => x.ChapterId == chapterId)
         .OrderBy(x => x.Order)
         .DeferredMultiple();
+
+    public IDeferredQueryMultiple<EmailProviderSummaryDto> GetEmailsSentToday(Guid chapterId)
+    {
+        var query =
+            from provider in Set()
+            from sentEmail in Set<SentEmail>()
+            where sentEmail.ChapterEmailProviderId == provider.Id &&
+                sentEmail.SentUtc >= DateTime.UtcNow.Date &&
+                sentEmail.SentUtc < DateTime.UtcNow.Date.AddDays(1)
+            group provider by provider.Id into g
+            select new EmailProviderSummaryDto
+            {
+                Sent = g.Count(),
+                EmailProviderId = g.Key
+            };
+
+        return query.DeferredMultiple();
+    }
 }
