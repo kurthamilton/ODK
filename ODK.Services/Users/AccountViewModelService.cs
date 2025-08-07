@@ -55,9 +55,14 @@ public class AccountViewModelService : IAccountViewModelService
 
     public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName)
     {
+        var platform = _platformProvider.GetPlatform();
+
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
-        OdkAssertions.MeetsCondition(chapter, x => x.IsOpenForRegistration());
+        OdkAssertions.MeetsCondition(
+            chapter, 
+            x => x.IsOpenForRegistration(),
+            $"Chapter {chapter.GetDisplayName(platform)} is not open for registration");
 
         var (
                 chapterProperties,

@@ -1,11 +1,17 @@
 using System.Globalization;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using ODK.Services.Tasks;
 using ODK.Web.Common.Config;
+using ODK.Web.Common.Config.Settings;
+using ODK.Web.Razor.Attributes;
 using ODK.Web.Razor.Authentication;
 using ODK.Web.Razor.Middleware;
+using ODK.Web.Razor.Services;
 using Serilog;
 
 namespace ODK.Web.Razor;
@@ -14,7 +20,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var app = BuildApp(args);
+        var (app, appSettings) = BuildApp(args);
 
         // Configure the HTTP request pipeline.
         app.UseMiddleware<RateLimitingMiddleware>();
@@ -56,7 +62,44 @@ public class Program
         app.Run();
     }
 
-    private static WebApplication BuildApp(string[] args)
+    private static WebApplicationBuilder AddHangfire(
+        WebApplicationBuilder builder,
+        AppSettings appSettings)
+    {
+        builder
+            .Services
+            .AddHangfire((provider, configuration) =>
+            {
+                BaseHangfireConfig(provider, configuration, appSettings.Hangfire);
+                configuration.UseSqlServerStorage(
+                    appSettings.ConnectionStrings.Default,
+                    new SqlServerStorageOptions
+                    {
+                        SchemaName = appSettings.Hangfire.SchemaName
+                    });
+            });
+
+        return builder;
+    }
+
+    private static void BaseHangfireConfig(
+        IServiceProvider provider,
+        IGlobalConfiguration configuration,
+        HangfireSettings settings)
+    {
+        configuration
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings();
+
+        // Add job failure logging filter to log when jobs fail after all retry attempts
+        configuration.UseFilter(new HangfireJobFailureLoggerAttribute());
+        configuration.UseFilter(new AutomaticRetryAttribute
+        {
+            Attempts = settings.RetryAttempts
+        });
+    }
+
+    private static (WebApplication, AppSettings) BuildApp(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -66,7 +109,7 @@ public class Program
         });
 
         builder.Services.AddControllers();
-
+        
         builder.Services.AddScoped<CustomCookieAuthenticationEvents>();
         builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         builder.Services.AddHttpContextAccessor();
@@ -76,6 +119,8 @@ public class Program
             {
                 options.EventsType = typeof(CustomCookieAuthenticationEvents);
             });
+        builder.Services
+            .AddScoped<IBackgroundTaskService, HangfireService>();
 
         var appSettings = AppStartup.ConfigureServices(builder.Configuration, builder.Services);
         LoggingConfig.Configure(builder, appSettings);
@@ -116,7 +161,9 @@ public class Program
             }
         });
 
+        AddHangfire(builder, appSettings);
+
         var app = builder.Build();
-        return app;
+        return (app, appSettings);
     }
 }

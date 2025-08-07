@@ -12,6 +12,8 @@ public class AppSettings
 
     public required ErrorsSettings Errors { get; init; }
 
+    public required HangfireSettings Hangfire { get; init; }
+
     public required LoggingSettings Logging { get; init; }
 
     public required MembersSettings Members { get; init; }

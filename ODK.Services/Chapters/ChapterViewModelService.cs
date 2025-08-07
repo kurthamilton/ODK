@@ -691,7 +691,10 @@ public class ChapterViewModelService : IChapterViewModelService
         var platform = _platformProvider.GetPlatform();
 
         var chapter = await GetChapter(chapterName);
-        OdkAssertions.MeetsCondition(chapter, x => x.IsOpenForRegistration());
+        OdkAssertions.MeetsCondition(
+            chapter, 
+            x => x.IsOpenForRegistration(), 
+            $"Chapter {chapter.GetDisplayName(platform)} is not open for registration");
 
         var today = chapter.TodayUtc();
 

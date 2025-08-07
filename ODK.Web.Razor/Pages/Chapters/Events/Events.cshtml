@@ -11,7 +11,10 @@
 
     var viewModel = await EventViewModelService.GetEventsPage(Model.CurrentMemberIdOrDefault, Model.ChapterName);
 
-    OdkAssertions.MeetsCondition(viewModel.Chapter, x => x.IsOpenForRegistration());
+    OdkAssertions.MeetsCondition(
+        viewModel.Chapter, 
+        x => x.IsOpenForRegistration(),
+        $"Chapter {viewModel.Chapter.GetDisplayName(viewModel.Platform)} is not open for registration");
 
     Model.Path = $"/{viewModel.Chapter.Name}/events";
 }

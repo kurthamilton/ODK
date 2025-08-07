@@ -7,7 +7,10 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Login";
 
-    OdkAssertions.MeetsCondition(Model.Chapter, x => x.IsOpenForRegistration());
+    OdkAssertions.MeetsCondition(
+        Model.Chapter, 
+        x => x.IsOpenForRegistration(),
+        $"Chapter {Model.Chapter.Name} is not open for registration");
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
