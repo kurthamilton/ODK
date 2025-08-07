@@ -8,7 +8,20 @@ public static class OdkAssertions
 {
     public static T Exists<T>([NotNull] T? value) => Exists(value, "");
 
-    public static T Exists<T>([NotNull] T? value, string message) => value ?? throw new OdkNotFoundException(message);
+    public static T Exists<T>([NotNull] T? value, string message)
+    {
+        if (value != null)
+        {
+            return value;
+        }
+
+        if (!string.IsNullOrEmpty(message))
+        {
+            throw new OdkNotFoundException(message);
+        }
+
+        throw new OdkNotFoundException();
+    }
 
     public static T BelongsToChapter<T>([NotNull] T? value, Guid chapterId) where T : IChapterEntity
         => MeetsCondition(value, x => x.ChapterId == chapterId);
@@ -17,7 +30,21 @@ public static class OdkAssertions
         => MeetsCondition(value, condition, "");
 
     public static T MeetsCondition<T>([NotNull] T? value, Func<T, bool> condition, string message)
-        => value != null && condition(value) ? value : throw new OdkNotFoundException(message);
+    {
+        Exists(value, message);
+
+        if (condition(value))
+        {
+            return value;
+        }
+
+        if (!string.IsNullOrEmpty(message))
+        {
+            throw new OdkNotFoundException(message);
+        }
+
+        throw new OdkNotFoundException();
+    }
 
     public static Member MemberOf([NotNull] Member? member, Guid chapterId)
         => MeetsCondition(member, x => x.IsMemberOf(chapterId));
