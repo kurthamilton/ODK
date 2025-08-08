@@ -86,6 +86,14 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
+    public Task<ChapterLoginPageViewModel> GetChapterLoginPage()
+    {
+        return Task.FromResult(new ChapterLoginPageViewModel
+        {
+            GoogleClientId = _settings.GoogleClientId
+        });
+    }
+
     public async Task<ChapterPicturePageViewModel> GetChapterPicturePage(Guid currentMemberId, string chapterName)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();

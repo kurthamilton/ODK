@@ -137,7 +137,7 @@ public class AccountController : OdkControllerBase
 
     [AllowAnonymous]
     [HttpPost("account/login/google")]
-    public async Task<IActionResult> GoogleLogin([FromForm] string token, string? returnUrl)
+    public async Task<IActionResult> GoogleSiteLogin([FromForm] string token, string? returnUrl)
     {
         var result = await _loginHandler.OAuthLogin(OAuthProviderType.Google, token);
         if (result.Success && result.Member != null)
@@ -178,6 +178,27 @@ public class AccountController : OdkControllerBase
         return RedirectToReferrer();
     }
 
+    [AllowAnonymous]
+    [HttpPost("{chapterName}/account/login/google")]
+    public async Task<IActionResult> GoogleChapterLogin(string chapterName, [FromForm] string token, string? returnUrl)
+    {
+        var platform = _platformProvider.GetPlatform();
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var result = await _loginHandler.OAuthLogin(OAuthProviderType.Google, token);
+        if (result.Success && result.Member != null)
+        {
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect(OdkRoutes.Groups.Group(platform, chapter));
+            }
+
+            return Redirect(returnUrl);
+        }
+
+        AddFeedback("Account not registered", FeedbackType.Error);
+
+        return RedirectToReferrer();
+    }
     [HttpPost("account/delete")]
     public async Task<IActionResult> DeleteAccount()
     {

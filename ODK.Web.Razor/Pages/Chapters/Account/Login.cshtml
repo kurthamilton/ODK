@@ -1,8 +1,10 @@
 ﻿@page "/{chapterName}/Account/Login"
 @using ODK.Core
+@using ODK.Services.Users
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Login
 @model ODK.Web.Razor.Pages.Chapters.Account.LoginModel
+@inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_OdkChapterLayout";
     Model.Title = "Login";
@@ -11,14 +13,24 @@
         Model.Chapter, 
         x => x.IsOpenForRegistration(),
         $"Chapter {Model.Chapter.Name} is not open for registration");
+
+    var viewModel = await AccountViewModelService.GetChapterLoginPage();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-   Title = "Login",
-   Content = await Html.PartialAsync("Account/_LoginForm", new LoginViewModel
-   {
-       Chapter = Model.Chapter,
-       ReturnUrl = Model.ReturnUrl
-   })
+    Title = "Login",
+    WidthClass = "col-12 col-md-8 col-lg-6 col-xl-4",
+    Content = await Html.PartialAsync("Account/_ChapterLoginContent", new LoginViewModel
+    {
+        Chapter = Model.Chapter,
+        GoogleClientId = viewModel.GoogleClientId,
+        ReturnUrl = Model.ReturnUrl
+    })
 })
+
+@section scripts
+{
+    @await Html.PartialAsync("Components/Scripts/_OAuth")
+    <script src="~/js/odk.login.js" asp-append-version="true"></script>
+}

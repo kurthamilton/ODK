@@ -1,0 +1,17 @@
+﻿@using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Login
+@model LoginViewModel
+
+@await Html.PartialAsync("Account/_LoginForm")
+
+<hr/>
+
+<form action="/@Model.Chapter?.Name/account/login/google" method="post" data-oauth-submit>
+    @*@Html.AntiForgeryToken()*@
+    <input type="hidden" name="token" data-oauth-token />
+    @await Html.PartialAsync("Components/_GoogleLoginButton", new GoogleLoginButtonViewModel
+    {
+        ClientId = Model.GoogleClientId,
+        Text = "Sign in with Google"
+    })
+</form>

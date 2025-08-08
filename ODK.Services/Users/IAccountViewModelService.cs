@@ -10,6 +10,8 @@ public interface IAccountViewModelService
 
     Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName);
 
+    Task<ChapterLoginPageViewModel> GetChapterLoginPage();
+
     Task<ChapterPicturePageViewModel> GetChapterPicturePage(Guid currentMemberId, string chapterName);
 
     Task<ChapterProfilePageViewModel> GetChapterProfilePage(Guid currentMemberId, string chapterName);
