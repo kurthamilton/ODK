@@ -15,6 +15,10 @@ public class ChapterEmailProviderMap : IEntityTypeConfiguration<ChapterEmailProv
         builder.Property(x => x.Id)
             .HasColumnName("ChapterEmailProviderId");
 
+        builder.Property(x => x.Type)
+            .HasColumnName("EmailProviderTypeId")
+            .HasConversion<int>();
+
         builder.HasOne<Chapter>()
             .WithMany()
             .HasForeignKey(x => x.ChapterId);

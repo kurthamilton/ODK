@@ -8,6 +8,8 @@ public interface ILoggingService
 
     Task DeleteAllErrors(Guid currentMemberId, Guid id);
 
+    Task Error(string message);
+
     Task Error(Exception exception, HttpRequest request);
 
     Task Error(Exception exception, IDictionary<string, string> data);

@@ -6,6 +6,8 @@ public class SentEmail : IDatabaseEntity
 
     public Guid? EmailProviderId { get; set; }
 
+    public string? ExternalId { get; set; }
+
     public Guid Id { get; set; }
 
     public DateTime SentUtc { get; set; }    

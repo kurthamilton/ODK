@@ -20,6 +20,7 @@ using ODK.Services.Features;
 using ODK.Services.Files;
 using ODK.Services.Imaging;
 using ODK.Services.Integrations.Emails;
+using ODK.Services.Integrations.Emails.Smtp;
 using ODK.Services.Integrations.Imaging;
 using ODK.Services.Integrations.OAuth;
 using ODK.Services.Integrations.Payments;
@@ -121,6 +122,7 @@ public static class DependencyConfig
         services.AddScoped<ICsvService, CsvService>();
         services.AddScoped<ICurrencyService, CurrencyService>();
         services.AddScoped<IEmailAdminService, EmailAdminService>();
+        services.AddScoped<IEmailClientFactory, EmailClientFactory>();
         services.AddScoped<IEventAdminService, EventAdminService>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IEventViewModelService, EventViewModelService>();
@@ -129,8 +131,8 @@ public static class DependencyConfig
         services.AddScoped<IIssueAdminService, IssueAdminService>();
         services.AddScoped<IIssueService, IssueService>();
         services.AddScoped<ILoggingService, LoggingService>();
-        services.AddScoped<IMailProvider, MailProvider>();
-        services.AddSingleton(new MailProviderSettings
+        services.AddScoped<SmtpEmailClient>();
+        services.AddSingleton(new SmtpEmailClientSettings
         {
             DebugEmailAddress = appSettings.Emails.DebugEmailAddress
         });

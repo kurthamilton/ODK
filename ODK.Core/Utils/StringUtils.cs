@@ -13,7 +13,7 @@ public static class StringUtils
         return AlphaNumericRegex.Replace(text, "");
     }
 
-    public static string Interpolate(this string text, IDictionary<string, string> values,
+    public static string Interpolate(this string text, IReadOnlyDictionary<string, string> values,
         Func<string, string>? process = null)
     {
         var sb = new StringBuilder(text);

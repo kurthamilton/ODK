@@ -14,5 +14,9 @@ public class EmailProviderMap : IEntityTypeConfiguration<EmailProvider>
 
         builder.Property(x => x.Id)
             .HasColumnName("EmailProviderId");
+
+        builder.Property(x => x.Type)
+            .HasColumnName("EmailProviderTypeId")
+            .HasConversion<int>();
     }
 }

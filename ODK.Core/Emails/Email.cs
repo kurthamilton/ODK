@@ -14,7 +14,7 @@ public class Email
 
     public EmailType Type { get; set; }
 
-    public Email Interpolate(IDictionary<string, string> parameters)
+    public Email Interpolate(IReadOnlyDictionary<string, string> parameters)
     {
         foreach (string key in parameters.Keys)
         {

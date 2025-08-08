@@ -1,4 +1,5 @@
-﻿using ODK.Core.Logging;
+﻿using System;
+using ODK.Core.Logging;
 using ODK.Data.Core;
 using Serilog;
 
@@ -33,6 +34,13 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
             x => x.ErrorRepository.GetById(id));
 
         throw new NotImplementedException();
+    }
+
+    public Task Error(string message)
+    {
+        _logger.Error(message);
+
+        return Task.CompletedTask;
     }
 
     public async Task Error(Exception exception, HttpRequest request)
@@ -122,6 +130,8 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
     public async Task Error(Exception exception, IDictionary<string, string> data)
     {
+        _logger.Error(exception, exception.Message);
+
         // Create new unit of work to avoid re-instigating any previous context errors
         var unitOfWork = _unitOfWorkFactory.Create();
 

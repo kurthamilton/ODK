@@ -20,6 +20,8 @@ public class EmailProvider : IDatabaseEntity
 
     public string SmtpServer { get; set; } = "";   
     
+    public EmailProviderType Type { get; set; }
+
     public bool IsValid()
     {
         if (string.IsNullOrEmpty(Name) ||
