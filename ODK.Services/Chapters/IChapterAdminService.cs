@@ -30,6 +30,8 @@ public interface IChapterAdminService
 
     Task<ServiceResult> DeleteChapterContactMessage(AdminServiceRequest request, Guid id);
 
+    Task<ServiceResult> DeleteChapterEmailProvider(AdminServiceRequest request, Guid id);
+
     Task DeleteChapterProperty(AdminServiceRequest request, Guid id);
 
     Task DeleteChapterQuestion(AdminServiceRequest request, Guid id);

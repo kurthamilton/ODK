@@ -8,6 +8,8 @@ public class EmailProvider : IDatabaseEntity
 
     public Guid Id { get; set; }
 
+    public string Name { get; set; } = "";
+
     public int Order { get; set; }
 
     public string SmtpLogin { get; set; } = "";
@@ -20,7 +22,8 @@ public class EmailProvider : IDatabaseEntity
     
     public bool IsValid()
     {
-        if (string.IsNullOrWhiteSpace(SmtpLogin) ||
+        if (string.IsNullOrEmpty(Name) ||
+            string.IsNullOrWhiteSpace(SmtpLogin) ||
             string.IsNullOrWhiteSpace(SmtpPassword) ||
             SmtpPort == 0 ||
             DailyLimit <= 0 ||

@@ -15,8 +15,8 @@
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
-            <tr>
-                <th>Provider</th>
+            <tr>                
+                <th>Name</th>
                 <th></th>
             </tr>
         </thead>
@@ -25,7 +25,7 @@
             {
                 <tr>
                     <td>
-                        <a href="/superadmin/emailproviders/@provider.Id">@provider.SmtpServer</a>
+                        <a href="/superadmin/emailproviders/@provider.Id">@provider.Name</a>
                     </td>
                     <td>
                         <form method="post" action="/superadmin/emails/providers/@provider.Id/delete">

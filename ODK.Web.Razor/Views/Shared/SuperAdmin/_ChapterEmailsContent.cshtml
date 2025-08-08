@@ -31,9 +31,15 @@
             {
                 <tr>
                     <td>
-                        <a href="/@Model.Name/admin/superadmin/emailproviders/@emailProvider.Id">@emailProvider.SmtpServer</a>
+                        <a href="/@Model.Name/admin/superadmin/emailproviders/@emailProvider.Id">@emailProvider.Name</a>
                     </td>
-                    <td>                        
+                    <td> 
+                        <form method="post" action="/superadmin/groups/@Model.Id/emails/providers/@emailProvider.Id/delete">
+                            <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                    onclick="return confirm('Are you sure you want to delete this email provider?');">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
                     </td>
                 </tr>
             }

@@ -31,6 +31,7 @@ public class EmailProviderCreateModel : SuperAdminPageModel
         {
             BatchSize = viewModel.BatchSize,
             DailyLimit = viewModel.DailyLimit ?? 0,
+            Name = viewModel.Name,
             SmtpLogin = viewModel.SmtpLogin,
             SmtpPassword = viewModel.SmtpPassword,
             SmtpPort = viewModel.SmtpPort ?? 0,

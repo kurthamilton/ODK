@@ -48,6 +48,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         {
             BatchSize = model.BatchSize,
             DailyLimit = model.DailyLimit,
+            Name = model.Name,
             Order = existing.Count + 1,
             SmtpLogin = model.SmtpLogin,
             SmtpPassword = model.SmtpPassword,
@@ -158,6 +159,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
         provider.BatchSize = model.BatchSize;
         provider.DailyLimit = model.DailyLimit;
+        provider.Name = model.Name;
         provider.SmtpLogin = model.SmtpLogin;
         provider.SmtpPassword = model.SmtpPassword;
         provider.SmtpPort = model.SmtpPort;

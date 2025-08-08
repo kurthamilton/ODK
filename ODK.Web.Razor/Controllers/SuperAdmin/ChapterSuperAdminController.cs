@@ -48,6 +48,15 @@ public class ChapterSuperAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpPost("/superadmin/groups/{groupId:guid}/emails/providers/{id:guid}/delete")]
+    public async Task<IActionResult> DeleteEmailProvider(Guid groupId, Guid id)
+    {
+        var request = new AdminServiceRequest(groupId, MemberId);
+        await _chapterAdminService.DeleteChapterEmailProvider(request, id);
+        AddFeedback("Email provider deleted", FeedbackType.Success);
+        return RedirectToReferrer();
+    }
+
     [HttpPost("/{chapterName}/Admin/SuperAdmin/Location")]
     public async Task<IActionResult> UpdateLocation(string chapterName, ChapterLocationFormViewModel viewModel)
     {

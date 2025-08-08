@@ -112,6 +112,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             BatchSize = model.BatchSize,
             ChapterId = request.ChapterId,
             DailyLimit = model.DailyLimit,
+            Name = model.Name,
             Order = existing.Count + 1,
             SmtpLogin = model.SmtpLogin,
             SmtpPassword = model.SmtpPassword,
@@ -523,6 +524,17 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         OdkAssertions.BelongsToChapter(contactMessage, request.ChapterId);
 
         _unitOfWork.ChapterContactMessageRepository.Delete(contactMessage);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
+    public async Task<ServiceResult> DeleteChapterEmailProvider(AdminServiceRequest request, Guid id)
+    {
+        var provider = await GetSuperAdminRestrictedContent(request,
+            x => x.ChapterEmailProviderRepository.GetById(id));
+
+        _unitOfWork.ChapterEmailProviderRepository.Delete(provider);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
@@ -1347,6 +1359,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         provider.BatchSize = model.BatchSize;
         provider.DailyLimit = model.DailyLimit;
+        provider.Name = model.Name;
         provider.SmtpLogin = model.SmtpLogin;
         provider.SmtpPassword = model.SmtpPassword;
         provider.SmtpPort = model.SmtpPort;

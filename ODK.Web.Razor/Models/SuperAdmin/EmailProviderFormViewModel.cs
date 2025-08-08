@@ -14,6 +14,9 @@ public class EmailProviderFormViewModel
     public int? DailyLimit { get; set; }
 
     [Required]
+    public string Name { get; set; } = "";
+
+    [Required]
     [Display(Name = "SMTP login")]
     public string SmtpLogin { get; set; } = "";
 

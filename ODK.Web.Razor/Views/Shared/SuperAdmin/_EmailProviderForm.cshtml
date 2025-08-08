@@ -1,6 +1,12 @@
 ﻿@model ODK.Web.Razor.Models.SuperAdmin.EmailProviderFormViewModel
 
 <div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.Name, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.Name)
+</div>
+
+<div class="form-group mb-3 required">
     @Html.LabelFor(x => x.SmtpServer, new { @class = "form-label" })
     @Html.TextBoxFor(x => x.SmtpServer, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.SmtpServer)
