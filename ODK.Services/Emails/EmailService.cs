@@ -4,9 +4,8 @@ using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
-using ODK.Services.Emails;
 
-namespace ODK.Services.Integrations.Emails;
+namespace ODK.Services.Emails;
 
 public class EmailService : IEmailService
 {

@@ -109,7 +109,7 @@ public class MailProvider : IMailProvider
         body = layoutBody.Interpolate(parameters);
 
         var (provider, _) = GetProvider(siteProviders, chapterProviders, siteSummary, chapterSummary);
-
+        
         var message = CreateMessage(
             provider,
             siteSettings,
@@ -243,7 +243,10 @@ public class MailProvider : IMailProvider
             await client.ConnectAsync(provider.SmtpServer, provider.SmtpPort, SecureSocketOptions.StartTlsWhenAvailable);
             await client.AuthenticateAsync(provider.SmtpLogin, provider.SmtpPassword);
 
-            await client.SendAsync(message);
+            var response = await client.SendAsync(message);
+
+            await _loggingService.Info($"SMTP response: {response}");
+
             await client.DisconnectAsync(true);
 
             var chapterProvider = provider as ChapterEmailProvider;
