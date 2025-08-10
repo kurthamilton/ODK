@@ -12,16 +12,6 @@ public class EmailRepository : WriteRepositoryBase<Email>, IEmailRepository
     {
     }
 
-    public void AddSentEmail(SentEmail sentEmail)
-    {
-        if (sentEmail.Id == default)
-        {
-            sentEmail.Id = Guid.NewGuid();
-        }
-
-        AddSingle(sentEmail);
-    }
-
     public IDeferredQueryMultiple<Email> GetAll() => Set()
         .DeferredMultiple();
 

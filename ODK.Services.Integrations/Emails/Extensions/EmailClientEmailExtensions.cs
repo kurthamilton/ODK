@@ -31,7 +31,7 @@ internal static class EmailClientEmailExtensions
             var to = email.From.ToMailboxAddress();
             message.To.Add(to);
 
-            foreach (EmailAddressee recipient in email.To)
+            foreach (var recipient in email.To)
             {
                 message.Bcc.Add(recipient.ToMailboxAddress());
             }

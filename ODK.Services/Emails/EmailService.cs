@@ -9,12 +9,16 @@ using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Exceptions;
+using ODK.Services.Logging;
+using ODK.Services.Tasks;
 
 namespace ODK.Services.Emails;
 
 public class EmailService : IEmailService
 {
+    private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IEmailClientFactory _emailClientFactory;
+    private readonly ILoggingService _loggingService;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUrlProvider _urlProvider;
@@ -23,9 +27,13 @@ public class EmailService : IEmailService
         IUnitOfWork unitOfWork,
         IEmailClientFactory emailClientFactory,
         IUrlProvider urlProvider,
-        IPlatformProvider platformProvider)
+        IPlatformProvider platformProvider,
+        IBackgroundTaskService backgroundTaskService,
+        ILoggingService loggingService)
     {
+        _backgroundTaskService = backgroundTaskService;
         _emailClientFactory = emailClientFactory;
+        _loggingService = loggingService;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
         _urlProvider = urlProvider;
@@ -160,6 +168,64 @@ public class EmailService : IEmailService
         });
     }
 
+    // Public for Hangfire
+    public async Task SendQueuedEmailTask(Guid queuedEmailId, Guid? chapterId)
+    {
+        var (queuedEmail, recipients, siteProviders, chapterProviders, siteSummary, chapterSummary) = await _unitOfWork.RunAsync(
+            x => x.QueuedEmailRepository.GetById(queuedEmailId),
+            x => x.QueuedEmailRecipientRepository.GetByQueuedEmailId(queuedEmailId),
+            x => x.EmailProviderRepository.GetAll(),
+            x => chapterId != null
+                ? x.ChapterEmailProviderRepository.GetByChapterId(chapterId.Value)
+                : new DefaultDeferredQueryMultiple<ChapterEmailProvider>(),
+            x => x.EmailProviderRepository.GetEmailsSentToday(),
+            x => chapterId != null
+                ? x.ChapterEmailProviderRepository.GetEmailsSentToday(chapterId.Value)
+                : new DefaultDeferredQueryMultiple<EmailProviderSummaryDto>());
+
+        var email = new EmailClientEmail
+        {
+            Body = queuedEmail.Body,
+            From = new EmailAddressee(queuedEmail.FromEmailAddress, queuedEmail.FromName),
+            Subject = queuedEmail.Subject,
+            To = recipients
+                .Select(x => new EmailAddressee(x.EmailAddress, x.Name))
+                .ToArray()
+        };
+
+        var provider = GetProvider(siteProviders, chapterProviders, siteSummary, chapterSummary);
+        var emailClient = _emailClientFactory.Create(provider.Type);
+        
+        var result = await emailClient.SendEmail(provider, email);
+
+        if (!result.Success)
+        {
+            throw new OdkServiceException($"Error sending queued email using provider {provider.Name}");
+        }
+
+        var sentUtc = DateTime.UtcNow;
+        var chapterProvider = provider as ChapterEmailProvider;
+
+        var sentEmails = recipients
+            .Select(x => new SentEmail
+            {
+                Id = Guid.NewGuid(),
+                ExternalId = result.ExternalId,
+                SentUtc = sentUtc,
+                ChapterEmailProviderId = chapterProvider?.Id,
+                EmailProviderId = chapterProvider == null ? provider.Id : null,
+                Subject = queuedEmail.Subject,
+                To = x.EmailAddress
+            })
+            .ToArray();
+
+        _unitOfWork.SentEmailRepository.AddMany(sentEmails);
+        _unitOfWork.QueuedEmailRecipientRepository.DeleteMany(recipients);
+        _unitOfWork.QueuedEmailRepository.Delete(queuedEmail);
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     private static IEnumerable<EmailAddressee> GetAddressees(IEnumerable<ChapterAdminMember> adminMembers)
     {
         foreach (var adminMember in adminMembers)
@@ -203,21 +269,14 @@ public class EmailService : IEmailService
     private async Task<ServiceResult> SendEmail(SendEmailOptions options)
     {
         var platform = _platformProvider.GetPlatform();
+        var chapterId = options.Chapter?.Id;
 
-        var (emails, chapterEmails, chapterProviders, siteProviders, siteSettings, siteSummary, chapterSummary) = await _unitOfWork.RunAsync(
+        var (emails, chapterEmails, siteSettings) = await _unitOfWork.RunAsync(
             x => x.EmailRepository.GetAll(),
-            x => options.Chapter != null
-                ? x.ChapterEmailRepository.GetByChapterId(options.Chapter.Id)
-                : new DefaultDeferredQueryMultiple<ChapterEmail>(),
-            x => options.Chapter != null
-                ? x.ChapterEmailProviderRepository.GetByChapterId(options.Chapter.Id)
-                : new DefaultDeferredQueryMultiple<ChapterEmailProvider>(),
-            x => x.EmailProviderRepository.GetAll(),
-            x => x.SiteEmailSettingsRepository.Get(platform),
-            x => x.EmailProviderRepository.GetEmailsSentToday(),
-            x => options.Chapter != null
-                ? x.ChapterEmailProviderRepository.GetEmailsSentToday(options.Chapter.Id)
-                : new DefaultDeferredQueryMultiple<EmailProviderSummaryDto>());
+            x => chapterId != null
+                ? x.ChapterEmailRepository.GetByChapterId(chapterId.Value)
+                : new DefaultDeferredQueryMultiple<ChapterEmail>(),            
+            x => x.SiteEmailSettingsRepository.Get(platform));
 
         var layoutEmail = chapterEmails.FirstOrDefault(x => x.Type == EmailType.Layout)?.ToEmail()
             ?? emails.First(x => x.Type == EmailType.Layout);
@@ -265,21 +324,34 @@ public class EmailService : IEmailService
 
         parameters["body"] = body;
 
-        var layoutBody = layoutEmail.HtmlContent;
-        body = layoutBody.Interpolate(parameters.AsReadOnly());
-
-        var emailClientEmail = new EmailClientEmail
+        var queuedEmail = new QueuedEmail
         {
-            Body = body,
-            From = new EmailAddressee(
-                siteSettings.FromEmailAddress, 
-                siteSettings.FromName.Interpolate(parameters.AsReadOnly())),
-            Subject = subject.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode),
-            To = options.To
+            Body = layoutEmail.HtmlContent.Interpolate(parameters.AsReadOnly()),
+            ChapterId = chapterId,
+            CreatedUtc = DateTime.UtcNow,
+            FromEmailAddress = siteSettings.FromEmailAddress,
+            FromName = siteSettings.FromName.Interpolate(parameters.AsReadOnly()),
+            Id = Guid.NewGuid(),
+            Subject = subject.Interpolate(parameters.AsReadOnly())
         };
 
-        var provider = GetProvider(siteProviders, chapterProviders, siteSummary, chapterSummary);
-        var emailClient = _emailClientFactory.Create(provider.Type);
-        return await emailClient.SendEmail(provider, emailClientEmail);
+        _unitOfWork.QueuedEmailRepository.Add(queuedEmail);
+
+        foreach (var recipient in options.To)
+        {
+            _unitOfWork.QueuedEmailRecipientRepository.Add(new QueuedEmailRecipient
+            {
+                EmailAddress = recipient.Address,
+                Id = Guid.NewGuid(),
+                Name = recipient.Name,
+                QueuedEmailId = queuedEmail.Id
+            });
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        
+        _backgroundTaskService.Enqueue(() => SendQueuedEmailTask(queuedEmail.Id, chapterId));
+
+        return ServiceResult.Successful();
     }
 }

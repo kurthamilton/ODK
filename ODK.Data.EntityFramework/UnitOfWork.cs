@@ -79,6 +79,9 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IPaymentCheckoutSessionRepository> _paymentCheckoutSessionRepository;
     private readonly Lazy<IPaymentReconciliationRepository> _paymentReconciliationRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;
+    private readonly Lazy<IQueuedEmailRecipientRepository> _queuedEmailRecipientRepository;
+    private readonly Lazy<IQueuedEmailRepository> _queuedEmailRepository;
+    private readonly Lazy<ISentEmailRepository> _sentEmailRepository;
     private readonly Lazy<ISiteContactMessageReplyRepository> _siteContactMessageReplyRepository;
     private readonly Lazy<ISiteContactMessageRepository> _siteContactMessageRepository;
     private readonly Lazy<ISiteEmailSettingsRepository> _siteEmailSettingsRepository;
@@ -163,6 +166,9 @@ public class UnitOfWork : IUnitOfWork
         _paymentCheckoutSessionRepository = new(() => new PaymentCheckoutSessionRepository(_context));
         _paymentReconciliationRepository = new(() => new PaymentReconciliationRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
+        _queuedEmailRecipientRepository = new(() => new QueuedEmailRecipientRepository(_context));
+        _queuedEmailRepository = new(() => new QueuedEmailRepository(_context));
+        _sentEmailRepository = new(() => new SentEmailRepository(_context));
         _siteContactMessageReplyRepository = new(() => new SiteContactMessageReplyRepository(_context));
         _siteContactMessageRepository = new(() => new SiteContactMessageRepository(_context));
         _siteEmailSettingsRepository = new(() => new SiteEmailSettingsRepository(_context));
@@ -243,6 +249,9 @@ public class UnitOfWork : IUnitOfWork
     public IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository => _paymentCheckoutSessionRepository.Value;
     public IPaymentReconciliationRepository PaymentReconciliationRepository => _paymentReconciliationRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
+    public IQueuedEmailRecipientRepository QueuedEmailRecipientRepository => _queuedEmailRecipientRepository.Value;
+    public IQueuedEmailRepository QueuedEmailRepository => _queuedEmailRepository.Value;
+    public ISentEmailRepository SentEmailRepository => _sentEmailRepository.Value;
     public ISiteContactMessageReplyRepository SiteContactMessageReplyRepository => _siteContactMessageReplyRepository.Value;
     public ISiteContactMessageRepository SiteContactMessageRepository => _siteContactMessageRepository.Value;
     public ISiteEmailSettingsRepository SiteEmailSettingsRepository => _siteEmailSettingsRepository.Value;

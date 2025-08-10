@@ -73,7 +73,10 @@ public interface IUnitOfWork
     INotificationRepository NotificationRepository { get; }
     IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository { get; }
     IPaymentReconciliationRepository PaymentReconciliationRepository { get; }
-    IPaymentRepository PaymentRepository { get; }   
+    IPaymentRepository PaymentRepository { get; }
+    IQueuedEmailRecipientRepository QueuedEmailRecipientRepository { get; }
+    IQueuedEmailRepository QueuedEmailRepository { get; }
+    ISentEmailRepository SentEmailRepository { get; }
     ISiteContactMessageReplyRepository SiteContactMessageReplyRepository { get; }
     ISiteContactMessageRepository SiteContactMessageRepository { get; }
     ISiteEmailSettingsRepository SiteEmailSettingsRepository { get; }

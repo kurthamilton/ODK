@@ -82,7 +82,8 @@ public class Program
                     {
                         SchemaName = appSettings.Hangfire.SchemaName
                     });
-            });
+            })
+            .AddHangfireServer();
 
         return builder;
     }
