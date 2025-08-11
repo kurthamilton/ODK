@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+﻿using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using ODK.Core.Exceptions;
@@ -6,6 +7,7 @@ using ODK.Data.Core;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
+using ODK.Web.Common.Config.Settings;
 using HttpRequest = ODK.Services.Logging.HttpRequest;
 
 namespace ODK.Web.Razor.Middleware;
@@ -23,20 +25,21 @@ public class ErrorHandlingMiddleware
         HttpContext context, 
         IRequestCache requestCache, 
         ILoggingService loggingService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        AppSettings appSettings)
     {
         try
         {
             await _next(context);
 
             if (context.Response.StatusCode == 404)
-            {
+            {                
                 throw new OdkNotFoundException($"Path not found: {context.Request.Path}");
             }
         }
         catch (Exception ex)
         {            
-            await LogError(context, ex, loggingService);
+            await LogError(context, ex, loggingService, appSettings);
 
             context.Response.StatusCode = ex switch
             {
@@ -119,8 +122,14 @@ public class ErrorHandlingMiddleware
         return defaultPath;
     }
 
-    private async Task LogError(HttpContext httpContext, Exception ex, ILoggingService loggingService)
+    private async Task LogError(HttpContext httpContext, Exception ex, ILoggingService loggingService, AppSettings appSettings)
     {
+        if (ex is OdkNotFoundException &&
+            appSettings.Logging.NotFound.IgnorePatterns.Any(x => Regex.IsMatch(httpContext.Request.Path, x)))
+        {
+            return;
+        }
+
         var headers = httpContext.Request.Headers
             .ToDictionary(x => x.Key, x => x.Value.ToString());
 
