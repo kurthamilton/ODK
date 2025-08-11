@@ -83,7 +83,10 @@ public class Program
                         SchemaName = appSettings.Hangfire.SchemaName
                     });
             })
-            .AddHangfireServer();
+            .AddHangfireServer(options =>
+            {
+                options.WorkerCount = appSettings.Hangfire.WorkerCount;
+            });
 
         return builder;
     }
