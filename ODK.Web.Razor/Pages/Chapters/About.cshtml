@@ -11,14 +11,20 @@
     Model.Title = "About";
     Model.Description = "More information about this Drunken Knitwits chapter, including some frequently asked questions";
 
-    OdkAssertions.MeetsCondition(
-        Model.Chapter, 
-        x => x.IsOpenForRegistration(),
-        $"Chapter {Model.Chapter.Name} is not open for registration");
-
     var texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
 
     Model.Path = $"/{Model.Chapter.Name}/about";
+}
+
+@if (!Model.Chapter.IsOpenForRegistration())
+{
+    @await Html.PartialAsync("Components/_Body", new BodyViewModel
+    {
+        Title = $"{Model.Chapter.Name} Drunken Knitwits",
+        Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", Model.Chapter)
+    })
+
+    return;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

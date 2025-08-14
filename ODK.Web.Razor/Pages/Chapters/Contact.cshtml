@@ -12,14 +12,20 @@
     Model.Title = "Contact";
     Model.Description = "Form for sending messages to the owners of this Drunken Knitwits chapter";    
 
-    OdkAssertions.MeetsCondition(
-        Model.Chapter, 
-        x => x.IsOpenForRegistration(),
-        $"Chapter {Model.Chapter.Name} is not open for registration");
-
     var viewModel = await ChapterViewModelService.GetGroupContactPage(Model.CurrentMemberIdOrDefault, Model.Chapter.Slug);
 
     Model.Path = $"/{viewModel.Chapter.Name}/contact";
+}
+
+@if (!viewModel.Chapter.IsOpenForRegistration())
+{
+    @await Html.PartialAsync("Components/_Body", new BodyViewModel
+    {
+        Title = $"{viewModel.Chapter.Name} Drunken Knitwits",
+        Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", viewModel.Chapter)
+    })
+
+    return;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

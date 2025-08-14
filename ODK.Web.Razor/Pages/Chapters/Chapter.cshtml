@@ -37,6 +37,17 @@
     Model.Location = viewModel.ChapterLocation;
 }
 
+@if (!viewModel.Chapter.IsOpenForRegistration())
+{
+    @await Html.PartialAsync("Components/_Body", new BodyViewModel
+    {
+        Title = $"{viewModel.Chapter.Name} Drunken Knitwits",
+        Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", viewModel.Chapter)
+    })
+
+    return;
+}
+
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
 {
     Title = viewModel.Chapter.Name,

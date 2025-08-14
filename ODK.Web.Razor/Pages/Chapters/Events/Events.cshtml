@@ -11,12 +11,18 @@
 
     var viewModel = await EventViewModelService.GetEventsPage(Model.CurrentMemberIdOrDefault, Model.ChapterName);
 
-    OdkAssertions.MeetsCondition(
-        viewModel.Chapter, 
-        x => x.IsOpenForRegistration(),
-        $"Chapter {viewModel.Chapter.GetDisplayName(viewModel.Platform)} is not open for registration");
-
     Model.Path = $"/{viewModel.Chapter.Name}/events";
+}
+
+@if (!viewModel.Chapter.IsOpenForRegistration())
+{
+    @await Html.PartialAsync("Components/_Body", new BodyViewModel
+    {
+        Title = $"{viewModel.Chapter.Name} Drunken Knitwits",
+        Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", viewModel.Chapter)
+    })
+
+    return;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

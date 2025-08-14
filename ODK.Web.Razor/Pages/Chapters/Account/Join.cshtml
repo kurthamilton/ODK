@@ -12,6 +12,17 @@
     var viewModel = await AccountViewModelService.GetChapterJoinPage(Model.ChapterName);    
 }
 
+@if (!viewModel.Chapter.IsOpenForRegistration())
+{
+    @await Html.PartialAsync("Components/_Body", new BodyViewModel
+    {
+        Title = $"{viewModel.Chapter.Name} Drunken Knitwits",
+        Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", viewModel.Chapter)
+    })
+
+    return;
+}
+
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Title = $"Join the {viewModel.Chapter.Name} Drunken Knitwits",

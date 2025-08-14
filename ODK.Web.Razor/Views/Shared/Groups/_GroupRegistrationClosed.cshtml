@@ -1,0 +1,10 @@
+﻿@using ODK.Core.Chapters
+@model Chapter
+
+<p>
+    This group is not open for registration.
+</p>
+@if (!string.IsNullOrEmpty(Model.RedirectUrl))
+{
+    <p>In the meantime, you can find us <a href="@Model.RedirectUrl" target="_blank">here</a>.</p>
+}

@@ -9,12 +9,18 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Login";
 
-    OdkAssertions.MeetsCondition(
-        Model.Chapter, 
-        x => x.IsOpenForRegistration(),
-        $"Chapter {Model.Chapter.Name} is not open for registration");
-
     var viewModel = await AccountViewModelService.GetChapterLoginPage();
+}
+
+@if (!Model.Chapter.IsOpenForRegistration())
+{
+    @await Html.PartialAsync("Components/_Body", new BodyViewModel
+    {
+        Title = $"{Model.Chapter.Name} Drunken Knitwits",
+        Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", Model.Chapter)
+    })
+
+    return;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
