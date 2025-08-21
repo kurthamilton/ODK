@@ -24,4 +24,12 @@ public class RedirectController : Controller
         var url = OdkRoutes.Account.Join(chapter);
         return RedirectPermanent(url);
     }
+
+    [Route("{chapterName}/login")]
+    public async Task<IActionResult> ChapterLogin(string chapterName)
+    {
+        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var url = OdkRoutes.Account.Login(chapter);
+        return RedirectPermanent(url);
+    }
 }
