@@ -14,6 +14,7 @@
 
     @if (memberId != null)
     {
+        @Html.HiddenFor(x => x.EmailAddress)
         <div class="form-control-plaintext">
             @Model.EmailAddress
             <a href="@OdkRoutes.Account.EmailAddressChange(Model.Chapter)">Change</a>
