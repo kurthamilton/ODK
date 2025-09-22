@@ -3,7 +3,6 @@ using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
-using ODK.Core.Subscriptions;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 

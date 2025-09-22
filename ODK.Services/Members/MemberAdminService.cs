@@ -787,13 +787,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         foreach (var member in members)
         {
-            if (!memberSubscriptionsDictionary.TryGetValue(member.Id, out var memberSubscription))
-            {
-                continue;
-            }
+            memberSubscriptionsDictionary.TryGetValue(member.Id, out var memberSubscription);
+
+            var subscriptionType = memberSubscription?.Type ?? SubscriptionType.Full;
 
             var status = _authorizationService.GetSubscriptionStatus(member, memberSubscription, membershipSettings);
-            if (filter.Types.Contains(memberSubscription.Type) &&
+            if (filter.Types.Contains(subscriptionType) &&
                 filter.Statuses.Contains(status))
             {
                 yield return member;
