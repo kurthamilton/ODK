@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using ODK.Core;
 using ODK.Core.Members;
+using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Members;
 using IAuthenticationService = ODK.Services.Authentication.IAuthenticationService;
@@ -18,20 +20,35 @@ public class LoginHandler : ILoginHandler
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IMemberService _memberService;
     private readonly IOAuthProviderFactory _oauthProviderFactory;
-    private readonly LoginHandlerSettings _settings; 
+    private readonly LoginHandlerSettings _settings;
+    private readonly IUnitOfWork _unitOfWork;
 
     public LoginHandler(
         IAuthenticationService authenticationService, 
         LoginHandlerSettings settings,
         IHttpContextAccessor httpContextAccessor,
         IOAuthProviderFactory oauthProviderFactory,
-        IMemberService memberService)
+        IMemberService memberService,
+        IUnitOfWork unitOfWork)
     {
         _authenticationService = authenticationService;
         _httpContextAccessor = httpContextAccessor;
         _memberService = memberService;
         _oauthProviderFactory = oauthProviderFactory;
         _settings = settings;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<AuthenticationResult> Impersonate(Guid currentMemberId, Guid memberId)
+    {
+        var (currentMember, member) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberRepository.GetById(memberId));
+
+        OdkAssertions.MeetsCondition(currentMember, x => x.SuperAdmin);
+
+        await Logout();
+        return await Login(member);
     }
 
     public async Task<AuthenticationResult> Login(string username, string password, 

@@ -1,0 +1,8 @@
+﻿@using ODK.Web.Razor.Models.SuperAdmin
+@model ImpersonateFormViewModel
+
+<div class="form-group mb-3 required">
+    @Html.LabelFor(x => x.MemberId, new { @class = "form-label" })
+    @Html.TextBoxFor(x => x.MemberId, new { @class = "form-control" })
+    @Html.ValidationMessageFor(x => x.MemberId)
+</div>
