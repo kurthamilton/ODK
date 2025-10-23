@@ -118,6 +118,7 @@ public class PayPalPaymentProvider : IPaymentProvider
         var subscription = await client.GetSubscription(externalId);
         return subscription != null ? new ExternalSubscription
         {
+            CancelDate = null,
             ExternalId = subscription.Id,
             ExternalSubscriptionPlanId = subscription.PlanId,
             LastPaymentDate = subscription.BillingInfo?.LastPayment?.Date,

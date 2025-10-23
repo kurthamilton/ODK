@@ -2,6 +2,8 @@
 
 public class ExternalSubscription
 {
+    public required DateTime? CancelDate { get; init; }
+
     public required string ExternalId { get; init; }
 
     public required string ExternalSubscriptionPlanId { get; init; }    
