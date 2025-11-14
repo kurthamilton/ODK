@@ -588,8 +588,12 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Payment not made: you are not a member of this subscription's chapter");
         }
 
-        var paymentResult = await _paymentService.MakePayment(paymentSettings, 
-            paymentSettings.Currency, member, (decimal)chapterSubscription.Amount, cardToken, 
+        var paymentResult = await _paymentService.MakePayment(
+            paymentSettings, 
+            paymentSettings.Currency, 
+            member, 
+            (decimal)chapterSubscription.Amount, 
+            cardToken, 
             chapterSubscription.Title);
         if (!paymentResult.Success)
         {
@@ -775,6 +779,7 @@ public class MemberService : IMemberService
             Amount = (decimal)memberSubscriptionRecord.Amount,
             ChapterId = memberSubscriptionRecord.ChapterId,
             CurrencyId = chapterPaymentSettings.CurrencyId,
+            ExternalId = checkoutSession.SubscriptionId,
             Id = memberSubscriptionRecord.PaymentId.Value,
             MemberId = memberSubscriptionRecord.MemberId,
             PaidUtc = memberSubscriptionRecord.PurchasedUtc,

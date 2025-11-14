@@ -15,6 +15,8 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
     {
     }
 
+    public IDeferredQueryMultiple<Payment> GetAll() => Set().DeferredMultiple();
+
     public IDeferredQueryMultiple<PaymentChapterDto> GetChapterDtosByMemberId(Guid memberId)
     {
         var query =

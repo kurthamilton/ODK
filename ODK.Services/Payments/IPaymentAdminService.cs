@@ -11,5 +11,7 @@ public interface IPaymentAdminService
 
     Task<ChapterReconciliationsViewModel> GetReconciliations(AdminServiceRequest request);
 
+    Task<IReadOnlyCollection<MissingPaymentModel>> GetMissingPayments(Guid currentMemberId);
+
     Task SetPaymentReconciliationExemption(AdminServiceRequest request, Guid paymentId, bool exempt);
 }

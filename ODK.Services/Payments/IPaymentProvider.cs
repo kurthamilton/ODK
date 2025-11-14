@@ -1,4 +1,6 @@
-﻿namespace ODK.Services.Payments;
+﻿using ODK.Services.Payments.Models;
+
+namespace ODK.Services.Payments;
 
 public interface IPaymentProvider
 {
@@ -22,14 +24,16 @@ public interface IPaymentProvider
 
     Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId);
 
+    Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments();
+
     Task<string?> GetProductId(string name);
 
     Task<ExternalSubscription?> GetSubscription(string externalId);
 
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);
 
-    Task<ServiceResult> MakePayment(string currencyCode, decimal amount, string cardToken, 
-        string description, string memberName);
+    Task<RemotePaymentResult> MakePayment(string currencyCode, decimal amount, string cardToken, 
+        string description, Guid memberId, string memberName);
 
     Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
         string paymentId, string note);

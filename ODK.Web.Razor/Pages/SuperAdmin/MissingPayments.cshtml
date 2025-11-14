@@ -1,0 +1,16 @@
+﻿@page "/superadmin/payments/missing"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Payments
+@using ODK.Web.Common.Extensions
+@model ODK.Web.Razor.Pages.SuperAdmin.MissingPaymentsModel
+@inject IPaymentAdminService PaymentAdminService
+@{
+    Layout = "_SiteAdminLayout";
+    Model.Title = "Payments | SuperAdmin";
+
+    var memberId = User.MemberId();
+    var missingPayments = await PaymentAdminService.GetMissingPayments(memberId);
+}
+
+@await Html.PartialAsync("SuperAdmin/_MissingPaymentsContent", missingPayments)

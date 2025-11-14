@@ -109,6 +109,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             Amount = siteSubscriptionPrice.Amount,
             ChapterId = null,
             CurrencyId = siteSubscriptionPrice.CurrencyId,
+            ExternalId = checkoutSession.SessionId,
             Id = Guid.NewGuid(),
             MemberId = memberId,
             PaidUtc = DateTime.UtcNow,

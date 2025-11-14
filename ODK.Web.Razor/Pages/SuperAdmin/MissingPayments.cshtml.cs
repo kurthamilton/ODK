@@ -2,9 +2,9 @@ using ODK.Services.Caching;
 
 namespace ODK.Web.Razor.Pages.SuperAdmin;
 
-public class PaymentsModel : SuperAdminPageModel
+public class MissingPaymentsModel : SuperAdminPageModel
 {
-    public PaymentsModel(IRequestCache requestCache) 
+    public MissingPaymentsModel(IRequestCache requestCache)
         : base(requestCache)
     {
     }

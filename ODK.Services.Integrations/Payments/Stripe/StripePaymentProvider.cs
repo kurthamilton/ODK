@@ -1,8 +1,11 @@
-﻿using ODK.Core.Payments;
+﻿using System.Linq;
+using ODK.Core.Extensions;
+using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
 using Stripe;
 using Stripe.Checkout;
 
@@ -161,6 +164,40 @@ public class StripePaymentProvider : IPaymentProvider
             ?.Id;
     }
 
+    public async Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments()
+    {        
+        var invoices = await GetAllInvoices();
+
+        var remotePayments = new List<RemotePaymentModel>();
+
+        foreach (var invoice in invoices)
+        {
+            var customer = invoice.Customer;
+
+            foreach (var payment in invoice.Payments)
+            {
+                if (payment.AmountPaid == null)
+                {
+                    continue;
+                }
+
+                var remotePayment = new RemotePaymentModel
+                {
+                    Amount = (decimal)payment.AmountPaid / 100,
+                    Created = invoice.Created,
+                    Currency = invoice.Currency,
+                    CustomerEmail = invoice.CustomerEmail,
+                    Id = payment.Id,
+                    SubscriptionId = invoice.Parent.SubscriptionDetails?.SubscriptionId
+                };
+
+                remotePayments.Add(remotePayment);
+            }
+        }
+
+        return remotePayments;
+    }
+
     public async Task<ExternalSubscription?> GetSubscription(string externalId)
     {
         var service = CreateSubscriptionService();
@@ -227,8 +264,8 @@ public class StripePaymentProvider : IPaymentProvider
         }
     }
 
-    public async Task<ServiceResult> MakePayment(string currencyCode, decimal amount, 
-        string cardToken, string description, string memberName)
+    public async Task<RemotePaymentResult> MakePayment(string currencyCode, decimal amount, 
+        string cardToken, string description, Guid memberId, string memberName)
     {
         var service = CreatePaymentIntentService();
         var intent = await service.CreateAsync(new PaymentIntentCreateOptions
@@ -251,11 +288,15 @@ public class StripePaymentProvider : IPaymentProvider
                     }
 
                 }
+            },            
+            Metadata = new Dictionary<string, string>
+            {
+                { "member_id", memberId.ToString() }
             }
         });
 
         intent = await service.ConfirmAsync(intent.Id);
-        return ServiceResult.Successful();
+        return RemotePaymentResult.Successful(intent.Id);
     }
 
     public Task<string?> SendPayment(string currencyCode, decimal amount, 
@@ -299,6 +340,13 @@ public class StripePaymentProvider : IPaymentProvider
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
     {
         throw new NotImplementedException();
+    }
+
+    private async Task<IReadOnlyCollection<Invoice>> GetAllInvoices()
+    {
+        var service = CreateInvoiceService();
+
+        return await service.ListAutoPagingAsync().All();
     }
 
     private InvoiceService CreateInvoiceService() => new InvoiceService(_client);

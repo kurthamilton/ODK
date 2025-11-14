@@ -2,6 +2,10 @@
 
 public class Payment : IDatabaseEntity
 {
+    public Payment()
+    {
+    }
+
     public decimal Amount { get; set; }
 
     public Guid? ChapterId { get; set; }
@@ -9,6 +13,8 @@ public class Payment : IDatabaseEntity
     public Guid CurrencyId { get; set; }
 
     public bool ExemptFromReconciliation { get; set; }
+
+    public string? ExternalId { get; set; }
 
     public Guid Id { get; set; }
 

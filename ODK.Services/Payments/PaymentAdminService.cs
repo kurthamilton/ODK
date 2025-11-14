@@ -9,14 +9,17 @@ namespace ODK.Services.Payments;
 
 public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
 {
+    private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public PaymentAdminService(
         IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider) 
+        IPlatformProvider platformProvider,
+        IPaymentProviderFactory paymentProviderFactory) 
         : base(unitOfWork)
     {
+        _paymentProviderFactory = paymentProviderFactory;
         _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
@@ -112,6 +115,66 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
                 .OrderByDescending(x => x.CreatedUtc)
                 .ToArray()
         };
+    }
+
+    public async Task<IReadOnlyCollection<MissingPaymentModel>> GetMissingPayments(Guid currentMemberId)
+    {
+        var (ourPayments, sitePaymentSettings, currencies) = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.PaymentRepository.GetAll(),
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.CurrencyRepository.GetAll());
+        
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings);
+
+        var theirPayments = await paymentProvider.GetAllPayments();
+
+        var ourPaymentsDictionary = ourPayments
+            .Where(x => !string.IsNullOrEmpty(x.ExternalId))
+            .ToDictionary(x => x.ExternalId ?? "");
+
+        var missingPayments = theirPayments
+            .Where(x => !ourPaymentsDictionary.ContainsKey(x.Id))
+            .ToArray();
+
+        var emailAddresses = missingPayments
+            .Where(x => !string.IsNullOrEmpty(x.CustomerEmail))
+            .Select(x => x.CustomerEmail)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Cast<string>()
+            .ToArray();
+
+        var externalIds = missingPayments
+            .Select(x => x.Id)
+            .ToArray();
+
+        var members = await _unitOfWork.MemberRepository.GetByEmailAddresses(emailAddresses).Run();
+        var memberDictionary = members
+            .ToDictionary(x => x.EmailAddress, StringComparer.OrdinalIgnoreCase);
+
+        var memberSubscriptionRecords = await _unitOfWork.MemberSubscriptionRecordRepository
+            .GetByExternalIds(externalIds)
+            .Run();
+        var memberSubscriptionRecordDictionary = memberSubscriptionRecords
+            .ToDictionary(x => x.ExternalId ?? "", StringComparer.OrdinalIgnoreCase);
+
+        var currencyDictionary = currencies
+            .ToDictionary(x => x.Code, StringComparer.OrdinalIgnoreCase);
+
+        return missingPayments
+            .Select(x => new MissingPaymentModel
+            {
+                Amount = x.Amount,
+                Created = x.Created,
+                Currency = currencyDictionary[x.Currency],
+                Member = !string.IsNullOrEmpty(x.CustomerEmail) && memberDictionary.ContainsKey(x.CustomerEmail) 
+                    ? memberDictionary[x.CustomerEmail] 
+                    : null,
+                MemberEmail = x.CustomerEmail,
+                MemberSubscriptionRecord = memberSubscriptionRecordDictionary.ContainsKey(x.Id)
+                    ? memberSubscriptionRecordDictionary[x.Id] 
+                    : null
+            })
+            .ToArray();
     }
 
     public async Task SetPaymentReconciliationExemption(AdminServiceRequest request, Guid paymentId, bool exempt)

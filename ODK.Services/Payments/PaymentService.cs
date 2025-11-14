@@ -3,16 +3,22 @@ using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Data.Core;
+using ODK.Services.Logging;
 
 namespace ODK.Services.Payments;
 
 public class PaymentService : IPaymentService
 {
+    private readonly ILoggingService _loggingService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
-    public PaymentService(IUnitOfWork unitOfWork, IPaymentProviderFactory paymentProviderFactory)
+    public PaymentService(
+        IUnitOfWork unitOfWork, 
+        IPaymentProviderFactory paymentProviderFactory,
+        ILoggingService loggingService)
     {
+        _loggingService = loggingService;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }
@@ -74,8 +80,13 @@ public class PaymentService : IPaymentService
         return await provider.GetSubscriptionPlan(externalId);
     }
 
-    public async Task<ServiceResult> MakePayment(ChapterPaymentSettings chapterPaymentSettings, 
-        Currency currency, Member member, decimal amount, string cardToken, string reference)
+    public async Task<ServiceResult> MakePayment(
+        ChapterPaymentSettings chapterPaymentSettings, 
+        Currency currency, 
+        Member member, 
+        decimal amount, 
+        string cardToken, 
+        string reference)
     {
         var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository.GetActive().Run();
 
@@ -85,11 +96,18 @@ public class PaymentService : IPaymentService
             ? _paymentProviderFactory.GetPaymentProvider(chapterPaymentSettings)
             : sitePaymentProvider;
 
-        var paymentResult = await paymentProvider.MakePayment(currency.Code, amount, cardToken, reference,
+        var paymentResult = await paymentProvider.MakePayment(
+            currency.Code, 
+            amount, 
+            cardToken, 
+            reference,
+            member.Id,
             member.FullName);
         if (!paymentResult.Success)
         {
-            return paymentResult;
+            await _loggingService.Error(
+                $"Error making payment for member {member.Id} for {amount} with reference '{reference}': {paymentResult.Message}");
+            return ServiceResult.Failure(paymentResult.Message);
         }
 
         var payment = new Payment
@@ -97,6 +115,7 @@ public class PaymentService : IPaymentService
             Amount = amount,
             ChapterId = chapterPaymentSettings.ChapterId,
             CurrencyId = currency.Id,
+            ExternalId = paymentResult.Id,
             MemberId = member.Id,
             PaidUtc = DateTime.UtcNow,
             Reference = reference
