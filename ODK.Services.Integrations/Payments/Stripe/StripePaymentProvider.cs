@@ -166,7 +166,10 @@ public class StripePaymentProvider : IPaymentProvider
 
     public async Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments()
     {        
-        var invoices = await GetAllInvoices();
+        var invoices = await GetAllInvoices(new InvoiceListOptions
+        {
+            Expand = ["data.payments"]
+        });
 
         var remotePayments = new List<RemotePaymentModel>();
 
@@ -189,7 +192,7 @@ public class StripePaymentProvider : IPaymentProvider
                     CustomerEmail = invoice.CustomerEmail,
                     Id = payment.Id,
                     SubscriptionId = invoice.Parent.SubscriptionDetails?.SubscriptionId
-                };
+                };                
 
                 remotePayments.Add(remotePayment);
             }
@@ -342,11 +345,12 @@ public class StripePaymentProvider : IPaymentProvider
         throw new NotImplementedException();
     }
 
-    private async Task<IReadOnlyCollection<Invoice>> GetAllInvoices()
+    private async Task<IReadOnlyCollection<Invoice>> GetAllInvoices(
+        InvoiceListOptions? options = null)
     {
         var service = CreateInvoiceService();
 
-        return await service.ListAutoPagingAsync().All();
+        return await service.ListAutoPagingAsync(options).All();
     }
 
     private InvoiceService CreateInvoiceService() => new InvoiceService(_client);
