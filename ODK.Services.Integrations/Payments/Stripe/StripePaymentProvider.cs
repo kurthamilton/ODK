@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using ODK.Core.Chapters;
 using ODK.Core.Extensions;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
@@ -165,11 +166,23 @@ public class StripePaymentProvider : IPaymentProvider
     }
 
     public async Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments()
-    {        
-        var invoices = await GetAllInvoices(new InvoiceListOptions
-        {
-            Expand = ["data.payments"]
-        });
+    {
+        var (invoices, paymentIntents, subscriptions) = await TaskUtils.WhenAll(
+            GetAllInvoices(new InvoiceListOptions
+            {
+                Expand = ["data.payments"]
+            }),
+            GetAllPaymentIntents(new PaymentIntentListOptions
+            {
+                Expand = ["data.latest_charge"]
+            }), 
+            GetAllSubscriptions());
+
+        var paymentIntentDictionary = paymentIntents
+            .ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
+
+        var subscriptionDictionary = subscriptions
+            .ToDictionary(x => x.Id, StringComparer.OrdinalIgnoreCase);
 
         var remotePayments = new List<RemotePaymentModel>();
 
@@ -184,13 +197,32 @@ public class StripePaymentProvider : IPaymentProvider
                     continue;
                 }
 
+                var paymentIntentId = payment.Payment.PaymentIntentId;
+
+                if (paymentIntentDictionary.TryGetValue(paymentIntentId, out var paymentIntent))
+                {
+                    if (paymentIntent.LatestCharge.Refunded)
+                    {
+                        continue;
+                    }
+                }
+
+                var subscriptionId = invoice.Parent.SubscriptionDetails?.SubscriptionId;                
+
+                if (!string.IsNullOrEmpty(subscriptionId))
+                {
+                    subscriptionDictionary.TryGetValue(subscriptionId, out var subscription);
+                }
+
+                var created = paymentIntent?.LatestCharge.Created ?? invoice.Created;
+
                 var remotePayment = new RemotePaymentModel
                 {
                     Amount = (decimal)payment.AmountPaid / 100,
-                    Created = invoice.Created,
+                    Created = TimeZoneInfo.ConvertTimeFromUtc(created, Chapter.DefaultTimeZone),
                     Currency = invoice.Currency,
                     CustomerEmail = invoice.CustomerEmail,
-                    Id = payment.Id,
+                    PaymentId = paymentIntentId,
                     SubscriptionId = invoice.Parent.SubscriptionDetails?.SubscriptionId
                 };                
 
@@ -351,6 +383,19 @@ public class StripePaymentProvider : IPaymentProvider
         var service = CreateInvoiceService();
 
         return await service.ListAutoPagingAsync(options).All();
+    }
+
+    private async Task<IReadOnlyCollection<PaymentIntent>> GetAllPaymentIntents(
+        PaymentIntentListOptions? options = null)
+    {
+        var service = CreatePaymentIntentService();
+        return await service.ListAutoPagingAsync(options).All();
+    }
+
+    private async Task<IReadOnlyCollection<Subscription>> GetAllSubscriptions()
+    {
+        var service = CreateSubscriptionService();
+        return await service.ListAutoPagingAsync().All();
     }
 
     private InvoiceService CreateInvoiceService() => new InvoiceService(_client);

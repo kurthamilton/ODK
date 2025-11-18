@@ -7,7 +7,7 @@
 @inject IPaymentAdminService PaymentAdminService
 @{
     Layout = "_SiteAdminLayout";
-    Model.Title = "Payments | SuperAdmin";
+    Model.Title = "Missing payments | SuperAdmin";
 
     var memberId = User.MemberId();
     var missingPayments = await PaymentAdminService.GetMissingPayments(memberId);

@@ -1,4 +1,5 @@
-﻿using ODK.Core.Payments;
+﻿using System.ComponentModel.DataAnnotations;
+using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Exceptions;
@@ -133,7 +134,27 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             .ToDictionary(x => x.ExternalId ?? "");
 
         var missingPayments = theirPayments
-            .Where(x => !ourPaymentsDictionary.ContainsKey(x.Id))
+            .Where(x =>
+                !ourPaymentsDictionary.ContainsKey(x.PaymentId) &&
+                (x.SubscriptionId == null || !ourPaymentsDictionary.ContainsKey(x.SubscriptionId)))
+            .ToArray();
+
+        var testSubId = "sub_1SPivRKsnJKOyzEL51zR0HfO";
+        var theirPayments2 = theirPayments
+            .Where(x => string.Equals(x.SubscriptionId, testSubId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var ourPayments2 = ourPayments
+            .Where(x => string.Equals(x.ExternalId, testSubId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        var ourPaymentsDictionary2 = ourPayments2
+            .Where(x => !string.IsNullOrEmpty(x.ExternalId))
+            .ToDictionary(x => x.ExternalId ?? "");
+
+        var missingPayments2 = theirPayments2
+            .Where(x =>
+                !ourPaymentsDictionary2.ContainsKey(x.PaymentId) &&
+                (x.SubscriptionId == null || !ourPaymentsDictionary2.ContainsKey(x.SubscriptionId)))
             .ToArray();
 
         var emailAddresses = missingPayments
@@ -144,7 +165,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             .ToArray();
 
         var externalIds = missingPayments
-            .Select(x => x.Id)
+            .Select(x => x.PaymentId)
             .ToArray();
 
         var members = await _unitOfWork.MemberRepository.GetByEmailAddresses(emailAddresses).Run();
@@ -170,9 +191,11 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
                     ? memberDictionary[x.CustomerEmail] 
                     : null,
                 MemberEmail = x.CustomerEmail,
-                MemberSubscriptionRecord = memberSubscriptionRecordDictionary.ContainsKey(x.Id)
-                    ? memberSubscriptionRecordDictionary[x.Id] 
-                    : null
+                MemberSubscriptionRecord = memberSubscriptionRecordDictionary.ContainsKey(x.PaymentId)
+                    ? memberSubscriptionRecordDictionary[x.PaymentId] 
+                    : null,
+                PaymentId = x.PaymentId,
+                SubscriptionId = x.SubscriptionId
             })
             .ToArray();
     }

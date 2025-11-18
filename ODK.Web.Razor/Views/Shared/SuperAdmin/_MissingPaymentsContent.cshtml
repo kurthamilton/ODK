@@ -20,6 +20,8 @@
                     <th>Member</th>
                     <th>Amount</th>
                     <th>Member subscription</th>
+                    <th>Payment Id</th>
+                    <th>Subscription Id</th>
                 </tr>
             </thead>
             <tbody>
@@ -31,6 +33,8 @@
                         <td>@missingPayment.Member?.Id</td>
                         <td>@missingPayment.Currency.ToAmountString(missingPayment.Amount)</td>
                         <td>@missingPayment.MemberSubscriptionRecord?.Id</td>
+                        <td>@missingPayment.PaymentId</td>
+                        <td>@missingPayment.SubscriptionId</td>
                     </tr>
                 }
             </tbody>

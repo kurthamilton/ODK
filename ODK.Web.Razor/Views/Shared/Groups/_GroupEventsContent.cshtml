@@ -31,7 +31,7 @@
                 ForceDisplayYear = past,
                 FullWidth = true,
                 Platform = Model.Platform,
-                TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+                TimeZone = Model.Chapter.TimeZone ?? Chapter.DefaultTimeZone
             })
         </div>
 })

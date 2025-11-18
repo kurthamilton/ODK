@@ -16,4 +16,8 @@ public class MissingPaymentModel
     public required string? MemberEmail { get; init; }
 
     public required MemberSubscriptionRecord? MemberSubscriptionRecord { get; init; }
+
+    public required string PaymentId { get; init; }
+
+    public required string? SubscriptionId { get; init; }
 }

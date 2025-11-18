@@ -10,7 +10,7 @@ public class RemotePaymentModel
 
     public required string? CustomerEmail { get; init; }
 
-    public required string Id { get; init; }
+    public required string PaymentId { get; init; }
 
     public required string? SubscriptionId { get; init; }
 }

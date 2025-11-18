@@ -8,6 +8,8 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
 
     public const string DrunkenKnitwitsSuffix = " Drunken Knitwits";
 
+    public static readonly TimeZoneInfo DefaultTimeZone = TimeZoneInfo.FindSystemTimeZoneById(DefaultTimeZoneId);
+
     public DateTime? ApprovedUtc { get; set; }
 
     public string? BannerImageUrl { get; set; }
