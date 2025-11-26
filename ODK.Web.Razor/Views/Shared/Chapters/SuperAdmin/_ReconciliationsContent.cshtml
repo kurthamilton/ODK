@@ -31,9 +31,14 @@
                     {
                         var payment = dto.Payment;
 
+                        if (payment.PaidUtc == null)
+                        {
+                            continue;
+                        }
+
                         <tr>
                             <td>
-                                @payment.PaidUtc.ToString("yyyy-MM-dd HH:mm:ss")
+                                @payment.PaidUtc.Value.ToString("yyyy-MM-dd HH:mm:ss")
                             </td>
                             <td>
                                 @viewModel.PaymentSettings.Currency.ToAmountString(payment.Amount)

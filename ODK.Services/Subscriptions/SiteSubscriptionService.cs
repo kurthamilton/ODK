@@ -8,6 +8,7 @@ using ODK.Data.Core.Deferred;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
 using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Subscriptions;
@@ -264,10 +265,20 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             throw new Exception("Error starting checkout session: subscriptionPlan not found");
         }
 
-        var session = await _paymentService.StartCheckoutSession(paymentSettings, subscriptionPlan, returnPath);
+        var paymentCheckoutSessionId = Guid.NewGuid();
+
+        var metadata = new PaymentMetadataModel
+        {
+            MemberId = memberId,
+            PaymentCheckoutSessionId = paymentCheckoutSessionId
+        };
+
+        var session = await _paymentService.StartCheckoutSession(
+            paymentSettings, subscriptionPlan, returnPath, metadata);
 
         _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
         {
+            Id = paymentCheckoutSessionId,
             MemberId = memberId,
             PaymentId = priceId,
             SessionId = session.SessionId,

@@ -95,6 +95,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public ISiteSettingsRepository SiteSettingsRepository => Mock.Object.SiteSettingsRepository;
     public ISiteSubscriptionPriceRepository SiteSubscriptionPriceRepository => Mock.Object.SiteSubscriptionPriceRepository;
     public ISiteSubscriptionRepository SiteSubscriptionRepository => Mock.Object.SiteSubscriptionRepository;
+    public IPaymentProviderWebhookEventRepository PaymentProviderWebhookEventRepository => Mock.Object.PaymentProviderWebhookEventRepository;
     public ITopicGroupRepository TopicGroupRepository => Mock.Object.TopicGroupRepository;
     public ITopicRepository TopicRepository => Mock.Object.TopicRepository;
     public IVenueLocationRepository VenueLocationRepository => Mock.Object.VenueLocationRepository;

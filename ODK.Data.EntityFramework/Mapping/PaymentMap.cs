@@ -14,6 +14,9 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.CreatedUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.Id)
             .HasColumnName("PaymentId");
 

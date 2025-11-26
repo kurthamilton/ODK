@@ -2,6 +2,7 @@
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
+using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;
 
@@ -28,6 +29,13 @@ public interface IPaymentService
     Task<ServiceResult> MakePayment(ChapterPaymentSettings chapterPaymentSettings, 
         Currency currency, Member member, decimal amount, string cardToken, string reference);
 
+    Task ProcessWebhook(PaymentProviderWebhook webhook);
+
     Task<ExternalCheckoutSession> StartCheckoutSession(
-        IPaymentSettings settings, ExternalSubscriptionPlan subscriptionPlan, string returnPath);
+        IPaymentSettings settings, 
+        ExternalSubscriptionPlan subscriptionPlan, 
+        string returnPath,
+        PaymentMetadataModel metadata);
+
+    Task UpdatePaymentMetadata(IPaymentSettings settings, string externalId, PaymentMetadataModel metadata);
 }

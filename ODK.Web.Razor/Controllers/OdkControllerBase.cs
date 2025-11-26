@@ -60,6 +60,13 @@ public abstract class OdkControllerBase : Controller
         return map(result.Value);
     }
 
+    protected async Task<string> ReadBodyText()
+    {
+        using var reader = new StreamReader(Request.Body);
+        var text = await reader.ReadToEndAsync();
+        return text;
+    }
+
     protected IActionResult RedirectToReferrer(string? fallback = null)
     {
         var url = Request.Headers["Referer"].ToString();

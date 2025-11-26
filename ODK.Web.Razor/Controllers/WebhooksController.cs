@@ -1,0 +1,44 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using ODK.Services.Logging;
+using ODK.Services.Payments;
+using ODK.Services.Tasks;
+
+namespace ODK.Web.Razor.Controllers;
+
+[ApiController]
+public class WebhooksController : OdkControllerBase
+{
+    private readonly IBackgroundTaskService _backgroundTaskService;
+    private readonly ILoggingService _loggingService;    
+    private readonly IPaymentService _paymentService;
+    private readonly IStripeWebhookParser _stripeWebhookParser;
+
+    public WebhooksController(
+        ILoggingService loggingService,
+        IPaymentProviderFactory paymentProviderFactory,
+        IBackgroundTaskService backgroundTaskService,
+        IPaymentService paymentService,
+        IStripeWebhookParser stripeWebhookParser)
+    {
+        _backgroundTaskService = backgroundTaskService;
+        _loggingService = loggingService;
+        _paymentService = paymentService;
+        _stripeWebhookParser = stripeWebhookParser;
+    }
+
+    [HttpPost("webhooks/stripe")]
+    public async Task Stripe()
+    {
+        var json = await ReadBodyText();
+
+        await _loggingService.Info($"Received Stripe webhook: {json}");
+
+        var webhook = await _stripeWebhookParser.ParseWebhook(json);
+        if (webhook == null)
+        {
+            return;
+        }
+
+        await _backgroundTaskService.Enqueue(() => _paymentService.ProcessWebhook(webhook));
+    }
+}

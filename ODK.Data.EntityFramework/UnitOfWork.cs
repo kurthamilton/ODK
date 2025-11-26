@@ -77,6 +77,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<INewMemberTopicRepository> _newMemberTopicRepository;
     private readonly Lazy<INotificationRepository> _notificationRepository;
     private readonly Lazy<IPaymentCheckoutSessionRepository> _paymentCheckoutSessionRepository;
+    private readonly Lazy<IPaymentProviderWebhookEventRepository> _paymentProviderWebhookEventRepository;
     private readonly Lazy<IPaymentReconciliationRepository> _paymentReconciliationRepository;
     private readonly Lazy<IPaymentRepository> _paymentRepository;
     private readonly Lazy<IQueuedEmailRecipientRepository> _queuedEmailRecipientRepository;
@@ -164,6 +165,7 @@ public class UnitOfWork : IUnitOfWork
         _newMemberTopicRepository = new(() => new NewMemberTopicRepository(_context));
         _notificationRepository = new(() => new NotificationRepository(_context));
         _paymentCheckoutSessionRepository = new(() => new PaymentCheckoutSessionRepository(_context));
+        _paymentProviderWebhookEventRepository = new(() => new PaymentProviderWebhookEventRepository(_context));
         _paymentReconciliationRepository = new(() => new PaymentReconciliationRepository(_context));
         _paymentRepository = new(() => new PaymentRepository(_context));        
         _queuedEmailRecipientRepository = new(() => new QueuedEmailRecipientRepository(_context));
@@ -247,6 +249,7 @@ public class UnitOfWork : IUnitOfWork
     public INewMemberTopicRepository NewMemberTopicRepository => _newMemberTopicRepository.Value;
     public INotificationRepository NotificationRepository => _notificationRepository.Value;
     public IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository => _paymentCheckoutSessionRepository.Value;
+    public IPaymentProviderWebhookEventRepository PaymentProviderWebhookEventRepository => _paymentProviderWebhookEventRepository.Value;
     public IPaymentReconciliationRepository PaymentReconciliationRepository => _paymentReconciliationRepository.Value;
     public IPaymentRepository PaymentRepository => _paymentRepository.Value;
     public IQueuedEmailRecipientRepository QueuedEmailRecipientRepository => _queuedEmailRecipientRepository.Value;

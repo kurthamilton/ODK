@@ -10,9 +10,6 @@ public interface IMemberService
 {
     Task<ServiceResult> CancelChapterSubscription(Guid memberId, string externalId);
 
-    Task<bool> CompleteChapterSubscriptionCheckoutSession(
-        Guid memberId, Guid chapterSubscriptionId, string sessionId);
-
     Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
 
     Task<ServiceResult<Member?>> CreateAccount(CreateAccountModel model);

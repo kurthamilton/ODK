@@ -66,6 +66,7 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
                 .Where(x => x.Id == dto.Payment.MemberId)
             where 
                 dto.Payment.ChapterId == chapterId &&
+                dto.Payment.PaidUtc != null &&
                 dto.PaymentReconciliation == null && 
                 !dto.Payment.ExemptFromReconciliation
             select new PaymentMemberDto

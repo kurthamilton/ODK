@@ -19,4 +19,8 @@
     <ProjectReference Include="..\ODK.Services\ODK.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Payments\Stripe\Models\" />
+  </ItemGroup>
+
 </Project>

@@ -1,10 +1,10 @@
-﻿using System.Linq;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Extensions;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
 using ODK.Core.Web;
+using ODK.Services.Logging;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
 using Stripe;
@@ -16,13 +16,16 @@ public class StripePaymentProvider : IPaymentProvider
 {
     private readonly IStripeClient _client;
     private readonly IHttpRequestProvider _httpRequestProvider;
+    private readonly ILoggingService _loggingService;
 
     public StripePaymentProvider(
         IPaymentSettings paymentSettings,
-        IHttpRequestProvider httpRequestProvider)
+        IHttpRequestProvider httpRequestProvider,
+        ILoggingService loggingService)
     {        
-        _httpRequestProvider = httpRequestProvider;
         _client = new StripeClient(paymentSettings.ApiSecretKey);
+        _httpRequestProvider = httpRequestProvider;
+        _loggingService = loggingService;
     }
 
     public bool HasCustomers => true;
@@ -132,7 +135,7 @@ public class StripePaymentProvider : IPaymentProvider
 
     public async Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
     {
-        var service = CreateSessionService();        
+        var service = CreateSessionService();
 
         try
         {
@@ -146,6 +149,8 @@ public class StripePaymentProvider : IPaymentProvider
                 ClientSecret = session.ClientSecret,
                 Complete = complete,
                 Currency = session.Currency,
+                Metadata = PaymentMetadataModel.FromDictionary(session.Metadata ?? []),
+                PaymentId = session.PaymentIntentId,
                 SessionId = session.Id,
                 SubscriptionId = session.SubscriptionId
             };
@@ -332,7 +337,7 @@ public class StripePaymentProvider : IPaymentProvider
 
         intent = await service.ConfirmAsync(intent.Id);
         return RemotePaymentResult.Successful(intent.Id);
-    }
+    }    
 
     public Task<string?> SendPayment(string currencyCode, decimal amount, 
         string emailAddress, string paymentId, string note)
@@ -340,10 +345,13 @@ public class StripePaymentProvider : IPaymentProvider
         throw new NotImplementedException();
     }
 
-    public async Task<ExternalCheckoutSession> StartCheckout(ExternalSubscriptionPlan subscriptionPlan, string returnPath)
+    public async Task<ExternalCheckoutSession> StartCheckout(
+        ExternalSubscriptionPlan subscriptionPlan, string returnPath, PaymentMetadataModel metadata)
     {
         var baseUrl = UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl);
-        
+
+        var metadataDictionary = new Dictionary<string, string>(metadata.ToDictionary());
+
         var service = CreateSessionService();
         var session = await service.CreateAsync(new SessionCreateOptions
         {
@@ -358,7 +366,16 @@ public class StripePaymentProvider : IPaymentProvider
             },
             Mode = subscriptionPlan.Recurring ? "subscription" : "payment",
             ReturnUrl = baseUrl + returnPath.Replace("{sessionId}", "{CHECKOUT_SESSION_ID}"),
-            AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false }
+            AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false },
+            Metadata = metadataDictionary,            
+            PaymentIntentData = !subscriptionPlan.Recurring ? new SessionPaymentIntentDataOptions
+            {
+                Metadata = metadataDictionary
+            } : null,
+            SubscriptionData = subscriptionPlan.Recurring ? new SessionSubscriptionDataOptions
+            {
+                Metadata = metadataDictionary
+            } : null
         });
         
         return new ExternalCheckoutSession
@@ -367,9 +384,21 @@ public class StripePaymentProvider : IPaymentProvider
             ClientSecret = session.ClientSecret,
             Complete = false,
             Currency = session.Currency,
+            Metadata = metadata,
+            PaymentId = null,
             SessionId = session.Id,
             SubscriptionId = null
         };
+    }
+
+    public async Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata)
+    {
+        var service = CreatePaymentIntentService();
+
+        await service.UpdateAsync(externalId, new PaymentIntentUpdateOptions
+        {
+            Metadata = new Dictionary<string, string>(metadata.ToDictionary())
+        });
     }
 
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
@@ -388,7 +417,7 @@ public class StripePaymentProvider : IPaymentProvider
     private async Task<IReadOnlyCollection<PaymentIntent>> GetAllPaymentIntents(
         PaymentIntentListOptions? options = null)
     {
-        var service = CreatePaymentIntentService();
+        var service = CreatePaymentIntentService();        
         return await service.ListAutoPagingAsync(options).All();
     }
 

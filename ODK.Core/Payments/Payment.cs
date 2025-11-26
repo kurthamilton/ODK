@@ -10,6 +10,8 @@ public class Payment : IDatabaseEntity
 
     public Guid? ChapterId { get; set; }
 
+    public DateTime? CreatedUtc { get; set; }
+
     public Guid CurrencyId { get; set; }
 
     public bool ExemptFromReconciliation { get; set; }
@@ -20,7 +22,7 @@ public class Payment : IDatabaseEntity
 
     public Guid MemberId { get; set; }
 
-    public DateTime PaidUtc { get; set; }
+    public DateTime? PaidUtc { get; set; }
 
     public decimal? PaymentReconciliationAmount { get; set; }
 

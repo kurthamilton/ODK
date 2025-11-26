@@ -28,9 +28,14 @@
             {
                 var (payment, currency, reconciliation) = (dto.Payment, dto.Currency, dto.PaymentReconciliation);
 
+                if (payment.PaidUtc == null)
+                {
+                    continue;
+                }
+
                 <tr>
                     <td>
-                        @Model.Chapter.ToChapterTime(payment.PaidUtc).ToString("yyyy-MM-dd HH:mm:ss")
+                        @Model.Chapter.ToChapterTime(payment.PaidUtc.Value).ToString("yyyy-MM-dd HH:mm:ss")
                     </td>
                     <td>
                         @currency.ToAmountString(payment.Amount)

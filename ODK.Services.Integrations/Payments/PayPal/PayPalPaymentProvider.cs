@@ -225,10 +225,13 @@ public class PayPalPaymentProvider : IPaymentProvider
         return response?.BatchHeader?.PayoutBatchId;
     }
 
-    public Task<ExternalCheckoutSession> StartCheckout(ExternalSubscriptionPlan subscriptionPlan, string returnPath)
+    public Task<ExternalCheckoutSession> StartCheckout(
+        ExternalSubscriptionPlan subscriptionPlan, string returnPath, PaymentMetadataModel metadata)
     {
         throw new NotImplementedException();
     }
+
+    public Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata) => throw new NotImplementedException();
 
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
     {
