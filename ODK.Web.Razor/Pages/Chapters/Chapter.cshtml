@@ -1,15 +1,14 @@
 ﻿@page "/{chapterName:regex(^[A-Za-z-]+$)}"
 @using ODK.Core.Platforms
 @using ODK.Services.Chapters
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.ChapterModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_OdkChapterLayout";
 
-    var memberId = User.MemberIdOrDefault();
-    var viewModel = await ChapterViewModelService.GetHomePage(memberId, Model.ChapterName);
+    var viewModel = await ChapterViewModelService.GetHomePage(
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.ChapterName);
 
     var description = viewModel.Chapter.Name;
     if (Model.Platform == PlatformType.DrunkenKnitwits)

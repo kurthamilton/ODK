@@ -5,6 +5,7 @@
 @using ODK.Core.Payments
 @using ODK.Core.Subscriptions
 @using ODK.Core.Utils
+@using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Members
 @using ODK.Services.Subscriptions
@@ -12,10 +13,12 @@
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
+@using ODK.Web.Razor.Services
+@inject IRequestStore RequestStore
 @inject ISiteSubscriptionService SiteSubscriptionService
 @{
-    var memberId = User.MemberId();
-    var viewModel = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(memberId);
+    var viewModel = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(
+        RequestStore.ServiceRequest, RequestStore.CurrentMemberIdOrDefault);
 
     var (currency, currentMember, memberSubscription, subscriptions, paymentSettings) = 
         (viewModel.Currency, viewModel.CurrentMember, viewModel.CurrentMemberSubscription, viewModel.Subscriptions, viewModel.PaymentSettings!);

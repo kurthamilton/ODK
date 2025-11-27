@@ -1,6 +1,5 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Members;
-using ODK.Core.Web;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Topics.Models;
@@ -15,7 +14,7 @@ public interface IMemberService
 
     Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, CreateAccountModel model);
 
-    Task<ServiceResult> CreateChapterAccount(IHttpRequestContext httpRequestContext, Guid chapterId, CreateMemberProfile model);
+    Task<ServiceResult> CreateChapterAccount(ServiceRequest request, Guid chapterId, CreateMemberProfile model);
 
     Task<ServiceResult> DeleteMember(Guid memberId);
 

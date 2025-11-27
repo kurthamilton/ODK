@@ -42,7 +42,7 @@ public class ScheduledTasksController : OdkControllerBase
 
         try
         {
-            await _memberAdminService.SendMemberSubscriptionReminderEmails(HttpRequestContext);
+            await _memberAdminService.SendMemberSubscriptionReminderEmails(ServiceRequest);
         }
         catch
         {
@@ -57,7 +57,7 @@ public class ScheduledTasksController : OdkControllerBase
 
         try
         {
-            await _eventAdminService.SendScheduledEmails(HttpRequestContext);            
+            await _eventAdminService.SendScheduledEmails(ServiceRequest);            
         }
         catch
         {
@@ -87,7 +87,7 @@ public class ScheduledTasksController : OdkControllerBase
 
         try
         {
-            await _siteSubscriptionService.SyncExpiredSubscriptions(HttpRequestContext);
+            await _siteSubscriptionService.SyncExpiredSubscriptions(ServiceRequest);
         }
         catch
         {

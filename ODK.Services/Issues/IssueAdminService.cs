@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Issues;
-using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Issues.Models;
 using ODK.Services.Members;
@@ -9,17 +8,14 @@ namespace ODK.Services.Issues;
 public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
 {
     private readonly IMemberEmailService _memberEmailService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public IssueAdminService(
         IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider,
         IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
         _memberEmailService = memberEmailService;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
@@ -54,8 +50,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
 
     public async Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
-        var currentMemberId = request.CurrentMemberId;
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var issue = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.IssueRepository.GetById(issueId));
@@ -81,7 +76,7 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
             x => x.SiteEmailSettingsRepository.Get(platform));
 
         await _memberEmailService.SendIssueReply(
-            request.HttpRequestContext, 
+            request, 
             issue, 
             issueMessage, 
             member, 

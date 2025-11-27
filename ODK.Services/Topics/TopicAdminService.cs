@@ -244,11 +244,11 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         var members = await _unitOfWork.MemberRepository.GetByIds(memberIds).Run();
 
         await _memberEmailService.SendTopicApprovedEmails(
-            request.HttpRequestContext,
+            request,
             approvedMemberTopics.Cast<INewTopic>().Concat(approvedChapterTopics).ToArray(), 
             members);
         await _memberEmailService.SendTopicRejectedEmails(
-            request.HttpRequestContext,
+            request,
             rejectedMemberTopics.Cast<INewTopic>().Concat(rejectedChapterTopics).ToArray(), 
             members);
     }

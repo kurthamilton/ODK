@@ -3,7 +3,6 @@ using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
-using ODK.Core.Web;
 using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;
@@ -32,10 +31,10 @@ public interface IPaymentService
         Currency currency, Member member, decimal amount, string cardToken, string reference);
 
     Task ProcessWebhook(
-        IHttpRequestContext httpRequestContext, PlatformType platform, PaymentProviderWebhook webhook);
+        ServiceRequest request, PlatformType platform, PaymentProviderWebhook webhook);
 
     Task<ExternalCheckoutSession> StartCheckoutSession(
-        IHttpRequestContext httpRequestContext,
+        ServiceRequest request,
         IPaymentSettings settings, 
         ExternalSubscriptionPlan subscriptionPlan, 
         string returnPath,

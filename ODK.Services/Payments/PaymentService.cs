@@ -4,7 +4,6 @@ using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Logging;
 using ODK.Services.Members;
@@ -142,7 +141,7 @@ public class PaymentService : IPaymentService
     }
 
     public async Task ProcessWebhook(
-        IHttpRequestContext httpRequestContext, PlatformType platform, PaymentProviderWebhook webhook)
+        ServiceRequest request, PlatformType platform, PaymentProviderWebhook webhook)
     {
         var existingEvent = await _unitOfWork.PaymentProviderWebhookEventRepository
             .GetByExternalId(webhook.PaymentProviderType, webhook.Id).Run();
@@ -320,19 +319,19 @@ public class PaymentService : IPaymentService
             var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
             var currency = chapterPaymentSettings.Currency;
 
-            await _memberEmailService.SendPaymentNotification(httpRequestContext, payment, currency, siteEmailSettings);
+            await _memberEmailService.SendPaymentNotification(request, payment, currency, siteEmailSettings);
         }
     }
 
     public async Task<ExternalCheckoutSession> StartCheckoutSession(
-        IHttpRequestContext httpRequestContext,
+        ServiceRequest request,
         IPaymentSettings settings, 
         ExternalSubscriptionPlan subscriptionPlan,
         string returnPath,
         PaymentMetadataModel metadata)
     {
         var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.StartCheckout(httpRequestContext, subscriptionPlan, returnPath, metadata);
+        return await provider.StartCheckout(request, subscriptionPlan, returnPath, metadata);
     }
 
     public async Task UpdatePaymentMetadata(IPaymentSettings settings, string externalId, PaymentMetadataModel metadata)

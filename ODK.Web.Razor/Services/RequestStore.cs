@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
+using ODK.Services;
 using ODK.Services.Exceptions;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Services;
@@ -17,7 +18,9 @@ public class RequestStore : IRequestStore
     private readonly Lazy<Guid> _currentMemberId;
     private readonly Lazy<Guid?> _currentMemberIdOrDefault;
     private readonly Lazy<IHttpRequestContext> _httpRequestContext;
+    private readonly Lazy<MemberServiceRequest> _memberServiceRequest;
     private readonly Lazy<PlatformType> _platform;
+    private readonly Lazy<ServiceRequest> _serviceRequest;
 
     public RequestStore(
         IHttpContextAccessor httpContextAccessor,
@@ -38,7 +41,9 @@ public class RequestStore : IRequestStore
             () => _httpContextAccessor.HttpContext?.User?.MemberIdOrDefault());
         _httpRequestContext = new(
             () => new HttpRequestContext(_httpContextAccessor.HttpContext?.Request));
+        _memberServiceRequest = new(() => new MemberServiceRequest(CurrentMemberId, ServiceRequest));
         _platform = new(() => _platformProvider.GetPlatform(HttpRequestContext.RequestUrl));
+        _serviceRequest = new(() => new ServiceRequest(HttpRequestContext, Platform));
     }
 
     public Chapter? Chapter => throw new NotImplementedException();
@@ -51,5 +56,9 @@ public class RequestStore : IRequestStore
 
     public IHttpRequestContext HttpRequestContext => _httpRequestContext.Value;
 
+    public MemberServiceRequest MemberServiceRequest => _memberServiceRequest.Value;
+
     public PlatformType Platform => _platform.Value;
+
+    public ServiceRequest ServiceRequest => _serviceRequest.Value;
 }

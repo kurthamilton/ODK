@@ -23,7 +23,7 @@ public class ContactController : OdkControllerBase
     public async Task<IActionResult> Contact([FromForm] ContactFormViewModel viewModel)
     {
         await _contactService.SendSiteContactMessage(
-            HttpRequestContext,
+            ServiceRequest,
             viewModel.EmailAddress ?? "",
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");

@@ -1,10 +1,10 @@
 ﻿@using ODK.Services.Subscriptions
-@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Services
 @model ODK.Web.Razor.Models.SuperAdmin.SiteSubscriptionFormViewModel
+@inject IRequestStore RequestStore
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
 @{
-    var memberId = User.MemberId();
-    var siteSubscriptions = await SiteSubscriptionAdminService.GetAllSubscriptions(memberId);
+    var siteSubscriptions = await SiteSubscriptionAdminService.GetAllSubscriptions(RequestStore.MemberServiceRequest);
     var fallbackOptions = siteSubscriptions
         .Where(x => x.Id != Model.SiteSubscriptionId)
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })

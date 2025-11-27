@@ -1,25 +1,30 @@
 ﻿using ODK.Core.Members;
 using ODK.Core.Subscriptions;
-using ODK.Core.Web;
 using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Subscriptions;
 
 public interface ISiteSubscriptionService
 {
-    Task<bool> CompleteSiteSubscriptionCheckoutSession(Guid memberId, Guid siteSubscriptionPriceId, string sessionId);
+    Task<bool> CompleteSiteSubscriptionCheckoutSession(
+        MemberServiceRequest request, Guid siteSubscriptionPriceId, string sessionId);
 
-    Task<ServiceResult> ConfirmMemberSiteSubscription(Guid memberId, Guid siteSubscriptionId, string externalId);
+    Task<ServiceResult> ConfirmMemberSiteSubscription(
+        MemberServiceRequest request, Guid siteSubscriptionId, string externalId);
 
-    Task<MemberSiteSubscription?> GetMemberSiteSubscription(Guid memberId);
+    Task<MemberSiteSubscription?> GetMemberSiteSubscription(
+        MemberServiceRequest request);
 
-    Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(Guid? memberId);
+    Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
+        ServiceRequest request, Guid? memberId);
 
     Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         MemberServiceRequest request, Guid priceId, string returnPath);
 
-    Task SyncExpiredSubscriptions(IHttpRequestContext httpRequestContext);
+    Task SyncExpiredSubscriptions(ServiceRequest request);
 
-    Task<ServiceResult> UpdateMemberSiteSubscription(Guid memberId, Guid siteSubscriptionId, 
+    Task<ServiceResult> UpdateMemberSiteSubscription(
+        MemberServiceRequest request, 
+        Guid siteSubscriptionId, 
         SiteSubscriptionFrequency frequency);
 }

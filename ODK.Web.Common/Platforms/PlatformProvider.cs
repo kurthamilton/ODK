@@ -27,7 +27,7 @@ public class PlatformProvider : IPlatformProvider
         }
 
         var httpRequestContext = _httpRequestProvider.Get();
-        return GetPlatform(httpRequestContext);
+        return GetPlatform(httpRequestContext.RequestUrl);
     }
 
     public PlatformType GetPlatform(string requestUrl)
@@ -48,6 +48,4 @@ public class PlatformProvider : IPlatformProvider
 
         return _platform.Value;
     }
-
-    public PlatformType GetPlatform(IHttpRequestContext httpRequestContext) => GetPlatform(httpRequestContext.RequestUrl);
 }

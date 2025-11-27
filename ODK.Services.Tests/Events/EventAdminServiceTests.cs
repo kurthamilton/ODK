@@ -299,7 +299,6 @@ public static class EventAdminServiceTests
         return new EventAdminService(
             unitOfWork: unitOfWork ?? CreateMockUnitOfWork(),
             Mock.Of<IAuthorizationService>(),
-            Mock.Of<IPlatformProvider>(),
             Mock.Of<INotificationService>(),
             Mock.Of<IHtmlSanitizer>(),
             Mock.Of<IMemberEmailService>());

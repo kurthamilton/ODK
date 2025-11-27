@@ -36,6 +36,7 @@ using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
 using ODK.Services.Users;
 using ODK.Services.Venues;
+using ODK.Services.Web;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Platforms;
@@ -79,7 +80,7 @@ public static class DependencyConfig
     private static void ConfigureCore(IServiceCollection services)
     {        
         services.AddSingleton<IHtmlSanitizer>(new HtmlSanitizer());
-        services.AddScoped<IUrlProvider, UrlProvider>();
+        services.AddScoped<IUrlProviderFactory, UrlProviderFactory>();
     }
 
     private static void ConfigureData(IServiceCollection services, AppSettings appSettings)

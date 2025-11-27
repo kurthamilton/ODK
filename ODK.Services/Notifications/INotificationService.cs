@@ -39,7 +39,7 @@ public interface INotificationService
 
     Task<NotificationsPageViewModel> GetNotificationsPageViewModel(Guid memberId);
 
-    Task<UnreadNotificationsViewModel> GetUnreadNotificationsViewModel(Guid memberId);
+    Task<UnreadNotificationsViewModel> GetUnreadNotificationsViewModel(MemberServiceRequest request);
 
     Task MarkAsRead(Guid memberId, Guid notificationId);
 

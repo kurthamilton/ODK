@@ -9,12 +9,10 @@ using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
-using ODK.Services.Logging;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Notifications;
@@ -29,14 +27,12 @@ public class MemberService : IMemberService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
-    private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly INotificationService _notificationService;
     private readonly IOAuthProviderFactory _oauthProviderFactory;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IPaymentService _paymentService;    
-    private readonly IPlatformProvider _platformProvider;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -46,24 +42,20 @@ public class MemberService : IMemberService
         IPaymentService paymentService, 
         ICacheService cacheService, 
         IMemberImageService memberImageService, 
-        IPlatformProvider platformProvider, 
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
         IOAuthProviderFactory oauthProviderFactory,
         ITopicService topicService,
-        IPaymentProviderFactory paymentProviderFactory,
-        ILoggingService loggingService)
+        IPaymentProviderFactory paymentProviderFactory)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
-        _loggingService = loggingService;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _notificationService = notificationService;
         _oauthProviderFactory = oauthProviderFactory;
         _paymentProviderFactory = paymentProviderFactory;
         _paymentService = paymentService;        
-        _platformProvider = platformProvider;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
@@ -150,7 +142,7 @@ public class MemberService : IMemberService
 
         if (existing != null)
         {
-            await _memberEmailService.SendDuplicateMemberEmail(request.HttpRequestContext, null, existing);
+            await _memberEmailService.SendDuplicateMemberEmail(request, null, existing);
             return ServiceResult<Member?>.Successful(null);
         }
         
@@ -234,19 +226,19 @@ public class MemberService : IMemberService
 
         if (!string.IsNullOrEmpty(activationToken))
         {
-            await _memberEmailService.SendActivationEmail(request.HttpRequestContext, null, member, activationToken);
+            await _memberEmailService.SendActivationEmail(request, null, member, activationToken);
         }
         else
         {
-            await _memberEmailService.SendSiteWelcomeEmail(request.HttpRequestContext, member);
+            await _memberEmailService.SendSiteWelcomeEmail(request, member);
         }
 
         return ServiceResult<Member?>.Successful(member);
     }
 
-    public async Task<ServiceResult> CreateChapterAccount(IHttpRequestContext httpRequestContext, Guid chapterId, CreateMemberProfile model)
+    public async Task<ServiceResult> CreateChapterAccount(ServiceRequest request, Guid chapterId, CreateMemberProfile model)
     {
-        var platform = _platformProvider.GetPlatform(httpRequestContext);
+        var platform = request.Platform;
 
         var (
             chapter, 
@@ -284,7 +276,7 @@ public class MemberService : IMemberService
 
         if (existing != null)
         {
-            await _memberEmailService.SendDuplicateMemberEmail(httpRequestContext, chapter, existing);
+            await _memberEmailService.SendDuplicateMemberEmail(request, chapter, existing);
             return ServiceResult.Successful();
         }
 
@@ -354,7 +346,7 @@ public class MemberService : IMemberService
 
         try
         {
-            await _memberEmailService.SendActivationEmail(httpRequestContext, chapter, member, activationToken);
+            await _memberEmailService.SendActivationEmail(request, chapter, member, activationToken);
 
             return ServiceResult.Successful();
         }        
@@ -497,11 +489,10 @@ public class MemberService : IMemberService
         return await _unitOfWork.MemberPreferencesRepository.GetByMemberId(memberId).Run();
     }
 
-    public async Task<ServiceResult> JoinChapter(MemberChapterServiceRequest request, IEnumerable<UpdateMemberProperty> properties)
+    public async Task<ServiceResult> JoinChapter(
+        MemberChapterServiceRequest request, IEnumerable<UpdateMemberProperty> properties)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
-
-        var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+        var (currentMemberId, chapterId, platform) = (request.CurrentMemberId, request.ChapterId, request.Platform);
 
         var (
             chapter, 
@@ -552,7 +543,7 @@ public class MemberService : IMemberService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendNewMemberAdminEmail(
-            request.HttpRequestContext, 
+            request, 
             chapter, 
             adminMembers, 
             currentMember, 
@@ -578,7 +569,7 @@ public class MemberService : IMemberService
         }
 
         await _memberEmailService.SendMemberLeftChapterEmail(
-            request.HttpRequestContext,
+            request,
             chapter,
             adminMembers,
             currentMember,
@@ -657,7 +648,7 @@ public class MemberService : IMemberService
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId));
 
         await _memberEmailService.SendMemberChapterSubscriptionConfirmationEmail(
-            request.HttpRequestContext,
+            request,
             chapter,
             chapterPaymentSettings,
             chapterSubscription,
@@ -677,7 +668,7 @@ public class MemberService : IMemberService
             x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
 
         return await RequestMemberEmailAddressUpdate(
-            request.HttpRequestContext, 
+            request, 
             chapter, 
             member, 
             newEmailAddress, 
@@ -692,7 +683,7 @@ public class MemberService : IMemberService
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
         return await RequestMemberEmailAddressUpdate(
-            request.HttpRequestContext, 
+            request, 
             null, 
             member, 
             newEmailAddress, 
@@ -735,10 +726,8 @@ public class MemberService : IMemberService
 
     public async Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
         MemberServiceRequest request, Guid chapterSubscriptionId, string returnPath)
-    {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
-
-        var memberId = request.CurrentMemberId;
+    {        
+        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (member, chapterSubscription) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
@@ -776,7 +765,7 @@ public class MemberService : IMemberService
         };
 
         var externalCheckoutSession = await _paymentService.StartCheckoutSession(
-            request.HttpRequestContext, paymentSettings, subscriptionPlan, returnPath, metadata);
+            request, paymentSettings, subscriptionPlan, returnPath, metadata);
 
         _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
         {            
@@ -1175,7 +1164,7 @@ public class MemberService : IMemberService
     }
 
     private async Task<ServiceResult> RequestMemberEmailAddressUpdate(
-        IHttpRequestContext httpRequestContext,
+        ServiceRequest request,
         Chapter? chapter, 
         Member member, 
         string newEmailAddress, 
@@ -1206,7 +1195,7 @@ public class MemberService : IMemberService
         });
 
         await _memberEmailService.SendAddressUpdateEmail(
-            httpRequestContext, 
+            request, 
             chapter, 
             member, 
             newEmailAddress, 

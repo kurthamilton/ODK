@@ -1,16 +1,15 @@
-﻿using ODK.Core;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
+using ODK.Core;
 using ODK.Core.Chapters;
 using ODK.Core.Cryptography;
 using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
-using System.Diagnostics.CodeAnalysis;
-using System.Security.Claims;
 
 namespace ODK.Services.Authentication;
 
@@ -34,7 +33,7 @@ public class AuthenticationService : IAuthenticationService
     }    
 
     public async Task<ServiceResult> ActivateChapterAccountAsync(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         Guid chapterId, 
         string activationToken, 
         string password)
@@ -80,7 +79,7 @@ public class AuthenticationService : IAuthenticationService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendNewMemberEmailsAsync(
-            httpRequestContext,
+            request,
             chapter, 
             adminMembers, 
             member, 
@@ -91,7 +90,7 @@ public class AuthenticationService : IAuthenticationService
     }
 
     public async Task<ServiceResult> ActivateSiteAccountAsync(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         string activationToken, 
         string password)
     {
@@ -126,7 +125,7 @@ public class AuthenticationService : IAuthenticationService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendSiteWelcomeEmail(httpRequestContext, member);
+        await _memberEmailService.SendSiteWelcomeEmail(request, member);
 
         return ServiceResult.Successful();
     }
@@ -192,7 +191,7 @@ public class AuthenticationService : IAuthenticationService
     }
     
     public async Task<ServiceResult> RequestPasswordResetAsync(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         Guid chapterId, 
         string emailAddress)
     {
@@ -200,14 +199,14 @@ public class AuthenticationService : IAuthenticationService
             .GetById(chapterId)
             .Run();
 
-        return await RequestPasswordResetAsync(httpRequestContext, chapter, emailAddress);
+        return await RequestPasswordResetAsync(request, chapter, emailAddress);
     }
 
     public async Task<ServiceResult> RequestPasswordResetAsync(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         string emailAddress)
     {
-        return await RequestPasswordResetAsync(httpRequestContext, null, emailAddress);
+        return await RequestPasswordResetAsync(request, null, emailAddress);
     }
 
     public async Task<ServiceResult> ResetPasswordAsync(string token, string password)
@@ -276,7 +275,7 @@ public class AuthenticationService : IAuthenticationService
     }
 
     private async Task<ServiceResult> RequestPasswordResetAsync(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         Chapter? chapter, 
         string emailAddress)
     {
@@ -310,7 +309,7 @@ public class AuthenticationService : IAuthenticationService
             }
 
             await _memberEmailService.SendActivationEmail(
-                httpRequestContext, 
+                request, 
                 chapter, 
                 member, 
                 activationToken.ActivationToken);
@@ -331,7 +330,7 @@ public class AuthenticationService : IAuthenticationService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendPasswordResetEmail(httpRequestContext, chapter, member, token);
+        await _memberEmailService.SendPasswordResetEmail(request, chapter, member, token);
 
         return ServiceResult.Successful();
     }    

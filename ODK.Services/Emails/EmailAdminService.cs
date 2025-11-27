@@ -108,7 +108,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(currentMemberId));
 
-        return await _memberEmailService.SendTestEmail(request.HttpRequestContext, chapter, currentMember, type);
+        return await _memberEmailService.SendTestEmail(request, chapter, currentMember, type);
     }
 
     public async Task<ServiceResult> SendTestMemberEmail(MemberServiceRequest request, EmailType type)
@@ -118,7 +118,7 @@ public class EmailAdminService : OdkAdminServiceBase, IEmailAdminService
         var currentMember = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.MemberRepository.GetById(currentMemberId));
 
-        return await _memberEmailService.SendTestEmail(request.HttpRequestContext, null, currentMember, type);
+        return await _memberEmailService.SendTestEmail(request, null, currentMember, type);
     }
 
     public async Task<ServiceResult> UpdateChapterEmail(MemberChapterServiceRequest request, EmailType type, 

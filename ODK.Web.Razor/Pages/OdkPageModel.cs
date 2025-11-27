@@ -14,15 +14,6 @@ namespace ODK.Web.Razor.Pages;
 
 public abstract class OdkPageModel : PageModel
 {
-    private readonly Lazy<MemberServiceRequest> _memberServiceRequest;
-    private readonly Lazy<ServiceRequest> _serviceRequest;
-
-    protected OdkPageModel()
-    {                
-        _memberServiceRequest = new(() => new MemberServiceRequest(CurrentMemberId, ServiceRequest));
-        _serviceRequest = new(() => new ServiceRequest(HttpRequestContext, Platform));
-    }
-
     public OdkComponentContext ComponentContext => RequestStore.ComponentContext;
 
     public Guid CurrentMemberId => RequestStore.CurrentMemberId;
@@ -49,7 +40,7 @@ public abstract class OdkPageModel : PageModel
         set => ViewData["Keywords"] = value;
     }
 
-    public MemberServiceRequest MemberServiceRequest => _memberServiceRequest.Value;
+    public MemberServiceRequest MemberServiceRequest => RequestStore.MemberServiceRequest;
 
     public string? Path
     {
@@ -65,7 +56,7 @@ public abstract class OdkPageModel : PageModel
     [OdkInject]
     public required IRequestStore RequestStore { get; set; }
 
-    public ServiceRequest ServiceRequest => _serviceRequest.Value;
+    public ServiceRequest ServiceRequest => RequestStore.ServiceRequest;
 
     public string? Title
     {

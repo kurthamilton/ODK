@@ -6,7 +6,6 @@ using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
-using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
@@ -34,7 +33,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IPaymentService _paymentService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly ChapterAdminServiceSettings _settings;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
@@ -44,7 +42,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         ICacheService cacheService,
         IHtmlSanitizer htmlSanitizer,
         IInstagramService instagramService,
-        IPlatformProvider platformProvider,
         INotificationService notificationService,
         IImageService imageService,
         IMemberEmailService memberEmailService,
@@ -60,7 +57,6 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _paymentService = paymentService;
-        _platformProvider = platformProvider;
         _settings = settings;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
@@ -151,7 +147,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendGroupApprovedEmail(
-            request.HttpRequestContext, 
+            request, 
             chapter, 
             owner);
 
@@ -163,8 +159,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         ChapterCreateModel model)
     {
         var now = DateTime.UtcNow;
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
-        var currentMemberId = request.CurrentMemberId;
+        
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (
             memberSubscription, 
@@ -300,7 +296,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             model.NewTopics);
 
         await _memberEmailService.SendNewGroupEmail(
-            request.HttpRequestContext, 
+            request, 
             chapter, 
             texts, 
             siteEmailSettings);
@@ -436,7 +432,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         if (chapterPaymentSettings?.UseSitePaymentProvider == true)
         {      
-            var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+            var platform = request.Platform;
             var productName = chapter.GetFullName(platform);
 
             var productId = await _paymentService.GetProductId(sitePaymentSettings, productName);
@@ -636,7 +632,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var chapter = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId));
@@ -651,7 +647,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(
         MemberChapterServiceRequest request, bool readByChapter)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, privacySettings, conversations) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -674,7 +670,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(
         MemberChapterServiceRequest request, Guid id)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (
             chapter, 
@@ -745,7 +741,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterDeleteAdminPageViewModel> GetChapterDeleteViewModel(
         MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, memberCount) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -761,7 +757,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterImageAdminPageViewModel> GetChapterImageViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, image) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -777,7 +773,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, ownerSubscription, links, privacySettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -809,7 +805,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(
         MemberChapterServiceRequest request, bool spam)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, allMessages) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -841,7 +837,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(
         MemberChapterServiceRequest request, Guid id)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, message, replies) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -867,7 +863,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, paymentSettings, currencies, ownerSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -887,7 +883,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, privacySettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -909,7 +905,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, properties) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -927,7 +923,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         MemberChapterServiceRequest request, 
         Guid propertyId)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, property, options) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -955,7 +951,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, questions) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -972,7 +968,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ChapterQuestionAdminPageViewModel> GetChapterQuestionViewModel(
         MemberChapterServiceRequest request, Guid questionId)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, question) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -996,7 +992,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, texts) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -1012,7 +1008,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, chapterTopics, topicGroups, topics) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -1032,7 +1028,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, ownerSubscription, membershipSettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -1060,7 +1056,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<SuperAdminChapterEmailsViewModel> GetSuperAdminChapterEmailsViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var emailProviders = await GetSuperAdminRestrictedContent(request,
             x => x.ChapterEmailProviderRepository.GetByChapterId(request.ChapterId));
@@ -1073,8 +1069,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(MemberServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
-        var currentMemberId = request.CurrentMemberId;
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (chapters, subscriptions) = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.ChapterRepository.GetAll(),
@@ -1130,8 +1125,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<SuperAdminChapterViewModel> GetSuperAdminChapterViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
-        var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+        var (currentMemberId, chapterId, platform) = (request.CurrentMemberId, request.ChapterId, request.Platform);
 
         var (chapter, subscription, siteSubscriptions) = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.ChapterRepository.GetById(chapterId),
@@ -1220,7 +1214,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
         
         await _memberEmailService.SendChapterConversationEmail(
-            request.HttpRequestContext, 
+            request, 
             chapter, 
             conversation, 
             conversationMessage, 
@@ -1246,7 +1240,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         OdkAssertions.BelongsToChapter(originalMessage, request.ChapterId);
 
         var sendResult = await _memberEmailService.SendChapterMessageReply(
-            request.HttpRequestContext, chapter, originalMessage, message);
+            request, chapter, originalMessage, message);
         if (!sendResult.Success)
         {
             return sendResult;
@@ -1355,7 +1349,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendChapterConversationEmail(
-            request.HttpRequestContext, 
+            request, 
             chapter, 
             conversation, 
             conversationMessage, 

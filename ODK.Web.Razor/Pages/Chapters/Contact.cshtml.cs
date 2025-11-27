@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Services.Contact;
 using ODK.Web.Razor.Models.Contact;
 
@@ -29,7 +28,7 @@ public class ContactModel : ChapterPageModel
         }
 
         await _contactService.SendChapterContactMessage(
-            HttpRequestContext,
+            ServiceRequest,
             Chapter,
             viewModel.EmailAddress ?? "",
             viewModel.Message ?? "",

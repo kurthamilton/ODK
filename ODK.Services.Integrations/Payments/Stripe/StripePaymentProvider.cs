@@ -3,7 +3,6 @@ using ODK.Core.Extensions;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Core.Utils;
-using ODK.Core.Web;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
@@ -343,12 +342,12 @@ public class StripePaymentProvider : IPaymentProvider
     }
 
     public async Task<ExternalCheckoutSession> StartCheckout(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         ExternalSubscriptionPlan subscriptionPlan, 
         string returnPath, 
         PaymentMetadataModel metadata)
     {
-        var baseUrl = UrlUtils.BaseUrl(httpRequestContext.RequestUrl);
+        var baseUrl = UrlUtils.BaseUrl(request.HttpRequestContext.RequestUrl);
 
         var metadataDictionary = new Dictionary<string, string>(metadata.ToDictionary());
 

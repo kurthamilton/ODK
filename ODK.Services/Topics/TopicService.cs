@@ -1,5 +1,4 @@
-﻿using ODK.Core.Platforms;
-using ODK.Core.Topics;
+﻿using ODK.Core.Topics;
 using ODK.Data.Core;
 using ODK.Services.Members;
 using ODK.Services.Topics.Models;
@@ -9,24 +8,19 @@ namespace ODK.Services.Topics;
 public class TopicService : ITopicService
 {
     private readonly IMemberEmailService _memberEmailService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public TopicService(
         IUnitOfWork unitOfWork,
-        IMemberEmailService memberEmailService,
-        IPlatformProvider platformProvider)
+        IMemberEmailService memberEmailService)
     {
         _memberEmailService = memberEmailService;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
     public async Task AddNewChapterTopics(MemberChapterServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
-
-        var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+        var (currentMemberId, chapterId, platform) = (request.CurrentMemberId, request.ChapterId, request.Platform);
 
         var (topics, chapterNewTopics, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.TopicRepository.GetAll(),
@@ -87,15 +81,13 @@ public class TopicService : ITopicService
             _unitOfWork.NewChapterTopicRepository.AddMany(newTopics);
             await _unitOfWork.SaveChangesAsync();
 
-            await _memberEmailService.SendNewTopicEmail(request.HttpRequestContext, newTopics, siteEmailSettings);
+            await _memberEmailService.SendNewTopicEmail(request, newTopics, siteEmailSettings);
         }
     }
 
     public async Task AddNewMemberTopics(MemberServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
-
-        var currentMemberId = request.CurrentMemberId;
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (topics, memberNewTopics, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.TopicRepository.GetAll(),
@@ -155,7 +147,7 @@ public class TopicService : ITopicService
             _unitOfWork.NewMemberTopicRepository.AddMany(newTopics);
             await _unitOfWork.SaveChangesAsync();
 
-            await _memberEmailService.SendNewTopicEmail(request.HttpRequestContext, newTopics, siteEmailSettings);
+            await _memberEmailService.SendNewTopicEmail(request, newTopics, siteEmailSettings);
         }
     }
 }

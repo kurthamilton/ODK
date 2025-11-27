@@ -72,7 +72,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         AssertMemberIsSuperAdmin(currentMember);
 
         var sendResult = await _memberEmailService.SendSiteMessageReply(
-            request.HttpRequestContext, 
+            request, 
             originalMessage, 
             message);
         if (!sendResult.Success)

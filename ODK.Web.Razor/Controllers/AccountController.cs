@@ -370,7 +370,8 @@ public class AccountController : OdkControllerBase
     [HttpPost("/account/password/forgotten")]
     public async Task<IActionResult> ForgottenPassword([FromForm] ForgottenPasswordFormViewModel viewModel)
     {
-        var result = await _authenticationService.RequestPasswordResetAsync(HttpRequestContext, viewModel.EmailAddress ?? "");
+        var result = await _authenticationService.RequestPasswordResetAsync(
+            ServiceRequest, viewModel.EmailAddress ?? "");
         string successMessage = 
             "An email containing password reset instructions has been sent to that email address " +
             "if it is associated with an account";
@@ -386,7 +387,7 @@ public class AccountController : OdkControllerBase
     {
         var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
         var result = await _authenticationService.RequestPasswordResetAsync(
-            _requestStore.HttpRequestContext, chapter.Id, viewModel.EmailAddress ?? "");
+            ServiceRequest, chapter.Id, viewModel.EmailAddress ?? "");
         var successMessage = 
             "An email containing password reset instructions has been sent to that email address " +
             "if it is associated with an account";
@@ -428,7 +429,7 @@ public class AccountController : OdkControllerBase
         [FromForm] string externalId)
     {
         var result = await _siteSubscriptionService.ConfirmMemberSiteSubscription(
-            MemberId, 
+            MemberServiceRequest, 
             siteSubscriptionPriceId, 
             externalId);
         AddFeedback(result, "Subscription updated");

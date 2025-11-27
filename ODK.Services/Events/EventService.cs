@@ -84,7 +84,7 @@ public class EventService : IEventService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendEventCommentEmail(
-            request.HttpRequestContext, 
+            request, 
             chapter, 
             @event, 
             eventComment, 

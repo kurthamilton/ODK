@@ -56,7 +56,7 @@ public class JoinModel : ChapterPageModel2
             })
         };
 
-        var result = await _memberService.CreateChapterAccount(HttpRequestContext, chapter.Id, model);
+        var result = await _memberService.CreateChapterAccount(ServiceRequest, chapter.Id, model);
         PostJoin(result);
         return result.Success
             ? Redirect($"/{chapterName}/Account/Pending")

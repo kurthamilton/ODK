@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using ODK.Core.Payments;
-using ODK.Core.Platforms;
+﻿using ODK.Core.Payments;
 using ODK.Data.Core;
 using ODK.Services.Exceptions;
 using ODK.Services.Payments.Models;
@@ -11,17 +9,14 @@ namespace ODK.Services.Payments;
 public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
 {
     private readonly IPaymentProviderFactory _paymentProviderFactory;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public PaymentAdminService(
         IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider,
         IPaymentProviderFactory paymentProviderFactory) 
         : base(unitOfWork)
     {
         _paymentProviderFactory = paymentProviderFactory;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
@@ -71,7 +66,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
 
     public async Task<ChapterPaymentsViewModel> GetPayments(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var platform = request.Platform;
 
         var (chapter, payments, paymentSettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),

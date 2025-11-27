@@ -6,7 +6,8 @@
 @{
     Layout = "_HomeLayout";
 
-    var viewModel = await ChapterViewModelService.GetGroupHomePage(Model.CurrentMemberIdOrDefault, Model.Slug);
+    var viewModel = await ChapterViewModelService.GetGroupHomePage(
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
 
     Model.Title = viewModel.Chapter.Name;
 

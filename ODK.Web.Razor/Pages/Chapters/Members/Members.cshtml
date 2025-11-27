@@ -11,7 +11,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Knitwits";
 
-    var viewModel = await MemberViewModelService.GetMembersPage(Model.CurrentMemberId, Model.ChapterName);
+    var viewModel = await MemberViewModelService.GetMembersPage(Model.MemberServiceRequest, Model.ChapterName);
     if (!viewModel.IsMember)
     {
         Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));

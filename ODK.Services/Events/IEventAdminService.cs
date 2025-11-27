@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Events;
-using ODK.Core.Web;
 using ODK.Services.Events.ViewModels;
 
 namespace ODK.Services.Events;
@@ -35,7 +34,7 @@ public interface IEventAdminService
 
     Task<ServiceResult> SendEventInvites(MemberChapterServiceRequest request, Guid eventId, bool test = false);
 
-    Task SendScheduledEmails(IHttpRequestContext httpRequestContext);
+    Task SendScheduledEmails(ServiceRequest request);
 
     Task UpdateEventSettings(MemberChapterServiceRequest request, UpdateEventSettings model);
 

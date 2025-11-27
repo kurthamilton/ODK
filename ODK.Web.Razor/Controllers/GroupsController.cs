@@ -38,7 +38,7 @@ public class GroupsController : OdkControllerBase
     public async Task<IActionResult> Contact(Guid id, [FromForm] ContactFormViewModel viewModel)
     {
         await _contactService.SendChapterContactMessage(
-            HttpRequestContext,
+            ServiceRequest,
             id, 
             viewModel.EmailAddress ?? "", 
             viewModel.Message ?? "", 

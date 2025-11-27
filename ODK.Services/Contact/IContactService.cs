@@ -9,21 +9,21 @@ public interface IContactService
     Task<ServiceResult> ReplyToChapterConversation(MemberServiceRequest request, Guid conversationId, string message);
 
     Task SendChapterContactMessage(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         Guid chapterId, 
         string fromAddress, 
         string message, 
         string recaptchaToken);
 
     Task SendChapterContactMessage(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         Chapter chapter, 
         string fromAddress, 
         string message, 
         string recaptchaToken);
 
     Task SendSiteContactMessage(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         string fromAddress, 
         string message, 
         string recaptchaToken);

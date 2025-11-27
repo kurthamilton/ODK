@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using ODK.Core;
-using ODK.Core.Platforms;
+﻿using ODK.Core;
 using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
@@ -13,25 +11,24 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 {
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IPaymentService _paymentService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public SiteSubscriptionAdminService(
         IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider,
         IPaymentService paymentService,
         IHtmlSanitizer htmlSanitizer) 
         : base(unitOfWork)
     {
         _htmlSanitizer = htmlSanitizer;
         _paymentService = paymentService;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> AddSiteSubscription(Guid currentMemberId, SiteSubscriptionCreateModel model)
+    public async Task<ServiceResult> AddSiteSubscription(
+        MemberServiceRequest request, SiteSubscriptionCreateModel model)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+
         var (paymentSettings, existing) = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SitePaymentSettingsRepository.GetById(model.SitePaymentSettingId),
             x => x.SiteSubscriptionRepository.GetAll(platform));
@@ -67,9 +64,13 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> AddSiteSubscriptionPrice(Guid currentMemberId, Guid siteSubscriptionId,
+    public async Task<ServiceResult> AddSiteSubscriptionPrice(
+        MemberServiceRequest request, 
+        Guid siteSubscriptionId,
         SiteSubscriptionPriceCreateModel model)
     {
+        var currentMemberId = request.CurrentMemberId;
+
         var (siteSubscription, existing, currency) = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
@@ -136,9 +137,11 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         }
     }
 
-    public async Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(Guid currentMemberId)
+    public async Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(
+        MemberServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+
         return await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetAll(platform));
     }
@@ -160,9 +163,9 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         };
     }
 
-    public async Task MakeDefault(Guid currentMemberId, Guid siteSubscriptionId)
+    public async Task MakeDefault(MemberServiceRequest request, Guid siteSubscriptionId)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var subscriptions = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetAll(platform));
@@ -186,9 +189,10 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<ServiceResult> UpdateSiteSubscription(Guid currentMemberId, Guid siteSubscriptionId, SiteSubscriptionCreateModel model)
+    public async Task<ServiceResult> UpdateSiteSubscription(
+        MemberServiceRequest request, Guid siteSubscriptionId, SiteSubscriptionCreateModel model)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var existing = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SiteSubscriptionRepository.GetAll(platform));

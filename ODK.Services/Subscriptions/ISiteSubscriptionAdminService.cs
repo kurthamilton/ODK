@@ -5,20 +5,24 @@ namespace ODK.Services.Subscriptions;
 
 public interface ISiteSubscriptionAdminService
 {
-    Task<ServiceResult> AddSiteSubscription(Guid currentMemberId, SiteSubscriptionCreateModel model);
+    Task<ServiceResult> AddSiteSubscription(MemberServiceRequest request, SiteSubscriptionCreateModel model);
 
-    Task<ServiceResult> AddSiteSubscriptionPrice(Guid currentMemberId, Guid siteSubscriptionId, 
+    Task<ServiceResult> AddSiteSubscriptionPrice(
+        MemberServiceRequest request, 
+        Guid siteSubscriptionId, 
         SiteSubscriptionPriceCreateModel model);
 
     Task DeleteSiteSubscriptionPrice(Guid currentMemberId, Guid siteSubscriptionId, Guid siteSubscriptionPriceId);
 
-    Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(Guid currentMemberId);
+    Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(MemberServiceRequest request);
 
     Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(Guid currentMemberId, Guid siteSubscriptionId);
 
-    Task MakeDefault(Guid currentMemberId, Guid siteSubscriptionId);
+    Task MakeDefault(MemberServiceRequest request, Guid siteSubscriptionId);
 
-    Task<ServiceResult> UpdateSiteSubscription(Guid currentMemberId, Guid siteSubscriptionId, 
+    Task<ServiceResult> UpdateSiteSubscription(
+        MemberServiceRequest request, 
+        Guid siteSubscriptionId, 
         SiteSubscriptionCreateModel model);
 
     Task<ServiceResult> UpdateSiteSubscriptionEnabled(Guid currentMemberId, Guid siteSubscriptionId,

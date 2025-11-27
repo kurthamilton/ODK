@@ -40,7 +40,7 @@ public interface IPaymentProvider
         string paymentId, string note);
 
     Task<ExternalCheckoutSession> StartCheckout(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         ExternalSubscriptionPlan subscriptionPlan, 
         string returnPath, 
         PaymentMetadataModel metadata);

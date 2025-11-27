@@ -15,27 +15,22 @@ public abstract class OdkControllerBase : Controller
 {
     private static readonly Regex VersionRegex = new(@"^""(?<version>-?\d+)""$");
         
-    private readonly Lazy<MemberServiceRequest> _memberServiceRequest;
-    private readonly IRequestStore _requestStore;
-    private readonly Lazy<ServiceRequest> _serviceRequest;
+    private readonly IRequestStore _requestStore;    
 
     protected OdkControllerBase(IRequestStore requestStore)
     {
-        _requestStore = requestStore;
-        
-        _memberServiceRequest = new(() => new MemberServiceRequest(MemberId, ServiceRequest));
-        _serviceRequest = new(() => new ServiceRequest(HttpRequestContext, Platform));
+        _requestStore = requestStore;        
     }
 
     protected IHttpRequestContext HttpRequestContext => _requestStore.HttpRequestContext;
 
     protected Guid MemberId => _requestStore.CurrentMemberId;
 
-    protected MemberServiceRequest MemberServiceRequest => _memberServiceRequest.Value;
+    protected MemberServiceRequest MemberServiceRequest => _requestStore.MemberServiceRequest;
 
     protected PlatformType Platform => _requestStore.Platform;
 
-    protected ServiceRequest ServiceRequest => _serviceRequest.Value;
+    protected ServiceRequest ServiceRequest => _requestStore.ServiceRequest;
 
     protected void AddFeedback(string message, FeedbackType type)
         => AddFeedback(new FeedbackViewModel(message, type));

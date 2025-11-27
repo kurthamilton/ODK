@@ -20,7 +20,7 @@ public class ActivateModel : OdkPageModel
 
     public async Task<IActionResult> OnPostAsync(string token, ActivateFormViewModel viewModel)
     {
-        var result = await _authenticationService.ActivateSiteAccountAsync(HttpRequestContext, token, viewModel.Password);
+        var result = await _authenticationService.ActivateSiteAccountAsync(ServiceRequest, token, viewModel.Password);
         if (!result.Success)
         {
             AddFeedback(new FeedbackViewModel(result));

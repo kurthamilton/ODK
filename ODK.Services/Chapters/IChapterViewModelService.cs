@@ -10,25 +10,28 @@ public interface IChapterViewModelService
 
     Task<ChapterCreateViewModel> GetChapterCreate(PlatformType platform, Guid currentMemberId);
 
-    Task<GroupContactPageViewModel> GetGroupContactPage(Guid? currentMemberId, string slug);
+    Task<GroupContactPageViewModel> GetGroupContactPage(
+        ServiceRequest request, Guid? currentMemberId, string slug);
 
-    Task<GroupConversationPageViewModel> GetGroupConversationPage(Guid currentMemberId, string slug, Guid conversationId);
+    Task<GroupConversationPageViewModel> GetGroupConversationPage(
+        MemberServiceRequest request, string slug, Guid conversationId);
 
-    Task<GroupEventsPageViewModel> GetGroupEventsPage(Guid? currentMemberId, string slug);
+    Task<GroupEventsPageViewModel> GetGroupEventsPage(ServiceRequest request, Guid? currentMemberId, string slug);
 
-    Task<GroupEventsPageViewModel> GetGroupPastEventsPage(Guid? currentMemberId, string slug);
+    Task<GroupEventsPageViewModel> GetGroupPastEventsPage(ServiceRequest request, Guid? currentMemberId, string slug);
 
-    Task<GroupHomePageViewModel> GetGroupHomePage(Guid? currentMemberId, string slug);
+    Task<GroupHomePageViewModel> GetGroupHomePage(ServiceRequest request, Guid? currentMemberId, string slug);
 
-    Task<GroupJoinPageViewModel> GetGroupJoinPage(Guid? currentMemberId, string slug);
+    Task<GroupJoinPageViewModel> GetGroupJoinPage(ServiceRequest request, Guid? currentMemberId, string slug);
 
-    Task<GroupProfilePageViewModel> GetGroupProfilePage(Guid currentMemberId, string slug);
+    Task<GroupProfilePageViewModel> GetGroupProfilePage(MemberServiceRequest request, string slug);
 
-    Task<GroupProfileSubscriptionPageViewModel> GetGroupProfileSubscriptionPage(Guid currentMemberId, string slug);
+    Task<GroupProfileSubscriptionPageViewModel> GetGroupProfileSubscriptionPage(
+        MemberServiceRequest request, string slug);
 
-    Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(Guid? currentMemberId, string slug);
+    Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(ServiceRequest request, Guid? currentMemberId, string slug);
 
-    Task<ChapterHomePageViewModel> GetHomePage(Guid? currentMemberId, string chapterName);
+    Task<ChapterHomePageViewModel> GetHomePage(ServiceRequest request, Guid? currentMemberId, string chapterName);
 
-    Task<MemberChaptersViewModel> GetMemberChapters(Guid memberId);
+    Task<MemberChaptersViewModel> GetMemberChapters(MemberServiceRequest request);
 }

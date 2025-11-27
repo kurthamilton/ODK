@@ -4,7 +4,6 @@ using ODK.Core.Events;
 using ODK.Core.Extensions;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
-using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -17,31 +16,29 @@ namespace ODK.Services.Events;
 public class EventViewModelService : IEventViewModelService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public EventViewModelService(
         IUnitOfWork unitOfWork, 
-        IAuthorizationService authorizationService,
-        IPlatformProvider platformProvider)
+        IAuthorizationService authorizationService)
     {
         _authorizationService = authorizationService;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<EventPageViewModel> GetEventPageViewModel(Guid? currentMemberId, string chapterName, 
-        Guid eventId)
+    public async Task<EventPageViewModel> GetEventPageViewModel(
+        ServiceRequest request, Guid? currentMemberId, string chapterName, Guid eventId)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
-        return await GetEventPageViewModel(currentMemberId, chapter, eventId);
+        return await GetEventPageViewModel(request, currentMemberId, chapter, eventId);
     }
 
-    public async Task<EventsPageViewModel> GetEventsPage(Guid? currentMemberId, string chapterName)
+    public async Task<EventsPageViewModel> GetEventsPage(
+        ServiceRequest request, Guid? currentMemberId, string chapterName)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
@@ -134,17 +131,19 @@ public class EventViewModelService : IEventViewModelService
         };
     }
 
-    public async Task<EventPageViewModel> GetGroupEventPageViewModel(Guid? currentMemberId, string slug, Guid eventId)
+    public async Task<EventPageViewModel> GetGroupEventPageViewModel(
+        ServiceRequest request, Guid? currentMemberId, string slug, Guid eventId)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
-        return await GetEventPageViewModel(currentMemberId, chapter, eventId);
+        return await GetEventPageViewModel(request, currentMemberId, chapter, eventId);
     }
 
-    private async Task<EventPageViewModel> GetEventPageViewModel(Guid? currentMemberId, Chapter chapter, Guid eventId)
+    private async Task<EventPageViewModel> GetEventPageViewModel(
+        ServiceRequest request, Guid? currentMemberId, Chapter chapter, Guid eventId)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var (
             membershipSettings,

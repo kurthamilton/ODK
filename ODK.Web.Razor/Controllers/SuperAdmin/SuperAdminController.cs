@@ -146,7 +146,7 @@ public class SuperAdminController : OdkControllerBase
     [HttpPost("superadmin/subscriptions")]
     public async Task<IActionResult> CreateSubscription(SiteSubscriptionFormViewModel viewModel)
     {
-        var result = await _siteSubscriptionAdminService.AddSiteSubscription(MemberId, new SiteSubscriptionCreateModel
+        var result = await _siteSubscriptionAdminService.AddSiteSubscription(MemberServiceRequest, new SiteSubscriptionCreateModel
         {
             Description = viewModel.Description,
             Name = viewModel.Name,
@@ -168,7 +168,7 @@ public class SuperAdminController : OdkControllerBase
     [HttpPost("superadmin/subscriptions/{id:guid}")]
     public async Task<IActionResult> UpdateSubscription(Guid id, SiteSubscriptionFormViewModel viewModel)
     {
-        var result = await _siteSubscriptionAdminService.UpdateSiteSubscription(MemberId, id, new SiteSubscriptionCreateModel
+        var result = await _siteSubscriptionAdminService.UpdateSiteSubscription(MemberServiceRequest, id, new SiteSubscriptionCreateModel
         {
             Description = viewModel.Description,
             Name = viewModel.Name,
@@ -196,7 +196,7 @@ public class SuperAdminController : OdkControllerBase
     [HttpPost("superadmin/subscriptions/{id:guid}/default")]
     public async Task<IActionResult> MakeDefault(Guid id)
     {
-        await _siteSubscriptionAdminService.MakeDefault(MemberId, id);
+        await _siteSubscriptionAdminService.MakeDefault(MemberServiceRequest, id);
         AddFeedback("Default subscription updated", FeedbackType.Success);
         return RedirectToReferrer();
     }
@@ -221,7 +221,7 @@ public class SuperAdminController : OdkControllerBase
     public async Task<IActionResult> AddSiteSubscriptionPrice(Guid id, 
         SiteSubscriptionPriceFormViewModel viewModel)
     {
-        var result = await _siteSubscriptionAdminService.AddSiteSubscriptionPrice(MemberId, id, new SiteSubscriptionPriceCreateModel
+        var result = await _siteSubscriptionAdminService.AddSiteSubscriptionPrice(MemberServiceRequest, id, new SiteSubscriptionPriceCreateModel
         {
             Amount = viewModel.Amount ?? default,
             CurrencyId = viewModel.CurrencyId ?? default,

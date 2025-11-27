@@ -7,13 +7,13 @@ namespace ODK.Services.Authentication;
 public interface IAuthenticationService
 {
     Task<ServiceResult> ActivateChapterAccountAsync(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         Guid chapterId, 
         string activationToken, 
         string password);
 
     Task<ServiceResult> ActivateSiteAccountAsync(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         string activationToken, 
         string password);    
 
@@ -24,12 +24,12 @@ public interface IAuthenticationService
     Task<Member?> GetMemberAsync(string username, string password);
     
     Task<ServiceResult> RequestPasswordResetAsync(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         Guid chapterId, 
         string emailAddress);
     
     Task<ServiceResult> RequestPasswordResetAsync(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         string emailAddress);
 
     Task<ServiceResult> ResetPasswordAsync(string token, string password);

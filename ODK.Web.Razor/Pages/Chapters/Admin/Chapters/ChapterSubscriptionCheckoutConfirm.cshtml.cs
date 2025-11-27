@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Platforms;
 using ODK.Services.Caching;
 using ODK.Services.Subscriptions;
-using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 
@@ -34,7 +32,7 @@ public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
         }
 
         var result = await _siteSubscriptionService.CompleteSiteSubscriptionCheckoutSession(
-            memberId.Value, id, sessionId);
+            MemberServiceRequest, id, sessionId);
 
         var requestUrl = Request.GetDisplayUrl();
 

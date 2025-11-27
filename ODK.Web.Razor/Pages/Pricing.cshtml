@@ -10,7 +10,7 @@
     Model.Path = "/pricing";
 
     var siteSubscriptions = await SiteSubscriptionService
-        .GetSiteSubscriptionsViewModel(Model.CurrentMemberIdOrDefault);
+        .GetSiteSubscriptionsViewModel(Model.ServiceRequest, Model.CurrentMemberIdOrDefault);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

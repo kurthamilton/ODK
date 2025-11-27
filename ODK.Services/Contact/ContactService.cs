@@ -3,8 +3,6 @@ using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Messages;
 using ODK.Core.Notifications;
-using ODK.Core.Platforms;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
@@ -19,14 +17,12 @@ public class ContactService : IContactService
     private readonly IAuthorizationService _authorizationService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IRecaptchaService _recaptchaService;
     private readonly IUnitOfWork _unitOfWork;
     
     public ContactService(
         IRecaptchaService recaptchaService,
         IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider,
         IAuthorizationService authorizationService,
         INotificationService notificationService,
         IMemberEmailService memberEmailService)
@@ -34,7 +30,6 @@ public class ContactService : IContactService
         _authorizationService = authorizationService;
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
-        _platformProvider = platformProvider;
         _recaptchaService = recaptchaService;
         _unitOfWork = unitOfWork;
     }
@@ -77,7 +72,7 @@ public class ContactService : IContactService
             .Select(x => x.Member);
 
         await _memberEmailService.SendChapterConversationEmail(
-            request.HttpRequestContext,
+            request,
             chapter, 
             conversation, 
             conversationMessage, 
@@ -88,18 +83,18 @@ public class ContactService : IContactService
     }
 
     public async Task SendChapterContactMessage(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         Guid chapterId, 
         string fromAddress, 
         string message, 
         string recaptchaToken)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetById(chapterId).Run();
-        await SendChapterContactMessage(httpRequestContext, chapter, fromAddress, message, recaptchaToken);
+        await SendChapterContactMessage(request, chapter, fromAddress, message, recaptchaToken);
     }
 
     public async Task SendChapterContactMessage(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         Chapter chapter, 
         string fromAddress, 
         string message, 
@@ -141,19 +136,19 @@ public class ContactService : IContactService
 
         if (!flagged)
         {
-            await _memberEmailService.SendChapterMessage(httpRequestContext, chapter, adminMembers, contactMessage);
+            await _memberEmailService.SendChapterMessage(request, chapter, adminMembers, contactMessage);
         }        
     }
 
     public async Task SendSiteContactMessage(
-        IHttpRequestContext httpRequestContext, 
+        ServiceRequest request, 
         string fromAddress, 
         string message, 
         string recaptchaToken)
     {
         ValidateRequest(fromAddress, message);
 
-        var platform = _platformProvider.GetPlatform(httpRequestContext);
+        var platform = request.Platform;
 
         var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
 
@@ -174,7 +169,7 @@ public class ContactService : IContactService
         _unitOfWork.SiteContactMessageRepository.Add(contactMessage);
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendSiteMessage(httpRequestContext, contactMessage, siteEmailSettings);
+        await _memberEmailService.SendSiteMessage(request, contactMessage, siteEmailSettings);
     }
 
     public async Task<ServiceResult> StartChapterConversation(
@@ -245,7 +240,7 @@ public class ContactService : IContactService
             .Select(x => x.Member);
 
         await _memberEmailService.SendChapterConversationEmail(
-            request.HttpRequestContext,
+            request,
             chapter, 
             conversation, 
             conversationMessage, 

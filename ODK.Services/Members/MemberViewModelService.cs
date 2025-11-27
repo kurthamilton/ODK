@@ -1,6 +1,5 @@
 ﻿using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Members.ViewModels;
 
@@ -8,36 +7,32 @@ namespace ODK.Services.Members;
 
 public class MemberViewModelService : IMemberViewModelService
 {
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public MemberViewModelService(
-        IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider)
+    public MemberViewModelService(IUnitOfWork unitOfWork)
     {
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<MemberPageViewModel> GetGroupMemberPage(Guid currentMemberId, string slug, Guid memberId)
+    public async Task<MemberPageViewModel> GetGroupMemberPage(MemberServiceRequest request, string slug, Guid memberId)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
-        return await GetMemberPage(currentMemberId, chapter, memberId);
+        return await GetMemberPage(request, chapter, memberId);
     }
 
-    public async Task<MembersPageViewModel> GetGroupMembersPage(Guid currentMemberId, string slug)
+    public async Task<MembersPageViewModel> GetGroupMembersPage(MemberServiceRequest request, string slug)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
 
-        return await GetMembersPage(currentMemberId, chapter);
+        return await GetMembersPage(request, chapter);
     }
 
-    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(Guid currentMemberId)
+    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (currentMember, conversations) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
@@ -61,9 +56,9 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(Guid currentMemberId, Guid chapterId)
+    public async Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (chapterId, currentMemberId, platform) = (request.ChapterId, request.CurrentMemberId, request.Platform);
 
         var (chapter, currentMember, conversations) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
@@ -96,25 +91,25 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    public async Task<MemberPageViewModel> GetMemberPage(Guid currentMemberId, string chapterName, Guid memberId)
+    public async Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, string chapterName, Guid memberId)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
-        return await GetMemberPage(currentMemberId, chapter, memberId);
+        return await GetMemberPage(request, chapter, memberId);
     }
 
-    public async Task<MembersPageViewModel> GetMembersPage(Guid currentMemberId, string chapterName)
+    public async Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, string chapterName)
     {        
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
-        return await GetMembersPage(currentMemberId, chapter);
+        return await GetMembersPage(request, chapter);
     }
 
-    private async Task<MemberPageViewModel> GetMemberPage(Guid currentMemberId, Chapter chapter, Guid memberId)
+    private async Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, Chapter chapter, Guid memberId)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (
             currentMember,             
@@ -149,9 +144,9 @@ public class MemberViewModelService : IMemberViewModelService
         };
     }
 
-    private async Task<MembersPageViewModel> GetMembersPage(Guid currentMemberId, Chapter chapter)
+    private async Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, Chapter chapter)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         // get current member separately as they might be hidden from the list of members
         var (

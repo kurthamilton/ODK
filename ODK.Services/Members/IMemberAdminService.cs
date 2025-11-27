@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Members;
-using ODK.Core.Web;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 
@@ -51,7 +50,7 @@ public interface IMemberAdminService
 
     Task<ServiceResult> SendBulkEmail(MemberChapterServiceRequest request, MemberFilter filter, string subject, string body);
 
-    Task SendMemberSubscriptionReminderEmails(IHttpRequestContext httpRequestContext);
+    Task SendMemberSubscriptionReminderEmails(ServiceRequest request);
 
     Task SetMemberVisibility(MemberChapterServiceRequest request, Guid memberId, bool visible);
 

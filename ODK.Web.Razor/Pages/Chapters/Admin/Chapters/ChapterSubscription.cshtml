@@ -1,4 +1,5 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Subscription"
+@using ODK.Services
 @using ODK.Services.Members
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Extensions
@@ -18,8 +19,9 @@
         return;
     }
 
-    var subscription = await SiteSubscriptionService.GetMemberSiteSubscription(memberId.Value);
-    var siteSubscriptions = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(memberId.Value);
+    var request = new MemberServiceRequest(memberId.Value, Model.ServiceRequest);
+    var subscription = await SiteSubscriptionService.GetMemberSiteSubscription(request);
+    var siteSubscriptions = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(Model.ServiceRequest, memberId);
 }
 
 @await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", new ChapterSubscriptionViewModel

@@ -2,7 +2,6 @@
 using ODK.Core.Events;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
-using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
 using ODK.Data.Core;
@@ -12,14 +11,10 @@ namespace ODK.Services.Notifications;
 
 public class NotificationService : INotificationService
 {
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public NotificationService(
-        IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider)
+    public NotificationService(IUnitOfWork unitOfWork)
     {
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
@@ -113,9 +108,10 @@ public class NotificationService : INotificationService
         };
     }
 
-    public async Task<UnreadNotificationsViewModel> GetUnreadNotificationsViewModel(Guid memberId)
+    public async Task<UnreadNotificationsViewModel> GetUnreadNotificationsViewModel(
+        MemberServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (unread, totalCount, settings) = await _unitOfWork.RunAsync(
             x => x.NotificationRepository.GetUnreadByMemberId(memberId),
