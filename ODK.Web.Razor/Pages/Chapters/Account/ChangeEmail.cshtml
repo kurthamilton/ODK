@@ -17,7 +17,7 @@
     Model.Title = "Change email";
 
     var memberId = User.MemberId();
-    var chapter = await RequestCache.GetChapterAsync(Model.ChapterName);
+    var chapter = await RequestCache.GetChapterAsync(Model.Platform, Model.ChapterName);
     var viewModel = await AccountViewModelService.GetChapterAccountViewModel(memberId, Model.ChapterName);
 }
 

@@ -1,11 +1,8 @@
-﻿@using ODK.Core.Platforms
-@using ODK.Services.Authentication
+﻿@using ODK.Services.Authentication
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
-@inject IPlatformProvider PlatformProvider
-@{
-    var platform = PlatformProvider.GetPlatform();
-}
+@using ODK.Web.Razor.Models
+@model OdkComponentContext
 
 @if (User.Authenticated())
 {
@@ -20,14 +17,14 @@
                 </span>
                 <span>My account</span>
             </a>
-            <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.Index(platform)">
+            <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.Index(Model.Platform)">
                 <span class="icon">
                     @await Html.PartialAsync("Components/Icons/_Groups")
                 </span>
                 <span>My groups</span>
             </a>
 
-            <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.GroupCreate(platform)">
+            <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.GroupCreate(Model.Platform)">
                 <span class="icon">
                     <i class="fa-solid fa-plus"></i>
                 </span>

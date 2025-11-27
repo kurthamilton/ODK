@@ -5,12 +5,13 @@ using ODK.Services.Members;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Web.Common.Config.Settings;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class ScheduledTasksController : Controller
+public class ScheduledTasksController : OdkControllerBase
 {
     private readonly IEventAdminService _eventAdminService;
     private readonly IInstagramService _instagramService;
@@ -23,7 +24,9 @@ public class ScheduledTasksController : Controller
         IInstagramService instagramService,
         AppSettings settings,
         ISiteSubscriptionService siteSubscriptionService,
-        IMemberAdminService memberAdminService)
+        IMemberAdminService memberAdminService,
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _eventAdminService = eventAdminService;
         _instagramService = instagramService;
@@ -39,7 +42,7 @@ public class ScheduledTasksController : Controller
 
         try
         {
-            await _memberAdminService.SendMemberSubscriptionReminderEmails();
+            await _memberAdminService.SendMemberSubscriptionReminderEmails(HttpRequestContext);
         }
         catch
         {
@@ -54,7 +57,7 @@ public class ScheduledTasksController : Controller
 
         try
         {
-            await _eventAdminService.SendScheduledEmails();            
+            await _eventAdminService.SendScheduledEmails(HttpRequestContext);            
         }
         catch
         {
@@ -84,7 +87,7 @@ public class ScheduledTasksController : Controller
 
         try
         {
-            await _siteSubscriptionService.SyncExpiredSubscriptions();
+            await _siteSubscriptionService.SyncExpiredSubscriptions(HttpRequestContext);
         }
         catch
         {

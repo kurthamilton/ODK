@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Payments;
-using ODK.Core.Platforms;
 
 namespace ODK.Services.Payments.Models;
 
@@ -14,8 +13,6 @@ public class PaymentProviderWebhook
     public required string? PaymentId { get; init; }
 
     public required PaymentProviderType PaymentProviderType { get; init; }
-
-    public required PlatformType Platform { get; init; }
 
     public required string? SubscriptionId { get; init; }
 

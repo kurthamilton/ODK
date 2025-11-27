@@ -5,12 +5,12 @@
 @using ODK.Services.Caching
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Header
-@inject IPlatformProvider PlatformProvider
+@model OdkComponentContext
 @inject IRequestCache RequestCache
 @{
-    var platform = PlatformProvider.GetPlatform();
-    if (platform != PlatformType.DrunkenKnitwits)
+    if (Model.Platform != PlatformType.DrunkenKnitwits)
     {
         return;
     }
@@ -18,7 +18,7 @@
     var memberId = User.MemberIdOrDefault();
     var member = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
 
-    var chapters = await RequestCache.GetChaptersAsync();    
+    var chapters = await RequestCache.GetChaptersAsync(Model.Platform);
     var menuItems = chapters
         .OrderBy(x => x.Name)
         .Select(c => new MenuItem
@@ -30,11 +30,11 @@
         .ToArray();
 }
 
-@await Html.PartialAsync("Header/_Header", new HeaderViewModel
+@await Html.PartialAsync("Header/_Header", new HeaderViewModel(Model)
 {   
    ImageLink = "/",
    ImageUrl = "/assets/img/home-banner.png",
-   Navbar = new NavbarViewModel
+   Navbar = new NavbarViewModel(Model)
    {
        Breakpoint = "md",
        Chapter = null,

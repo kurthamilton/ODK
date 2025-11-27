@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Payments;
-using ODK.Core.Platforms;
 using ODK.Services.Logging;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
@@ -10,18 +9,14 @@ namespace ODK.Services.Integrations.Payments.Stripe;
 public class StripeWebhookParser : IStripeWebhookParser
 {
     private readonly ILoggingService _loggingService;
-    private readonly IPlatformProvider _platformProvider;
 
-    public StripeWebhookParser(
-        ILoggingService loggingService,
-        IPlatformProvider platformProvider)
+    public StripeWebhookParser(ILoggingService loggingService)
     {
         _loggingService = loggingService;
-        _platformProvider = platformProvider;
     }
 
     public async Task<PaymentProviderWebhook?> ParseWebhook(string json)
-    {
+    {        
         JsonNode? obj;
 
         try
@@ -58,7 +53,6 @@ public class StripeWebhookParser : IStripeWebhookParser
             Metadata = metadata,
             PaymentId = objData?["payment_intent"]?.GetValue<string>(),
             PaymentProviderType = PaymentProviderType.Stripe,
-            Platform = _platformProvider.GetPlatform(),
             SubscriptionId = null,
             Type = obj["type"]?.GetValue<string>() == "checkout.session.completed"
                 ? PaymentProviderWebhookType.CheckoutSessionCompleted

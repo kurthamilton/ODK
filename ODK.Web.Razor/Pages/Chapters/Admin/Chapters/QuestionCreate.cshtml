@@ -1,10 +1,14 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Questions/Create"
-@using ODK.Web.Razor.Models.Components
+@using ODK.Core.Chapters
 @using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.QuestionCreateModel
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create question | Admin";
+
+    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent", Model.Chapter)
+@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent", viewModel)

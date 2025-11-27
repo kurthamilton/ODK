@@ -3,6 +3,7 @@ using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
 using ODK.Core.Subscriptions;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Logging;
@@ -123,8 +124,9 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
         var currency = siteSubscriptionPrice.Currency;
-
-        await _memberEmailService.SendPaymentNotification(payment, currency, siteEmailSettings);
+        
+        // TODO: handle in webhook
+        await _memberEmailService.SendPaymentNotification(null, payment, currency, siteEmailSettings);
 
         return true;
     }
@@ -245,9 +247,10 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     }
 
     public async Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
-        Guid memberId, Guid priceId, string returnPath)
+        MemberServiceRequest request, Guid priceId, string returnPath)
     {
         var platform = _platformProvider.GetPlatform();
+        var memberId = request.CurrentMemberId;
 
         var (member, price, paymentSettings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
@@ -274,7 +277,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         };
 
         var session = await _paymentService.StartCheckoutSession(
-            paymentSettings, subscriptionPlan, returnPath, metadata);
+            request.HttpRequestContext, paymentSettings, subscriptionPlan, returnPath, metadata);
 
         _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
         {
@@ -296,7 +299,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         };
     }
 
-    public async Task SyncExpiredSubscriptions()
+    public async Task SyncExpiredSubscriptions(IHttpRequestContext httpRequestContext)
     {
         var subscriptions = await _unitOfWork.MemberSiteSubscriptionRepository.GetExpired().Run();
 
@@ -319,7 +322,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             else
             {
                 var member = await _unitOfWork.MemberRepository.GetById(subscription.MemberId).Run();
-                await _memberEmailService.SendSiteSubscriptionExpiredEmail(member);
+                await _memberEmailService.SendSiteSubscriptionExpiredEmail(httpRequestContext, member);
             }
         }
 

@@ -10,18 +10,15 @@ namespace ODK.Services.Integrations.Payments;
 public class PaymentProviderFactory : IPaymentProviderFactory
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly ILoggingService _loggingService;
     private readonly PayPalPaymentProviderSettings _payPalSettings;
 
     public PaymentProviderFactory(
         IHttpClientFactory httpClientFactory,
         PayPalPaymentProviderSettings payPalSettings,
-        IHttpRequestProvider httpRequestProvider,
         ILoggingService loggingService)
     {
         _httpClientFactory = httpClientFactory;
-        _httpRequestProvider = httpRequestProvider;
         _loggingService = loggingService;
         _payPalSettings = payPalSettings;
     }
@@ -39,7 +36,6 @@ public class PaymentProviderFactory : IPaymentProviderFactory
             case PaymentProviderType.Stripe:
                 return new StripePaymentProvider(
                     settings,
-                    _httpRequestProvider,
                     _loggingService);
             default:
                 throw new InvalidOperationException($"Payment provider type {settings.Provider} not supported");

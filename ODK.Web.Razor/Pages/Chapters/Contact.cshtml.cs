@@ -9,8 +9,7 @@ public class ContactModel : ChapterPageModel
 {
     private readonly IContactService _contactService;
 
-    public ContactModel(IRequestCache requestCache, IContactService contactService) 
-        : base(requestCache)
+    public ContactModel(IContactService contactService) 
     {
         _contactService = contactService;
     }
@@ -29,7 +28,9 @@ public class ContactModel : ChapterPageModel
             return Page();
         }
 
-        await _contactService.SendChapterContactMessage(Chapter,
+        await _contactService.SendChapterContactMessage(
+            HttpRequestContext,
+            Chapter,
             viewModel.EmailAddress ?? "",
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");

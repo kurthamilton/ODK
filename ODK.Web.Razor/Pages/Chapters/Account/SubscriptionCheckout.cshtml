@@ -4,7 +4,6 @@
 @using ODK.Core.Payments
 @using ODK.Services.Members
 @using ODK.Web.Common.Components
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
@@ -15,10 +14,9 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription checkout";
 
-    var memberId = User.MemberId();
     var returnPath = $"/{Model.Chapter.Name}/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
-        memberId, Model.SubscriptionId, returnPath);
+        Model.MemberServiceRequest, Model.SubscriptionId, returnPath);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Web;
 
-public interface IHttpRequestProvider
+public interface IHttpRequestContext
 {
     string RequestUrl { get; }
 }

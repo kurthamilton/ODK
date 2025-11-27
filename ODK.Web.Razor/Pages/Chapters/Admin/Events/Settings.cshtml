@@ -8,8 +8,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Event settings | Admin";
 
-    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
-    var viewModel = await EventAdminService.GetEventSettingsViewModel(request);
+    var viewModel = await EventAdminService.GetEventSettingsViewModel(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Admin/Events/_SettingsContent", viewModel)

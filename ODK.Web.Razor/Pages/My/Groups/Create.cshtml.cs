@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 using ODK.Core.Images;
-using ODK.Core.Platforms;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Topics.Models;
@@ -15,13 +14,10 @@ namespace ODK.Web.Razor.Pages.My.Groups;
 public class CreateModel : OdkPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
-    private readonly IPlatformProvider _platformProvider;
 
-    public CreateModel(IChapterAdminService chapterAdminService,
-        IPlatformProvider platformProvider)
+    public CreateModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
-        _platformProvider = platformProvider;
     }
 
     public void OnGet()
@@ -55,7 +51,7 @@ public class CreateModel : OdkPageModel
             return Page();
         }
 
-        var result = await _chapterAdminService.CreateChapter(CurrentMemberId, new ChapterCreateModel
+        var result = await _chapterAdminService.CreateChapter(MemberServiceRequest, new ChapterCreateModel
         {
             Description = viewModel.Description?.Trim() ?? "",
             ImageData = bytes,
@@ -82,10 +78,8 @@ public class CreateModel : OdkPageModel
 
         AddFeedback("Group created. Once approved you will be able to publish and start accepting group members.", FeedbackType.Success);
 
-        var platform = _platformProvider.GetPlatform();
-
         return result.Value != null
-            ? Redirect(OdkRoutes.MemberGroups.Group(platform, result.Value))
-            : Redirect(OdkRoutes.MemberGroups.Index(platform));
+            ? Redirect(OdkRoutes.MemberGroups.Group(Platform, result.Value))
+            : Redirect(OdkRoutes.MemberGroups.Index(Platform));
     }
 }

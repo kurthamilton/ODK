@@ -11,7 +11,7 @@
     var notifications = Model.Unread;
 
     var chapterPageContext = new ChapterPageContext(RequestCache, Context);
-    var chapter = await chapterPageContext.GetChapterAsync();
+    var chapter = await chapterPageContext.GetChapterAsync(Model.Platform);
 
     var showIfEmptyClass = notifications.Count == 0 ? null : "d-none";
     var hideIfEmptyClass = notifications.Count == 0 ? "d-none" : null;

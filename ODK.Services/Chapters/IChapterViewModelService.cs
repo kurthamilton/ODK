@@ -1,12 +1,14 @@
-﻿using ODK.Services.Chapters.ViewModels;
+﻿using ODK.Core.Platforms;
+using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Chapters;
 
 public interface IChapterViewModelService
 {
-    Task<GroupsViewModel> FindGroups(Guid? currentMemberId, GroupFilter filter);
+    Task<GroupsViewModel> FindGroups(
+        PlatformType platform, Guid? currentMemberId, GroupFilter filter);
 
-    Task<ChapterCreateViewModel> GetChapterCreate(Guid currentMemberId);
+    Task<ChapterCreateViewModel> GetChapterCreate(PlatformType platform, Guid currentMemberId);
 
     Task<GroupContactPageViewModel> GetGroupContactPage(Guid? currentMemberId, string slug);
 

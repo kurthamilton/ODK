@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Platforms;
 using ODK.Core.Utils;
-using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Events;
 using ODK.Web.Common.Feedback;
@@ -14,16 +12,13 @@ public class CreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterService _chapterService;
     private readonly IEventAdminService _eventAdminService;
-    private readonly IPlatformProvider _platformProvider;
-
+    
     public CreateModel(
         IEventAdminService eventAdminService,
-        IChapterService chapterService,
-        IPlatformProvider platformProvider)
+        IChapterService chapterService)
     {
         _chapterService = chapterService;
         _eventAdminService = eventAdminService;
-        _platformProvider = platformProvider;
     }    
 
     public Guid? VenueId { get; private set; }
@@ -35,8 +30,7 @@ public class CreateModel : OdkGroupAdminPageModel
 
     public async Task<IActionResult> OnPostAsync([FromForm] EventFormSubmitViewModel viewModel)
     {
-        var request = new AdminServiceRequest(ChapterId, CurrentMemberId);
-        var result = await _eventAdminService.CreateEvent(request, new CreateEvent
+        var result = await _eventAdminService.CreateEvent(AdminServiceRequest, new CreateEvent
         {
             AttendeeLimit = viewModel.AttendeeLimit,
             Date = viewModel.Date,
@@ -59,10 +53,9 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();
         }
 
-        var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterService.GetChapterById(ChapterId);
         AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
-        var url = OdkRoutes.MemberGroups.Events(platform, chapter);
+        var url = OdkRoutes.MemberGroups.Events(Platform, chapter);
         return Redirect(url);
     }
 }

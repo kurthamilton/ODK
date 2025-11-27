@@ -2,20 +2,21 @@
 @using ODK.Core.Members
 @using ODK.Services.Authorization
 @using ODK.Services.Caching
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Members
 @using ODK.Web.Razor.Pages.Chapters
+@using ODK.Web.Razor.Services
 @inject IAuthorizationService AuthorizationService
 @inject IRequestCache RequestCache
+@inject IRequestStore RequestStore
 @{
-    var memberId = User.MemberIdOrDefault();
+    var memberId = RequestStore.CurrentMemberIdOrDefault;
     if (memberId == null)
     {
         return;
     }
 
     var chapterContext = new ChapterPageContext(RequestCache, Context);
-    var chapter = await chapterContext.GetChapterAsync();
+    var chapter = await chapterContext.GetChapterAsync(RequestStore.Platform);
     if (chapter == null)
     {
         return;

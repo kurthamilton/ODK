@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services;
 using ODK.Services.Authentication;
-using ODK.Services.Caching;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Account;
 
@@ -11,8 +10,7 @@ public class PasswordResetModel : ChapterPageModel
 {
     private readonly IAuthenticationService _authenticationService;
 
-    public PasswordResetModel(IRequestCache requestCache, IAuthenticationService authenticationService) 
-        : base(requestCache)
+    public PasswordResetModel(IAuthenticationService authenticationService) 
     {
         _authenticationService = authenticationService;
     }

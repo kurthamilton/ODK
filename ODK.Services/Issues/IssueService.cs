@@ -23,14 +23,15 @@ public class IssueService : IIssueService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> CreateIssue(Guid currentMemberId, IssueCreateModel model)
+    public async Task<ServiceResult> CreateIssue(MemberServiceRequest request, IssueCreateModel model)
     {
         if (string.IsNullOrWhiteSpace(model.Title) || string.IsNullOrWhiteSpace(model.Message))
         {
             return ServiceResult.Failure("Title and message cannot be empty");
         }
 
-        var platform = _platformProvider.GetPlatform();
+        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var currentMemberId = request.CurrentMemberId;
 
         var (member, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
@@ -59,7 +60,12 @@ public class IssueService : IIssueService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendNewIssueEmail(member, issue, issueMessage, siteEmailSettings);
+        await _memberEmailService.SendNewIssueEmail(
+            request.HttpRequestContext, 
+            member, 
+            issue, 
+            issueMessage, 
+            siteEmailSettings);
 
         return ServiceResult.Successful();
     }
@@ -91,9 +97,10 @@ public class IssueService : IIssueService
         };
     }
 
-    public async Task<ServiceResult> ReplyToIssue(Guid currentMemberId, Guid issueId, string message)
+    public async Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var currentMemberId = request.CurrentMemberId;
 
         var (issue, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.IssueRepository.GetById(issueId),
@@ -117,7 +124,12 @@ public class IssueService : IIssueService
         _unitOfWork.IssueMessageRepository.Add(issueMessage);
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendIssueReply(issue, issueMessage, null, siteEmailSettings);
+        await _memberEmailService.SendIssueReply(
+            request.HttpRequestContext, 
+            issue, 
+            issueMessage, 
+            null, 
+            siteEmailSettings);
 
         return ServiceResult.Successful();
     }

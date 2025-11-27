@@ -4,9 +4,9 @@ namespace ODK.Services.Media;
 
 public interface IMediaAdminService
 {
-    Task<IReadOnlyCollection<MediaFile>> DeleteMediaFile(AdminServiceRequest request, string name);
+    Task<IReadOnlyCollection<MediaFile>> DeleteMediaFile(MemberChapterServiceRequest request, string name);
 
-    Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(AdminServiceRequest request);
+    Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(MemberChapterServiceRequest request);
 
-    Task<MediaFile?> SaveMediaFile(AdminServiceRequest request, string name, byte[] data);
+    Task<MediaFile?> SaveMediaFile(MemberChapterServiceRequest request, string name, byte[] data);
 }

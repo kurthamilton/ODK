@@ -1,17 +1,13 @@
 ﻿@page "/account/subscription"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-@using ODK.Core.Platforms
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Account.SubscriptionModel
-@inject IPlatformProvider PlatformProvider
 @{
     Layout = "_AccountLayout";
     Model.Title = "Subscription";
-
-    var platform = PlatformProvider.GetPlatform();
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -19,7 +15,7 @@
     Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Subscription(platform, null),
+        Active = OdkRoutes.Account.Subscription(Model.Platform, null),
         Content =
             @<div>
                 <h2>My subscription</h2>

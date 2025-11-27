@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/events/venues/new"
+@using ODK.Core.Chapters
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models
 @model CreateModel
 @inject IChapterAdminService ChapterAdminService
 @{
@@ -7,9 +9,11 @@
     Model.Title = "Create venue";
 
     var chapter = await ChapterAdminService.GetChapter(Model.AdminServiceRequest);
+
+    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
-@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", chapter)
+@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", viewModel)
 
 @section scripts
 {

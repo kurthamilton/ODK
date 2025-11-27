@@ -1,10 +1,11 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Admin.Members
+@using ODK.Web.Razor.Services
 @model MembershipSettingsFormViewModel
-@inject IPlatformProvider PlatformProvider
+@inject IRequestStore RequestStore
 @{
-    var platform = PlatformProvider.GetPlatform();
+    var platform = RequestStore.Platform;
 }
 
 <div class="mb-3 form-check form-switch">

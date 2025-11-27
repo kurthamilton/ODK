@@ -8,22 +8,34 @@ using ODK.Core.Messages;
 using ODK.Core.Payments;
 using ODK.Core.Topics;
 using ODK.Core.Venues;
+using ODK.Core.Web;
 
 namespace ODK.Services.Members;
 
 public interface IMemberEmailService
 {
-    Task SendActivationEmail(Chapter? chapter, Member member, string activationToken);
+    Task SendActivationEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter? chapter, 
+        Member member, 
+        string activationToken);
 
-    Task SendAddressUpdateEmail(Chapter? chapter, Member member, string newEmailAddress, string token);
+    Task SendAddressUpdateEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter? chapter, 
+        Member member, 
+        string newEmailAddress, 
+        string token);
 
     Task SendBulkEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter,
         IEnumerable<Member> to,
         string subject,
         string body);
 
     Task SendChapterConversationEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter,
         ChapterConversation conversation,
         ChapterConversationMessage message,
@@ -31,40 +43,55 @@ public interface IMemberEmailService
         bool isReply);
 
     Task SendChapterMessage(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter, 
         IReadOnlyCollection<ChapterAdminMember> adminMembers, 
         ChapterContactMessage contactMessage);
 
     Task<ServiceResult> SendChapterMessageReply(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter,
         ChapterContactMessage originalMessage,
         string reply);
 
-    Task SendDuplicateMemberEmail(Chapter? chapter, Member member);
+    Task SendDuplicateMemberEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter? chapter, 
+        Member member);
 
     Task SendEventCommentEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter,
         Event @event,
         EventComment eventComment,
         Member? parentCommentMember);
 
     Task SendEventInvites(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter,
         Event @event,
         Venue venue,
         IEnumerable<Member> members);
 
-    Task SendGroupApprovedEmail(Chapter chapter, Member owner);
+    Task SendGroupApprovedEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter chapter, 
+        Member owner);
 
-    Task SendMemberApprovedEmail(Chapter chapter, Member member);
+    Task SendMemberApprovedEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter chapter, 
+        Member member);
 
     Task SendIssueReply(
+        IHttpRequestContext httpRequestContext,
         Issue issue,
         IssueMessage reply,
         Member? toMember,
         SiteEmailSettings siteEmailSettings);
 
     Task SendMemberChapterSubscriptionConfirmationEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter,
         ChapterPaymentSettings chapterPaymentSettings,
         ChapterSubscription chapterSubscription,
@@ -72,25 +99,41 @@ public interface IMemberEmailService
         DateTime expiresUtc);
 
     Task SendMemberChapterSubscriptionExpiringEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter, 
         Member member, 
         MemberSubscription memberSubscription,
         DateTime expires,
         DateTime disabledDate);
 
-    Task SendMemberDeleteEmail(Chapter chapter, Member member, string? reason);
+    Task SendMemberDeleteEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter chapter, 
+        Member member, 
+        string? reason);
 
     Task SendMemberLeftChapterEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter, 
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member, 
         string? reason);
 
-    Task SendNewGroupEmail(Chapter chapter, ChapterTexts texts, SiteEmailSettings settings);
+    Task SendNewGroupEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter chapter, 
+        ChapterTexts texts, 
+        SiteEmailSettings settings);
 
-    Task SendNewIssueEmail(Member member, Issue issue, IssueMessage message, SiteEmailSettings settings);
+    Task SendNewIssueEmail(
+        IHttpRequestContext httpRequestContext,
+        Member member, 
+        Issue issue, 
+        IssueMessage message, 
+        SiteEmailSettings settings);
 
     Task SendNewMemberAdminEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,        
@@ -98,29 +141,61 @@ public interface IMemberEmailService
         IReadOnlyCollection<MemberProperty> memberProperties);
 
     Task SendNewMemberEmailsAsync(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter, 
         IReadOnlyCollection<ChapterAdminMember> adminMembers, 
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties);
 
-    Task SendNewTopicEmail(IReadOnlyCollection<INewTopic> newTopics, SiteEmailSettings settings);
+    Task SendNewTopicEmail(
+        IHttpRequestContext httpRequestContext, 
+        IReadOnlyCollection<INewTopic> newTopics, 
+        SiteEmailSettings settings);
 
-    Task SendPasswordResetEmail(Chapter? chapter, Member member, string token);
+    Task SendPasswordResetEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter? chapter, 
+        Member member, 
+        string token);
 
-    Task SendPaymentNotification(Payment payment, Currency currency, SiteEmailSettings settings);
+    Task SendPaymentNotification(
+        IHttpRequestContext httpRequestContext, 
+        Payment payment, 
+        Currency currency, 
+        SiteEmailSettings settings);
 
-    Task SendSiteMessage(SiteContactMessage message, SiteEmailSettings settings);
+    Task SendSiteMessage(
+        IHttpRequestContext httpRequestContext, 
+        SiteContactMessage message, 
+        SiteEmailSettings settings);
 
-    Task<ServiceResult> SendSiteMessageReply(SiteContactMessage originalMessage, string reply);
+    Task<ServiceResult> SendSiteMessageReply(
+        IHttpRequestContext httpRequestContext, 
+        SiteContactMessage originalMessage, 
+        string reply);
 
-    Task SendSiteSubscriptionExpiredEmail(Member member);
+    Task SendSiteSubscriptionExpiredEmail(
+        IHttpRequestContext httpRequestContext, 
+        Member member);
 
-    Task SendSiteWelcomeEmail(Member member);
+    Task SendSiteWelcomeEmail(
+        IHttpRequestContext httpRequestContext, 
+        Member member);
 
-    Task<ServiceResult> SendTestEmail(Chapter? chapter, Member to, EmailType type);
+    Task<ServiceResult> SendTestEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter? chapter, 
+        Member to, 
+        EmailType type);
 
-    Task SendTopicApprovedEmails(IReadOnlyCollection<INewTopic> newTopics, IReadOnlyCollection<Member> members);
+    Task SendTopicApprovedEmails(
+        IHttpRequestContext httpRequestContext, 
+        IReadOnlyCollection<INewTopic> newTopics, 
+        IReadOnlyCollection<Member> members);
 
-    Task SendTopicRejectedEmails(IReadOnlyCollection<INewTopic> newTopics, IReadOnlyCollection<Member> members);
+    Task SendTopicRejectedEmails(
+        IHttpRequestContext httpRequestContext, 
+        IReadOnlyCollection<INewTopic> newTopics, 
+        IReadOnlyCollection<Member> members);
 }

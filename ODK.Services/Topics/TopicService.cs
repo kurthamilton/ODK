@@ -22,9 +22,11 @@ public class TopicService : ITopicService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task AddNewChapterTopics(Guid currentMemberId, Guid chapterId, IReadOnlyCollection<NewTopicModel> models)
+    public async Task AddNewChapterTopics(MemberChapterServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+
+        var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
 
         var (topics, chapterNewTopics, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.TopicRepository.GetAll(),
@@ -85,13 +87,15 @@ public class TopicService : ITopicService
             _unitOfWork.NewChapterTopicRepository.AddMany(newTopics);
             await _unitOfWork.SaveChangesAsync();
 
-            await _memberEmailService.SendNewTopicEmail(newTopics, siteEmailSettings);
+            await _memberEmailService.SendNewTopicEmail(request.HttpRequestContext, newTopics, siteEmailSettings);
         }
     }
 
-    public async Task AddNewMemberTopics(Guid currentMemberId, IReadOnlyCollection<NewTopicModel> models)
+    public async Task AddNewMemberTopics(MemberServiceRequest request, IReadOnlyCollection<NewTopicModel> models)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+
+        var currentMemberId = request.CurrentMemberId;
 
         var (topics, memberNewTopics, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.TopicRepository.GetAll(),
@@ -151,7 +155,7 @@ public class TopicService : ITopicService
             _unitOfWork.NewMemberTopicRepository.AddMany(newTopics);
             await _unitOfWork.SaveChangesAsync();
 
-            await _memberEmailService.SendNewTopicEmail(newTopics, siteEmailSettings);
+            await _memberEmailService.SendNewTopicEmail(request.HttpRequestContext, newTopics, siteEmailSettings);
         }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Images;
-using ODK.Core.Platforms;
-using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Services.Members;
@@ -9,6 +7,7 @@ using ODK.Services.Members.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Members;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.Admin;
 
@@ -16,27 +15,22 @@ public class MemberAdminController : AdminControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
     private readonly IMemberAdminService _memberAdminService;
-    private readonly IPlatformProvider _platformProvider;
-    private readonly IRequestCache _requestCache;
 
     public MemberAdminController(
         IMemberAdminService memberAdminService, 
         IChapterAdminService chapterAdminService,
         IRequestCache requestCache,
-        IPlatformProvider platformProvider)
-        : base(requestCache)
+        IRequestStore requestStore)
+        : base(requestCache, requestStore)
     {
         _chapterAdminService = chapterAdminService;
         _memberAdminService = memberAdminService;
-        _platformProvider = platformProvider;
-        _requestCache = requestCache;
     }
 
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/approve")]
     public async Task<IActionResult> ApproveMember(Guid chapterId, Guid id)
     {
-        var request = new AdminServiceRequest(chapterId, MemberId);
-
+        var request = MemberChapterServiceRequest(chapterId);
         var result = await _memberAdminService.ApproveMember(request, id);
         AddFeedback(result, "Member approved");
         return RedirectToReferrer();
@@ -46,8 +40,8 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> UpdatePicture(Guid chapterId, Guid id,
         [FromForm] string imageDataUrl)
     {
-        var request = new AdminServiceRequest(chapterId, MemberId);
-        
+        var request = MemberChapterServiceRequest(chapterId);
+
         if (string.IsNullOrEmpty(imageDataUrl))
         {
             AddFeedback("No image provided", FeedbackType.Warning);
@@ -71,7 +65,7 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/{id:guid}/delete")]
     public async Task<IActionResult> DeleteMember(Guid chapterId, Guid id, [FromForm] string? reason)
     {
-        var request = new AdminServiceRequest(chapterId, MemberId);
+        var request = MemberChapterServiceRequest(chapterId);
         var result = await _memberAdminService.RemoveMemberFromChapter(request, id, reason);
         AddFeedback(result, "Member deleted");
 
@@ -80,15 +74,14 @@ public class MemberAdminController : AdminControllerBase
             return RedirectToReferrer();
         }
 
-        var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterAdminService.GetChapter(request);
-        return Redirect(OdkRoutes.MemberGroups.Members(platform, chapter));
+        return Redirect(OdkRoutes.MemberGroups.Members(Platform, chapter));
     }
 
     [HttpPost("groups/{chapterId:guid}members/{id:guid}/emails/activation/send")]
     public async Task<IActionResult> SendActivationEmail(Guid chapterId, Guid id)
     {
-        var request = new AdminServiceRequest(chapterId, MemberId);
+        var request = MemberChapterServiceRequest(chapterId);
         await _memberAdminService.SendActivationEmail(request, id);
         AddFeedback("Email sent", FeedbackType.Success);
         return RedirectToReferrer();
@@ -107,8 +100,8 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> AddAdminMember(Guid id, 
         [FromForm] AdminMemberAddFormViewModel viewModel)
     {
-        var serviceRequest = new AdminServiceRequest(id, MemberId);
-        var result = await _chapterAdminService.AddChapterAdminMember(serviceRequest, viewModel.MemberId!.Value);
+        var request = MemberChapterServiceRequest(id);
+        var result = await _chapterAdminService.AddChapterAdminMember(request, viewModel.MemberId!.Value);
         AddFeedback(result, "Admin member added");
         return RedirectToReferrer();
     }
@@ -116,8 +109,8 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{id:guid}/members/admins/{memberId:guid}/delete")]
     public async Task<IActionResult> AddAdminMember(Guid id, Guid memberId)
     {
-        var serviceRequest = new AdminServiceRequest(id, MemberId);
-        var result = await _chapterAdminService.DeleteChapterAdminMember(serviceRequest, memberId);
+        var request = MemberChapterServiceRequest(id);
+        var result = await _chapterAdminService.DeleteChapterAdminMember(request, memberId);
         AddFeedback(result, "Admin member removed");
         return RedirectToReferrer();
     }
@@ -135,7 +128,7 @@ public class MemberAdminController : AdminControllerBase
     public async Task<IActionResult> SendBulkEmail(Guid chapterId, 
         [FromForm] SendMemberBulkEmailFormViewModel viewModel)
     {
-        var request = new AdminServiceRequest(chapterId, MemberId);
+        var request = MemberChapterServiceRequest(chapterId);
 
         var filter = new MemberFilter
         {
@@ -151,8 +144,8 @@ public class MemberAdminController : AdminControllerBase
     [HttpPost("groups/{chapterId:guid}/members/subscriptions/{id:guid}/delete")]
     public async Task<IActionResult> DeleteSubscription(Guid chapterId, Guid id)
     {
-        var serviceRequest = new AdminServiceRequest(chapterId, MemberId);
-        var result = await _chapterAdminService.DeleteChapterSubscription(serviceRequest, id);
+        var request = MemberChapterServiceRequest(chapterId);
+        var result = await _chapterAdminService.DeleteChapterSubscription(request, id);
         AddFeedback(result, "Subscription deleted");
         return RedirectToReferrer();
     }

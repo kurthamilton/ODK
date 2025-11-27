@@ -1,12 +1,13 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Services.Users.ViewModels
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Services
+@using ODK.Web.Razor.Views
 @model PersonalDetailsFormViewModel
-@inject IPlatformProvider PlatformProvider
+@inject IRequestStore RequestStore
 @{
-    var memberId = User.MemberIdOrDefault();
-    var platform = PlatformProvider.GetPlatform();
+    var memberId = RequestStore.CurrentMemberIdOrDefault;
+    var platform = RequestStore.Platform;
 }
 
 <div class="form-group mb-3 @(memberId == null ? "required" : null)">

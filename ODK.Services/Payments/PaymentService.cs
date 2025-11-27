@@ -3,8 +3,9 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
+using ODK.Core.Platforms;
+using ODK.Core.Web;
 using ODK.Data.Core;
-using ODK.Data.Core.Deferred;
 using ODK.Services.Logging;
 using ODK.Services.Members;
 using ODK.Services.Payments.Models;
@@ -140,7 +141,8 @@ public class PaymentService : IPaymentService
         return ServiceResult.Successful();
     }
 
-    public async Task ProcessWebhook(PaymentProviderWebhook webhook)
+    public async Task ProcessWebhook(
+        IHttpRequestContext httpRequestContext, PlatformType platform, PaymentProviderWebhook webhook)
     {
         var existingEvent = await _unitOfWork.PaymentProviderWebhookEventRepository
             .GetByExternalId(webhook.PaymentProviderType, webhook.Id).Run();
@@ -315,21 +317,22 @@ public class PaymentService : IPaymentService
         // send chapter payment notification
         if (chapterPaymentSettings?.UseSitePaymentProvider == true)
         {
-            var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(webhook.Platform).Run();
+            var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
             var currency = chapterPaymentSettings.Currency;
 
-            await _memberEmailService.SendPaymentNotification(payment, currency, siteEmailSettings);
+            await _memberEmailService.SendPaymentNotification(httpRequestContext, payment, currency, siteEmailSettings);
         }
     }
 
     public async Task<ExternalCheckoutSession> StartCheckoutSession(
+        IHttpRequestContext httpRequestContext,
         IPaymentSettings settings, 
         ExternalSubscriptionPlan subscriptionPlan,
         string returnPath,
         PaymentMetadataModel metadata)
     {
         var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.StartCheckout(subscriptionPlan, returnPath, metadata);
+        return await provider.StartCheckout(httpRequestContext, subscriptionPlan, returnPath, metadata);
     }
 
     public async Task UpdatePaymentMetadata(IPaymentSettings settings, string externalId, PaymentMetadataModel metadata)

@@ -15,16 +15,13 @@ namespace ODK.Services.Integrations.Payments.Stripe;
 public class StripePaymentProvider : IPaymentProvider
 {
     private readonly IStripeClient _client;
-    private readonly IHttpRequestProvider _httpRequestProvider;
     private readonly ILoggingService _loggingService;
 
     public StripePaymentProvider(
         IPaymentSettings paymentSettings,
-        IHttpRequestProvider httpRequestProvider,
         ILoggingService loggingService)
     {        
         _client = new StripeClient(paymentSettings.ApiSecretKey);
-        _httpRequestProvider = httpRequestProvider;
         _loggingService = loggingService;
     }
 
@@ -346,9 +343,12 @@ public class StripePaymentProvider : IPaymentProvider
     }
 
     public async Task<ExternalCheckoutSession> StartCheckout(
-        ExternalSubscriptionPlan subscriptionPlan, string returnPath, PaymentMetadataModel metadata)
+        IHttpRequestContext httpRequestContext, 
+        ExternalSubscriptionPlan subscriptionPlan, 
+        string returnPath, 
+        PaymentMetadataModel metadata)
     {
-        var baseUrl = UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl);
+        var baseUrl = UrlUtils.BaseUrl(httpRequestContext.RequestUrl);
 
         var metadataDictionary = new Dictionary<string, string>(metadata.ToDictionary());
 

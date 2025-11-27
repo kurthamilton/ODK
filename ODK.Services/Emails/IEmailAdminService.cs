@@ -4,21 +4,21 @@ namespace ODK.Services.Emails;
 
 public interface IEmailAdminService
 {
-    Task<ServiceResult> DeleteChapterEmail(AdminServiceRequest request, EmailType type);
+    Task<ServiceResult> DeleteChapterEmail(MemberChapterServiceRequest request, EmailType type);
 
-    Task<ChapterEmail> GetChapterEmail(AdminServiceRequest request, EmailType type);
+    Task<ChapterEmail> GetChapterEmail(MemberChapterServiceRequest request, EmailType type);
 
-    Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(AdminServiceRequest request);
+    Task<IReadOnlyCollection<ChapterEmail>> GetChapterEmails(MemberChapterServiceRequest request);
 
     Task<Email> GetEmail(Guid currentMemberId, EmailType type);
     
     Task<IReadOnlyCollection<Email>> GetEmails(Guid currentMemberId);
 
-    Task<ServiceResult> SendTestEmail(AdminServiceRequest request, EmailType type);
+    Task<ServiceResult> SendTestEmail(MemberChapterServiceRequest request, EmailType type);
 
-    Task<ServiceResult> SendTestEmail(Guid currentMemberId, EmailType type);
+    Task<ServiceResult> SendTestMemberEmail(MemberServiceRequest request, EmailType type);
 
-    Task<ServiceResult> UpdateChapterEmail(AdminServiceRequest request, EmailType type, UpdateEmail model);
+    Task<ServiceResult> UpdateChapterEmail(MemberChapterServiceRequest request, EmailType type, UpdateEmail model);
 
     Task<ServiceResult> UpdateEmail(Guid currentMemberId, EmailType type, UpdateEmail model);
 }

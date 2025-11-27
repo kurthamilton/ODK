@@ -1,10 +1,12 @@
 ﻿@using ODK.Services.Settings
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.SuperAdmin
+@model OdkComponentContext
 @inject ISettingsService SettingsService
 @{
     var memberId = User.MemberId();        
-    var settings = await SettingsService.GetSiteEmailSettings();
+    var settings = await SettingsService.GetSiteEmailSettings(Model.Platform);
 }
 
 <section class="section--admin">

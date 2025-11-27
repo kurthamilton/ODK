@@ -1,14 +1,10 @@
-﻿@using ODK.Core.Platforms
-@using ODK.Web.Common.Components
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Common.Routes
+﻿@using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components
-@inject IPlatformProvider PlatformProvider
+@using ODK.Web.Razor.Services
+@inject IRequestStore RequestStore
 @{
     Layout = "_HomeLayout";
 
-    var platform = PlatformProvider.GetPlatform();
-    
     var menuItems = new[]
     {
         new MenuItem { Link = "/superadmin/emails", Text = "Emails" },

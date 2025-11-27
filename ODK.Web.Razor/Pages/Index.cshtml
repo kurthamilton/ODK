@@ -1,17 +1,14 @@
 ﻿@page "/"
 @using ODK.Core.Platforms
 @model IndexModel
-@inject IPlatformProvider PlatformProvider
 @{
     Layout = "_HomeLayout";
     Model.Path = "/";
-
-    var platform = PlatformProvider.GetPlatform();    
 }
 
-@if (platform == PlatformType.DrunkenKnitwits)
+@if (Model.Platform == PlatformType.DrunkenKnitwits)
 {
-    @await Html.PartialAsync("Home/_OdkHomeContent")
+    @await Html.PartialAsync("Home/_OdkHomeContent", Model.ComponentContext)
 }
 else
 {

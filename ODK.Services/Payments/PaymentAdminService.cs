@@ -25,7 +25,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task CreateReconciliation(AdminServiceRequest request, CreateReconciliationModel model)
+    public async Task CreateReconciliation(MemberChapterServiceRequest request, CreateReconciliationModel model)
     {
         var (payments, chapterPaymentSettings, sitePaymentSettings) = await GetSuperAdminRestrictedContent(
             request.CurrentMemberId,
@@ -69,9 +69,9 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<ChapterPaymentsViewModel> GetPayments(AdminServiceRequest request)
+    public async Task<ChapterPaymentsViewModel> GetPayments(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
 
         var (chapter, payments, paymentSettings) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -89,7 +89,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
         };
     }
 
-    public async Task<ChapterReconciliationsViewModel> GetReconciliations(AdminServiceRequest request)
+    public async Task<ChapterReconciliationsViewModel> GetReconciliations(MemberChapterServiceRequest request)
     {
         var (reconciliations, pendingReconciliations, paymentSettings, sitePaymentSettings) = await GetSuperAdminRestrictedContent(
             request.CurrentMemberId,
@@ -200,7 +200,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             .ToArray();
     }
 
-    public async Task SetPaymentReconciliationExemption(AdminServiceRequest request, Guid paymentId, bool exempt)
+    public async Task SetPaymentReconciliationExemption(MemberChapterServiceRequest request, Guid paymentId, bool exempt)
     {
         var payment = await GetSuperAdminRestrictedContent(request,
             x => x.PaymentRepository.GetById(paymentId));

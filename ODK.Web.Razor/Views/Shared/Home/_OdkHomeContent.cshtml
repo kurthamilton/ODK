@@ -1,9 +1,11 @@
 ﻿@using ODK.Services.Chapters
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Home
+@model OdkComponentContext
 @inject IChapterService ChapterService
 @{
-    var dto = await ChapterService.GetChaptersDto();
+    var dto = await ChapterService.GetChaptersDto(Model.Platform);
 
     var (countries, chapters) = (dto.Countries, dto.Chapters);
     var continents = countries

@@ -2,6 +2,7 @@
 using ODK.Services.Contact;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Contact;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -10,7 +11,10 @@ public class ContactController : OdkControllerBase
 {
     private readonly IContactService _contactService;
 
-    public ContactController(IContactService contactService)
+    public ContactController(
+        IContactService contactService,
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _contactService = contactService;
     }
@@ -19,6 +23,7 @@ public class ContactController : OdkControllerBase
     public async Task<IActionResult> Contact([FromForm] ContactFormViewModel viewModel)
     {
         await _contactService.SendSiteContactMessage(
+            HttpRequestContext,
             viewModel.EmailAddress ?? "",
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");

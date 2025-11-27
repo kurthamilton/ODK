@@ -1,9 +1,13 @@
 ﻿@page "/{chapterName}/admin/superAdmin/emails"
+@using ODK.Core.Chapters
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @model EmailsModel
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Emails | SuperAdmin";
+
+    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
 }
 
-@await Html.PartialAsync("SuperAdmin/_ChapterEmailsContent", Model.Chapter)
+@await Html.PartialAsync("SuperAdmin/_ChapterEmailsContent", viewModel)

@@ -8,13 +8,11 @@ namespace ODK.Services.Settings;
 
 public class SettingsService : OdkAdminServiceBase, ISettingsService
 {
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public SettingsService(IUnitOfWork unitOfWork, IPlatformProvider platformProvider)
+    public SettingsService(IUnitOfWork unitOfWork)
         : base(unitOfWork)
     {
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
@@ -113,9 +111,8 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         return await _unitOfWork.SiteSettingsRepository.Get().Run();        
     }
 
-    public async Task<SiteEmailSettings> GetSiteEmailSettings()
+    public async Task<SiteEmailSettings> GetSiteEmailSettings(PlatformType platform)
     {
-        var platform = _platformProvider.GetPlatform();
         return await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
     }    
 
@@ -131,16 +128,15 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
             x => x.SitePaymentSettingsRepository.GetById(id));
     }
 
-    public async Task<ServiceResult> UpdateEmailSettings(Guid currentMemberId, 
+    public async Task<ServiceResult> UpdateEmailSettings(
+        MemberServiceRequest request, 
         string fromEmailAddress, 
         string fromEmailName, 
         string emailTitle,
         string contactEmailAddress)
     {
-        var platform = _platformProvider.GetPlatform();
-
-        var settings = await GetSuperAdminRestrictedContent(currentMemberId,
-            x => x.SiteEmailSettingsRepository.Get(platform));
+        var settings = await GetSuperAdminRestrictedContent(request.CurrentMemberId,
+            x => x.SiteEmailSettingsRepository.Get(request.Platform));
 
         settings.ContactEmailAddress = contactEmailAddress;
         settings.FromEmailAddress = fromEmailAddress;

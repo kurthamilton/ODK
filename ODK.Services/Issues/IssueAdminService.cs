@@ -52,8 +52,11 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         };
     }
 
-    public async Task<ServiceResult> ReplyToIssue(Guid currentMemberId, Guid issueId, string message)
+    public async Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message)
     {
+        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+        var currentMemberId = request.CurrentMemberId;
+
         var issue = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.IssueRepository.GetById(issueId));
 
@@ -71,15 +74,18 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         };
 
         _unitOfWork.IssueMessageRepository.Add(issueMessage);
-        await _unitOfWork.SaveChangesAsync();
-
-        var platform = _platformProvider.GetPlatform();
+        await _unitOfWork.SaveChangesAsync();        
 
         var (member, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(issue.MemberId),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
-        await _memberEmailService.SendIssueReply(issue, issueMessage, member, siteEmailSettings);
+        await _memberEmailService.SendIssueReply(
+            request.HttpRequestContext, 
+            issue, 
+            issueMessage, 
+            member, 
+            siteEmailSettings);
 
         return ServiceResult.Successful();
     }

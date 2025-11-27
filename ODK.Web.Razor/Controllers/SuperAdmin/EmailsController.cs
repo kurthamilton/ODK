@@ -6,6 +6,7 @@ using ODK.Services.Emails;
 using ODK.Services.Settings;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.SuperAdmin;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.SuperAdmin;
 
@@ -15,7 +16,11 @@ public class EmailsController : OdkControllerBase
     private readonly IEmailAdminService _emailAdminService;
     private readonly ISettingsService _settingsService;
 
-    public EmailsController(ISettingsService settingsService, IEmailAdminService emailAdminService)
+    public EmailsController(
+        ISettingsService settingsService, 
+        IEmailAdminService emailAdminService,
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _emailAdminService = emailAdminService;
         _settingsService = settingsService;
@@ -24,7 +29,7 @@ public class EmailsController : OdkControllerBase
     [HttpPost("/superadmin/emails/{type}/send/test")]
     public async Task<IActionResult> SendTestEmail(string chapterName, EmailType type)
     {
-        var result = await _emailAdminService.SendTestEmail(MemberId, type);
+        var result = await _emailAdminService.SendTestMemberEmail(MemberServiceRequest, type);
         AddFeedback(result, "Test email sent");
         return RedirectToReferrer();
     }
@@ -40,7 +45,8 @@ public class EmailsController : OdkControllerBase
     [HttpPost("superadmin/emails/settings")]
     public async Task<IActionResult> UpdateSettings(SiteEmailSettingsViewModel viewModel)
     {
-        await _settingsService.UpdateEmailSettings(MemberId, 
+        await _settingsService.UpdateEmailSettings(
+            MemberServiceRequest,
             viewModel.FromEmailAddress, 
             viewModel.FromEmailName, 
             viewModel.Title,

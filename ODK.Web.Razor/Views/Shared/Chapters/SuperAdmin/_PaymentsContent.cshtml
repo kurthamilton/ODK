@@ -2,14 +2,14 @@
 @using ODK.Services
 @using ODK.Services.Chapters
 @using ODK.Services.Payments
-@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Chapters.SuperAdmin
-@model ODK.Core.Chapters.Chapter
+@model OdkComponentViewModel<Chapter>
 @inject IChapterAdminService ChapterAdminService
 @inject ICurrencyService CurrencyService
 @{
-    var memberId = User.MemberId();
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
+    var serviceRequest = Model.MemberChapterServiceRequest(Model.Value.Id);
     var paymentSettings = await ChapterAdminService.GetChapterPaymentSettings(serviceRequest);
     var currencies = await CurrencyService.GetCurrencies();
 }

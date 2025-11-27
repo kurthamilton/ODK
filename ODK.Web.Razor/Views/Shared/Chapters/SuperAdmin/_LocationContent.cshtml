@@ -1,24 +1,25 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services
 @using ODK.Services.Chapters
-@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SuperAdmin
-@model ODK.Core.Chapters.Chapter
+@model OdkComponentViewModel<Chapter>
 @inject IChapterAdminService ChapterAdminService
 @{
-    var request = new AdminServiceRequest(Model.Id, User.MemberId());
+    var request = Model.MemberChapterServiceRequest(Model.Value.Id);
     var location = await ChapterAdminService.GetChapterLocation(request);
 }
 
 <section class="section--admin">
     <h3>Time zone</h3>
 
-    <form action="/@Model.Name/Admin/SuperAdmin/TimeZone" method="post">
+    <form action="/@Model.Value.Name/Admin/SuperAdmin/TimeZone" method="post">
         @*@Html.AntiForgeryToken()*@
         @await Html.PartialAsync("Chapters/SuperAdmin/_TimeZoneForm", new ChapterTimeZoneFormViewModel
        {
-           TimeZone = Model.TimeZone?.Id
+           TimeZone = Model.Value.TimeZone?.Id
        })
         <button class="btn btn-primary">Update</button>
     </form>
@@ -27,7 +28,7 @@
 <section class="section--admin">
     <h3>Location</h3>
 
-    <form action="/@Model.Name/Admin/SuperAdmin/Location" method="post">
+    <form action="/@Model.Value.Name/Admin/SuperAdmin/Location" method="post">
         @*@Html.AntiForgeryToken()*@
         @await Html.PartialAsync("Chapters/SuperAdmin/_LocationForm", new ChapterLocationFormViewModel
         {

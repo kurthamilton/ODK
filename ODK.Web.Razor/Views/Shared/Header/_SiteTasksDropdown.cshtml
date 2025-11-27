@@ -1,14 +1,11 @@
-﻿@using ODK.Core.Platforms
-@using ODK.Core.Utils
-@using ODK.Services.Chapters
+﻿@using ODK.Services.Chapters
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models
+@model OdkComponentContext
 @inject IChapterService ChapterService
-@inject IPlatformProvider PlatformProvider
 @{
     var memberId = User.MemberIdOrDefault();
-
-    var platform = PlatformProvider.GetPlatform();
 
     var ownedChapters = memberId != null
         ? await ChapterService.GetChaptersByOwnerId(memberId.Value)
@@ -43,7 +40,7 @@
             {
                 @foreach (var chapter in chaptersPendingPublication)
                 {
-                    <a class="dropdown-item border-top p-3" href="@OdkRoutes.MemberGroups.Group(platform, chapter)">
+                    <a class="dropdown-item border-top p-3" href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
                         <strong>@chapter.Name</strong> is waiting to be published
                     </a>
                 }                

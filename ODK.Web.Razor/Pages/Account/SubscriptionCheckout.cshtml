@@ -2,10 +2,8 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Payments
-@using ODK.Services.Members
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Components
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
@@ -16,10 +14,9 @@
     Layout = "_AccountLayout";
     Model.Title = "Subscription checkout";
 
-    var memberId = User.MemberId();
     var returnPath = $"/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
     var viewModel = await SiteSubscriptionService.StartSiteSubscriptionCheckout(
-        memberId, Model.SubscriptionId, returnPath);
+        Model.MemberServiceRequest, Model.SubscriptionId, returnPath);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

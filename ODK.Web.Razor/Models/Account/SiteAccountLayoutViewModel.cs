@@ -4,7 +4,7 @@ using ODK.Core.Chapters;
 namespace ODK.Web.Razor.Models.Account;
 
 public class SiteAccountLayoutViewModel
-{    
+{
     public required string Active { get; set; }
 
     public Chapter? Chapter { get; set; }

@@ -1,4 +1,5 @@
-﻿using ODK.Services.Payments.Models;
+﻿using ODK.Core.Web;
+using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;
 
@@ -39,7 +40,10 @@ public interface IPaymentProvider
         string paymentId, string note);
 
     Task<ExternalCheckoutSession> StartCheckout(
-        ExternalSubscriptionPlan subscriptionPlan, string returnPath, PaymentMetadataModel metadata);
+        IHttpRequestContext httpRequestContext, 
+        ExternalSubscriptionPlan subscriptionPlan, 
+        string returnPath, 
+        PaymentMetadataModel metadata);
 
     Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata);
 

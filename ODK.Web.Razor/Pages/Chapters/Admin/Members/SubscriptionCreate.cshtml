@@ -9,8 +9,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create subscription | Admin";
 
-    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
-    var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(request);
+    var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)

@@ -1,10 +1,10 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
-@inject IPlatformProvider PlatformProvider
+@using ODK.Web.Razor.Models
+@model OdkComponentContext
 @{
-    var platform = PlatformProvider.GetPlatform();
-    if (platform != PlatformType.Default)
+    if (Model.Platform != PlatformType.Default)
     {
         return;
     }
@@ -28,9 +28,9 @@
         </button>*@
 
         <div class="d-flex gap-4 ms-auto align-self-center order-md-5">
-            @await Html.PartialAsync("Header/_SiteTasksDropdown")
-            @await Html.PartialAsync("Header/_NotificationDropdown")
-            @await Html.PartialAsync("Header/_SiteAccountDropdown")
+            @await Html.PartialAsync("Header/_SiteTasksDropdown", Model)
+            @await Html.PartialAsync("Header/_NotificationDropdown", Model)
+            @await Html.PartialAsync("Header/_SiteAccountDropdown", Model)
         </div>
 
         <div class="navbar-collapse site-nav" id="@id">
@@ -39,13 +39,13 @@
                     <a class="nav-link" href="/pricing">Pricing</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="@OdkRoutes.Groups.Index(platform)">Groups</a>
+                    <a class="nav-link" href="@OdkRoutes.Groups.Index(Model.Platform)">Groups</a>
                 </li>
 
                 @if (authenticated)
                 {
                     <li class="nav-item">
-                        <a class="nav-link" href="@OdkRoutes.MemberGroups.Index(platform)">My groups</a>
+                        <a class="nav-link" href="@OdkRoutes.MemberGroups.Index(Model.Platform)">My groups</a>
                     </li>
                 }                
             </ul>

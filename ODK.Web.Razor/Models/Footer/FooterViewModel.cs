@@ -2,7 +2,12 @@
 
 namespace ODK.Web.Razor.Models.Footer;
 
-public class FooterViewModel
+public class FooterViewModel : OdkComponentViewModel
 {
+    public FooterViewModel(OdkComponentContext context) 
+        : base(context)
+    {
+    }
+
     public Chapter? Chapter { get; set; }
 }

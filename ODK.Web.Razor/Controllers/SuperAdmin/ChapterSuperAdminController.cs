@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
-using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
@@ -11,6 +10,7 @@ using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Controllers.Admin;
 using ODK.Web.Razor.Models.Chapters.SuperAdmin;
 using ODK.Web.Razor.Models.SuperAdmin;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.SuperAdmin;
 
@@ -23,8 +23,9 @@ public class ChapterSuperAdminController : AdminControllerBase
     public ChapterSuperAdminController(
         IChapterAdminService chapterAdminService, 
         IRequestCache requestCache,
-        IPaymentAdminService paymentAdminService)
-        : base(requestCache)
+        IPaymentAdminService paymentAdminService,
+        IRequestStore requestStore)
+        : base(requestCache, requestStore)
     {
         _chapterAdminService = chapterAdminService;
         _paymentAdminService = paymentAdminService;
@@ -33,7 +34,7 @@ public class ChapterSuperAdminController : AdminControllerBase
     [HttpPost("/superadmin/groups/{id:guid}/approve")]
     public async Task<IActionResult> Approve(Guid id)
     {
-        var request = new AdminServiceRequest(id, MemberId);
+        var request = MemberChapterServiceRequest(id);
         var result = await _chapterAdminService.ApproveChapter(request);
         AddFeedback(result, "Group approved");
         return RedirectToReferrer();
@@ -42,7 +43,7 @@ public class ChapterSuperAdminController : AdminControllerBase
     [HttpPost("/superadmin/groups/{id:guid}/delete")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var request = new AdminServiceRequest(id, MemberId);
+        var request = MemberChapterServiceRequest(id);
         var result = await _chapterAdminService.DeleteChapter(request);
         AddFeedback(result, "Chapter deleted");
         return RedirectToReferrer();
@@ -51,7 +52,7 @@ public class ChapterSuperAdminController : AdminControllerBase
     [HttpPost("/superadmin/groups/{groupId:guid}/emails/providers/{id:guid}/delete")]
     public async Task<IActionResult> DeleteEmailProvider(Guid groupId, Guid id)
     {
-        var request = new AdminServiceRequest(groupId, MemberId);
+        var request = MemberChapterServiceRequest(groupId);
         await _chapterAdminService.DeleteChapterEmailProvider(request, id);
         AddFeedback("Email provider deleted", FeedbackType.Success);
         return RedirectToReferrer();

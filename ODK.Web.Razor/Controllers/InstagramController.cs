@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Core.SocialMedia;
 using ODK.Services.Imaging;
 using ODK.Services.SocialMedia;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -14,7 +15,9 @@ public class InstagramController : OdkControllerBase
 
     public InstagramController(
         IInstagramService instagramService,
-        IImageService imageService)
+        IImageService imageService,
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _imageService = imageService;
         _instagramService = instagramService;

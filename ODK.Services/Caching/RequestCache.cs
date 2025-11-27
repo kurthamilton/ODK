@@ -8,7 +8,6 @@ namespace ODK.Services.Caching;
 
 public class RequestCache : IRequestCache
 {
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly IDictionary<string, Chapter> _chapters;
@@ -16,9 +15,8 @@ public class RequestCache : IRequestCache
     private readonly IDictionary<Guid, Member> _members;
     private readonly IDictionary<Guid, MemberSubscription?> _memberSubscriptions;
 
-    public RequestCache(IUnitOfWork unitOfWork, IPlatformProvider platformProvider)
+    public RequestCache(IUnitOfWork unitOfWork)
     {
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
 
         _chapters = new Dictionary<string, Chapter>(StringComparer.InvariantCultureIgnoreCase);
@@ -27,22 +25,22 @@ public class RequestCache : IRequestCache
         _memberSubscriptions = new Dictionary<Guid, MemberSubscription?>();
     }
 
-    public async Task<Chapter> GetChapterAsync(Guid chapterId)
+    public async Task<Chapter> GetChapterAsync(PlatformType platform, Guid chapterId)
     {
-        var chapters = await GetChaptersAsync();
+        var chapters = await GetChaptersAsync(platform);
         var chapter = chapters.FirstOrDefault(x => x.Id == chapterId);
         return OdkAssertions.Exists(chapter);
     }
 
-    public async Task<Chapter> GetChapterAsync(string name)
+    public async Task<Chapter> GetChapterAsync(PlatformType platform, string name)
     {
-        var chapters = await GetChaptersAsync();
+        var chapters = await GetChaptersAsync(platform);
         var chapter = chapters
             .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
         return OdkAssertions.Exists(chapter, $"Chapter not found: '{name}'");
     }
 
-    public async Task<IReadOnlyCollection<Chapter>> GetChaptersAsync()
+    public async Task<IReadOnlyCollection<Chapter>> GetChaptersAsync(PlatformType platform)
     {
         if (_chapters.Count > 0)
         {
@@ -53,7 +51,6 @@ public class RequestCache : IRequestCache
             .GetAll()
             .Run();
 
-        var platform = _platformProvider.GetPlatform();
         if (platform != PlatformType.Default)
         {
             chapters = chapters

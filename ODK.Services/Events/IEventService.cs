@@ -5,7 +5,7 @@ namespace ODK.Services.Events;
 
 public interface IEventService
 {
-    Task<ServiceResult> AddComment(Guid currentMemberId, Guid eventId, string comment, Guid? parentEventCommentId);
+    Task<ServiceResult> AddComment(MemberServiceRequest request, Guid eventId, string comment, Guid? parentEventCommentId);
 
     Task<(Chapter, Event)> GetEvent(Guid eventId);
 

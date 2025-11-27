@@ -11,7 +11,7 @@
     Layout = "_AccountLayout";
     Model.Title = "Payments";
 
-    var viewModel = await AccountViewModelService.GetMemberPaymentsPage(Model.CurrentMemberId);
+    var viewModel = await AccountViewModelService.GetMemberPaymentsPage(Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

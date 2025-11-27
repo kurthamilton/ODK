@@ -52,7 +52,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         var subscription = new SiteSubscription
         {
-            Platform = _platformProvider.GetPlatform(),
+            Platform = platform,
             SitePaymentSettingId = model.SitePaymentSettingId
         };
 

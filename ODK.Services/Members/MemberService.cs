@@ -1,5 +1,4 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -10,6 +9,7 @@ using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
+using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
@@ -140,18 +140,17 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
     
-    public async Task<ServiceResult<Member?>> CreateAccount(CreateAccountModel model)
+    public async Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, CreateAccountModel model)
     {
-        var platform = _platformProvider.GetPlatform();
         var (existing, siteSubscription, distanceUnits, topics) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
-            x => x.SiteSubscriptionRepository.GetDefault(platform),
+            x => x.SiteSubscriptionRepository.GetDefault(request.Platform),
             x => x.DistanceUnitRepository.GetAll(),
             x => x.TopicRepository.GetByIds(model.TopicIds));
 
         if (existing != null)
         {
-            await _memberEmailService.SendDuplicateMemberEmail(null, existing);
+            await _memberEmailService.SendDuplicateMemberEmail(request.HttpRequestContext, null, existing);
             return ServiceResult<Member?>.Successful(null);
         }
         
@@ -229,23 +228,26 @@ public class MemberService : IMemberService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _topicService.AddNewMemberTopics(member.Id, model.NewTopics);
+        await _topicService.AddNewMemberTopics(
+            new MemberServiceRequest(member.Id, request),
+            model.NewTopics);
 
         if (!string.IsNullOrEmpty(activationToken))
         {
-            await _memberEmailService.SendActivationEmail(null, member, activationToken);
+            await _memberEmailService.SendActivationEmail(request.HttpRequestContext, null, member, activationToken);
         }
         else
         {
-            await _memberEmailService.SendSiteWelcomeEmail(member);
+            await _memberEmailService.SendSiteWelcomeEmail(request.HttpRequestContext, member);
         }
 
         return ServiceResult<Member?>.Successful(member);
     }
 
-    public async Task<ServiceResult> CreateChapterAccount(Guid chapterId, CreateMemberProfile model)
+    public async Task<ServiceResult> CreateChapterAccount(IHttpRequestContext httpRequestContext, Guid chapterId, CreateMemberProfile model)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = _platformProvider.GetPlatform(httpRequestContext);
+
         var (
             chapter, 
             chapterProperties, 
@@ -282,7 +284,7 @@ public class MemberService : IMemberService
 
         if (existing != null)
         {
-            await _memberEmailService.SendDuplicateMemberEmail(chapter, existing);
+            await _memberEmailService.SendDuplicateMemberEmail(httpRequestContext, chapter, existing);
             return ServiceResult.Successful();
         }
 
@@ -352,7 +354,7 @@ public class MemberService : IMemberService
 
         try
         {
-            await _memberEmailService.SendActivationEmail(chapter, member, activationToken);
+            await _memberEmailService.SendActivationEmail(httpRequestContext, chapter, member, activationToken);
 
             return ServiceResult.Successful();
         }        
@@ -495,9 +497,11 @@ public class MemberService : IMemberService
         return await _unitOfWork.MemberPreferencesRepository.GetByMemberId(memberId).Run();
     }
 
-    public async Task<ServiceResult> JoinChapter(Guid currentMemberId, Guid chapterId, IEnumerable<UpdateMemberProperty> properties)
+    public async Task<ServiceResult> JoinChapter(MemberChapterServiceRequest request, IEnumerable<UpdateMemberProperty> properties)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+
+        var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
 
         var (
             chapter, 
@@ -547,13 +551,21 @@ public class MemberService : IMemberService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendNewMemberAdminEmail(chapter, adminMembers, currentMember, chapterProperties, memberProperties);
+        await _memberEmailService.SendNewMemberAdminEmail(
+            request.HttpRequestContext, 
+            chapter, 
+            adminMembers, 
+            currentMember, 
+            chapterProperties, 
+            memberProperties);
 
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> LeaveChapter(Guid currentMemberId, Guid chapterId, string reason)
+    public async Task<ServiceResult> LeaveChapter(MemberChapterServiceRequest request, string reason)
     {
+        var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+
         var (chapter, adminMembers) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId));        
@@ -566,6 +578,7 @@ public class MemberService : IMemberService
         }
 
         await _memberEmailService.SendMemberLeftChapterEmail(
+            request.HttpRequestContext,
             chapter,
             adminMembers,
             currentMember,
@@ -574,9 +587,13 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> PurchaseChapterSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId,
+    public async Task<ServiceResult> PurchaseChapterSubscription(
+        MemberChapterServiceRequest request, 
+        Guid chapterSubscriptionId,
         string cardToken)
     {
+        var (memberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+
         var (paymentSettings, member, chapterSubscription, memberSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(memberId),
@@ -640,6 +657,7 @@ public class MemberService : IMemberService
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId));
 
         await _memberEmailService.SendMemberChapterSubscriptionConfirmationEmail(
+            request.HttpRequestContext,
             chapter,
             chapterPaymentSettings,
             chapterSubscription,
@@ -649,22 +667,36 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, Guid chapterId, string newEmailAddress)
+    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberChapterServiceRequest request, string newEmailAddress)
     {
+        var (memberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+
         var (chapter, member, existingToken) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
 
-        return await RequestMemberEmailAddressUpdate(chapter, member, newEmailAddress, existingToken);
+        return await RequestMemberEmailAddressUpdate(
+            request.HttpRequestContext, 
+            chapter, 
+            member, 
+            newEmailAddress, 
+            existingToken);
     }
 
-    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress)
+    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberServiceRequest request, string newEmailAddress)
     {
+        var memberId = request.CurrentMemberId;
+
         var (member, existingToken) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
-        return await RequestMemberEmailAddressUpdate(null, member, newEmailAddress, existingToken);
+        return await RequestMemberEmailAddressUpdate(
+            request.HttpRequestContext, 
+            null, 
+            member, 
+            newEmailAddress, 
+            existingToken);
     }
 
     public async Task RotateMemberImage(Guid memberId)
@@ -702,9 +734,11 @@ public class MemberService : IMemberService
     }    
 
     public async Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
-        Guid memberId, Guid chapterSubscriptionId, string returnPath)
+        MemberServiceRequest request, Guid chapterSubscriptionId, string returnPath)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = _platformProvider.GetPlatform(request.HttpRequestContext);
+
+        var memberId = request.CurrentMemberId;
 
         var (member, chapterSubscription) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
@@ -742,7 +776,7 @@ public class MemberService : IMemberService
         };
 
         var externalCheckoutSession = await _paymentService.StartCheckoutSession(
-            paymentSettings, subscriptionPlan, returnPath, metadata);
+            request.HttpRequestContext, paymentSettings, subscriptionPlan, returnPath, metadata);
 
         _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
         {            
@@ -1019,10 +1053,12 @@ public class MemberService : IMemberService
     }
 
     public async Task<ServiceResult> UpdateMemberTopics(
-        Guid id, 
+        MemberServiceRequest request, 
         IReadOnlyCollection<Guid> topicIds, 
         IReadOnlyCollection<NewTopicModel> newTopics)
     {
+        var id = request.CurrentMemberId;
+
         var existing = await _unitOfWork.MemberTopicRepository.GetByMemberId(id).Run();
 
         if (_unitOfWork.MemberTopicRepository.Merge(existing, id, topicIds) > 0)
@@ -1030,7 +1066,9 @@ public class MemberService : IMemberService
             await _unitOfWork.SaveChangesAsync();
         }
 
-        await _topicService.AddNewMemberTopics(id, newTopics);
+        await _topicService.AddNewMemberTopics(
+            request,
+            newTopics);
 
         return ServiceResult.Successful();
     }
@@ -1137,6 +1175,7 @@ public class MemberService : IMemberService
     }
 
     private async Task<ServiceResult> RequestMemberEmailAddressUpdate(
+        IHttpRequestContext httpRequestContext,
         Chapter? chapter, 
         Member member, 
         string newEmailAddress, 
@@ -1166,7 +1205,12 @@ public class MemberService : IMemberService
             NewEmailAddress = newEmailAddress
         });
 
-        await _memberEmailService.SendAddressUpdateEmail(chapter, member, newEmailAddress, activationToken);
+        await _memberEmailService.SendAddressUpdateEmail(
+            httpRequestContext, 
+            chapter, 
+            member, 
+            newEmailAddress, 
+            activationToken);
 
         return ServiceResult.Successful();
     }

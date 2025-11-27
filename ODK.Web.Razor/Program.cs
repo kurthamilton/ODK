@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ODK.Services.Tasks;
 using ODK.Web.Common.Config;
 using ODK.Web.Common.Config.Settings;
@@ -128,11 +130,17 @@ public class Program
             {
                 options.EventsType = typeof(CustomCookieAuthenticationEvents);
             });
+        
         builder.Services
-            .AddScoped<IBackgroundTaskService, HangfireService>();
+            .AddScoped<IBackgroundTaskService, HangfireService>()
+            .AddScoped<IRequestStore, RequestStore>();
 
         var appSettings = AppStartup.ConfigureServices(builder.Configuration, builder.Services);
         LoggingConfig.Configure(builder, appSettings);
+
+        // register the [OdkInject] attribute for dependency injection in PageModel classes
+        builder.Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IPageModelActivatorProvider, InjectingPageModelActivatorProvider<OdkInjectAttribute>>());
 
         builder.Services.AddWebOptimizer(pipeline =>
         {

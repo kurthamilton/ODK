@@ -10,8 +10,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Edit subscription | Admin";
 
-    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
-    var viewModel = await MemberAdminService.GetMemberSubscriptionViewModel(request, Model.SubscriptionId);
+    var viewModel = await MemberAdminService.GetMemberSubscriptionViewModel(Model.AdminServiceRequest, Model.SubscriptionId);
 }
 
 @await Html.PartialAsync("Admin/Members/_SubscriptionEditContent", viewModel)

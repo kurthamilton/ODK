@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/questions/new"
+@using ODK.Core.Chapters
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models
 @model CreateModel
 @inject IChapterAdminService ChapterAdminService
 @{
@@ -7,6 +9,8 @@
     Model.Title = "Create question";
 
     var chapter = await ChapterAdminService.GetChapter(Model.AdminServiceRequest);
+
+    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent", chapter)
+@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent", viewModel)

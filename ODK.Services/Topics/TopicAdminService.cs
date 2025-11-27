@@ -45,7 +45,8 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         return ServiceResult.Successful();
     }
 
-    public async Task ApproveTopics(Guid currentMemberId, ApproveTopicsModel approved, ApproveTopicsModel rejected)
+    public async Task ApproveTopics(
+        MemberServiceRequest request, ApproveTopicsModel approved, ApproveTopicsModel rejected)
     {
         var rejectedNewChapterTopicIds = rejected.Chapters
             .Select(x => x.NewTopicId)
@@ -72,6 +73,8 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         var newMemberTopicIds = approvedNewMemberTopicIds
             .Concat(rejectedNewMemberTopicIds)
             .ToArray();
+
+        var currentMemberId = request.CurrentMemberId;
 
         var (topicGroups, topics, newMemberTopics, newChapterTopics) = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.TopicGroupRepository.GetAll(),
@@ -241,9 +244,11 @@ public class TopicAdminService : OdkAdminServiceBase, ITopicAdminService
         var members = await _unitOfWork.MemberRepository.GetByIds(memberIds).Run();
 
         await _memberEmailService.SendTopicApprovedEmails(
+            request.HttpRequestContext,
             approvedMemberTopics.Cast<INewTopic>().Concat(approvedChapterTopics).ToArray(), 
             members);
         await _memberEmailService.SendTopicRejectedEmails(
+            request.HttpRequestContext,
             rejectedMemberTopics.Cast<INewTopic>().Concat(rejectedChapterTopics).ToArray(), 
             members);
     }

@@ -2,6 +2,7 @@
 using ODK.Services.Logging;
 using ODK.Services.Payments;
 using ODK.Services.Tasks;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -18,7 +19,9 @@ public class WebhooksController : OdkControllerBase
         IPaymentProviderFactory paymentProviderFactory,
         IBackgroundTaskService backgroundTaskService,
         IPaymentService paymentService,
-        IStripeWebhookParser stripeWebhookParser)
+        IStripeWebhookParser stripeWebhookParser,
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _backgroundTaskService = backgroundTaskService;
         _loggingService = loggingService;
@@ -39,6 +42,7 @@ public class WebhooksController : OdkControllerBase
             return;
         }
 
-        await _backgroundTaskService.Enqueue(() => _paymentService.ProcessWebhook(webhook));
+        _backgroundTaskService.Enqueue(
+            () => _paymentService.ProcessWebhook(HttpRequestContext, Platform, webhook));
     }
 }

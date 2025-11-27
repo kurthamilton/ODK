@@ -1,13 +1,13 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services
 @using ODK.Services.Chapters
-@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.SuperAdmin
-@model ODK.Core.Chapters.Chapter
+@model OdkComponentViewModel<Chapter>
 @inject IChapterAdminService ChapterAdminService
 @{
-    var memberId = User.MemberId();
-    var serviceRequest = new AdminServiceRequest(Model.Id, memberId);
+    var serviceRequest = Model.MemberChapterServiceRequest(Model.Value.Id);
     var adminMembers = await ChapterAdminService.GetChapterAdminMembers(serviceRequest);
 }
 
@@ -28,13 +28,13 @@
                 <tr>
                     <td>@adminMember.Member.FullName</td>
                     <td>
-                        @if (Model.OwnerId == adminMember.MemberId)
+                        @if (Model.Value.OwnerId == adminMember.MemberId)
                         {
                             <i class="fa-solid fa-star text-warning"></i>
                         }
                         else
                         {
-                            <form action="/@Model.Name/Admin/Chapter/Owner" method="post">
+                            <form action="/@Model.Value.Name/Admin/Chapter/Owner" method="post">
                                 @Html.Hidden("memberId", adminMember.MemberId)
                                 <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
                                     <i class="fa-regular fa-star text-warning"></i>
@@ -43,8 +43,8 @@
                         }
                     </td>
                     <td>
-                        <form action="/@Model.Name/Admin/Members/@adminMember.MemberId/Visibility" method="post">
-                            @if (adminMember.Member.Visible(Model.Id))
+                        <form action="/@Model.Value.Name/Admin/Members/@adminMember.MemberId/Visibility" method="post">
+                            @if (adminMember.Member.Visible(Model.Value.Id))
                             {
                                 @Html.Hidden("visible", false)
                                 <button class="btn btn-danger btn-sm" type="submit">Hide</button>

@@ -3,9 +3,11 @@ using ODK.Core.Members;
 
 namespace ODK.Web.Razor.Models.Header;
 
-public class ChapterHeaderViewModel
+public class ChapterHeaderViewModel : OdkComponentViewModel
 {
-    public ChapterHeaderViewModel(Chapter chapter, Member? member)
+    public ChapterHeaderViewModel(
+        Chapter chapter, Member? member, OdkComponentContext context)
+        : base(context)
     {
         Chapter = chapter;
         Member = member;

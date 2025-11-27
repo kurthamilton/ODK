@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
+using ODK.Core.Web;
 using ODK.Services.Integrations.Payments.PayPal.Client;
 using ODK.Services.Integrations.Payments.PayPal.Client.Models;
 using ODK.Services.Payments;
@@ -226,7 +227,10 @@ public class PayPalPaymentProvider : IPaymentProvider
     }
 
     public Task<ExternalCheckoutSession> StartCheckout(
-        ExternalSubscriptionPlan subscriptionPlan, string returnPath, PaymentMetadataModel metadata)
+        IHttpRequestContext httpRequestContext, 
+        ExternalSubscriptionPlan subscriptionPlan, 
+        string returnPath, 
+        PaymentMetadataModel metadata)
     {
         throw new NotImplementedException();
     }

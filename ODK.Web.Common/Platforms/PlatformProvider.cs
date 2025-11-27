@@ -1,7 +1,7 @@
-﻿using System;
-using System.Linq;
-using ODK.Core.Platforms;
+﻿using ODK.Core.Platforms;
 using ODK.Core.Web;
+using System;
+using System.Linq;
 
 namespace ODK.Web.Common.Platforms;
 
@@ -9,11 +9,11 @@ public class PlatformProvider : IPlatformProvider
 {
     private static PlatformType? _platform;
 
-    private readonly IHttpRequestProvider _httpRequestProvider;
+    private readonly IHttpRequestContextProvider _httpRequestProvider;
     private readonly PlatformProviderSettings _settings;
 
     public PlatformProvider(PlatformProviderSettings settings, 
-        IHttpRequestProvider httpRequestProvider)
+        IHttpRequestContextProvider httpRequestProvider)
     {
         _httpRequestProvider = httpRequestProvider;
         _settings = settings;
@@ -26,9 +26,18 @@ public class PlatformProvider : IPlatformProvider
             return _platform.Value;
         }
 
-        var url = _httpRequestProvider.RequestUrl;
+        var httpRequestContext = _httpRequestProvider.Get();
+        return GetPlatform(httpRequestContext);
+    }
 
-        if (_settings.DrunkenKnitwitsBaseUrls.Any(x => url.StartsWith(x, StringComparison.InvariantCultureIgnoreCase)))
+    public PlatformType GetPlatform(string requestUrl)
+    {
+        if (_platform != null)
+        {
+            return _platform.Value;
+        }
+
+        if (_settings.DrunkenKnitwitsBaseUrls.Any(x => requestUrl.StartsWith(x, StringComparison.OrdinalIgnoreCase)))
         {
             _platform = PlatformType.DrunkenKnitwits;
         }
@@ -39,4 +48,6 @@ public class PlatformProvider : IPlatformProvider
 
         return _platform.Value;
     }
+
+    public PlatformType GetPlatform(IHttpRequestContext httpRequestContext) => GetPlatform(httpRequestContext.RequestUrl);
 }

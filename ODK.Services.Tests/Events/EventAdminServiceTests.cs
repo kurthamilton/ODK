@@ -73,7 +73,11 @@ public static class EventAdminServiceTests
         var service = CreateService(
             unitOfWork: unitOfWork);
 
-        var request = new AdminServiceRequest(ChapterId, CurrentMemberId);
+        var request = new MemberChapterServiceRequest(
+            ChapterId, 
+            CurrentMemberId, 
+            Mock.Of<IHttpRequestContext>(),
+            PlatformType.Default);
 
         // Act
         await service.CreateEvent(request, new CreateEvent
@@ -296,7 +300,6 @@ public static class EventAdminServiceTests
             unitOfWork: unitOfWork ?? CreateMockUnitOfWork(),
             Mock.Of<IAuthorizationService>(),
             Mock.Of<IPlatformProvider>(),
-            Mock.Of<IUrlProvider>(),
             Mock.Of<INotificationService>(),
             Mock.Of<IHtmlSanitizer>(),
             Mock.Of<IMemberEmailService>());

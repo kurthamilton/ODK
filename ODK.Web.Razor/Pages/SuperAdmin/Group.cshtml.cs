@@ -20,6 +20,9 @@ public class GroupModel : SuperAdminPageModel
         _chapterAdminService = chapterAdminService;
     }
 
+    public MemberChapterServiceRequest AdminServiceRequest 
+        => new MemberChapterServiceRequest(ChapterId, MemberServiceRequest);
+
     public Guid ChapterId { get; private set; }
 
     public IActionResult OnGet(Guid id)
@@ -36,7 +39,7 @@ public class GroupModel : SuperAdminPageModel
             return OnGet(id);
         }
 
-        var request = new AdminServiceRequest(id, CurrentMemberId);
+        var request = MemberChapterServiceRequest(id);
 
         var result = await _chapterAdminService.UpdateSuperAdminChapter(request, viewModel);
 

@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
@@ -43,6 +40,8 @@ using ODK.Web.Common.Account;
 using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Platforms;
 using ODK.Web.Common.Services;
+using System.IO;
+using System.Linq;
 
 namespace ODK.Web.Common.Config;
 
@@ -78,8 +77,7 @@ public static class DependencyConfig
     }
 
     private static void ConfigureCore(IServiceCollection services)
-    {
-        services.AddScoped<IHttpRequestProvider, HttpRequestProvider>();
+    {        
         services.AddSingleton<IHtmlSanitizer>(new HtmlSanitizer());
         services.AddScoped<IUrlProvider, UrlProvider>();
     }

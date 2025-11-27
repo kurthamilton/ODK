@@ -4,41 +4,41 @@ namespace ODK.Core.Web;
 
 public interface IUrlProvider
 {
-    string ActivateAccountUrl(Chapter? chapter, string token);
+    string ActivateAccountUrl(IHttpRequestContext httpRequestContext, Chapter? chapter, string token);
 
-    string BaseUrl();
+    string BaseUrl(IHttpRequestContext httpRequestContext);
 
-    string ConfirmEmailAddressUpdate(Chapter? chapter, string token);
+    string ConfirmEmailAddressUpdate(IHttpRequestContext httpRequestContext, Chapter? chapter, string token);
 
-    string ConversationAdminUrl(Chapter chapter, Guid conversationId);
+    string ConversationAdminUrl(IHttpRequestContext httpRequestContext, Chapter chapter, Guid conversationId);
 
-    string ConversationUrl(Chapter chapter, Guid conversationId);
+    string ConversationUrl(IHttpRequestContext httpRequestContext, Chapter chapter, Guid conversationId);
 
-    string EmailPreferences(Chapter? chapter);
+    string EmailPreferences(IHttpRequestContext httpRequestContext, Chapter? chapter);
 
-    string EventRsvpUrl(Chapter chapter, Guid eventId);
+    string EventRsvpUrl(IHttpRequestContext httpRequestContext, Chapter chapter, Guid eventId);
 
-    string EventsUrl(Chapter chapter);    
+    string EventsUrl(IHttpRequestContext httpRequestContext, Chapter chapter);    
 
-    string EventUrl(Chapter chapter, Guid eventId);
+    string EventUrl(IHttpRequestContext httpRequestContext, Chapter chapter, Guid eventId);
 
-    string GroupUrl(Chapter chapter);
+    string GroupUrl(IHttpRequestContext httpRequestContext, Chapter chapter);
 
-    string GroupsUrl();
+    string GroupsUrl(IHttpRequestContext httpRequestContext);
 
-    string IssueAdminUrl(Guid issueId);
+    string IssueAdminUrl(IHttpRequestContext httpRequestContext, Guid issueId);
 
-    string IssueUrl(Guid issueId);
+    string IssueUrl(IHttpRequestContext httpRequestContext, Guid issueId);
 
-    string MemberAdminUrl(Chapter chapter, Guid memberId);
+    string MemberAdminUrl(IHttpRequestContext httpRequestContext, Chapter chapter, Guid memberId);
 
-    string MemberSiteSubscriptionUrl();
+    string MemberSiteSubscriptionUrl(IHttpRequestContext httpRequestContext);
 
-    string MessageAdminUrl(Guid messageId);
+    string MessageAdminUrl(IHttpRequestContext httpRequestContext, Guid messageId);
 
-    string MessageAdminUrl(Chapter chapter, Guid messageId);
+    string MessageAdminUrl(IHttpRequestContext httpRequestContext, Chapter chapter, Guid messageId);
 
-    string PasswordReset(Chapter? chapter, string token);
+    string PasswordReset(IHttpRequestContext httpRequestContext, Chapter? chapter, string token);
 
-    string TopicApprovalUrl();
+    string TopicApprovalUrl(IHttpRequestContext httpRequestContext);
 }

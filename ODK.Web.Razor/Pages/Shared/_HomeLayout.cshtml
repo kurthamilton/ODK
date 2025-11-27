@@ -3,12 +3,14 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Header
 @using ODK.Web.Razor.Pages.Chapters
-@inject IPlatformProvider PlatformProvider
+@using ODK.Web.Razor.Services
 @inject IRequestCache RequestCache
+@inject IRequestStore RequestStore
 @{
     Layout = "_Layout";
 
-    var platform = PlatformProvider.GetPlatform();
+    var platform = RequestStore.Platform;
+    var componentContext = RequestStore.ComponentContext;
 }
 
 @RenderBody()
@@ -30,15 +32,15 @@
 
 @section header
 {
-    @await Html.PartialAsync("Header/_HomeHeader")
+    @await Html.PartialAsync("Header/_HomeHeader", componentContext)
 
-    @if (platform == PlatformType.DrunkenKnitwits)
+    @if (componentContext.Platform == PlatformType.DrunkenKnitwits)
     {
         var chapterContext = new ChapterPageContext(RequestCache, Context);
-        var member = await chapterContext.GetMemberAsync();
+        var member = await chapterContext.GetMemberAsync(componentContext.CurrentMemberId);
 
         <div class="mb-1 d-none d-md-block">
-            @await Html.PartialAsync("Header/_Navbar", new NavbarViewModel
+            @await Html.PartialAsync("Header/_Navbar", new NavbarViewModel(componentContext)
             {
                 Breakpoint = "md",
                 Color = "dark",
@@ -58,5 +60,5 @@
 
 @section footer
 {
-    @await Html.PartialAsync("Footer/_HomeFooter")
+    @await Html.PartialAsync("Footer/_HomeFooter", componentContext)
 }

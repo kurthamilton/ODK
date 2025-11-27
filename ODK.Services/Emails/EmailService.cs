@@ -40,12 +40,13 @@ public class EmailService : IEmailService
     }
 
     public async Task SendBulkEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter,
         IEnumerable<Member> to,
         EmailType type,
         IDictionary<string, string> parameters)
     {
-        await SendEmail(new SendEmailOptions
+        await SendEmail(httpRequestContext, new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
@@ -57,12 +58,13 @@ public class EmailService : IEmailService
     }
 
     public async Task SendBulkEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter,
         IEnumerable<Member> to,
         string subject,
         string body)
     {
-        await SendEmail(new SendEmailOptions
+        await SendEmail(httpRequestContext, new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
@@ -72,6 +74,7 @@ public class EmailService : IEmailService
     }    
 
     public async Task SendEventCommentEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter chapter, 
         Member? replyToMember, 
         EventComment comment,
@@ -89,7 +92,7 @@ public class EmailService : IEmailService
             to = to.Append(replyToMember.ToEmailAddressee());
         }
 
-        await SendEmail(new SendEmailOptions
+        await SendEmail(httpRequestContext, new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
@@ -100,14 +103,22 @@ public class EmailService : IEmailService
         });
     }
 
-    public Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, EmailType type,
+    public Task<ServiceResult> SendEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter? chapter, 
+        EmailAddressee to, 
+        EmailType type,
         IDictionary<string, string> parameters)
-        => SendEmail(chapter, [to], type, parameters);
+        => SendEmail(httpRequestContext, chapter, [to], type, parameters);
 
-    public async Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, EmailType type,
+    public async Task<ServiceResult> SendEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter? chapter, 
+        IEnumerable<EmailAddressee> to, 
+        EmailType type,
         IDictionary<string, string> parameters)
     {
-        return await SendEmail(new SendEmailOptions
+        return await SendEmail(httpRequestContext, new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
@@ -118,15 +129,25 @@ public class EmailService : IEmailService
         });
     }
 
-    public async Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, string subject, string body)
+    public async Task<ServiceResult> SendEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter? chapter, 
+        IEnumerable<EmailAddressee> to, 
+        string subject, 
+        string body)
     {
-        return await SendEmail(chapter, to, subject, body, new Dictionary<string, string>());
+        return await SendEmail(httpRequestContext, chapter, to, subject, body, new Dictionary<string, string>());
     }
 
-    public async Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, string subject, string body,
+    public async Task<ServiceResult> SendEmail(
+        IHttpRequestContext httpRequestContext, 
+        Chapter? chapter, 
+        IEnumerable<EmailAddressee> to, 
+        string subject, 
+        string body,
         IDictionary<string, string> parameters)
     {
-        return await SendEmail(new SendEmailOptions
+        return await SendEmail(httpRequestContext, new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
@@ -137,12 +158,13 @@ public class EmailService : IEmailService
     }
 
     public async Task<ServiceResult> SendMemberEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter? chapter,
         EmailAddressee to,
         string subject,
         string body)
     {
-        return await SendEmail(new SendEmailOptions
+        return await SendEmail(httpRequestContext, new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
@@ -152,13 +174,14 @@ public class EmailService : IEmailService
     }
 
     public async Task<ServiceResult> SendMemberEmail(
+        IHttpRequestContext httpRequestContext,
         Chapter? chapter,
         EmailAddressee to,
         string subject,
         string body,
         IDictionary<string, string> parameters)
     {
-        return await SendEmail(new SendEmailOptions
+        return await SendEmail(httpRequestContext, new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
@@ -266,9 +289,10 @@ public class EmailService : IEmailService
         throw new OdkServiceException("No more emails can be sent today");
     }
 
-    private async Task<ServiceResult> SendEmail(SendEmailOptions options)
+    private async Task<ServiceResult> SendEmail(
+        IHttpRequestContext httpRequestContext, SendEmailOptions options)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = _platformProvider.GetPlatform(httpRequestContext);
         var chapterId = options.Chapter?.Id;
 
         var (emails, chapterEmails, siteSettings) = await _unitOfWork.RunAsync(
@@ -293,12 +317,12 @@ public class EmailService : IEmailService
 
         if (options.Chapter != null)
         {
-            parameters["chapter.baseurl"] = _urlProvider.GroupUrl(options.Chapter);
+            parameters["chapter.baseurl"] = _urlProvider.GroupUrl(httpRequestContext, options.Chapter);
         }
 
         if (!parameters.ContainsKey("platform.baseurl"))
         {
-            parameters["platform.baseurl"] = _urlProvider.BaseUrl();
+            parameters["platform.baseurl"] = _urlProvider.BaseUrl(httpRequestContext);
         }
 
         var title = siteSettings.Title.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
@@ -350,7 +374,7 @@ public class EmailService : IEmailService
 
         await _unitOfWork.SaveChangesAsync();
         
-        await _backgroundTaskService.Enqueue(() => SendQueuedEmailTask(queuedEmail.Id, chapterId));
+        _backgroundTaskService.Enqueue(() => SendQueuedEmailTask(queuedEmail.Id, chapterId));
 
         return ServiceResult.Successful();
     }

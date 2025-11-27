@@ -17,7 +17,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Account";
 
-    var chapter = await RequestCache.GetChapterAsync(Model.ChapterName);
+    var chapter = await RequestCache.GetChapterAsync(Model.Platform, Model.ChapterName);
     var member = await MemberService.GetMember(Model.CurrentMemberId);
 }
 

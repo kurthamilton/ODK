@@ -3,9 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Platforms;
-using ODK.Core.Web;
 using ODK.Data.Core;
-using ODK.Services.Authorization;
 using ODK.Services.Caching;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Members.ViewModels;
@@ -15,29 +13,17 @@ namespace ODK.Services.Chapters;
 
 public class ChapterService : IChapterService
 {
-    private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
-    private readonly IHttpRequestProvider _httpRequestProvider;
-    private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
     
     public ChapterService(
         IUnitOfWork unitOfWork, 
         ICacheService cacheService, 
-        IAuthorizationService authorizationService,
-        IPlatformProvider platformProvider,
-        IHttpRequestProvider httpRequestProvider,
-        IHtmlSanitizer htmlSanitizer,
         IPaymentProviderFactory paymentProviderFactory)
     {
-        _authorizationService = authorizationService;
         _cacheService = cacheService;
-        _httpRequestProvider = httpRequestProvider;
-        _htmlSanitizer = htmlSanitizer;
         _paymentProviderFactory = paymentProviderFactory;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }            
 
@@ -147,13 +133,12 @@ public class ChapterService : IChapterService
         return await _unitOfWork.ChapterRepository.GetByOwnerId(ownerId).Run();
     }
 
-    public async Task<ChaptersHomePageViewModel> GetChaptersDto()
+    public async Task<ChaptersHomePageViewModel> GetChaptersDto(PlatformType platform)
     {
         var (chapters, countries) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetAll(),
             x => x.CountryRepository.GetAll());
 
-        var platform = _platformProvider.GetPlatform();
         if (platform != PlatformType.Default)
         {
             chapters = chapters

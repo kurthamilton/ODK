@@ -15,6 +15,7 @@ using ODK.Services.Topics.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.SuperAdmin;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.SuperAdmin;
 
@@ -26,6 +27,7 @@ public class SuperAdminController : OdkControllerBase
     private readonly IInstagramService _instagramService;
     private readonly ILoggingService _loggingService;
     private readonly IRequestCache _requestCache;
+    private readonly IRequestStore _requestStore;
     private readonly ISettingsService _settingsService;
     private readonly ISiteSubscriptionAdminService _siteSubscriptionAdminService;
     private readonly ITopicAdminService _topicAdminService;
@@ -39,13 +41,16 @@ public class SuperAdminController : OdkControllerBase
         IFeatureService featureService,
         IContactAdminService contactAdminService,
         ITopicAdminService topicAdminService,
-        IPaymentAdminService paymentAdminService)
+        IPaymentAdminService paymentAdminService,
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _contactAdminService = contactAdminService;
         _featureService = featureService;
         _instagramService = instagramService;
         _loggingService = loggingService;
         _requestCache = requestCache;
+        _requestStore = requestStore;
         _settingsService = settingsService;
         _siteSubscriptionAdminService = siteSubscriptionAdminService;
         _topicAdminService = topicAdminService;
@@ -92,7 +97,7 @@ public class SuperAdminController : OdkControllerBase
     public async Task<IActionResult> ReplyToMessage(Guid id,
         [FromForm] ChapterMessageReplyFormViewModel viewModel)
     {
-        var result = await _contactAdminService.ReplyToMessage(MemberId, id, viewModel.Message ?? "");
+        var result = await _contactAdminService.ReplyToMessage(MemberServiceRequest, id, viewModel.Message ?? "");
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
     }
@@ -298,7 +303,7 @@ public class SuperAdminController : OdkControllerBase
                 .ToArray()
         };
 
-        await _topicAdminService.ApproveTopics(MemberId, approved, rejected);
+        await _topicAdminService.ApproveTopics(MemberServiceRequest, approved, rejected);
 
         AddFeedback("Topics processed", FeedbackType.Success);
 
@@ -314,7 +319,7 @@ public class SuperAdminController : OdkControllerBase
     [HttpPost("{chapterName}/Admin/SuperAdmin/Instagram/Scrape")]
     public async Task<IActionResult> ScrapeInstagram(string chapterName)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
         if (chapter == null)
         {
             return RedirectToReferrer();

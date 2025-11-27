@@ -25,7 +25,7 @@ public class JoinModel : ChapterPageModel2
         [FromForm] ChapterProfileFormSubmitViewModel profileViewModel,
         [FromForm] PersonalDetailsFormViewModel personalDetailsViewModel)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var chapter = await _requestCache.GetChapterAsync(Platform, chapterName);
 
         if (string.IsNullOrEmpty(profileViewModel.ImageDataUrl))
         {
@@ -56,7 +56,7 @@ public class JoinModel : ChapterPageModel2
             })
         };
 
-        var result = await _memberService.CreateChapterAccount(chapter.Id, model);
+        var result = await _memberService.CreateChapterAccount(HttpRequestContext, chapter.Id, model);
         PostJoin(result);
         return result.Success
             ? Redirect($"/{chapterName}/Account/Pending")

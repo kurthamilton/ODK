@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Members;
+using ODK.Core.Web;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Topics.Models;
@@ -12,9 +13,9 @@ public interface IMemberService
 
     Task<ServiceResult> ConfirmEmailAddressUpdate(Guid memberId, string confirmationToken);
 
-    Task<ServiceResult<Member?>> CreateAccount(CreateAccountModel model);
+    Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, CreateAccountModel model);
 
-    Task<ServiceResult> CreateChapterAccount(Guid chapterId, CreateMemberProfile model);
+    Task<ServiceResult> CreateChapterAccount(IHttpRequestContext httpRequestContext, Guid chapterId, CreateMemberProfile model);
 
     Task<ServiceResult> DeleteMember(Guid memberId);
 
@@ -32,20 +33,20 @@ public interface IMemberService
 
     Task<MemberPreferences?> GetMemberPreferences(Guid memberId);
 
-    Task<ServiceResult> JoinChapter(Guid currentMemberId, Guid chapterId, IEnumerable<UpdateMemberProperty> memberProperties);
+    Task<ServiceResult> JoinChapter(MemberChapterServiceRequest request, IEnumerable<UpdateMemberProperty> memberProperties);
 
-    Task<ServiceResult> LeaveChapter(Guid currentMemberId, Guid chapterId, string reason);
+    Task<ServiceResult> LeaveChapter(MemberChapterServiceRequest request, string reason);
 
-    Task<ServiceResult> PurchaseChapterSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId, string cardToken);
+    Task<ServiceResult> PurchaseChapterSubscription(MemberChapterServiceRequest request, Guid chapterSubscriptionId, string cardToken);
 
-    Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, Guid chapterId, string newEmailAddress);
+    Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberChapterServiceRequest request, string newEmailAddress);
 
-    Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress);
+    Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberServiceRequest request, string newEmailAddress);
 
     Task RotateMemberImage(Guid memberId);    
 
     Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
-        Guid memberId, Guid chapterSubscriptionId, string returnPath);    
+        MemberServiceRequest request, Guid chapterSubscriptionId, string returnPath);    
 
     Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);
 
@@ -60,7 +61,7 @@ public interface IMemberService
     Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model);
 
     Task<ServiceResult> UpdateMemberTopics(
-        Guid id, 
+        MemberServiceRequest request, 
         IReadOnlyCollection<Guid> topicIds,
         IReadOnlyCollection<NewTopicModel> newTopics);
 }

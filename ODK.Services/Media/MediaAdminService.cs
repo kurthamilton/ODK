@@ -19,7 +19,7 @@ public class MediaAdminService : OdkAdminServiceBase, IMediaAdminService
         _mediaFileProvider = mediaFileProvider;
     }
 
-    public async Task<IReadOnlyCollection<MediaFile>> DeleteMediaFile(AdminServiceRequest request, string name)
+    public async Task<IReadOnlyCollection<MediaFile>> DeleteMediaFile(MemberChapterServiceRequest request, string name)
     {
         var chapterId = request.ChapterId;
 
@@ -36,14 +36,14 @@ public class MediaAdminService : OdkAdminServiceBase, IMediaAdminService
         return await _mediaFileProvider.GetMediaFiles(chapterId);
     }
 
-    public async Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(AdminServiceRequest request)
+    public async Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(MemberChapterServiceRequest request)
     {
         await AssertMemberIsChapterAdmin(request);
 
         return await _mediaFileProvider.GetMediaFiles(request.ChapterId);
     }
 
-    public async Task<MediaFile?> SaveMediaFile(AdminServiceRequest request, string name, byte[] data)
+    public async Task<MediaFile?> SaveMediaFile(MemberChapterServiceRequest request, string name, byte[] data)
     {
         var chapterId = request.ChapterId;
 

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Members;
 using ODK.Services.Members;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -10,7 +11,10 @@ public class MembersController : OdkControllerBase
 {
     private readonly IMemberService _memberService;
     
-    public MembersController(IMemberService memberService)
+    public MembersController(
+        IMemberService memberService,
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _memberService = memberService;
     }

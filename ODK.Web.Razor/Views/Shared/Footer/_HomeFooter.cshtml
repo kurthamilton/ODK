@@ -1,20 +1,18 @@
 ﻿@using ODK.Core.Platforms
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Footer
-@inject IPlatformProvider PlatformProvider
-@{
-    var platform = PlatformProvider.GetPlatform();
-}
+@model OdkComponentContext
 
-@if (platform == PlatformType.DrunkenKnitwits)
+@if (Model.Platform == PlatformType.DrunkenKnitwits)
 {
-    @await Html.PartialAsync("Footer/_OdkFooter", new FooterViewModel
+    @await Html.PartialAsync("Footer/_OdkFooter", new FooterViewModel(Model)
     {
         Chapter = null
     })
 }
 else
 {
-    @await Html.PartialAsync("Footer/_SiteFooter", new FooterViewModel
+    @await Html.PartialAsync("Footer/_SiteFooter", new FooterViewModel(Model)
     {
         Chapter = null
     })

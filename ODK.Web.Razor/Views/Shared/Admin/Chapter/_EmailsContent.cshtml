@@ -1,15 +1,15 @@
-﻿@using ODK.Core.Emails
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Emails
 @using ODK.Services
 @using ODK.Services.Emails
-@using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Services
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
-@model ODK.Core.Chapters.Chapter
+@model OdkComponentViewModel<Chapter>
 @inject IEmailAdminService EmailAdminService
 @{
-    var memberId = User.MemberId();
-
-    var request = new AdminServiceRequest(Model.Id, memberId);
+    var request = Model.MemberChapterServiceRequest(Model.Value.Id);
     var emails = await EmailAdminService.GetChapterEmails(request);
 }
 
@@ -38,7 +38,7 @@
                         {
                             <tr>
                                 <td>
-                                    <a href="/@Model.Name/Admin/Chapter/Emails/@email.Type">@email.Type</a>
+                                    <a href="/@Model.Value.Name/Admin/Chapter/Emails/@email.Type">@email.Type</a>
                                 </td>
                                 <td>
                                     @if (email.IsDefault())

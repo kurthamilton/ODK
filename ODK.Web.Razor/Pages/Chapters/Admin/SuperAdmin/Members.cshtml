@@ -1,9 +1,13 @@
 ﻿@page "/{chapterName}/Admin/SuperAdmin/Members"
+@using ODK.Core.Chapters
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @model MembersModel
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Members | SuperAdmin";
+
+    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
 }
 
-@await Html.PartialAsync("SuperAdmin/_MembersContent", Model.Chapter)
+@await Html.PartialAsync("SuperAdmin/_MembersContent", viewModel)

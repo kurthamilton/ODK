@@ -1,8 +1,8 @@
 ﻿@using ODK.Core.Platforms
-@inject IPlatformProvider PlatformProvider
+@using ODK.Web.Razor.Models.Footer
+@model FooterViewModel
 @{
-    var platform = PlatformProvider.GetPlatform();
-    if (platform != PlatformType.Default)
+    if (Model.Platform != PlatformType.Default)
     {
         return;
     }

@@ -1,8 +1,12 @@
 ﻿@page "/{chapterName}/Admin/SuperAdmin/Reconciliations"
+@using ODK.Core.Chapters
+@using ODK.Web.Razor.Models
 @model ODK.Web.Razor.Pages.Chapters.Admin.SuperAdmin.ReconciliationsModel
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Reconciliations | SuperAdmin";
+
+    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
 }
 
-@await Html.PartialAsync("Chapters/SuperAdmin/_ReconciliationsContent", Model.Chapter)
+@await Html.PartialAsync("Chapters/SuperAdmin/_ReconciliationsContent", viewModel)

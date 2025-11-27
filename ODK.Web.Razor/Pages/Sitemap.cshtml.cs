@@ -1,29 +1,19 @@
-using System.Globalization;
-using System.Xml.Linq;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using ODK.Core.Platforms;
-using ODK.Core.Web;
+using ODK.Core.Utils;
 using ODK.Services.Chapters;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Sitemap;
 
 namespace ODK.Web.Razor.Pages;
 
-public class SitemapModel : PageModel
+public class SitemapModel : OdkPageModel
 {
     private readonly IChapterService _chapterService;
-    private readonly IPlatformProvider _platformProvider;
     
-    public SitemapModel(
-        IUrlProvider urlProvider,
-        IChapterService chapterService,
-        IPlatformProvider platformProvider)
+    public SitemapModel(IChapterService chapterService)
     {
         _chapterService = chapterService;
-        _platformProvider = platformProvider;
 
-        BaseUrl = urlProvider.BaseUrl();
+        BaseUrl = UrlUtils.BaseUrl(HttpRequestContext.RequestUrl);
     }
 
     public string BaseUrl { get; }
@@ -38,8 +28,7 @@ public class SitemapModel : PageModel
             }
         };
 
-        var platform = _platformProvider.GetPlatform();
-        var chaptersDto = await _chapterService.GetChaptersDto();
+        var chaptersDto = await _chapterService.GetChaptersDto(Platform);
         var chapters = chaptersDto
             .Chapters
             .Where(x => x.Approved())
@@ -49,7 +38,7 @@ public class SitemapModel : PageModel
         {
             nodes.Add(new SitemapNodeModel
             {
-                Url = GetUrl(OdkRoutes.Groups.Group(platform, chapter))
+                Url = GetUrl(OdkRoutes.Groups.Group(Platform, chapter))
             });
 
             nodes.Add(new SitemapNodeModel
@@ -59,17 +48,17 @@ public class SitemapModel : PageModel
 
             nodes.Add(new SitemapNodeModel
             {
-                Url = GetUrl(OdkRoutes.Groups.Events(platform, chapter))
+                Url = GetUrl(OdkRoutes.Groups.Events(Platform, chapter))
             });
 
             nodes.Add(new SitemapNodeModel
             {
-                Url = GetUrl(OdkRoutes.Groups.Contact(platform, chapter))
+                Url = GetUrl(OdkRoutes.Groups.Contact(Platform, chapter))
             });
 
             nodes.Add(new SitemapNodeModel
             {
-                Url = GetUrl(OdkRoutes.Groups.About(platform, chapter))
+                Url = GetUrl(OdkRoutes.Groups.About(Platform, chapter))
             });
         }
 

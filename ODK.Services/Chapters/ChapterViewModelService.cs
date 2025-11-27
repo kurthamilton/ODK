@@ -34,10 +34,9 @@ public class ChapterViewModelService : IChapterViewModelService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<GroupsViewModel> FindGroups(Guid? currentMemberId, GroupFilter filter)
+    public async Task<GroupsViewModel> FindGroups(
+        PlatformType platform, Guid? currentMemberId, GroupFilter filter)
     {
-        var platform = _platformProvider.GetPlatform();
-
         MemberLocation? memberLocation = null;
 
         if (filter.Location == null && currentMemberId != null)
@@ -163,9 +162,9 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<ChapterCreateViewModel> GetChapterCreate(Guid currentMemberId)
+    public async Task<ChapterCreateViewModel> GetChapterCreate(
+        PlatformType platform, Guid currentMemberId)
     {
-        var platform = _platformProvider.GetPlatform();
         if (platform != PlatformType.Default)
         {
             throw new OdkNotFoundException();
