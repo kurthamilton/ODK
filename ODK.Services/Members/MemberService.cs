@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -13,6 +14,7 @@ using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
+using ODK.Services.Exceptions;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Notifications;
@@ -438,25 +440,7 @@ public class MemberService : IMemberService
         var member = await _unitOfWork.MemberRepository
             .GetById(request.CurrentMemberId).Run();
         return member;
-    }
-
-    public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId)
-    {
-        var result = await _cacheService.GetOrSetVersionedItem(
-            () => _unitOfWork.MemberImageRepository.GetByMemberId(memberId).Run(),
-            memberId,
-            currentVersion);
-
-        if (currentVersion == result.Version)
-        {
-            return result;
-        }
-
-        var image = result.Value;
-        return image != null
-            ? new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image)
-            : new VersionedServiceResult<MemberImage>(0, null);
-    }
+    }    
 
     public async Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId)
     {
@@ -480,10 +464,55 @@ public class MemberService : IMemberService
         return new VersionedServiceResult<MemberAvatar>(version, image);
     }
 
+    public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId)
+    {
+        var result = await _cacheService.GetOrSetVersionedItem(
+            () => _unitOfWork.MemberImageRepository.GetByMemberId(memberId).Run(),
+            memberId,
+            currentVersion);
+
+        if (currentVersion == result.Version)
+        {
+            return result;
+        }
+
+        var image = result.Value;
+        return image != null
+            ? new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image)
+            : new VersionedServiceResult<MemberImage>(0, null);
+    }
+
+    public async Task<MemberPaymentCheckoutSessionStatusViewModel> GetMemberChapterPaymentCheckoutSessionStatusViewModel(
+        MemberChapterServiceRequest request, string externalSessionId)
+    {
+        var (sitePaymentSettings, chapterPaymentSettings, checkoutSession) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
+        
+        IPaymentSettings paymentSettings = chapterPaymentSettings == null || chapterPaymentSettings.UseSitePaymentProvider
+            ? sitePaymentSettings
+            : chapterPaymentSettings;
+
+        var externalSession = await _paymentService.GetCheckoutSession(paymentSettings, externalSessionId);
+
+        if (externalSession != null && externalSession.Metadata.ChapterId != request.ChapterId)
+        {
+            throw new OdkServiceException("Chapter mismatch");
+        }
+
+        return new MemberPaymentCheckoutSessionStatusViewModel
+        {
+            Complete = checkoutSession?.CompletedUtc != null,
+            Expired = externalSession == null,
+            PaymentReceived = externalSession?.Complete == true
+        };
+    }
+
     public async Task<MemberLocation?> GetMemberLocation(Guid memberId)
     {
         return await _unitOfWork.MemberLocationRepository.GetByMemberId(memberId);
-    }
+    }    
 
     public async Task<MemberPreferences?> GetMemberPreferences(Guid memberId)
     {
@@ -725,10 +754,10 @@ public class MemberService : IMemberService
         _cacheService.RemoveVersionedItem<MemberAvatar>(memberId);
     }    
 
-    public async Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
+    public async Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
         MemberServiceRequest request, Guid chapterSubscriptionId, string returnPath)
     {        
-        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
+        var memberId = request.CurrentMemberId;
 
         var (member, chapterSubscription) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
@@ -791,12 +820,11 @@ public class MemberService : IMemberService
 
         await _unitOfWork.SaveChangesAsync();
 
-        return new ChapterSubscriptionCheckoutViewModel
+        return new ChapterSubscriptionCheckoutStartedViewModel
         {
             ClientSecret = externalCheckoutSession.ClientSecret,
             CurrencyCode = subscriptionPlan.CurrencyCode,
-            PaymentSettings = paymentSettings,
-            Platform = platform
+            PaymentSettings = paymentSettings
         };
     }
 

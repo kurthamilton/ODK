@@ -1,8 +1,64 @@
 ﻿@page "/{chapterName}/account/subscription/{id:guid}/confirm"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Members
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
 @model SubscriptionCheckoutConfirmModel
+@inject IMemberService MemberService
 @{
     Layout = "_OdkChapterLayout";
-    Model.Title = "Subscription checkout";    
+    Model.Title = "Subscription pending confirmation";
+
+    var request = Model.MemberChapterServiceRequest();
+
+    var subscriptionUrl = OdkRoutes.Account.Subscription(Model.Platform, Model.Chapter);
+}
+
+@await Html.PartialAsync("Components/_Body", new BodyViewModel
+{
+    Title = "Account",
+    HideSubscriptionAlert = true,
+    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    {
+        Active = OdkRoutes.Account.Subscription(Model.Platform, Model.Chapter),
+        Chapter = Model.Chapter,
+        Content =
+            @<div>
+                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+                {
+                    Breadcrumbs = new[]
+                    {
+                        new MenuItem { Text = "My subscription", Link = subscriptionUrl },
+                        new MenuItem { Text = "Checkout" }
+                    }
+                })
+                <h2>Checkout</h2>
+                <section class="section">
+                    <div data-odk-checkout
+                         data-odk-checkout-redirect="@subscriptionUrl"
+                         data-odk-polling-url="/groups/@Model.Chapter.Id/payments/sessions/@Model.SessionId/status">
+
+                         <div class="alert alert-success" data-odk-checkout-status="complete">
+                            Complete
+                         </div>
+
+                        <div class="alert alert-warning" data-odk-checkout-status="pending">
+                            Pending
+                        </div>
+
+                        <div class="alert alert-danger" data-odk-checkout-status="expired">
+                            Expired
+                        </div>
+                    </div>
+                </section>
+            </div>
+    })
+})
+
+@section scripts {
+    <script src="~/js/odk.polling.js" asp-append-version="true"></script>
+    <script src="~/js/odk.checkout.js" asp-append-version="true"></script>
 }

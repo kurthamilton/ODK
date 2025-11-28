@@ -2,7 +2,6 @@
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
-using ODK.Core.Platforms;
 using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;

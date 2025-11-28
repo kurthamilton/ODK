@@ -20,15 +20,18 @@ public interface IMemberService
 
     Task<ServiceResult<(Member Member, MemberChapter MemberChapter)>> DeleteMemberChapterData(Guid memberId, Guid chapterId);
 
-    Task<Member?> FindMemberByEmailAddress(string emailAddress);
+    Task<Member?> FindMemberByEmailAddress(string emailAddress);    
 
     Task<Member> GetMember(MemberServiceRequest request);
 
     Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
 
+    Task<MemberPaymentCheckoutSessionStatusViewModel> GetMemberChapterPaymentCheckoutSessionStatusViewModel(
+        MemberChapterServiceRequest request, string externalSessionId);
+
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId);
 
-    Task<MemberLocation?> GetMemberLocation(Guid memberId);
+    Task<MemberLocation?> GetMemberLocation(Guid memberId);    
 
     Task<MemberPreferences?> GetMemberPreferences(Guid memberId);
 
@@ -44,7 +47,7 @@ public interface IMemberService
 
     Task RotateMemberImage(Guid memberId);    
 
-    Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
+    Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
         MemberServiceRequest request, Guid chapterSubscriptionId, string returnPath);    
 
     Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);

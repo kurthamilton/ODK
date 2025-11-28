@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Payments;
 
-public class PaymentCheckoutSession : IDatabaseEntity
+public class PaymentCheckoutSession : IDatabaseEntity, IMemberEntity
 {
     public DateTime? CompletedUtc { get; set; }
 
