@@ -17,7 +17,9 @@ public abstract class OdkComponentViewModel
         Platform = context.Platform;
 
         _memberServiceRequest =
-            new(() => new MemberServiceRequest(Context.CurrentMemberId ?? throw new OdkNotAuthorizedException(), ServiceRequest));
+            new(() => new MemberServiceRequest(
+                Context.CurrentMemberIdOrDefault ?? throw new OdkNotAuthorizedException(), 
+                ServiceRequest));
         _serviceRequest = new(() => new ServiceRequest(HttpRequestContext, Platform));
     }
 

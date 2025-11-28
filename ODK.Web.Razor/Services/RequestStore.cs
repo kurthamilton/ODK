@@ -31,7 +31,7 @@ public class RequestStore : IRequestStore
 
         _componentContext = new(() => new OdkComponentContext
         {
-            CurrentMemberId = CurrentMemberIdOrDefault,
+            CurrentMemberIdOrDefault = CurrentMemberIdOrDefault,
             HttpRequestContext = HttpRequestContext,
             Platform = Platform
         });

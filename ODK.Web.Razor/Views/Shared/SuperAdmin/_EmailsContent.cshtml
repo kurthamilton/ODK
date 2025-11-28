@@ -4,7 +4,6 @@
 @model OdkComponentContext
 @inject ISettingsService SettingsService
 @{
-    var memberId = Model.CurrentMemberId;
     var settings = await SettingsService.GetSiteEmailSettings(Model.Platform);
 }
 

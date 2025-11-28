@@ -5,7 +5,7 @@ namespace ODK.Web.Razor.Models;
 
 public class OdkComponentContext
 {
-    public required Guid? CurrentMemberId { get; init; }
+    public required Guid? CurrentMemberIdOrDefault { get; init; }
 
     public required IHttpRequestContext HttpRequestContext { get; init; }
 

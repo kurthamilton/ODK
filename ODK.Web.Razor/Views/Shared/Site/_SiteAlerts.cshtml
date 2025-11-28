@@ -5,7 +5,7 @@
 @model OdkComponentContext
 @inject IChapterService ChapterService
 @{
-    var memberId = Model.CurrentMemberId;
+    var memberId = Model.CurrentMemberIdOrDefault;
 
     var ownedChapters = memberId != null 
         ? await ChapterService.GetChaptersByOwnerId(memberId.Value)

@@ -37,7 +37,7 @@
     @if (componentContext.Platform == PlatformType.DrunkenKnitwits)
     {
         var chapterContext = new ChapterPageContext(RequestCache, Context);
-        var member = await chapterContext.GetMemberAsync(componentContext.CurrentMemberId);
+        var member = await chapterContext.GetMemberAsync(componentContext.CurrentMemberIdOrDefault);
 
         <div class="mb-1 d-none d-md-block">
             @await Html.PartialAsync("Header/_Navbar", new NavbarViewModel(componentContext)

@@ -14,7 +14,7 @@
         return;
     }
 
-    var memberId = Model.CurrentMemberId;
+    var memberId = Model.CurrentMemberIdOrDefault;
     var member = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
 
     var chapters = await RequestCache.GetChaptersAsync(Model.Platform);
