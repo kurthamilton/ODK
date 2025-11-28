@@ -17,17 +17,16 @@
             @foreach (var dto in Model.Payments.OrderByDescending(x => x.Payment.PaidUtc))
             {
                 var payment = dto.Payment;
-                if (payment.PaidUtc == null)
-                {
-                    continue;
-                }
-
+                
                 <tr>
                     <td>
                         <a href="@OdkRoutes.Groups.Group(Model.Platform, dto.Chapter)">@dto.Chapter.Name</a>
                     </td>
                     <td>
-                        @payment.PaidUtc.Value.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? dto.Chapter.TimeZone)
+                        @if (payment.PaidUtc != null)
+                        {
+                            @payment.PaidUtc.Value.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? dto.Chapter.TimeZone)
+                        }                        
                     </td>
                     <td>
                         @dto.Currency.ToAmountString(payment.Amount)

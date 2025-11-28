@@ -46,10 +46,16 @@
                               data-odk-checkout-action="reload">
                          </div>
 
-                        <div class="alert alert-warning" 
-                             data-odk-checkout-status="@PaymentCheckoutSessionStatuses.Pending">
-                            We are just waiting for confirmation of your payment...
-                        </div>
+                        <div data-odk-checkout-status="@PaymentCheckoutSessionStatuses.Pending">
+                            <div class="alert alert-warning">
+                                We are just waiting for confirmation of your payment...
+                            </div>
+                            <div>
+                                <a href="@subscriptionUrl">
+                                    Go back to my subscription
+                                </a>
+                            </div>
+                        </div>                        
 
                         <div data-odk-checkout-status="@PaymentCheckoutSessionStatuses.Expired"
                              data-odk-checkout-action="reload">
