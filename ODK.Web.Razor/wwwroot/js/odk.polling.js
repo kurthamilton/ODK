@@ -17,15 +17,19 @@
     }
 
     async function send(options) {
-        const response = await fetch(options.url);
-        const json = await response.json();
+        try {
+            const response = await fetch(options.url);
+            if (response.status >= 200 && response.status < 300) {
+                const json = await response.json();
 
-        options.$container.dispatchEvent(new CustomEvent('odk:polling.response', {
-            detail: {
-                json: json
-            }
-        })); 
-
-        window.setTimeout(() => send(options), options.interval);
+                options.$container.dispatchEvent(new CustomEvent('odk:polling.response', {
+                    detail: {
+                        json: json
+                    }
+                }));
+            }            
+        } finally {
+            window.setTimeout(() => send(options), options.interval);
+        }         
     }
 })();

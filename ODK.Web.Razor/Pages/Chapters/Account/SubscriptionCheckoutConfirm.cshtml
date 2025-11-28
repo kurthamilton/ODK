@@ -42,11 +42,11 @@
                          data-odk-checkout-redirect="@subscriptionUrl"
                          data-odk-polling-url="/groups/@Model.Chapter.Id/payments/sessions/@Model.SessionId/status">
 
-                         <div data-odk-checkout-status="@PaymentCheckoutSessionStatuses.Complete"
-                              data-odk-checkout-action="reload">
-                         </div>
+                        <div data-odk-checkout-status="@PaymentStatusType.Complete"
+                             data-odk-checkout-action="reload">
+                        </div>
 
-                        <div data-odk-checkout-status="@PaymentCheckoutSessionStatuses.Pending">
+                        <div data-odk-checkout-status="@PaymentStatusType.Pending">
                             <div class="alert alert-warning">
                                 We are just waiting for confirmation of your payment...
                             </div>
@@ -57,7 +57,7 @@
                             </div>
                         </div>                        
 
-                        <div data-odk-checkout-status="@PaymentCheckoutSessionStatuses.Expired"
+                        <div data-odk-checkout-status="@PaymentStatusType.Expired"
                              data-odk-checkout-action="reload">
                         </div>
                     </div>

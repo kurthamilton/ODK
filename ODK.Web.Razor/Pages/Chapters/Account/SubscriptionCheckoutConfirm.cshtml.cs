@@ -29,13 +29,13 @@ public class SubscriptionCheckoutConfirmModel : ChapterPageModel
         var request = MemberChapterServiceRequest(Chapter.Id);
         var status = await _memberService.GetMemberChapterPaymentCheckoutSessionStatus(request, sessionId);
 
-        if (status == PaymentCheckoutSessionStatuses.Complete)
+        if (status == PaymentStatusType.Complete)
         {
             AddFeedback("Purchase complete", FeedbackType.Success);
             return Redirect(RedirectUrl);
         }
 
-        if (status == PaymentCheckoutSessionStatuses.Expired)
+        if (status == PaymentStatusType.Expired)
         {
             AddFeedback("Purchase not successful. Please try again", FeedbackType.Error);
             return Redirect(RedirectUrl);

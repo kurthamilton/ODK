@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Countries;
 using ODK.Core.Members;
+using ODK.Core.Payments;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Topics.Models;
@@ -26,7 +27,7 @@ public interface IMemberService
 
     Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
 
-    Task<string> GetMemberChapterPaymentCheckoutSessionStatus(
+    Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         MemberChapterServiceRequest request, string externalSessionId);
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId);

@@ -1,5 +1,4 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -482,7 +481,7 @@ public class MemberService : IMemberService
             : new VersionedServiceResult<MemberImage>(0, null);
     }
 
-    public async Task<string> GetMemberChapterPaymentCheckoutSessionStatus(
+    public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         MemberChapterServiceRequest request, string externalSessionId)
     {
         var (sitePaymentSettings, chapterPaymentSettings, checkoutSession) = await _unitOfWork.RunAsync(
@@ -496,19 +495,14 @@ public class MemberService : IMemberService
 
         if (checkoutSession.CompletedUtc != null)
         {
-            return PaymentCheckoutSessionStatuses.Complete;
+            return PaymentStatusType.Complete;
         }
 
         var externalSession = await _paymentService.GetCheckoutSession(paymentSettings, externalSessionId);
 
-        if (externalSession != null && externalSession.Metadata.ChapterId != request.ChapterId)
-        {
-            throw new OdkServiceException("Chapter mismatch");
-        }
-
-        return externalSession == null
-            ? PaymentCheckoutSessionStatuses.Expired 
-            : PaymentCheckoutSessionStatuses.Pending;
+        return externalSession == null || externalSession.Metadata.ChapterId != request.ChapterId
+            ? PaymentStatusType.Expired 
+            : PaymentStatusType.Pending;
     }
 
     public async Task<MemberLocation?> GetMemberLocation(Guid memberId)
