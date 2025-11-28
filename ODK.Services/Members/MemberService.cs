@@ -482,7 +482,7 @@ public class MemberService : IMemberService
             : new VersionedServiceResult<MemberImage>(0, null);
     }
 
-    public async Task<MemberPaymentCheckoutSessionStatusViewModel> GetMemberChapterPaymentCheckoutSessionStatusViewModel(
+    public async Task<string> GetMemberChapterPaymentCheckoutSessionStatus(
         MemberChapterServiceRequest request, string externalSessionId)
     {
         var (sitePaymentSettings, chapterPaymentSettings, checkoutSession) = await _unitOfWork.RunAsync(
@@ -494,6 +494,11 @@ public class MemberService : IMemberService
             ? sitePaymentSettings
             : chapterPaymentSettings;
 
+        if (checkoutSession.CompletedUtc != null)
+        {
+            return PaymentCheckoutSessionStatuses.Complete;
+        }
+
         var externalSession = await _paymentService.GetCheckoutSession(paymentSettings, externalSessionId);
 
         if (externalSession != null && externalSession.Metadata.ChapterId != request.ChapterId)
@@ -501,12 +506,9 @@ public class MemberService : IMemberService
             throw new OdkServiceException("Chapter mismatch");
         }
 
-        return new MemberPaymentCheckoutSessionStatusViewModel
-        {
-            Complete = checkoutSession?.CompletedUtc != null,
-            Expired = externalSession == null,
-            PaymentReceived = externalSession?.Complete == true
-        };
+        return externalSession == null
+            ? PaymentCheckoutSessionStatuses.Expired 
+            : PaymentCheckoutSessionStatuses.Pending;
     }
 
     public async Task<MemberLocation?> GetMemberLocation(Guid memberId)

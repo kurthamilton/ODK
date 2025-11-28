@@ -26,7 +26,7 @@ public interface IMemberService
 
     Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
 
-    Task<MemberPaymentCheckoutSessionStatusViewModel> GetMemberChapterPaymentCheckoutSessionStatusViewModel(
+    Task<string> GetMemberChapterPaymentCheckoutSessionStatus(
         MemberChapterServiceRequest request, string externalSessionId);
 
     Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId);

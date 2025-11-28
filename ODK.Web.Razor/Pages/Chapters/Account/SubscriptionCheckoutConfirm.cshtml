@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/account/subscription/{id:guid}/confirm"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core.Payments
 @using ODK.Services.Members
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
@@ -14,7 +15,7 @@
 
     var request = Model.MemberChapterServiceRequest();
 
-    var subscriptionUrl = OdkRoutes.Account.Subscription(Model.Platform, Model.Chapter);
+    var subscriptionUrl = Model.RedirectUrl;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -41,16 +42,17 @@
                          data-odk-checkout-redirect="@subscriptionUrl"
                          data-odk-polling-url="/groups/@Model.Chapter.Id/payments/sessions/@Model.SessionId/status">
 
-                         <div class="alert alert-success" data-odk-checkout-status="complete">
-                            Complete
+                         <div data-odk-checkout-status="@PaymentCheckoutSessionStatuses.Complete"
+                              data-odk-checkout-action="reload">
                          </div>
 
-                        <div class="alert alert-warning" data-odk-checkout-status="pending">
-                            Pending
+                        <div class="alert alert-warning" 
+                             data-odk-checkout-status="@PaymentCheckoutSessionStatuses.Pending">
+                            We are just waiting for confirmation of your payment...
                         </div>
 
-                        <div class="alert alert-danger" data-odk-checkout-status="expired">
-                            Expired
+                        <div data-odk-checkout-status="@PaymentCheckoutSessionStatuses.Expired"
+                             data-odk-checkout-action="reload">
                         </div>
                     </div>
                 </section>

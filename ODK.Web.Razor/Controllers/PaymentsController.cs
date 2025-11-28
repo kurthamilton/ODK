@@ -24,13 +24,8 @@ public class PaymentsController : OdkControllerBase
     public async Task<IActionResult> GetSessionStatus(string id, Guid groupId)
     {
         var request = MemberChapterServiceRequest(groupId);
-        var viewModel = await _memberService.GetMemberChapterPaymentCheckoutSessionStatusViewModel(request, id);
-        var status = viewModel.Complete
-            ? "complete"
-            : viewModel.Expired
-                ? "expired"
-                : "pending";
-
+        var status = await _memberService.GetMemberChapterPaymentCheckoutSessionStatus(request, id);
+        
         return Ok(new
         {
             status
