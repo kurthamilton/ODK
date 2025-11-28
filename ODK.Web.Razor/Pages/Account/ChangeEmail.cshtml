@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Members
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Account.ChangeEmailModel
@@ -11,8 +10,7 @@
     Layout = "_AccountLayout";
     Model.Title = "Change email";
 
-    var memberId = User.MemberId();
-    var member = await MemberService.GetMember(memberId);
+    var member = await MemberService.GetMember(Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

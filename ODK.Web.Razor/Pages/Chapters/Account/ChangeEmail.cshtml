@@ -3,7 +3,6 @@
 @using ODK.Services.Caching
 @using ODK.Services.Users
 @using ODK.Services.Users.ViewModels
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
@@ -16,7 +15,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Change email";
 
-    var memberId = User.MemberId();
+    var memberId = Model.CurrentMemberId;
     var chapter = await RequestCache.GetChapterAsync(Model.Platform, Model.ChapterName);
     var viewModel = await AccountViewModelService.GetChapterAccountViewModel(memberId, Model.ChapterName);
 }

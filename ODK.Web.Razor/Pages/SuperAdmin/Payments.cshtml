@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Settings
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.SuperAdmin.PaymentsModel
 @inject ISettingsService SettingsService
@@ -10,8 +9,7 @@
     Layout = "_SiteAdminLayout";
     Model.Title = "Payments | SuperAdmin";
 
-    var memberId = User.MemberId();
-    var settings = await SettingsService.GetSitePaymentSettings(memberId);
+    var settings = await SettingsService.GetSitePaymentSettings(Model.CurrentMemberId);
 }
 
 @await Html.PartialAsync("SuperAdmin/_PaymentsContent", settings)

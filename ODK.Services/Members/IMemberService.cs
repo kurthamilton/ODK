@@ -22,7 +22,7 @@ public interface IMemberService
 
     Task<Member?> FindMemberByEmailAddress(string emailAddress);
 
-    Task<Member> GetMember(Guid memberId);
+    Task<Member> GetMember(MemberServiceRequest request);
 
     Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId);
 
@@ -49,7 +49,7 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);
 
-    Task<ServiceResult> UpdateMemberChapterProfile(Guid id, Guid chapterId, UpdateMemberChapterProfile model);
+    Task<ServiceResult> UpdateMemberChapterProfile(MemberChapterServiceRequest request, UpdateMemberChapterProfile model);
 
     Task<ServiceResult> UpdateMemberCurrency(Guid id, Guid currencyId);
 
@@ -57,7 +57,7 @@ public interface IMemberService
 
     Task<ServiceResult> UpdateMemberLocation(Guid id, LatLong? location, string? name, Guid? distanceUnitId);    
 
-    Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model);
+    Task<ServiceResult> UpdateMemberSiteProfile(MemberServiceRequest request, UpdateMemberSiteProfile model);
 
     Task<ServiceResult> UpdateMemberTopics(
         MemberServiceRequest request, 

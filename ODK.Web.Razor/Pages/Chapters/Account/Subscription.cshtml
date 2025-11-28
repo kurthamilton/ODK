@@ -3,7 +3,6 @@
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Components
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
@@ -13,7 +12,7 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription";
 
-    var memberId = User.MemberId();
+    var memberId = Model.CurrentMemberId;
     var paymentSettings = await ChapterService.GetChapterPaymentSettings(memberId, Model.Chapter.Id);
 }
 

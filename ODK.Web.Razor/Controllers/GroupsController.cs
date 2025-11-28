@@ -7,7 +7,6 @@ using ODK.Services.Contact;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
-using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Chapters;
@@ -123,9 +122,9 @@ public class GroupsController : OdkControllerBase
             })
         };
 
-        var memberId = User.MemberId();
+        var request = MemberChapterServiceRequest(id);
 
-        var result = await _memberService.UpdateMemberChapterProfile(memberId, id, model);
+        var result = await _memberService.UpdateMemberChapterProfile(request, model);
         AddFeedback(result, "Profile updated");
         return result.Success ? RedirectToReferrer() : View();
     }

@@ -30,8 +30,7 @@ public interface IPaymentService
     Task<ServiceResult> MakePayment(ChapterPaymentSettings chapterPaymentSettings, 
         Currency currency, Member member, decimal amount, string cardToken, string reference);
 
-    Task ProcessWebhook(
-        ServiceRequest request, PlatformType platform, PaymentProviderWebhook webhook);
+    Task ProcessWebhook(ServiceRequest request, PaymentProviderWebhook webhook);
 
     Task<ExternalCheckoutSession> StartCheckoutSession(
         ServiceRequest request,

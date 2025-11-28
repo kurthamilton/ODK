@@ -36,7 +36,7 @@ public class RequestStore : IRequestStore
             Platform = Platform
         });
         _currentMemberId = new(
-            () => _httpContextAccessor.HttpContext?.User?.MemberId() ?? throw new OdkNotAuthorizedException());
+            () => CurrentMemberIdOrDefault ?? throw new OdkNotAuthorizedException());
         _currentMemberIdOrDefault = new(
             () => _httpContextAccessor.HttpContext?.User?.MemberIdOrDefault());
         _httpRequestContext = new(

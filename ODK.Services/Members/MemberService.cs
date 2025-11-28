@@ -433,9 +433,10 @@ public class MemberService : IMemberService
         return await _unitOfWork.MemberRepository.GetByEmailAddress(emailAddress).Run();
     }
 
-    public async Task<Member> GetMember(Guid memberId)
+    public async Task<Member> GetMember(MemberServiceRequest request)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
+        var member = await _unitOfWork.MemberRepository
+            .GetById(request.CurrentMemberId).Run();
         return member;
     }
 
@@ -844,12 +845,15 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }    
 
-    public async Task<ServiceResult> UpdateMemberChapterProfile(Guid id, Guid chapterId, UpdateMemberChapterProfile model)
+    public async Task<ServiceResult> UpdateMemberChapterProfile(
+        MemberChapterServiceRequest request, UpdateMemberChapterProfile model)
     {
+        var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+
         var (chapterProperties, member, memberProperties) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(id),
-            x => x.MemberPropertyRepository.GetByMemberId(id, chapterId));
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapterId));
 
         var validationResult = ValidateMemberProfile(chapterProperties, model, forApplication: false);
         if (!validationResult.Success)
@@ -1028,9 +1032,11 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model)
+    public async Task<ServiceResult> UpdateMemberSiteProfile(
+        MemberServiceRequest request, UpdateMemberSiteProfile model)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(id).Run();
+        var member = await _unitOfWork.MemberRepository
+            .GetById(request.CurrentMemberId).Run();
 
         member.FirstName = model.FirstName.Trim();
         member.LastName = model.LastName.Trim();
@@ -1073,24 +1079,6 @@ public class MemberService : IMemberService
         }
 
         return ServiceResult.Failure("This group is not able to welcome any new members");
-    }
-
-    private static IEnumerable<string> GetMissingMemberProfileProperties(
-        CreateMemberProfile profile, 
-        IEnumerable<ChapterProperty> chapterProperties,
-        IEnumerable<UpdateMemberProperty> memberProperties,
-        bool forApplication)
-    {
-        if (string.IsNullOrWhiteSpace(profile.EmailAddress))
-        {
-            yield return "Email address";
-        }
-
-        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, memberProperties, forApplication);
-        foreach (string property in missingProperties)
-        {
-            yield return property;
-        }
     }
 
     private static IEnumerable<string> GetMissingMemberProfileProperties(

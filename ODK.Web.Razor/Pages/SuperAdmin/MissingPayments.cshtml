@@ -2,15 +2,13 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Payments
-@using ODK.Web.Common.Extensions
 @model ODK.Web.Razor.Pages.SuperAdmin.MissingPaymentsModel
 @inject IPaymentAdminService PaymentAdminService
 @{
     Layout = "_SiteAdminLayout";
     Model.Title = "Missing payments | SuperAdmin";
 
-    var memberId = User.MemberId();
-    var missingPayments = await PaymentAdminService.GetMissingPayments(memberId);
+    var missingPayments = await PaymentAdminService.GetMissingPayments(Model.CurrentMemberId);
 }
 
 @await Html.PartialAsync("SuperAdmin/_MissingPaymentsContent", missingPayments)

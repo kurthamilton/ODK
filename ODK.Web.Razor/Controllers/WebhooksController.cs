@@ -43,6 +43,6 @@ public class WebhooksController : OdkControllerBase
         }
 
         _backgroundTaskService.Enqueue(
-            () => _paymentService.ProcessWebhook(ServiceRequest, Platform, webhook));
+            () => _paymentService.ProcessWebhook(ServiceRequest, webhook));
     }
 }

@@ -1,11 +1,10 @@
 ﻿@using ODK.Services.Chapters
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
 @model OdkComponentContext
 @inject IChapterService ChapterService
 @{
-    var memberId = User.MemberIdOrDefault();
+    var memberId = Model.CurrentMemberId;
 
     var ownedChapters = memberId != null
         ? await ChapterService.GetChaptersByOwnerId(memberId.Value)

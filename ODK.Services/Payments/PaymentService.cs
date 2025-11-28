@@ -3,7 +3,6 @@ using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
-using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Logging;
 using ODK.Services.Members;
@@ -141,7 +140,7 @@ public class PaymentService : IPaymentService
     }
 
     public async Task ProcessWebhook(
-        ServiceRequest request, PlatformType platform, PaymentProviderWebhook webhook)
+        ServiceRequest request, PaymentProviderWebhook webhook)
     {
         var existingEvent = await _unitOfWork.PaymentProviderWebhookEventRepository
             .GetByExternalId(webhook.PaymentProviderType, webhook.Id).Run();
@@ -316,7 +315,8 @@ public class PaymentService : IPaymentService
         // send chapter payment notification
         if (chapterPaymentSettings?.UseSitePaymentProvider == true)
         {
-            var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
+            var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository
+                .Get(request.Platform).Run();
             var currency = chapterPaymentSettings.Currency;
 
             await _memberEmailService.SendPaymentNotification(request, payment, currency, siteEmailSettings);

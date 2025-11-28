@@ -1,11 +1,7 @@
 ﻿@using ODK.Core.Logging
 @using ODK.Services.Logging
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.SuperAdmin
 @model ODK.Web.Razor.Models.SuperAdmin.FeatureContentViewModel
-@{
-    var memberId = User.MemberId();    
-}
 
 <form method="post">
     @*@Html.AntiForgeryToken()*@

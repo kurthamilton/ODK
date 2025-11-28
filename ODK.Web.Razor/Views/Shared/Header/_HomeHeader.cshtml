@@ -4,7 +4,6 @@
 @using ODK.Core.Utils
 @using ODK.Services.Caching
 @using ODK.Web.Common.Components
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Header
 @model OdkComponentContext
@@ -15,7 +14,7 @@
         return;
     }
 
-    var memberId = User.MemberIdOrDefault();
+    var memberId = Model.CurrentMemberId;
     var member = memberId.HasValue ? await RequestCache.GetMemberAsync(memberId.Value) : null;
 
     var chapters = await RequestCache.GetChaptersAsync(Model.Platform);

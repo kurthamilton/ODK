@@ -18,7 +18,6 @@ using ODK.Services.Subscriptions;
 using ODK.Services.Topics.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Account;
-using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Account;
@@ -223,7 +222,7 @@ public class AccountController : OdkControllerBase
 
         if (Platform == PlatformType.DrunkenKnitwits)
         {
-            var member = await _memberService.GetMember(MemberId);
+            var member = await _memberService.GetMember(MemberServiceRequest);
             chapterId = member.Chapters.Count == 1
                 ? member.Chapters.First().ChapterId
                 : null;
@@ -317,9 +316,7 @@ public class AccountController : OdkControllerBase
             LastName = viewModel.LastName
         };
 
-        var memberId = User.MemberId();
-
-        var result = await _memberService.UpdateMemberSiteProfile(memberId, model);
+        var result = await _memberService.UpdateMemberSiteProfile(MemberServiceRequest, model);
         AddFeedback(result, "Profile updated");
 
         return result.Success

@@ -18,7 +18,7 @@
     Model.Title = "Account";
 
     var chapter = await RequestCache.GetChapterAsync(Model.Platform, Model.ChapterName);
-    var member = await MemberService.GetMember(Model.CurrentMemberId);
+    var member = await MemberService.GetMember(Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
