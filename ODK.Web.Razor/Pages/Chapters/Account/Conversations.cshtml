@@ -9,7 +9,8 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "My conversations";
 
-    var viewModel = await MemberViewModelService.GetMemberConversationsPage(Model.MemberChapterServiceRequest(Model.Chapter.Id));
+    var request = Model.MemberChapterServiceRequest();
+    var viewModel = await MemberViewModelService.GetMemberConversationsPage(request);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
