@@ -21,10 +21,19 @@ public class PaymentsController : OdkControllerBase
     }
 
     [HttpGet("groups/{groupId}/payments/sessions/{id}/status")]
-    public async Task<MemberPaymentCheckoutSessionStatusViewModel> GetSessionStatus(string id, Guid groupId)
+    public async Task<IActionResult> GetSessionStatus(string id, Guid groupId)
     {
         var request = MemberChapterServiceRequest(groupId);
         var viewModel = await _memberService.GetMemberChapterPaymentCheckoutSessionStatusViewModel(request, id);
-        return viewModel;
+        var status = viewModel.Complete
+            ? "complete"
+            : viewModel.Expired
+                ? "expired"
+                : "pending";
+
+        return Ok(new
+        {
+            status
+        });
     }
 }
