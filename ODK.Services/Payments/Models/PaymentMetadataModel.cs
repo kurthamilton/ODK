@@ -1,27 +1,61 @@
-﻿namespace ODK.Services.Payments.Models;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Extensions;
+using ODK.Core.Members;
+using ODK.Core.Subscriptions;
+
+namespace ODK.Services.Payments.Models;
 
 public class PaymentMetadataModel
 {
-    public Guid? ChapterId { get; set; }
+    public PaymentMetadataModel(
+        Member member,
+        ChapterSubscription chapterSubscription,
+        Guid paymentCheckoutSessionId,
+        Guid paymentId)
+    {
+        ChapterId = chapterSubscription.ChapterId;
+        ChapterSubscriptionId = chapterSubscription.Id;
+        MemberId = member.Id;
+        PaymentCheckoutSessionId = paymentCheckoutSessionId;
+        PaymentId = paymentId;
+    }
 
-    public Guid? ChapterSubscriptionId { get; set; }
+    public PaymentMetadataModel(
+        Member member,
+        SiteSubscriptionPrice siteSubscriptionPrice,
+        Guid paymentCheckoutSessionId,
+        Guid paymentId)
+    {        
+        MemberId = member.Id;
+        PaymentCheckoutSessionId = paymentCheckoutSessionId;
+        PaymentId = paymentId;
+        SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
+    }
 
-    public Guid? MemberId { get; set; }
+    private PaymentMetadataModel()
+    {
+    }
 
-    public Guid? PaymentCheckoutSessionId { get; set; }
+    public Guid? ChapterId { get; private set; }
 
-    public Guid? PaymentId { get; set; }
+    public Guid? ChapterSubscriptionId { get; private set; }
 
-    public Guid? SiteSubscriptionId { get; set; }
+    public Guid? MemberId { get; private set; }
+
+    public Guid? PaymentCheckoutSessionId { get; private set; }
+
+    public Guid? PaymentId { get; private set; }
+
+    public Guid? SiteSubscriptionPriceId { get; private set; }
 
     public static PaymentMetadataModel FromDictionary(IDictionary<string, string> dictionary)
     {
-        TryGetGuid(dictionary, "ChapterId", out var chapterId);
-        TryGetGuid(dictionary, "ChapterSubscriptionId", out var chapterSubscriptionId);
-        TryGetGuid(dictionary, "MemberId", out var memberId);
-        TryGetGuid(dictionary, "PaymentCheckoutSessionId", out var paymentCheckoutSessionId);
-        TryGetGuid(dictionary, "PaymentId", out var paymentId);
-        TryGetGuid(dictionary, "SiteSubscriptionId", out var siteSubscriptionId);
+        dictionary.TryGetGuidValue("ChapterId", out var chapterId);
+        dictionary.TryGetGuidValue("ChapterSubscriptionId", out var chapterSubscriptionId);
+        dictionary.TryGetGuidValue("MemberId", out var memberId);
+        dictionary.TryGetGuidValue("PaymentCheckoutSessionId", out var paymentCheckoutSessionId);
+        dictionary.TryGetGuidValue("PaymentId", out var paymentId);
+        dictionary.TryGetGuidValue("SiteSubscriptionPriceId", out var siteSubscriptionPriceId);
 
         return new PaymentMetadataModel
         {
@@ -30,7 +64,7 @@ public class PaymentMetadataModel
             MemberId = memberId,
             PaymentCheckoutSessionId = paymentCheckoutSessionId,
             PaymentId = paymentId,
-            SiteSubscriptionId = siteSubscriptionId
+            SiteSubscriptionPriceId = siteSubscriptionPriceId
         };
     }
 
@@ -63,29 +97,11 @@ public class PaymentMetadataModel
             dictionary.Add("PaymentId", PaymentId.Value.ToString());
         }
 
-        if (SiteSubscriptionId != null)
+        if (SiteSubscriptionPriceId != null)
         {
-            dictionary.Add("SiteSubscriptionId", SiteSubscriptionId.Value.ToString());
+            dictionary.Add("SiteSubscriptionPriceId", SiteSubscriptionPriceId.Value.ToString());
         }
 
         return dictionary;
-    }
-
-    private static bool TryGetGuid(IDictionary<string, string> dictionary, string key, out Guid? value)
-    {
-        value = null;
-
-        if (!dictionary.TryGetValue(key, out var stringValue))
-        {
-            return false; 
-        }
-
-        if (!Guid.TryParse(stringValue, out var parsedValue))
-        {
-            return false;
-        }
-
-        value = parsedValue;
-        return true;
     }
 }

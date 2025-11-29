@@ -2,5 +2,7 @@
 
 public class PaymentsSettings
 {
-    public required PaymentsPayPalSettings PayPal { get; set; }
+    public required PaymentsPayPalSettings PayPal { get; init; }
+
+    public required PaymentsStripeSettings Stripe { get; init; }
 }

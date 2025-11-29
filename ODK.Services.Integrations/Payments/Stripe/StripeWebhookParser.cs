@@ -2,61 +2,81 @@
 using ODK.Services.Logging;
 using ODK.Services.Payments;
 using ODK.Services.Payments.Models;
-using System.Text.Json.Nodes;
+using Stripe;
+using Stripe.Checkout;
 
 namespace ODK.Services.Integrations.Payments.Stripe;
 
 public class StripeWebhookParser : IStripeWebhookParser
 {
     private readonly ILoggingService _loggingService;
+    private readonly StripeWebhookParserSettings _settings;
 
-    public StripeWebhookParser(ILoggingService loggingService)
+    public StripeWebhookParser(
+        ILoggingService loggingService,
+        StripeWebhookParserSettings settings)
     {
         _loggingService = loggingService;
+        _settings = settings;
     }
 
-    public async Task<PaymentProviderWebhook?> ParseWebhook(string json)
-    {        
-        JsonNode? obj;
-
+    public async Task<PaymentProviderWebhook?> ParseWebhook(string json, string? signature)
+    {
         try
         {
-            obj = JsonNode.Parse(json);
-        }
-        catch
-        {
-            await _loggingService.Error($"Error parsing Stripe webhook: {json}");
-            return null;
-        }
+            var stripeEvent = string.IsNullOrEmpty(_settings.WebhookSecret) 
+                ? EventUtility.ParseEvent(json)
+                : EventUtility.ConstructEvent(json, signature, _settings.WebhookSecret);
 
-        if (obj == null)
-        {
-            return null;
-        }
-
-        var objData = obj["data"]?["object"];
-
-        var metadata = new Dictionary<string, string>();
-        var objMetadata = objData?["metadata"]?.AsObject();
-        if (objMetadata != null)
-        {
-            foreach (var kvp in objMetadata)
+            return stripeEvent.Type switch
             {
-                metadata[kvp.Key] = kvp.Value?.ToString() ?? string.Empty;
-            }
+                EventTypes.CheckoutSessionCompleted => ToCheckoutSessionCompleted(stripeEvent),
+                EventTypes.InvoicePaymentSucceeded => ToInvoicePaymentSucceeded(stripeEvent),
+                _ => null
+            };            
         }
+        catch (Exception ex)
+        {
+            await _loggingService.Error("Error handling Stripe webhook", ex);
+            return null;
+        }
+    }
+
+    private static PaymentProviderWebhook ToCheckoutSessionCompleted(Event stripeEvent)
+    {
+        var session = (Session)stripeEvent.Data.Object;
+        
+        return new PaymentProviderWebhook
+        {
+            Amount = session.AmountTotal > 0 
+                ? (decimal)(session.AmountTotal.Value / 100.0) 
+                : 0,
+            Complete = session.PaymentStatus == "paid",
+            Id = session.Id,
+            Metadata = session.Metadata,
+            OriginatedUtc = stripeEvent.Created,
+            PaymentId = session.PaymentIntentId,
+            PaymentProviderType = PaymentProviderType.Stripe,
+            SubscriptionId = null,
+            Type = PaymentProviderWebhookType.CheckoutSessionCompleted
+        };
+    }
+
+    private static PaymentProviderWebhook ToInvoicePaymentSucceeded(Event stripeEvent)
+    {
+        var invoice = (Invoice)stripeEvent.Data.Object;
 
         return new PaymentProviderWebhook
         {
-            Complete = objData?["status"]?.GetValue<string>() == "complete",
-            Id = objData?["id"]?.GetValue<string>() ?? string.Empty,
-            Metadata = metadata,
-            PaymentId = objData?["payment_intent"]?.GetValue<string>(),
+            Amount = (decimal)(invoice.AmountPaid / 100.0),
+            Complete = invoice.Status == "paid",
+            Id = invoice.Id,
+            Metadata = invoice.Parent.SubscriptionDetails.Metadata,
+            OriginatedUtc = stripeEvent.Created,
+            PaymentId = invoice.RawJObject.Value<string>("payment_intent"),
             PaymentProviderType = PaymentProviderType.Stripe,
-            SubscriptionId = null,
-            Type = obj["type"]?.GetValue<string>() == "checkout.session.completed"
-                ? PaymentProviderWebhookType.CheckoutSessionCompleted
-                : null
+            SubscriptionId = invoice.Parent.SubscriptionDetails.SubscriptionId,
+            Type = PaymentProviderWebhookType.InvoicePaymentSucceeded
         };
     }
 }

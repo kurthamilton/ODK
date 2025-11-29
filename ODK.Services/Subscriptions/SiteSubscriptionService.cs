@@ -110,7 +110,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             Id = Guid.NewGuid(),
             MemberId = memberId,
             PaidUtc = DateTime.UtcNow,
-            Reference = $"Subscription: {siteSubscription.Name}"
+            Reference = siteSubscription.ToReference()
         };
 
         _unitOfWork.PaymentRepository.Add(payment);
@@ -249,8 +249,9 @@ public class SiteSubscriptionService : ISiteSubscriptionService
     {
         var (memberId, platform) = (request.CurrentMemberId, request.Platform);
 
-        var (member, price, paymentSettings) = await _unitOfWork.RunAsync(
+        var (member, siteSubscription, price, paymentSettings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
+            x => x.SiteSubscriptionRepository.GetByPriceId(priceId),
             x => x.SiteSubscriptionPriceRepository.GetById(priceId),
             x => x.SitePaymentSettingsRepository.GetActive());
 
@@ -259,38 +260,51 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             throw new Exception("Error starting checkout session: siteSubscriptionPrice.ExternalId missing");
         }
 
-        var subscriptionPlan = await _paymentService.GetSubscriptionPlan(paymentSettings, price.ExternalId);
-        if (subscriptionPlan == null)
+        var externalSubscriptionPlan = await _paymentService.GetSubscriptionPlan(paymentSettings, price.ExternalId);
+        if (externalSubscriptionPlan == null)
         {
             throw new Exception("Error starting checkout session: subscriptionPlan not found");
         }
 
+        var utcNow = DateTime.UtcNow;
         var paymentCheckoutSessionId = Guid.NewGuid();
+        var paymentId = Guid.NewGuid();
 
-        var metadata = new PaymentMetadataModel
-        {
-            MemberId = memberId,
-            PaymentCheckoutSessionId = paymentCheckoutSessionId
-        };
+        var metadata = new PaymentMetadataModel(
+            member, 
+            price, 
+            paymentCheckoutSessionId: paymentCheckoutSessionId, 
+            paymentId: paymentId);
 
-        var session = await _paymentService.StartCheckoutSession(
-            request, paymentSettings, subscriptionPlan, returnPath, metadata);
+        var externalCheckoutSession = await _paymentService.StartCheckoutSession(
+            request, paymentSettings, externalSubscriptionPlan, returnPath, metadata);
 
         _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
         {
             Id = paymentCheckoutSessionId,
             MemberId = memberId,
             PaymentId = priceId,
-            SessionId = session.SessionId,
-            StartedUtc = DateTime.UtcNow
+            SessionId = externalCheckoutSession.SessionId,
+            StartedUtc = utcNow
+        });
+
+        _unitOfWork.PaymentRepository.Add(new Payment
+        {
+            Amount = price.Amount,
+            CreatedUtc = utcNow,
+            CurrencyId = price.CurrencyId,
+            ExternalId = externalCheckoutSession.PaymentId,
+            Id = paymentId,
+            MemberId = memberId,
+            Reference = siteSubscription.ToReference()
         });
 
         await _unitOfWork.SaveChangesAsync();
 
         return new SiteSubscriptionCheckoutViewModel
         {
-            ClientSecret = session.ClientSecret,
-            CurrencyCode = subscriptionPlan.CurrencyCode,
+            ClientSecret = externalCheckoutSession.ClientSecret,
+            CurrencyCode = externalSubscriptionPlan.CurrencyCode,
             PaymentSettings = paymentSettings,
             Platform = platform
         };

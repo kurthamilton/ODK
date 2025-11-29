@@ -13,7 +13,6 @@ using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
-using ODK.Services.Exceptions;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Notifications;
@@ -778,20 +777,18 @@ public class MemberService : IMemberService
             throw new Exception("Error starting checkout session: subscriptionPlan not found");
         }
 
+        var utcNow = DateTime.UtcNow;
         var paymentCheckoutSessionId = Guid.NewGuid();
         var paymentId = Guid.NewGuid();
 
-        var metadata = new PaymentMetadataModel
-        {
-            ChapterId = chapterSubscription.ChapterId,
-            ChapterSubscriptionId = chapterSubscriptionId,
-            MemberId = memberId,
-            PaymentCheckoutSessionId = paymentCheckoutSessionId,
-            PaymentId = paymentId
-        };
+        var metadata = new PaymentMetadataModel(
+            member, 
+            chapterSubscription,
+            paymentCheckoutSessionId: paymentCheckoutSessionId,
+            paymentId: paymentId);
 
         var externalCheckoutSession = await _paymentService.StartCheckoutSession(
-            request, paymentSettings, subscriptionPlan, returnPath, metadata);
+            request, paymentSettings, subscriptionPlan, returnPath, metadata);        
 
         _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
         {            
@@ -799,19 +796,19 @@ public class MemberService : IMemberService
             MemberId = memberId,
             PaymentId = chapterSubscriptionId,
             SessionId = externalCheckoutSession.SessionId,
-            StartedUtc = DateTime.UtcNow
+            StartedUtc = utcNow
         });
 
         _unitOfWork.PaymentRepository.Add(new Payment
         {
             Amount = (decimal)chapterSubscription.Amount,
             ChapterId = chapterSubscription.ChapterId,
-            CreatedUtc = DateTime.UtcNow,
+            CreatedUtc = utcNow,
             CurrencyId = chapterPaymentSettings.CurrencyId,
             ExternalId = externalCheckoutSession.PaymentId,
             Id = paymentId,
             MemberId = memberId,
-            Reference = $"Subscription: {chapterSubscription.Name}"
+            Reference = chapterSubscription.ToReference()
         });
 
         await _unitOfWork.SaveChangesAsync();

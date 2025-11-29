@@ -10,6 +10,8 @@ public interface ILoggingService
 
     Task Error(string message);
 
+    Task Error(string message, Exception exception);
+
     Task Error(Exception exception, HttpRequest request);
 
     Task Error(Exception exception, IDictionary<string, string> data);

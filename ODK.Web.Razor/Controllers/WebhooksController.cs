@@ -32,11 +32,12 @@ public class WebhooksController : OdkControllerBase
     [HttpPost("webhooks/stripe")]
     public async Task Stripe()
     {
+        var signature = Request.Headers["Stripe-Signature"];
         var json = await ReadBodyText();
 
         await _loggingService.Info($"Received Stripe webhook: {json}");
 
-        var webhook = await _stripeWebhookParser.ParseWebhook(json);
+        var webhook = await _stripeWebhookParser.ParseWebhook(json, signature);
         if (webhook == null)
         {
             return;

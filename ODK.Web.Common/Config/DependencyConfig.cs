@@ -102,6 +102,10 @@ public static class DependencyConfig
             ApiBaseUrl = payments.PayPal.ApiBaseUrl
         });
         services.AddScoped<IStripeWebhookParser, StripeWebhookParser>();
+        services.AddSingleton(new StripeWebhookParserSettings
+        {
+            WebhookSecret = appSettings.Payments.Stripe.WebhookSecret
+        });
     }
 
     private static void ConfigureServices(this IServiceCollection services, AppSettings appSettings)

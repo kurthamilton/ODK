@@ -749,6 +749,7 @@ public class MemberEmailService : IMemberEmailService
 
     public async Task SendPaymentNotification(
         ServiceRequest request, 
+        Member member,
         Payment payment, 
         Currency currency, 
         SiteEmailSettings settings)
@@ -756,7 +757,7 @@ public class MemberEmailService : IMemberEmailService
         var to = new EmailAddressee(settings.ContactEmailAddress, "");
         var subject = "{title} - Payment Received";
         var body = 
-            $"<p>A payment has been received for {currency.ToAmountString(payment.Amount)}</p>" +
+            $"<p>A payment has been received for {currency.ToAmountString(payment.Amount)}.</p>" +
             $"<p>Reference: {payment.Reference}</p>";
 
         await _emailService.SendEmail(
@@ -764,6 +765,18 @@ public class MemberEmailService : IMemberEmailService
             null, 
             [to], 
             subject, 
+            body);
+
+        to = new EmailAddressee(member.EmailAddress, member.FullName);
+        body =
+            $"<p>Your payment of {currency.ToAmountString(payment.Amount)} has been processed.</p>" +
+            $"<p>Reference: {payment.Reference}</p>";
+
+        await _emailService.SendEmail(
+            request,
+            null,
+            [to],
+            subject,
             body);
     }
 
