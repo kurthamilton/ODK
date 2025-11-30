@@ -6,19 +6,28 @@
 @using ODK.Services.Chapters
 @using ODK.Services.Members
 @using ODK.Services.Payments
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
-@model ODK.Web.Razor.Models.Account.ChapterSubscriptionContentViewModel
+@model OdkComponentViewModel<Chapter>
 @inject IChapterService ChapterService
 @{
-    var memberId = User.MemberId();
-    var dto = await ChapterService.GetChapterMemberSubscriptionsDto(memberId, Model.Chapter);
+    var (chapter, memberId) = (Model.Value, Model.Context.CurrentMemberId);
+    var dto = await ChapterService.GetChapterMemberSubscriptionsViewModel(memberId, chapter);
 
-    var (memberSubscription, chapterSubscriptions, paymentSettings, currency, externalSubscription) = 
-        (dto.MemberSubscription, dto.ChapterSubscriptions, dto.PaymentSettings, dto.Currency, dto.ExternalSubscription);
+    var (currentSubscription, 
+        memberSubscription, 
+        chapterSubscriptions, 
+        paymentSettings, 
+        currency, 
+        externalSubscription) = 
+        (dto.CurrentSubscription, 
+        dto.MemberSubscription, 
+        dto.ChapterSubscriptions, 
+        dto.PaymentSettings, 
+        dto.Currency, 
+        dto.ExternalSubscription);
 
     var title = memberSubscription == null || memberSubscription.Type == SubscriptionType.Trial 
         ? "Purchase membership" 
@@ -34,9 +43,13 @@
 }
 
 <div class="form-group mb-3">
-    <label class="form-label">Membership type</label>
+    <label class="form-label">Membership</label>
     <div class="form-control-plaintext">
-        @if (memberSubscription != null)
+        @if (currentSubscription != null)
+        {
+            <span>@currentSubscription.Name</span>
+        }
+        else if (memberSubscription != null)
         {
             <span>@memberSubscription.Type</span>
         }
@@ -53,7 +66,7 @@
         @if (memberSubscription?.ExpiresUtc != null)
         {
             <span>
-                @Model.Chapter.ToLocalTime(memberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")
+                @chapter.ToLocalTime(memberSubscription.ExpiresUtc.Value).ToString("d MMMM yyyy")
             </span>
         }
         else
@@ -71,14 +84,14 @@
             <label class="form-label">Next payment date</label>
             <div class="form-control-plaintext">
                 <span>
-                    @Model.Chapter.ToLocalTime(externalSubscription.NextBillingDate.Value).ToString("d MMMM yyyy")
+                    @chapter.ToLocalTime(externalSubscription.NextBillingDate.Value).ToString("d MMMM yyyy")
                 </span>
             </div>
         </div>
     }    
 
     <div>
-        <form action="/Chapters/@Model.Chapter.Id/Account/Subscription/Cancel" method="post">
+        <form action="/Chapters/@chapter.Id/Account/Subscription/Cancel" method="post">
             <input type="hidden" name="@nameof(CancelSubscriptionRequest.ExternalId)" value="@externalSubscription.ExternalId" />
             <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription?');">
                 Cancel subscription
@@ -112,9 +125,9 @@ else
                     }
 
                     <div>
-                        @if (Model.PaymentSettings?.Provider == PaymentProviderType.Stripe)
+                        @if (paymentSettings?.Provider == PaymentProviderType.Stripe)
                         {
-                            <a class="btn btn-primary mr-1" href="/@Model.Chapter.Name/account/subscription/@chapterSubscription.Id/checkout">
+                            <a class="btn btn-primary mr-1" href="/@chapter.Name/account/subscription/@chapterSubscription.Id/checkout">
                                 Purchase
                             </a>
                         }
@@ -130,8 +143,8 @@ else
 
                         @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                        {
-                           Action = $"/Chapters/{Model.Chapter.Id}/Account/Subscription/Purchase",
-                           PaymentSettings = Model.PaymentSettings,
+                           Action = $"/Chapters/{chapter.Id}/Account/Subscription/Purchase",
+                           PaymentSettings = paymentSettings,
                            FormContentFunc =
                                 @<input type="hidden" name="subscriptionId" value="@chapterSubscription.Id" />,
                            Id = modalId,
