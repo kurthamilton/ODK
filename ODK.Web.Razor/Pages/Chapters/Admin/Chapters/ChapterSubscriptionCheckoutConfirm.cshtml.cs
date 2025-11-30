@@ -1,7 +1,9 @@
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using ODK.Core.Chapters;
+using ODK.Core.Payments;
+using ODK.Services;
 using ODK.Services.Caching;
-using ODK.Services.Subscriptions;
+using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 
@@ -9,42 +11,45 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Chapters;
 
 public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
 {
-    private readonly ISiteSubscriptionService _siteSubscriptionService;
+    private readonly IChapterAdminService _chapterAdminService;
 
     public ChapterSubscriptionCheckoutConfirmModel(
         IRequestCache requestCache,
-        ISiteSubscriptionService siteSubscriptionService) 
+        IChapterAdminService chapterAdminService) 
         : base(requestCache)
     {
-        _siteSubscriptionService = siteSubscriptionService;
+        _chapterAdminService = chapterAdminService;
     }
+
+    public string RedirectUrl => OdkRoutes.MemberGroups.GroupSubscription(Platform, Chapter);
+
+    public string? SessionId { get; set; }
+
+    public Guid SubscriptionId { get; set; }
 
     public async Task<IActionResult> OnGet(Guid id, string sessionId)
     {
-        var chapter = await LoadChapter();
+        SessionId = sessionId;
+        SubscriptionId = id;
 
-        var url = OdkRoutes.MemberGroups.GroupSubscription(Platform, chapter);
+        await LoadChapter();
 
-        var memberId = chapter.OwnerId;
-        if (memberId == null)
-        {
-            return Redirect(url);
-        }
+        var request = MemberChapterServiceRequest(Chapter.Id);
+        var status = await _chapterAdminService.GetChapterPaymentCheckoutSessionStatus(
+            request, sessionId);
 
-        var result = await _siteSubscriptionService.CompleteSiteSubscriptionCheckoutSession(
-            MemberServiceRequest, id, sessionId);
-
-        var requestUrl = Request.GetDisplayUrl();
-
-        if (result)
+        if (status == PaymentStatusType.Complete)
         {
             AddFeedback("Purchase complete", FeedbackType.Success);
+            return Redirect(RedirectUrl);
         }
-        else
+
+        if (status == PaymentStatusType.Expired)
         {
             AddFeedback("Purchase not successful. Please try again", FeedbackType.Error);
+            return Redirect(RedirectUrl);
         }
-        
-        return Redirect(url);
+
+        return Page();
     }
 }

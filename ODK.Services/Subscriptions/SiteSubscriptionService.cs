@@ -31,101 +31,6 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<bool> CompleteSiteSubscriptionCheckoutSession(
-        MemberServiceRequest request, Guid siteSubscriptionPriceId, string sessionId)
-    {
-        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
-
-        var (member, siteSubscriptionPrice, paymentCheckoutSession) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
-            x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId),
-            x => x.PaymentCheckoutSessionRepository.GetByMemberId(memberId, sessionId));
-
-        var siteSubscription = await _unitOfWork.SiteSubscriptionRepository
-            .GetById(siteSubscriptionPrice.SiteSubscriptionId)
-            .Run();
-
-        if (paymentCheckoutSession == null || paymentCheckoutSession.CompletedUtc != null)
-        {
-            return false;
-        }
-
-        var (paymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, platform));
-
-        if (string.IsNullOrEmpty(siteSubscriptionPrice.ExternalId))
-        {
-            throw new Exception("Error completing checkout session: siteSubscriptionPrice.ExternalId missing");
-        }
-
-        var subscriptionPlan = await _paymentService.GetSubscriptionPlan(
-            paymentSettings, siteSubscriptionPrice.ExternalId);
-        if (subscriptionPlan == null)
-        {
-            throw new Exception("Error completing checkout session: subscriptionPlan not found");
-        }
-
-        var checkoutSession = await _paymentService.GetCheckoutSession(paymentSettings, sessionId);
-        if (checkoutSession?.Complete != true)
-        {
-            return false;
-        }
-
-        memberSubscription ??= new MemberSiteSubscription();
-
-        var now = memberSubscription.ExpiresUtc > DateTime.UtcNow 
-            ? memberSubscription.ExpiresUtc.Value 
-            : DateTime.UtcNow;
-        var months = siteSubscriptionPrice.Frequency == SiteSubscriptionFrequency.Yearly
-            ? 12
-            : 1;
-
-        var expiresUtc = now.AddMonths(months);
-        memberSubscription.ExpiresUtc = expiresUtc;
-        memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
-        memberSubscription.SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId;
-        memberSubscription.PaymentProvider = paymentSettings.Provider;
-
-        if (memberSubscription.Id == default)
-        {
-            memberSubscription.Id = Guid.NewGuid();
-            memberSubscription.MemberId = memberId;            
-            _unitOfWork.MemberSiteSubscriptionRepository.Add(memberSubscription);
-        }
-        else
-        {
-            _unitOfWork.MemberSiteSubscriptionRepository.Update(memberSubscription);
-        }
-
-        paymentCheckoutSession.CompletedUtc = DateTime.UtcNow;
-        _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
-
-        var payment = new Payment
-        {
-            Amount = siteSubscriptionPrice.Amount,
-            ChapterId = null,
-            CurrencyId = siteSubscriptionPrice.CurrencyId,
-            ExternalId = checkoutSession.SessionId,
-            Id = Guid.NewGuid(),
-            MemberId = memberId,
-            PaidUtc = DateTime.UtcNow,
-            Reference = siteSubscription.ToReference()
-        };
-
-        _unitOfWork.PaymentRepository.Add(payment);
-
-        await _unitOfWork.SaveChangesAsync();
-
-        var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
-        var currency = siteSubscriptionPrice.Currency;
-        
-        // TODO: handle in webhook
-        await _memberEmailService.SendPaymentNotification(null, payment, currency, siteEmailSettings);
-
-        return true;
-    }
-
     public async Task<ServiceResult> ConfirmMemberSiteSubscription(
         MemberServiceRequest request, 
         Guid siteSubscriptionPriceId, 
@@ -181,6 +86,25 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         return await _unitOfWork.MemberSiteSubscriptionRepository
             .GetByMemberId(memberId, platform)
             .Run();
+    }
+
+    public async Task<PaymentStatusType> GetMemberSiteSubscriptionPaymentCheckoutSessionStatus(
+        MemberServiceRequest request, string externalSessionId)
+    {
+        var (sitePaymentSettings, checkoutSession) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
+        
+        if (checkoutSession.CompletedUtc != null)
+        {
+            return PaymentStatusType.Complete;
+        }
+
+        var externalSession = await _paymentService.GetCheckoutSession(sitePaymentSettings, externalSessionId);
+
+        return externalSession == null
+            ? PaymentStatusType.Expired
+            : PaymentStatusType.Pending;
     }
 
     public async Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(

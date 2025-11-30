@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Members;
-using ODK.Services.Members.ViewModels;
 using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
@@ -20,7 +19,7 @@ public class PaymentsController : OdkControllerBase
         _memberService = memberService;
     }
 
-    [HttpGet("groups/{groupId}/payments/sessions/{id}/status")]
+    [HttpGet("payments/sessions/{id}/status")]
     public async Task<IActionResult> GetSessionStatus(string id, Guid groupId)
     {
         var request = MemberChapterServiceRequest(groupId);
@@ -28,7 +27,7 @@ public class PaymentsController : OdkControllerBase
         
         return Ok(new
         {
-            status
+            status = status.ToString()
         });
     }
 }

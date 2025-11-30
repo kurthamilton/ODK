@@ -6,6 +6,7 @@ using ODK.Core.Extensions;
 using ODK.Core.Features;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
+using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Core.Web;
 using ODK.Data.Core;
@@ -20,6 +21,7 @@ using ODK.Services.Notifications;
 using ODK.Services.Payments;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
+using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
 
 namespace ODK.Services.Chapters;
@@ -34,6 +36,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly INotificationService _notificationService;
     private readonly IPaymentService _paymentService;
     private readonly ChapterAdminServiceSettings _settings;
+    private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -47,7 +50,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         IMemberEmailService memberEmailService,
         ITopicService topicService,
         IPaymentService paymentService,
-        ChapterAdminServiceSettings settings)
+        ChapterAdminServiceSettings settings,
+        ISiteSubscriptionService siteSubscriptionService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
@@ -58,6 +62,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _notificationService = notificationService;
         _paymentService = paymentService;
         _settings = settings;
+        _siteSubscriptionService = siteSubscriptionService;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
@@ -988,6 +993,23 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     {
         return await GetChapterAdminRestrictedContent(request,
             x => x.ChapterQuestionRepository.GetByChapterId(request.ChapterId));
+    }
+
+    public async Task<PaymentStatusType> GetChapterPaymentCheckoutSessionStatus(
+        MemberChapterServiceRequest request, string externalSessionId)
+    {
+        var chapter = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
+
+        if (chapter.OwnerId == null)
+        {
+            throw new OdkServiceException("Chapter owner not found");
+        }
+
+        var chapterOwnerRequest = new MemberServiceRequest(chapter.OwnerId.Value, request);
+        
+        return await _siteSubscriptionService.GetMemberSiteSubscriptionPaymentCheckoutSessionStatus(
+            chapterOwnerRequest, externalSessionId);
     }
 
     public async Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(MemberChapterServiceRequest request)

@@ -89,8 +89,8 @@ public class StripePaymentProvider : IPaymentProvider
     public async Task<string?> CreateSubscriptionPlan(ExternalSubscriptionPlan subscriptionPlan)
     {
         var service = CreatePriceService();
-        
-        var result = await service.CreateAsync(new PriceCreateOptions
+
+        var options = new PriceCreateOptions
         {
             Active = false,
             Currency = subscriptionPlan.CurrencyCode.ToLowerInvariant(),
@@ -112,7 +112,9 @@ public class StripePaymentProvider : IPaymentProvider
                 }
             } : null,
             UnitAmountDecimal = subscriptionPlan.Amount * 100
-        });
+        };
+
+        var result = await service.CreateAsync(options);
         
         return result.Id;
     }

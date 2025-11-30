@@ -13,8 +13,6 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription pending confirmation";
 
-    var request = Model.MemberChapterServiceRequest();
-
     var subscriptionUrl = Model.RedirectUrl;
 }
 
@@ -39,8 +37,7 @@
                 <h2>Checkout</h2>
                 <section class="section">
                     <div data-odk-checkout
-                         data-odk-checkout-redirect="@subscriptionUrl"
-                         data-odk-polling-url="/groups/@Model.Chapter.Id/payments/sessions/@Model.SessionId/status">
+                         data-odk-polling-url="/payments/sessions/@Model.SessionId/status?groupId=@Model.Chapter.Id">
 
                         <div data-odk-checkout-status="@PaymentStatusType.Complete"
                              data-odk-checkout-action="reload">

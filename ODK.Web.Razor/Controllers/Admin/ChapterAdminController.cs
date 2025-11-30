@@ -127,6 +127,18 @@ public class ChapterAdminController : AdminControllerBase
         return RedirectToReferrer();
     }
 
+    [HttpGet("groups/{groupId}/payments/sessions/{id}/status")]
+    public async Task<IActionResult> GetPaymentSessionStatus(string id, Guid groupId)
+    {
+        var request = MemberChapterServiceRequest(groupId);
+        var status = await _chapterAdminService.GetChapterPaymentCheckoutSessionStatus(request, id);
+
+        return Ok(new
+        {
+            status = status.ToString()
+        });
+    }
+
     [HttpPost("groups/{id:guid}/privacy")]
     public async Task<IActionResult> UpdatePrivacySettings(Guid id, [FromForm] ChapterPrivacySettingsFormViewModel viewModel)
     {
