@@ -7,16 +7,16 @@ namespace ODK.Web.Razor.Pages;
 
 public class SitemapModel : OdkPageModel
 {
+    private readonly Lazy<string> _baseUrl;
     private readonly IChapterService _chapterService;
     
     public SitemapModel(IChapterService chapterService)
     {
-        _chapterService = chapterService;
-
-        BaseUrl = UrlUtils.BaseUrl(HttpRequestContext.RequestUrl);
+        _baseUrl = new(() => UrlUtils.BaseUrl(HttpRequestContext.RequestUrl));
+        _chapterService = chapterService;        
     }
 
-    public string BaseUrl { get; }
+    public string BaseUrl => _baseUrl.Value;
 
     public async Task<IReadOnlyCollection<SitemapNodeModel>> GetSitemapNodes()
     {
