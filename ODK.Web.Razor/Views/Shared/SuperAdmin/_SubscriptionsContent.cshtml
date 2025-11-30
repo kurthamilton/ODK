@@ -1,4 +1,5 @@
 ﻿@using ODK.Services.Subscriptions
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
 @inject IRequestStore RequestStore
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
@@ -40,7 +41,10 @@
                             </span>
                             @if (subscription.SitePaymentSettings.Active)
                             {
-                                <i class="fa-solid fa-circle-check text-success"></i>
+                                @await Html.PartialAsync("Components/Icons/_CircleCheck", new IconViewModel
+                                {
+                                    Class = "text-success"
+                                })
                             }
                         </td>
                         <td>
@@ -48,7 +52,10 @@
                             {
                                 <form action="/superadmin/subscriptions/@subscription.Id/disable" method="post">
                                     <button class="btn btn-icon">
-                                        <i class="fa-solid fa-circle-check text-success"></i>
+                                        @await Html.PartialAsync("Components/Icons/_CircleCheck", new IconViewModel
+                                        {
+                                            Class = "text-success"
+                                        })
                                     </button>                                    
                                 </form>                                
                             }

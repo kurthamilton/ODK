@@ -110,7 +110,7 @@
                                             <button data-bs-toggle="tooltip" data-bs-title="Remove"
                                                     class="btn-icon text-danger"
                                                     onclick="return confirm('Are you sure you want to remove admin access for this member?');">
-                                                <i class="fas fa-times"></i>
+                                                @await Html.PartialAsync("Components/Icons/_Times")
                                             </button>
                                         </form>
                                     }          

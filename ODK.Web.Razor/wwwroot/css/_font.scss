@@ -7,7 +7,7 @@
 @mixin odk-icons-times {
     &:before {
         content: "\f00d";
-        font-family: 'Font Awesome 6 Free';
+        font-family: var(--fa-family,var(--fa-style-family,"Font Awesome 7 Free"));
         font-weight: 900;
         font-style: normal;
         font-variant: normal;

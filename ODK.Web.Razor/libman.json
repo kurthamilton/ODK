@@ -7,7 +7,7 @@
       "destination": "wwwroot/lib/bootstrap/"
     },
     {
-      "library": "font-awesome@6.6.0",
+      "library": "font-awesome@7.0.1",
       "destination": "wwwroot/lib/font-awesome/"
     },
     {
@@ -23,7 +23,7 @@
     },
     {
       "provider": "cdnjs",
-      "library": "slim-select@2.10.0",
+      "library": "slim-select@2.13.1",
       "destination": "wwwroot/lib/slim-select/"
     },
     {
@@ -33,7 +33,7 @@
     },
     {
       "provider": "cdnjs",
-      "library": "tinymce@7.5.0",
+      "library": "tinymce@8.1.2",
       "destination": "wwwroot/lib/tinymce/"
     },
     {

@@ -7,6 +7,7 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model ChapterMessagesAdminPageViewModel
 
 @await Html.PartialAsync("Admin/Chapter/_MessagesTabs", Model)
@@ -40,7 +41,10 @@
                                 <td>
                                     @if (message.RepliedUtc != null)
                                     {
-                                        <i class="fas fa-check-circle text-success"></i>
+                                        @await Html.PartialAsync("Components/Icons/_CircleCheck", new IconViewModel
+                                        {
+                                            Class = "text-success"
+                                        })
                                     }
                                 </td>
                                 <td>
@@ -51,7 +55,7 @@
                                         @*@Html.AntiForgeryToken()*@
                                         <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
                                                 onclick="return confirm('Are you sure you want to delete this message?');">
-                                            <i class="fas fa-times"></i>
+                                            @await Html.PartialAsync("Components/Icons/_Times")
                                         </button>
                                     </form>
                                 </td>

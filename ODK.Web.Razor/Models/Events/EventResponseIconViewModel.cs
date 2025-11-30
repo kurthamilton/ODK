@@ -10,9 +10,9 @@ public class EventResponseIconViewModel
 
     public string IconClass => CurrentResponse switch
     {
-        EventResponseType.Yes => "fa-check-circle",
-        EventResponseType.Maybe => "fa-question-circle",
-        EventResponseType.No => "fa-times-circle",
+        EventResponseType.Yes => "fa-circle-check",
+        EventResponseType.Maybe => "fa-circle-question",
+        EventResponseType.No => "fa-circle-xmark",
         _ => ""
     };
 

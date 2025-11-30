@@ -10,7 +10,10 @@
 
     <div>        
         <a class="social-media-link" href="@url" target="_blank">
-            <i class="social-media-icon--instagram fa-brands fa-instagram @sizeClass"></i>
+            @await Html.PartialAsync("Components/Icons/_Instagram", new IconViewModel
+            {
+                Class = $"social-media-icon--instagram {sizeClass}"
+            })
             @if (Model.ShowNames)
             {
                 <span>@Model.Instagram</span>
@@ -25,7 +28,10 @@
 
     <div>        
         <a class="social-media-link" href="@url" target="_blank">
-            <i class="social-media-icon--facebook fa-brands fa-facebook-f @sizeClass"></i>
+            @await Html.PartialAsync("Components/Icons/_Facebook", new IconViewModel
+            {
+                Class = $"social-media-icon--facebook {sizeClass}"
+            })
             
             @if (Model.ShowNames)
             {
@@ -41,7 +47,10 @@
 
     <div>
         <a class="social-media-link" href="@url" target="_blank">
-            <i class="social-media-icon--twitter fa-brands fa-x-twitter @sizeClass"></i>
+            @await Html.PartialAsync("Components/Icons/_Twitter", new IconViewModel
+            {
+                Class = $"social-media-icon--twitter {sizeClass}"
+            })
 
             @if (Model.ShowNames)
             {

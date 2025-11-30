@@ -1,6 +1,11 @@
-﻿@model string
+﻿@using ODK.Web.Razor.Models.Components
+@model string
 
-<i class="fab fa-instagram mr-1"></i>
+@await Html.PartialAsync("Components/Icons/_Instagram", new IconViewModel
+{
+    Class = "mr-1"
+})
+
 <a href="https://www.instagram.com/@Model" target="_blank">
     @Model
 </a>

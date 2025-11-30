@@ -3,6 +3,7 @@
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Members
 @model MembersAdminPageViewModel
 @inject IAuthorizationService AuthorizationService
@@ -134,11 +135,17 @@
                             <td>
                                 @if (!optOutMemberIds.Contains(member.Id))
                                 {
-                                    <i class="fas fa-check-circle text-success"></i>
+                                    @await Html.PartialAsync("Components/Icons/_CircleCheck", new IconViewModel
+                                    {
+                                        Class = "text-success"
+                                    })
                                 }
                                 else
                                 {
-                                    <i class="fas fa-times-circle text-danger"></i>
+                                    @await Html.PartialAsync("Components/Icons/_TimesCircle", new IconViewModel
+                                    {
+                                        Class = "text-danger"
+                                    })
                                 }
                             </td>
                             <td>

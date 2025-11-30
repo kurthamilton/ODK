@@ -8,6 +8,7 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model EventsAdminPageViewModel
 @{
     var (events, venues, allInvites, allResponses) = 
@@ -39,10 +40,25 @@
                             <th>Name</th>
                             <th>Date</th>
                             <th>Venue</th>
-                            <th><i class="fas fa-envelope"></i></th>
-                            <th><i class="fas fa-check-circle text-success"></i></th>
-                            <th><i class="fas fa-question-circle text-warning"></i></th>
-                            <th><i class="fas fa-times-circle text-danger"></i></th>
+                            <th>@await Html.PartialAsync("Components/Icons/_Envelope")</th>
+                            <th>
+                            @await Html.PartialAsync("Components/Icons/_CircleCheck", new IconViewModel
+                                {
+                                    Class = "text-success"
+                                })
+                            </th>
+                            <th>
+                                @await Html.PartialAsync("Components/Icons/_QuestionCircle", new IconViewModel
+                                {
+                                    Class = "text-warning"
+                                })
+                            </th>
+                            <th>
+                                @await Html.PartialAsync("Components/Icons/_TimesCircle", new IconViewModel
+                                {
+                                    Class = "text-danger"
+                                })
+                            </th>
                         </tr>
                     </thead>
                     <tbody>

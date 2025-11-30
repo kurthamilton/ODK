@@ -151,7 +151,7 @@
             {
                 <div class="input-group">
                     <span class="input-group-text">
-                        <i class="fab fa-facebook-f"></i>
+                        @await Html.PartialAsync("Components/Icons/_Facebook")
                     </span>
                     @Html.TextBoxFor(x => x.Properties[i].Value, htmlAttributes)
                 </div>
