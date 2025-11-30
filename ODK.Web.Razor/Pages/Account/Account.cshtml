@@ -11,7 +11,7 @@
     Layout = "_AccountLayout";
     Model.Title = "Profile";
 
-    var member = await MemberService.GetMember(Model.CurrentMemberId);
+    var member = await MemberService.GetMember(Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

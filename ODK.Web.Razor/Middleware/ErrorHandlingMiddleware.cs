@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Diagnostics;
+﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using ODK.Core.Exceptions;
@@ -8,6 +7,8 @@ using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 using ODK.Services.Logging;
 using ODK.Web.Common.Config.Settings;
+using ODK.Web.Razor.Services;
+using System.Text.RegularExpressions;
 using HttpRequest = ODK.Services.Logging.HttpRequest;
 
 namespace ODK.Web.Razor.Middleware;
@@ -26,7 +27,8 @@ public class ErrorHandlingMiddleware
         IRequestCache requestCache, 
         ILoggingService loggingService,
         IUnitOfWork unitOfWork,
-        AppSettings appSettings)
+        AppSettings appSettings,
+        IRequestStore requestStore)
     {
         try
         {
@@ -49,11 +51,15 @@ public class ErrorHandlingMiddleware
                 _ => 500
             };
 
-            await HandleAsync(context, requestCache, unitOfWork);            
+            await HandleAsync(context, requestCache, unitOfWork, requestStore);            
         }                
     }
 
-    private async Task HandleAsync(HttpContext httpContext, IRequestCache requestCache, IUnitOfWork unitOfWork)
+    private async Task HandleAsync(
+        HttpContext httpContext, 
+        IRequestCache requestCache, 
+        IUnitOfWork unitOfWork, 
+        IRequestStore requestStore)
     {
         var request = httpContext.Request;
         var response = httpContext.Response;
@@ -61,7 +67,7 @@ public class ErrorHandlingMiddleware
         var originalMethod = request.Method;
         var originalPath = request.Path;
 
-        var path = await GetErrorPath(httpContext, requestCache, unitOfWork);
+        var path = await GetErrorPath(httpContext, requestCache, unitOfWork, requestStore);
 
         ResetHttpContext(httpContext);
 
@@ -80,7 +86,8 @@ public class ErrorHandlingMiddleware
         }
     }
 
-    private async Task<string?> GetErrorPath(HttpContext context, IRequestCache requestCache, IUnitOfWork unitOfWork)
+    private async Task<string?> GetErrorPath(
+        HttpContext context, IRequestCache requestCache, IUnitOfWork unitOfWork, IRequestStore requestStore)
     {
         var statusCode = context.Response.StatusCode;
         var defaultPath = $"/error/{statusCode}";
@@ -107,7 +114,7 @@ public class ErrorHandlingMiddleware
             var chapterName = originalPathParts[1];
             try
             {
-                var chapter = await requestCache.GetChapterAsync(chapterName);
+                var chapter = await requestCache.GetChapterAsync(requestStore.Platform, chapterName);
                 if (chapter != null)
                 {
                     return $"/{chapter.Name}/error/{statusCode}";

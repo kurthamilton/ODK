@@ -25,8 +25,9 @@ public class ActivateModel : ChapterPageModel2
 
     public async Task<IActionResult> OnPostAsync(string token, ActivateFormViewModel viewModel)
     {
-        var chapter = await _requestCache.GetChapterAsync(ChapterName);
-        var result = await _authenticationService.ActivateChapterAccountAsync(chapter.Id, token, viewModel.Password);
+        var chapter = await _requestCache.GetChapterAsync(Platform, ChapterName);
+        var result = await _authenticationService.ActivateChapterAccountAsync(
+            ServiceRequest, chapter.Id, token, viewModel.Password);
         if (!result.Success)
         {
             AddFeedback(new FeedbackViewModel(result));

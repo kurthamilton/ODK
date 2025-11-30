@@ -20,7 +20,8 @@
         TopicGroup = Model.TopicGroup
     };
 
-    var viewModel = await ChapterViewModelService.FindGroups(Model.CurrentMemberIdOrDefault, filter);
+    var viewModel = await ChapterViewModelService.FindGroups(
+        Model.Platform, Model.CurrentMemberIdOrDefault, filter);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

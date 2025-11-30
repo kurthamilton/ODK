@@ -1,6 +1,5 @@
 ﻿using ODK.Core;
 using ODK.Core.Issues;
-using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Issues.Models;
 using ODK.Services.Members;
@@ -10,27 +9,24 @@ namespace ODK.Services.Issues;
 public class IssueService : IIssueService
 {
     private readonly IMemberEmailService _memberEmailService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public IssueService(
         IUnitOfWork unitOfWork,
-        IMemberEmailService memberEmailService,
-        IPlatformProvider platformProvider)
+        IMemberEmailService memberEmailService)
     {
         _memberEmailService = memberEmailService;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> CreateIssue(Guid currentMemberId, IssueCreateModel model)
+    public async Task<ServiceResult> CreateIssue(MemberServiceRequest request, IssueCreateModel model)
     {
         if (string.IsNullOrWhiteSpace(model.Title) || string.IsNullOrWhiteSpace(model.Message))
         {
             return ServiceResult.Failure("Title and message cannot be empty");
         }
 
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (member, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
@@ -59,7 +55,12 @@ public class IssueService : IIssueService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendNewIssueEmail(member, issue, issueMessage, siteEmailSettings);
+        await _memberEmailService.SendNewIssueEmail(
+            request, 
+            member, 
+            issue, 
+            issueMessage, 
+            siteEmailSettings);
 
         return ServiceResult.Successful();
     }
@@ -91,9 +92,9 @@ public class IssueService : IIssueService
         };
     }
 
-    public async Task<ServiceResult> ReplyToIssue(Guid currentMemberId, Guid issueId, string message)
+    public async Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (issue, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.IssueRepository.GetById(issueId),
@@ -117,7 +118,12 @@ public class IssueService : IIssueService
         _unitOfWork.IssueMessageRepository.Add(issueMessage);
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendIssueReply(issue, issueMessage, null, siteEmailSettings);
+        await _memberEmailService.SendIssueReply(
+            request, 
+            issue, 
+            issueMessage, 
+            null, 
+            siteEmailSettings);
 
         return ServiceResult.Successful();
     }

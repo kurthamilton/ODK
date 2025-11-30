@@ -7,7 +7,7 @@ public interface ITopicAdminService
 {
     Task<ServiceResult> AddTopic(Guid currentMemberId, Guid topicGroupId, string name);
 
-    Task ApproveTopics(Guid currentMemberId, ApproveTopicsModel approved, ApproveTopicsModel rejected);
+    Task ApproveTopics(MemberServiceRequest request, ApproveTopicsModel approved, ApproveTopicsModel rejected);
 
     Task<TopicsAdminPageViewModel> GetTopicsAdminPageViewModel(Guid currentMemberId);
 }

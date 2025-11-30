@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Chapters;
 using ODK.Web.Razor.Models.Topics;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.Admin;
 
@@ -14,7 +14,10 @@ public class GroupAdminController : OdkControllerBase
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public GroupAdminController(IChapterAdminService chapterAdminService)
+    public GroupAdminController(
+        IChapterAdminService chapterAdminService,
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _chapterAdminService = chapterAdminService;
     }
@@ -23,7 +26,7 @@ public class GroupAdminController : OdkControllerBase
     public async Task<IActionResult> StartConversation(Guid id,
         [FromForm] ChapterAdminStartConversationFormViewModel viewModel)
     {
-        var request = new AdminServiceRequest(id, MemberId);
+        var request = MemberChapterServiceRequest(id);
         await _chapterAdminService.StartConversation(request, viewModel.MemberId, 
             viewModel.Subject ?? "", viewModel.Message ?? "");
         AddFeedback("Message sent", FeedbackType.Success);
@@ -34,7 +37,7 @@ public class GroupAdminController : OdkControllerBase
     public async Task<IActionResult> ReplyToConversation(Guid id, Guid conversationId,
         [FromForm] ChapterConversationReplyFormViewModel viewModel)
     {
-        var request = new AdminServiceRequest(id, MemberId);
+        var request = MemberChapterServiceRequest(id);
         var result = await _chapterAdminService.ReplyToConversation(request, conversationId, viewModel.Message ?? "");
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
@@ -43,24 +46,24 @@ public class GroupAdminController : OdkControllerBase
     [HttpPost("admin/groups/{id:guid}/description")]
     public async Task<IActionResult> UpdateDescription(Guid id, [FromForm] string description)
     {
-        await _chapterAdminService.UpdateChapterDescription(
-            new AdminServiceRequest(id, MemberId), description);
+        var request = MemberChapterServiceRequest(id);
+        await _chapterAdminService.UpdateChapterDescription(request, description);
         return RedirectToReferrer();
     }
 
     [HttpPost("admin/groups/{id:guid}/texts/register")]
     public async Task<IActionResult> UpdateRegisterText(Guid id, [FromForm] string text)
     {
-        await _chapterAdminService.UpdateChapterDescription(
-            new AdminServiceRequest(id, MemberId), text);
+        var request = MemberChapterServiceRequest(id);
+        await _chapterAdminService.UpdateChapterDescription(request, text);
         return RedirectToReferrer();
     }
 
     [HttpPost("admin/groups/{id:guid}/topics")]
     public async Task<IActionResult> UpdateTopics(Guid id, [FromForm] TopicPickerViewModel viewModel)
     {
-        var result = await _chapterAdminService.UpdateChapterTopics(
-            new AdminServiceRequest(id, MemberId), viewModel.TopicIds ?? []);
+        var request = MemberChapterServiceRequest(id);
+        var result = await _chapterAdminService.UpdateChapterTopics(request, viewModel.TopicIds ?? []);
         AddFeedback(result, "Topics updated");
         return RedirectToReferrer();
     }

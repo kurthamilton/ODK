@@ -12,7 +12,8 @@
     Model.Title = "Contact";
     Model.Description = "Form for sending messages to the owners of this Drunken Knitwits chapter";    
 
-    var viewModel = await ChapterViewModelService.GetGroupContactPage(Model.CurrentMemberIdOrDefault, Model.Chapter.Slug);
+    var viewModel = await ChapterViewModelService.GetGroupContactPage(
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter.Slug);
 
     Model.Path = $"/{viewModel.Chapter.Name}/contact";
 }

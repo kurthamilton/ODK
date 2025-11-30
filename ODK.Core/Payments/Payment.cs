@@ -2,19 +2,27 @@
 
 public class Payment : IDatabaseEntity
 {
+    public Payment()
+    {
+    }
+
     public decimal Amount { get; set; }
 
     public Guid? ChapterId { get; set; }
+
+    public DateTime? CreatedUtc { get; set; }
 
     public Guid CurrencyId { get; set; }
 
     public bool ExemptFromReconciliation { get; set; }
 
+    public string? ExternalId { get; set; }
+
     public Guid Id { get; set; }
 
     public Guid MemberId { get; set; }
 
-    public DateTime PaidUtc { get; set; }
+    public DateTime? PaidUtc { get; set; }
 
     public decimal? PaymentReconciliationAmount { get; set; }
 

@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
@@ -25,6 +22,7 @@ using ODK.Services.Integrations.Imaging;
 using ODK.Services.Integrations.OAuth;
 using ODK.Services.Integrations.Payments;
 using ODK.Services.Integrations.Payments.PayPal;
+using ODK.Services.Integrations.Payments.Stripe;
 using ODK.Services.Issues;
 using ODK.Services.Logging;
 using ODK.Services.Media;
@@ -38,10 +36,13 @@ using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
 using ODK.Services.Users;
 using ODK.Services.Venues;
+using ODK.Services.Web;
 using ODK.Web.Common.Account;
 using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Platforms;
 using ODK.Web.Common.Services;
+using System.IO;
+using System.Linq;
 
 namespace ODK.Web.Common.Config;
 
@@ -77,10 +78,9 @@ public static class DependencyConfig
     }
 
     private static void ConfigureCore(IServiceCollection services)
-    {
-        services.AddScoped<IHttpRequestProvider, HttpRequestProvider>();
+    {        
         services.AddSingleton<IHtmlSanitizer>(new HtmlSanitizer());
-        services.AddScoped<IUrlProvider, UrlProvider>();
+        services.AddScoped<IUrlProviderFactory, UrlProviderFactory>();
     }
 
     private static void ConfigureData(IServiceCollection services, AppSettings appSettings)
@@ -100,7 +100,12 @@ public static class DependencyConfig
         services.AddSingleton(new PayPalPaymentProviderSettings
         {
             ApiBaseUrl = payments.PayPal.ApiBaseUrl
-        });;
+        });
+        services.AddScoped<IStripeWebhookParser, StripeWebhookParser>();
+        services.AddSingleton(new StripeWebhookParserSettings
+        {
+            WebhookSecret = appSettings.Payments.Stripe.WebhookSecret
+        });
     }
 
     private static void ConfigureServices(this IServiceCollection services, AppSettings appSettings)

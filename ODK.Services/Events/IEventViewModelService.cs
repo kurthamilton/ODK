@@ -4,9 +4,11 @@ namespace ODK.Services.Events;
 
 public interface IEventViewModelService
 {
-    Task<EventPageViewModel> GetEventPageViewModel(Guid? currentMemberId, string chapterName, Guid eventId);
+    Task<EventPageViewModel> GetEventPageViewModel(
+        ServiceRequest request, Guid? currentMemberId, string chapterName, Guid eventId);
 
-    Task<EventsPageViewModel> GetEventsPage(Guid? currentMemberId, string chapterName);
+    Task<EventsPageViewModel> GetEventsPage(ServiceRequest request, Guid? currentMemberId, string chapterName);
 
-    Task<EventPageViewModel> GetGroupEventPageViewModel(Guid? currentMemberId, string slug, Guid eventId);    
+    Task<EventPageViewModel> GetGroupEventPageViewModel(
+        ServiceRequest request, Guid? currentMemberId, string slug, Guid eventId);    
 }

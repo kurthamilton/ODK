@@ -15,6 +15,8 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
     {
     }
 
+    public IDeferredQueryMultiple<Payment> GetAll() => Set().DeferredMultiple();
+
     public IDeferredQueryMultiple<PaymentChapterDto> GetChapterDtosByMemberId(Guid memberId)
     {
         var query =
@@ -64,6 +66,7 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
                 .Where(x => x.Id == dto.Payment.MemberId)
             where 
                 dto.Payment.ChapterId == chapterId &&
+                dto.Payment.PaidUtc != null &&
                 dto.PaymentReconciliation == null && 
                 !dto.Payment.ExemptFromReconciliation
             select new PaymentMemberDto

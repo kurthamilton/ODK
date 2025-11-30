@@ -17,11 +17,7 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
     public IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId) => Set()
         .InChapter(chapterId)
         .DeferredMultiple();
-
-    public IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress) => Set()
-        .Where(x => x.EmailAddress == emailAddress)
-        .DeferredSingleOrDefault();    
-
+    
     public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId) => Set()
         .Current(chapterId)
         .Visible(chapterId)
@@ -32,6 +28,14 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
         .Current(chapterId)
         .InChapter(chapterId)
         .Where(x => memberIds.Contains(x.Id))
+        .DeferredMultiple();
+
+    public IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress) => Set()
+        .Where(x => x.EmailAddress == emailAddress)
+        .DeferredSingleOrDefault();
+
+    public IDeferredQueryMultiple<Member> GetByEmailAddresses(IEnumerable<string> emailAddresses) => Set()
+        .Where(x => emailAddresses.Contains(x.EmailAddress))
         .DeferredMultiple();
 
     public IDeferredQuery<int> GetCountByChapterId(Guid chapterId) => Set()

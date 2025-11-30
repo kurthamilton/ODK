@@ -11,7 +11,7 @@
     Layout = "_AccountLayout";
     Model.Title = "Email preferences";
 
-    var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.CurrentMemberId);
+    var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

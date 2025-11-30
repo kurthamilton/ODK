@@ -6,9 +6,7 @@ using ODK.Core.Cryptography;
 using ODK.Core.Emails;
 using ODK.Core.Members;
 using ODK.Core.Notifications;
-using ODK.Core.Web;
 using ODK.Data.Core;
-using ODK.Services.Authorization;
 using ODK.Services.Exceptions;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
@@ -17,30 +15,28 @@ namespace ODK.Services.Authentication;
 
 public class AuthenticationService : IAuthenticationService
 {
-    private readonly IAuthorizationService _authorizationService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly AuthenticationServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IUrlProvider _urlProvider;
-
+    
     public AuthenticationService(
         AuthenticationServiceSettings settings,
-        IAuthorizationService authorizationService, 
         IUnitOfWork unitOfWork,
         IMemberEmailService memberEmailService,
-        IUrlProvider urlProvider,
         INotificationService notificationService)
     {
-        _authorizationService = authorizationService; 
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _settings = settings;
         _unitOfWork = unitOfWork;
-        _urlProvider = urlProvider;
     }    
 
-    public async Task<ServiceResult> ActivateChapterAccountAsync(Guid chapterId, string activationToken, string password)
+    public async Task<ServiceResult> ActivateChapterAccountAsync(
+        ServiceRequest request, 
+        Guid chapterId, 
+        string activationToken, 
+        string password)
     {
         var token = await _unitOfWork.MemberActivationTokenRepository
             .GetByToken(activationToken)
@@ -83,6 +79,7 @@ public class AuthenticationService : IAuthenticationService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendNewMemberEmailsAsync(
+            request,
             chapter, 
             adminMembers, 
             member, 
@@ -92,7 +89,10 @@ public class AuthenticationService : IAuthenticationService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> ActivateSiteAccountAsync(string activationToken, string password)
+    public async Task<ServiceResult> ActivateSiteAccountAsync(
+        ServiceRequest request, 
+        string activationToken, 
+        string password)
     {
         var token = await _unitOfWork.MemberActivationTokenRepository
             .GetByToken(activationToken)
@@ -125,7 +125,7 @@ public class AuthenticationService : IAuthenticationService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendSiteWelcomeEmail(member);
+        await _memberEmailService.SendSiteWelcomeEmail(request, member);
 
         return ServiceResult.Successful();
     }
@@ -190,18 +190,23 @@ public class AuthenticationService : IAuthenticationService
         return claims;
     }
     
-    public async Task<ServiceResult> RequestPasswordResetAsync(Guid chapterId, string emailAddress)
+    public async Task<ServiceResult> RequestPasswordResetAsync(
+        ServiceRequest request, 
+        Guid chapterId, 
+        string emailAddress)
     {
         var chapter = await _unitOfWork.ChapterRepository
             .GetById(chapterId)
             .Run();
 
-        return await RequestPasswordResetAsync(chapter, emailAddress);
+        return await RequestPasswordResetAsync(request, chapter, emailAddress);
     }
 
-    public async Task<ServiceResult> RequestPasswordResetAsync(string emailAddress)
+    public async Task<ServiceResult> RequestPasswordResetAsync(
+        ServiceRequest request, 
+        string emailAddress)
     {
-        return await RequestPasswordResetAsync(null, emailAddress);
+        return await RequestPasswordResetAsync(request, null, emailAddress);
     }
 
     public async Task<ServiceResult> ResetPasswordAsync(string token, string password)
@@ -269,7 +274,10 @@ public class AuthenticationService : IAuthenticationService
         return memberPassword.Hash == passwordHash;
     }
 
-    private async Task<ServiceResult> RequestPasswordResetAsync(Chapter? chapter, string emailAddress)
+    private async Task<ServiceResult> RequestPasswordResetAsync(
+        ServiceRequest request, 
+        Chapter? chapter, 
+        string emailAddress)
     {
         if (!MailUtils.ValidEmailAddress(emailAddress))
         {
@@ -300,7 +308,11 @@ public class AuthenticationService : IAuthenticationService
                 await _unitOfWork.SaveChangesAsync();
             }
 
-            await _memberEmailService.SendActivationEmail(chapter, member, activationToken.ActivationToken);
+            await _memberEmailService.SendActivationEmail(
+                request, 
+                chapter, 
+                member, 
+                activationToken.ActivationToken);
             return ServiceResult.Successful();
         }
 
@@ -318,7 +330,7 @@ public class AuthenticationService : IAuthenticationService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendPasswordResetEmail(chapter, member, token);
+        await _memberEmailService.SendPasswordResetEmail(request, chapter, member, token);
 
         return ServiceResult.Successful();
     }    

@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Issues;
-using ODK.Core.Platforms;
 using ODK.Data.Core;
 using ODK.Services.Issues.Models;
 using ODK.Services.Members;
@@ -9,17 +8,14 @@ namespace ODK.Services.Issues;
 public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
 {
     private readonly IMemberEmailService _memberEmailService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public IssueAdminService(
         IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider,
         IMemberEmailService memberEmailService)
         : base(unitOfWork)
     {
         _memberEmailService = memberEmailService;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
@@ -52,8 +48,10 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         };
     }
 
-    public async Task<ServiceResult> ReplyToIssue(Guid currentMemberId, Guid issueId, string message)
+    public async Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message)
     {
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+
         var issue = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.IssueRepository.GetById(issueId));
 
@@ -71,15 +69,18 @@ public class IssueAdminService : OdkAdminServiceBase, IIssueAdminService
         };
 
         _unitOfWork.IssueMessageRepository.Add(issueMessage);
-        await _unitOfWork.SaveChangesAsync();
-
-        var platform = _platformProvider.GetPlatform();
+        await _unitOfWork.SaveChangesAsync();        
 
         var (member, siteEmailSettings) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(issue.MemberId),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
-        await _memberEmailService.SendIssueReply(issue, issueMessage, member, siteEmailSettings);
+        await _memberEmailService.SendIssueReply(
+            request, 
+            issue, 
+            issueMessage, 
+            member, 
+            siteEmailSettings);
 
         return ServiceResult.Successful();
     }

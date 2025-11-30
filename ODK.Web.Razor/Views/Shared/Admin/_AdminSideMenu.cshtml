@@ -5,10 +5,12 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Services
+@using ODK.Web.Razor.Views
 @model AdminSideMenuViewModel
-@inject IPlatformProvider PlatformProvider
+@inject IRequestStore RequestStore
 @{
-    var platform = PlatformProvider.GetPlatform();
+    var platform = RequestStore.Platform;
     var chapter = Model.Chapter;
 
     var groupLinks = new[]

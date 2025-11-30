@@ -9,7 +9,7 @@
 @{
     Layout = "_HomeLayout";
 
-    var viewModel = await MemberViewModelService.GetGroupMembersPage(Model.CurrentMemberId, Model.Slug);
+    var viewModel = await MemberViewModelService.GetGroupMembersPage(Model.MemberServiceRequest, Model.Slug);
 
     if (!viewModel.IsMember)
     {

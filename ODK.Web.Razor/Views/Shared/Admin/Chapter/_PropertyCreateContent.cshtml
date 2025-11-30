@@ -1,15 +1,14 @@
-﻿@using ODK.Core.DataTypes
+﻿@using ODK.Core.Chapters
+@using ODK.Core.DataTypes
 @using ODK.Core.Platforms
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Components
-@model ODK.Core.Chapters.Chapter
-@inject IPlatformProvider PlatformProvider
-@{
-    var platform = PlatformProvider.GetPlatform();
-}
+@using ODK.Web.Razor.Views
+@model OdkComponentViewModel<Chapter>
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
@@ -17,7 +16,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupProperties(platform, Model),
+            Link = OdkRoutes.MemberGroups.GroupProperties(Model.Platform, Model.Value),
             Text = "Member properties"
         },
         new MenuItem { Text = "New" }

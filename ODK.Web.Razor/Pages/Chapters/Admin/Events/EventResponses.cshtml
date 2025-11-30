@@ -10,8 +10,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Event responses | Admin";
 
-    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
-    var viewModel = await EventAdminService.GetEventAttendeesViewModel(request, Model.Event.Id);
+    var viewModel = await EventAdminService.GetEventAttendeesViewModel(Model.AdminServiceRequest, Model.Event.Id);
 }
 
 @await Html.PartialAsync("Admin/Events/Event/_EventResponsesContent", viewModel)

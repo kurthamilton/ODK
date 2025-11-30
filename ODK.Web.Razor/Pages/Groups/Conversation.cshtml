@@ -8,7 +8,8 @@
 @{
     Layout = "_HomeLayout";
 
-    var viewModel = await ChapterViewModelService.GetGroupConversationPage(Model.CurrentMemberId, Model.Slug, Model.ConversationId);
+    var viewModel = await ChapterViewModelService.GetGroupConversationPage(
+        Model.MemberServiceRequest, Model.Slug, Model.ConversationId);
 
     Model.Title = $"{viewModel.Conversation.Subject} | Conversations | {viewModel.Chapter.Name}";
 }

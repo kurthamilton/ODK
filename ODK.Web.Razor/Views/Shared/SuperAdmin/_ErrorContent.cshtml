@@ -1,11 +1,8 @@
 ﻿@using ODK.Core.Logging
 @using ODK.Services.Logging
-@using ODK.Web.Common.Extensions
 @model ODK.Web.Razor.Models.SuperAdmin.ErrorContentViewModel
 @inject ILoggingService LoggingService
 @{
-    var memberId = User.MemberId();
-
     var (error, properties) = (Model.Error.Error, Model.Error.Properties);
 }
 

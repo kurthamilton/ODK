@@ -1,13 +1,12 @@
-﻿using System.Text.RegularExpressions;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Members;
 using ODK.Services.Payments;
+using System.Text.RegularExpressions;
 
 namespace ODK.Services.Events;
 
@@ -20,23 +19,22 @@ public class EventService : IEventService
     private readonly IMemberEmailService _memberEmailService;
     private readonly IPaymentService _paymentService;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IUrlProvider _urlProvider;
 
     public EventService(IUnitOfWork unitOfWork,       
         IAuthorizationService authorizationService,
         IPaymentService paymentService,
-        IUrlProvider urlProvider,
         IMemberEmailService memberEmailService)
     {
         _authorizationService = authorizationService;
         _memberEmailService = memberEmailService;
         _paymentService = paymentService;
         _unitOfWork = unitOfWork;
-        _urlProvider = urlProvider;
     }
 
-    public async Task<ServiceResult> AddComment(Guid currentMemberId, Guid eventId, string comment, Guid? parentEventCommentId)
+    public async Task<ServiceResult> AddComment(MemberServiceRequest request, Guid eventId, string comment, Guid? parentEventCommentId)
     {
+        var currentMemberId = request.CurrentMemberId;
+
         var (member, @event) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.EventRepository.GetById(eventId));
@@ -85,7 +83,12 @@ public class EventService : IEventService
         _unitOfWork.EventCommentRepository.Add(eventComment);
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendEventCommentEmail(chapter, @event, eventComment, parentCommentMember);
+        await _memberEmailService.SendEventCommentEmail(
+            request, 
+            chapter, 
+            @event, 
+            eventComment, 
+            parentCommentMember);
 
         return ServiceResult.Successful();
     }

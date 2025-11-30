@@ -8,8 +8,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Members | Admin";
 
-    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
-    var viewModel = await MemberAdminService.GetMembersViewModel(request);
+    var viewModel = await MemberAdminService.GetMembersViewModel(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Admin/Members/_MembersContent", viewModel)

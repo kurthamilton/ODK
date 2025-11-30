@@ -1,9 +1,9 @@
 ﻿@using ODK.Services.Subscriptions
-@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Services
+@inject IRequestStore RequestStore
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
 @{
-    var memberId = User.MemberId();
-    var subscriptions = await SiteSubscriptionAdminService.GetAllSubscriptions(memberId);
+    var subscriptions = await SiteSubscriptionAdminService.GetAllSubscriptions(RequestStore.MemberServiceRequest);
 }
 
 <h2>Subscriptions</h2>

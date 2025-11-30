@@ -13,6 +13,7 @@
     Layout = "_OdkChapterLayout";
 
     var viewModel = await EventViewModelService.GetEventPageViewModel(
+        Model.ServiceRequest,
         Model.CurrentMemberIdOrDefault,
         Model.ChapterName,
         Model.EventId);

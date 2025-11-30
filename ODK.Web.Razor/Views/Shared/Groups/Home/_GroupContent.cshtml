@@ -60,7 +60,7 @@
                                         responseSummary: x.ResponseSummary))
                                     .ToArray(),
                                 Platform = Model.Platform,
-                                TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+                                TimeZone = Model.Chapter.TimeZone ?? Chapter.DefaultTimeZone
                             })
                         </div>
                 })                
@@ -86,7 +86,7 @@
                                         responseSummary: x.ResponseSummary))
                                     .ToArray(),
                                 Platform = Model.Platform,
-                                TimeZone = Model.Chapter.TimeZone ?? TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+                                TimeZone = Model.Chapter.TimeZone ?? Chapter.DefaultTimeZone
                             })
                         </div>
                 })

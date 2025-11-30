@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Members;
+using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Services.Subscriptions.ViewModels;
 
@@ -6,19 +7,25 @@ namespace ODK.Services.Subscriptions;
 
 public interface ISiteSubscriptionService
 {
-    Task<bool> CompleteSiteSubscriptionCheckoutSession(Guid memberId, Guid siteSubscriptionPriceId, string sessionId);
+    Task<ServiceResult> ConfirmMemberSiteSubscription(
+        MemberServiceRequest request, Guid siteSubscriptionId, string externalId);
 
-    Task<ServiceResult> ConfirmMemberSiteSubscription(Guid memberId, Guid siteSubscriptionId, string externalId);
+    Task<MemberSiteSubscription?> GetMemberSiteSubscription(
+        MemberServiceRequest request);
 
-    Task<MemberSiteSubscription?> GetMemberSiteSubscription(Guid memberId);
+    Task<PaymentStatusType> GetMemberSiteSubscriptionPaymentCheckoutSessionStatus(
+        MemberServiceRequest request, string externalSessionId);
 
-    Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(Guid? memberId);
+    Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
+        ServiceRequest request, Guid? memberId);    
 
     Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
-        Guid memberId, Guid priceId, string returnPath);
+        MemberServiceRequest request, Guid priceId, string returnPath);
 
-    Task SyncExpiredSubscriptions();
+    Task SyncExpiredSubscriptions(ServiceRequest request);
 
-    Task<ServiceResult> UpdateMemberSiteSubscription(Guid memberId, Guid siteSubscriptionId, 
+    Task<ServiceResult> UpdateMemberSiteSubscription(
+        MemberServiceRequest request, 
+        Guid siteSubscriptionId, 
         SiteSubscriptionFrequency frequency);
 }

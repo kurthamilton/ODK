@@ -1,24 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core;
 using ODK.Core.Chapters;
-using ODK.Services.Caching;
+using ODK.Services;
 
 namespace ODK.Web.Razor.Pages.Chapters;
 
 public abstract class ChapterPageModel : OdkPageModel
-{
-    private readonly IRequestCache _requestCache;
-
-    protected ChapterPageModel(IRequestCache requestCache)
-    {
-        _requestCache = requestCache;
-    }
-
+{    
     public Chapter Chapter { get; private set; } = null!;
-    
-    public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
+
+    public MemberChapterServiceRequest MemberChapterServiceRequest()
+        => new MemberChapterServiceRequest(Chapter.Id, MemberServiceRequest);
+
+    public override async Task OnPageHandlerExecutionAsync(
+        PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        var chapter = await new ChapterPageContext(_requestCache, HttpContext).GetChapterAsync();
+        var chapter = await new ChapterPageContext(RequestCache, HttpContext)
+            .GetChapterAsync(RequestStore.Platform);
         OdkAssertions.Exists(chapter);
 
         Chapter = chapter;        

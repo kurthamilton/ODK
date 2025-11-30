@@ -11,24 +11,26 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin;
 [Authorize(Roles = "Admin")]
 public abstract class AdminPageModel : ChapterPageModel2
 {
+    private readonly Lazy<MemberChapterServiceRequest> _adminServiceRequest;
     private readonly IRequestCache _requestCache;
 
     protected AdminPageModel(IRequestCache requestCache) 
     {
+        _adminServiceRequest = new(() => new MemberChapterServiceRequest(Chapter.Id, MemberServiceRequest));
         _requestCache = requestCache;
     }
 
-    public AdminServiceRequest AdminServiceRequest => new AdminServiceRequest(Chapter.Id, CurrentMemberId);
+    public MemberChapterServiceRequest AdminServiceRequest => _adminServiceRequest.Value;
 
     public Chapter Chapter { get; set; } = null!;
 
     public Member CurrentMember { get; private set; } = null!;    
 
-    protected async Task<AdminServiceRequest> GetAdminServiceRequest()
+    protected async Task<MemberChapterServiceRequest> GetAdminServiceRequest()
     {
         await LoadChapter();
 
-        return new AdminServiceRequest(Chapter.Id, CurrentMemberId);
+        return AdminServiceRequest;
     }
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, 
@@ -49,7 +51,7 @@ public abstract class AdminPageModel : ChapterPageModel2
             return Chapter;
         }
 
-        Chapter = await _requestCache.GetChapterAsync(ChapterName);
+        Chapter = await _requestCache.GetChapterAsync(Platform, ChapterName);
         return Chapter;
     }
 }

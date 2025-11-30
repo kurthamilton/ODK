@@ -11,7 +11,7 @@
     Layout = "_HomeLayout";
     Model.Title = "My groups";
 
-    var viewModel = await ChapterViewModelService.GetMemberChapters(Model.CurrentMemberId);
+    var viewModel = await ChapterViewModelService.GetMemberChapters(Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

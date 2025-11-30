@@ -1,6 +1,5 @@
 ﻿using ODK.Core;
 using ODK.Core.Countries;
-using ODK.Core.Platforms;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 using ODK.Services.Caching;
@@ -11,21 +10,18 @@ namespace ODK.Services.Venues;
 public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 {
     private readonly ICacheService _cacheService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public VenueAdminService(
         IUnitOfWork unitOfWork,
-        ICacheService cacheService,
-        IPlatformProvider platformProvider)
+        ICacheService cacheService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> CreateVenue(AdminServiceRequest request, CreateVenue model)
+    public async Task<ServiceResult> CreateVenue(MemberChapterServiceRequest request, CreateVenue model)
     {
         var (chapterId, currentMemberId) = (request.ChapterId, request.CurrentMemberId);
 
@@ -64,16 +60,17 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         return ServiceResult.Successful();
     }
     
-    public async Task<Venue> GetVenue(AdminServiceRequest request, Guid venueId)
+    public async Task<Venue> GetVenue(MemberChapterServiceRequest request, Guid venueId)
     {
         var venue = await GetChapterAdminRestrictedContent(request,
             x => x.VenueRepository.GetById(venueId));
         return OdkAssertions.BelongsToChapter(venue, request.ChapterId);
     }
 
-    public async Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(AdminServiceRequest request, Guid venueId)
+    public async Task<VenueEventsAdminPageViewModel> GetVenueEventsViewModel(
+        MemberChapterServiceRequest request, Guid venueId)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var (chapter, venue, events) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -91,9 +88,9 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         };
     }
 
-    public async Task<VenuesAdminPageViewModel> GetVenuesViewModel(AdminServiceRequest request)
+    public async Task<VenuesAdminPageViewModel> GetVenuesViewModel(MemberChapterServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var (chapter, venues, events) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -109,9 +106,9 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         };
     }
 
-    public async Task<VenueAdminPageViewModel> GetVenueViewModel(AdminServiceRequest request, Guid venueId)
+    public async Task<VenueAdminPageViewModel> GetVenueViewModel(MemberChapterServiceRequest request, Guid venueId)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var (chapter, venue) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -130,7 +127,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
         };
     }
 
-    public async Task<ServiceResult> UpdateVenue(AdminServiceRequest request, Guid id, CreateVenue model)
+    public async Task<ServiceResult> UpdateVenue(MemberChapterServiceRequest request, Guid id, CreateVenue model)
     {       
         var (venue, existing) = await GetChapterAdminRestrictedContent(request,
             x => x.VenueRepository.GetById(id),

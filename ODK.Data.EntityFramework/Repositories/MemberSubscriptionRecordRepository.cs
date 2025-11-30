@@ -18,6 +18,16 @@ public class MemberSubscriptionRecordRepository : ReadWriteRepositoryBase<Member
             .Where(x => x.ExternalId == externalId)
             .DeferredSingle();
 
+    public IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetByExternalIdOrDefault(string externalId)
+        => Set()
+            .Where(x => x.ExternalId == externalId)
+            .DeferredSingleOrDefault();
+
+    public IDeferredQueryMultiple<MemberSubscriptionRecord> GetByExternalIds(IEnumerable<string> externalIds)
+        => Set()
+            .Where(x => externalIds.Contains(x.ExternalId))
+            .DeferredMultiple();
+
     public IDeferredQuerySingleOrDefault<MemberSubscriptionRecord> GetLatest(Guid memberId, Guid chapterId)
     {
         var query =

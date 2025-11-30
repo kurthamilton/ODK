@@ -3,28 +3,27 @@ using ODK.Core.Chapters;
 using ODK.Core.Platforms;
 using ODK.Core.Utils;
 using ODK.Core.Web;
+using ODK.Services;
+using ODK.Services.Web;
 using ODK.Web.Common.Routes;
 
 namespace ODK.Web.Common.Services;
 
 public class UrlProvider : IUrlProvider
 {
-    private readonly IHttpRequestProvider _httpRequestProvider;
+    private readonly IHttpRequestContext _httpRequestContext;
     private readonly PlatformType _platform;
 
-    public UrlProvider(
-        IHttpRequestProvider httpRequestProvider,
-        IPlatformProvider platformProvider)
+    public UrlProvider(ServiceRequest request)
     {
-        _httpRequestProvider = httpRequestProvider;
-        _platform = platformProvider.GetPlatform();
+        _httpRequestContext = request.HttpRequestContext;
+        _platform = request.Platform;
     }
 
     public string ActivateAccountUrl(Chapter? chapter, string token)
         => GetUrl(OdkRoutes.Account.Activate(chapter, token));
 
-    public string BaseUrl()
-        => GetUrl("");
+    public string BaseUrl() => GetUrl("");
 
     public string ConfirmEmailAddressUpdate(Chapter? chapter, string token)
         => GetUrl(OdkRoutes.Account.EmailAddressChangeConfirm(chapter, token));
@@ -78,5 +77,5 @@ public class UrlProvider : IUrlProvider
         => GetUrl("/superadmin/topics");
 
     private string GetUrl(string path) 
-        => $"{UrlUtils.BaseUrl(_httpRequestProvider.RequestUrl)}{path}";
+        => $"{UrlUtils.BaseUrl(_httpRequestContext.RequestUrl)}{path}";
 }

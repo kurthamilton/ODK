@@ -10,7 +10,7 @@
 @{
     Layout = "_HomeLayout";
 
-    var viewModel = await MemberViewModelService.GetGroupMemberPage(Model.CurrentMemberId, Model.Slug, Model.MemberId);
+    var viewModel = await MemberViewModelService.GetGroupMemberPage(Model.MemberServiceRequest, Model.Slug, Model.MemberId);
     if (!viewModel.IsMember)
     {
         Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));

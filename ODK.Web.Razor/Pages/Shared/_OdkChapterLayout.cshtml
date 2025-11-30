@@ -1,21 +1,22 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Members
-@using ODK.Services.Caching
+﻿@using ODK.Services.Caching
 @using ODK.Web.Razor.Models.Footer
 @using ODK.Web.Razor.Models.Header
 @using ODK.Web.Razor.Pages.Chapters
+@using ODK.Web.Razor.Services
 @inject IRequestCache RequestCache
+@inject IRequestStore RequestStore
 @{
     Layout = "_Layout";
 
     var chapterContext = new ChapterPageContext(RequestCache, Context);
-    var chapter = await chapterContext.GetChapterAsync();
+    var chapter = await chapterContext.GetChapterAsync(RequestStore.Platform);
     if (chapter == null)
     {
         return;
     }
 
-    var member = await chapterContext.GetMemberAsync();    
+    var member = await chapterContext.GetMemberAsync(RequestStore.CurrentMemberIdOrDefault);
+    var componentContext = RequestStore.ComponentContext;
 }
 
 @section styles
@@ -25,7 +26,8 @@
 
 @section header
 {
-    @await Html.PartialAsync("Header/_ChapterHeader", new ChapterHeaderViewModel(chapter, member))
+    @await Html.PartialAsync("Header/_ChapterHeader", 
+        new ChapterHeaderViewModel(chapter, member, componentContext))
 }
 
 <div class="chapter chapter-theme--@chapter.Name.ToLowerInvariant()">
@@ -34,7 +36,7 @@
 
 @section footer
 {
-    @await Html.PartialAsync("Footer/_ChapterFooter", new FooterViewModel
+    @await Html.PartialAsync("Footer/_ChapterFooter", new FooterViewModel(componentContext)
     {
         Chapter = chapter
     })

@@ -19,7 +19,7 @@
                     TimeZone = 
                         Model.CurrentMember?.TimeZone ?? 
                         Model.Chapter.TimeZone ?? 
-                        TimeZoneInfo.FindSystemTimeZoneById(Chapter.DefaultTimeZoneId)
+                        Chapter.DefaultTimeZone
                 };
 
                 <div class="card-body card-body-sm">

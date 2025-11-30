@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Platforms;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Routes;
@@ -10,14 +9,11 @@ namespace ODK.Web.Razor.Pages.My.Groups.Members.Subscriptions;
 public class CreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
-    private readonly IPlatformProvider _platformProvider;
 
     public CreateModel(
-        IChapterAdminService chapterAdminService,
-        IPlatformProvider platformProvider)
+        IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
-        _platformProvider = platformProvider;
     }
 
     public void OnGet()
@@ -46,8 +42,7 @@ public class CreateModel : OdkGroupAdminPageModel
             return Page();            
         }
 
-        var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
-        return Redirect(OdkRoutes.MemberGroups.MembersSubscriptions(platform, chapter));
+        return Redirect(OdkRoutes.MemberGroups.MembersSubscriptions(Platform, chapter));
     }
 }

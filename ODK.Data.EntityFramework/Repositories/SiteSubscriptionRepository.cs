@@ -22,6 +22,18 @@ public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscripti
         .Where(x => x.Platform == platform && x.Enabled)
         .DeferredMultiple();
 
+    public IDeferredQuerySingle<SiteSubscription> GetByPriceId(Guid priceId)
+    {
+        var query = 
+            from price in Set<SiteSubscriptionPrice>()
+            from siteSubscription in Set()
+                .Where(x => x.Id == price.SiteSubscriptionId)
+            where price.Id == priceId
+            select siteSubscription;
+
+        return query.DeferredSingle();
+    }
+
     public IDeferredQuerySingle<SiteSubscription> GetDefault(PlatformType platform) => Set()
         .Where(x => x.Platform == platform && x.Enabled && x.Default)
         .DeferredSingle();

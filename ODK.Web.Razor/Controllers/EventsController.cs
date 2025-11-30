@@ -1,24 +1,23 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Events;
-using ODK.Core.Platforms;
 using ODK.Services.Events;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Events;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
 public class EventsController : OdkControllerBase
 {
     private readonly IEventService _eventService;
-    private readonly IPlatformProvider _platformProvider;
 
     public EventsController(
         IEventService eventService,
-        IPlatformProvider platformProvider)
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _eventService = eventService;
-        _platformProvider = platformProvider;
     }
 
     [Authorize]
@@ -28,16 +27,15 @@ public class EventsController : OdkControllerBase
         var result = await _eventService.UpdateMemberResponse(MemberId, id, EventResponseType.Yes);
         AddFeedback(result, "Attendance updated");
 
-        var platform = _platformProvider.GetPlatform();
         var (chapter, @event) = await _eventService.GetEvent(id);
-        return Redirect(OdkRoutes.Groups.Event(platform, chapter, id));
+        return Redirect(OdkRoutes.Groups.Event(Platform, chapter, id));
     }
 
     [Authorize]
     [HttpPost("events/{id:guid}/comments")]
     public async Task<IActionResult> AddComment(Guid id, EventCommentFormViewModel viewModel)
     {
-        var result = await _eventService.AddComment(MemberId, id, viewModel.Text ?? "", viewModel.Parent);
+        var result = await _eventService.AddComment(MemberServiceRequest, id, viewModel.Text ?? "", viewModel.Parent);
         if (!result.Success)
         {
             AddFeedback(result);

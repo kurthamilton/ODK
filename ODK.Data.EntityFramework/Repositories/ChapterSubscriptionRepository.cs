@@ -1,4 +1,6 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Chapters.Dtos;
+using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -11,7 +13,31 @@ public class ChapterSubscriptionRepository : ReadWriteRepositoryBase<ChapterSubs
     {
     }
 
+    public IDeferredQueryMultiple<ChapterSubscriptionAdminDto> GetAdminDtosByChapterId(
+        Guid chapterId, bool includeDisabled)
+    {
+        var query = 
+            from chapterSubscription in Set(chapterId, includeDisabled)
+            select new ChapterSubscriptionAdminDto
+            {
+                ChapterSubscription = chapterSubscription,
+                Used = Set<MemberSubscriptionRecord>()
+                    .Where(x => x.ChapterSubscriptionId == chapterSubscription.Id)
+                    .Any()
+            };
+
+        return query.DeferredMultiple();
+    }
+
     public IDeferredQueryMultiple<ChapterSubscription> GetByChapterId(Guid chapterId, bool includeDisabled)
+        => Set(chapterId, includeDisabled).DeferredMultiple();
+
+    public IDeferredQuery<bool> InUse(Guid chapterSubscriptionId)
+        => Set<MemberSubscriptionRecord>()
+            .Where(x => x.ChapterSubscriptionId == chapterSubscriptionId)
+            .DeferredAny();
+
+    private IQueryable<ChapterSubscription> Set(Guid chapterId, bool includeDisabled)
     {
         var query = Set()
             .Where(x => x.ChapterId == chapterId);
@@ -21,6 +47,6 @@ public class ChapterSubscriptionRepository : ReadWriteRepositoryBase<ChapterSubs
             query = query.Where(x => !x.Disabled);
         }
 
-        return query.DeferredMultiple();
+        return query;
     }
 }

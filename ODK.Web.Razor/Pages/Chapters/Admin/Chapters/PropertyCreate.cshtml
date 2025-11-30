@@ -1,10 +1,14 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Properties/Create"
-@using ODK.Web.Razor.Models.Components
+@using ODK.Core.Chapters
 @using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.PropertyCreateModel
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create property | Admin";
+
+    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent", Model.Chapter)
+@await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent", viewModel)

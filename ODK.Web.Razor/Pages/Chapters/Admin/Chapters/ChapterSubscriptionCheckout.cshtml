@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Payments
+@using ODK.Services
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
@@ -20,10 +21,10 @@
         return;
     }
 
+    var request = new MemberServiceRequest(memberId.Value, Model.ServiceRequest);
     var returnPath = $"/{Model.ChapterName}/admin/chapter/subscription/{Model.PriceId}/confirm?sessionId={{sessionId}}";
-
     var viewModel = await SiteSubscriptionService.StartSiteSubscriptionCheckout(
-        memberId.Value, Model.PriceId, returnPath);
+        request, Model.PriceId, returnPath);
 }
 
 @await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionCheckoutContent", viewModel)

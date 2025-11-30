@@ -43,6 +43,13 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
         return Task.CompletedTask;
     }
 
+    public Task Error(string message, Exception exception)
+    {
+        _logger.Error(message, exception);
+
+        return Task.CompletedTask;
+    }
+
     public async Task Error(Exception exception, HttpRequest request)
     {
         _logger.Error(exception, exception.Message);

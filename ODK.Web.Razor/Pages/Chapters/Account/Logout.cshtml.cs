@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Caching;
 using ODK.Web.Common.Account;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
@@ -8,8 +7,7 @@ public class LogoutModel : ChapterPageModel
 {
     private ILoginHandler _loginHandler;
 
-    public LogoutModel(IRequestCache requestCache, ILoginHandler loginHandler)
-        : base(requestCache)
+    public LogoutModel(ILoginHandler loginHandler)
     {
         _loginHandler = loginHandler;
     }

@@ -4,7 +4,7 @@ namespace ODK.Services.Topics;
 
 public interface ITopicService
 {
-    Task AddNewChapterTopics(Guid currentMemberId, Guid chapterId, IReadOnlyCollection<NewTopicModel> models);
+    Task AddNewChapterTopics(MemberChapterServiceRequest request, IReadOnlyCollection<NewTopicModel> models);
 
-    Task AddNewMemberTopics(Guid currentMemberId, IReadOnlyCollection<NewTopicModel> models);
+    Task AddNewMemberTopics(MemberServiceRequest request, IReadOnlyCollection<NewTopicModel> models);
 }

@@ -8,5 +8,6 @@ public interface ISiteSubscriptionRepository : IReadWriteRepository<SiteSubscrip
 {
     IDeferredQueryMultiple<SiteSubscription> GetAll(PlatformType platform);
     IDeferredQueryMultiple<SiteSubscription> GetAllEnabled(PlatformType platform);
+    IDeferredQuerySingle<SiteSubscription> GetByPriceId(Guid priceId);
     IDeferredQuerySingle<SiteSubscription> GetDefault(PlatformType platform);
 }

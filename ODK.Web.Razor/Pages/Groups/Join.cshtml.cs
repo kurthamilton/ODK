@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Platforms;
+using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
@@ -36,7 +37,7 @@ public class JoinModel : OdkGroupPageModel
                     : x.Value ?? ""
         });
 
-        var result = await _memberService.JoinChapter(CurrentMemberId, chapter.Id, properties);
+        var result = await _memberService.JoinChapter(MemberChapterServiceRequest(chapter.Id), properties);
         if (!result.Success)
         {
             AddFeedback(result);

@@ -7,8 +7,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Payments | Admin";
 
-    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
-    var viewModel = await PaymentAdminService.GetPayments(request);
+    var viewModel = await PaymentAdminService.GetPayments(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Admin/Payments/_PaymentsContent", viewModel)

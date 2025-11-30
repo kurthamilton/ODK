@@ -9,7 +9,7 @@
 
     if (Model.Member != null)
     {
-        var chapters = await RequestCache.GetChaptersAsync();
+        var chapters = await RequestCache.GetChaptersAsync(Model.Platform);
         memberChapters = chapters
             .Where(x => Model.Member.IsMemberOf(x.Id))
             .OrderBy(x => x.Name)

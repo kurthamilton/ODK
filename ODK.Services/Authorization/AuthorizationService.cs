@@ -2,7 +2,6 @@
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
-using ODK.Core.Platforms;
 using ODK.Core.Venues;
 using ODK.Data.Core;
 
@@ -10,14 +9,10 @@ namespace ODK.Services.Authorization;
 
 public class AuthorizationService : IAuthorizationService
 {
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public AuthorizationService(
-        IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider)
+    public AuthorizationService(IUnitOfWork unitOfWork)
     {
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 

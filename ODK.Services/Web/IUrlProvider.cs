@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Chapters;
 
-namespace ODK.Core.Web;
+namespace ODK.Services.Web;
 
 public interface IUrlProvider
 {

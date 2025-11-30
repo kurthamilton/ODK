@@ -72,6 +72,7 @@ public interface IUnitOfWork
     INewMemberTopicRepository NewMemberTopicRepository { get; }
     INotificationRepository NotificationRepository { get; }
     IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository { get; }
+    IPaymentProviderWebhookEventRepository PaymentProviderWebhookEventRepository { get; }
     IPaymentReconciliationRepository PaymentReconciliationRepository { get; }
     IPaymentRepository PaymentRepository { get; }
     IQueuedEmailRecipientRepository QueuedEmailRecipientRepository { get; }

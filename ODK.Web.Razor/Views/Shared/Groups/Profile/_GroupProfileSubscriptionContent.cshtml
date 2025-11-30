@@ -1,9 +1,16 @@
-﻿@using ODK.Services.Chapters.ViewModels
+﻿@using ODK.Core.Chapters
+@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups.Profile
+@using ODK.Web.Razor.Services
 @model GroupProfileSubscriptionPageViewModel
-
+@inject IRequestStore RequestStore
+@{
+    var context = RequestStore.ComponentContext;
+    var chapterSubscriptionViewModel = new OdkComponentViewModel<Chapter>(context, Model.Chapter);
+}
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     MenuContentFunc =
@@ -17,13 +24,7 @@
         @<div>            
             <section class="section">
                 <h3>My subscription</h3>
-                @await Html.PartialAsync("Account/_ChapterSubscriptionContent", new ChapterSubscriptionContentViewModel
-                {
-                    Chapter = Model.Chapter,
-                    PaymentSettings = Model.ChapterPaymentSettings?.UseSitePaymentProvider == true
-                        ? Model.SitePaymentSettings
-                        : Model.ChapterPaymentSettings
-                })
+                @await Html.PartialAsync("Account/_ChapterSubscriptionContent", chapterSubscriptionViewModel)
             </section>
             <section class="section">
                 <h3>Leave group</h3>

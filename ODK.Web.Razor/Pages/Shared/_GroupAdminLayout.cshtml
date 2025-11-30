@@ -1,17 +1,16 @@
-﻿@using ODK.Core.Platforms
-@using ODK.Services.Caching
-@using ODK.Web.Common.Components
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Common.Routes
+﻿@using ODK.Services.Caching
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@inject IPlatformProvider PlatformProvider
+@using ODK.Web.Razor.Services
 @inject IRequestCache RequestCache
+@inject IRequestStore RequestStore
 @{
     Layout = "_HomeLayout";
 
+    var platform = RequestStore.Platform;
+
     Guid.TryParse(Context.GetRouteValue("id")?.ToString(), out var chapterId);
-    var chapter = await RequestCache.GetChapterAsync(chapterId);    
+    var chapter = await RequestCache.GetChapterAsync(platform, chapterId);
 }
 
 @section styles

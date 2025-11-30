@@ -1,5 +1,6 @@
 ﻿using ODK.Core.Emails;
 using ODK.Core.Payments;
+using ODK.Core.Platforms;
 using ODK.Core.Settings;
 
 namespace ODK.Services.Settings;
@@ -21,7 +22,7 @@ public interface ISettingsService
 
     Task<SiteSettings> GetSiteSettings();
 
-    Task<SiteEmailSettings> GetSiteEmailSettings();
+    Task<SiteEmailSettings> GetSiteEmailSettings(PlatformType platform);
 
     Task<IReadOnlyCollection<SitePaymentSettings>> GetSitePaymentSettings(Guid currentMemberId);
 
@@ -29,7 +30,8 @@ public interface ISettingsService
 
     Task<ServiceResult> UpdateEmailProvider(Guid currentMemberId, Guid emailProviderId, UpdateEmailProvider model);
 
-    Task<ServiceResult> UpdateEmailSettings(Guid currentMemberId, 
+    Task<ServiceResult> UpdateEmailSettings(
+        MemberServiceRequest request,
         string fromEmailAddress, 
         string fromEmailName, 
         string emailTitle,

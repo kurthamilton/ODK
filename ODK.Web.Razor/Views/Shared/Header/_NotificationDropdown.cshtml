@@ -1,16 +1,17 @@
 ﻿@using ODK.Core.Notifications
 @using ODK.Services.Notifications
 @using ODK.Services.Notifications.ViewModels
-@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Services
 @inject INotificationService NotificationService
+@inject IRequestStore RequestStore
 @{
-    var memberId = User.MemberIdOrDefault();
+    var memberId = RequestStore.CurrentMemberIdOrDefault;
     if (memberId == null)
     {
         return;
     }
 
-    var viewModel = await NotificationService.GetUnreadNotificationsViewModel(memberId.Value);
+    var viewModel = await NotificationService.GetUnreadNotificationsViewModel(RequestStore.MemberServiceRequest);
 }
 
 @*Only show notifications to users who have seen them before*@

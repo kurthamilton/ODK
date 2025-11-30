@@ -1,6 +1,6 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
-using ODK.Core.Emails;
+using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
@@ -10,156 +10,170 @@ namespace ODK.Services.Chapters;
 
 public interface IChapterAdminService
 {
-    Task<ServiceResult> AddChapterAdminMember(AdminServiceRequest request, Guid memberId);
+    Task<ServiceResult> AddChapterAdminMember(MemberChapterServiceRequest request, Guid memberId);
 
-    Task<ServiceResult> AddChapterEmailProvider(AdminServiceRequest request, UpdateEmailProvider model);
+    Task<ServiceResult> AddChapterEmailProvider(MemberChapterServiceRequest request, UpdateEmailProvider model);
 
-    Task<ServiceResult> ApproveChapter(AdminServiceRequest request);
+    Task<ServiceResult> ApproveChapter(MemberChapterServiceRequest request);
 
-    Task<ServiceResult<Chapter?>> CreateChapter(Guid currentMemberId, ChapterCreateModel model);
+    Task<ServiceResult<Chapter?>> CreateChapter(
+        MemberServiceRequest request, 
+        ChapterCreateModel model);
 
-    Task<ServiceResult> CreateChapterProperty(AdminServiceRequest request, CreateChapterProperty model);
+    Task<ServiceResult> CreateChapterProperty(MemberChapterServiceRequest request, CreateChapterProperty model);
 
-    Task<ServiceResult> CreateChapterQuestion(AdminServiceRequest request, CreateChapterQuestion model);
+    Task<ServiceResult> CreateChapterQuestion(MemberChapterServiceRequest request, CreateChapterQuestion model);
 
-    Task<ServiceResult> CreateChapterSubscription(AdminServiceRequest request, CreateChapterSubscription model);
+    Task<ServiceResult> CreateChapterSubscription(MemberChapterServiceRequest request, CreateChapterSubscription model);
 
-    Task<ServiceResult> DeleteChapter(AdminServiceRequest request);
+    Task<ServiceResult> DeleteChapter(MemberChapterServiceRequest request);
 
-    Task<ServiceResult> DeleteChapterAdminMember(AdminServiceRequest request, Guid memberId);
+    Task<ServiceResult> DeleteChapterAdminMember(MemberChapterServiceRequest request, Guid memberId);
 
-    Task<ServiceResult> DeleteChapterContactMessage(AdminServiceRequest request, Guid id);
+    Task<ServiceResult> DeleteChapterContactMessage(MemberChapterServiceRequest request, Guid id);
 
-    Task<ServiceResult> DeleteChapterEmailProvider(AdminServiceRequest request, Guid id);
+    Task<ServiceResult> DeleteChapterEmailProvider(MemberChapterServiceRequest request, Guid id);
 
-    Task DeleteChapterProperty(AdminServiceRequest request, Guid id);
+    Task DeleteChapterProperty(MemberChapterServiceRequest request, Guid id);
 
-    Task DeleteChapterQuestion(AdminServiceRequest request, Guid id);
+    Task DeleteChapterQuestion(MemberChapterServiceRequest request, Guid id);
 
-    Task<ServiceResult> DeleteChapterSubscription(AdminServiceRequest request, Guid id);
+    Task<ServiceResult> DeleteChapterSubscription(MemberChapterServiceRequest request, Guid id);
 
-    Task<Chapter> GetChapter(AdminServiceRequest request);
+    Task<Chapter> GetChapter(MemberChapterServiceRequest request);
 
-    Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(AdminServiceRequest request);
+    Task<IReadOnlyCollection<ChapterAdminMember>> GetChapterAdminMembers(MemberChapterServiceRequest request);
 
-    Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(AdminServiceRequest request);
+    Task<ChapterAdminPageViewModel> GetChapterAdminPageViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(AdminServiceRequest request, bool readByChapter);
+    Task<ChapterConversationsAdminPageViewModel> GetChapterConversationsViewModel(MemberChapterServiceRequest request, bool readByChapter);
 
-    Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(AdminServiceRequest request, Guid id);
+    Task<ChapterConversationAdminPageViewModel> GetChapterConversationViewModel(MemberChapterServiceRequest request, Guid id);
 
-    Task<ChapterDeleteAdminPageViewModel> GetChapterDeleteViewModel(AdminServiceRequest request);
+    Task<ChapterDeleteAdminPageViewModel> GetChapterDeleteViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterImageAdminPageViewModel> GetChapterImageViewModel(AdminServiceRequest request);
+    Task<ChapterImageAdminPageViewModel> GetChapterImageViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(AdminServiceRequest request);
+    Task<ChapterLinksAdminPageViewModel> GetChapterLinksViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterLocation?> GetChapterLocation(AdminServiceRequest request);
+    Task<ChapterLocation?> GetChapterLocation(MemberChapterServiceRequest request);
 
-    Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(AdminServiceRequest request, bool spam);
+    Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(MemberChapterServiceRequest request, bool spam);
 
-    Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(AdminServiceRequest request, Guid id);
+    Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(MemberChapterServiceRequest request, Guid id);
 
-    Task<ChapterPaymentSettings?> GetChapterPaymentSettings(AdminServiceRequest request);
+    Task<ChapterPaymentSettings?> GetChapterPaymentSettings(MemberChapterServiceRequest request);
 
-    Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(AdminServiceRequest request);
+    Task<ChapterPaymentSettingsAdminPageViewModel> GetChapterPaymentSettingsViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(AdminServiceRequest request);
+    Task<ChapterPrivacyAdminPageViewModel> GetChapterPrivacyViewModel(MemberChapterServiceRequest request);
 
-    Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(AdminServiceRequest request);
+    Task<IReadOnlyCollection<ChapterProperty>> GetChapterProperties(MemberChapterServiceRequest request);
 
-    Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(AdminServiceRequest request);
+    Task<ChapterPropertiesAdminPageViewModel> GetChapterPropertiesViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterPropertyAdminPageViewModel> GetChapterPropertyViewModel(AdminServiceRequest request, Guid propertyId);
+    Task<ChapterPropertyAdminPageViewModel> GetChapterPropertyViewModel(MemberChapterServiceRequest request, Guid propertyId);
 
-    Task<ChapterQuestion> GetChapterQuestion(AdminServiceRequest request, Guid questionId);
+    Task<ChapterQuestion> GetChapterQuestion(MemberChapterServiceRequest request, Guid questionId);
 
-    Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(AdminServiceRequest request);
+    Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(MemberChapterServiceRequest request);
 
-    Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(AdminServiceRequest request);
+    Task<ChapterQuestionsAdminPageViewModel> GetChapterQuestionsViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterQuestionAdminPageViewModel> GetChapterQuestionViewModel(AdminServiceRequest request, Guid questionId);
+    Task<ChapterQuestionAdminPageViewModel> GetChapterQuestionViewModel(MemberChapterServiceRequest request, Guid questionId);
 
-    Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(AdminServiceRequest request);
+    Task<PaymentStatusType> GetChapterPaymentCheckoutSessionStatus(MemberChapterServiceRequest request, string externalSessionId);
 
-    Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(AdminServiceRequest request);
+    Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(MemberChapterServiceRequest request);
+
+    Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(MemberChapterServiceRequest request);
     
-    Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(AdminServiceRequest request);
+    Task<MembershipSettingsAdminPageViewModel> GetMembershipSettingsViewModel(MemberChapterServiceRequest request);
 
-    Task<ChapterEmailProvider> GetChapterEmailProvider(AdminServiceRequest request, Guid emailProviderId);
+    Task<ChapterEmailProvider> GetChapterEmailProvider(MemberChapterServiceRequest request, Guid emailProviderId);
 
-    Task<SuperAdminChapterEmailsViewModel> GetSuperAdminChapterEmailsViewModel(AdminServiceRequest request);
+    Task<SuperAdminChapterEmailsViewModel> GetSuperAdminChapterEmailsViewModel(MemberChapterServiceRequest request);
 
-    Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(Guid currentMemberId);
+    Task<SuperAdminChaptersViewModel> GetSuperAdminChaptersViewModel(MemberServiceRequest request);
 
-    Task<SuperAdminChapterViewModel> GetSuperAdminChapterViewModel(Guid currentMemberId, Guid chapterId);
+    Task<SuperAdminChapterViewModel> GetSuperAdminChapterViewModel(MemberChapterServiceRequest request);
 
-    Task<ServiceResult> PublishChapter(AdminServiceRequest request);
+    Task<ServiceResult> PublishChapter(MemberChapterServiceRequest request);
 
-    Task<ServiceResult> ReplyToConversation(AdminServiceRequest request, Guid conversationId, string message);
+    Task<ServiceResult> ReplyToConversation(
+        MemberChapterServiceRequest request, 
+        Guid conversationId, 
+        string message);
 
-    Task<ServiceResult> ReplyToMessage(AdminServiceRequest request, Guid messageId, string message);
+    Task<ServiceResult> ReplyToMessage(
+        MemberChapterServiceRequest request, 
+        Guid messageId, 
+        string message);
 
-    Task<ServiceResult> SetMessageAsReplied(AdminServiceRequest request, Guid messageId);
+    Task<ServiceResult> SetMessageAsReplied(MemberChapterServiceRequest request, Guid messageId);
 
-    Task SetOwner(AdminServiceRequest request, Guid memberId);
+    Task SetOwner(MemberChapterServiceRequest request, Guid memberId);
 
-    Task<ServiceResult> StartConversation(AdminServiceRequest request, Guid memberId, string subject, string message);
+    Task<ServiceResult> StartConversation(
+        MemberChapterServiceRequest request, 
+        Guid memberId, 
+        string subject, 
+        string message);
 
-    Task<ServiceResult> UpdateChapterAdminMember(AdminServiceRequest request, Guid memberId, 
+    Task<ServiceResult> UpdateChapterAdminMember(MemberChapterServiceRequest request, Guid memberId, 
         UpdateChapterAdminMember model);
 
-    Task<ServiceResult> UpdateChapterCurrency(AdminServiceRequest request, Guid currencyId);
+    Task<ServiceResult> UpdateChapterCurrency(MemberChapterServiceRequest request, Guid currencyId);
 
-    Task<ServiceResult> UpdateChapterDescription(AdminServiceRequest request, string description);
+    Task<ServiceResult> UpdateChapterDescription(MemberChapterServiceRequest request, string description);
 
-    Task<ServiceResult> UpdateChapterEmailProvider(AdminServiceRequest request, Guid emailProviderId, UpdateEmailProvider model);
+    Task<ServiceResult> UpdateChapterEmailProvider(MemberChapterServiceRequest request, Guid emailProviderId, UpdateEmailProvider model);
 
-    Task<ServiceResult> UpdateChapterImage(AdminServiceRequest request, UpdateChapterImage model);
+    Task<ServiceResult> UpdateChapterImage(MemberChapterServiceRequest request, UpdateChapterImage model);
 
-    Task UpdateChapterLinks(AdminServiceRequest request, UpdateChapterLinks model);    
+    Task UpdateChapterLinks(MemberChapterServiceRequest request, UpdateChapterLinks model);    
 
-    Task<ServiceResult> UpdateChapterLocation(AdminServiceRequest request,
+    Task<ServiceResult> UpdateChapterLocation(MemberChapterServiceRequest request,
         LatLong? location, string? name);
 
-    Task<ServiceResult> UpdateChapterMembershipSettings(AdminServiceRequest request, 
+    Task<ServiceResult> UpdateChapterMembershipSettings(MemberChapterServiceRequest request, 
         UpdateChapterMembershipSettings model);
 
-    Task<ServiceResult> UpdateChapterPaymentSettings(AdminServiceRequest request, 
+    Task<ServiceResult> UpdateChapterPaymentSettings(MemberChapterServiceRequest request, 
         UpdateChapterPaymentSettings model);
 
-    Task<ServiceResult> UpdateChapterPrivacySettings(AdminServiceRequest request,
+    Task<ServiceResult> UpdateChapterPrivacySettings(MemberChapterServiceRequest request,
         UpdateChapterPrivacySettings model);
 
-    Task<ServiceResult> UpdateChapterProperty(AdminServiceRequest request, 
+    Task<ServiceResult> UpdateChapterProperty(MemberChapterServiceRequest request, 
         Guid propertyId, UpdateChapterProperty model);
 
-    Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(AdminServiceRequest request, 
+    Task<IReadOnlyCollection<ChapterProperty>> UpdateChapterPropertyDisplayOrder(MemberChapterServiceRequest request, 
         Guid propertyId, int moveBy);
 
-    Task<ServiceResult> UpdateChapterQuestion(AdminServiceRequest request, 
+    Task<ServiceResult> UpdateChapterQuestion(MemberChapterServiceRequest request, 
         Guid questionId, CreateChapterQuestion model);
     
-    Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(AdminServiceRequest request,
+    Task<IReadOnlyCollection<ChapterQuestion>> UpdateChapterQuestionDisplayOrder(MemberChapterServiceRequest request,
         Guid questionId, int moveBy);
 
-    Task UpdateChapterRedirectUrl(AdminServiceRequest request, string? redirectUrl);
+    Task UpdateChapterRedirectUrl(MemberChapterServiceRequest request, string? redirectUrl);
 
-    Task<ServiceResult> UpdateChapterSiteSubscription(AdminServiceRequest request, 
+    Task<ServiceResult> UpdateChapterSiteSubscription(MemberChapterServiceRequest request, 
         Guid siteSubscriptionId, SiteSubscriptionFrequency frequency);
 
-    Task<ServiceResult> UpdateChapterSubscription(AdminServiceRequest request, 
+    Task<ServiceResult> UpdateChapterSubscription(MemberChapterServiceRequest request, 
         Guid subscriptionId, CreateChapterSubscription model);
 
-    Task<ServiceResult> UpdateChapterTexts(AdminServiceRequest request, 
+    Task<ServiceResult> UpdateChapterTexts(MemberChapterServiceRequest request, 
         UpdateChapterTexts model);
 
-    Task<ServiceResult> UpdateChapterTimeZone(AdminServiceRequest request, 
+    Task<ServiceResult> UpdateChapterTimeZone(MemberChapterServiceRequest request, 
         string? timeZoneId);
 
-    Task<ServiceResult> UpdateChapterTopics(AdminServiceRequest request,
+    Task<ServiceResult> UpdateChapterTopics(MemberChapterServiceRequest request,
         IReadOnlyCollection<Guid> topicIds);
 
-    Task<ServiceResult> UpdateSuperAdminChapter(AdminServiceRequest request, 
+    Task<ServiceResult> UpdateSuperAdminChapter(MemberChapterServiceRequest request, 
         SuperAdminChapterUpdateViewModel viewModel);
 }

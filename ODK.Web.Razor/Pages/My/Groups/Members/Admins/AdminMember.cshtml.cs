@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Platforms;
 using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Routes;
@@ -10,13 +9,10 @@ namespace ODK.Web.Razor.Pages.My.Groups.Members.Admins;
 public class AdminMemberModel : OdkGroupAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
-    private readonly IPlatformProvider _platformProvider;
 
-    public AdminMemberModel(IChapterAdminService chapterAdminService,
-        IPlatformProvider platformProvider)
+    public AdminMemberModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
-        _platformProvider = platformProvider;
     }
 
     public Guid MemberId { get; private set; }
@@ -44,8 +40,7 @@ public class AdminMemberModel : OdkGroupAdminPageModel
             return Page();            
         }                
 
-        var platform = _platformProvider.GetPlatform();
         var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
-        return Redirect(OdkRoutes.MemberGroups.MemberAdmins(platform, chapter));
+        return Redirect(OdkRoutes.MemberGroups.MemberAdmins(Platform, chapter));
     }
 }

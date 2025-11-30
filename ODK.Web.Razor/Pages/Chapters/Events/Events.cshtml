@@ -9,7 +9,8 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Events";
 
-    var viewModel = await EventViewModelService.GetEventsPage(Model.CurrentMemberIdOrDefault, Model.ChapterName);
+    var viewModel = await EventViewModelService.GetEventsPage(
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.ChapterName);
 
     Model.Path = $"/{viewModel.Chapter.Name}/events";
 }

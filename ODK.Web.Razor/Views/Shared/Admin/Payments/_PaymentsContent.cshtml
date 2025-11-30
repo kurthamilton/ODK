@@ -28,9 +28,14 @@
                     {                     
                         var (currency, member, payment, reconciliation) = (dto.Currency, dto.Member, dto.Payment, dto.PaymentReconciliation);
                         
+                        if (payment.PaidUtc == null)
+                        {
+                            continue;
+                        }
+
                         <tr>
                             <td>
-                                @Model.Chapter.ToChapterTime(payment.PaidUtc).ToString("yyyy-MM-dd HH:mm:ss")
+                                @Model.Chapter.ToChapterTime(payment.PaidUtc.Value).ToString("yyyy-MM-dd HH:mm:ss")
                             </td>
                             <td>
                                 <a href="@OdkRoutes.MemberGroups.MemberPayments(Model.Platform, Model.Chapter, member.Id)" 

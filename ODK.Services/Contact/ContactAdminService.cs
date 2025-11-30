@@ -63,15 +63,18 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         };
     }
 
-    public async Task<ServiceResult> ReplyToMessage(Guid currentMemberId, Guid messageId, string message)
+    public async Task<ServiceResult> ReplyToMessage(MemberServiceRequest request, Guid messageId, string message)
     {
         var (currentMember, originalMessage) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.SiteContactMessageRepository.GetById(messageId));
 
         AssertMemberIsSuperAdmin(currentMember);
 
-        var sendResult = await _memberEmailService.SendSiteMessageReply(originalMessage, message);
+        var sendResult = await _memberEmailService.SendSiteMessageReply(
+            request, 
+            originalMessage, 
+            message);
         if (!sendResult.Success)
         {
             return sendResult;
@@ -86,7 +89,7 @@ public class ContactAdminService : OdkAdminServiceBase, IContactAdminService
         {
             CreatedUtc = now,
             Message = _htmlSanitizer.Sanitize(message, DefaultHtmlSantizerOptions) ?? "",
-            MemberId = currentMemberId,
+            MemberId = request.CurrentMemberId,
             SiteContactMessageId = originalMessage.Id            
         });
 

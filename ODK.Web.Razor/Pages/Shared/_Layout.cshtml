@@ -1,18 +1,18 @@
-﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
-@using ODK.Core.Chapters
+﻿@using Microsoft.AspNetCore.Http.Extensions
 @using ODK.Core.Countries
 @using ODK.Core.Platforms
 @using ODK.Core.Utils
-@using ODK.Core.Web
 @using ODK.Services.Caching
 @using ODK.Web.Razor.Pages.Chapters
-@inject IPlatformProvider PlatformProvider
+@using ODK.Web.Razor.Services
 @inject IRequestCache RequestCache
-@inject IHttpRequestProvider HttpRequestProvider
+@inject IRequestStore RequestStore
 @{
-    var platform = PlatformProvider.GetPlatform();
+    var platform = RequestStore.Platform;
+
     var context = new ChapterPageContext(RequestCache, Context);
-    var chapter = await context.GetChapterAsync();
+    var chapter = await context.GetChapterAsync(platform);
+
     var title = platform switch
     {
         PlatformType.DrunkenKnitwits => "Drunken Knitwits",
@@ -29,10 +29,11 @@
     {
         title = $"{pageTitle} | {title}";
     }
-
+    
+    var requestUrl = Context.Request.GetDisplayUrl();
     var canonicalUrlPath = ViewData["Path"] as string;
     var canonicalUrl = canonicalUrlPath != null
-        ? UrlUtils.BaseUrl(HttpRequestProvider.RequestUrl) + canonicalUrlPath
+        ? UrlUtils.BaseUrl(requestUrl) + canonicalUrlPath
         : null;
 
     var description = ViewData["Description"] as string;
@@ -117,7 +118,7 @@
     @await RenderSectionAsync("styles", required: false)
 </head>
 <body>   
-    @await Html.PartialAsync("Header/_SiteHeader")
+    @await Html.PartialAsync("Header/_SiteHeader", RequestStore.ComponentContext)
 
     @await RenderSectionAsync("header")
 

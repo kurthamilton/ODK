@@ -4,6 +4,7 @@ using ODK.Core.Countries;
 using ODK.Core.Images;
 using ODK.Core.Issues;
 using ODK.Core.Platforms;
+using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Caching;
@@ -17,13 +18,13 @@ using ODK.Services.Subscriptions;
 using ODK.Services.Topics.Models;
 using ODK.Services.Users.ViewModels;
 using ODK.Web.Common.Account;
-using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Account;
 using ODK.Web.Razor.Models.Login;
 using ODK.Web.Razor.Models.Notifications;
 using ODK.Web.Razor.Models.Topics;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -37,8 +38,8 @@ public class AccountController : OdkControllerBase
     private readonly ILoginHandler _loginHandler;
     private readonly IMemberService _memberService;
     private readonly INotificationService _notificationService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IRequestCache _requestCache;
+    private readonly IRequestStore _requestStore;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
 
     public AccountController(
@@ -48,9 +49,10 @@ public class AccountController : OdkControllerBase
         IAuthenticationService authenticationService, 
         IFeatureService featureService,
         ISiteSubscriptionService siteSubscriptionService,
-        IPlatformProvider platformProvider,
         INotificationService notificationService,
-        IIssueService issueService)
+        IIssueService issueService,
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _authenticationService = authenticationService;
         _featureService = featureService;
@@ -58,8 +60,8 @@ public class AccountController : OdkControllerBase
         _loginHandler = loginHandler;
         _memberService = memberService;
         _notificationService = notificationService;
-        _platformProvider = platformProvider;
         _requestCache = requestCache;
+        _requestStore = requestStore;
         _siteSubscriptionService = siteSubscriptionService;
     }
 
@@ -89,7 +91,7 @@ public class AccountController : OdkControllerBase
             TopicIds = topics.TopicIds ?? []
         };
 
-        var result = await _memberService.CreateAccount(model);        
+        var result = await _memberService.CreateAccount(ServiceRequest, model);        
 
         if (result.Value?.Activated == true)
         {
@@ -159,7 +161,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("{chapterName}/Account/Login")]
     public async Task<IActionResult> Login(string chapterName, [FromForm] LoginViewModel viewModel, string? returnUrl)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
         var result = await _loginHandler.Login(viewModel.Email ?? "",
             viewModel.Password ?? "", true);
 
@@ -182,14 +184,13 @@ public class AccountController : OdkControllerBase
     [HttpPost("{chapterName}/account/login/google")]
     public async Task<IActionResult> GoogleChapterLogin(string chapterName, [FromForm] string token, string? returnUrl)
     {
-        var platform = _platformProvider.GetPlatform();
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var chapter = await _requestCache.GetChapterAsync(Platform, chapterName);
         var result = await _loginHandler.OAuthLogin(OAuthProviderType.Google, token);
         if (result.Success && result.Member != null)
         {
             if (string.IsNullOrEmpty(returnUrl))
             {
-                return Redirect(OdkRoutes.Groups.Group(platform, chapter));
+                return Redirect(OdkRoutes.Groups.Group(Platform, chapter));
             }
 
             return Redirect(returnUrl);
@@ -219,18 +220,18 @@ public class AccountController : OdkControllerBase
     {
         Guid? chapterId = null;
 
-        var platform = _platformProvider.GetPlatform();
-        if (platform == PlatformType.DrunkenKnitwits)
+        if (Platform == PlatformType.DrunkenKnitwits)
         {
-            var member = await _memberService.GetMember(MemberId);
+            var member = await _memberService.GetMember(MemberServiceRequest);
             chapterId = member.Chapters.Count == 1
                 ? member.Chapters.First().ChapterId
                 : null;
         }
 
         var result = chapterId != null
-            ? await _memberService.RequestMemberEmailAddressUpdate(MemberId, chapterId.Value, viewModel.Email ?? "")
-            : await _memberService.RequestMemberEmailAddressUpdate(MemberId, viewModel.Email ?? "");
+            ? await _memberService.RequestMemberEmailAddressUpdate(
+                new MemberChapterServiceRequest(chapterId.Value, MemberServiceRequest), viewModel.Email ?? "")
+            : await _memberService.RequestMemberEmailAddressUpdate(MemberServiceRequest, viewModel.Email ?? "");
 
         var successMessage =
             "An email has been sent to the email address you provided. " +
@@ -315,9 +316,7 @@ public class AccountController : OdkControllerBase
             LastName = viewModel.LastName
         };
 
-        var memberId = User.MemberId();
-
-        var result = await _memberService.UpdateMemberSiteProfile(memberId, model);
+        var result = await _memberService.UpdateMemberSiteProfile(MemberServiceRequest, model);
         AddFeedback(result, "Profile updated");
 
         return result.Success
@@ -335,7 +334,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/issues")]
     public async Task<IActionResult> CreateIssue([FromForm] IssueCreateFormViewModel viewModel)
     {
-        var result = await _issueService.CreateIssue(MemberId, new IssueCreateModel
+        var result = await _issueService.CreateIssue(MemberServiceRequest, new IssueCreateModel
         {
             Message = viewModel.Message ?? "",
             Title = viewModel.Title ?? "",
@@ -350,7 +349,7 @@ public class AccountController : OdkControllerBase
     [HttpPost("account/issues/{id:guid}/reply")]
     public async Task<IActionResult> ReplyToIssue(Guid id, [FromForm] IssueReplyFormViewModel viewModel)
     {
-        var result = await _issueService.ReplyToIssue(MemberId, id, viewModel.Message ?? "");
+        var result = await _issueService.ReplyToIssue(MemberServiceRequest, id, viewModel.Message ?? "");
         AddFeedback(result, "Reply sent");
         return RedirectToReferrer();
     }
@@ -368,7 +367,8 @@ public class AccountController : OdkControllerBase
     [HttpPost("/account/password/forgotten")]
     public async Task<IActionResult> ForgottenPassword([FromForm] ForgottenPasswordFormViewModel viewModel)
     {
-        var result = await _authenticationService.RequestPasswordResetAsync(viewModel.EmailAddress ?? "");
+        var result = await _authenticationService.RequestPasswordResetAsync(
+            ServiceRequest, viewModel.EmailAddress ?? "");
         string successMessage = 
             "An email containing password reset instructions has been sent to that email address " +
             "if it is associated with an account";
@@ -382,8 +382,9 @@ public class AccountController : OdkControllerBase
     [HttpPost("/{ChapterName}/Account/Password/Forgotten")]
     public async Task<IActionResult> ForgottenPassword(string chapterName, [FromForm] ForgottenPasswordFormViewModel viewModel)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
-        var result = await _authenticationService.RequestPasswordResetAsync(chapter.Id, viewModel.EmailAddress ?? "");
+        var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
+        var result = await _authenticationService.RequestPasswordResetAsync(
+            ServiceRequest, chapter.Id, viewModel.EmailAddress ?? "");
         var successMessage = 
             "An email containing password reset instructions has been sent to that email address " +
             "if it is associated with an account";
@@ -425,7 +426,7 @@ public class AccountController : OdkControllerBase
         [FromForm] string externalId)
     {
         var result = await _siteSubscriptionService.ConfirmMemberSiteSubscription(
-            MemberId, 
+            MemberServiceRequest, 
             siteSubscriptionPriceId, 
             externalId);
         AddFeedback(result, "Subscription updated");
@@ -433,17 +434,18 @@ public class AccountController : OdkControllerBase
     }
 
     [HttpPost("Chapters/{id:guid}/Account/Subscription/Cancel")]
-    public async Task<IActionResult> CancelChapterSubscription(Guid id, [FromForm] CancelSubscriptionRequest request)
+    public async Task<IActionResult> CancelChapterSubscription(Guid id, [FromForm] CancelSubscriptionRequest form)
     {
-        var result = await _memberService.CancelChapterSubscription(MemberId, request.ExternalId);
+        var result = await _memberService.CancelChapterSubscription(MemberId, form.ExternalId);
         AddFeedback(result, "Purchase complete. Thank you for subscribing.");
         return RedirectToReferrer();
     }
 
     [HttpPost("Chapters/{id:guid}/Account/Subscription/Purchase")]
-    public async Task<IActionResult> PurchaseChapterSubscription(Guid id, [FromForm] PurchaseSubscriptionRequest request)
+    public async Task<IActionResult> PurchaseChapterSubscription(Guid id, [FromForm] PurchaseSubscriptionRequest form)
     {
-        var result = await _memberService.PurchaseChapterSubscription(MemberId, id, request.SubscriptionId, request.Token);
+        var request = new MemberChapterServiceRequest(id, MemberServiceRequest);
+        var result = await _memberService.PurchaseChapterSubscription(request, form.SubscriptionId, form.Token);
         AddFeedback(result, "Purchase complete. Thank you for subscribing.");
         return RedirectToReferrer();
     }    
@@ -454,7 +456,7 @@ public class AccountController : OdkControllerBase
         var newTopics = NewTopicModel.Build(viewModel.NewTopicGroups, viewModel.NewTopics);
 
         var result = await _memberService.UpdateMemberTopics(
-            MemberId, 
+            MemberServiceRequest,
             viewModel.TopicIds ?? [],
             newTopics);
         AddFeedback(result, "Interests updated");

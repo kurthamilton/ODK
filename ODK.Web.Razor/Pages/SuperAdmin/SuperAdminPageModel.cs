@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Services.Caching;
 using ODK.Services.Exceptions;
 
@@ -16,12 +15,12 @@ public abstract class SuperAdminPageModel : OdkPageModel
 
     public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
+        await base.OnPageHandlerExecutionAsync(context, next);
+
         var member = await _requestCache.GetMemberAsync(CurrentMemberId);
         if (member?.SuperAdmin != true)
         {
             throw new OdkNotAuthorizedException();
-        }
-
-        await base.OnPageHandlerExecutionAsync(context, next);
+        }        
     }
 }

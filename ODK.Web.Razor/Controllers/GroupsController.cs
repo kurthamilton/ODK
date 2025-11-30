@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
-using ODK.Core.Platforms;
+using ODK.Services;
 using ODK.Services.Chapters;
 using ODK.Services.Contact;
 using ODK.Services.Members;
 using ODK.Services.Members.Models;
 using ODK.Services.Users.ViewModels;
-using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Chapters;
 using ODK.Web.Razor.Models.Contact;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -20,24 +20,25 @@ public class GroupsController : OdkControllerBase
     private readonly IChapterService _chapterService;
     private readonly IContactService _contactService;
     private readonly IMemberService _memberService;
-    private readonly IPlatformProvider _platformProvider;
 
     public GroupsController(
         IMemberService memberService,
-        IPlatformProvider platformProvider,
+        IRequestStore requestStore,
         IContactService contactService,
         IChapterService chapterService)
+        : base(requestStore)
     {
         _chapterService = chapterService;
         _contactService = contactService;
         _memberService = memberService;
-        _platformProvider = platformProvider;
     }
 
     [HttpPost("groups/{id:guid}/contact")]
     public async Task<IActionResult> Contact(Guid id, [FromForm] ContactFormViewModel viewModel)
     {
-        await _contactService.SendChapterContactMessage(id, 
+        await _contactService.SendChapterContactMessage(
+            ServiceRequest,
+            id, 
             viewModel.EmailAddress ?? "", 
             viewModel.Message ?? "", 
             viewModel.Recaptcha ?? "");
@@ -58,7 +59,7 @@ public class GroupsController : OdkControllerBase
     public async Task<IActionResult> StartConversation(Guid chapterId, [FromForm] ConversationFormViewModel viewModel)
     {
         await _contactService.StartChapterConversation(
-            MemberId,
+            MemberServiceRequest,
             chapterId,
             viewModel.Subject ?? "",
             viewModel.Message ?? "",
@@ -75,7 +76,7 @@ public class GroupsController : OdkControllerBase
         [FromForm] ChapterConversationReplyFormViewModel viewModel)
     {
         await _contactService.ReplyToChapterConversation(
-            MemberId,
+            MemberServiceRequest,
             conversationId,
             viewModel.Message ?? "");
 
@@ -92,7 +93,8 @@ public class GroupsController : OdkControllerBase
     [HttpPost("groups/{id:guid}/leave")]
     public async Task<IActionResult> LeaveGroup(Guid id, [FromForm] string reason)
     {
-        var result = await _memberService.LeaveChapter(MemberId, id, reason);
+        var request = new MemberChapterServiceRequest(id, MemberServiceRequest);
+        var result = await _memberService.LeaveChapter(request, reason);
         AddFeedback(result, "You have left the group");
                 
         if (!result.Success)
@@ -100,8 +102,7 @@ public class GroupsController : OdkControllerBase
             return RedirectToReferrer();            
         }                
 
-        var platform = _platformProvider.GetPlatform();
-        return Redirect(OdkRoutes.MemberGroups.Index(platform));
+        return Redirect(OdkRoutes.MemberGroups.Index(Platform));
     }
 
     [Authorize]
@@ -121,9 +122,9 @@ public class GroupsController : OdkControllerBase
             })
         };
 
-        var memberId = User.MemberId();
+        var request = MemberChapterServiceRequest(id);
 
-        var result = await _memberService.UpdateMemberChapterProfile(memberId, id, model);
+        var result = await _memberService.UpdateMemberChapterProfile(request, model);
         AddFeedback(result, "Profile updated");
         return result.Success ? RedirectToReferrer() : View();
     }

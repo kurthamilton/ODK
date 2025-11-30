@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ODK.Services.Caching;
 using ODK.Web.Common.Routes;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
 
@@ -8,19 +9,24 @@ namespace ODK.Web.Razor.Controllers;
 /// A controller for routes that have been permanently moved
 /// </summary>
 [Route("")]
-public class RedirectController : Controller
+public class RedirectController : OdkControllerBase
 {
     private readonly IRequestCache _requestCache;
+    private readonly IRequestStore _requestStore;
 
-    public RedirectController(IRequestCache requestCache)
+    public RedirectController(
+        IRequestCache requestCache,
+        IRequestStore requestStore)
+        : base(requestStore)
     {
         _requestCache = requestCache;
+        _requestStore = requestStore;
     }
 
     [Route("{chapterName}/join")]
     public async Task<IActionResult> ChapterJoin(string chapterName)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
         var url = OdkRoutes.Account.Join(chapter);
         return RedirectPermanent(url);
     }
@@ -28,7 +34,7 @@ public class RedirectController : Controller
     [Route("{chapterName}/login")]
     public async Task<IActionResult> ChapterLogin(string chapterName)
     {
-        var chapter = await _requestCache.GetChapterAsync(chapterName);
+        var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
         var url = OdkRoutes.Account.Login(chapter);
         return RedirectPermanent(url);
     }

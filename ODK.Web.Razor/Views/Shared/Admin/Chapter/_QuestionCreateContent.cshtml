@@ -1,14 +1,12 @@
-﻿@using ODK.Core.Platforms
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Platforms
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Components
-@model ODK.Core.Chapters.Chapter
-@inject IPlatformProvider PlatformProvider
-@{
-    var platform = PlatformProvider.GetPlatform();
-}
+@model OdkComponentViewModel<Chapter>
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
@@ -16,7 +14,7 @@
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupQuestions(platform, Model),
+            Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, Model.Value),
             Text = "FAQ"
         },
         new MenuItem { Text = "New" }

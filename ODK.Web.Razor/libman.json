@@ -3,7 +3,7 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
-      "library": "bootstrap@5.3.3",
+      "library": "bootstrap@5.3.8",
       "destination": "wwwroot/lib/bootstrap/"
     },
     {
@@ -12,7 +12,7 @@
     },
     {
       "provider": "unpkg",
-      "library": "aspnet-client-validation@0.11.0",
+      "library": "aspnet-client-validation@0.11.1",
       "destination": "wwwroot/lib/aspnet-client-validation/",
       "files": [
         "dist/aspnet-validation.css",
@@ -37,7 +37,7 @@
       "destination": "wwwroot/lib/tinymce/"
     },
     {
-      "provider": "unpkg",
+      "provider": "cdnjs",
       "library": "flatpickr@4.6.13",
       "destination": "wwwroot/lib/flatpickr/"
     },

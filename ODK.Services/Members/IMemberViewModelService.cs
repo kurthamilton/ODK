@@ -4,17 +4,17 @@ namespace ODK.Services.Members;
 
 public interface IMemberViewModelService
 {    
-    Task<MemberPageViewModel> GetGroupMemberPage(Guid currentMemberId, string slug, Guid memberId);
+    Task<MemberPageViewModel> GetGroupMemberPage(MemberServiceRequest request, string slug, Guid memberId);
 
-    Task<MembersPageViewModel> GetGroupMembersPage(Guid currentMemberId, string slug);
+    Task<MembersPageViewModel> GetGroupMembersPage(MemberServiceRequest request, string slug);
 
-    Task<MemberConversationsPageViewModel> GetMemberConversationsPage(Guid currentMemberId);
+    Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberServiceRequest request);
 
-    Task<MemberConversationsPageViewModel> GetMemberConversationsPage(Guid currentMemberId, Guid chapterId);
+    Task<MemberConversationsPageViewModel> GetMemberConversationsPage(MemberChapterServiceRequest request);
 
     Task<MemberInterestsPageViewModel> GetMemberInterestsPage(Guid currentMemberId);
 
-    Task<MemberPageViewModel> GetMemberPage(Guid currentMemberId, string chapterName, Guid memberId);
+    Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, string chapterName, Guid memberId);
 
-    Task<MembersPageViewModel> GetMembersPage(Guid currentMemberId, string chapterName);    
+    Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, string chapterName);    
 }

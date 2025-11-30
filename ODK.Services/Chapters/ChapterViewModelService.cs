@@ -21,23 +21,19 @@ namespace ODK.Services.Chapters;
 public class ChapterViewModelService : IChapterViewModelService
 {
     private readonly IAuthorizationService _authorizationService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChapterViewModelService(
         IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider,
         IAuthorizationService authorizationService)
     {
         _authorizationService = authorizationService;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<GroupsViewModel> FindGroups(Guid? currentMemberId, GroupFilter filter)
+    public async Task<GroupsViewModel> FindGroups(
+        PlatformType platform, Guid? currentMemberId, GroupFilter filter)
     {
-        var platform = _platformProvider.GetPlatform();
-
         MemberLocation? memberLocation = null;
 
         if (filter.Location == null && currentMemberId != null)
@@ -163,9 +159,9 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<ChapterCreateViewModel> GetChapterCreate(Guid currentMemberId)
+    public async Task<ChapterCreateViewModel> GetChapterCreate(
+        PlatformType platform, Guid currentMemberId)
     {
-        var platform = _platformProvider.GetPlatform();
         if (platform != PlatformType.Default)
         {
             throw new OdkNotFoundException();
@@ -196,9 +192,10 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupContactPageViewModel> GetGroupContactPage(Guid? currentMemberId, string slug)
+    public async Task<GroupContactPageViewModel> GetGroupContactPage(
+        ServiceRequest request, Guid? currentMemberId, string slug)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
@@ -246,10 +243,10 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupConversationPageViewModel> GetGroupConversationPage(Guid currentMemberId, string slug, 
-        Guid conversationId)
+    public async Task<GroupConversationPageViewModel> GetGroupConversationPage(
+        MemberServiceRequest request, string slug, Guid conversationId)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
@@ -312,9 +309,10 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupEventsPageViewModel> GetGroupEventsPage(Guid? currentMemberId, string slug)
+    public async Task<GroupEventsPageViewModel> GetGroupEventsPage(
+        ServiceRequest request, Guid? currentMemberId, string slug)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
@@ -375,9 +373,10 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupEventsPageViewModel> GetGroupPastEventsPage(Guid? currentMemberId, string slug)
+    public async Task<GroupEventsPageViewModel> GetGroupPastEventsPage(
+        ServiceRequest request, Guid? currentMemberId, string slug)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
@@ -440,9 +439,10 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupHomePageViewModel> GetGroupHomePage(Guid? currentMemberId, string slug)
+    public async Task<GroupHomePageViewModel> GetGroupHomePage(
+        ServiceRequest request, Guid? currentMemberId, string slug)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
@@ -547,9 +547,9 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
     
-    public async Task<GroupJoinPageViewModel> GetGroupJoinPage(Guid? currentMemberId, string slug)
+    public async Task<GroupJoinPageViewModel> GetGroupJoinPage(ServiceRequest request, Guid? currentMemberId, string slug)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
@@ -583,9 +583,9 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupProfilePageViewModel> GetGroupProfilePage(Guid currentMemberId, string slug)
+    public async Task<GroupProfilePageViewModel> GetGroupProfilePage(MemberServiceRequest request, string slug)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
@@ -622,9 +622,10 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupProfileSubscriptionPageViewModel> GetGroupProfileSubscriptionPage(Guid currentMemberId, string slug)
+    public async Task<GroupProfileSubscriptionPageViewModel> GetGroupProfileSubscriptionPage(
+        MemberServiceRequest request, string slug)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
@@ -658,9 +659,10 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(Guid? currentMemberId, string slug)
+    public async Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(
+        ServiceRequest request, Guid? currentMemberId, string slug)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
@@ -686,9 +688,9 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<ChapterHomePageViewModel> GetHomePage(Guid? currentMemberId, string chapterName)
+    public async Task<ChapterHomePageViewModel> GetHomePage(ServiceRequest request, Guid? currentMemberId, string chapterName)
     {        
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var chapter = await GetChapter(chapterName);
         
@@ -776,9 +778,9 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
-    public async Task<MemberChaptersViewModel> GetMemberChapters(Guid memberId)
+    public async Task<MemberChaptersViewModel> GetMemberChapters(MemberServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (chapters, adminMembers) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByMemberId(memberId),

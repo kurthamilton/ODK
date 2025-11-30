@@ -3,14 +3,12 @@ using ODK.Core.Chapters;
 using ODK.Core.Emails;
 using ODK.Core.Events;
 using ODK.Core.Members;
-using ODK.Core.Platforms;
 using ODK.Core.Utils;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
 using ODK.Services.Exceptions;
-using ODK.Services.Logging;
 using ODK.Services.Tasks;
+using ODK.Services.Web;
 
 namespace ODK.Services.Emails;
 
@@ -18,34 +16,29 @@ public class EmailService : IEmailService
 {
     private readonly IBackgroundTaskService _backgroundTaskService;
     private readonly IEmailClientFactory _emailClientFactory;
-    private readonly ILoggingService _loggingService;
-    private readonly IPlatformProvider _platformProvider;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IUrlProvider _urlProvider;
+    private readonly IUrlProviderFactory _urlProviderFactory;
 
     public EmailService(
         IUnitOfWork unitOfWork,
         IEmailClientFactory emailClientFactory,
-        IUrlProvider urlProvider,
-        IPlatformProvider platformProvider,
-        IBackgroundTaskService backgroundTaskService,
-        ILoggingService loggingService)
+        IUrlProviderFactory urlProviderFactory,
+        IBackgroundTaskService backgroundTaskService)
     {
         _backgroundTaskService = backgroundTaskService;
         _emailClientFactory = emailClientFactory;
-        _loggingService = loggingService;
-        _platformProvider = platformProvider;
         _unitOfWork = unitOfWork;
-        _urlProvider = urlProvider;
+        _urlProviderFactory = urlProviderFactory;
     }
 
     public async Task SendBulkEmail(
+        ServiceRequest request,
         Chapter chapter,
         IEnumerable<Member> to,
         EmailType type,
         IDictionary<string, string> parameters)
     {
-        await SendEmail(new SendEmailOptions
+        await SendEmail(request, new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
@@ -57,12 +50,13 @@ public class EmailService : IEmailService
     }
 
     public async Task SendBulkEmail(
+        ServiceRequest request,
         Chapter chapter,
         IEnumerable<Member> to,
         string subject,
         string body)
     {
-        await SendEmail(new SendEmailOptions
+        await SendEmail(request, new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
@@ -72,6 +66,7 @@ public class EmailService : IEmailService
     }    
 
     public async Task SendEventCommentEmail(
+        ServiceRequest request,
         Chapter chapter, 
         Member? replyToMember, 
         EventComment comment,
@@ -89,7 +84,7 @@ public class EmailService : IEmailService
             to = to.Append(replyToMember.ToEmailAddressee());
         }
 
-        await SendEmail(new SendEmailOptions
+        await SendEmail(request, new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
@@ -100,14 +95,22 @@ public class EmailService : IEmailService
         });
     }
 
-    public Task<ServiceResult> SendEmail(Chapter? chapter, EmailAddressee to, EmailType type,
+    public Task<ServiceResult> SendEmail(
+        ServiceRequest request, 
+        Chapter? chapter, 
+        EmailAddressee to, 
+        EmailType type,
         IDictionary<string, string> parameters)
-        => SendEmail(chapter, [to], type, parameters);
+        => SendEmail(request, chapter, [to], type, parameters);
 
-    public async Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, EmailType type,
+    public async Task<ServiceResult> SendEmail(
+        ServiceRequest request, 
+        Chapter? chapter, 
+        IEnumerable<EmailAddressee> to, 
+        EmailType type,
         IDictionary<string, string> parameters)
     {
-        return await SendEmail(new SendEmailOptions
+        return await SendEmail(request, new SendEmailOptions
         {
             Body = "",
             Chapter = chapter,
@@ -118,15 +121,25 @@ public class EmailService : IEmailService
         });
     }
 
-    public async Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, string subject, string body)
+    public async Task<ServiceResult> SendEmail(
+        ServiceRequest request, 
+        Chapter? chapter, 
+        IEnumerable<EmailAddressee> to, 
+        string subject, 
+        string body)
     {
-        return await SendEmail(chapter, to, subject, body, new Dictionary<string, string>());
+        return await SendEmail(request, chapter, to, subject, body, new Dictionary<string, string>());
     }
 
-    public async Task<ServiceResult> SendEmail(Chapter? chapter, IEnumerable<EmailAddressee> to, string subject, string body,
+    public async Task<ServiceResult> SendEmail(
+        ServiceRequest request, 
+        Chapter? chapter, 
+        IEnumerable<EmailAddressee> to, 
+        string subject, 
+        string body,
         IDictionary<string, string> parameters)
     {
-        return await SendEmail(new SendEmailOptions
+        return await SendEmail(request, new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
@@ -137,12 +150,13 @@ public class EmailService : IEmailService
     }
 
     public async Task<ServiceResult> SendMemberEmail(
+        ServiceRequest request,
         Chapter? chapter,
         EmailAddressee to,
         string subject,
         string body)
     {
-        return await SendEmail(new SendEmailOptions
+        return await SendEmail(request, new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
@@ -152,13 +166,14 @@ public class EmailService : IEmailService
     }
 
     public async Task<ServiceResult> SendMemberEmail(
+        ServiceRequest request,
         Chapter? chapter,
         EmailAddressee to,
         string subject,
         string body,
         IDictionary<string, string> parameters)
     {
-        return await SendEmail(new SendEmailOptions
+        return await SendEmail(request, new SendEmailOptions
         {
             Body = body,
             Chapter = chapter,
@@ -266,9 +281,10 @@ public class EmailService : IEmailService
         throw new OdkServiceException("No more emails can be sent today");
     }
 
-    private async Task<ServiceResult> SendEmail(SendEmailOptions options)
+    private async Task<ServiceResult> SendEmail(
+        ServiceRequest request, SendEmailOptions options)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
         var chapterId = options.Chapter?.Id;
 
         var (emails, chapterEmails, siteSettings) = await _unitOfWork.RunAsync(
@@ -291,14 +307,16 @@ public class EmailService : IEmailService
             parameters["chapter.name"] = options.Chapter?.Name ?? "";
         }
 
+        var urlProvider = _urlProviderFactory.Create(request);
+
         if (options.Chapter != null)
         {
-            parameters["chapter.baseurl"] = _urlProvider.GroupUrl(options.Chapter);
+            parameters["chapter.baseurl"] = urlProvider.GroupUrl(options.Chapter);
         }
 
         if (!parameters.ContainsKey("platform.baseurl"))
         {
-            parameters["platform.baseurl"] = _urlProvider.BaseUrl();
+            parameters["platform.baseurl"] = urlProvider.BaseUrl();
         }
 
         var title = siteSettings.Title.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);

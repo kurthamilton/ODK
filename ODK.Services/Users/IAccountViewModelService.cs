@@ -8,7 +8,7 @@ public interface IAccountViewModelService
 
     Task<ChapterAccountViewModel> GetChapterAccountViewModel(Guid currentMemberId, string chapterName);
 
-    Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName);
+    Task<ChapterJoinPageViewModel> GetChapterJoinPage(ServiceRequest request, string chapterName);
 
     Task<ChapterLoginPageViewModel> GetChapterLoginPage();
 
@@ -16,11 +16,12 @@ public interface IAccountViewModelService
 
     Task<ChapterProfilePageViewModel> GetChapterProfilePage(Guid currentMemberId, string chapterName);
 
-    Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(Guid currentMemberId, string chapterName);
+    Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(
+        MemberServiceRequest request, string chapterName);
 
-    Task<MemberEmailPreferencesPageViewModel> GetMemberEmailPreferencesPage(Guid currentMemberId);
+    Task<MemberEmailPreferencesPageViewModel> GetMemberEmailPreferencesPage(MemberServiceRequest request);
 
-    Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(Guid currentMemberId);
+    Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(MemberServiceRequest request);
 
     Task<SiteLoginPageViewModel> GetSiteLoginPage();
 

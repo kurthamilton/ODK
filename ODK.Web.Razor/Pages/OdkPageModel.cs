@@ -1,22 +1,32 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using ODK.Core.Countries;
+using ODK.Core.Platforms;
+using ODK.Core.Web;
 using ODK.Services;
+using ODK.Services.Caching;
 using ODK.Web.Common.Extensions;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Razor.Attributes;
+using ODK.Web.Razor.Models;
+using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Pages;
 
 public abstract class OdkPageModel : PageModel
-{    
-    public Guid CurrentMemberId => User.MemberId();
+{
+    public OdkComponentContext ComponentContext => RequestStore.ComponentContext;
 
-    public Guid? CurrentMemberIdOrDefault => User.MemberIdOrDefault();
+    public Guid CurrentMemberId => RequestStore.CurrentMemberId;
+
+    public Guid? CurrentMemberIdOrDefault => RequestStore.CurrentMemberIdOrDefault;
 
     public string? Description
     {
         get => ViewData["Description"] as string;
         set => ViewData["Description"] = value;
     }
+
+    public IHttpRequestContext HttpRequestContext => RequestStore.HttpRequestContext;
 
     public ILocation? Location
     {
@@ -30,17 +40,32 @@ public abstract class OdkPageModel : PageModel
         set => ViewData["Keywords"] = value;
     }
 
+    public MemberServiceRequest MemberServiceRequest => RequestStore.MemberServiceRequest;
+
     public string? Path
     {
         get => ViewData["Path"] as string;
         set => ViewData["Path"] = value;
     }
 
+    public PlatformType Platform => RequestStore.Platform;
+
+    [OdkInject]
+    public required IRequestCache RequestCache { get; set; }
+
+    [OdkInject]
+    public required IRequestStore RequestStore { get; set; }
+
+    public ServiceRequest ServiceRequest => RequestStore.ServiceRequest;
+
     public string? Title
     {
         get => ViewData["Title"] as string;
         set => ViewData["Title"] = value;
-    }
+    }    
+
+    public MemberChapterServiceRequest MemberChapterServiceRequest(Guid chapterId)
+        => new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
 
     protected void AddFeedback(FeedbackViewModel viewModel) => TempData!.AddFeedback(viewModel);
 

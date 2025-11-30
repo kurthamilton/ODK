@@ -10,9 +10,9 @@ using ODK.Core.Payments;
 using ODK.Core.Topics;
 using ODK.Core.Utils;
 using ODK.Core.Venues;
-using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Services.Emails;
+using ODK.Services.Web;
 
 namespace ODK.Services.Members;
 
@@ -20,21 +20,26 @@ public class MemberEmailService : IMemberEmailService
 {
     private readonly IEmailService _emailService;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IUrlProvider _urlProvider;
+    private readonly IUrlProviderFactory _urlProviderFactory;
 
     public MemberEmailService(
         IEmailService emailService, 
-        IUrlProvider urlProvider,
+        IUrlProviderFactory urlProviderFactory,
         IUnitOfWork unitOfWork)
     {
         _emailService = emailService;
         _unitOfWork = unitOfWork;
-        _urlProvider = urlProvider;
+        _urlProviderFactory = urlProviderFactory;
     }
 
-    public async Task SendActivationEmail(Chapter? chapter, Member member, string token)
-    {        
-        var url = _urlProvider.ActivateAccountUrl(chapter, token);
+    public async Task SendActivationEmail(
+        ServiceRequest request,
+        Chapter? chapter, 
+        Member member, 
+        string token)
+    {
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.ActivateAccountUrl(chapter, token);
 
         var to = member.ToEmailAddressee();
 
@@ -43,12 +48,18 @@ public class MemberEmailService : IMemberEmailService
             { "url", url }
         };
 
-        await _emailService.SendEmail(chapter, to, EmailType.ActivateAccount, parameters);
+        await _emailService.SendEmail(request, chapter, to, EmailType.ActivateAccount, parameters);
     }
 
-    public async Task SendAddressUpdateEmail(Chapter? chapter, Member member, string newEmailAddress, string token)
+    public async Task SendAddressUpdateEmail(
+        ServiceRequest request, 
+        Chapter? chapter, 
+        Member member, 
+        string newEmailAddress, 
+        string token)
     {
-        var url = _urlProvider.ConfirmEmailAddressUpdate(chapter, token);
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.ConfirmEmailAddressUpdate(chapter, token);
 
         var to = new EmailAddressee(newEmailAddress, member.FullName);
 
@@ -57,16 +68,18 @@ public class MemberEmailService : IMemberEmailService
             { "url", url }
         };
 
-        await _emailService.SendEmail(chapter, to, EmailType.EmailAddressUpdate, parameters);
+        await _emailService.SendEmail(request, chapter, to, EmailType.EmailAddressUpdate, parameters);
     }
 
     public async Task SendBulkEmail(
+        ServiceRequest request,
         Chapter chapter,
         IEnumerable<Member> to,
         string subject,
         string body)
     {
         await _emailService.SendBulkEmail(
+            request,
             chapter,
             to,
             subject,
@@ -74,6 +87,7 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendChapterConversationEmail(
+        ServiceRequest request,
         Chapter chapter,
         ChapterConversation conversation,
         ChapterConversationMessage message,
@@ -106,9 +120,10 @@ public class MemberEmailService : IMemberEmailService
             }
         }
 
+        var urlProvider = _urlProviderFactory.Create(request);
         var url = isToMember
-            ? _urlProvider.ConversationUrl(chapter, conversation.Id)
-            : _urlProvider.ConversationAdminUrl(chapter, conversation.Id);
+            ? urlProvider.ConversationUrl(chapter, conversation.Id)
+            : urlProvider.ConversationAdminUrl(chapter, conversation.Id);
 
         var addressees = to.Select(x => x.ToEmailAddressee());
 
@@ -119,15 +134,17 @@ public class MemberEmailService : IMemberEmailService
             { "url", url }
         };
 
-        await _emailService.SendEmail(chapter, addressees, subject, body, parameters);
+        await _emailService.SendEmail(request, chapter, addressees, subject, body, parameters);
     }
 
     public async Task SendChapterMessage(
+        ServiceRequest request,
         Chapter chapter, 
         IReadOnlyCollection<ChapterAdminMember> adminMembers, 
         ChapterContactMessage message)
     {
-        var url = _urlProvider.MessageAdminUrl(chapter, message.Id);
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.MessageAdminUrl(chapter, message.Id);
 
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -141,6 +158,7 @@ public class MemberEmailService : IMemberEmailService
             .Select(x => x.ToEmailAddressee());
 
         await _emailService.SendEmail(
+            request,
             chapter,
             to,
             EmailType.ContactRequest,
@@ -148,11 +166,13 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task<ServiceResult> SendChapterMessageReply(
+        ServiceRequest request,
         Chapter chapter, 
         ChapterContactMessage originalMessage, 
         string reply)
     {
-        var url = _urlProvider.GroupUrl(chapter);
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.GroupUrl(chapter);
 
         var to = new[]
         {
@@ -172,12 +192,22 @@ public class MemberEmailService : IMemberEmailService
             { "url", url }
         };
 
-        return await _emailService.SendEmail(chapter, to, "Re: your message to {title}", body, parameters);
+        return await _emailService.SendEmail(
+            request, 
+            chapter, 
+            to, 
+            "Re: your message to {title}", 
+            body, 
+            parameters);
     }
 
-    public async Task SendDuplicateMemberEmail(Chapter? chapter, Member member)
+    public async Task SendDuplicateMemberEmail(
+        ServiceRequest request, 
+        Chapter? chapter, 
+        Member member)
     {
         await _emailService.SendEmail(
+            request,
             chapter,
             member.ToEmailAddressee(),
             EmailType.DuplicateEmail,
@@ -185,12 +215,14 @@ public class MemberEmailService : IMemberEmailService
     }
 
     public async Task SendEventCommentEmail(
+        ServiceRequest request,
         Chapter chapter, 
         Event @event, 
         EventComment eventComment, 
         Member? parentCommentMember)
     {
-        var url = _urlProvider.EventUrl(chapter, @event.Id);
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.EventUrl(chapter, @event.Id);
 
         var parameters = new Dictionary<string, string>
         {
@@ -199,10 +231,16 @@ public class MemberEmailService : IMemberEmailService
             { "event.url", url }
         };
 
-        await _emailService.SendEventCommentEmail(chapter, parentCommentMember, eventComment, parameters);
+        await _emailService.SendEventCommentEmail(
+            request, 
+            chapter, 
+            parentCommentMember, 
+            eventComment, 
+            parameters);
     }
 
     public async Task SendEventInvites(
+        ServiceRequest request,
         Chapter chapter,
         Event @event,
         Venue venue,
@@ -210,11 +248,12 @@ public class MemberEmailService : IMemberEmailService
     {
         var time = @event.ToLocalTimeString(chapter.TimeZone);
 
-        var eventUrl = _urlProvider.EventUrl(chapter, @event.Id);
+        var urlProvider = _urlProviderFactory.Create(request);
+        var eventUrl = urlProvider.EventUrl(chapter, @event.Id);
         var rsvpUrl = @event.Ticketed 
-            ? _urlProvider.EventUrl(chapter, @event.Id)
-            : _urlProvider.EventRsvpUrl(chapter, @event.Id);
-        var unsubscribeUrl = _urlProvider.EmailPreferences(chapter);
+            ? urlProvider.EventUrl(chapter, @event.Id)
+            : urlProvider.EventRsvpUrl(chapter, @event.Id);
+        var unsubscribeUrl = urlProvider.EmailPreferences(chapter);
 
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -229,15 +268,20 @@ public class MemberEmailService : IMemberEmailService
         };
 
         await _emailService.SendBulkEmail(
+            request,
             chapter,
             members,
             EmailType.EventInvite,
             parameters);
     }
 
-    public async Task SendGroupApprovedEmail(Chapter chapter, Member owner)
+    public async Task SendGroupApprovedEmail(
+        ServiceRequest request, 
+        Chapter chapter, 
+        Member owner)
     {
-        var url = _urlProvider.GroupUrl(chapter);
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.GroupUrl(chapter);
 
         var subject = "{title} - Your group has been approved 🚀";
 
@@ -254,6 +298,7 @@ public class MemberEmailService : IMemberEmailService
         };
 
         await _emailService.SendMemberEmail(
+            request,
             chapter, 
             to,
             subject,
@@ -261,9 +306,13 @@ public class MemberEmailService : IMemberEmailService
             parameters);
     }
 
-    public async Task SendMemberApprovedEmail(Chapter chapter, Member member)
+    public async Task SendMemberApprovedEmail(
+        ServiceRequest request, 
+        Chapter chapter, 
+        Member member)
     {
-        var url = _urlProvider.GroupUrl(chapter);
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.GroupUrl(chapter);
 
         var parameters = new Dictionary<string, string>
         {
@@ -276,10 +325,17 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraphLink("url")
             .ToString();
 
-        await _emailService.SendMemberEmail(chapter, member.ToEmailAddressee(), subject, body, parameters);
+        await _emailService.SendMemberEmail(
+            request, 
+            chapter, 
+            member.ToEmailAddressee(), 
+            subject, 
+            body, 
+            parameters);
     }
 
     public async Task SendIssueReply(
+        ServiceRequest request,
         Issue issue,
         IssueMessage reply,
         Member? toMember,
@@ -306,10 +362,11 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraph("{issue.message}")
             .AddParagraphLink("url")
             .ToString();
-        
+
+        var urlProvider = _urlProviderFactory.Create(request);
         var url = isToMember
-            ? _urlProvider.IssueUrl(issue.Id)
-            : _urlProvider.IssueAdminUrl(issue.Id);
+            ? urlProvider.IssueUrl(issue.Id)
+            : urlProvider.IssueAdminUrl(issue.Id);
 
         var to = toMember?.ToEmailAddressee() ?? new EmailAddressee(siteEmailSettings.ContactEmailAddress, "");
 
@@ -320,10 +377,17 @@ public class MemberEmailService : IMemberEmailService
             { "url", url }
         };
 
-        await _emailService.SendEmail(null, [to], subject, body, parameters);
+        await _emailService.SendEmail(
+            request, 
+            null, 
+            [to], 
+            subject, 
+            body, 
+            parameters);
     }
 
     public async Task SendMemberChapterSubscriptionConfirmationEmail(
+        ServiceRequest request,
         Chapter chapter,
         ChapterPaymentSettings chapterPaymentSettings,
         ChapterSubscription chapterSubscription,
@@ -336,10 +400,16 @@ public class MemberEmailService : IMemberEmailService
             { "subscription.end", chapter.ToChapterTime(expiresUtc).ToString("d MMMM yyyy") }
         };
 
-        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.SubscriptionConfirmation, parameters);
+        await _emailService.SendEmail(
+            request, 
+            chapter, 
+            member.ToEmailAddressee(), 
+            EmailType.SubscriptionConfirmation, 
+            parameters);
     }
 
     public async Task SendMemberChapterSubscriptionExpiringEmail(
+        ServiceRequest request,
         Chapter chapter,
         Member member,
         MemberSubscription memberSubscription,
@@ -368,10 +438,19 @@ public class MemberEmailService : IMemberEmailService
                 _ => EmailType.SubscriptionExpired
             };
 
-        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), emailType, properties);
+        await _emailService.SendEmail(
+            request, 
+            chapter, 
+            member.ToEmailAddressee(), 
+            emailType, 
+            properties);
     }
 
-    public async Task SendMemberDeleteEmail(Chapter chapter, Member member, string? reason)
+    public async Task SendMemberDeleteEmail(
+        ServiceRequest request, 
+        Chapter chapter, 
+        Member member, 
+        string? reason)
     {
         var subject = "{title} - you have been removed from a group";
 
@@ -392,10 +471,17 @@ public class MemberEmailService : IMemberEmailService
             { "reason", reason ?? "" }
         };
 
-        await _emailService.SendEmail(chapter, [member.ToEmailAddressee()], subject, body, parameters);
+        await _emailService.SendEmail(
+            request, 
+            chapter, 
+            [member.ToEmailAddressee()], 
+            subject, 
+            body, 
+            parameters);
     }
 
     public async Task SendMemberLeftChapterEmail(
+        ServiceRequest request,
         Chapter chapter, 
         IReadOnlyCollection<ChapterAdminMember> adminMembers, 
         Member member, 
@@ -433,19 +519,30 @@ public class MemberEmailService : IMemberEmailService
         var memberChapter = member.MemberChapter(chapter.Id);
 
         var parameters = new Dictionary<string, string>
-            {
-                { "member.name", member.FullName },
-                { "chapter.name", chapter.Name },
-                { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(chapter.TimeZone) ?? "-" },
-                { "reason", reason ?? "" }
-            };
+        {
+            { "member.name", member.FullName },
+            { "chapter.name", chapter.Name },
+            { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(chapter.TimeZone) ?? "-" },
+            { "reason", reason ?? "" }
+        };
 
-        await _emailService.SendEmail(chapter, emailRecipients, subject: subject, body: body, parameters: parameters);
+        await _emailService.SendEmail(
+            request, 
+            chapter, 
+            emailRecipients, 
+            subject: subject, 
+            body: body, 
+            parameters: parameters);
     }
 
-    public async Task SendNewGroupEmail(Chapter chapter, ChapterTexts texts, SiteEmailSettings settings)
+    public async Task SendNewGroupEmail(
+        ServiceRequest request,
+        Chapter chapter, 
+        ChapterTexts texts, 
+        SiteEmailSettings settings)
     {
-        var baseUrl = _urlProvider.BaseUrl();
+        var urlProvider = _urlProviderFactory.Create(request);
+        var baseUrl = urlProvider.BaseUrl();
         var url = $"{baseUrl}/superadmin/groups";
 
         var parameters = new Dictionary<string, string>
@@ -467,6 +564,7 @@ public class MemberEmailService : IMemberEmailService
             .ToString();
 
         await _emailService.SendMemberEmail(
+            request,
             null, 
             to,
             subject,
@@ -474,7 +572,12 @@ public class MemberEmailService : IMemberEmailService
             parameters);
     }
 
-    public async Task SendNewIssueEmail(Member member, Issue issue, IssueMessage message, SiteEmailSettings settings)
+    public async Task SendNewIssueEmail(
+        ServiceRequest request,
+        Member member, 
+        Issue issue, 
+        IssueMessage message, 
+        SiteEmailSettings settings)
     {
         var subject = "{title} - New issue";
 
@@ -485,17 +588,25 @@ public class MemberEmailService : IMemberEmailService
             .AddParagraphLink("url")
             .ToString();
 
+        var urlProvider = _urlProviderFactory.Create(request);
         var to = new EmailAddressee(settings.ContactEmailAddress, "");
-        await _emailService.SendMemberEmail(null, to, subject, body, new Dictionary<string, string>
-        {
-            { "issue.title", issue.Title },
-            { "issue.title", issue.Title },
-            { "member.name", member.FullName },
-            { "url", _urlProvider.IssueAdminUrl(issue.Id) }
-        });
+        await _emailService.SendMemberEmail(
+            request, 
+            null, 
+            to, 
+            subject, 
+            body, 
+            new Dictionary<string, string>
+            {
+                { "issue.title", issue.Title },
+                { "issue.title", issue.Title },
+                { "member.name", member.FullName },
+                { "url", urlProvider.IssueAdminUrl(issue.Id) }
+            });
     }
 
     public async Task SendNewMemberAdminEmail(
+        ServiceRequest request,
         Chapter chapter,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
@@ -517,7 +628,8 @@ public class MemberEmailService : IMemberEmailService
                 memberProperty?.Value ?? "-");
         }
 
-        var url = _urlProvider.MemberAdminUrl(chapter, member.Id);
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.MemberAdminUrl(chapter, member.Id);
 
         var parameters = new Dictionary<string, string>
         {
@@ -530,17 +642,24 @@ public class MemberEmailService : IMemberEmailService
             .Select(x => x.ToEmailAddressee())
             .ToArray();
 
-        await _emailService.SendEmail(chapter, to, EmailType.NewMemberAdmin, parameters);
+        await _emailService.SendEmail(
+            request, 
+            chapter, 
+            to, 
+            EmailType.NewMemberAdmin, 
+            parameters);
     }
 
     public async Task SendNewMemberEmailsAsync(
+        ServiceRequest request,
         Chapter chapter,
         IReadOnlyCollection<ChapterAdminMember> adminMembers,
         Member member,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<MemberProperty> memberProperties)
     {
-        var eventsUrl = _urlProvider.EventsUrl(chapter);
+        var urlProvider = _urlProviderFactory.Create(request);
+        var eventsUrl = urlProvider.EventsUrl(chapter);
 
         var parameters = new Dictionary<string, string>
         {
@@ -548,14 +667,29 @@ public class MemberEmailService : IMemberEmailService
             { "member.firstName", HttpUtility.HtmlEncode(member.FirstName) }
         };
 
-        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.NewMember, parameters);
+        await _emailService.SendEmail(
+            request, 
+            chapter, 
+            member.ToEmailAddressee(), 
+            EmailType.NewMember, 
+            parameters);
 
-        await SendNewMemberAdminEmail(chapter, adminMembers, member, chapterProperties, memberProperties);
+        await SendNewMemberAdminEmail(
+            request, 
+            chapter, 
+            adminMembers, 
+            member, 
+            chapterProperties, 
+            memberProperties);
     }
 
-    public async Task SendNewTopicEmail(IReadOnlyCollection<INewTopic> newTopics, SiteEmailSettings settings)
+    public async Task SendNewTopicEmail(
+        ServiceRequest request, 
+        IReadOnlyCollection<INewTopic> newTopics, 
+        SiteEmailSettings settings)
     {
-        var url = _urlProvider.TopicApprovalUrl();
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.TopicApprovalUrl();
 
         var parameters = new Dictionary<string, string>
         {
@@ -582,47 +716,98 @@ public class MemberEmailService : IMemberEmailService
 
         var to = new EmailAddressee(settings.ContactEmailAddress, "");
 
-        await _emailService.SendMemberEmail(null, to, subject, body, parameters);
+        await _emailService.SendMemberEmail(
+            request, 
+            null, 
+            to, 
+            subject, 
+            body, 
+            parameters);
     }
 
-    public async Task SendPasswordResetEmail(Chapter? chapter, Member member, string token)
+    public async Task SendPasswordResetEmail(
+        ServiceRequest request, 
+        Chapter? chapter, 
+        Member member, 
+        string token)
     {
-        string url = _urlProvider.PasswordReset(chapter, token);
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.PasswordReset(chapter, token);
 
         var parameters = new Dictionary<string, string>
         {
             { "url", url }
         };
 
-        await _emailService.SendEmail(chapter, member.ToEmailAddressee(), EmailType.PasswordReset, parameters);
+        await _emailService.SendEmail(
+            request, 
+            chapter, 
+            member.ToEmailAddressee(), 
+            EmailType.PasswordReset, 
+            parameters);
     }
 
-    public async Task SendPaymentNotification(Payment payment, Currency currency, SiteEmailSettings settings)
+    public async Task SendPaymentNotification(
+        ServiceRequest request, 
+        Member member,
+        Payment payment, 
+        Currency currency, 
+        SiteEmailSettings settings)
     {
         var to = new EmailAddressee(settings.ContactEmailAddress, "");
         var subject = "{title} - Payment Received";
         var body = 
-            $"<p>A payment has been received for {currency.ToAmountString(payment.Amount)}</p>" +
+            $"<p>A payment has been received for {currency.ToAmountString(payment.Amount)}.</p>" +
             $"<p>Reference: {payment.Reference}</p>";
 
-        await _emailService.SendEmail(null, [to], subject, body);
+        await _emailService.SendEmail(
+            request, 
+            null, 
+            [to], 
+            subject, 
+            body);
+
+        to = new EmailAddressee(member.EmailAddress, member.FullName);
+        body =
+            $"<p>Your payment of {currency.ToAmountString(payment.Amount)} has been processed.</p>" +
+            $"<p>Reference: {payment.Reference}</p>";
+
+        await _emailService.SendEmail(
+            request,
+            null,
+            [to],
+            subject,
+            body);
     }
 
-    public async Task SendSiteMessage(SiteContactMessage message, SiteEmailSettings settings)
+    public async Task SendSiteMessage(
+        ServiceRequest request, 
+        SiteContactMessage message, 
+        SiteEmailSettings settings)
     {
+        var urlProvider = _urlProviderFactory.Create(request);
+
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "message.from", message.FromAddress },
             { "message.text", message.Message },
-            { "url", _urlProvider.MessageAdminUrl(message.Id) }
+            { "url", urlProvider.MessageAdminUrl(message.Id) }
         };
 
         var to = new EmailAddressee(settings.ContactEmailAddress, "");
 
-        await _emailService.SendEmail(null, to, EmailType.ContactRequest, parameters);
+        await _emailService.SendEmail(
+            request, 
+            null, 
+            to, 
+            EmailType.ContactRequest, 
+            parameters);
     }
 
-    public async Task<ServiceResult> SendSiteMessageReply(SiteContactMessage originalMessage, string reply)
+    public async Task<ServiceResult> SendSiteMessageReply(
+        ServiceRequest request, 
+        SiteContactMessage originalMessage, 
+        string reply)
     {        
         var to = new[]
         {
@@ -638,12 +823,20 @@ public class MemberEmailService : IMemberEmailService
             .AddText(originalMessage.Message)
             .ToString();
 
-        return await _emailService.SendEmail(null, to, subject, body);
+        return await _emailService.SendEmail(
+            request, 
+            null, 
+            to, 
+            subject, 
+            body);
     }
 
-    public async Task SendSiteSubscriptionExpiredEmail(Member member)
+    public async Task SendSiteSubscriptionExpiredEmail(
+        ServiceRequest request, 
+        Member member)
     {
-        var url = _urlProvider.MemberSiteSubscriptionUrl();
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.MemberSiteSubscriptionUrl();
 
         var subject = "{title} - Subscription Expired";
         var body = new EmailBodyBuilder()
@@ -656,12 +849,20 @@ public class MemberEmailService : IMemberEmailService
             { "url", url }
         };
 
-        await _emailService.SendMemberEmail(null, member.ToEmailAddressee(), subject, body);
+        await _emailService.SendMemberEmail(
+            request, 
+            null, 
+            member.ToEmailAddressee(), 
+            subject, 
+            body);
     }
 
-    public async Task SendSiteWelcomeEmail(Member member)
+    public async Task SendSiteWelcomeEmail(
+        ServiceRequest request, 
+        Member member)
     {
-        var url = _urlProvider.GroupsUrl();
+        var urlProvider = _urlProviderFactory.Create(request);
+        var url = urlProvider.GroupsUrl();
 
         var subject = "{title} - Welcome!";
 
@@ -677,13 +878,20 @@ public class MemberEmailService : IMemberEmailService
             { "url", url }
         };
 
-        await _emailService.SendMemberEmail(null, member.ToEmailAddressee(),
+        await _emailService.SendMemberEmail(
+            request,
+            null, 
+            member.ToEmailAddressee(),
             subject,
             body,
             parameters);
     }
 
-    public async Task<ServiceResult> SendTestEmail(Chapter? chapter, Member to, EmailType type)
+    public async Task<ServiceResult> SendTestEmail(
+        ServiceRequest request, 
+        Chapter? chapter, 
+        Member to, 
+        EmailType type)
     {
         var parameters = new Dictionary<string, string>
         {
@@ -692,10 +900,16 @@ public class MemberEmailService : IMemberEmailService
             { "member.lastName", to.FirstName }
         };
 
-        return await _emailService.SendEmail(chapter, to.ToEmailAddressee(), type, parameters);
+        return await _emailService.SendEmail(
+            request, 
+            chapter, 
+            to.ToEmailAddressee(), 
+            type, 
+            parameters);
     }
 
     public async Task SendTopicApprovedEmails(
+        ServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics, 
         IReadOnlyCollection<Member> members)
     {
@@ -745,11 +959,18 @@ public class MemberEmailService : IMemberEmailService
                 .AddTable(topicTableBuilder)
                 .ToString();
 
-            await _emailService.SendMemberEmail(null, member.ToEmailAddressee(), subject, body, parameters);
+            await _emailService.SendMemberEmail(
+                request, 
+                null, 
+                member.ToEmailAddressee(), 
+                subject, 
+                body, 
+                parameters);
         }
     }
 
     public async Task SendTopicRejectedEmails(
+        ServiceRequest request,
         IReadOnlyCollection<INewTopic> newTopics,
         IReadOnlyCollection<Member> members)
     {
@@ -799,7 +1020,13 @@ public class MemberEmailService : IMemberEmailService
                 .AddTable(topicTableBuilder)
                 .ToString();
 
-            await _emailService.SendMemberEmail(null, member.ToEmailAddressee(), subject, body, parameters);
+            await _emailService.SendMemberEmail(
+                request, 
+                null, 
+                member.ToEmailAddressee(), 
+                subject, 
+                body, 
+                parameters);
         }
     }
 }

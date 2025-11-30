@@ -14,8 +14,8 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Email preferences";
 
-    var chapter = await RequestCache.GetChapterAsync(Model.ChapterName);
-    var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.CurrentMemberId);
+    var chapter = await RequestCache.GetChapterAsync(Model.Platform, Model.ChapterName);
+    var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.MemberServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

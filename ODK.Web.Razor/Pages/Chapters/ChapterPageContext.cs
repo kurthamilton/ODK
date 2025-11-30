@@ -1,13 +1,14 @@
 ﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Services.Caching;
-using ODK.Web.Common.Extensions;
+using ODK.Web.Common.Services;
 
 namespace ODK.Web.Razor.Pages.Chapters;
 
 public class ChapterPageContext
 {
-    private readonly HttpContext? _httpContext;
+    private readonly HttpContext _httpContext;
     private readonly IRequestCache _requestCache;
 
     public ChapterPageContext(IRequestCache requestCache, HttpContext httpContext)
@@ -39,9 +40,9 @@ public class ChapterPageContext
             : null;
     }
 
-    public async Task<Chapter?> GetChapterAsync()
+    public async Task<Chapter?> GetChapterAsync(PlatformType platform)
     {
-        var chapterName = _httpContext?.Request.RouteValues["chapterName"] as string;
+        var chapterName = _httpContext.Request.RouteValues["chapterName"] as string;
         if (string.IsNullOrWhiteSpace(chapterName))
         {
             return null;
@@ -49,7 +50,8 @@ public class ChapterPageContext
 
         try
         {
-            return await _requestCache.GetChapterAsync(chapterName);
+            var httpRequestContext = new HttpRequestContext(_httpContext.Request);
+            return await _requestCache.GetChapterAsync(platform, chapterName);
         }
         catch
         {
@@ -57,9 +59,8 @@ public class ChapterPageContext
         }
     }
 
-    public async Task<Member?> GetMemberAsync()
-    {
-       var memberId = _httpContext?.User.MemberIdOrDefault();
+    public async Task<Member?> GetMemberAsync(Guid? memberId)
+    {       
        if (!memberId.HasValue)
        {
             return null;

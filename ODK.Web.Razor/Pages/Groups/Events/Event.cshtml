@@ -9,7 +9,8 @@
 @{
     Layout = "_HomeLayout";
 
-    var viewModel = await EventViewModelService.GetGroupEventPageViewModel(Model.CurrentMemberIdOrDefault, Model.Slug, Model.EventId);
+    var viewModel = await EventViewModelService.GetGroupEventPageViewModel(
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug, Model.EventId);
 
     Model.Title = $"{viewModel.Event.GetDisplayName()} | {viewModel.Chapter.Name}";
 }

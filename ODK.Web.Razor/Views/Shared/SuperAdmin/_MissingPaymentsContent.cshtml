@@ -1,0 +1,43 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Payments
+@using ODK.Services
+@using ODK.Services.Chapters
+@using ODK.Services.Payments
+@using ODK.Services.Payments.Models
+@using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.SuperAdmin
+@model IReadOnlyCollection<MissingPaymentModel>
+
+<h2 class="d-none d-md-block">Missing payments</h2>
+
+<section class="section">
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Remote Customer</th>
+                    <th>Member</th>
+                    <th>Amount</th>
+                    <th>Member subscription</th>
+                    <th>Payment Id</th>
+                    <th>Subscription Id</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var missingPayment in Model)
+                {
+                    <tr>
+                        <td>@missingPayment.Created.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@(missingPayment.MemberEmail ?? "-")</td>
+                        <td>@missingPayment.Member?.Id</td>
+                        <td>@missingPayment.Currency.ToAmountString(missingPayment.Amount)</td>
+                        <td>@missingPayment.MemberSubscriptionRecord?.Id</td>
+                        <td>@missingPayment.PaymentId</td>
+                        <td>@missingPayment.SubscriptionId</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>        
+</section>

@@ -1,5 +1,4 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -18,6 +17,7 @@ using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
 using ODK.Services.Topics;
 using ODK.Services.Topics.Models;
 
@@ -33,7 +33,6 @@ public class MemberService : IMemberService
     private readonly IOAuthProviderFactory _oauthProviderFactory;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IPaymentService _paymentService;    
-    private readonly IPlatformProvider _platformProvider;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -43,7 +42,6 @@ public class MemberService : IMemberService
         IPaymentService paymentService, 
         ICacheService cacheService, 
         IMemberImageService memberImageService, 
-        IPlatformProvider platformProvider, 
         IMemberEmailService memberEmailService,
         INotificationService notificationService,
         IOAuthProviderFactory oauthProviderFactory,
@@ -58,7 +56,6 @@ public class MemberService : IMemberService
         _oauthProviderFactory = oauthProviderFactory;
         _paymentProviderFactory = paymentProviderFactory;
         _paymentService = paymentService;        
-        _platformProvider = platformProvider;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
@@ -135,18 +132,17 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
     
-    public async Task<ServiceResult<Member?>> CreateAccount(CreateAccountModel model)
+    public async Task<ServiceResult<Member?>> CreateAccount(ServiceRequest request, CreateAccountModel model)
     {
-        var platform = _platformProvider.GetPlatform();
         var (existing, siteSubscription, distanceUnits, topics) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByEmailAddress(model.EmailAddress),
-            x => x.SiteSubscriptionRepository.GetDefault(platform),
+            x => x.SiteSubscriptionRepository.GetDefault(request.Platform),
             x => x.DistanceUnitRepository.GetAll(),
             x => x.TopicRepository.GetByIds(model.TopicIds));
 
         if (existing != null)
         {
-            await _memberEmailService.SendDuplicateMemberEmail(null, existing);
+            await _memberEmailService.SendDuplicateMemberEmail(request, null, existing);
             return ServiceResult<Member?>.Successful(null);
         }
         
@@ -224,23 +220,26 @@ public class MemberService : IMemberService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _topicService.AddNewMemberTopics(member.Id, model.NewTopics);
+        await _topicService.AddNewMemberTopics(
+            new MemberServiceRequest(member.Id, request),
+            model.NewTopics);
 
         if (!string.IsNullOrEmpty(activationToken))
         {
-            await _memberEmailService.SendActivationEmail(null, member, activationToken);
+            await _memberEmailService.SendActivationEmail(request, null, member, activationToken);
         }
         else
         {
-            await _memberEmailService.SendSiteWelcomeEmail(member);
+            await _memberEmailService.SendSiteWelcomeEmail(request, member);
         }
 
         return ServiceResult<Member?>.Successful(member);
     }
 
-    public async Task<ServiceResult> CreateChapterAccount(Guid chapterId, CreateMemberProfile model)
+    public async Task<ServiceResult> CreateChapterAccount(ServiceRequest request, Guid chapterId, CreateMemberProfile model)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
+
         var (
             chapter, 
             chapterProperties, 
@@ -277,7 +276,7 @@ public class MemberService : IMemberService
 
         if (existing != null)
         {
-            await _memberEmailService.SendDuplicateMemberEmail(chapter, existing);
+            await _memberEmailService.SendDuplicateMemberEmail(request, chapter, existing);
             return ServiceResult.Successful();
         }
 
@@ -347,7 +346,7 @@ public class MemberService : IMemberService
 
         try
         {
-            await _memberEmailService.SendActivationEmail(chapter, member, activationToken);
+            await _memberEmailService.SendActivationEmail(request, chapter, member, activationToken);
 
             return ServiceResult.Successful();
         }        
@@ -434,29 +433,12 @@ public class MemberService : IMemberService
         return await _unitOfWork.MemberRepository.GetByEmailAddress(emailAddress).Run();
     }
 
-    public async Task<Member> GetMember(Guid memberId)
+    public async Task<Member> GetMember(MemberServiceRequest request)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(memberId).Run();
+        var member = await _unitOfWork.MemberRepository
+            .GetById(request.CurrentMemberId).Run();
         return member;
-    }
-
-    public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId)
-    {
-        var result = await _cacheService.GetOrSetVersionedItem(
-            () => _unitOfWork.MemberImageRepository.GetByMemberId(memberId).Run(),
-            memberId,
-            currentVersion);
-
-        if (currentVersion == result.Version)
-        {
-            return result;
-        }
-
-        var image = result.Value;
-        return image != null
-            ? new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image)
-            : new VersionedServiceResult<MemberImage>(0, null);
-    }
+    }    
 
     public async Task<VersionedServiceResult<MemberAvatar>> GetMemberAvatar(long? currentVersion, Guid memberId)
     {
@@ -480,19 +462,62 @@ public class MemberService : IMemberService
         return new VersionedServiceResult<MemberAvatar>(version, image);
     }
 
+    public async Task<VersionedServiceResult<MemberImage>> GetMemberImage(long? currentVersion, Guid memberId)
+    {
+        var result = await _cacheService.GetOrSetVersionedItem(
+            () => _unitOfWork.MemberImageRepository.GetByMemberId(memberId).Run(),
+            memberId,
+            currentVersion);
+
+        if (currentVersion == result.Version)
+        {
+            return result;
+        }
+
+        var image = result.Value;
+        return image != null
+            ? new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image)
+            : new VersionedServiceResult<MemberImage>(0, null);
+    }
+
+    public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
+        MemberChapterServiceRequest request, string externalSessionId)
+    {
+        var (sitePaymentSettings, chapterPaymentSettings, checkoutSession) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
+        
+        IPaymentSettings paymentSettings = chapterPaymentSettings == null || chapterPaymentSettings.UseSitePaymentProvider
+            ? sitePaymentSettings
+            : chapterPaymentSettings;
+
+        if (checkoutSession.CompletedUtc != null)
+        {
+            return PaymentStatusType.Complete;
+        }
+
+        var externalSession = await _paymentService.GetCheckoutSession(paymentSettings, externalSessionId);
+
+        return externalSession == null || externalSession.Metadata.ChapterId != request.ChapterId
+            ? PaymentStatusType.Expired 
+            : PaymentStatusType.Pending;
+    }
+
     public async Task<MemberLocation?> GetMemberLocation(Guid memberId)
     {
         return await _unitOfWork.MemberLocationRepository.GetByMemberId(memberId);
-    }
+    }    
 
     public async Task<MemberPreferences?> GetMemberPreferences(Guid memberId)
     {
         return await _unitOfWork.MemberPreferencesRepository.GetByMemberId(memberId).Run();
     }
 
-    public async Task<ServiceResult> JoinChapter(Guid currentMemberId, Guid chapterId, IEnumerable<UpdateMemberProperty> properties)
+    public async Task<ServiceResult> JoinChapter(
+        MemberChapterServiceRequest request, IEnumerable<UpdateMemberProperty> properties)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, chapterId, platform) = (request.CurrentMemberId, request.ChapterId, request.Platform);
 
         var (
             chapter, 
@@ -542,13 +567,21 @@ public class MemberService : IMemberService
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _memberEmailService.SendNewMemberAdminEmail(chapter, adminMembers, currentMember, chapterProperties, memberProperties);
+        await _memberEmailService.SendNewMemberAdminEmail(
+            request, 
+            chapter, 
+            adminMembers, 
+            currentMember, 
+            chapterProperties, 
+            memberProperties);
 
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> LeaveChapter(Guid currentMemberId, Guid chapterId, string reason)
+    public async Task<ServiceResult> LeaveChapter(MemberChapterServiceRequest request, string reason)
     {
+        var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+
         var (chapter, adminMembers) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapterId));        
@@ -561,6 +594,7 @@ public class MemberService : IMemberService
         }
 
         await _memberEmailService.SendMemberLeftChapterEmail(
+            request,
             chapter,
             adminMembers,
             currentMember,
@@ -569,9 +603,13 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> PurchaseChapterSubscription(Guid memberId, Guid chapterId, Guid chapterSubscriptionId,
+    public async Task<ServiceResult> PurchaseChapterSubscription(
+        MemberChapterServiceRequest request, 
+        Guid chapterSubscriptionId,
         string cardToken)
     {
+        var (memberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+
         var (paymentSettings, member, chapterSubscription, memberSubscription) = await _unitOfWork.RunAsync(
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(memberId),
@@ -588,8 +626,12 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Payment not made: you are not a member of this subscription's chapter");
         }
 
-        var paymentResult = await _paymentService.MakePayment(paymentSettings, 
-            paymentSettings.Currency, member, (decimal)chapterSubscription.Amount, cardToken, 
+        var paymentResult = await _paymentService.MakePayment(
+            paymentSettings, 
+            paymentSettings.Currency, 
+            member, 
+            (decimal)chapterSubscription.Amount, 
+            cardToken, 
             chapterSubscription.Title);
         if (!paymentResult.Success)
         {
@@ -631,6 +673,7 @@ public class MemberService : IMemberService
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId));
 
         await _memberEmailService.SendMemberChapterSubscriptionConfirmationEmail(
+            request,
             chapter,
             chapterPaymentSettings,
             chapterSubscription,
@@ -640,22 +683,36 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, Guid chapterId, string newEmailAddress)
+    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberChapterServiceRequest request, string newEmailAddress)
     {
+        var (memberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+
         var (chapter, member, existingToken) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
 
-        return await RequestMemberEmailAddressUpdate(chapter, member, newEmailAddress, existingToken);
+        return await RequestMemberEmailAddressUpdate(
+            request, 
+            chapter, 
+            member, 
+            newEmailAddress, 
+            existingToken);
     }
 
-    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(Guid memberId, string newEmailAddress)
+    public async Task<ServiceResult> RequestMemberEmailAddressUpdate(MemberServiceRequest request, string newEmailAddress)
     {
+        var memberId = request.CurrentMemberId;
+
         var (member, existingToken) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.MemberEmailAddressUpdateTokenRepository.GetByMemberId(memberId));
-        return await RequestMemberEmailAddressUpdate(null, member, newEmailAddress, existingToken);
+        return await RequestMemberEmailAddressUpdate(
+            request, 
+            null, 
+            member, 
+            newEmailAddress, 
+            existingToken);
     }
 
     public async Task RotateMemberImage(Guid memberId)
@@ -692,114 +749,10 @@ public class MemberService : IMemberService
         _cacheService.RemoveVersionedItem<MemberAvatar>(memberId);
     }    
 
-    public async Task<bool> CompleteChapterSubscriptionCheckoutSession(
-        Guid memberId, Guid chapterSubscriptionId, string sessionId)
-    {
-        var platform = _platformProvider.GetPlatform();
-
-        var (member, chapterSubscription, paymentCheckoutSession) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(memberId),
-            x => x.ChapterSubscriptionRepository.GetById(chapterSubscriptionId),
-            x => x.PaymentCheckoutSessionRepository.GetByMemberId(memberId, sessionId));
-
-        if (paymentCheckoutSession == null || paymentCheckoutSession.CompletedUtc != null)
-        {
-            return false;
-        }
-
-        var memberChapter = member.MemberChapter(chapterSubscription.ChapterId);
-        OdkAssertions.Exists(memberChapter);
-
-        var (chapterPaymentSettings, sitePaymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId),
-            x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterSubscription.ChapterId));
-
-        IPaymentSettings paymentSettings = chapterPaymentSettings.UseSitePaymentProvider
-            ? sitePaymentSettings
-            : chapterPaymentSettings;
-
-        if (string.IsNullOrEmpty(chapterSubscription.ExternalId))
-        {
-            throw new Exception("Error completing checkout session: chapterSubscription.ExternalId missing");
-        }
-
-        var subscriptionPlan = await _paymentService.GetSubscriptionPlan(paymentSettings, chapterSubscription.ExternalId);
-        if (subscriptionPlan == null)
-        {
-            throw new Exception("Error completing checkout session: subscriptionPlan not found");
-        }
-
-        var checkoutSession = await _paymentService.GetCheckoutSession(paymentSettings, sessionId);
-        if (checkoutSession?.Complete != true)
-        {
-            return false;
-        }
-
-        memberSubscription ??= new MemberSubscription();
-
-        var now = memberSubscription.ExpiresUtc > DateTime.UtcNow ? memberSubscription.ExpiresUtc.Value : DateTime.UtcNow;
-        var expiresUtc = now.AddMonths(chapterSubscription.Months);
-        memberSubscription.ExpiresUtc = expiresUtc;
-        memberSubscription.Type = chapterSubscription.Type;
-
-        if (memberSubscription.MemberChapterId == default)
-        {
-            memberSubscription.MemberChapterId = memberChapter.Id;
-            _unitOfWork.MemberSubscriptionRepository.Add(memberSubscription);
-        }
-        else
-        {
-            _unitOfWork.MemberSubscriptionRepository.Update(memberSubscription);
-        }
-
-        var memberSubscriptionRecord = new MemberSubscriptionRecord
-        {
-            Amount = chapterSubscription.Amount,
-            ChapterId = chapterSubscription.ChapterId,
-            ChapterSubscriptionId = chapterSubscription.Id,
-            ExternalId = checkoutSession.SubscriptionId,
-            MemberId = memberId,
-            Months = chapterSubscription.Months,
-            PaymentId = Guid.NewGuid(),
-            PurchasedUtc = DateTime.UtcNow,
-            Type = chapterSubscription.Type
-        };
-        _unitOfWork.MemberSubscriptionRecordRepository.Add(memberSubscriptionRecord);
-
-        paymentCheckoutSession.CompletedUtc = DateTime.UtcNow;
-        _unitOfWork.PaymentCheckoutSessionRepository.Update(paymentCheckoutSession);
-
-        var payment = new Payment
-        {
-            Amount = (decimal)memberSubscriptionRecord.Amount,
-            ChapterId = memberSubscriptionRecord.ChapterId,
-            CurrencyId = chapterPaymentSettings.CurrencyId,
-            Id = memberSubscriptionRecord.PaymentId.Value,
-            MemberId = memberSubscriptionRecord.MemberId,
-            PaidUtc = memberSubscriptionRecord.PurchasedUtc,
-            Reference = $"Subscription: {chapterSubscription.Name}"
-        };
-
-        _unitOfWork.PaymentRepository.Add(payment);
-
-        await _unitOfWork.SaveChangesAsync();
-
-        if (chapterPaymentSettings?.UseSitePaymentProvider == true)
-        {
-            var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
-            var currency = chapterPaymentSettings.Currency;
-
-            await _memberEmailService.SendPaymentNotification(payment, currency, siteEmailSettings);
-        }
-
-        return true;
-    }
-
-    public async Task<ChapterSubscriptionCheckoutViewModel> StartChapterSubscriptionCheckoutSession(
-        Guid memberId, Guid chapterSubscriptionId, string returnPath)
-    {
-        var platform = _platformProvider.GetPlatform();
+    public async Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
+        MemberServiceRequest request, Guid chapterSubscriptionId, string returnPath)
+    {        
+        var memberId = request.CurrentMemberId;
 
         var (member, chapterSubscription) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
@@ -824,24 +777,47 @@ public class MemberService : IMemberService
             throw new Exception("Error starting checkout session: subscriptionPlan not found");
         }
 
-        var session = await _paymentService.StartCheckoutSession(paymentSettings, subscriptionPlan, returnPath);
+        var utcNow = DateTime.UtcNow;
+        var paymentCheckoutSessionId = Guid.NewGuid();
+        var paymentId = Guid.NewGuid();
+
+        var metadata = new PaymentMetadataModel(
+            member, 
+            chapterSubscription,
+            paymentCheckoutSessionId: paymentCheckoutSessionId,
+            paymentId: paymentId);
+
+        var externalCheckoutSession = await _paymentService.StartCheckoutSession(
+            request, paymentSettings, subscriptionPlan, returnPath, metadata);        
 
         _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
-        {
+        {            
+            Id = paymentCheckoutSessionId,
             MemberId = memberId,
             PaymentId = chapterSubscriptionId,
-            SessionId = session.SessionId,
-            StartedUtc = DateTime.UtcNow
+            SessionId = externalCheckoutSession.SessionId,
+            StartedUtc = utcNow
+        });
+
+        _unitOfWork.PaymentRepository.Add(new Payment
+        {
+            Amount = (decimal)chapterSubscription.Amount,
+            ChapterId = chapterSubscription.ChapterId,
+            CreatedUtc = utcNow,
+            CurrencyId = chapterPaymentSettings.CurrencyId,
+            ExternalId = externalCheckoutSession.PaymentId,
+            Id = paymentId,
+            MemberId = memberId,
+            Reference = chapterSubscription.ToReference()
         });
 
         await _unitOfWork.SaveChangesAsync();
 
-        return new ChapterSubscriptionCheckoutViewModel
+        return new ChapterSubscriptionCheckoutStartedViewModel
         {
-            ClientSecret = session.ClientSecret,
+            ClientSecret = externalCheckoutSession.ClientSecret,
             CurrencyCode = subscriptionPlan.CurrencyCode,
-            PaymentSettings = paymentSettings,
-            Platform = platform
+            PaymentSettings = paymentSettings
         };
     }
 
@@ -890,12 +866,15 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }    
 
-    public async Task<ServiceResult> UpdateMemberChapterProfile(Guid id, Guid chapterId, UpdateMemberChapterProfile model)
+    public async Task<ServiceResult> UpdateMemberChapterProfile(
+        MemberChapterServiceRequest request, UpdateMemberChapterProfile model)
     {
+        var (currentMemberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
+
         var (chapterProperties, member, memberProperties) = await _unitOfWork.RunAsync(
             x => x.ChapterPropertyRepository.GetByChapterId(chapterId),
-            x => x.MemberRepository.GetById(id),
-            x => x.MemberPropertyRepository.GetByMemberId(id, chapterId));
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.MemberPropertyRepository.GetByMemberId(currentMemberId, chapterId));
 
         var validationResult = ValidateMemberProfile(chapterProperties, model, forApplication: false);
         if (!validationResult.Success)
@@ -1074,9 +1053,11 @@ public class MemberService : IMemberService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdateMemberSiteProfile(Guid id, UpdateMemberSiteProfile model)
+    public async Task<ServiceResult> UpdateMemberSiteProfile(
+        MemberServiceRequest request, UpdateMemberSiteProfile model)
     {
-        var member = await _unitOfWork.MemberRepository.GetById(id).Run();
+        var member = await _unitOfWork.MemberRepository
+            .GetById(request.CurrentMemberId).Run();
 
         member.FirstName = model.FirstName.Trim();
         member.LastName = model.LastName.Trim();
@@ -1088,10 +1069,12 @@ public class MemberService : IMemberService
     }
 
     public async Task<ServiceResult> UpdateMemberTopics(
-        Guid id, 
+        MemberServiceRequest request, 
         IReadOnlyCollection<Guid> topicIds, 
         IReadOnlyCollection<NewTopicModel> newTopics)
     {
+        var id = request.CurrentMemberId;
+
         var existing = await _unitOfWork.MemberTopicRepository.GetByMemberId(id).Run();
 
         if (_unitOfWork.MemberTopicRepository.Merge(existing, id, topicIds) > 0)
@@ -1099,7 +1082,9 @@ public class MemberService : IMemberService
             await _unitOfWork.SaveChangesAsync();
         }
 
-        await _topicService.AddNewMemberTopics(id, newTopics);
+        await _topicService.AddNewMemberTopics(
+            request,
+            newTopics);
 
         return ServiceResult.Successful();
     }
@@ -1115,24 +1100,6 @@ public class MemberService : IMemberService
         }
 
         return ServiceResult.Failure("This group is not able to welcome any new members");
-    }
-
-    private static IEnumerable<string> GetMissingMemberProfileProperties(
-        CreateMemberProfile profile, 
-        IEnumerable<ChapterProperty> chapterProperties,
-        IEnumerable<UpdateMemberProperty> memberProperties,
-        bool forApplication)
-    {
-        if (string.IsNullOrWhiteSpace(profile.EmailAddress))
-        {
-            yield return "Email address";
-        }
-
-        var missingProperties = GetMissingMemberProfileProperties(chapterProperties, memberProperties, forApplication);
-        foreach (string property in missingProperties)
-        {
-            yield return property;
-        }
     }
 
     private static IEnumerable<string> GetMissingMemberProfileProperties(
@@ -1206,6 +1173,7 @@ public class MemberService : IMemberService
     }
 
     private async Task<ServiceResult> RequestMemberEmailAddressUpdate(
+        ServiceRequest request,
         Chapter? chapter, 
         Member member, 
         string newEmailAddress, 
@@ -1235,7 +1203,12 @@ public class MemberService : IMemberService
             NewEmailAddress = newEmailAddress
         });
 
-        await _memberEmailService.SendAddressUpdateEmail(chapter, member, newEmailAddress, activationToken);
+        await _memberEmailService.SendAddressUpdateEmail(
+            request, 
+            chapter, 
+            member, 
+            newEmailAddress, 
+            activationToken);
 
         return ServiceResult.Successful();
     }

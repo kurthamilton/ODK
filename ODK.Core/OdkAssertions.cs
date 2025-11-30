@@ -26,6 +26,9 @@ public static class OdkAssertions
     public static T BelongsToChapter<T>([NotNull] T? value, Guid chapterId) where T : IChapterEntity
         => MeetsCondition(value, x => x.ChapterId == chapterId);
 
+    public static T BelongsToMember<T>([NotNull] T? value, Guid memberId) where T : IMemberEntity
+        => MeetsCondition(value, x => x.MemberId == memberId);
+
     public static T MeetsCondition<T>([NotNull] T? value, Func<T, bool> condition) 
         => MeetsCondition(value, condition, "");
 

@@ -12,9 +12,9 @@ public class SubscriptionsPageViewModel
 
     public required Currency? Currency { get; init; }
 
-    public required ExternalSubscription? ExternalSubscription { get; init; }
+    public required ChapterSubscription? CurrentSubscription { get; init; }
 
-    public required ChapterMembershipSettings MembershipSettings { get; init; }
+    public required ExternalSubscription? ExternalSubscription { get; init; }
 
     public required MemberSubscription? MemberSubscription { get; init; }
 

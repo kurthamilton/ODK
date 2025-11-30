@@ -14,16 +14,23 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var dto in Model.Payments.OrderByDescending(x => x.Payment.PaidUtc))
+            @foreach (var dto in Model.Payments.OrderByDescending(x => x.Payment.CreatedUtc))
             {
                 var payment = dto.Payment;
-
+                
                 <tr>
                     <td>
                         <a href="@OdkRoutes.Groups.Group(Model.Platform, dto.Chapter)">@dto.Chapter.Name</a>
                     </td>
                     <td>
-                        @payment.PaidUtc.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? dto.Chapter.TimeZone)
+                        @if (payment.PaidUtc != null)
+                        {
+                            @payment.PaidUtc.Value.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? dto.Chapter.TimeZone)
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">INCOMPLETE</span>
+                        }
                     </td>
                     <td>
                         @dto.Currency.ToAmountString(payment.Amount)

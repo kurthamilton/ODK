@@ -8,5 +8,5 @@ public interface IIssueAdminService
 
     Task<IssuesAdminPageViewModel> GetIssuesAdminPageViewModel(Guid currentMemberId);
 
-    Task<ServiceResult> ReplyToIssue(Guid currentMemberId, Guid issueId, string message);
+    Task<ServiceResult> ReplyToIssue(MemberServiceRequest request, Guid issueId, string message);
 }

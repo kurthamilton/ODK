@@ -4,7 +4,6 @@
 @using ODK.Core.Members
 @using ODK.Services.Countries
 @using ODK.Services.Members
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
@@ -15,10 +14,10 @@
     Layout = "_AccountLayout";
     Model.Title = "Location";
 
-    var memberId = User.MemberId();
+    var memberId = Model.MemberServiceRequest.CurrentMemberId;
 
     var distanceUnitOptions = await CountryService.GetDistanceUnits();
-    var member = await MemberService.GetMember(memberId);
+    var member = await MemberService.GetMember(Model.MemberServiceRequest);
     var memberPreferences = await MemberService.GetMemberPreferences(memberId);
     var location = await MemberService.GetMemberLocation(memberId);
 }

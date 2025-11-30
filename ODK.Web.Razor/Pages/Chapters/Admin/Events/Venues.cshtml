@@ -8,8 +8,7 @@
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Venues | Admin";
 
-    var request = new AdminServiceRequest(Model.Chapter.Id, Model.CurrentMemberId);
-    var viewModel = await VenueAdminService.GetVenuesViewModel(request);
+    var viewModel = await VenueAdminService.GetVenuesViewModel(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Admin/Venues/_VenuesContent", viewModel)

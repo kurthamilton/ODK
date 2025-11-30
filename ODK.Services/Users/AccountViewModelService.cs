@@ -9,16 +9,13 @@ namespace ODK.Services.Users;
 
 public class AccountViewModelService : IAccountViewModelService
 {
-    private readonly IPlatformProvider _platformProvider;
     private readonly AccountViewModelServiceSettings _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public AccountViewModelService(
         IUnitOfWork unitOfWork,
-        IPlatformProvider platformProvider,
         AccountViewModelServiceSettings settings)
     {
-        _platformProvider = platformProvider;
         _settings = settings;
         _unitOfWork = unitOfWork;
     }    
@@ -53,9 +50,10 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }         
 
-    public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(string chapterName)
+    public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(
+        ServiceRequest request, string chapterName)
     {
-        var platform = _platformProvider.GetPlatform();
+        var platform = request.Platform;
 
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
@@ -151,9 +149,10 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
-    public async Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(Guid currentMemberId, string chapterName)
+    public async Task<MemberChapterPaymentsPageViewModel> GetMemberChapterPaymentsPage(
+        MemberServiceRequest request, string chapterName)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
@@ -171,9 +170,10 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
-    public async Task<MemberEmailPreferencesPageViewModel> GetMemberEmailPreferencesPage(Guid currentMemberId)
+    public async Task<MemberEmailPreferencesPageViewModel> GetMemberEmailPreferencesPage(
+        MemberServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (member, preferences) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
@@ -187,9 +187,9 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
-    public async Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(Guid currentMemberId)
+    public async Task<MemberPaymentsPageViewModel> GetMemberPaymentsPage(MemberServiceRequest request)
     {
-        var platform = _platformProvider.GetPlatform();
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var (member, payments) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),

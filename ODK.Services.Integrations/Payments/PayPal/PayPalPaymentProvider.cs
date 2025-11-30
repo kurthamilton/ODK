@@ -4,6 +4,7 @@ using ODK.Core.Subscriptions;
 using ODK.Services.Integrations.Payments.PayPal.Client;
 using ODK.Services.Integrations.Payments.PayPal.Client.Models;
 using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Integrations.Payments.PayPal;
 
@@ -107,6 +108,11 @@ public class PayPalPaymentProvider : IPaymentProvider
         return Task.FromResult<ExternalCheckoutSession?>(null);
     }
 
+    public Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments()
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<string?> GetProductId(string name)
     {
         throw new NotImplementedException();
@@ -160,15 +166,15 @@ public class PayPalPaymentProvider : IPaymentProvider
         };
     }
 
-    public async Task<ServiceResult> MakePayment(string currencyCode, decimal amount,
-        string cardToken, string description, string memberName)
+    public async Task<RemotePaymentResult> MakePayment(string currencyCode, decimal amount,
+        string cardToken, string description, Guid memberId, string memberName)
     {
         var client = GetClient();
 
         var order = await client.GetOrder(cardToken);
         if (order == null || order.PurchaseUnits.Length != 1)
         {
-            return ServiceResult.Failure("Payment not found in PayPal");
+            return RemotePaymentResult.Failure("Payment not found in PayPal");
         }
 
         var purchase = order.PurchaseUnits[0];
@@ -178,16 +184,16 @@ public class PayPalPaymentProvider : IPaymentProvider
             string.Equals("APPROVED", order.Status, StringComparison.InvariantCultureIgnoreCase);
         if (!approved)
         {
-            return ServiceResult.Failure($"Payment not approved in PayPal. Current status: {order.Status}");
+            return RemotePaymentResult.Failure($"Payment not approved in PayPal. Current status: {order.Status}");
         }
 
         var capture = await client.CaptureOrderPayment(order.Id);
         if (!string.Equals("COMPLETED", capture?.Status, StringComparison.InvariantCultureIgnoreCase))
         {
-            return ServiceResult.Failure($"Payment not completed in PayPal. Current status: {order.Status}");
+            return RemotePaymentResult.Failure($"Payment not completed in PayPal. Current status: {order.Status}");
         }
 
-        return ServiceResult.Successful();
+        return RemotePaymentResult.Successful(order.Id);
     }
 
     public async Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
@@ -219,10 +225,16 @@ public class PayPalPaymentProvider : IPaymentProvider
         return response?.BatchHeader?.PayoutBatchId;
     }
 
-    public Task<ExternalCheckoutSession> StartCheckout(ExternalSubscriptionPlan subscriptionPlan, string returnPath)
+    public Task<ExternalCheckoutSession> StartCheckout(
+        ServiceRequest request, 
+        ExternalSubscriptionPlan subscriptionPlan, 
+        string returnPath, 
+        PaymentMetadataModel metadata)
     {
         throw new NotImplementedException();
     }
+
+    public Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata) => throw new NotImplementedException();
 
     public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
     {

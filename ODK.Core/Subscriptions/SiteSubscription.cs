@@ -66,4 +66,6 @@ public class SiteSubscription : IDatabaseEntity
     }
 
     public bool HasFeature(SiteFeatureType feature) => Features().Contains(feature);
+
+    public string ToReference() => $"Subscription: {Name}";
 }

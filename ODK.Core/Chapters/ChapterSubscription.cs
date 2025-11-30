@@ -31,6 +31,8 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public SubscriptionType Type { get; set; }
 
+    public string ToReference() => $"Subscription: {Name}";
+
     public bool Uses(ChapterPaymentSettings? chapterPaymentSettings, SitePaymentSettings sitePaymentSettings)
     {
         return chapterPaymentSettings?.UseSitePaymentProvider == true

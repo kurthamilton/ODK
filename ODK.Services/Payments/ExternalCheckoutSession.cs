@@ -1,4 +1,6 @@
-﻿namespace ODK.Services.Payments;
+﻿using ODK.Services.Payments.Models;
+
+namespace ODK.Services.Payments;
 
 public class ExternalCheckoutSession
 {
@@ -9,6 +11,10 @@ public class ExternalCheckoutSession
     public required bool Complete { get; init; }
 
     public required string Currency { get; init; }
+
+    public required PaymentMetadataModel Metadata { get; init; }
+
+    public required string? PaymentId { get; init; }
 
     public required string SessionId { get; init; }
 
