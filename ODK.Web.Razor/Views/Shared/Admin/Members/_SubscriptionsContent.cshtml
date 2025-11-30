@@ -19,7 +19,7 @@
 <h2 class="d-none d-md-block">Subscriptions</h2>
 
 <section class="section">
-    @if (Model.ChapterSubscriptions.Count == 0)
+    @if (subscriptions.Count == 0)
     {
         <p>
             Charge your members a subscription fee to cover your group running costs.
@@ -59,8 +59,10 @@
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach (var subscription in subscriptions)
+                        @foreach (var dto in subscriptions)
                         {
+                            var subscription = dto.ChapterSubscription;
+
                             <tr>
                                 <td>
                                     @if (subscription.Recurring)
@@ -82,12 +84,15 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <form method="post" action="/groups/@Model.Chapter.Id/members/subscriptions/@subscription.Id/delete">
-                                        <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
-                                                onclick="return confirm('Are you sure you want to delete this subscription?');">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </form>
+                                    @if (!dto.Used)
+                                    {
+                                        <form method="post" action="/groups/@Model.Chapter.Id/members/subscriptions/@subscription.Id/delete">
+                                            <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                                    onclick="return confirm('Are you sure you want to delete this subscription?');">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    }                                    
                                 </td>
                             </tr>
                         }

@@ -372,7 +372,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByMemberId(currentMemberId),
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId, includeDisabled: true),
+            x => x.ChapterSubscriptionRepository.GetAdminDtosByChapterId(chapterId, includeDisabled: true),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
             x => x.SitePaymentSettingsRepository.GetActive());
@@ -381,8 +381,8 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         chapterSubscriptions = chapterSubscriptions
             .Where(x => chapterPaymentSettings.UseSitePaymentProvider
-                ? x.SitePaymentSettingId == sitePaymentSettings.Id
-                : x.SitePaymentSettingId == null)
+                ? x.ChapterSubscription.SitePaymentSettingId == sitePaymentSettings.Id
+                : x.ChapterSubscription.SitePaymentSettingId == null)
             .ToArray();
 
         return new SubscriptionsAdminPageViewModel

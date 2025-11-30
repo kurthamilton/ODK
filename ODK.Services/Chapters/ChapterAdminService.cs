@@ -607,8 +607,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
     public async Task<ServiceResult> DeleteChapterSubscription(MemberChapterServiceRequest request, Guid id)
     {
-        var subscription = await GetChapterAdminRestrictedContent(request,
-            x => x.ChapterSubscriptionRepository.GetById(id));
+        var (subscription, inUse) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterSubscriptionRepository.GetById(id),
+            x => x.ChapterSubscriptionRepository.InUse(id));
+
+        if (inUse)
+        {
+            var message = "Subscriptions cannot be deleted if they have already been used - try disabling instead.";
+            return ServiceResult.Failure(message);
+        }
 
         _unitOfWork.ChapterSubscriptionRepository.Delete(subscription);
         await _unitOfWork.SaveChangesAsync();
