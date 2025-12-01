@@ -147,11 +147,16 @@ public class EventService : IEventService
             memberResponse,
             memberSubscription, 
             membershipSettings, 
-            privacySettings,
-            numberOfAttendees);
+            privacySettings);
         if (!validationResult.Success)
         {
             return validationResult;
+        }
+
+        var spacesLeft = EventHasSpaces(@event, numberOfAttendees);
+        if (!spacesLeft.Success)
+        {
+            return spacesLeft;
         }
 
         var paymentResult = await _paymentService.MakePayment(paymentSettings, 
@@ -259,11 +264,16 @@ public class EventService : IEventService
             memberResponse,
             memberSubscription, 
             membershipSettings, 
-            privacySettings,
-            numberOfAttendees);
+            privacySettings);
         if (!validationResult.Success)
         {
             return validationResult;
+        }
+
+        var spacesLeft = EventHasSpaces(@event, numberOfAttendees);
+        if (!spacesLeft.Success)
+        {
+            return spacesLeft;
         }
 
         var paymentResult = await _paymentService.MakePayment(paymentSettings, 
@@ -298,7 +308,7 @@ public class EventService : IEventService
     {
         responseType = NormalizeResponseType(responseType);
 
-        var (member, @event, memberResponse, numerOfAttendees) = await _unitOfWork.RunAsync(
+        var (member, @event, memberResponse, numberOfAttendees) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
@@ -325,11 +335,19 @@ public class EventService : IEventService
             memberResponse,
             memberSubscription, 
             membershipSettings, 
-            privacySettings,
-            numerOfAttendees);
+            privacySettings);
         if (!validationResult.Success)
         {
             return validationResult;
+        }
+
+        if (responseType == EventResponseType.Yes)
+        {
+            var spacesLeft = EventHasSpaces(@event, numberOfAttendees);
+            if (!spacesLeft.Success)
+            {
+                return spacesLeft;
+            }
         }
 
         if (@event.RsvpDeadlinePassed)
@@ -382,24 +400,30 @@ public class EventService : IEventService
             : EventResponseType.None;
     }
 
+    private static ServiceResult EventHasSpaces(
+        Event @event,
+        int numberOfAttendees)
+    {
+        if (@event.NumberOfSpacesLeft(numberOfAttendees) <= 0)
+        {
+            return ServiceResult.Failure("No more spaces left");
+        }
+
+        return ServiceResult.Successful();
+    }
+
     private ServiceResult MemberCanAttendEvent(
         Event @event, 
         Member? member, 
         EventResponse? memberResponse,
         MemberSubscription? subscription, 
         ChapterMembershipSettings? membershipSettings,
-        ChapterPrivacySettings? privacySettings,
-        int numberOfAttendees)
+        ChapterPrivacySettings? privacySettings)
     {
         if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
-        }
-
-        if (@event.NumberOfSpacesLeft(numberOfAttendees) <= 0)
-        {
-            return ServiceResult.Failure("No more spaces left");
-        }
+        }        
 
         return _authorizationService.CanRespondToEvent(@event, member, subscription, membershipSettings, privacySettings)
             ? ServiceResult.Successful()
