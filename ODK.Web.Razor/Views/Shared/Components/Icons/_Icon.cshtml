@@ -1,0 +1,59 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model IconViewModel
+@{
+}
+
+@switch (Model.Type)
+{
+    case IconType.Calendar:
+        <i class="@Model.Class far fa-calendar"></i>
+        break;
+    case IconType.ChevronRight:
+        <i class="@Model.Class fas fa-chevron-right"></i>
+        break;
+    case IconType.CircleCheck:
+        <i class="@Model.Class fas fa-circle-check"></i>
+        break;
+    case IconType.Contact:
+        <i class="@Model.Class far fa-envelope"></i>
+        break;
+    case IconType.Edit:
+        <i class="@Model.Class fas fa-pen-to-square"></i>
+        break;
+    case IconType.Envelope:
+        <i class="@Model.Class fas fa-envelope"></i>
+        break;
+    case IconType.Facebook:
+        <i class="@Model.Class fab fa-facebook-f"></i>
+        break;
+    case IconType.Google:
+        @await Html.PartialAsync("Components/Icons/_Google")
+        break;
+    case IconType.Groups:
+        <i class="@Model.Class fas fa-users-rectangle"></i>
+        break;
+    case IconType.Instagram:
+        <i class="@Model.Class fab fa-instagram"></i>
+        break;
+    case IconType.MagnifyingGlass:
+        <i class="@Model.Class fas fa-magnifying-glass"></i>
+        break;
+    case IconType.Maximize:
+        <i class="@Model.Class fas fa-up-right-and-down-left-from-center"></i>
+        break;
+    case IconType.Members:
+        <i class="@Model.Class fas fa-users"></i>
+        break;
+    case IconType.QuestionCircle:
+        <i class="@Model.Class fas fa-circle-question" />
+        break;
+    case IconType.Rocket:
+        <i class="@Model.Class">🚀</i>
+        break;
+    case IconType.Settings:
+        <i class="@Model.Class fas fa-gear"></i>
+        break;
+    case IconType.Ticket:
+        <i class="@Model.Class fas fa-ticket"></i>
+        break;
+}
