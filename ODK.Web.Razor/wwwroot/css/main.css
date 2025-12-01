@@ -12066,6 +12066,10 @@ html[data-platform=odk] {
   transition: opacity 1s ease;
 }
 
+.cc-hidden .cc-window {
+  display: none;
+}
+
 .cc-message {
   flex: 1 1 auto;
 }

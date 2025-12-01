@@ -1,5 +1,4 @@
-﻿using System;
-using ODK.Core.Members;
+﻿using ODK.Core.Members;
 using ODK.Core.Utils;
 
 namespace ODK.Core.Events;

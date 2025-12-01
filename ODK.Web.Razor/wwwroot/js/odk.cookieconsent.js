@@ -1,7 +1,9 @@
 ﻿(function () {
+    const $body = document.querySelector('body');
+
     // https://www.osano.com/cookieconsent/documentation/javascript-api/
     window.cookieconsent.initialise({
-        container: document.querySelector('body'),
+        container: $body,
         content: {
             message: 'This website uses cookies to improve your experience.',
             link: 'Learn more',
@@ -10,10 +12,12 @@
         elements: {
             dismiss: '<a aria-label="dismiss cookie message" tabindex="0" class="btn btn-primary cc-btn cc-dismiss">Got it!</a>',
         },
-        revokable: false,        
+        revokable: false,         
         law: {
             regionalLaw: false,
         },
         location: false,
+        // fix broken dismiss functionality
+        onPopupClose: () => $body.classList.add('cc-hidden')
     });
 })();
