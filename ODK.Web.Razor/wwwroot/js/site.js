@@ -229,6 +229,8 @@
 
     function bindTooltips() {
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+        const tooltipList = [...tooltipTriggerList]
+            .filter(x => !!x.getAttribute('data-bs-title'))
+            .map(x => new bootstrap.Tooltip(x));
     }    
 })();
