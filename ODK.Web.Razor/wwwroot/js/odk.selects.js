@@ -140,7 +140,7 @@
         let allowDeselect = true;
 
         if (!multiple) {
-            const $placeholder = $select.querySelector('option[value=""]');
+            const $placeholder = $select.querySelector('option[data-placeholder]');
             if ($placeholder) {
                 $placeholder.setAttribute('data-placeholder', 'true');
             }
