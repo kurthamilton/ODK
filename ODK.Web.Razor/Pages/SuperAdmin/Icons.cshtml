@@ -1,148 +1,32 @@
 ﻿@page "/superadmin/icons"
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Components
 @attribute [Authorize]
 @model IconsModel
 @{
     Layout = "_SiteAdminLayout";
+    Model.Title = "Icons";
+
+    var iconTypes = Enum.GetValues<IconType>()
+        .Where(x => x != IconType.None)
+        .OrderBy(x => x.ToString())
+        .ToArray();
 }
 
 <h2>Icons</h2>
 
-<div class="table-responsive">    
-    <table class="table table-striped">
-        <tbody>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Calendar")</td>
-                <td>
-                    Components/Icons/_Calendar
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_CircleCheck")</td>
-                <td>
-                    Components/Icons/_CircleCheck
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_ChevronRight")</td>
-                <td>
-                    Components/Icons/_ChevronRight
-                </td>
-            </tr>            
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Contact")</td>
-                <td>
-                    Components/Icons/_Contact
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Edit")</td>
-                <td>
-                    Components/Icons/_Edit
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Envelope")</td>
-                <td>
-                    Components/Icons/_Envelope
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Facebook")</td>
-                <td>
-                    Components/Icons/_Facebook
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Google")</td>
-                <td>
-                    Components/Icons/_Google
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Groups")</td>
-                <td>
-                    Components/Icons/_Groups
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Instagram")</td>
-                <td>
-                    Components/Icons/_Instagram
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_MagnifyingGlass")</td>
-                <td>
-                    Components/Icons/_MagnifyingGlass
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Maximize")</td>
-                <td>
-                    Components/Icons/_Maximize
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_QuestionCircle")</td>
-                <td>
-                    Components/Icons/_QuestionCircle
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Rocket")</td>
-                <td>
-                    Components/Icons/_Rocket
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Settings")</td>
-                <td>
-                    Components/Icons/_Settings
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Ticket")</td>
-                <td>
-                    Components/Icons/_Ticket
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Times")</td>
-                <td>
-                    Components/Icons/_Times
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_TimesCircle")</td>
-                <td>
-                    Components/Icons/_TimesCircle
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_TodoList")</td>
-                <td>
-                    Components/Icons/_TodoList
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Twitter")</td>
-                <td>
-                    Components/Icons/_Twitter
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Undo")</td>
-                <td>
-                    Components/Icons/_Undo
-                </td>
-            </tr>
-            <tr>
-                <td>@await Html.PartialAsync("Components/Icons/_Upload")</td>
-                <td>
-                    Components/Icons/_Upload
-                </td>
-            </tr>
-        </tbody>
-    </table>
+<div class="container-fluid">
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6">
+        @foreach (var type in iconTypes)
+        {
+            <div class="col card m-2">
+                <div class="d-flex justify-content-center m-2">
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(type))
+                </div>
+                <div class="d-flex justify-content-center small m-2 mt-0">
+                    @type.ToString()                    
+                </div>
+            </div>
+        }
+    </div>    
 </div>

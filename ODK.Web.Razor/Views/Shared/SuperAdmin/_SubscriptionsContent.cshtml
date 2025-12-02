@@ -41,7 +41,7 @@
                             </span>
                             @if (subscription.SitePaymentSettings.Active)
                             {
-                                @await Html.PartialAsync("Components/Icons/_CircleCheck", new IconViewModel
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
                                 {
                                     Class = "text-success"
                                 })
@@ -52,7 +52,7 @@
                             {
                                 <form action="/superadmin/subscriptions/@subscription.Id/disable" method="post">
                                     <button class="btn btn-icon">
-                                        @await Html.PartialAsync("Components/Icons/_CircleCheck", new IconViewModel
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
                                         {
                                             Class = "text-success"
                                         })
@@ -63,7 +63,10 @@
                             {
                                 <form action="/superadmin/subscriptions/@subscription.Id/enable" method="post">
                                     <button class="btn btn-icon">
-                                        <i class="fa-regular fa-circle-xmark text-danger"></i>
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircleOutline)
+                                        {
+                                            Class = "text-danger"
+                                        })
                                     </button>
                                 </form>                                
                             }
@@ -73,15 +76,24 @@
                         <td>
                             @if (subscription.Premium)
                             {
-                                <i class="fa-solid fa-star text-warning" data-bs-toggle="tooltip" data-bs-title="Premium"></i>
+                                <span data-bs-toggle="tooltip" data-bs-title="Premium">
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
+                                    {
+                                        Class = "text-warning"
+                                    })
+                                </span>
                             }
                             @if (subscription.SendMemberEmails)
                             {
-                                <i class="fas fa-envelope" data-bs-toggle="tooltip" data-bs-title="Send member emails"></i>
+                                <span data-bs-toggle="tooltip" data-bs-title="Send member emails">
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
+                                </span>
                             }
                             @if (subscription.MemberSubscriptions)
                             {
-                                <i class="fa-solid fa-dollar-sign" data-bs-toggle="tooltip" data-bs-title="Member subscriptions"></i>
+                                <span data-bs-toggle="tooltip" data-bs-title="Member subscriptions">
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Dollar))
+                                </span>
                             }
                         </td>
                         <td>

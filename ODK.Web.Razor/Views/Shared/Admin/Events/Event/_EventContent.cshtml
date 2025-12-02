@@ -26,7 +26,7 @@
         @*@Html.AntiForgeryToken()*@
         <div class="mb-3">
             <button class="btn btn-primary" type="submit">
-                @await Html.PartialAsync("Components/Icons/_Upload")
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Upload))
                 Publish
             </button>
         </div>

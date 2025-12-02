@@ -1,6 +1,7 @@
 ﻿(function () {
     bindCollapseToggle();
     bindConditionals();
+    bindCopyToClipboard();
     bindFeaturePopovers();
     bindForms();
     bindImages();
@@ -58,6 +59,16 @@
             $source.addEventListener('change', () => setDisplay());
             setDisplay();
         });
+    }
+
+    function bindCopyToClipboard() {
+        const $sources = document.querySelectorAll('[data-copy-to-clipboard]');
+        $sources.forEach($source => {
+            $source.addEventListener('click', () => {
+                const text = $source.getAttribute('data-copy-to-clipboard');
+                navigator.clipboard.writeText(text);
+            });            
+        });        
     }
 
     function bindFeaturePopovers() {

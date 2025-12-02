@@ -3,6 +3,6 @@
 @model UpgradeButtonViewModel
 
 <a href="@OdkRoutes.Account.Subscription(Model.Platform, Model.Chapter)" class="btn btn-outline-primary">
-    <i class="fa-solid fa-unlock"></i>
+    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Unlock))
     <span>Upgrade to unlock</span>
 </a>

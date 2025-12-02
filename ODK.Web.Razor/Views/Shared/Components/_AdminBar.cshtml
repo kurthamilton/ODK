@@ -11,7 +11,7 @@
     <a href="@Model.AdminLink" class="btn btn-outline-secondary">
         @if (Model.AdminLinkText == "Edit")
         {
-            @await Html.PartialAsync("Components/Icons/_Edit")
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Edit))
         }
         
         @Model.AdminLinkText

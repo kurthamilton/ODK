@@ -2,6 +2,7 @@
 @using ODK.Services.Caching
 @using ODK.Services.Notifications
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Notifications;
 @using ODK.Services.Notifications.ViewModels
 @using ODK.Web.Razor.Pages.Chapters
@@ -26,8 +27,12 @@
 
     <div class="text-light account-links__user dropdown-toggle" 
         data-bs-toggle="dropdown" data-bs-auto-close="outside">
-        <i data-notifications-show-if-empty class="fa-regular fa-bell @showIfEmptyClass"></i>
-        <i data-notifications-hide-if-empty class="fa-solid fa-bell @hideIfEmptyClass"></i>
+        <span class="icon-wrapper @showIfEmptyClass" data-notifications-show-if-empty>
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.BellOutline))
+        </span>
+        <span class="icon-wrapper @hideIfEmptyClass" data-notifications-hide-if-empty>
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Bell))
+        </span>
     </div>
     <div class="dropdown-menu dropdown-menu-end p-0">
         <div class="dropdown-header">
@@ -35,7 +40,7 @@
                 <h5 class="m-0">Notifications</h5>
                 <div class="ms-auto">
                     <a class="btn btn-icon" href="@OdkRoutes.Account.Notifications(chapter)">
-                        @await Html.PartialAsync("Components/Icons/_Settings")
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
                     </a>
                 </div>
             </div>            

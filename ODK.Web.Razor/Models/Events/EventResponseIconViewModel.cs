@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Events;
+using ODK.Web.Razor.Models.Components;
 
 namespace ODK.Web.Razor.Models.Events;
 
@@ -8,12 +9,12 @@ public class EventResponseIconViewModel
 
     public required EventResponseType CurrentResponse { get; set; }
 
-    public string IconClass => CurrentResponse switch
+    public IconType? Icon => CurrentResponse switch
     {
-        EventResponseType.Yes => "fa-circle-check",
-        EventResponseType.Maybe => "fa-circle-question",
-        EventResponseType.No => "fa-circle-xmark",
-        _ => ""
+        EventResponseType.Yes => IconType.CheckCircle,
+        EventResponseType.Maybe => IconType.QuestionCircle,
+        EventResponseType.No => IconType.TimesCircle,
+        _ => null
     };
 
     public bool ReadOnly { get; set; }    

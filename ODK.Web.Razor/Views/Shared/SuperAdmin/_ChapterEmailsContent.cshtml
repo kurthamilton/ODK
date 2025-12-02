@@ -4,6 +4,7 @@
 @using ODK.Services.Chapters.ViewModels
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Components
 @model OdkComponentViewModel<Chapter>
 @inject IChapterAdminService ChapterAdminService
 @{
@@ -37,7 +38,7 @@
                         <form method="post" action="/superadmin/groups/@Model.Value.Id/emails/providers/@emailProvider.Id/delete">
                             <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
                                     onclick="return confirm('Are you sure you want to delete this email provider?');">
-                                @await Html.PartialAsync("Components/Icons/_Times")
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                             </button>
                         </form>
                     </td>

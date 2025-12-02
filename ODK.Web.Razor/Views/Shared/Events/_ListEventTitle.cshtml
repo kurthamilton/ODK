@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Events
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model ListEventViewModel
 
@@ -19,7 +20,7 @@
     @if (Model.Event.Ticketed)
     {
         <div data-bs-toggle="tooltip" data-bs-title="Ticketed">
-            @await Html.PartialAsync("Components/Icons/_Ticket")
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Ticket))
         </div>
     }
 </div>

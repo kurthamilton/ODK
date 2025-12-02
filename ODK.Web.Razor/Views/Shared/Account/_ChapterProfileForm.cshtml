@@ -7,6 +7,7 @@
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
 @model ChapterProfileFormViewModel
 @{
     var memberId = User.MemberIdOrDefault();
@@ -151,7 +152,7 @@
             {
                 <div class="input-group">
                     <span class="input-group-text">
-                        @await Html.PartialAsync("Components/Icons/_Facebook")
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Facebook))
                     </span>
                     @Html.TextBoxFor(x => x.Properties[i].Value, htmlAttributes)
                 </div>

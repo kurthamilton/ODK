@@ -7,7 +7,7 @@
     @Html.LabelFor(x => x.Facebook, new { @class = "form-label" })
     <div class="input-group">
         <span class="input-group-text">
-            @await Html.PartialAsync("Components/Icons/_Facebook")
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Facebook))
         </span>
         @Html.TextBoxFor(x => x.Facebook, new { @class = "form-control" })
     </div>
@@ -17,7 +17,7 @@
     @Html.LabelFor(x => x.Instagram, new { @class = "form-label" })
     <div class="input-group">
         <span class="input-group-text">
-            @await Html.PartialAsync("Components/Icons/_Instagram")
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Instagram))
         </span>
         @Html.TextBoxFor(x => x.Instagram, new { @class = "form-control" })
     </div>
@@ -48,7 +48,7 @@
     @Html.LabelFor(x => x.Twitter, new { @class = "form-label" })
     <div class="input-group">
         <span class="input-group-text">
-            @await Html.PartialAsync("Components/Icons/_Twitter")
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Twitter))
         </span>
         @Html.TextBoxFor(x => x.Twitter, new { @class = "form-control" })
     </div>

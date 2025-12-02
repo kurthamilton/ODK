@@ -25,7 +25,7 @@
 <div class="d-flex flex-column gap-3" data-expanded-select-for="@Model.Id">
     <div class="input-group">
         <div class="input-group-text">
-            @await Html.PartialAsync("Components/Icons/_MagnifyingGlass")
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.MagnifyingGlass))
         </div>
         <input class="form-control" placeholder="Search" data-expanded-select-search />
     </div>

@@ -1,6 +1,7 @@
 ﻿@using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Components
 @model OdkComponentContext
 @inject IChapterService ChapterService
 @{
@@ -29,7 +30,7 @@
 
         <div class="text-light account-links__user dropdown-toggle"
              data-bs-toggle="dropdown" data-bs-auto-close="outside">
-            @await Html.PartialAsync("Components/Icons/_TodoList")
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TodoList))
         </div>
         <div class="dropdown-menu dropdown-menu-end p-0">
             <div class="dropdown-header">

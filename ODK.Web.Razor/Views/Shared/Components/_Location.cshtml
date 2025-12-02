@@ -1,5 +1,7 @@
-﻿@model string
+﻿@using ODK.Web.Razor.Models.Components
+@model string
 
 <div class="d-flex align-items-center gap-2">
-    <i class="fa-solid fa-location-dot"></i><span>@Model</span>
+    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
+    <span>@Model</span>
 </div>

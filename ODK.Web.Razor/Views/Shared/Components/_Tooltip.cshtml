@@ -1,4 +1,9 @@
-﻿@model string
+﻿@using ODK.Web.Razor.Models.Components
+@model string
 
-<i class="ms-1 icon--help fas fa-question-circle" 
-   data-bs-toggle="tooltip" data-bs-title="@Model"></i>
+<span data-bs-toggle="tooltip" data-bs-title="@Model">
+    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.QuestionCircle)
+    {
+        Class = "ms-1 icon--help"
+    })
+</span>
