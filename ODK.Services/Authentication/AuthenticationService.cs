@@ -171,23 +171,10 @@ public class AuthenticationService : IAuthenticationService
     {
         var adminMembers = await _unitOfWork.ChapterAdminMemberRepository.GetByMemberId(member.Id).Run();
 
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, member.Id.ToString()),
-            new Claim(ClaimTypes.Role, OdkRoles.Member)
-        };
-
-        if (adminMembers.Any())
-        {
-            claims.Add(new Claim(ClaimTypes.Role, OdkRoles.Admin));
-        }
-
-        if (member.SuperAdmin)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, OdkRoles.SuperAdmin));
-        }
-
-        return claims;
+        var claimsUser = new OdkClaimsUser(member, adminMembers);
+        return claimsUser
+            .GetClaims()
+            .ToArray();
     }
     
     public async Task<ServiceResult> RequestPasswordResetAsync(

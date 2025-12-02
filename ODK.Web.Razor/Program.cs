@@ -25,9 +25,10 @@ public class Program
         var (app, appSettings) = BuildApp(args);
 
         // Configure the HTTP request pipeline.
-        app.UseMiddleware<RateLimitingMiddleware>();
-        app.UseSerilogRequestLogging();
-        app.UseMiddleware<ErrorHandlingMiddleware>();
+        app            
+            .UseMiddleware<RateLimitingMiddleware>()
+            .UseSerilogRequestLogging()
+            .UseMiddleware<ErrorHandlingMiddleware>();
 
         if (!app.Environment.IsDevelopment())
         {
@@ -65,6 +66,8 @@ public class Program
             SupportedCultures = supportedCultures,
             SupportedUICultures = supportedCultures
         });
+
+        app.UseMiddleware<HttpContextLoggingMiddleware>();
 
         app.Run();
     }
