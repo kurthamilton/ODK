@@ -136,7 +136,7 @@
     function bindSlimSelect($select) {
         let placeholder = $select.getAttribute('data-placeholder');
         const multiple = $select.hasAttribute('multiple');
-        const required = $select.hasAttribute('data-val-required');
+
         let allowDeselect = true;
 
         if (!multiple) {

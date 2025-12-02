@@ -13,20 +13,14 @@
     var authenticated = User.Authenticated();
 }
 
-<nav class="navbar navbar-dark bg-dark text-light border-bottom border-light navbar-expand">
+<nav class="navbar navbar--site navbar-dark bg-dark text-light border-bottom border-light navbar-expand">
     <div class="container flex-wrap flex-md-nowrap">
         <div class="me-3">
             <a href="/">
-                <img class="site-logo" src="/assets/img/groupsquirrel.webp" />
+                <img class="site-logo" src="/assets/groupsquirrel/logo2.webp" />
             </a>
         </div>
         
-        @*<button class="navbar-toggler"
-        type="button" data-bs-toggle="collapse" data-bs-target="#@id"
-        aria-controls="@id" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-        </button>*@
-
         <div class="d-flex gap-4 ms-auto align-self-center order-md-5">
             @await Html.PartialAsync("Header/_SiteTasksDropdown", Model)
             @await Html.PartialAsync("Header/_NotificationDropdown", Model)

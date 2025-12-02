@@ -68,9 +68,28 @@ public class ChapterViewModelService : IChapterViewModelService
             .ToArray();
 
         var distanceUnit = distanceUnits
-            .FirstOrDefault(x => string.Equals(x.Abbreviation, filter.DistanceUnit, StringComparison.InvariantCultureIgnoreCase))
+            .FirstOrDefault(x => string.Equals(x.Abbreviation, filter.DistanceUnit, StringComparison.OrdinalIgnoreCase))
             ?? distanceUnits.FirstOrDefault(x => x.Id == preferences?.DistanceUnitId)
             ?? distanceUnits.First();
+
+        if (currentMemberId != null && distanceUnit.Id != preferences?.DistanceUnitId)
+        {
+            preferences ??= new MemberPreferences();
+
+            preferences.DistanceUnitId = distanceUnit.Id;
+            
+            if (preferences.MemberId == default)
+            {
+                preferences.MemberId = currentMemberId.Value;
+                _unitOfWork.MemberPreferencesRepository.Add(preferences);                
+            }
+            else
+            {
+                _unitOfWork.MemberPreferencesRepository.Update(preferences);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         var distance = filter.Distance ?? 30;
 
@@ -151,7 +170,9 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             Distance = new Distance { Unit = distanceUnit, Value = distance },
             DistanceUnits = distanceUnits,
-            Groups = groups,
+            Groups = groups
+                .OrderBy(x => x.Distance!.Value)
+                .ToArray(),
             Location = location,
             Platform = platform,
             TopicGroupId = topicGroup?.Id,
@@ -826,7 +847,7 @@ public class ChapterViewModelService : IChapterViewModelService
             var viewModel = new ChapterWithDistanceViewModel
             {
                 Chapter = chapter,
-                Distance = 0,
+                Distance = null,
                 HasImage = image != null,
                 IsAdmin = adminMember != null,
                 IsMember = true,
@@ -907,18 +928,18 @@ public class ChapterViewModelService : IChapterViewModelService
         return viewModels;
     }
 
-    private IDictionary<Guid, double> FilterChaptersByDistance(
+    private IDictionary<Guid, Distance> FilterChaptersByDistance(
         IReadOnlyCollection<Chapter> chapters,
         IReadOnlyCollection<ChapterLocation> chapterLocations,
         LatLong? location,
         Distance distance)
     {
-        var chaptersWithDistances = new Dictionary<Guid, double>();
+        var chaptersWithDistances = new Dictionary<Guid, Distance>();
 
         if (location == null)
         {
             return chapters
-                .ToDictionary(x => x.Id, x => 0.0);
+                .ToDictionary(x => x.Id, x => new Distance { Unit = distance.Unit, Value = 0 });
         }        
 
         var chapterLocationDictionary = chapterLocations
@@ -942,7 +963,9 @@ public class ChapterViewModelService : IChapterViewModelService
                 continue;
             }
 
-            chaptersWithDistances.Add(chapter.Id, chapterDistance);
+            chaptersWithDistances.Add(
+                chapter.Id, 
+                new Distance { Unit = distance.Unit, Value = chapterDistance });
         }
 
         return chaptersWithDistances;

@@ -17,8 +17,17 @@
                         <h5><strong>@Model.Chapter.Name</strong></h5>
                         @if (Model.Location != null)
                         {
-                            <div class="small">
-                                @await Html.PartialAsync("Components/_Location", Model.Location.Name)
+                            <div class="d-flex gap-2 small">
+                                <div>
+                                    @await Html.PartialAsync("Components/_Location", Model.Location.Name)                                
+                                </div>                            
+                                @if (Model.Distance != null)
+                                {
+                                    <span> | </span>
+                                    <span>
+                                        @Math.Ceiling(Model.Distance.Value) @Model.Distance.Unit.Abbreviation
+                                    </span>
+                                }
                             </div>
                         }                        
                         @if (!string.IsNullOrEmpty(Model.Texts?.Description))

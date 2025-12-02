@@ -1,4 +1,5 @@
 ﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Core.Platforms;
 using ODK.Core.Topics;
 
@@ -8,7 +9,7 @@ public class ChapterWithDistanceViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    public required double Distance { get; init; }
+    public required Distance? Distance { get; init; }
 
     public required bool HasImage { get; init; }
 
