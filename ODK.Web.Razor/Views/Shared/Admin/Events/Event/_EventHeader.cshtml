@@ -2,6 +2,7 @@
 @using ODK.Core.Venues
 @using ODK.Services.Events.ViewModels
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @model EventAdminPageViewModelBase
 
 <h5>@Model.Event.Date.EventDate()</h5>
@@ -10,5 +11,5 @@
 </h5>
 
 <a href="@OdkRoutes.Groups.Event(Model.Platform, Model.Chapter, Model.Event.Id)">
-    <i class="fas fa-home"></i> View in site
+    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Home)) View in site
 </a>

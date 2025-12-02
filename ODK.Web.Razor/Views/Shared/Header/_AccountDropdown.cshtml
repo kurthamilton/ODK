@@ -1,4 +1,5 @@
 ﻿@using ODK.Services.Authentication
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
 @model AccountMenuViewModel
 @{
@@ -18,7 +19,7 @@
     <div class="account-links" role="button">
         <div class="dropdown">
             <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">
-                <i class="fas fa-user"></i>
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.User))
             </div>
             <div class="dropdown-menu dropdown-menu-end text-end">
                 @if (Model.MemberChapters.Count == 1)

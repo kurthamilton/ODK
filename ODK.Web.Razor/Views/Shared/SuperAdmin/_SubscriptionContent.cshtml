@@ -1,5 +1,6 @@
 ﻿@using ODK.Services.Subscriptions.ViewModels
 @using ODK.Web.Common.Extensions;
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SuperAdmin
 @model SiteSubscriptionViewModel
 @{
@@ -57,7 +58,7 @@
                                 @*@Html.AntiForgeryToken()*@
                                 <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
                                         onclick="return confirm('Are you sure you want to delete this price?');">
-                                    @await Html.PartialAsync("Components/Icons/_Times")
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                                 </button>
                             </form>
                         </td>

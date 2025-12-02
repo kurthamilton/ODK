@@ -40,21 +40,21 @@
                             <th>Name</th>
                             <th>Date</th>
                             <th>Venue</th>
-                            <th>@await Html.PartialAsync("Components/Icons/_Envelope")</th>
+                            <th>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))</th>
                             <th>
-                            @await Html.PartialAsync("Components/Icons/_CircleCheck", new IconViewModel
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
                                 {
                                     Class = "text-success"
                                 })
                             </th>
                             <th>
-                                @await Html.PartialAsync("Components/Icons/_QuestionCircle", new IconViewModel
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.QuestionCircle)
                                 {
                                     Class = "text-warning"
                                 })
                             </th>
                             <th>
-                                @await Html.PartialAsync("Components/Icons/_TimesCircle", new IconViewModel
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
                                 {
                                     Class = "text-danger"
                                 })
@@ -73,7 +73,7 @@
                                 <td>
                                     @if (@event.Ticketed)
                                     {
-                                        @await Html.PartialAsync("Components/Icons/_Ticket")
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Ticket))
                                     }
                                 </td>
                                 <td><a href="@OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>

@@ -49,10 +49,10 @@
                                     else
                                     {
                                         <span>
-                                            @await Html.PartialAsync("Components/Icons/_CircleCheck", new IconViewModel
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
                                             {
                                                 Class = "text-success"
-                                            })
+                                            })                                            
                                         </span>
                                     }
                                 </td>

@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Html
 @using ODK.Core.Notifications
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Notifications
 @model NotificationListItemViewModel
 @{
@@ -66,7 +67,7 @@
                     @notificationContent.Invoke(null)
                 </div>
                 <div class="notification-col-icon">
-                    @await Html.PartialAsync("Components/Icons/_ChevronRight")
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ChevronRight))
                 </div>
             </a>
         }

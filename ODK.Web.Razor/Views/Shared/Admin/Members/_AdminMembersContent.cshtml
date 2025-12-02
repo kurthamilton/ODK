@@ -82,25 +82,25 @@
                                 <td>
                                     @if (adminMember.ReceiveContactEmails)
                                     {
-                                        <i class="fa fa-check"></i>
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
                                     }
                                 </td>
                                 <td>
                                     @if (adminMember.ReceiveNewMemberEmails)
                                     {
-                                        <i class="fa fa-check"></i>
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
                                     }
                                 </td>
                                 <td>
                                     @if (adminMember.SendNewMemberEmails)
                                     {
-                                        <i class="fa fa-check"></i>
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
                                     }
                                 </td>
                                 <td>
                                     @if (adminMember.ReceiveEventCommentEmails)
                                     {
-                                        <i class="fa fa-check"></i>
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Check))
                                     }
                                 </td>
                                 <td>
@@ -110,13 +110,18 @@
                                             <button data-bs-toggle="tooltip" data-bs-title="Remove"
                                                     class="btn-icon text-danger"
                                                     onclick="return confirm('Are you sure you want to remove admin access for this member?');">
-                                                @await Html.PartialAsync("Components/Icons/_Times")
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                                             </button>
                                         </form>
                                     }          
                                     else
                                     {
-                                        <i class="fa-solid fa-star text-warning" data-bs-toggle="tooltip" data-bs-title="Owner"></i>
+                                        <span data-bs-toggle="tooltip" data-bs-title="Owner">
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
+                                            {
+                                                Class = "text-warning"
+                                            })
+                                        </span>                                        
                                     }
                                 </td>
                             </tr>

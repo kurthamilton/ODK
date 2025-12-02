@@ -18,13 +18,21 @@
                 <div>
                     @if (!chapter.Approved())
                     {
-                        <i class="fa-solid fa-triangle-exclamation text-danger" 
-                            data-bs-toggle="tooltip" data-bs-title="Not approved"></i>
+                        <span data-bs-toggle="tooltip" data-bs-title="Not approved">
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ExclamationTriangle)
+                            {
+                                Class = "text-danger"
+                            })
+                        </span>
                     }
                     else if (chapter.CanBePublished())
                     {
-                        <i class="fa-solid fa-triangle-exclamation text-warning" 
-                            data-bs-toggle="tooltip" data-bs-title="Not published"></i>
+                        <span data-bs-toggle="tooltip" data-bs-title="Not published">
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ExclamationTriangle)
+                            {
+                                Class = "text-warning"
+                            })
+                        </span>
                     }
                 </div>
             }        
@@ -35,7 +43,7 @@
             @if (Model.IsAdmin || Model.IsOwner)
             {
                 <a class="text-body-secondary" href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
-                    @await Html.PartialAsync("Components/Icons/_Settings") 
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
                     <span>Manage</span>
                 </a>
             }            

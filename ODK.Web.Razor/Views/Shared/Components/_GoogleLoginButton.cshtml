@@ -4,7 +4,7 @@
 
 <div data-oauth-button="@OAuthProviderType.Google" data-google-clientid="@Model.ClientId">    
     <button type="button" class="btn btn-outline-primary d-flex align-items-center w-100">
-        @await Html.PartialAsync("Components/Icons/_Google")
+        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Google))
         <div class="flex-grow-1 d-flex justify-content-center">
             @Model.Text
         </div>

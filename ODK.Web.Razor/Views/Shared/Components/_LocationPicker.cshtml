@@ -1,9 +1,12 @@
 ﻿@using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
 @model LocationFormViewModel
 
 <div class="input-group">
     <span class="input-group-text">
-        <i class="fa-solid fa-location-dot" data-bs-toggle="tooltip" data-bs-title="Location"></i>
+        <span data-bs-toggle="tooltip" data-bs-title="Location">
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
+        </span>       
     </span>
     @Html.TextBoxFor(x => x.Name, new { @class = "form-control", data_location = "" })
     

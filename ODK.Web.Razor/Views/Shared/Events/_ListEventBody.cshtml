@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Events
 @using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @model ListEventViewModel
 @{
@@ -7,7 +8,7 @@
 }
 
 <div class="d-flex align-items-center gap-2">
-    @await Html.PartialAsync("Components/Icons/_Calendar")
+    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Calendar))
     <span>
         <span>@localTime.ToFriendlyDateString(Model.Chapter.TimeZone, forceIncludeYear: Model.ForceDisplayYear)</span>
         <span>@Event.ToLocalTimeString(Model.Event.Date, Model.Event.EndTime, Model.Chapter.TimeZone)</span>

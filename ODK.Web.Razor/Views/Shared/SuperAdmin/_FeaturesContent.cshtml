@@ -3,6 +3,7 @@
 @using ODK.Services.Features
 @using ODK.Web.Common.Extensions
 @using System.Web
+@using ODK.Web.Razor.Models.Components
 @inject IFeatureService FeatureService
 @{
     var memberId = User.MemberId();
@@ -39,7 +40,7 @@
                         <form action="/superadmin/features/@feature.Id/delete" method="post">
                             @*@Html.AntiForgeryToken()*@
                             <button class="btn-icon text-danger" onclick="return confirm('Are you sure you want to delete this feature?');">
-                                    @await Html.PartialAsync("Components/Icons/_Times")
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                             </button>
                         </form>
                     </td>

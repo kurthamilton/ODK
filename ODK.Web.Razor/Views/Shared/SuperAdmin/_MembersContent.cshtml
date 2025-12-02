@@ -3,6 +3,7 @@
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Services
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.SuperAdmin
 @model OdkComponentViewModel<Chapter>
 @inject IChapterAdminService ChapterAdminService
@@ -30,14 +31,20 @@
                     <td>
                         @if (Model.Value.OwnerId == adminMember.MemberId)
                         {
-                            <i class="fa-solid fa-star text-warning"></i>
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
+                            {
+                                Class = "text-warning"
+                            })
                         }
                         else
                         {
                             <form action="/@Model.Value.Name/Admin/Chapter/Owner" method="post">
                                 @Html.Hidden("memberId", adminMember.MemberId)
                                 <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
-                                    <i class="fa-regular fa-star text-warning"></i>
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
+                                    {
+                                        Class = "text-warning"
+                                    })
                                 </button>
                             </form>                        
                         }

@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Logging
 @using ODK.Services.Logging
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Components
 @inject ILoggingService LoggingService
 @{
     var memberId = User.MemberId();
@@ -33,7 +34,7 @@
                             <form method="post" action="/SuperAdmin/Errors/@error.Id/Delete">
                                 @*@Html.AntiForgeryToken()*@
                                 <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger">
-                                    @await Html.PartialAsync("Components/Icons/_Times")
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                                 </button>
                             </form>
                         </td>

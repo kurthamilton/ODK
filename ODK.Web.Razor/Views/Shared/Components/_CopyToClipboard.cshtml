@@ -1,0 +1,10 @@
+﻿@using ODK.Web.Razor.Models.Components
+@model CopyToClipboardViewModel
+
+<span data-copy-to-clipboard="Model.Text"
+      data-bs-toggle="tooltip" data-bs-title="@Model.Text">    
+    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Copy)
+    {
+        Class = Model.IconClass
+    })
+</span>

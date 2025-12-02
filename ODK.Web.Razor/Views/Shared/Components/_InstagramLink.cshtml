@@ -1,7 +1,7 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model string
 
-@await Html.PartialAsync("Components/Icons/_Instagram", new IconViewModel
+@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Instagram)
 {
     Class = "mr-1"
 })

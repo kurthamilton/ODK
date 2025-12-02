@@ -1,11 +1,14 @@
 ﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Topics
 @model GroupsViewModel
 
 <div class="form-group mb-3" data-location-container>
     <div class="input-group input-group-sm">
         <span class="input-group-text">
-            <i class="fa-solid fa-location-dot" data-bs-toggle="tooltip" data-bs-title="Location"></i>
+            <span data-bs-toggle="tooltip" data-bs-title="Location">
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
+            </span>
         </span>
         <input type="text" name="n" value="@Model.Location?.Name" class="form-control" placeholder="Location" data-location />
     </div>

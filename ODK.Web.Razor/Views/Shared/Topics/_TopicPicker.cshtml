@@ -71,7 +71,7 @@
     </div>
     <div>
         <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#topics-modal">
-            @await Html.PartialAsync("Components/Icons/_Maximize")
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Maximize))
             Show all
         </button>
     </div>

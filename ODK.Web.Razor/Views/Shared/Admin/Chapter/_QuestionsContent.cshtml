@@ -6,6 +6,7 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model ChapterQuestionsAdminPageViewModel
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
@@ -48,13 +49,13 @@
                                         <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/move/up">
                                             @*@Html.AntiForgeryToken()*@
                                             <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
-                                                <i class="fas fa-arrow-circle-up"></i>
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ArrowCircleUp))
                                             </button>
                                         </form>
                                         <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/move/down">
                                             @*@Html.AntiForgeryToken()*@
                                             <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
-                                                <i class="fas fa-arrow-circle-down"></i>
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ArrowCircleDown))
                                             </button>
                                         </form>
                                     </div>
@@ -64,7 +65,7 @@
                                         @*@Html.AntiForgeryToken()*@
                                         <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
                                                 onclick="return confirm('Are you sure you want to delete this question?');">
-                                        @await Html.PartialAsync("Components/Icons/_Times")
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                                         </button>
                                     </form>
                                 </td>

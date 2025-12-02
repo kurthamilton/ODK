@@ -82,7 +82,7 @@
                     </div>
                     <div class="col ms-auto align-self-end">
                         <a href="@OdkRoutes.MemberGroups.MembersDownload(Model.Platform, Model.Chapter)">
-                            <i class="fa-solid fa-file-excel icon--excel"></i>
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Excel))
                             Download CSV
                         </a>
                     </div>
@@ -135,14 +135,14 @@
                             <td>
                                 @if (!optOutMemberIds.Contains(member.Id))
                                 {
-                                    @await Html.PartialAsync("Components/Icons/_CircleCheck", new IconViewModel
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
                                     {
                                         Class = "text-success"
                                     })
                                 }
                                 else
                                 {
-                                    @await Html.PartialAsync("Components/Icons/_TimesCircle", new IconViewModel
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
                                     {
                                         Class = "text-danger"
                                     })
@@ -154,7 +154,7 @@
                                     <form method="post" action="/groups/@Model.Chapter.Id/members/@member.Id/emails/activation/send">
                                         <button data-bs-toggle="tooltip" data-bs-title="Re-send activation email"
                                                 class="btn-icon text-primary">
-                                            <i class="fas fa-envelope-square"></i>
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.EnvelopeSquare))
                                         </button>
                                     </form>
                                 }

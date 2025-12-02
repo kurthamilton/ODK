@@ -1,5 +1,6 @@
-﻿@model string
+﻿@using ODK.Web.Razor.Models.Components
+@model string
 
 <a href="@Model">
-    @await Html.PartialAsync("Components/Icons/_Edit")
+    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Edit))
 </a>

@@ -2,31 +2,32 @@
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Components
 @model OdkComponentContext
 
 @if (User.Authenticated())
 {
     <div class="dropdown" role="button">
         <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">
-            <i class="fas fa-user"></i>
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.User))
         </div>
         <div class="dropdown-menu dropdown-menu-end">
             <a class="dropdown-item dropdown-item--icon" href="/account">
                 <span class="icon">
-                    <i class="fa-regular fa-user"></i>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.UserOutline))
                 </span>
                 <span>My account</span>
             </a>
             <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.Index(Model.Platform)">
                 <span class="icon">
-                    @await Html.PartialAsync("Components/Icons/_Groups")
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Groups))
                 </span>
                 <span>My groups</span>
             </a>
 
             <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.GroupCreate(Model.Platform)">
                 <span class="icon">
-                    <i class="fa-solid fa-plus"></i>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
                 </span>
                 <span>Create group</span>
             </a>
@@ -35,13 +36,13 @@
 
             <a class="dropdown-item dropdown-item--icon" href="#" data-theme-selector="dark">
                 <span class="icon">
-                    <i class="fa-regular fa-moon"></i>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Moon))
                 </span>
                 <span>Dark mode</span>
             </a>
             <a class="dropdown-item dropdown-item--icon" href="#" data-theme-selector="light">
                 <span class="icon">
-                    <i class="fa-regular fa-sun"></i>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Sun))
                 </span>
                 <span>Light mode</span>
             </a>
@@ -52,7 +53,7 @@
 
                 <a class="dropdown-item dropdown-item--icon" href="/superadmin">
                     <span class="icon">
-                        <i class="fa-solid fa-wrench"></i>
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Wrench))
                     </span>
                     <span>Site admin</span>
                 </a>
@@ -61,7 +62,7 @@
             <div class="dropdown-divider"></div>
             <a class="dropdown-item dropdown-item--icon" href="/account/logout">
                 <span class="icon">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Logout))
                 </span>
                 <span>Sign Out</span>
             </a>

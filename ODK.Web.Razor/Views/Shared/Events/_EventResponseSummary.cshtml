@@ -1,4 +1,5 @@
 ﻿@using ODK.Core.Utils
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 
 @model EventResponseSummaryViewModel
@@ -9,7 +10,7 @@
 }
 
 <div class="d-flex align-items-center gap-2 small">
-    @await Html.PartialAsync("Components/Icons/_Members")
+    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Members))
     <span>
         @Model.Summary.Yes
         @StringUtils.Pluralise(Model.Summary.Yes, "Attendee")

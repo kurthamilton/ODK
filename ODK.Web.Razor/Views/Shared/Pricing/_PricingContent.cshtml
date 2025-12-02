@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Subscriptions
 @using ODK.Services.Subscriptions.ViewModels
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Pricing
 @model PricingContentViewModel
 @{
@@ -34,7 +35,10 @@
                         @if (Model.SiteSubscriptions.CurrentMemberSubscription?.SiteSubscriptionId == subscription.Id)
                         {
                             <div class="mt-auto">
-                                <i class="fa-solid fa-star text-warning"></i>
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
+                                {
+                                    Class = "text-warning"
+                                })
                                 <span>Current plan</span>
                             </div>
                         }

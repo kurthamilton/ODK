@@ -10,7 +10,7 @@
 
     <div>        
         <a class="social-media-link" href="@url" target="_blank">
-            @await Html.PartialAsync("Components/Icons/_Instagram", new IconViewModel
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Instagram)
             {
                 Class = $"social-media-icon--instagram {sizeClass}"
             })
@@ -28,7 +28,7 @@
 
     <div>        
         <a class="social-media-link" href="@url" target="_blank">
-            @await Html.PartialAsync("Components/Icons/_Facebook", new IconViewModel
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Facebook)
             {
                 Class = $"social-media-icon--facebook {sizeClass}"
             })
@@ -47,7 +47,7 @@
 
     <div>
         <a class="social-media-link" href="@url" target="_blank">
-            @await Html.PartialAsync("Components/Icons/_Twitter", new IconViewModel
+            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Twitter)
             {
                 Class = $"social-media-icon--twitter {sizeClass}"
             })
