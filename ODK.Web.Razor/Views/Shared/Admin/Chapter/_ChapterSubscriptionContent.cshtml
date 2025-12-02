@@ -1,15 +1,17 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Core.Utils
 @using ODK.Services.Chapters
+@using ODK.Services.Chapters.ViewModels
 @using ODK.Services.Members
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Payments
 @using ODK.Web.Razor.Models.Pricing
-@model ChapterSubscriptionViewModel
+@model ChapterSubscriptionAdminPageViewModel
 @{
-    var subscription = Model.Current;
+    var subscription = Model.SiteSubscriptions.CurrentMemberSubscription;
 }
 
 <section class="section">
@@ -39,7 +41,8 @@
     {
         @await Html.PartialAsync("Pricing/_PricingContent", new PricingContentViewModel
         {
-            CheckoutUrl = $"/{Model.Chapter.Name}/admin/chapter/subscription/{{price.id}}/checkout",
+            CheckoutUrl = OdkRoutes.MemberGroups.GroupSubscriptionCheckout(Model.Platform, Model.Chapter, "{price.id}"),
+            CheckoutUrlPriceIdPlaceholder = "{price.id}",
             SiteSubscriptions = Model.SiteSubscriptions
         })
     }

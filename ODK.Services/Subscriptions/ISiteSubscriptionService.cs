@@ -1,5 +1,4 @@
-﻿using ODK.Core.Members;
-using ODK.Core.Payments;
+﻿using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Services.Subscriptions.ViewModels;
 
@@ -9,9 +8,6 @@ public interface ISiteSubscriptionService
 {
     Task<ServiceResult> ConfirmMemberSiteSubscription(
         MemberServiceRequest request, Guid siteSubscriptionId, string externalId);
-
-    Task<MemberSiteSubscription?> GetMemberSiteSubscription(
-        MemberServiceRequest request);
 
     Task<PaymentStatusType> GetMemberSiteSubscriptionPaymentCheckoutSessionStatus(
         MemberServiceRequest request, string externalSessionId);

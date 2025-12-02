@@ -1,4 +1,6 @@
-﻿namespace ODK.Web.Razor.Models.Components;
+﻿using ODK.Web.Common.Components;
+
+namespace ODK.Web.Razor.Models.Components;
 
 public class IconViewModel
 {

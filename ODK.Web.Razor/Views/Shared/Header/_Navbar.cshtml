@@ -1,6 +1,7 @@
 ﻿@using ODK.Core.Chapters
 @using ODK.Services.Caching
 @using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
 @model ODK.Web.Razor.Models.Header.NavbarViewModel
 @inject IRequestCache RequestCache
@@ -80,9 +81,9 @@
                                     <span>@menuItem.Text</span>
                                 }
 
-                                @if (!string.IsNullOrEmpty(menuItem.Icon))
+                                @if (menuItem.Icon != null)
                                 {
-                                    <i class="@menuItem.Icon"></i>
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(menuItem.Icon.Value))
                                 }
                             </a>
                         </li>

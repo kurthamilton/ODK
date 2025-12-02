@@ -84,6 +84,8 @@ public interface IChapterAdminService
 
     Task<PaymentStatusType> GetChapterPaymentCheckoutSessionStatus(MemberChapterServiceRequest request, string externalSessionId);
 
+    Task<ChapterSubscriptionAdminPageViewModel> GetChapterSubscriptionViewModel(MemberChapterServiceRequest request);
+
     Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(MemberChapterServiceRequest request);
 
     Task<ChapterTopicsAdminPageViewModel> GetChapterTopicsViewModel(MemberChapterServiceRequest request);

@@ -10,8 +10,9 @@
 @model AdminSideMenuViewModel
 @inject IRequestStore RequestStore
 @{
-    var platform = RequestStore.Platform;
     var chapter = Model.Chapter;
+    var currentMemberId = RequestStore.CurrentMemberId;
+    var platform = RequestStore.Platform;
 
     var groupLinks = new[]
     {
@@ -30,7 +31,11 @@
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupProperties(platform, chapter), Text = "Properties" },
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupSocialMedia(platform, chapter), Text = "Social media" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.GroupSubscription(platform, chapter), Text = "Subscription" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem { Link = OdkRoutes.MemberGroups.GroupSubscription(platform, chapter), Text = "Subscription" }
+            : chapter.OwnerId == currentMemberId
+                ? new MenuItem { Link = OdkRoutes.Account.Subscription(platform, null), Text = "Subscription" }
+                : new MenuItem(),
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()

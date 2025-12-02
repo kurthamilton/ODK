@@ -2,6 +2,7 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
 @model GroupPageViewModelBase
 @inject IHttpContextAccessor HttpContextAccessor
@@ -14,7 +15,11 @@
 
     if (Model.IsMember)
     {
-        menuItems.Add(new MenuItem { Text = "Members", Link = OdkRoutes.Groups.Members(Model.Platform, Model.Chapter) });        
+        menuItems.Add(new MenuItem 
+        { 
+            Text = "Members", 
+            Link = OdkRoutes.Groups.Members(Model.Platform, Model.Chapter)
+        });
     }
 
     if (Model.HasQuestions)
@@ -33,12 +38,21 @@
 
     if (Model.IsMember)
     {
-        menuItems.Add(new MenuItem { Text = "My profile", Link = OdkRoutes.Groups.Profile.Index(Model.Chapter) });
+        menuItems.Add(new MenuItem 
+        { 
+            Text = "My profile", 
+            Link = OdkRoutes.Groups.Profile.Index(Model.Chapter) 
+        });
     }
 
     if (Model.IsAdmin)
     {
-        menuItems.Add(new MenuItem { Text = "Manage", Link = OdkRoutes.MemberGroups.Group(Model.Platform, Model.Chapter) });
+        menuItems.Add(new MenuItem 
+        { 
+            Text = "Manage", 
+            Icon = IconType.Settings, 
+            Link = OdkRoutes.MemberGroups.Group(Model.Platform, Model.Chapter) 
+        });
     }
 
     var id = "nav-group";
@@ -63,6 +77,10 @@
 
                     <li class="nav-item @(menuItem.Hidden ? "invisible" : null) ">
                         <a class="nav-link @(active ? "active" : null)" href="@menuItem.Link">
+                            @if (menuItem.Icon != null)
+                            {
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(menuItem.Icon.Value))
+                            }
                             @menuItem.Text
                         </a>
                     </li>

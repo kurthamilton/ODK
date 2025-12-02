@@ -1,4 +1,4 @@
-﻿namespace ODK.Web.Razor.Models.Components;
+﻿namespace ODK.Web.Common.Components;
 
 public enum IconType
 {

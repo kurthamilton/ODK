@@ -78,16 +78,6 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         return ServiceResult.Successful();
     }
 
-    public async Task<MemberSiteSubscription?> GetMemberSiteSubscription(
-        MemberServiceRequest request)
-    {
-        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
-
-        return await _unitOfWork.MemberSiteSubscriptionRepository
-            .GetByMemberId(memberId, platform)
-            .Run();
-    }
-
     public async Task<PaymentStatusType> GetMemberSiteSubscriptionPaymentCheckoutSessionStatus(
         MemberServiceRequest request, string externalSessionId)
     {

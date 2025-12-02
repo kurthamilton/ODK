@@ -1,14 +1,14 @@
 ﻿using ODK.Core.Chapters;
-using ODK.Core.Members;
+using ODK.Core.Platforms;
 using ODK.Services.Subscriptions.ViewModels;
 
-namespace ODK.Web.Razor.Models.Admin.Chapters;
+namespace ODK.Services.Chapters.ViewModels;
 
-public class ChapterSubscriptionViewModel
+public class ChapterSubscriptionAdminPageViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    public required MemberSiteSubscription? Current { get; init; }
+    public required PlatformType Platform { get; init; }
 
     public required SiteSubscriptionsViewModel SiteSubscriptions { get; init; }
 }

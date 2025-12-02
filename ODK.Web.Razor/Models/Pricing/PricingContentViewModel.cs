@@ -6,5 +6,7 @@ public class PricingContentViewModel
 {
     public required string CheckoutUrl { get; init; }
 
+    public required string CheckoutUrlPriceIdPlaceholder { get; init; }
+
     public required SiteSubscriptionsViewModel SiteSubscriptions { get; init; }
 }

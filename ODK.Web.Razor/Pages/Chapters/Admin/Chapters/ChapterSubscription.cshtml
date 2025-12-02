@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Subscription"
 @using ODK.Services
+@using ODK.Services.Chapters
 @using ODK.Services.Members
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Extensions
@@ -7,29 +8,16 @@
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
 @model ChapterSubscriptionModel
-@inject IMemberService MemberService
-@inject ISiteSubscriptionService SiteSubscriptionService
+@inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Subscription | Admin";
 
-    var memberId = Model.Chapter.OwnerId;
-    if (memberId == null)
-    {
-        return;
-    }
-
-    var request = new MemberServiceRequest(memberId.Value, Model.ServiceRequest);
-    var subscription = await SiteSubscriptionService.GetMemberSiteSubscription(request);
-    var siteSubscriptions = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(Model.ServiceRequest, memberId);
+    var request = Model.MemberChapterServiceRequest(Model.Chapter.Id);
+    var viewModel = await ChapterAdminService.GetChapterSubscriptionViewModel(request);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", new ChapterSubscriptionViewModel
-{
-    Chapter = Model.Chapter,
-    Current = subscription,
-    SiteSubscriptions = siteSubscriptions
-})
+@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", viewModel)
 
 @section scripts
 {
@@ -37,7 +25,7 @@
         var added = new List<Guid>();
     }
 
-    @foreach (var dto in siteSubscriptions.Subscriptions)
+    @foreach (var dto in viewModel.SiteSubscriptions.Subscriptions)
     {
         var paymentSettings = dto.Subscription.SitePaymentSettings;
         if (added.Contains(paymentSettings.Id))
@@ -48,11 +36,11 @@
         added.Add(paymentSettings.Id);
 
         @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
-       {
-           ApiPublicKey = paymentSettings.ApiPublicKey ?? "",
-           CurrencyCode = "",
-           IsSubscription = true,
-           Provider = paymentSettings.Provider
+        {
+            ApiPublicKey = paymentSettings.ApiPublicKey ?? "",
+            CurrencyCode = "",
+            IsSubscription = true,
+            Provider = paymentSettings.Provider
        })
-    }    
+    }
 }

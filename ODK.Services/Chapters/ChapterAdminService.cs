@@ -1019,6 +1019,28 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             chapterOwnerRequest, externalSessionId);
     }
 
+    public async Task<ChapterSubscriptionAdminPageViewModel> GetChapterSubscriptionViewModel(
+        MemberChapterServiceRequest request)
+    {
+        var (chapterId, platform) = (request.ChapterId, request.Platform);
+
+        var chapter = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(chapterId));
+
+        OdkAssertions.Exists(chapter.OwnerId);
+
+        var chapterOwnerRequest = new MemberServiceRequest(chapter.OwnerId.Value, request);
+        var siteSubscriptionsViewModel = await _siteSubscriptionService.GetSiteSubscriptionsViewModel(
+            request, chapter.OwnerId);
+
+        return new ChapterSubscriptionAdminPageViewModel
+        {
+            Chapter = chapter,
+            Platform = platform,
+            SiteSubscriptions = siteSubscriptionsViewModel
+        };
+    }
+
     public async Task<ChapterTextsAdminPageViewModel> GetChapterTextsViewModel(MemberChapterServiceRequest request)
     {
         var platform = request.Platform;

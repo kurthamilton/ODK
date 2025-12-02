@@ -32,10 +32,10 @@
 @section scripts
 {
     @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
-{
-    ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? "",
-    CurrencyCode = viewModel.CurrencyCode,
-    IsSubscription = true,
-    Provider = viewModel.PaymentSettings.Provider ?? PaymentProviderType.None
-})
+    {
+        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? "",
+        CurrencyCode = viewModel.CurrencyCode,
+        IsSubscription = true,
+        Provider = viewModel.PaymentSettings.Provider ?? PaymentProviderType.None
+    })
 }

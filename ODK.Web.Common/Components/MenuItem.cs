@@ -14,7 +14,7 @@ public class MenuItem
 
     public bool Hidden { get; set; }
 
-    public string? Icon { get; set; }
+    public IconType? Icon { get; set; }
 
     public string? Link { get; set; }
     

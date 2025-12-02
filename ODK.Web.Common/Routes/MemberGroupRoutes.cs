@@ -126,7 +126,13 @@ public class MemberGroupRoutes
     public string GroupSubscription(PlatformType platform, Chapter chapter) => platform switch
     {
         PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/subscription",
-        _ => $"{Group(platform, chapter)}/social-media"
+        _ => $"{Group(platform, chapter)}/subscription"
+    };
+
+    public string GroupSubscriptionCheckout(PlatformType platform, Chapter chapter, string priceIdPlaceholder) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/subscription/{priceIdPlaceholder}/checkout",
+        _ => $"{Group(platform, chapter)}/subscription/{priceIdPlaceholder}/checkout"
     };
 
     public string GroupTexts(PlatformType platform, Chapter chapter) => platform switch
