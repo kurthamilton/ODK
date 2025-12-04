@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Chapters.ViewModels;
 
-public class GroupContactPageViewModel : GroupPageViewModelBase
+public class GroupContactPageViewModel : GroupPageViewModel
 {
     public required bool CanStartConversation { get; init; }
 

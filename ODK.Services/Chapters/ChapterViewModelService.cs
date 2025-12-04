@@ -394,6 +394,38 @@ public class ChapterViewModelService : IChapterViewModelService
         };
     }
 
+    public async Task<GroupPageViewModel> GetGroupPage(ServiceRequest request, Guid? currentMemberId, string slug)
+    {
+        var platform = request.Platform;
+
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
+
+        var (
+            currentMember,
+            ownerSubscription,
+            adminMembers,       
+            hasQuestions
+        ) = await _unitOfWork.RunAsync(
+            x => currentMemberId != null
+                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
+                : new DefaultDeferredQuerySingleOrDefault<Member>(),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
+
+        return new GroupPageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = currentMember,
+            HasQuestions = hasQuestions,
+            IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
+            IsMember = currentMember?.IsMemberOf(chapter.Id) == true,
+            OwnerSubscription = ownerSubscription,
+            Platform = platform
+        };
+    }
+
     public async Task<GroupEventsPageViewModel> GetGroupPastEventsPage(
         ServiceRequest request, Guid? currentMemberId, string slug)
     {
@@ -641,44 +673,7 @@ public class ChapterViewModelService : IChapterViewModelService
             OwnerSubscription = ownerSubscription,
             Platform = platform            
         };
-    }
-
-    public async Task<GroupProfileSubscriptionPageViewModel> GetGroupProfileSubscriptionPage(
-        MemberServiceRequest request, string slug)
-    {
-        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
-
-        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
-        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
-
-        var (
-            currentMember,
-            adminMembers,
-            ownerSubscription,
-            hasQuestions,
-            chapterPaymentSettings,
-            sitePaymentSettings
-        ) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
-            x => x.SitePaymentSettingsRepository.GetActive());
-
-        return new GroupProfileSubscriptionPageViewModel
-        {
-            Chapter = chapter,
-            CurrentMember = currentMember,
-            HasQuestions = hasQuestions,
-            IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
-            IsMember = currentMember.IsMemberOf(chapter.Id) == true,
-            OwnerSubscription = ownerSubscription,
-            ChapterPaymentSettings = chapterPaymentSettings,
-            Platform = platform,
-            SitePaymentSettings = sitePaymentSettings
-        };
-    }
+    }    
 
     public async Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(
         ServiceRequest request, Guid? currentMemberId, string slug)
@@ -706,6 +701,43 @@ public class ChapterViewModelService : IChapterViewModelService
             OwnerSubscription = ownerSubscription,
             Platform = platform,
             Questions = questions.OrderBy(x => x.DisplayOrder).ToArray()
+        };
+    }
+
+    public async Task<GroupSubscriptionPageViewModel> GetGroupSubscriptionPage(
+        MemberServiceRequest request, string slug)
+    {
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+
+        var chapter = await _unitOfWork.ChapterRepository.GetBySlug(slug).Run();
+        OdkAssertions.Exists(chapter, $"Chapter not found: '{slug}'");
+
+        var (
+            currentMember,
+            adminMembers,
+            ownerSubscription,
+            hasQuestions,
+            chapterPaymentSettings,
+            sitePaymentSettings
+        ) = await _unitOfWork.RunAsync(
+            x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
+            x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapter.Id),
+            x => x.SitePaymentSettingsRepository.GetActive());
+
+        return new GroupSubscriptionPageViewModel
+        {
+            Chapter = chapter,
+            CurrentMember = currentMember,
+            HasQuestions = hasQuestions,
+            IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
+            IsMember = currentMember.IsMemberOf(chapter.Id) == true,
+            OwnerSubscription = ownerSubscription,
+            ChapterPaymentSettings = chapterPaymentSettings,
+            Platform = platform,
+            SitePaymentSettings = sitePaymentSettings
         };
     }
 

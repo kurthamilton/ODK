@@ -4,7 +4,7 @@ using ODK.Core.Platforms;
 
 namespace ODK.Services.Chapters.ViewModels;
 
-public abstract class GroupPageViewModelBase
+public class GroupPageViewModel
 {
     public required Chapter Chapter { get; init; }    
 

@@ -17,6 +17,6 @@
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
     Title = "",
-    Content = await Html.PartialAsync("Groups/Profile/_GroupProfileContent", viewModel),
+    Content = await Html.PartialAsync("Groups/_GroupProfileContent", viewModel),
     Group = viewModel
 })

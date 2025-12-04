@@ -1,14 +1,14 @@
-﻿@page "/groups/{slug}/profile/subscription"
+﻿@page "/groups/{slug}/subscription"
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
 @using ODK.Web.Razor.Models.Payments
-@model ODK.Web.Razor.Pages.Groups.Profile.SubscriptionModel
+@model ODK.Web.Razor.Pages.Groups.Subscription.IndexModel
 @inject IChapterViewModelService ChapterViewModelService
 @{
     Layout = "_HomeLayout";
 
-    var viewModel = await ChapterViewModelService.GetGroupProfileSubscriptionPage(Model.MemberServiceRequest, Model.Slug);
+    var viewModel = await ChapterViewModelService.GetGroupSubscriptionPage(Model.MemberServiceRequest, Model.Slug);
 
     Model.Title = $"Subscription | Profile | {viewModel.Chapter.Name}";
 }
@@ -16,7 +16,7 @@
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
 {
     Title = "",
-    Content = await Html.PartialAsync("Groups/Profile/_GroupProfileSubscriptionContent", viewModel),
+    Content = await Html.PartialAsync("Groups/Subscription/_GroupSubscriptionContent", viewModel),
     Group = viewModel
 })
 

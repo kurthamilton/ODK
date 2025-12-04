@@ -30,7 +30,7 @@ public class PaymentsModel : OdkGroupAdminPageModel
                 ApiSecretKey = existing?.ApiSecretKey,
                 CurrencyId = viewModel.CurrencyId,
                 EmailAddress = viewModel.EmailAddress,
-                Provider = viewModel.Provider,
+                Provider = null,
                 UseSitePaymentProvider = existing?.UseSitePaymentProvider ?? false
             });
 

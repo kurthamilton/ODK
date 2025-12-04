@@ -44,9 +44,14 @@ public class GroupRoutes
 
     public string PastEvents(PlatformType platform, Chapter chapter) => $"{Events(platform, chapter)}/past";
 
-    public GroupProfileRoutes Profile { get; } = new GroupProfileRoutes();
+    public string Profile(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/profile");
     
     public string Questions(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/faq");
+
+    public string Subscription(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/subscription");
+
+    public string SubscriptionCheckout(PlatformType platform, Chapter chapter, ChapterSubscription subscription)
+        => $"{Subscription(platform, chapter)}/{subscription.Id}/checkout";
 
     private string GroupPath(PlatformType platform, Chapter chapter, string path) 
         => $"{Group(platform, chapter)}{path}";

@@ -5,6 +5,7 @@
 @await Html.PartialAsync("Components/_BodyWithSidebar", new BodyWithSidebarViewModel
 {
     Breadcrumbs = Model.Breadcrumbs,
+    Class = "--group-body-with-sidebar",
     Menu = await Html.PartialAsync("Groups/_GroupMenu", Model.Group),
     SidebarContent = Model.SidebarContent,
     Title = Model.Group.Chapter.Name,

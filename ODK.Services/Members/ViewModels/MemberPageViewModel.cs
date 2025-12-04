@@ -4,7 +4,7 @@ using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Members.ViewModels;
 
-public class MemberPageViewModel : GroupPageViewModelBase
+public class MemberPageViewModel : GroupPageViewModel
 {    
     public required IReadOnlyCollection<ChapterProperty> ChapterProperties { get; init; }
 

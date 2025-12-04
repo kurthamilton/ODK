@@ -10,7 +10,7 @@ public class GroupBodyViewModel
 
     public required IHtmlContent Content { get; init; }
 
-    public required GroupPageViewModelBase Group { get; init; }
+    public required GroupPageViewModel Group { get; init; }
 
     public required string Title { get; init; }
 }

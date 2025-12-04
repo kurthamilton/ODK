@@ -18,18 +18,20 @@ public interface IChapterViewModelService
 
     Task<GroupEventsPageViewModel> GetGroupEventsPage(ServiceRequest request, Guid? currentMemberId, string slug);
 
+    Task<GroupPageViewModel> GetGroupPage(ServiceRequest request, Guid? currentMemberId, string slug);
+
     Task<GroupEventsPageViewModel> GetGroupPastEventsPage(ServiceRequest request, Guid? currentMemberId, string slug);
 
     Task<GroupHomePageViewModel> GetGroupHomePage(ServiceRequest request, Guid? currentMemberId, string slug);
 
     Task<GroupJoinPageViewModel> GetGroupJoinPage(ServiceRequest request, Guid? currentMemberId, string slug);
 
-    Task<GroupProfilePageViewModel> GetGroupProfilePage(MemberServiceRequest request, string slug);
-
-    Task<GroupProfileSubscriptionPageViewModel> GetGroupProfileSubscriptionPage(
-        MemberServiceRequest request, string slug);
+    Task<GroupProfilePageViewModel> GetGroupProfilePage(MemberServiceRequest request, string slug);    
 
     Task<GroupQuestionsPageViewModel> GetGroupQuestionsPage(ServiceRequest request, Guid? currentMemberId, string slug);
+
+    Task<GroupSubscriptionPageViewModel> GetGroupSubscriptionPage(
+        MemberServiceRequest request, string slug);
 
     Task<ChapterHomePageViewModel> GetHomePage(ServiceRequest request, Guid? currentMemberId, string chapterName);
 

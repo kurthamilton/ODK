@@ -11,14 +11,14 @@
 @using ODK.Web.Razor.Models.Components
 @model ChapterMessagesAdminPageViewModel
 
-@await Html.PartialAsync("Admin/Chapter/_MessagesTabs", Model)
-
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Messages",
     ContentFunc = 
         @<div>
             <p>Contact messages sent by unknown users</p>
+            
+            @await Html.PartialAsync("Admin/Chapter/_MessagesTabs", Model)            
 
             <div class="table-responsive">
                 <table class="table table-striped">

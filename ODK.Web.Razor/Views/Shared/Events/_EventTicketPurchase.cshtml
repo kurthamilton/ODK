@@ -58,7 +58,7 @@
 
                 <button class="btn btn-primary mr-1"
                         data-bs-toggle="modal" data-bs-target="#@modalId">
-                    Purchase
+                    Buy
                 </button>
 
                 @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
@@ -150,7 +150,7 @@
 
                     <button class="btn btn-primary mr-1"
                             data-bs-toggle="modal" data-bs-target="#@modalId">
-                        Purchase
+                        Buy
                     </button>
 
                     @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
@@ -165,7 +165,7 @@
                             Description = "",
                             Id = "ticket-purchase"
                         },
-                        Title = $"{Model.Event.Name} - Purchase ticket"
+                        Title = $"{Model.Event.Name} - Buy ticket"
                     })                    
                 }
             }

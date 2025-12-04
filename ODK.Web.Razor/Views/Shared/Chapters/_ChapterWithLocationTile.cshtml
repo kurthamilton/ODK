@@ -5,48 +5,47 @@
 <div class="card">
     <div class="card-body">        
         <a href="@OdkRoutes.Groups.Group(Model.Platform, Model.Chapter)" class="text-body link-hover">
-            <div class="row">
-                <div class="col-4">
-                    @if (Model.HasImage)
-                    {
-                        <img src="@OdkRoutes.Groups.Image(Model.Chapter.Id)" />
-                    }                    
-                </div>
-                <div class="col-8">
-                    <div class="d-flex flex-column gap-2">
-                        <h5><strong>@Model.Chapter.Name</strong></h5>
-                        @if (Model.Location != null)
-                        {
-                            <div class="d-flex gap-2 small">
-                                <div>
-                                    @await Html.PartialAsync("Components/_Location", Model.Location.Name)                                
-                                </div>                            
-                                @if (Model.Distance != null)
-                                {
-                                    <span> | </span>
-                                    <span>
-                                        @Math.Ceiling(Model.Distance.Value) @Model.Distance.Unit.Abbreviation
-                                    </span>
-                                }
-                            </div>
-                        }                        
-                        @if (!string.IsNullOrEmpty(Model.Texts?.Description))
-                        {
-                            <div class="card-text">@Model.Texts?.Description</div>
-                        }
+        
+        @if (Model.HasImage)
+        {                
+            <div class="mb-3">
+                <img src="@OdkRoutes.Groups.Image(Model.Chapter.Id)" />
+            </div>                               
+        }
 
-                        @if (Model.Topics.Count > 0)
-                        {
-                            <div>
-                                @foreach (var topic in Model.Topics.OrderBy(x => x.Name))
-                                {
-                                    <div class="badge text-bg-secondary">@topic.Name</div>
-                                }
-                            </div>
-                        }
-                    </div>
+        <div class="d-flex flex-column gap-2">
+            <h6>@Model.Chapter.Name</h6>
+            @if (Model.Location != null)
+            {
+                <div class="d-flex gap-2 small">
+                    <div>
+                        @await Html.PartialAsync("Components/_Location", Model.Location.Name)                                
+                    </div>                            
+                    @if (Model.Distance != null)
+                    {
+                        <span> | </span>
+                        <span>
+                            @Math.Ceiling(Model.Distance.Value) @Model.Distance.Unit.Abbreviation
+                        </span>
+                    }
                 </div>
-            </div>
+            }                        
+            @if (!string.IsNullOrEmpty(Model.Texts?.Description))
+            {
+                <div class="card-text">@Model.Texts?.Description</div>
+            }
+
+            @if (Model.Topics.Count > 0)
+            {
+                <div>
+                    @foreach (var topic in Model.Topics.OrderBy(x => x.Name))
+                    {
+                        <div class="badge text-bg-secondary">@topic.Name</div>
+                    }
+                </div>
+            }
+        </div>
+
         </a>
     </div>    
 </div>

@@ -49,7 +49,7 @@ public interface IMemberService
     Task RotateMemberImage(Guid memberId);    
 
     Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
-        MemberServiceRequest request, Guid chapterSubscriptionId, string returnPath);    
+        MemberChapterServiceRequest request, Guid chapterSubscriptionId, string returnPath);    
 
     Task<ServiceResult> UpdateMemberEmailPreferences(Guid id, IEnumerable<MemberEmailPreferenceType> disabledTypes);
 

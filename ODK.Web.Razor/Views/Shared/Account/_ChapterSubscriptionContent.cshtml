@@ -6,6 +6,7 @@
 @using ODK.Services.Chapters
 @using ODK.Services.Members
 @using ODK.Services.Payments
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
@@ -13,7 +14,7 @@
 @model OdkComponentViewModel<Chapter>
 @inject IChapterService ChapterService
 @{
-    var (chapter, memberId) = (Model.Value, Model.Context.CurrentMemberId);
+    var (chapter, memberId, platform) = (Model.Value, Model.Context.CurrentMemberId, Model.Platform);
     var dto = await ChapterService.GetChapterMemberSubscriptionsViewModel(memberId, chapter);
 
     var (currentSubscription, 
@@ -125,22 +126,26 @@ else
                     }
 
                     <div>
-                        @if (paymentSettings?.Provider == PaymentProviderType.Stripe)
-                        {
-                            <a class="btn btn-primary mr-1" href="/@chapter.Name/account/subscription/@chapterSubscription.Id/checkout">
-                                Purchase
-                            </a>
-                        }
-                        else
-                        {
-                            <button class="btn btn-primary mr-1"
-                                    data-bs-toggle="modal" data-bs-target="#@modalId">
-                                Purchase
-                            </button>
-                        }
+                        <div class="button-container mt-3">
+                            @if (paymentSettings?.Provider == PaymentProviderType.Stripe)
+                            {
+                                var checkoutUrl = OdkRoutes.Groups
+                                    .SubscriptionCheckout(platform, chapter, chapterSubscription);
 
-                        <span>@currency.ToAmountString(chapterSubscription.Amount)</span>
+                                <a class="btn btn-primary" href="@checkoutUrl">
+                                    Buy
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-primary"
+                                        data-bs-toggle="modal" data-bs-target="#@modalId">
+                                    Buy
+                                </button>
+                            }
 
+                            <span>@currency.ToAmountString(chapterSubscription.Amount)</span>
+                        </div>
                         @await Html.PartialAsync("Payments/_PaymentModal", new PaymentModalViewModel
                        {
                            Action = $"/Chapters/{chapter.Id}/Account/Subscription/Purchase",
@@ -162,16 +167,5 @@ else
                 </div>
             </div>
         </div>
-    }
-
-    @if (paymentSettings?.Provider?.HasCheckout() != true)
-    {
-        @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
-        {
-            ApiPublicKey = paymentSettings?.ApiPublicKey ?? "",
-            CurrencyCode = currency?.Code ?? "",
-            IsSubscription = false,
-            Provider = paymentSettings?.Provider ?? default
-        })
     }
 }

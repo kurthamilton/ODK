@@ -3,7 +3,7 @@ using ODK.Core.Payments;
 
 namespace ODK.Services.Chapters.ViewModels;
 
-public class GroupProfileSubscriptionPageViewModel : GroupPageViewModelBase
+public class GroupSubscriptionPageViewModel : GroupPageViewModel
 {
     public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
 

@@ -6,7 +6,7 @@ using ODK.Services.Chapters.ViewModels;
 
 namespace ODK.Services.Events.ViewModels;
 
-public class EventPageViewModel : GroupPageViewModelBase
+public class EventPageViewModel : GroupPageViewModel
 {
     public required bool CanRespond { get; init; }
 

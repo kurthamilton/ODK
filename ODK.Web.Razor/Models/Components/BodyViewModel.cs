@@ -7,6 +7,8 @@ public class BodyViewModel
 {
     public IReadOnlyCollection<MenuItem>? Breadcrumbs { get; set; }
 
+    public string? Class { get; init; }
+
     public IHtmlContent? Content { get; set; }
 
     public Func<object?, IHtmlContent>? ContentFunc { get; set; }

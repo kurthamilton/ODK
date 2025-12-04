@@ -6,6 +6,24 @@
   font-weight: 300;
   src: local("Josefin Sans Light"), local("JosefinSans-Light"), url("../fonts/josefin-sans-v14-latin-300.woff2") format("woff2"), url("../fonts/josefin-sans-v14-latin-300.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
+@font-face {
+  font-family: "inter";
+  font-weight: normal;
+  font-style: normal;
+  src: local("Inter"), url("../fonts/Inter-VariableFont_opsz,wght.woff2") format("woff2"), url("../fonts/Inter-VariableFont_opsz,wght.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+@font-face {
+  font-family: "manrope";
+  font-weight: normal;
+  font-style: normal;
+  src: local("Manrope"), url("../fonts/Manrope-VariableFont_wght.woff2") format("woff2"), url("../fonts/Manrope-VariableFont_wght.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+@font-face {
+  font-family: "zain";
+  font-weight: normal;
+  font-style: normal;
+  src: local("Zain"), url("../fonts/Zain-Light.woff2") format("woff2"), url("../fonts/Zain-Light.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
 /*!
  * Bootstrap  v5.3.8 (https://getbootstrap.com/)
  * Copyright 2011-2025 The Bootstrap Authors
@@ -12047,6 +12065,7 @@ html[data-platform=odk] {
 .button-container {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .card-body-sm {

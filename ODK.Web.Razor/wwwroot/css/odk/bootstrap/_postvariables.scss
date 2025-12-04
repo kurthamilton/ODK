@@ -1,3 +1,7 @@
 @if $odk == true {
     $font-family-base: 'Josefin Sans', $font-family-base;
 }
+
+@if $odk == false {
+    $font-family-base: 'Inter', $font-family-base;
+}

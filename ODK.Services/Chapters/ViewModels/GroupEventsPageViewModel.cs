@@ -1,6 +1,6 @@
 ﻿namespace ODK.Services.Chapters.ViewModels;
 
-public class GroupEventsPageViewModel : GroupPageViewModelBase
+public class GroupEventsPageViewModel : GroupPageViewModel
 {
     public required IReadOnlyCollection<GroupPageListEventViewModel> Events { get; init; }
 }

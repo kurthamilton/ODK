@@ -5,7 +5,7 @@ using ODK.Core.Topics;
 
 namespace ODK.Services.Chapters.ViewModels;
 
-public class GroupHomePageViewModel : GroupPageViewModelBase
+public class GroupHomePageViewModel : GroupPageViewModel
 {
     public required ChapterLocation? ChapterLocation { get; init; }
 

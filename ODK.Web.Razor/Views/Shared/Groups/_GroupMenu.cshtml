@@ -4,7 +4,7 @@
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
-@model GroupPageViewModelBase
+@model GroupPageViewModel
 @inject IHttpContextAccessor HttpContextAccessor
 @{
     var menuItems = new List<MenuItem>
@@ -41,7 +41,13 @@
         menuItems.Add(new MenuItem 
         { 
             Text = "My profile", 
-            Link = OdkRoutes.Groups.Profile.Index(Model.Chapter) 
+            Link = OdkRoutes.Groups.Profile(Model.Platform, Model.Chapter) 
+        });
+
+        menuItems.Add(new MenuItem
+        {
+            Text = "My subscription",
+            Link = OdkRoutes.Groups.Subscription(Model.Platform, Model.Chapter)
         });
     }
 

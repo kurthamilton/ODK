@@ -5,7 +5,7 @@
 @using ODK.Web.Razor.Pages.Chapters
 @model ODK.Web.Razor.Models.Components.BodyWithSidebarViewModel
 
-<main>
+<main class="@Model.Class">
     @await Html.PartialAsync("Components/_PageTitle", new PageTitleViewModel
     {
         Content = Model.TitleContent,
@@ -13,14 +13,14 @@
         WidthClass = Model.WidthClass
     })
 
+    @if (Model.Menu != null)
+    {
+        @Model.Menu
+    }
+
     <div class="container">
         <div class="row @(Model.WidthClass != null ? "justify-content-center" : null)">
-            <div class="@(Model.WidthClass ?? "col-12")">
-                @if (Model.Menu != null)
-                {
-                    @Model.Menu
-                }
-
+            <div class="@(Model.WidthClass ?? "col-12")">                
                 <div class="page-alerts">
                     @if (!Model.HideSubscriptionAlert)
                     {

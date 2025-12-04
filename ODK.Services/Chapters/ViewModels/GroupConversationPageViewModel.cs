@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Chapters.ViewModels;
 
-public class GroupConversationPageViewModel : GroupPageViewModelBase
+public class GroupConversationPageViewModel : GroupPageViewModel
 {
     public required ChapterConversation Conversation { get; init; }
 

@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Chapters.ViewModels;
 
-public class GroupJoinPageViewModel : GroupPageViewModelBase
+public class GroupJoinPageViewModel : GroupPageViewModel
 {
     public required ChapterMembershipSettings? MembershipSettings { get; init; }
 

@@ -750,15 +750,16 @@ public class MemberService : IMemberService
     }    
 
     public async Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
-        MemberServiceRequest request, Guid chapterSubscriptionId, string returnPath)
+        MemberChapterServiceRequest request, Guid chapterSubscriptionId, string returnPath)
     {        
-        var memberId = request.CurrentMemberId;
+        var (platform, memberId) = (request.Platform, request.CurrentMemberId);
 
         var (member, chapterSubscription) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(memberId),
             x => x.ChapterSubscriptionRepository.GetById(chapterSubscriptionId));
 
-        var (chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
+        var (chapter, chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterSubscription.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId),
             x => x.SitePaymentSettingsRepository.GetActive());
 
@@ -815,9 +816,12 @@ public class MemberService : IMemberService
 
         return new ChapterSubscriptionCheckoutStartedViewModel
         {
+            Chapter = chapter,
+            ChapterSubscription = chapterSubscription,
             ClientSecret = externalCheckoutSession.ClientSecret,
             CurrencyCode = subscriptionPlan.CurrencyCode,
-            PaymentSettings = paymentSettings
+            PaymentSettings = paymentSettings,
+            Platform = platform
         };
     }
 

@@ -12,12 +12,7 @@
                 @<div>
                     @if (Model.Owned.Count > 0)
                     {
-                        <div class="d-flex flex-column gap-3">
-                            @foreach (var group in Model.Owned.OrderBy(x => x.Chapter.Name))
-                            {
-                                @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
-                            }
-                        </div>
+                        @await Html.PartialAsync("Chapters/_ChapterTiles", Model.Owned.OrderBy(x => x.Chapter.Name))
                     }
                     else
                     {
@@ -36,13 +31,8 @@
             @await Html.PartialAsync("Components/_Panel", new PanelViewModel
             {
                 TitleContentFunc = @<h5>Manager</h5>,
-                BodyContentFunc = 
-                    @<div class="d-flex flex-column gap-3">
-                        @foreach (var group in Model.Admin.OrderBy(x => x.Chapter.Name))
-                        {
-                            @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
-                        }
-                    </div>
+                BodyContent = 
+                    await Html.PartialAsync("Chapters/_ChapterTiles", Model.Admin.OrderBy(x => x.Chapter.Name))
             })                        
         </section>
     }
@@ -55,12 +45,7 @@
                 @<div>
                     @if (Model.Member.Count > 0)
                     {
-                        <div class="d-flex flex-column gap-3">
-                            @foreach (var group in Model.Member.OrderBy(x => x.Chapter.Name))
-                            {
-                                @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
-                            }
-                        </div>
+                        @await Html.PartialAsync("Chapters/_ChapterTiles", Model.Member.OrderBy(x => x.Chapter.Name))
                     }
                     else
                     {

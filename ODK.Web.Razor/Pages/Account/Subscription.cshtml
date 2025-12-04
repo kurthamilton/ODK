@@ -1,13 +1,19 @@
 ﻿@page "/account/subscription"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Services.Subscriptions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
+@using ODK.Web.Razor.Models.Payments
 @model ODK.Web.Razor.Pages.Account.SubscriptionModel
+@inject ISiteSubscriptionService SiteSubscriptionService
 @{
     Layout = "_AccountLayout";
     Model.Title = "Subscription";
+
+    var viewModel = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -20,8 +26,34 @@
             @<div>
                 <h2>My subscription</h2>
                 <section class="section">
-                    @await Html.PartialAsync("Account/_SiteSubscriptionContent")
+                    @await Html.PartialAsync("Account/_SiteSubscriptionContent", viewModel)
                 </section>
             </div>
     })
 })
+
+@section scripts
+{
+    @{
+        var added = new List<Guid>();
+    }
+
+    @foreach (var dto in viewModel.Subscriptions)
+    {
+        var paymentSettings = dto.Subscription.SitePaymentSettings;
+        if (added.Contains(paymentSettings.Id))
+        {
+            continue;
+        }
+
+        added.Add(paymentSettings.Id);
+
+        @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+        {
+            ApiPublicKey = paymentSettings.ApiPublicKey ?? "",
+            CurrencyCode = "",
+            IsSubscription = true,
+            Provider = paymentSettings.Provider
+       })
+    }
+}

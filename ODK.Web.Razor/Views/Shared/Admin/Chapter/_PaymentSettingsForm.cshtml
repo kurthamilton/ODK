@@ -11,12 +11,6 @@
 }
 
 <div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.Provider, new { @class = "form-label" })
-    @Html.OdkEnumDropDownFor(x => x.Provider, new { @class = "form-select" })
-    @Html.ValidationMessageFor(x => x.Provider)
-</div>
-
-<div class="form-group mb-3 required">
     @Html.LabelFor(x => x.CurrencyId, new { @class = "form-label" })
     @Html.DropDownListFor(x => x.CurrencyId, currencyOptions, "", new { @class = "form-select" })
     @Html.ValidationMessageFor(x => x.CurrencyId)

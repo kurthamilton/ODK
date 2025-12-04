@@ -4,6 +4,30 @@
     @include odk-font
 }
 
+@font-face {
+    font-family: "inter";
+    font-weight: normal;
+    font-style: normal;
+    src: local('Inter'), url('../fonts/Inter-VariableFont_opsz,wght.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+    url('../fonts/Inter-VariableFont_opsz,wght.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+@font-face {
+    font-family: "manrope";
+    font-weight: normal;
+    font-style: normal;
+    src: local('Manrope'), url('../fonts/Manrope-VariableFont_wght.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+    url('../fonts/Manrope-VariableFont_wght.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+@font-face {
+    font-family: "zain";
+    font-weight: normal;
+    font-style: normal;
+    src: local('Zain'), url('../fonts/Zain-Light.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+    url('../fonts/Zain-Light.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
 @mixin odk-icons-times {
     &:before {
         content: "\f00d";

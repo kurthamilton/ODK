@@ -1,32 +1,17 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Countries
-@using ODK.Core.Extensions
-@using ODK.Core.Members
-@using ODK.Core.Payments
+﻿@using ODK.Core.Payments
 @using ODK.Core.Subscriptions
 @using ODK.Core.Utils
-@using ODK.Services
-@using ODK.Services.Chapters
-@using ODK.Services.Members
-@using ODK.Services.Subscriptions
-@using ODK.Web.Common.Extensions
-@using ODK.Web.Razor.Models
-@using ODK.Web.Razor.Models.Components
+@using ODK.Services.Subscriptions.ViewModels
 @using ODK.Web.Razor.Models.Payments
-@using ODK.Web.Razor.Services
-@inject IRequestStore RequestStore
-@inject ISiteSubscriptionService SiteSubscriptionService
-@{
-    var viewModel = await SiteSubscriptionService.GetSiteSubscriptionsViewModel(
-        RequestStore.ServiceRequest, RequestStore.CurrentMemberIdOrDefault);
-
+@model SiteSubscriptionsViewModel
+@{    
     var (currency, currentMember, memberSubscription, subscriptions, paymentSettings) = 
-        (viewModel.Currency, viewModel.CurrentMember, viewModel.CurrentMemberSubscription, viewModel.Subscriptions, viewModel.PaymentSettings!);
+        (Model.Currency, Model.CurrentMember, Model.CurrentMemberSubscription, Model.Subscriptions, Model.PaymentSettings);
 }
 
 @if (currency == null)
 {
-    var currencyOptions = viewModel.Currencies
+    var currencyOptions = Model.Currencies
         .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.ToString() })
         .OrderBy(x => x.Text)
         .ToArray();
@@ -72,7 +57,7 @@
     </div>
 </div>
 
-@if (viewModel.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid != true)
+@if (Model.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid != true)
 {
     <h3>Upgrade</h3>
 
@@ -108,38 +93,41 @@
                                     var periodUnit = price.Frequency.PeriodUnit();
 
                                     <div class="d-flex align-items-center gap-1">
-                                        @if (subscription.SitePaymentSettings.Provider == PaymentProviderType.Stripe)
-                                        {
-                                            <a class="btn btn-primary mr-1" href="/account/subscription/@price.Id/checkout">
-                                                Purchase
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <button class="btn btn-primary mr-1" data-bs-toggle="modal" data-bs-target="#@modalId">
-                                                Subscribe
-                                            </button>
-                                        }
-
-                                        <span>@price.Currency.ToAmountString(price.Amount)/@periodUnit</span>
-
-                                        @await Html.PartialAsync("Payments/_PaymentSubscriptionModal", new PaymentSubscriptionModalViewModel
-                                        {
-                                            Action = "/account/subscription/confirm",
-                                            PaymentSettings = subscription.SitePaymentSettings,
-                                            FormContentFunc =
-                                                @<input type="hidden" name="siteSubscriptionPriceId" value="@price.Id" />,
-                                            Id = modalId,
-                                            PaymentForm = new PaymentSubscriptionFormViewModel
+                                        <div class="button-container mt-3">
+                                            @if (subscription.SitePaymentSettings.Provider == PaymentProviderType.Stripe)
                                             {
-                                                CurrencyCode = price.Currency.Code,
-                                                ExternalId = price.ExternalId,
-                                                Provider = subscription.SitePaymentSettings.Provider,
-                                                SiteSubscriptionPriceId = price.Id
-                                            },
-                                            Title = subscriptionDto.Subscription.Name
-                                        })
+                                                <a class="btn btn-primary" href="/account/subscription/@price.Id/checkout">
+                                                    Buy
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#@modalId">
+                                                    Subscribe
+                                                </button>
+                                            }
 
+                                            <span>@price.Currency.ToAmountString(price.Amount)/@periodUnit</span>
+                                        </div>
+                                        @if (subscription.SitePaymentSettings.Provider != PaymentProviderType.Stripe)
+                                        {
+                                            @await Html.PartialAsync("Payments/_PaymentSubscriptionModal", new PaymentSubscriptionModalViewModel
+                                            {
+                                                Action = "/account/subscription/confirm",
+                                                PaymentSettings = subscription.SitePaymentSettings,
+                                                FormContentFunc =
+                                                    @<input type="hidden" name="siteSubscriptionPriceId" value="@price.Id" />,
+                                                Id = modalId,
+                                                PaymentForm = new PaymentSubscriptionFormViewModel
+                                                {
+                                                    CurrencyCode = price.Currency.Code,
+                                                    ExternalId = price.ExternalId,
+                                                    Provider = subscription.SitePaymentSettings.Provider,
+                                                    SiteSubscriptionPriceId = price.Id
+                                                },
+                                                Title = subscriptionDto.Subscription.Name
+                                            })
+                                        }                                        
                                     </div>
                                 }
                             </div>
@@ -149,27 +137,4 @@
             </div>              
         }
     </div>
-}
-
-@{
-    var added = new List<Guid>();
-
-    @foreach (var subscriptionDto in viewModel.Subscriptions)
-    {
-        var subscriptionPaymentSettings = subscriptionDto.Subscription.SitePaymentSettings;
-        if (added.Contains(subscriptionPaymentSettings.Id))
-        {
-            continue;
-        }
-
-        added.Add(subscriptionPaymentSettings.Id);
-
-        @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
-        {
-            ApiPublicKey = subscriptionPaymentSettings.ApiPublicKey ?? "",
-            CurrencyCode = "",
-            IsSubscription = true,
-            Provider = subscriptionPaymentSettings.Provider
-        }) 
-    }
 }

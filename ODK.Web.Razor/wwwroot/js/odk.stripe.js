@@ -2,6 +2,8 @@
     const $forms = document.querySelectorAll('[data-stripe-checkout]');
     $forms.forEach($form => {
         const publicKey = $form.getAttribute('data-stripe');
+        if (!publicKey) return;
+
         const stripe = Stripe(publicKey);
         const sessionId = $form.getAttribute('data-stripe-checkout');
 

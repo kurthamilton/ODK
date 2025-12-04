@@ -1,0 +1,39 @@
+﻿@page "/groups/{slug}/subscription/{chapterSubscriptionId:guid}/checkout"
+@using ODK.Core.Payments
+@using ODK.Services.Chapters
+@using ODK.Services.Members
+@using ODK.Web.Razor.Models.Groups
+@using ODK.Web.Razor.Models.Payments
+@model ODK.Web.Razor.Pages.Groups.Subscription.CheckoutModel
+@inject IChapterViewModelService ChapterViewModelService
+@inject IMemberService MemberService
+@{
+    Layout = "_HomeLayout";
+
+    var group = await ChapterViewModelService.GetGroupPage(
+        Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
+
+    var request = Model.MemberChapterServiceRequest(group.Chapter.Id);
+    var returnUrl = "";
+
+    var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
+        request, Model.ChapterSubscriptionId, returnUrl);
+}
+
+@await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel
+{
+    Title = "",
+    Content = await Html.PartialAsync("Groups/Subscription/_GroupSubscriptionCheckoutContent", viewModel),
+    Group = group
+})
+
+@section scripts
+{
+    @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
+    {
+        ApiPublicKey = viewModel.PaymentSettings.ApiPublicKey ?? "",
+        CurrencyCode = viewModel.CurrencyCode,
+        IsSubscription = true,
+        Provider = viewModel.PaymentSettings.Provider ?? PaymentProviderType.None
+    })
+}

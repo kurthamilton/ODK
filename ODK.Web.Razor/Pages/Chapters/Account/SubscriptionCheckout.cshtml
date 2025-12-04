@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/account/subscription/{id:guid}/checkout"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Core
 @using ODK.Core.Payments
 @using ODK.Services.Members
 @using ODK.Web.Common.Components
@@ -14,9 +15,10 @@
     Layout = "_OdkChapterLayout";
     Model.Title = "Subscription checkout";
 
+    var request = Model.MemberChapterServiceRequest(Model.Chapter.Id);
     var returnPath = $"/{Model.Chapter.Name}/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
-        Model.MemberServiceRequest, Model.SubscriptionId, returnPath);
+        request, Model.SubscriptionId, returnPath);
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel

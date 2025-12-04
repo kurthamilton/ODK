@@ -1,0 +1,13 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@model IEnumerable<ChapterWithDistanceViewModel>
+
+<div class="container-fluid">
+    <div class="row row-cols-3">
+        @foreach (var group in Model)
+        {
+            <div class="col">
+                @await Html.PartialAsync("Chapters/_ChapterWithLocationTile", group)
+            </div>
+        }
+    </div>
+</div>

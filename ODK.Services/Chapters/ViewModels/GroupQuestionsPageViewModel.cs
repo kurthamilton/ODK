@@ -2,7 +2,7 @@
 
 namespace ODK.Services.Chapters.ViewModels;
 
-public class GroupQuestionsPageViewModel : GroupPageViewModelBase
+public class GroupQuestionsPageViewModel : GroupPageViewModel
 {
     public required IReadOnlyCollection<ChapterQuestion> Questions { get; init; }
 }
