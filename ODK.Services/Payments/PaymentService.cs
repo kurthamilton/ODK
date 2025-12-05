@@ -1,5 +1,4 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
@@ -46,6 +45,12 @@ public class PaymentService : IPaymentService
             : ServiceResult.Failure("Error canceling subscription");
     }    
 
+    public async Task<RemoteAccount?> CreatePaymentAccount(IPaymentSettings settings, CreateRemoteAccountOptions options)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.CreateConnectedAccount(options);
+    }
+
     public async Task<string?> CreateProduct(IPaymentSettings settings, string name)
     {
         var provider = _paymentProviderFactory.GetPaymentProvider(settings);
@@ -64,10 +69,22 @@ public class PaymentService : IPaymentService
         return await provider.DeactivateSubscriptionPlan(externalId);
     }
 
+    public async Task<string?> GeneratePaymentAccountSetupUrl(IPaymentSettings settings, GenerateRemoteAccountSetupUrlOptions options)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.GenerateConnectedAccountSetupUrl(options);
+    }
+
     public async Task<ExternalCheckoutSession?> GetCheckoutSession(IPaymentSettings settings, string externalId)
     {
         var provider = _paymentProviderFactory.GetPaymentProvider(settings);
         return await provider.GetCheckoutSession(externalId);
+    }
+
+    public async Task<RemoteAccount?> GetPaymentAccount(IPaymentSettings settings, string externalId)
+    {
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        return await provider.GetConnectedAccount(externalId);
     }
 
     public async Task<string?> GetProductId(IPaymentSettings settings, string name)
@@ -192,7 +209,7 @@ public class PaymentService : IPaymentService
 
             await _memberEmailService.SendPaymentNotification(request, member, payment, currency, siteEmailSettings);
         }
-    }
+    }    
 
     public async Task<ExternalCheckoutSession> StartCheckoutSession(
         ServiceRequest request,

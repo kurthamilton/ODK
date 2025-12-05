@@ -10,7 +10,9 @@ public interface IPaymentService
 {
     Task<ServiceResult> ActivateSubscriptionPlan(IPaymentSettings settings, string externalId);
 
-    Task<ServiceResult> CancelSubscription(IPaymentSettings settings, string externalId);    
+    Task<ServiceResult> CancelSubscription(IPaymentSettings settings, string externalId);
+
+    Task<RemoteAccount?> CreatePaymentAccount(IPaymentSettings settings, CreateRemoteAccountOptions options);
 
     Task<string?> CreateProduct(IPaymentSettings settings, string name);
 
@@ -18,7 +20,11 @@ public interface IPaymentService
 
     Task<ServiceResult> DeactivateSubscriptionPlan(IPaymentSettings settings, string externalId);
 
+    Task<string?> GeneratePaymentAccountSetupUrl(IPaymentSettings settings, GenerateRemoteAccountSetupUrlOptions options);
+
     Task<ExternalCheckoutSession?> GetCheckoutSession(IPaymentSettings settings, string externalId);
+
+    Task<RemoteAccount?> GetPaymentAccount(IPaymentSettings settings, string externalId);
 
     Task<string?> GetProductId(IPaymentSettings settings, string name);
 
@@ -29,7 +35,7 @@ public interface IPaymentService
     Task<ServiceResult> MakePayment(ChapterPaymentSettings chapterPaymentSettings, 
         Currency currency, Member member, decimal amount, string cardToken, string reference);
 
-    Task ProcessWebhook(ServiceRequest request, PaymentProviderWebhook webhook);
+    Task ProcessWebhook(ServiceRequest request, PaymentProviderWebhook webhook);    
 
     Task<ExternalCheckoutSession> StartCheckoutSession(
         ServiceRequest request,

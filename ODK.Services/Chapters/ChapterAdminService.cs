@@ -8,6 +8,7 @@ using ODK.Core.Members;
 using ODK.Core.Notifications;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
+using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
 using ODK.Data.Core.Deferred;
@@ -19,10 +20,12 @@ using ODK.Services.Imaging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
 using ODK.Services.Payments;
+using ODK.Services.Payments.Models;
 using ODK.Services.Settings;
 using ODK.Services.SocialMedia;
 using ODK.Services.Subscriptions;
 using ODK.Services.Topics;
+using ODK.Services.Web;
 
 namespace ODK.Services.Chapters;
 
@@ -39,6 +42,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUrlProviderFactory _urlProviderFactory;
 
     public ChapterAdminService(
         IUnitOfWork unitOfWork, 
@@ -51,7 +55,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         ITopicService topicService,
         IPaymentService paymentService,
         ChapterAdminServiceSettings settings,
-        ISiteSubscriptionService siteSubscriptionService)
+        ISiteSubscriptionService siteSubscriptionService,
+        IUrlProviderFactory urlProviderFactory)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
@@ -65,6 +70,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _siteSubscriptionService = siteSubscriptionService;
         _topicService = topicService;
         _unitOfWork = unitOfWork;
+        _urlProviderFactory = urlProviderFactory;
     }
     
     public async Task<ServiceResult> AddChapterAdminMember(MemberChapterServiceRequest request, Guid memberId)
@@ -169,16 +175,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var (
             memberSubscription, 
-            memberPaymentSettings, 
             existing, 
-            countries, 
-            siteEmailSettings
+            siteEmailSettings,
+            country
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform),
-            x => x.MemberPaymentSettingsRepository.GetByMemberId(currentMemberId),
             x => x.ChapterRepository.GetAll(),
-            x => x.CountryRepository.GetAll(),
-            x => x.SiteEmailSettingsRepository.Get(platform));
+            x => x.SiteEmailSettingsRepository.Get(platform),
+            x => x.CountryRepository.GetById(model.CountryId));
 
         var memberChapters = existing
             .Where(x => x.OwnerId == currentMemberId)
@@ -233,6 +237,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var chapter = new Chapter
         {
+            CountryId = model.CountryId,
             CreatedUtc = now,
             Name = model.Name,
             OwnerId = currentMemberId,
@@ -280,16 +285,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             TopicId = x
         }));
 
-        if (memberPaymentSettings != null)
+        _unitOfWork.ChapterPaymentSettingsRepository.Add(new ChapterPaymentSettings
         {
-            _unitOfWork.ChapterPaymentSettingsRepository.Add(new ChapterPaymentSettings
-            {
-                ApiPublicKey = memberPaymentSettings.ApiPublicKey,
-                ApiSecretKey = memberPaymentSettings.ApiSecretKey,
-                ChapterId = chapter.Id,
-                CurrencyId = memberPaymentSettings.CurrencyId
-            });
-        }
+            ChapterId = chapter.Id,
+            CurrencyId = country.CurrencyId
+        });
 
         image.ChapterId = chapter.Id;
         _unitOfWork.ChapterImageRepository.Add(image);
@@ -307,6 +307,66 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             siteEmailSettings);
 
         return ServiceResult<Chapter?>.Successful(chapter);
+    }
+
+    public async Task<ServiceResult<ChapterPaymentAccount>> CreateChapterPaymentAccount(
+        MemberChapterServiceRequest request, string refreshPath, string returnPath)
+    {
+        var (chapter, chapterPaymentSettings, existing, owner, sitePaymentSettings, country) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId),            
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId),
+            x => x.MemberRepository.GetChapterOwner(request.ChapterId),
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.CountryRepository.GetByChapterId(request.ChapterId));
+
+        if (existing != null)
+        {
+            return ServiceResult<ChapterPaymentAccount>.Failure("Payment account already exists");
+        }
+
+        if (owner == null)
+        {
+            return ServiceResult<ChapterPaymentAccount>.Failure("Set group owner before you can create a payment account");
+        }
+
+        var baseUrl = request.HttpRequestContext.BaseUrl;
+
+        var urlProvider = _urlProviderFactory.Create(request);
+
+        var result = await _paymentService.CreatePaymentAccount(sitePaymentSettings, new CreateRemoteAccountOptions
+        {
+            Chapter = chapter,
+            ChapterUrl = urlProvider.GroupUrl(chapter),
+            Country = country,
+            ChapterCurrency = chapterPaymentSettings.Currency,
+            Owner = owner
+        });
+
+        if (result == null)
+        {
+            return ServiceResult<ChapterPaymentAccount>.Failure("An error occurred while creating a payment account");
+        }
+
+        var onboardingUrl = await _paymentService.GeneratePaymentAccountSetupUrl(sitePaymentSettings, new GenerateRemoteAccountSetupUrlOptions
+        {
+            Id = result.Id,
+            RefreshUrl = UrlUtils.Url(baseUrl, refreshPath),
+            ReturnUrl = UrlUtils.Url(baseUrl, returnPath)
+        });
+
+        var paymentAccount = new ChapterPaymentAccount
+        {
+            ChapterId = request.ChapterId,
+            CreatedUtc = DateTime.UtcNow,
+            ExternalId = result.Id,
+            OnboardingUrl = onboardingUrl
+        };
+        _unitOfWork.ChapterPaymentAccountRepository.Add(paymentAccount);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult<ChapterPaymentAccount>.Successful(paymentAccount);
     }
 
     public async Task<ServiceResult> CreateChapterProperty(MemberChapterServiceRequest request, 
@@ -623,6 +683,40 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
 
+    public async Task<ServiceResult<string>> GenerateChapterPaymentAccountSetupUrl(
+        MemberChapterServiceRequest request, string refreshPath, string returnPath)
+    {
+        var (existing, sitePaymentSettings) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId),
+            x => x.SitePaymentSettingsRepository.GetActive());
+
+        if (existing == null)
+        {
+            return ServiceResult<string>.Failure("Payment account does not exist");
+        }
+
+        var baseUrl = request.HttpRequestContext.BaseUrl;
+
+        var url = await _paymentService.GeneratePaymentAccountSetupUrl(sitePaymentSettings, new GenerateRemoteAccountSetupUrlOptions
+        {
+            Id = existing.ExternalId,
+            RefreshUrl = UrlUtils.Url(baseUrl, refreshPath),
+            ReturnUrl = UrlUtils.Url(baseUrl, returnPath)
+        });
+
+        if (string.IsNullOrEmpty(url))
+        {
+            return ServiceResult<string>.Failure("An error occurred while refresh a payment account");
+        }
+
+        existing.OnboardingUrl = url;
+        _unitOfWork.ChapterPaymentAccountRepository.Update(existing);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult<string>.Successful(url);
+    }
+
     public async Task<Chapter> GetChapter(MemberChapterServiceRequest request)
     {
         return await GetChapterAdminRestrictedContent(request,
@@ -864,6 +958,34 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             Message = message,
             Platform = platform,
             Replies = replies
+        };
+    }
+
+    public async Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(MemberChapterServiceRequest request)
+    {
+        var (paymentAccount, sitePaymentSettings) = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId),
+            x => x.SitePaymentSettingsRepository.GetActive());
+
+        if (paymentAccount != null && paymentAccount.OnboardingCompletedUtc == null)
+        {
+            var remoteAccount = await _paymentService.GetPaymentAccount(sitePaymentSettings, paymentAccount.ExternalId);
+            if (remoteAccount?.Enabled == true)
+            {
+                paymentAccount.OnboardingCompletedUtc = DateTime.UtcNow;
+                paymentAccount.OnboardingUrl = null;
+                _unitOfWork.ChapterPaymentAccountRepository.Update(paymentAccount);
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
+        return new ChapterPaymentAccountAdminPageViewModel
+        {
+            Enabled = paymentAccount?.OnboardingCompletedUtc != null,
+            ExternalId = paymentAccount?.ExternalId,
+            OnboardingUrl = paymentAccount?.OnboardingCompletedUtc == null
+                ? paymentAccount?.OnboardingUrl
+                : null
         };
     }
 
@@ -1207,7 +1329,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
-    }
+    }    
 
     public async Task<ServiceResult> ReplyToConversation(
         MemberChapterServiceRequest request, 

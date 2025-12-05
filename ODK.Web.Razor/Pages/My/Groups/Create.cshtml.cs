@@ -33,6 +33,12 @@ public class CreateModel : OdkPageModel
             return Page();
         }
 
+        if (viewModel.CountryId == null)
+        {
+            AddFeedback("Country not set", FeedbackType.Error);
+            return Page();
+        }
+
         if (viewModel.Location.Lat == null || viewModel.Location.Long == null)
         {
             AddFeedback("Location not set", FeedbackType.Error);
@@ -53,6 +59,7 @@ public class CreateModel : OdkPageModel
 
         var result = await _chapterAdminService.CreateChapter(MemberServiceRequest, new ChapterCreateModel
         {
+            CountryId = viewModel.CountryId.Value,
             Description = viewModel.Description?.Trim() ?? "",
             ImageData = bytes,
             Location = new LatLong(viewModel.Location.Lat.Value, viewModel.Location.Long.Value),

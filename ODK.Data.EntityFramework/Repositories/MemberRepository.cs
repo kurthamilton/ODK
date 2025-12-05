@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -37,6 +38,18 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
     public IDeferredQueryMultiple<Member> GetByEmailAddresses(IEnumerable<string> emailAddresses) => Set()
         .Where(x => emailAddresses.Contains(x.EmailAddress))
         .DeferredMultiple();
+
+    public IDeferredQuerySingleOrDefault<Member> GetChapterOwner(Guid chapterId)
+    {
+        var query = 
+            from member in Set()
+            from chapter in Set<Chapter>()
+                .Where(x => member.Id == x.OwnerId)
+            where chapter.Id == chapterId
+            select member;
+
+        return query.DeferredSingleOrDefault();
+    }
 
     public IDeferredQuery<int> GetCountByChapterId(Guid chapterId) => Set()
         .Current(chapterId)

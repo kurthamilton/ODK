@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core.Countries;
+using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Core.Topics;
 
@@ -9,6 +10,8 @@ public class ChapterCreateViewModel
     public required int ChapterCount { get; init; }
 
     public required int? ChapterLimit { get; init; }
+
+    public required IReadOnlyCollection<Country> Countries { get; init; }
 
     public required Member Member { get; init; }
 

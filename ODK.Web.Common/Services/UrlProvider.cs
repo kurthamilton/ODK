@@ -1,7 +1,6 @@
 ﻿using System;
 using ODK.Core.Chapters;
 using ODK.Core.Platforms;
-using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Services;
 using ODK.Services.Web;
@@ -77,5 +76,5 @@ public class UrlProvider : IUrlProvider
         => GetUrl("/superadmin/topics");
 
     private string GetUrl(string path) 
-        => $"{UrlUtils.BaseUrl(_httpRequestContext.RequestUrl)}{path}";
+        => $"{_httpRequestContext.BaseUrl}{path}";
 }

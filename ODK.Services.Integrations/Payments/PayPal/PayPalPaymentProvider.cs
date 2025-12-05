@@ -28,6 +28,8 @@ public class PayPalPaymentProvider : IPaymentProvider
 
     public bool HasExternalGateway => false;
 
+    public bool SupportsConnectedAccounts => false;
+
     public bool SupportsRecurringPayments => PaymentProviderType.PayPal.SupportsRecurringPayments();
 
     public async Task<ServiceResult> ActivateSubscriptionPlan(string externalId)
@@ -45,10 +47,10 @@ public class PayPalPaymentProvider : IPaymentProvider
         return await client.CancelSubscription(externalId);
     }
 
-    public Task<string?> CreateCustomer(string emailAddress)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<RemoteAccount?> CreateConnectedAccount(CreateRemoteAccountOptions options) 
+        => throw new NotImplementedException();
+
+    public Task<string?> CreateCustomer(string emailAddress) => throw new NotImplementedException();
 
     public async Task<string?> CreateProduct(string name)
     {
@@ -103,20 +105,18 @@ public class PayPalPaymentProvider : IPaymentProvider
             : ServiceResult.Failure("Subscription plan could not be deactivated");
     }
 
-    public Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
-    {
-        return Task.FromResult<ExternalCheckoutSession?>(null);
-    }
+    public Task<string?> GenerateConnectedAccountSetupUrl(GenerateRemoteAccountSetupUrlOptions options)
+        => throw new NotImplementedException();
 
-    public Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments()
-    {
-        throw new NotImplementedException();
-    }
+    public Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments() 
+        => throw new NotImplementedException();
 
-    public Task<string?> GetProductId(string name)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId) => 
+        Task.FromResult<ExternalCheckoutSession?>(null);
+
+    public Task<RemoteAccount?> GetConnectedAccount(string externalId) => throw new NotImplementedException();
+
+    public Task<string?> GetProductId(string name) => throw new NotImplementedException();
 
     public async Task<ExternalSubscription?> GetSubscription(string externalId)
     {
@@ -194,7 +194,7 @@ public class PayPalPaymentProvider : IPaymentProvider
         }
 
         return RemotePaymentResult.Successful(order.Id);
-    }
+    }    
 
     public async Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
         string paymentId, string note)

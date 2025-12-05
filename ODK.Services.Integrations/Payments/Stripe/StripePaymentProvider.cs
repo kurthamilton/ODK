@@ -28,6 +28,8 @@ public class StripePaymentProvider : IPaymentProvider
 
     public bool HasExternalGateway => true;
 
+    public bool SupportsConnectedAccounts => true;
+
     public bool SupportsRecurringPayments => PaymentProviderType.Stripe.SupportsRecurringPayments();
 
     public async Task<ServiceResult> ActivateSubscriptionPlan(string externalId)
@@ -44,6 +46,8 @@ public class StripePaymentProvider : IPaymentProvider
 
     public async Task<bool> CancelSubscription(string externalId)
     {
+        await _loggingService.Info($"Cancelling Stripe subscription '{externalId}'");
+
         var subscriptionService = CreateSubscriptionService();
 
         try
@@ -51,16 +55,51 @@ public class StripePaymentProvider : IPaymentProvider
             await subscriptionService.CancelAsync(externalId);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            await _loggingService.Error($"Error cancelling Stripe subscription '{externalId}'", ex);
             return false;
         }
     }
 
-    public Task<string?> CreateCustomer(string emailAddress)
+    public async Task<RemoteAccount?> CreateConnectedAccount(CreateRemoteAccountOptions options)
     {
-        throw new NotImplementedException();
+        var emailAddress = options.Owner.EmailAddress;
+
+        await _loggingService.Info($"Creating connected stripe account for '{emailAddress}'");
+
+        var service = CreateAccountService();
+        
+        try
+        {
+            var account = await service.CreateAsync(new AccountCreateOptions
+            {
+                Email = emailAddress,
+                Country = options.Country.IsoCode2,
+                Type = "express",
+                BusinessProfile = new AccountBusinessProfileOptions
+                {
+                    Name = options.Chapter.Name,
+                    Url = options.ChapterUrl
+                },
+                BusinessType = "individual",
+                DefaultCurrency = options.ChapterCurrency.Code
+            });                        
+            
+            return new RemoteAccount
+            {
+                Enabled = false,
+                Id = account.Id                
+            };
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error creating connected stripe account for '{emailAddress}'", ex);
+            return null;
+        }
     }
+
+    public Task<string?> CreateCustomer(string emailAddress) => throw new NotImplementedException();
 
     public async Task<string?> CreateProduct(string name)
     {
@@ -131,6 +170,31 @@ public class StripePaymentProvider : IPaymentProvider
         return ServiceResult.Successful();
     }
 
+    public async Task<string?> GenerateConnectedAccountSetupUrl(GenerateRemoteAccountSetupUrlOptions options)
+    {
+        await _loggingService.Info($"Refreshing connected stripe account for Stripe account '{options.Id}'");
+
+        var service = CreateAccountLinkService();
+
+        try
+        {
+            var link = service.Create(new AccountLinkCreateOptions
+            {
+                Account = options.Id,
+                Type = "account_onboarding",
+                RefreshUrl = options.RefreshUrl,
+                ReturnUrl = options.ReturnUrl
+            });
+
+            return link.Url;
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error refreshing connected stripe account for Stripe account '{options.Id}'", ex);
+            return null;
+        }
+    }
+
     public async Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
     {
         var service = CreateSessionService();
@@ -157,15 +221,6 @@ public class StripePaymentProvider : IPaymentProvider
         {
             return null;
         }
-    }
-
-    public async Task<string?> GetProductId(string name)
-    {
-        var service = CreateProductService();
-        var products = await service.ListAsync();
-        return products
-            .FirstOrDefault(x => string.Equals(name, x.Name, StringComparison.InvariantCultureIgnoreCase))
-            ?.Id;
     }
 
     public async Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments()
@@ -234,6 +289,28 @@ public class StripePaymentProvider : IPaymentProvider
         }
 
         return remotePayments;
+    }
+
+    public async Task<RemoteAccount?> GetConnectedAccount(string externalId)
+    {
+        var service = CreateAccountService();
+
+        var account = await service.GetAsync(externalId);
+
+        return new RemoteAccount
+        {
+            Id = account.Id,
+            Enabled = account.PayoutsEnabled
+        };
+    }
+
+    public async Task<string?> GetProductId(string name)
+    {
+        var service = CreateProductService();
+        var products = await service.ListAsync();
+        return products
+            .FirstOrDefault(x => string.Equals(name, x.Name, StringComparison.InvariantCultureIgnoreCase))
+            ?.Id;
     }
 
     public async Task<ExternalSubscription?> GetSubscription(string externalId)
@@ -335,7 +412,7 @@ public class StripePaymentProvider : IPaymentProvider
 
         intent = await service.ConfirmAsync(intent.Id);
         return RemotePaymentResult.Successful(intent.Id);
-    }    
+    }        
 
     public Task<string?> SendPayment(string currencyCode, decimal amount, 
         string emailAddress, string paymentId, string note)
@@ -349,7 +426,9 @@ public class StripePaymentProvider : IPaymentProvider
         string returnPath, 
         PaymentMetadataModel metadata)
     {
-        var baseUrl = UrlUtils.BaseUrl(request.HttpRequestContext.RequestUrl);
+        var returnUrl = UrlUtils.Url(
+            baseUrl: request.HttpRequestContext.BaseUrl,
+            path: returnPath.Replace("{sessionId}", "{CHECKOUT_SESSION_ID}"));
 
         var metadataDictionary = new Dictionary<string, string>(metadata.ToDictionary());
 
@@ -366,7 +445,7 @@ public class StripePaymentProvider : IPaymentProvider
                 }
             },
             Mode = subscriptionPlan.Recurring ? "subscription" : "payment",
-            ReturnUrl = baseUrl + returnPath.Replace("{sessionId}", "{CHECKOUT_SESSION_ID}"),
+            ReturnUrl = returnUrl,
             AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false },
             Metadata = metadataDictionary,            
             PaymentIntentData = !subscriptionPlan.Recurring ? new SessionPaymentIntentDataOptions
@@ -428,10 +507,12 @@ public class StripePaymentProvider : IPaymentProvider
         return await service.ListAutoPagingAsync().All();
     }
 
-    private InvoiceService CreateInvoiceService() => new InvoiceService(_client);
-    private PaymentIntentService CreatePaymentIntentService() => new PaymentIntentService(_client);
-    private PriceService CreatePriceService() => new PriceService(_client);
-    private ProductService CreateProductService() => new ProductService(_client);
-    private SessionService CreateSessionService() => new SessionService(_client);
-    private SubscriptionService CreateSubscriptionService() => new SubscriptionService(_client);
+    private AccountLinkService CreateAccountLinkService() => new(_client);
+    private AccountService CreateAccountService() => new(_client);
+    private InvoiceService CreateInvoiceService() => new(_client);
+    private PaymentIntentService CreatePaymentIntentService() => new(_client);
+    private PriceService CreatePriceService() => new(_client);
+    private ProductService CreateProductService() => new(_client);
+    private SessionService CreateSessionService() => new(_client);
+    private SubscriptionService CreateSubscriptionService() => new(_client);
 }

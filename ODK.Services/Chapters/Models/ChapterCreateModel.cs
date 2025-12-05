@@ -5,6 +5,8 @@ namespace ODK.Services.Chapters.Models;
 
 public class ChapterCreateModel
 {
+    public required Guid CountryId { get; init; }
+
     public required string Description { get; init; }
 
     public required byte[] ImageData { get; init; }

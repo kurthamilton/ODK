@@ -12,6 +12,17 @@ public class CountryMap : IEntityTypeConfiguration<Country>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id).HasColumnName("CountryId");
+        builder.Property(x => x.Id)
+            .HasColumnName("CountryId");
+
+        builder.Property(x => x.IsoCode2)
+            .HasMaxLength(2);
+
+        builder.Property(x => x.IsoCode3)
+            .HasMaxLength(3);
+
+        builder.HasOne<Currency>()
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId);
     }
 }

@@ -20,6 +20,9 @@ public interface IChapterAdminService
         MemberServiceRequest request, 
         ChapterCreateModel model);
 
+    Task<ServiceResult<ChapterPaymentAccount>> CreateChapterPaymentAccount(
+        MemberChapterServiceRequest request, string refreshPath, string returnPath);
+
     Task<ServiceResult> CreateChapterProperty(MemberChapterServiceRequest request, CreateChapterProperty model);
 
     Task<ServiceResult> CreateChapterQuestion(MemberChapterServiceRequest request, CreateChapterQuestion model);
@@ -39,6 +42,9 @@ public interface IChapterAdminService
     Task DeleteChapterQuestion(MemberChapterServiceRequest request, Guid id);
 
     Task<ServiceResult> DeleteChapterSubscription(MemberChapterServiceRequest request, Guid id);
+
+    Task<ServiceResult<string>> GenerateChapterPaymentAccountSetupUrl(
+        MemberChapterServiceRequest request, string refreshPath, string returnPath);
 
     Task<Chapter> GetChapter(MemberChapterServiceRequest request);
 
@@ -61,6 +67,8 @@ public interface IChapterAdminService
     Task<ChapterMessagesAdminPageViewModel> GetChapterMessagesViewModel(MemberChapterServiceRequest request, bool spam);
 
     Task<ChapterMessageAdminPageViewModel> GetChapterMessageViewModel(MemberChapterServiceRequest request, Guid id);
+
+    Task<ChapterPaymentAccountAdminPageViewModel> GetChapterPaymentAccountViewModel(MemberChapterServiceRequest request);
 
     Task<ChapterPaymentSettings?> GetChapterPaymentSettings(MemberChapterServiceRequest request);
 
@@ -100,7 +108,7 @@ public interface IChapterAdminService
 
     Task<SuperAdminChapterViewModel> GetSuperAdminChapterViewModel(MemberChapterServiceRequest request);
 
-    Task<ServiceResult> PublishChapter(MemberChapterServiceRequest request);
+    Task<ServiceResult> PublishChapter(MemberChapterServiceRequest request);        
 
     Task<ServiceResult> ReplyToConversation(
         MemberChapterServiceRequest request, 

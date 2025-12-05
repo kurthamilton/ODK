@@ -1,4 +1,3 @@
-using ODK.Core.Utils;
 using ODK.Services.Chapters;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Sitemap;
@@ -12,7 +11,7 @@ public class SitemapModel : OdkPageModel
     
     public SitemapModel(IChapterService chapterService)
     {
-        _baseUrl = new(() => UrlUtils.BaseUrl(HttpRequestContext.RequestUrl));
+        _baseUrl = new(() => HttpRequestContext.BaseUrl);
         _chapterService = chapterService;        
     }
 

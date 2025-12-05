@@ -188,10 +188,11 @@ public class ChapterViewModelService : IChapterViewModelService
             throw new OdkNotFoundException();
         }
 
-        var (current, member, memberSubscription, topicGroups, topics, memberTopics) = await _unitOfWork.RunAsync(
+        var (current, member, memberSubscription, countries, topicGroups, topics, memberTopics) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetByOwnerId(currentMemberId),
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform),
+            x => x.CountryRepository.GetAll(),
             x => x.TopicGroupRepository.GetAll(),
             x => x.TopicRepository.GetAll(),
             x => x.MemberTopicRepository.GetByMemberId(currentMemberId));
@@ -204,6 +205,7 @@ public class ChapterViewModelService : IChapterViewModelService
             ChapterLimit = memberSubscription?.SiteSubscription != null
                 ? memberSubscription.SiteSubscription.GroupLimit
                 : SiteSubscription.DefaultGroupLimit,
+            Countries = countries,
             Member = member,
             MemberLocation = memberLocation,
             MemberTopics = memberTopics,

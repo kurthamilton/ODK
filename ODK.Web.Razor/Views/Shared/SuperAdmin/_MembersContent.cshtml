@@ -42,7 +42,7 @@
                             <form action="/@Model.Value.Name/Admin/Chapter/Owner" method="post">
                                 @Html.Hidden("memberId", adminMember.MemberId)
                                 <button class="btn btn-icon" data-bs-toggle="tooltip" data-bs-title="Set as owner">
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.StarOutline)
                                     {
                                         Class = "text-warning"
                                     })

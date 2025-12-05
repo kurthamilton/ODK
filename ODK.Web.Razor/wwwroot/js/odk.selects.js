@@ -134,13 +134,14 @@
     }
 
     function bindSlimSelect($select) {
+        const clearable = $select.hasAttribute('data-clearable');
         let placeholder = $select.getAttribute('data-placeholder');
         const multiple = $select.hasAttribute('multiple');
 
         let allowDeselect = true;
 
-        if (!multiple) {
-            const $placeholder = $select.querySelector('option[data-placeholder]');
+        if (!multiple && clearable) {
+            const $placeholder = $select.querySelector('option[value=""]');            
             if ($placeholder) {
                 $placeholder.setAttribute('data-placeholder', 'true');
             }

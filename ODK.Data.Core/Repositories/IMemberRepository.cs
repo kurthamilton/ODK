@@ -10,6 +10,7 @@ public interface IMemberRepository : IReadWriteRepository<Member>
     IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId, IEnumerable<Guid> memberIds);
     IDeferredQuerySingleOrDefault<Member> GetByEmailAddress(string emailAddress);
     IDeferredQueryMultiple<Member> GetByEmailAddresses(IEnumerable<string> emailAddresses);
+    IDeferredQuerySingleOrDefault<Member> GetChapterOwner(Guid chapterId);
     IDeferredQuery<int> GetCountByChapterId(Guid chapterId);
     IDeferredQueryMultiple<Member> GetLatestByChapterId(Guid chapterId, int pageSize);
 }
