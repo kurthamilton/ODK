@@ -5,7 +5,7 @@
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Payment settings",
+    Title = "Payments",
     ContentFunc = 
         @<div>
             <form method="post">
@@ -15,7 +15,6 @@
                     ChapterPaymentSettings = Model.PaymentSettings,
                     CurrencyId = Model.PaymentSettings?.CurrencyId,
                     CurrencyOptions = Model.CurrencyOptions,
-                    EmailAddress = Model.PaymentSettings?.EmailAddress,
                     OwnerSubscription = Model.OwnerSubscription,
                     UseSitePaymentProvider = Model.PaymentSettings?.UseSitePaymentProvider ?? false
                 })

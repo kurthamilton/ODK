@@ -16,11 +16,6 @@ public class ChapterPaymentSettingsFormViewModel
 
     public IReadOnlyCollection<Currency> CurrencyOptions { get; set; } = [];
 
-    [DisplayName("Email address")]
-    [Required]
-    [EmailAddress]
-    public string? EmailAddress { get; set; }
-
     public MemberSiteSubscription? OwnerSubscription { get; set; }
 
     [DisplayName("Use site payment provider")]

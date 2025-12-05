@@ -1720,10 +1720,14 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         settings.ApiPublicKey = model.ApiPublicKey;
         settings.ApiSecretKey = model.ApiSecretKey;
         settings.Currency = currency;
-        settings.CurrencyId = model.CurrencyId.Value;        
-        settings.EmailAddress = model.EmailAddress;
+        settings.CurrencyId = model.CurrencyId.Value;                
         settings.UseSitePaymentProvider = model.UseSitePaymentProvider;
         
+        if (!string.IsNullOrEmpty(model.EmailAddress))
+        {
+            settings.EmailAddress = model.EmailAddress;
+        }
+
         if (model.Provider != null)
         {
             settings.Provider = model.Provider;
