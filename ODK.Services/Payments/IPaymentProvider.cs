@@ -18,8 +18,6 @@ public interface IPaymentProvider
 
     Task<RemoteAccount?> CreateConnectedAccount(CreateRemoteAccountOptions options);
 
-    Task<string?> CreateCustomer(string emailAddress);
-
     Task<string?> CreateProduct(string name);
 
     Task<string?> CreateSubscriptionPlan(ExternalSubscriptionPlan subscriptionPlan);
@@ -53,6 +51,4 @@ public interface IPaymentProvider
         PaymentMetadataModel metadata);
 
     Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata);
-
-    Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken);
 }

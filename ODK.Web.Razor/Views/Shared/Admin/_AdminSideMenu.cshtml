@@ -103,7 +103,12 @@
         {
             Link = OdkRoutes.Payments.Payments(platform, chapter),
             Text = "Payments",
-            Children = []
+            Children = new[]
+            {
+                platform == PlatformType.DrunkenKnitwits
+                    ? new MenuItem()
+                    : new MenuItem { Text = "Account", Link = OdkRoutes.Payments.PaymentAccount(platform, chapter) }
+            }
         },
         superadminLinks.Length > 0
             ? new MenuItem

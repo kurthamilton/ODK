@@ -30,6 +30,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IChapterLinksRepository ChapterLinksRepository => Mock.Object.ChapterLinksRepository;
     public IChapterLocationRepository ChapterLocationRepository => Mock.Object.ChapterLocationRepository;
     public IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository => Mock.Object.ChapterMembershipSettingsRepository;
+    public IChapterPaymentAccountRepository ChapterPaymentAccountRepository => Mock.Object.ChapterPaymentAccountRepository;
     public IChapterPaymentSettingsRepository ChapterPaymentSettingsRepository => Mock.Object.ChapterPaymentSettingsRepository;
     public IChapterPrivacySettingsRepository ChapterPrivacySettingsRepository => Mock.Object.ChapterPrivacySettingsRepository;
     public IChapterPropertyOptionRepository ChapterPropertyOptionRepository => Mock.Object.ChapterPropertyOptionRepository;
@@ -81,7 +82,7 @@ internal class MockUnitOfWork : IUnitOfWork
     public IMemberTopicRepository MemberTopicRepository => Mock.Object.MemberTopicRepository;
     public INewChapterTopicRepository NewChapterTopicRepository => Mock.Object.NewChapterTopicRepository;
     public INewMemberTopicRepository NewMemberTopicRepository => Mock.Object.NewMemberTopicRepository;
-    public INotificationRepository NotificationRepository => Mock.Object.NotificationRepository;
+    public INotificationRepository NotificationRepository => Mock.Object.NotificationRepository;    
     public IPaymentCheckoutSessionRepository PaymentCheckoutSessionRepository => Mock.Object.PaymentCheckoutSessionRepository;
     public IPaymentReconciliationRepository PaymentReconciliationRepository => Mock.Object.PaymentReconciliationRepository;
     public IPaymentRepository PaymentRepository => Mock.Object.PaymentRepository;  

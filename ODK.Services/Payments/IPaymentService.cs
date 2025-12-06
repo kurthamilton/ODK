@@ -8,41 +8,61 @@ namespace ODK.Services.Payments;
 
 public interface IPaymentService
 {
-    Task<ServiceResult> ActivateSubscriptionPlan(IPaymentSettings settings, string externalId);
+    Task<ServiceResult> ActivateSubscriptionPlan(
+        IPaymentSettings settings, string? connectedAccountId, string externalId);
 
-    Task<ServiceResult> CancelSubscription(IPaymentSettings settings, string externalId);
+    Task<ServiceResult> CancelSubscription(
+        IPaymentSettings settings, string? connectedAccountId, string externalId);
 
     Task<RemoteAccount?> CreatePaymentAccount(IPaymentSettings settings, CreateRemoteAccountOptions options);
 
-    Task<string?> CreateProduct(IPaymentSettings settings, string name);
+    Task<string?> CreateProduct(IPaymentSettings settings, string? connectedAccountId, string name);
 
-    Task<string?> CreateSubscriptionPlan(IPaymentSettings settings, ExternalSubscriptionPlan subscriptionPlan);
+    Task<string?> CreateSubscriptionPlan(
+        IPaymentSettings settings, string? connectedAccountId, ExternalSubscriptionPlan subscriptionPlan);
 
-    Task<ServiceResult> DeactivateSubscriptionPlan(IPaymentSettings settings, string externalId);
+    Task<ServiceResult> DeactivateSubscriptionPlan(
+        IPaymentSettings settings, string? connectedAccountId, string externalId);
 
-    Task<string?> GeneratePaymentAccountSetupUrl(IPaymentSettings settings, GenerateRemoteAccountSetupUrlOptions options);
+    Task<string?> GeneratePaymentAccountSetupUrl(
+        IPaymentSettings settings, GenerateRemoteAccountSetupUrlOptions options);
 
-    Task<ExternalCheckoutSession?> GetCheckoutSession(IPaymentSettings settings, string externalId);
+    Task<ExternalCheckoutSession?> GetCheckoutSession(
+        IPaymentSettings settings, string? connectedAccountId, string externalId);
 
     Task<RemoteAccount?> GetPaymentAccount(IPaymentSettings settings, string externalId);
 
-    Task<string?> GetProductId(IPaymentSettings settings, string name);
+    Task<string?> GetProductId(IPaymentSettings settings, string? connectedAccountId, string name);
 
-    Task<ExternalSubscription?> GetSubscription(IPaymentSettings settings, string externalId);
+    Task<ExternalSubscription?> GetSubscription(
+        IPaymentSettings settings, string? connectedAccountId, string externalId);
 
-    Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(IPaymentSettings settings, string externalId);
+    Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(
+        IPaymentSettings settings, string? connectedAccountId, string externalId);
 
-    Task<ServiceResult> MakePayment(ChapterPaymentSettings chapterPaymentSettings, 
-        Currency currency, Member member, decimal amount, string cardToken, string reference);
+    Task<ServiceResult> MakePayment(
+        IPaymentSettings settings,
+        string? connectedAccountId,
+        Guid chapterId,
+        Currency currency, 
+        Member member, 
+        decimal amount, 
+        string cardToken, 
+        string reference);
 
     Task ProcessWebhook(ServiceRequest request, PaymentProviderWebhook webhook);    
 
     Task<ExternalCheckoutSession> StartCheckoutSession(
         ServiceRequest request,
-        IPaymentSettings settings, 
+        IPaymentSettings settings,
+        string? connectedAccountId,
         ExternalSubscriptionPlan subscriptionPlan, 
         string returnPath,
         PaymentMetadataModel metadata);
 
-    Task UpdatePaymentMetadata(IPaymentSettings settings, string externalId, PaymentMetadataModel metadata);
+    Task UpdatePaymentMetadata(
+        IPaymentSettings settings, 
+        string? connectedAccountId,
+        string externalId, 
+        PaymentMetadataModel metadata);
 }

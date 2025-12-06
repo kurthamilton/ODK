@@ -30,96 +30,106 @@ public class PaymentService : IPaymentService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> ActivateSubscriptionPlan(IPaymentSettings settings, string externalId)
+    public async Task<ServiceResult> ActivateSubscriptionPlan(
+        IPaymentSettings settings, string? connectedAccountId, string externalId)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(
+            settings, connectedAccountId);
         return await provider.ActivateSubscriptionPlan(externalId);
     }
 
-    public async Task<ServiceResult> CancelSubscription(IPaymentSettings settings, string externalId)
+    public async Task<ServiceResult> CancelSubscription(
+        IPaymentSettings settings, string? connectedAccountId, string externalId)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(
+            settings, connectedAccountId);
         var result = await provider.CancelSubscription(externalId);
         return result
             ? ServiceResult.Successful()
             : ServiceResult.Failure("Error canceling subscription");
     }    
 
-    public async Task<RemoteAccount?> CreatePaymentAccount(IPaymentSettings settings, CreateRemoteAccountOptions options)
+    public async Task<RemoteAccount?> CreatePaymentAccount(
+        IPaymentSettings settings, CreateRemoteAccountOptions options)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(
+            settings, connectedAccountId: null);
         return await provider.CreateConnectedAccount(options);
     }
 
-    public async Task<string?> CreateProduct(IPaymentSettings settings, string name)
+    public async Task<string?> CreateProduct(
+        IPaymentSettings settings, string? connectedAccountId, string name)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId);
         return await provider.CreateProduct(name);
     }
 
-    public async Task<string?> CreateSubscriptionPlan(IPaymentSettings settings, ExternalSubscriptionPlan subscriptionPlan)
+    public async Task<string?> CreateSubscriptionPlan(
+        IPaymentSettings settings, string? connectedAccountId, ExternalSubscriptionPlan subscriptionPlan)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId);
         return await provider.CreateSubscriptionPlan(subscriptionPlan);
     }
 
-    public async Task<ServiceResult> DeactivateSubscriptionPlan(IPaymentSettings settings, string externalId)
+    public async Task<ServiceResult> DeactivateSubscriptionPlan(
+        IPaymentSettings settings, string? connectedAccountId, string externalId)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId);
         return await provider.DeactivateSubscriptionPlan(externalId);
     }
 
-    public async Task<string?> GeneratePaymentAccountSetupUrl(IPaymentSettings settings, GenerateRemoteAccountSetupUrlOptions options)
+    public async Task<string?> GeneratePaymentAccountSetupUrl(
+        IPaymentSettings settings, GenerateRemoteAccountSetupUrlOptions options)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId: null);
         return await provider.GenerateConnectedAccountSetupUrl(options);
     }
 
-    public async Task<ExternalCheckoutSession?> GetCheckoutSession(IPaymentSettings settings, string externalId)
+    public async Task<ExternalCheckoutSession?> GetCheckoutSession(
+        IPaymentSettings settings, string? connectedAccountId, string externalId)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId);
         return await provider.GetCheckoutSession(externalId);
     }
 
     public async Task<RemoteAccount?> GetPaymentAccount(IPaymentSettings settings, string externalId)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId: null);
         return await provider.GetConnectedAccount(externalId);
     }
 
-    public async Task<string?> GetProductId(IPaymentSettings settings, string name)
+    public async Task<string?> GetProductId(
+        IPaymentSettings settings, string? connectedAccountId, string name)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId);
         return await provider.GetProductId(name);
     }
 
-    public async Task<ExternalSubscription?> GetSubscription(IPaymentSettings settings, string externalId)
+    public async Task<ExternalSubscription?> GetSubscription(
+        IPaymentSettings settings, string? connectedAccountId, string externalId)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId);
         return await provider.GetSubscription(externalId);
     }
 
-    public async Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(IPaymentSettings settings, string externalId)
+    public async Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(
+        IPaymentSettings settings, string? connectedAccountId, string externalId)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId);
         return await provider.GetSubscriptionPlan(externalId);
     }
 
     public async Task<ServiceResult> MakePayment(
-        ChapterPaymentSettings chapterPaymentSettings, 
+        IPaymentSettings settings,
+        string? connectedAccountId,
+        Guid chapterId,
         Currency currency, 
         Member member, 
         decimal amount, 
         string cardToken, 
         string reference)
-    {
-        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository.GetActive().Run();
-
-        var sitePaymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings);
-
-        var paymentProvider = chapterPaymentSettings.HasApiKey
-            ? _paymentProviderFactory.GetPaymentProvider(chapterPaymentSettings)
-            : sitePaymentProvider;
+    {        
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId);
 
         var paymentResult = await paymentProvider.MakePayment(
             currency.Code, 
@@ -138,7 +148,7 @@ public class PaymentService : IPaymentService
         var payment = new Payment
         {
             Amount = amount,
-            ChapterId = chapterPaymentSettings.ChapterId,
+            ChapterId = chapterId,
             CurrencyId = currency.Id,
             ExternalId = paymentResult.Id,
             MemberId = member.Id,
@@ -147,13 +157,6 @@ public class PaymentService : IPaymentService
         };
         _unitOfWork.PaymentRepository.Add(payment);
         await _unitOfWork.SaveChangesAsync();
-
-        if (!chapterPaymentSettings.HasApiKey && !string.IsNullOrEmpty(chapterPaymentSettings.EmailAddress))
-        {
-            amount = Math.Round(amount - (0.025M * amount), 2);
-            await sitePaymentProvider.SendPayment(currency.Code, amount,
-                chapterPaymentSettings.EmailAddress, payment.Id.ToString(), reference);
-        }        
 
         return ServiceResult.Successful();
     }
@@ -213,18 +216,23 @@ public class PaymentService : IPaymentService
 
     public async Task<ExternalCheckoutSession> StartCheckoutSession(
         ServiceRequest request,
-        IPaymentSettings settings, 
+        IPaymentSettings settings,
+        string? connectedAccountId,
         ExternalSubscriptionPlan subscriptionPlan,
         string returnPath,
         PaymentMetadataModel metadata)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId);
         return await provider.StartCheckout(request, subscriptionPlan, returnPath, metadata);
     }
 
-    public async Task UpdatePaymentMetadata(IPaymentSettings settings, string externalId, PaymentMetadataModel metadata)
+    public async Task UpdatePaymentMetadata(
+        IPaymentSettings settings,
+        string? connectedAccountId,
+        string externalId, 
+        PaymentMetadataModel metadata)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
+        var provider = _paymentProviderFactory.GetPaymentProvider(settings, connectedAccountId);
         await provider.UpdatePaymentMetadata(externalId, metadata);
     }
 

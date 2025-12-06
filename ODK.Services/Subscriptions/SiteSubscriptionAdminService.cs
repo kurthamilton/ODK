@@ -55,7 +55,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         UpdateSiteSubscription(model, subscription);
 
-        subscription.ExternalProductId = await _paymentService.CreateProduct(paymentSettings, subscription.Name);
+        subscription.ExternalProductId = await _paymentService.CreateProduct(
+            paymentSettings, connectedAccountId: null, subscription.Name);
 
         _unitOfWork.SiteSubscriptionRepository.Add(subscription);
 
@@ -96,17 +97,20 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         if (!string.IsNullOrEmpty(siteSubscription.ExternalProductId) && model.Amount > 0)
         {
-            price.ExternalId = await _paymentService.CreateSubscriptionPlan(siteSubscription.SitePaymentSettings, new ExternalSubscriptionPlan
-            {
-                Amount = model.Amount,
-                CurrencyCode = currency.Code,
-                ExternalId = "",
-                ExternalProductId = siteSubscription.ExternalProductId,
-                Frequency = model.Frequency,
-                Name = $"{siteSubscription.Name} - {model.Frequency} [{currency.Code}]",
-                NumberOfMonths = model.Frequency == SiteSubscriptionFrequency.Yearly ? 12 : 1,
-                Recurring = true
-            });
+            price.ExternalId = await _paymentService.CreateSubscriptionPlan(
+                siteSubscription.SitePaymentSettings, 
+                connectedAccountId: null,
+                new ExternalSubscriptionPlan
+                {
+                    Amount = model.Amount,
+                    CurrencyCode = currency.Code,
+                    ExternalId = "",
+                    ExternalProductId = siteSubscription.ExternalProductId,
+                    Frequency = model.Frequency,
+                    Name = $"{siteSubscription.Name} - {model.Frequency} [{currency.Code}]",
+                    NumberOfMonths = model.Frequency == SiteSubscriptionFrequency.Yearly ? 12 : 1,
+                    Recurring = true
+                });
         }
 
         _unitOfWork.SiteSubscriptionPriceRepository.Add(price);
@@ -114,7 +118,10 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         if (!string.IsNullOrEmpty(price.ExternalId))
         {
-            await _paymentService.ActivateSubscriptionPlan(siteSubscription.SitePaymentSettings, price.ExternalId);
+            await _paymentService.ActivateSubscriptionPlan(
+                siteSubscription.SitePaymentSettings, 
+                connectedAccountId: null, 
+                price.ExternalId);
         }
 
         return ServiceResult.Successful();
@@ -133,7 +140,10 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         if (!string.IsNullOrEmpty(price.ExternalId))
         {
-            await _paymentService.DeactivateSubscriptionPlan(siteSubscription.SitePaymentSettings, price.ExternalId);
+            await _paymentService.DeactivateSubscriptionPlan(
+                siteSubscription.SitePaymentSettings, 
+                connectedAccountId: null, 
+                price.ExternalId);
         }
     }
 

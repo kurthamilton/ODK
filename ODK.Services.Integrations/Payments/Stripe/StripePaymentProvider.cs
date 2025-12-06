@@ -18,9 +18,14 @@ public class StripePaymentProvider : IPaymentProvider
 
     public StripePaymentProvider(
         IPaymentSettings paymentSettings,
-        ILoggingService loggingService)
-    {        
-        _client = new StripeClient(paymentSettings.ApiSecretKey);
+        ILoggingService loggingService,
+        string connectedAccountId)
+    {
+        _client = new StripeClient(new StripeClientOptions
+        {
+            ApiKey = paymentSettings.ApiSecretKey,
+            StripeAccount = connectedAccountId
+        });
         _loggingService = loggingService;
     }
 
@@ -48,11 +53,11 @@ public class StripePaymentProvider : IPaymentProvider
     {
         await _loggingService.Info($"Cancelling Stripe subscription '{externalId}'");
 
-        var subscriptionService = CreateSubscriptionService();
+        var service = CreateSubscriptionService();
 
         try
         {
-            await subscriptionService.CancelAsync(externalId);
+            await service.CancelAsync(externalId);
             return true;
         }
         catch (Exception ex)
@@ -80,10 +85,16 @@ public class StripePaymentProvider : IPaymentProvider
                 BusinessProfile = new AccountBusinessProfileOptions
                 {
                     Name = options.Chapter.Name,
-                    Url = options.ChapterUrl
+                    // Url = options.ChapterUrl
                 },
                 BusinessType = "individual",
-                DefaultCurrency = options.ChapterCurrency.Code
+                DefaultCurrency = options.ChapterCurrency.Code,
+                Individual = new AccountIndividualOptions
+                {
+                    Email = options.Owner.EmailAddress,
+                    FirstName = options.Owner.FirstName,
+                    LastName = options.Owner.LastName
+                }
             });                        
             
             return new RemoteAccount
@@ -98,8 +109,6 @@ public class StripePaymentProvider : IPaymentProvider
             return null;
         }
     }
-
-    public Task<string?> CreateCustomer(string emailAddress) => throw new NotImplementedException();
 
     public async Task<string?> CreateProduct(string name)
     {
@@ -479,11 +488,6 @@ public class StripePaymentProvider : IPaymentProvider
         {
             Metadata = new Dictionary<string, string>(metadata.ToDictionary())
         });
-    }
-
-    public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
-    {
-        throw new NotImplementedException();
     }
 
     private async Task<IReadOnlyCollection<Invoice>> GetAllInvoices(

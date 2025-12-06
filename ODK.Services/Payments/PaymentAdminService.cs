@@ -120,7 +120,8 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.CurrencyRepository.GetAll());
         
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            sitePaymentSettings, connectedAccountId: null);
 
         var theirPayments = await paymentProvider.GetAllPayments();
 

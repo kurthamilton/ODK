@@ -71,14 +71,16 @@ public class ChapterService : IChapterService
             chapterSubscriptions, 
             chapterPaymentSettings, 
             sitePaymentSettings,
-            memberSubscriptionRecord
+            memberSubscriptionRecord,
+            chapterPaymentAccount
         ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
             x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId, includeDisabled: true),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.MemberSubscriptionRecordRepository.GetLatest(currentMemberId, chapterId));
+            x => x.MemberSubscriptionRecordRepository.GetLatest(currentMemberId, chapterId),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId));
 
         OdkAssertions.MemberOf(currentMember, chapterId);
 
@@ -93,7 +95,8 @@ public class ChapterService : IChapterService
             chapterPaymentSettings, 
             sitePaymentSettings, 
             memberSubscriptionRecord,
-            chapterSubscriptions);        
+            chapterSubscriptions,
+            chapterPaymentAccount);        
 
         return new SubscriptionsPageViewModel
         {
@@ -169,7 +172,8 @@ public class ChapterService : IChapterService
         ChapterPaymentSettings? chapterPaymentSettings,
         SitePaymentSettings sitePaymentSettings,
         MemberSubscriptionRecord? memberSubscriptionRecord,
-        IReadOnlyCollection<ChapterSubscription> chapterSubscriptions)
+        IReadOnlyCollection<ChapterSubscription> chapterSubscriptions,
+        ChapterPaymentAccount? chapterPaymentAccount)
     {
         if (memberSubscriptionRecord?.ExternalId == null || 
             memberSubscriptionRecord.ChapterSubscriptionId == null)
@@ -196,7 +200,8 @@ public class ChapterService : IChapterService
             return null;
         }
 
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(paymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            paymentSettings, chapterPaymentAccount?.ExternalId);
 
         return await paymentProvider.GetSubscription(memberSubscriptionRecord.ExternalId);
     }

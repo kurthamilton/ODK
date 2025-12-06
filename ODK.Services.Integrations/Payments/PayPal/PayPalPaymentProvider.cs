@@ -50,8 +50,6 @@ public class PayPalPaymentProvider : IPaymentProvider
     public Task<RemoteAccount?> CreateConnectedAccount(CreateRemoteAccountOptions options) 
         => throw new NotImplementedException();
 
-    public Task<string?> CreateCustomer(string emailAddress) => throw new NotImplementedException();
-
     public async Task<string?> CreateProduct(string name)
     {
         var model = new ProductJsonModel
@@ -234,12 +232,8 @@ public class PayPalPaymentProvider : IPaymentProvider
         throw new NotImplementedException();
     }
 
-    public Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata) => throw new NotImplementedException();
-
-    public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
-    {
-        throw new NotImplementedException();
-    }
+    public Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata) 
+        => throw new NotImplementedException();
 
     private PayPalClient GetClient()
     {

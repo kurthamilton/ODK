@@ -2,6 +2,7 @@
 using ODK.Core.Events;
 using ODK.Core.Features;
 using ODK.Core.Members;
+using ODK.Core.Payments;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Members;
@@ -124,8 +125,17 @@ public class EventService : IEventService
             return ServiceResult.Failure("This event does not have deposits");
         }
 
-        var (paymentSettings, ownerSubscription, membershipSettings, privacySettings, memberSubscription) = await _unitOfWork.RunAsync(
+        var (
+            sitePaymentSettings,
+            chapterPaymentSettings,
+            chapterPaymentAccount,
+            ownerSubscription, 
+            membershipSettings, 
+            privacySettings, 
+            memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(@event.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
@@ -136,7 +146,7 @@ public class EventService : IEventService
             return ServiceResult.Failure("Payment not made: this group can no longer receive payments");
         }
 
-        if (paymentSettings == null)
+        if (chapterPaymentSettings == null)
         {
             return ServiceResult.Failure("Payment not made: payments not configured");
         }
@@ -159,8 +169,19 @@ public class EventService : IEventService
             return spacesLeft;
         }
 
-        var paymentResult = await _paymentService.MakePayment(paymentSettings, 
-            paymentSettings.Currency, member, @event.TicketSettings.Deposit.Value, cardToken, @event.Name);
+        IPaymentSettings paymentSettings = chapterPaymentSettings.UseSitePaymentProvider
+            ? sitePaymentSettings
+            : chapterPaymentSettings;
+
+        var paymentResult = await _paymentService.MakePayment(
+            paymentSettings, 
+            chapterPaymentAccount?.ExternalId,
+            chapterPaymentSettings.ChapterId,
+            chapterPaymentSettings.Currency, 
+            member, 
+            @event.TicketSettings.Deposit.Value, 
+            cardToken, 
+            @event.Name);
         if (!paymentResult.Success)
         {
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
@@ -204,15 +225,29 @@ public class EventService : IEventService
             return ServiceResult.Failure("You have not paid a deposit for this event");
         }
 
-        var paymentSettings = await _unitOfWork.ChapterPaymentSettingsRepository.GetByChapterId(@event.ChapterId).Run();
-        if (paymentSettings == null)
+        var (sitePaymentSettings, chapterPaymentSettings, chapterPaymentAccount) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(@event.ChapterId));
+        if (chapterPaymentSettings == null)
         {
             return ServiceResult.Failure("Payment not made: payments not configured");
         }
 
+        IPaymentSettings paymentSettings = chapterPaymentSettings.UseSitePaymentProvider
+            ? sitePaymentSettings
+            : chapterPaymentSettings;
+
         var amount = @event.TicketSettings.Cost - ticketPurchase.DepositPaid.Value;
-        var paymentResult = await _paymentService.MakePayment(paymentSettings, 
-            paymentSettings.Currency, member, amount, cardToken, @event.Name);
+        var paymentResult = await _paymentService.MakePayment(
+            paymentSettings, 
+            chapterPaymentAccount?.ExternalId,
+            chapterPaymentSettings.ChapterId,
+            chapterPaymentSettings.Currency, 
+            member, 
+            amount, 
+            cardToken, 
+            @event.Name);
         if (!paymentResult.Success)
         {
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
@@ -246,8 +281,17 @@ public class EventService : IEventService
             return ServiceResult.Failure("You have already purchased a ticket for this event");
         }
 
-        var (paymentSettings, ownerSubscription, membershipSettings, privacySettings, memberSubscription) = await _unitOfWork.RunAsync(
+        var (
+            sitePaymentSettings,
+            chapterPaymentSettings, 
+            chapterPaymentAccount,
+            ownerSubscription, 
+            membershipSettings, 
+            privacySettings, 
+            memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(@event.ChapterId),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(@event.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(@event.ChapterId),
@@ -276,8 +320,19 @@ public class EventService : IEventService
             return spacesLeft;
         }
 
-        var paymentResult = await _paymentService.MakePayment(paymentSettings, 
-            paymentSettings.Currency, member, @event.TicketSettings.Cost, cardToken, @event.Name);
+        IPaymentSettings paymentSettings = chapterPaymentSettings.UseSitePaymentProvider
+            ? sitePaymentSettings
+            : chapterPaymentSettings;
+
+        var paymentResult = await _paymentService.MakePayment(
+            paymentSettings, 
+            chapterPaymentAccount?.ExternalId,
+            chapterPaymentSettings.ChapterId,
+            chapterPaymentSettings.Currency, 
+            member, 
+            @event.TicketSettings.Cost, 
+            cardToken, 
+            @event.Name);
         if (!paymentResult.Success)
         {
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");

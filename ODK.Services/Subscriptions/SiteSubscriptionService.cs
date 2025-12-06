@@ -44,7 +44,10 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         var siteSubscription = await _unitOfWork.SiteSubscriptionRepository.GetById(siteSubscriptionPrice.SiteSubscriptionId).Run();
 
-        var externalSubscription = await _paymentService.GetSubscription(siteSubscription.SitePaymentSettings, externalId);
+        var externalSubscription = await _paymentService.GetSubscription(
+            siteSubscription.SitePaymentSettings, 
+            connectedAccountId: null, 
+            externalId);
 
         if (externalSubscription == null || 
             externalSubscription.ExternalSubscriptionPlanId != siteSubscriptionPrice.ExternalId)
@@ -90,7 +93,8 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             return PaymentStatusType.Complete;
         }
 
-        var externalSession = await _paymentService.GetCheckoutSession(sitePaymentSettings, externalSessionId);
+        var externalSession = await _paymentService.GetCheckoutSession(
+            sitePaymentSettings, connectedAccountId: null, externalSessionId);
 
         return externalSession == null
             ? PaymentStatusType.Expired
@@ -174,7 +178,10 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             throw new Exception("Error starting checkout session: siteSubscriptionPrice.ExternalId missing");
         }
 
-        var externalSubscriptionPlan = await _paymentService.GetSubscriptionPlan(paymentSettings, price.ExternalId);
+        var externalSubscriptionPlan = await _paymentService.GetSubscriptionPlan(
+            paymentSettings, 
+            connectedAccountId: null,
+            price.ExternalId);
         if (externalSubscriptionPlan == null)
         {
             throw new Exception("Error starting checkout session: subscriptionPlan not found");
@@ -191,7 +198,12 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             paymentId: paymentId);
 
         var externalCheckoutSession = await _paymentService.StartCheckoutSession(
-            request, paymentSettings, externalSubscriptionPlan, returnPath, metadata);
+            request, 
+            paymentSettings, 
+            connectedAccountId: null,
+            externalSubscriptionPlan, 
+            returnPath, 
+            metadata);
 
         _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
         {
@@ -238,7 +250,10 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             }
 
             var paymentSettings = subscription.SiteSubscription.SitePaymentSettings;
-            var externalSubscription = await _paymentService.GetSubscription(paymentSettings, subscription.ExternalId);
+            var externalSubscription = await _paymentService.GetSubscription(
+                paymentSettings, 
+                connectedAccountId: null, 
+                subscription.ExternalId);
             if (externalSubscription?.NextBillingDate > DateTime.UtcNow)
             {                
                 subscription.ExpiresUtc = externalSubscription.NextBillingDate.Value;

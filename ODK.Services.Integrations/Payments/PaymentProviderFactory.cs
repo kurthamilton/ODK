@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Payments;
-using ODK.Core.Web;
 using ODK.Services.Integrations.Payments.PayPal;
 using ODK.Services.Integrations.Payments.Stripe;
 using ODK.Services.Logging;
@@ -23,7 +22,7 @@ public class PaymentProviderFactory : IPaymentProviderFactory
         _payPalSettings = payPalSettings;
     }
 
-    public IPaymentProvider GetPaymentProvider(IPaymentSettings settings)
+    public IPaymentProvider GetPaymentProvider(IPaymentSettings settings, string? connectedAccountId)
     {
         switch (settings.Provider)
         {
@@ -36,7 +35,8 @@ public class PaymentProviderFactory : IPaymentProviderFactory
             case PaymentProviderType.Stripe:
                 return new StripePaymentProvider(
                     settings,
-                    _loggingService);
+                    _loggingService,
+                    connectedAccountId);
             default:
                 throw new InvalidOperationException($"Payment provider type {settings.Provider} not supported");
         }

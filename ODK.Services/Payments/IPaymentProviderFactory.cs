@@ -4,5 +4,5 @@ namespace ODK.Services.Payments;
 
 public interface IPaymentProviderFactory
 {
-    IPaymentProvider GetPaymentProvider(IPaymentSettings settings);
+    IPaymentProvider GetPaymentProvider(IPaymentSettings settings, string? connectedAccountId);
 }

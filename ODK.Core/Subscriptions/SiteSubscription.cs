@@ -49,14 +49,16 @@ public class SiteSubscription : IDatabaseEntity
             yield return SiteFeatureType.EventTickets;
             yield return SiteFeatureType.InstagramFeed;
             yield return SiteFeatureType.MemberSubscriptions;
+            yield return SiteFeatureType.Payments;
             yield return SiteFeatureType.ScheduledEventEmails;
             yield return SiteFeatureType.SendMemberEmails;
             yield break;
         }
 
-        if (MemberSubscriptions)
+        if (MemberSubscriptions && !Premium)
         {
             yield return SiteFeatureType.MemberSubscriptions;
+            yield return SiteFeatureType.Payments;
         }        
 
         if (SendMemberEmails)
