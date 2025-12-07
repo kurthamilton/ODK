@@ -17,7 +17,7 @@
                         <th>Reference</th>
                         <th>Amount</th>
 
-                        @if (Model.PaymentSettings?.UseSitePaymentProvider == true)
+                        @if (Model.PaymentSettings.UseSitePaymentProvider)
                         {
                             <th>Reconciliation</th>
                         }
@@ -47,7 +47,7 @@
                             <td>
                                 @currency.ToAmountString(payment.Amount)
                             </td>
-                            @if (Model.PaymentSettings?.UseSitePaymentProvider == true)
+                            @if (Model.PaymentSettings.UseSitePaymentProvider)
                             {
                                 <td>
                                     @if (reconciliation != null)

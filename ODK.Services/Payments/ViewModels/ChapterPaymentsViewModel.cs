@@ -8,7 +8,7 @@ public class ChapterPaymentsViewModel
 {
     public required Chapter Chapter { get; init; }
 
-    public required ChapterPaymentSettings? PaymentSettings { get; init; }
+    public required ChapterPaymentSettings PaymentSettings { get; init; }
 
     public required IReadOnlyCollection<PaymentMemberDto> Payments { get; init; }
 

@@ -33,8 +33,7 @@ public class SubscriptionCreateModel : AdminPageModel
             Months = viewModel.DurationMonths ?? 0,
             Name = viewModel.Name,
             Recurring = viewModel.Recurring,
-            Title = viewModel.Title,
-            Type = viewModel.Type            
+            Title = viewModel.Title
         });
 
         if (result.Success)

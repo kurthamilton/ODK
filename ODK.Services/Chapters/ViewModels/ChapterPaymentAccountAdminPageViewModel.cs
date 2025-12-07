@@ -13,4 +13,6 @@ public class ChapterPaymentAccountAdminPageViewModel
     public required bool HasPermission { get; init; }
 
     public required string? OnboardingUrl { get; init; }
+
+    public required IReadOnlyCollection<string> RemainingSteps { get; init; }
 }

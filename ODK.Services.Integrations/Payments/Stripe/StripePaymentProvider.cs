@@ -19,7 +19,7 @@ public class StripePaymentProvider : IPaymentProvider
     public StripePaymentProvider(
         IPaymentSettings paymentSettings,
         ILoggingService loggingService,
-        string connectedAccountId)
+        string? connectedAccountId)
     {
         _client = new StripeClient(new StripeClientOptions
         {
@@ -94,13 +94,26 @@ public class StripePaymentProvider : IPaymentProvider
                     Email = options.Owner.EmailAddress,
                     FirstName = options.Owner.FirstName,
                     LastName = options.Owner.LastName
+                },
+                Capabilities = new AccountCapabilitiesOptions
+                {
+                    CardPayments = new AccountCapabilitiesCardPaymentsOptions
+                    {
+                        Requested = true
+                    },
+                    Transfers = new AccountCapabilitiesTransfersOptions
+                    {
+                        Requested = true
+                    }
                 }
             });                        
             
             return new RemoteAccount
             {
-                Enabled = false,
-                Id = account.Id                
+                CardPaymentsEnabled = false,
+                Id = account.Id,
+                IdentityDocumentsProvided = false,
+                InitialOnboardingComplete = false,
             };
         }
         catch (Exception ex)
@@ -306,10 +319,16 @@ public class StripePaymentProvider : IPaymentProvider
 
         var account = await service.GetAsync(externalId);
 
+        var initialOnboardingComplete = account.PayoutsEnabled;
+        var identityDocumentsProvided = initialOnboardingComplete &&
+            !account.Requirements?.EventuallyDue?.Contains("individual.verification.document") == true;
+
         return new RemoteAccount
         {
+            CardPaymentsEnabled = account.Capabilities.CardPayments == "active",
             Id = account.Id,
-            Enabled = account.PayoutsEnabled
+            IdentityDocumentsProvided = identityDocumentsProvided,
+            InitialOnboardingComplete = initialOnboardingComplete
         };
     }
 

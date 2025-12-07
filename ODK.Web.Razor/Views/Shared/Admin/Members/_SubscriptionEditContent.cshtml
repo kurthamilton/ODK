@@ -18,16 +18,6 @@
     }
 })
 
-@if (Model.PaymentSettings == null)
-{
-    <div class="alert alert-warning">
-        You must update your
-        <a href="@OdkRoutes.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a>
-        before you can edit subscriptions
-    </div>
-    return;
-}
-
 <form method="post">
     @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
@@ -42,8 +32,7 @@
         PaymentSettings = Model.PaymentSettings,
         Recurring = Model.Subscription.Recurring,
         SupportsRecurringPayments = Model.SupportsRecurringPayments,
-        Title = Model.Subscription.Title,
-        Type = Model.Subscription.Type
+        Title = Model.Subscription.Title
     })
     <button class="btn btn-primary">Update</button>
 </form>

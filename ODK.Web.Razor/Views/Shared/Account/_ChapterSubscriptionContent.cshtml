@@ -20,13 +20,11 @@
     var (currentSubscription, 
         memberSubscription, 
         chapterSubscriptions, 
-        paymentSettings, 
         currency, 
         externalSubscription) = 
         (dto.CurrentSubscription, 
         dto.MemberSubscription, 
         dto.ChapterSubscriptions, 
-        dto.PaymentSettings, 
         dto.Currency, 
         dto.ExternalSubscription);
 
@@ -107,6 +105,9 @@ else
     @foreach (var chapterSubscription in chapterSubscriptions)
     {
         var modalId = $"payment-modal-{chapterSubscription.Id}";
+        IPaymentSettings paymentSettings = chapterSubscription.SitePaymentSettings != null 
+            ? chapterSubscription.SitePaymentSettings
+            : dto.ChapterPaymentSettings;
 
         <div class="mb-3">
             <div class="card">

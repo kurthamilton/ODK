@@ -27,7 +27,4 @@ public class SubscriptionFormSubmitViewModel
 
     [Required]
     public string Title { get; set; } = "";
-
-    [Required]
-    public SubscriptionType Type { get; set; }
 }

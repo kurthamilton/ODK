@@ -337,15 +337,16 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = request.Platform;
 
-        var (chapter, ownerSubscription, chapterPaymentSettings, sitePaymentSettings) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, chapterPaymentSettings, chapterPaymentAccount) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.SitePaymentSettingsRepository.GetActive());
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId));
 
         return new SubscriptionCreateAdminPageViewModel
         {
             Chapter = chapter,
+            HasPaymentAccount = chapterPaymentAccount != null,
             OwnerSubscription = ownerSubscription,
             PaymentSettings = chapterPaymentSettings,
             Platform = platform,
@@ -365,8 +366,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             currentMember, 
             chapterSubscriptions, 
             chapterPaymentSettings, 
-            membershipSettings,
-            sitePaymentSettings
+            membershipSettings
         ) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
@@ -374,29 +374,25 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterSubscriptionRepository.GetAdminDtosByChapterId(chapterId, includeDisabled: true),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId),
-            x => x.SitePaymentSettingsRepository.GetActive());
+            x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
         chapterSubscriptions = chapterSubscriptions
-            .Where(x => chapterPaymentSettings.UseSitePaymentProvider
-                ? x.ChapterSubscription.SitePaymentSettingId == sitePaymentSettings.Id
-                : x.ChapterSubscription.SitePaymentSettingId == null)
+            .Where(x => 
+                x.ChapterSubscription.SitePaymentSettings == null || 
+                x.ChapterSubscription.SitePaymentSettings.Active)
             .ToArray();
 
         return new SubscriptionsAdminPageViewModel
         {
             Chapter = chapter,
             ChapterSubscriptions = chapterSubscriptions,
-            Currency = chapterPaymentSettings?.Currency,
+            Currency = chapterPaymentSettings.Currency,
             ExternalSubscription = null,
             MembershipSettings = membershipSettings ?? new(),
             MemberSubscription = null,
             OwnerSubscription = ownerSubscription,
-            PaymentSettings = chapterPaymentSettings?.UseSitePaymentProvider == true
-                ? sitePaymentSettings
-                : chapterPaymentSettings,
             Platform = platform
         };
     }
@@ -406,24 +402,29 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
     {
         var platform = request.Platform;
 
-        var (chapter, ownerSubscription, chapterPaymentSettings, sitePaymentSettings, subscription) = await GetChapterAdminRestrictedContent(request,
+        var (
+            chapter, 
+            ownerSubscription, 
+            chapterPaymentSettings, 
+            chapterPaymentAccount,
+            subscription) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterSubscriptionRepository.GetById(subscriptionId));
 
         OdkAssertions.BelongsToChapter(subscription, request.ChapterId);
 
-        var paymentProvider = chapterPaymentSettings.UseSitePaymentProvider
-            ? sitePaymentSettings.Provider
-            : chapterPaymentSettings.Provider ?? PaymentProviderType.None;
-
-        
+        var paymentProvider = 
+            subscription.SitePaymentSettings?.Provider ??
+            chapterPaymentSettings.Provider ?? 
+            PaymentProviderType.None;
 
         return new SubscriptionAdminPageViewModel
         {
             Chapter = chapter,
+            HasPaymentAccount = chapterPaymentAccount != null,
             OwnerSubscription = ownerSubscription,
             PaymentSettings = chapterPaymentSettings,
             Platform = platform,

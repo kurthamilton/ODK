@@ -10,17 +10,17 @@ namespace ODK.Services.Subscriptions;
 public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscriptionAdminService
 {
     private readonly IHtmlSanitizer _htmlSanitizer;
-    private readonly IPaymentService _paymentService;
+    private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public SiteSubscriptionAdminService(
         IUnitOfWork unitOfWork,
-        IPaymentService paymentService,
-        IHtmlSanitizer htmlSanitizer) 
+        IHtmlSanitizer htmlSanitizer,
+        IPaymentProviderFactory paymentProviderFactory) 
         : base(unitOfWork)
     {
         _htmlSanitizer = htmlSanitizer;
-        _paymentService = paymentService;
+        _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
     }
 
@@ -50,13 +50,14 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         var subscription = new SiteSubscription
         {
             Platform = platform,
-            SitePaymentSettingId = model.SitePaymentSettingId
+            SitePaymentSettingId = paymentSettings.Id
         };
 
         UpdateSiteSubscription(model, subscription);
 
-        subscription.ExternalProductId = await _paymentService.CreateProduct(
-            paymentSettings, connectedAccountId: null, subscription.Name);
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(paymentSettings);
+
+        subscription.ExternalProductId = await paymentProvider.CreateProduct(subscription.Name);
 
         _unitOfWork.SiteSubscriptionRepository.Add(subscription);
 
@@ -93,13 +94,13 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             CurrencyId = model.CurrencyId,
             Frequency = model.Frequency,
             SiteSubscriptionId = siteSubscriptionId
-        };        
+        };
+
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(siteSubscription.SitePaymentSettings);
 
         if (!string.IsNullOrEmpty(siteSubscription.ExternalProductId) && model.Amount > 0)
         {
-            price.ExternalId = await _paymentService.CreateSubscriptionPlan(
-                siteSubscription.SitePaymentSettings, 
-                connectedAccountId: null,
+            price.ExternalId = await paymentProvider.CreateSubscriptionPlan(
                 new ExternalSubscriptionPlan
                 {
                     Amount = model.Amount,
@@ -118,10 +119,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         if (!string.IsNullOrEmpty(price.ExternalId))
         {
-            await _paymentService.ActivateSubscriptionPlan(
-                siteSubscription.SitePaymentSettings, 
-                connectedAccountId: null, 
-                price.ExternalId);
+            await paymentProvider.ActivateSubscriptionPlan(price.ExternalId);
         }
 
         return ServiceResult.Successful();
@@ -140,10 +138,9 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
         if (!string.IsNullOrEmpty(price.ExternalId))
         {
-            await _paymentService.DeactivateSubscriptionPlan(
-                siteSubscription.SitePaymentSettings, 
-                connectedAccountId: null, 
-                price.ExternalId);
+            var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
+                siteSubscription.SitePaymentSettings);
+            await paymentProvider.DeactivateSubscriptionPlan(price.ExternalId);
         }
     }
 

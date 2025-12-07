@@ -13,11 +13,17 @@ public class ChapterPaymentAccountMap : IEntityTypeConfiguration<ChapterPaymentA
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.CardPaymentsEnabledUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
+
         builder.Property(x => x.CreatedUtc)
             .HasConversion<UtcDateTimeConverter>();
 
         builder.Property(x => x.Id)
             .HasColumnName("ChapterPaymentAccountId");
+
+        builder.Property(x => x.IdentityDocumentsProvidedUtc)
+            .HasConversion<NullableUtcDateTimeConverter>();
 
         builder.Property(x => x.OnboardingCompletedUtc)
             .HasConversion<NullableUtcDateTimeConverter>();
@@ -25,5 +31,9 @@ public class ChapterPaymentAccountMap : IEntityTypeConfiguration<ChapterPaymentA
         builder.HasOne<Chapter>()
             .WithOne()
             .HasForeignKey<ChapterPaymentAccount>(x => x.ChapterId);
+
+        builder.HasOne(x => x.SitePaymentSettings)
+            .WithMany()
+            .HasForeignKey(x => x.SitePaymentSettingId);
     }
 }

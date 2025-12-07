@@ -25,7 +25,7 @@
     </div>
     return;
 }
-else if (!string.IsNullOrEmpty(viewModel.ExternalId))
+else if (viewModel.Enabled)
 {
     var subscriptionsUrl = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, viewModel.Chapter);
     <div class="alert alert-success">
@@ -34,7 +34,7 @@ else if (!string.IsNullOrEmpty(viewModel.ExternalId))
     </div>
 }
 else if (!string.IsNullOrEmpty(viewModel.OnboardingUrl))
-{
+{    
     <a href="@viewModel.OnboardingUrl">Resume setup</a>
 }
 else

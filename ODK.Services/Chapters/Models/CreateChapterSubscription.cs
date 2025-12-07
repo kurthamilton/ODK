@@ -1,6 +1,4 @@
-﻿using ODK.Core.Members;
-
-namespace ODK.Services.Chapters.Models;
+﻿namespace ODK.Services.Chapters.Models;
 
 public class CreateChapterSubscription
 {
@@ -19,6 +17,4 @@ public class CreateChapterSubscription
     public required bool Recurring { get; init; }
 
     public required string Title { get; init; }
-
-    public required SubscriptionType Type { get; init; }
 }

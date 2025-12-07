@@ -1,4 +1,6 @@
-﻿using ODK.Core.Payments;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
+using ODK.Core.Payments;
 using ODK.Services.Integrations.Payments.PayPal;
 using ODK.Services.Integrations.Payments.Stripe;
 using ODK.Services.Logging;
@@ -22,6 +24,28 @@ public class PaymentProviderFactory : IPaymentProviderFactory
         _payPalSettings = payPalSettings;
     }
 
+    public IPaymentProvider GetChapterPaymentProvider(
+        ChapterPaymentSettings chapterPaymentSettings,
+        IChapterPaymentEntity paymentEntity)
+    {
+        IPaymentSettings paymentSettings = paymentEntity.SitePaymentSettings != null
+            ? paymentEntity.SitePaymentSettings
+            : chapterPaymentSettings;
+        return GetPaymentProvider(paymentSettings, paymentEntity.ExternalAccountId);
+    }
+
+    public IPaymentProvider GetChapterPaymentProvider(
+        SitePaymentSettings sitePaymentSettings,
+        ChapterPaymentSettings chapterPaymentSettings,
+        ChapterPaymentAccount? chapterPaymentAccount)
+    {
+        IPaymentSettings paymentSettings = chapterPaymentSettings.UseSitePaymentProvider
+            ? sitePaymentSettings
+            : chapterPaymentSettings;
+
+        return GetPaymentProvider(paymentSettings, chapterPaymentAccount?.ExternalId);
+    }
+
     public IPaymentProvider GetPaymentProvider(IPaymentSettings settings, string? connectedAccountId)
     {
         switch (settings.Provider)
@@ -40,5 +64,10 @@ public class PaymentProviderFactory : IPaymentProviderFactory
             default:
                 throw new InvalidOperationException($"Payment provider type {settings.Provider} not supported");
         }
+    }
+
+    public IPaymentProvider GetSitePaymentProvider(SitePaymentSettings sitePaymentSettings)
+    {
+        return GetPaymentProvider(sitePaymentSettings, connectedAccountId: null);
     }
 }

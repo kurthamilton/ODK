@@ -33,8 +33,7 @@ public class EditModel : OdkGroupAdminPageModel
             Name = viewModel.Name,
             Months = viewModel.DurationMonths ?? 0,
             Recurring = viewModel.Recurring,
-            Title = viewModel.Title,
-            Type = viewModel.Type
+            Title = viewModel.Title
         });
 
         AddFeedback(result, "Subscription updated");

@@ -32,7 +32,7 @@
 
 @section scripts
 {
-    @if (viewModel.Event.TicketSettings != null && viewModel.ChapterPaymentSettings != null)
+    @if (viewModel.Event.TicketSettings != null)
     {
         @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
         {

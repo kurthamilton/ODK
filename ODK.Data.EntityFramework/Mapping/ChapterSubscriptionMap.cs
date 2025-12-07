@@ -18,5 +18,9 @@ public class ChapterSubscriptionMap : IEntityTypeConfiguration<ChapterSubscripti
         builder.Property(x => x.Type)
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
+
+        builder.HasOne(x => x.SitePaymentSettings)
+            .WithMany()
+            .HasForeignKey(x => x.SitePaymentSettingId);
     }
 }

@@ -39,7 +39,7 @@ public interface IPaymentProvider
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);
 
     Task<RemotePaymentResult> MakePayment(string currencyCode, decimal amount, string cardToken, 
-        string description, Guid memberId, string memberName);    
+        string description, Guid memberId, string memberName);
 
     Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
         string paymentId, string note);

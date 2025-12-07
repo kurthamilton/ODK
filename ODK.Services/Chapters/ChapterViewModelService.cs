@@ -737,7 +737,7 @@ public class ChapterViewModelService : IChapterViewModelService
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
             IsMember = currentMember.IsMemberOf(chapter.Id) == true,
             OwnerSubscription = ownerSubscription,
-            ChapterPaymentSettings = chapterPaymentSettings,
+            Currency = chapterPaymentSettings.Currency,
             Platform = platform,
             SitePaymentSettings = sitePaymentSettings
         };
