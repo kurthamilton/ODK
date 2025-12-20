@@ -21,6 +21,12 @@
                     The questions below are shown on the About page.
                 </p>
             }
+            else
+            {
+                <p>
+                    Add useful questions and answers to your group page.
+                </p>
+            }
 
             <p>
                 <a href="@OdkRoutes.MemberGroups.GroupQuestionCreate(Model.Platform, Model.Chapter)" 
@@ -29,51 +35,54 @@
                 </a>
             </p>
 
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Question</th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var question in Model.Questions.OrderBy(x => x.DisplayOrder))
-                        {
+            @if (Model.Questions.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>
-                                    <a href="@OdkRoutes.MemberGroups.GroupQuestion(Model.Platform, Model.Chapter, question.Id)">@question.Name</a>
-                                </td>
-                                <td>
-                                    <div class="d-flex">
-                                        <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/move/up">
-                                            @*@Html.AntiForgeryToken()*@
-                                            <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
-                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ArrowCircleUp))
-                                            </button>
-                                        </form>
-                                        <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/move/down">
-                                            @*@Html.AntiForgeryToken()*@
-                                            <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
-                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ArrowCircleDown))
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                                <td>
-                                    <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/delete">
-                                        @*@Html.AntiForgeryToken()*@
-                                        <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
-                                                onclick="return confirm('Are you sure you want to delete this question?');">
-                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
-                                        </button>
-                                    </form>
-                                </td>
+                                <th>Question</th>
+                                <th class="tcol-narrow"></th>
+                                <th class="tcol-narrow"></th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            @foreach (var question in Model.Questions.OrderBy(x => x.DisplayOrder))
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="@OdkRoutes.MemberGroups.GroupQuestion(Model.Platform, Model.Chapter, question.Id)">@question.Name</a>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex">
+                                            <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/move/up">
+                                                @*@Html.AntiForgeryToken()*@
+                                                <button data-bs-toggle="tooltip" data-bs-title="Move up" class="btn btn-icon text-secondary">
+                                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ArrowCircleUp))
+                                                </button>
+                                            </form>
+                                            <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/move/down">
+                                                @*@Html.AntiForgeryToken()*@
+                                                <button data-bs-toggle="tooltip" data-bs-title="Move down" class="btn btn-icon text-secondary">
+                                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.ArrowCircleDown))
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <form method="post" action="/groups/@Model.Chapter.Id/questions/@question.Id/delete">
+                                            @*@Html.AntiForgeryToken()*@
+                                            <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                                    onclick="return confirm('Are you sure you want to delete this question?');">
+                                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }            
         </div>
 })

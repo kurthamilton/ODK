@@ -348,7 +348,8 @@ public class ChapterViewModelService : IChapterViewModelService
             privacySettings,
             adminMembers,
             upcomingEvents,
-            hasQuestions
+            hasQuestions,
+            pastEventCount
         ) = await _unitOfWork.RunAsync(
             x => currentMemberId != null
                 ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
@@ -360,8 +361,9 @@ public class ChapterViewModelService : IChapterViewModelService
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
-            x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),            
-            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id));
+            x => x.EventRepository.GetByChapterId(chapter.Id, after: DateTime.UtcNow),
+            x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
+            x => x.EventRepository.GetPastEventCountByChapterId(chapter.Id));
 
         var eventIds = upcomingEvents
             .Select(x => x.Id)
@@ -392,6 +394,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 memberSubscription,
                 membershipSettings,
                 privacySettings),
+            PastEventCount = pastEventCount,
             Platform = platform          
         };
     }
@@ -490,6 +493,7 @@ public class ChapterViewModelService : IChapterViewModelService
                 memberSubscription,
                 membershipSettings,
                 privacySettings),
+            PastEventCount = pastEvents.Count,
             Platform = platform
         };
     }

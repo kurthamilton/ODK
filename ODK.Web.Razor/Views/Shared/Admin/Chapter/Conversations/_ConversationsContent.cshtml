@@ -33,55 +33,62 @@
 
             @await Html.PartialAsync("Admin/Chapter/Conversations/_ConversationsAdminTabs")
 
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>From</th>
-                            <th>Subject</th>
-                            <th>Started</th>
-                            <th>Last message</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
-                        {
-                            var conversation = dto.Conversation;
-
+            @if (Model.Conversations.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>
-                                    @if (dto.Member.IsMemberOf(Model.Chapter.Id))
-                                    {
-                                        <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, dto.Member.Id)">
-                                            @dto.Member.FullName
-                                        </a>
-                                    }      
-                                    else
-                                    {
-                                        @dto.Member.FullName
-                                    }
-                                </td>
-                                <td>
-                                    <a href="@OdkRoutes.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
-                                        @dto.Conversation.Subject
-                                    </a>
-                                </td>
-                                <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
-                                <td>
-                                    <div>
-                                        @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
-                                    </div>
-                                    @if (dto.LastMessage.MemberId != dto.Conversation.MemberId)
-                                    {
-                                        <div>
-                                            @dto.LastMessage.Member?.FullName
-                                        </div>
-                                    }
-                                </td>                    
+                                <th>From</th>
+                                <th>Subject</th>
+                                <th>Started</th>
+                                <th>Last message</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            @foreach (var dto in Model.Conversations.OrderByDescending(x => x.LastMessage.CreatedUtc))
+                            {
+                                var conversation = dto.Conversation;
+
+                                <tr>
+                                    <td>
+                                        @if (dto.Member.IsMemberOf(Model.Chapter.Id))
+                                        {
+                                            <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, dto.Member.Id)">
+                                                @dto.Member.FullName
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            @dto.Member.FullName
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href="@OdkRoutes.MemberGroups.GroupConversation(Model.Platform, Model.Chapter, conversation.Id)">
+                                            @dto.Conversation.Subject
+                                        </a>
+                                    </td>
+                                    <td>@conversation.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
+                                    <td>
+                                        <div>
+                                            @dto.LastMessage.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)
+                                        </div>
+                                        @if (dto.LastMessage.MemberId != dto.Conversation.MemberId)
+                                        {
+                                            <div>
+                                                @dto.LastMessage.Member?.FullName
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p>No conversations</p>
+            }
         </div>
 })

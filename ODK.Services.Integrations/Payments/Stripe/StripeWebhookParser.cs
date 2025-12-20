@@ -32,6 +32,7 @@ public class StripeWebhookParser : IStripeWebhookParser
             {
                 EventTypes.CheckoutSessionCompleted => ToCheckoutSessionCompleted(stripeEvent),
                 EventTypes.InvoicePaymentSucceeded => ToInvoicePaymentSucceeded(stripeEvent),
+                EventTypes.PaymentIntentSucceeded => ToPaymentIntentSucceeded(stripeEvent),
                 _ => null
             };            
         }
@@ -77,6 +78,24 @@ public class StripeWebhookParser : IStripeWebhookParser
             PaymentProviderType = PaymentProviderType.Stripe,
             SubscriptionId = invoice.Parent.SubscriptionDetails.SubscriptionId,
             Type = PaymentProviderWebhookType.InvoicePaymentSucceeded
+        };
+    }
+
+    private static PaymentProviderWebhook ToPaymentIntentSucceeded(Event stripeEvent)
+    {
+        var paymentIntent = (PaymentIntent)stripeEvent.Data.Object;
+
+        return new PaymentProviderWebhook
+        {
+            Amount = (decimal)(paymentIntent.Amount / 100.0),
+            Complete = paymentIntent.Status == "succeeded",
+            Id = paymentIntent.Id,
+            Metadata = paymentIntent.Metadata,
+            OriginatedUtc = stripeEvent.Created,
+            PaymentId = paymentIntent.Id,
+            PaymentProviderType = PaymentProviderType.Stripe,
+            SubscriptionId = null,
+            Type = PaymentProviderWebhookType.PaymentSucceeded
         };
     }
 }

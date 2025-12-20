@@ -33,27 +33,41 @@
     Title = "Create event",
     ContentFunc = 
         @<div>
-            <form method="post">
-                @*@Html.AntiForgeryToken()*@
+            @if (Model.Venues.Count > 0)
+            {
+                <form method="post">
+                    @*@Html.AntiForgeryToken()*@
     
-                @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
-                {
-                    Chapter = Model.Chapter,
-                    Date = Model.Date,
-                    Description = Model.EventSettings?.DefaultDescription,
-                    EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
-                    HostOptions = hostOptions,
-                    OwnerSubscription = Model.OwnerSubscription,
-                    PaymentSettings = Model.PaymentSettings,
-                    Platform = Model.Platform,
-                    Venue = Model.VenueId ?? default,
-                    Venues = Model.Venues
-                })
+                    @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
+                    {
+                        Chapter = Model.Chapter,
+                        Date = Model.Date,
+                        Description = Model.EventSettings?.DefaultDescription,
+                        EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
+                        HostOptions = hostOptions,
+                        OwnerSubscription = Model.OwnerSubscription,
+                        PaymentSettings = Model.PaymentSettings,
+                        Platform = Model.Platform,
+                        Venue = Model.VenueId ?? default,
+                        Venues = Model.Venues
+                    })
     
-                <div class="button-container">
-                    <button type="submit" class="btn btn-primary">Create</button>
-                    <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
-                </div>
-            </form>
+                    <div class="button-container">
+                        <button type="submit" class="btn btn-primary">Create</button>
+                        <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                var venueCreateUrl = OdkRoutes.MemberGroups.VenueCreate(Model.Platform, Model.Chapter);
+
+                <p>
+                    You have not yet created any venues.
+                </p>
+                <p>
+                    <a class="btn btn-primary" href="@venueCreateUrl">Create venue</a>
+                </p>
+            }
         </div>
 })

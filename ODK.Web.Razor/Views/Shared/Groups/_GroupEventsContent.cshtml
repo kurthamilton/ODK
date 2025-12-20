@@ -9,29 +9,49 @@
 @using ODK.Web.Razor.Models.Events
 @model GroupEventsPageViewModel
 @{
-    var past = Context.ForPath(OdkRoutes.Groups.PastEvents(Model.Platform, Model.Chapter));
+    var past = Context.ForPath(OdkRoutes.Groups.PastEvents(Model.Platform, Model.Chapter));    
 }
 
-@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+@if (Model.Events.Count == 0)
 {
-    MenuContent = await Html.PartialAsync("Groups/_GroupEventsMenu", Model),
-    BodyContentFunc = 
-        @<div>
-            @await Html.PartialAsync("Events/_EventList", new EventListViewModel
-            {
-                Chapter = Model.Chapter,
-                Events = Model.Events
-                    .Select(x => new EventResponseViewModel(
-                        @event: x.Event, 
-                        venue: x.Venue, 
-                        response: x.Response?.Type ?? EventResponseType.None, 
-                        invited: false,
-                        responseSummary: x.ResponseSummary))
-                    .ToArray(),
-                ForceDisplayYear = past,
-                FullWidth = true,
-                Platform = Model.Platform,
-                TimeZone = Model.Chapter.TimeZone ?? Chapter.DefaultTimeZone
-            })
-        </div>
-})
+    <p>
+        There are no @(past ? "past" : "upcoming") events.        
+    </p>
+
+    return;
+}
+
+@{
+    var eventListViewModel = new EventListViewModel
+    {
+        Chapter = Model.Chapter,
+        Events = Model.Events
+            .Select(x => new EventResponseViewModel(
+                @event: x.Event,
+                venue: x.Venue,
+                response: x.Response?.Type ?? EventResponseType.None,
+                invited: false,
+                responseSummary: x.ResponseSummary))
+            .ToArray(),
+        ForceDisplayYear = past,
+        FullWidth = true,
+        Platform = Model.Platform,
+        TimeZone = Model.Chapter.TimeZone ?? Chapter.DefaultTimeZone
+    };
+}
+
+@if (Model.PastEventCount > 0)
+{
+    @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+    {
+        MenuContent = await Html.PartialAsync("Groups/_GroupEventsMenu", Model),
+        BodyContentFunc =
+            @<div>
+                @await Html.PartialAsync("Events/_EventList", eventListViewModel)
+            </div>
+    })
+}
+else
+{
+    @await Html.PartialAsync("Events/_EventList", eventListViewModel)
+}

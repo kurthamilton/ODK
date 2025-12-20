@@ -54,6 +54,10 @@ public class PaymentService : IPaymentService
         {
             result = await ProcessWebhookSubscription(request, webhook);
         }
+        else if (webhook.Type == PaymentProviderWebhookType.PaymentSucceeded)
+        {
+            result = await ProcessWebhookPayment(webhook);
+        }
         else
         {
             result = PaymentWebhookProcessingResult.Failure();

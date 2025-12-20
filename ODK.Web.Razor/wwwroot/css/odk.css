@@ -12838,6 +12838,10 @@ th.sortable.sort-desc:after {
   border-bottom: 2px solid var(--bs-table-border-color);
 }
 
+.tcol-narrow {
+  width: 1px;
+}
+
 .event-list {
   display: flex;
   flex-direction: column;
