@@ -1,0 +1,13 @@
+﻿.link-hover {
+    &:hover {
+        &.link-hover--opacity,
+        .link-hover__opacity {
+            opacity: 0.8;
+        }
+
+        &.link-hover--underline,
+        .link-hover__underline {
+            text-decoration: underline;
+        }
+    }
+}

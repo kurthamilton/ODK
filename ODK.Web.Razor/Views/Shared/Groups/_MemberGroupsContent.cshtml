@@ -3,7 +3,7 @@
 @using ODK.Web.Razor.Models.Components
 @model MemberChaptersViewModel
 
-<div>
+<div data-odk-component="_MemberGroupsContent">
     <section class="section--admin">
         @await Html.PartialAsync("Components/_Panel", new PanelViewModel
        {
@@ -37,11 +37,14 @@
         </section>
     }
     
-    <section class="section--admin">
-        @await Html.PartialAsync("Components/_Panel", new PanelViewModel
-        {
-            TitleContentFunc = @<h5>Member</h5>,
-            BodyContentFunc = 
+    @*Only show "Not a member" content if the member doesn't have any other groups*@
+    @if (Model.Member.Count > 0 || Model.Total == 0)
+    {
+        <section class="section--admin">
+            @await Html.PartialAsync("Components/_Panel", new PanelViewModel
+            {
+                TitleContentFunc = @<h5>Member</h5>,
+                BodyContentFunc =
                 @<div>
                     @if (Model.Member.Count > 0)
                     {
@@ -55,6 +58,7 @@
                         </p>
                     }
                 </div>
-        })                
-    </section>
+            })
+        </section>
+    }    
 </div>

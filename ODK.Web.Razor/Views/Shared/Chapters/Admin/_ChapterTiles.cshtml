@@ -8,9 +8,11 @@
     }
 }
 
-<div class="d-flex gap-3">
-    @foreach (var chapter in Model.Chapters.OrderBy(x => x.Chapter.Name))
-    {
-        @await Html.PartialAsync("Chapters/Admin/_ChapterTile", chapter)
-    }
+<div data-odk-component="_ChapterTiles">
+    <div class="d-flex gap-3">
+        @foreach (var chapter in Model.Chapters.OrderBy(x => x.Chapter.Name))
+        {
+            @await Html.PartialAsync("Chapters/Admin/_ChapterTile", chapter)
+        }
+    </div>
 </div>

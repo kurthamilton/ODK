@@ -43,10 +43,11 @@
         @<div>
             @if (Model.IsAdmin || Model.IsOwner)
             {
-                <a class="text-body-secondary" href="@OdkRoutes.MemberGroups.Group(Model.Platform, chapter)">
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Settings))
-                    <span>Manage</span>
-                </a>
+                @await Html.PartialAsync("Chapters/Admin/_ManageChapterLink", new ManageChapterLinkViewModel
+                {
+                    Chapter = Model.Chapter,
+                    Platform = Model.Platform
+                })
             }            
         </div>
 })

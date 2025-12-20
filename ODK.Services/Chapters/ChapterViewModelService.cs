@@ -849,27 +849,18 @@ public class ChapterViewModelService : IChapterViewModelService
             .Select(x => x.Id)
             .ToArray();
 
-        var (texts, images, topics) = await _unitOfWork.RunAsync(
+        var (texts, images) = await _unitOfWork.RunAsync(
             x => chapterIds.Length > 0 
                 ? x.ChapterTextsRepository.GetByChapterIds(chapterIds)
                 : new DefaultDeferredQueryMultiple<ChapterTexts>(),
             x => chapterIds.Length > 0
                 ? x.ChapterImageRepository.GetDtosByChapterIds(chapterIds)
-                : new DefaultDeferredQueryMultiple<ChapterImageMetadata>(),
-            x => chapterIds.Length > 0
-                ? x.ChapterTopicRepository.GetDtosByChapterIds(chapterIds)
-                : new DefaultDeferredQueryMultiple<ChapterTopicDto>());
-
-        var locations = await _unitOfWork.ChapterLocationRepository.GetByChapterIds(chapterIds);
+                : new DefaultDeferredQueryMultiple<ChapterImageMetadata>());
 
         var adminMemberDictionary = adminMembers.ToDictionary(x => x.ChapterId);
         var imageDictionary = images.ToDictionary(x => x.ChapterId);
-        var locationDictionary = locations.ToDictionary(x => x.ChapterId);
         var textsDictionary = texts.ToDictionary(x => x.ChapterId);
-        var topicDictionary = topics
-            .GroupBy(x => x.ChapterId)
-            .ToDictionary(x => x.Key, x => x.ToArray());
-
+        
         var admin = new List<ChapterWithDistanceViewModel>();
         var member = new List<ChapterWithDistanceViewModel>();
         var owned = new List<ChapterWithDistanceViewModel>();
@@ -878,10 +869,8 @@ public class ChapterViewModelService : IChapterViewModelService
         {
             adminMemberDictionary.TryGetValue(chapter.Id, out var adminMember);
             imageDictionary.TryGetValue(chapter.Id, out var image);
-            locationDictionary.TryGetValue(chapter.Id, out var location);
             textsDictionary.TryGetValue(chapter.Id, out var chapterTexts);
-            topicDictionary.TryGetValue(chapter.Id, out var chapterTopics);
-
+            
             var viewModel = new ChapterWithDistanceViewModel
             {
                 Chapter = chapter,
@@ -889,10 +878,12 @@ public class ChapterViewModelService : IChapterViewModelService
                 HasImage = image != null,
                 IsAdmin = adminMember != null,
                 IsMember = true,
-                Location = location,
+                // no need to show location for existing groups
+                Location = null,
                 Platform = platform,
                 Texts = chapterTexts,
-                Topics = chapterTopics?.Select(x => x.Topic).ToArray() ?? []
+                // no need to show topics for existing groups
+                Topics = []
             };
 
             if (chapter.OwnerId == memberId)
