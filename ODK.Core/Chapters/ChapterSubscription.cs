@@ -42,7 +42,7 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity, IChapterPaym
             return false; 
         }
 
-        return SitePaymentSettings == null || SitePaymentSettings.Active;
+        return SitePaymentSettings == null || SitePaymentSettings.Enabled;
     }
 
     public string ToReference() => $"Subscription: {Name}";

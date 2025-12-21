@@ -28,6 +28,7 @@
         @await Html.PartialAsync("SuperAdmin/_PaymentSettingsForm", new SitePaymentSettingsFormViewModel
         {         
             Commission = 100 * settings.Commission,
+            Enabled = settings.Enabled,
             Name = settings.Name,
             Provider = settings.Provider,
             PublicKey = settings.ApiPublicKey,

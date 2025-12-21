@@ -165,6 +165,8 @@ public class SiteSubscriptionService : ISiteSubscriptionService
                 .Select(x => x.First())
                 .ToArray(),
             Subscriptions = siteSubscriptionViewModels
+                .Where(x => x.Prices.Count > 0)
+                .ToArray()
         };
     }
 

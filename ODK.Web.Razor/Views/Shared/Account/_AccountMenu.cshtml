@@ -2,6 +2,7 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
 @model AccountMenuViewModel
 @inject IRequestStore RequestStore
@@ -38,27 +39,23 @@
         .FirstOrDefault(x => string.Equals(x.Link, Model.Active, StringComparison.InvariantCultureIgnoreCase));
 }
 
-<ul class="list-group d-none d-md-block">
-    @foreach (var menuItem in menuItems)
+<div data-odk-component="_AccountMenu">
+    @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
     {
-        <li class="list-group-item @(activeMenuItem?.Link == menuItem.Link ? "active" : null)">
-            <a class="nav-link text-nowrap" href="@menuItem.Link">
-                @menuItem.Text
-            </a>
-        </li>
-    }
-</ul>
+        MenuItems = menuItems
+    })
 
-<div class="dropdown d-md-none">
-    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-        @activeMenuItem?.Text
-    </button>
-    <ul class="dropdown-menu">
-        @foreach (var menuItem in menuItems)
-        {
-            <li>
-                <a class="dropdown-item" href="@menuItem.Link">@menuItem.Text</a>
-            </li>
-        }        
-    </ul>
+    <div class="dropdown d-md-none">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            @activeMenuItem?.Text
+        </button>
+        <ul class="dropdown-menu">
+            @foreach (var menuItem in menuItems)
+            {
+                <li>
+                    <a class="dropdown-item" href="@menuItem.Link">@menuItem.Text</a>
+                </li>
+            }        
+        </ul>
+    </div>
 </div>

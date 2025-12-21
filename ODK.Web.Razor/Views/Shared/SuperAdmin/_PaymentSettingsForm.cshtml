@@ -31,3 +31,8 @@
     @Html.TextBoxFor(x => x.Commission, new { @class = "form-control" })
     @Html.ValidationMessageFor(x => x.Commission)
 </div>
+
+<div class="form-check form-switch mb-3">
+    @Html.CheckBoxFor(x => x.Enabled, new { @class = "form-check-input", role = "switch" })
+    @Html.LabelFor(x => x.Enabled, new { @class = "form-check-label" })
+</div>

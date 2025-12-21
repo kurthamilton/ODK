@@ -2,15 +2,17 @@
 @using ODK.Web.Razor.Models.Account
 @model SiteAccountLayoutViewModel
 
-<div class="d-block d-md-flex">
-    <div>
-        @await Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
-        {
-            Active = Model.Active,
-            Chapter = Model.Chapter
-        })
-    </div>
-    <div class="ps-md-5 pt-5 pt-md-0 flex-grow-1">        
-        @Model.Content.Invoke(null)
+<div data-odk-component="_SiteAccountLayout">
+    <div class="d-block d-md-flex">
+        <div>
+            @await Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
+            {
+                Active = Model.Active,
+                Chapter = Model.Chapter
+            })
+        </div>
+        <div class="ps-md-5 pt-5 pt-md-0 flex-grow-1">        
+            @Model.Content.Invoke(null)
+        </div>
     </div>
 </div>
