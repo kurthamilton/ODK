@@ -1,6 +1,4 @@
-﻿@using ODK.Core.Payments
-@using ODK.Core.Subscriptions
-@using ODK.Core.Utils
+﻿@using ODK.Core.Utils
 @using ODK.Services.Subscriptions.ViewModels
 @using ODK.Web.Razor.Models.Payments
 @model SiteSubscriptionsViewModel
@@ -34,107 +32,51 @@
     return;
 }
 
-<div class="form-group mb-3">
-    <label class="form-label">Current subscription</label>
-    <div class="form-control-plaintext">
-        @(memberSubscription?.SiteSubscription.Name ?? "-")
+<div data-odk-component="_SiteSubscriptionContent">
+    <div class="form-group mb-3">
+        <label class="form-label">Current subscription</label>
+        <div class="form-control-plaintext">
+            @(memberSubscription?.SiteSubscription.Name ?? "-")
+        </div>
     </div>
-</div>
 
-<div class="form-group mb-3">
-    <label class="form-label">Next payment date</label>
-    <div class="form-control-plaintext">
-        @if (memberSubscription?.ExpiresUtc != null)
-        {
-            <span>
-                @memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
-            </span>
-        }
-        else
-        {
-            <span>-</span>
-        }
-    </div>
-</div>
-
-@if (Model.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid != true)
-{
-    <h3>Upgrade</h3>
-
-    <div class="d-flex gap-3">
-        @foreach (var subscriptionDto in subscriptions)
-        {
-            var subscription = subscriptionDto.Subscription;
-            var prices = subscriptionDto.Prices
-                .Where(x => x.IsPaid)
-                .OrderByDescending(x => x.Amount)
-                .ToArray();
-            if (prices.Length == 0)
+    <div class="form-group mb-3">
+        <label class="form-label">Next payment date</label>
+        <div class="form-control-plaintext">
+            @if (memberSubscription?.ExpiresUtc != null)
             {
-                continue;
+                <span>
+                    @memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
+                </span>
             }
-
-            <div class="mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">@subscription.Name</h5>
-                        <div class="card-text">
-                            @Html.Raw(subscription.Description)
-
-                            <div class="d-flex flex-column gap-3">
-                                @foreach (var price in prices)
-                                {
-                                    if (price.ExternalId == null)
-                                    {
-                                        continue;
-                                    }
-
-                                    var modalId = $"payment-modal-upgrade-{price.Id}";
-                                    var periodUnit = price.Frequency.PeriodUnit();
-
-                                    <div class="d-flex align-items-center gap-1">
-                                        <div class="button-container mt-3">
-                                            @if (subscription.SitePaymentSettings.Provider == PaymentProviderType.Stripe)
-                                            {
-                                                <a class="btn btn-primary" href="/account/subscription/@price.Id/checkout">
-                                                    Buy
-                                                </a>
-                                            }
-                                            else
-                                            {
-                                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#@modalId">
-                                                    Subscribe
-                                                </button>
-                                            }
-
-                                            <span>@price.Currency.ToAmountString(price.Amount)/@periodUnit</span>
-                                        </div>
-                                        @if (subscription.SitePaymentSettings.Provider != PaymentProviderType.Stripe)
-                                        {
-                                            @await Html.PartialAsync("Payments/_PaymentSubscriptionModal", new PaymentSubscriptionModalViewModel
-                                            {
-                                                Action = "/account/subscription/confirm",
-                                                PaymentSettings = subscription.SitePaymentSettings,
-                                                FormContentFunc =
-                                                    @<input type="hidden" name="siteSubscriptionPriceId" value="@price.Id" />,
-                                                Id = modalId,
-                                                PaymentForm = new PaymentSubscriptionFormViewModel
-                                                {
-                                                    CurrencyCode = price.Currency.Code,
-                                                    ExternalId = price.ExternalId,
-                                                    Provider = subscription.SitePaymentSettings.Provider,
-                                                    SiteSubscriptionPriceId = price.Id
-                                                },
-                                                Title = subscriptionDto.Subscription.Name
-                                            })
-                                        }                                        
-                                    </div>
-                                }
-                            </div>
-                        </div>                        
-                    </div>
-                </div>
-            </div>              
-        }
+            else
+            {
+                <span>-</span>
+            }
+        </div>
     </div>
-}
+
+    @if (Model.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid != true)
+    {
+        <h3>Upgrade</h3>
+
+        <div class="d-md-flex gap-3">
+            @foreach (var subscriptionDto in subscriptions.OrderBy(x => x.Subscription.DisplayOrder))
+            {
+                var subscription = subscriptionDto.Subscription;
+                var prices = subscriptionDto.Prices
+                    .Where(x => x.IsPaid)
+                    .OrderByDescending(x => x.Amount)
+                    .ToArray();
+                if (prices.Length == 0)
+                {
+                    continue;
+                }
+
+                <div class="mb-3 col">
+                    @await Html.PartialAsync("Account/_SiteSubscriptionCard", subscriptionDto)
+                </div>              
+            }
+        </div>
+    }
+</div>

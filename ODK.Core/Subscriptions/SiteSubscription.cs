@@ -12,6 +12,8 @@ public class SiteSubscription : IDatabaseEntity
 
     public string Description { get; set; } = "";
 
+    public int? DisplayOrder { get; set; }
+
     public bool Enabled { get; set; }
 
     public string? ExternalProductId { get; set; }

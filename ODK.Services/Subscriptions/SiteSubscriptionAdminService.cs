@@ -153,6 +153,39 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             x => x.SiteSubscriptionRepository.GetAll(platform));
     }
 
+    public async Task<IReadOnlyCollection<SiteSubscriptionSuperAdminListItemViewModel>> GetSiteSubscriptionSuperAdminListItems(
+        MemberServiceRequest request)
+    {
+        var platform = request.Platform;
+
+        var (siteSubscriptions, prices) = await GetSuperAdminRestrictedContent(request.CurrentMemberId,
+            x => x.SiteSubscriptionRepository.GetAll(platform),
+            x => x.SiteSubscriptionPriceRepository.GetAll(platform));
+
+        var priceCounts = prices
+            .GroupBy(x => x.SiteSubscriptionId)
+            .ToDictionary(x => x.Key, x => x.Count());
+
+        return siteSubscriptions
+            .Select(x => new SiteSubscriptionSuperAdminListItemViewModel
+            {
+                Default = x.Default,
+                Enabled = x.Enabled,
+                GroupLimit = x.GroupLimit,
+                Id = x.Id,
+                MemberLimit = x.MemberLimit,
+                MemberSubscriptions = x.MemberSubscriptions,                
+                Name = x.Name,
+                PaymentSettingsName = x.SitePaymentSettings.Name,
+                Premium = x.Premium,
+                PriceCount = priceCounts.TryGetValue(x.Id, out var priceCount) ? priceCount : 0,
+                SendMemberEmails = x.SendMemberEmails
+            })
+            .OrderBy(x => x.PaymentSettingsName)
+            .ThenBy(x => x.Name)
+            .ToArray();
+    }
+
     public async Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(Guid currentMemberId, Guid siteSubscriptionId)
     {
         var (subscription, prices, currencies, sitePaymentSettings) = await GetSuperAdminRestrictedContent(currentMemberId,

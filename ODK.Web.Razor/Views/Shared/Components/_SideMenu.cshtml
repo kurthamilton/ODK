@@ -19,64 +19,77 @@
     var activeParent = active?.Children?.Count > 0 
         ? active
         : Model.MenuItems.FirstOrDefault(x => x.Children?.Any(y => y.Link == active?.Link) == true);
+
+    var showDropdown = 
+        Model.CollapseAll || 
+        (active != null && activeParent?.Children != null);
 }
 
-<div class="d-md-none">
-    @await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+<div data-odk-component="_SideMenu">    
+    @if (showDropdown)
     {
-        Class = "mt-0",
-        MenuItems = Model.MenuItems
-            .Select(x => new MenuItem
-            {
-                Active = active != null 
-                    ? active.DescendantOf(x) == true
-                    : false,
-                Text = x.Text,
-                Link = x.Link
-            })
-            .ToArray()
-    })
-</div>
+        if (!string.IsNullOrEmpty(active?.Text))
+        {
+            var children = activeParent?.Children ?? Model.MenuItems;
 
-@if (activeParent != null && active != null && activeParent.Children != null)
-{
-    <div class="dropdown d-md-none my-3">
-        <button class="btn ps-0 dropdown-toggle w-100 text-start" 
-                type="button" data-bs-toggle="dropdown">
-            <h2 class="d-inline-block m-0">@active.Text</h2>
-        </button>
-        <ul class="dropdown-menu">
-            @foreach (var menuItem in activeParent.Children)
+            <div class="dropdown d-md-none my-3">
+                <button class="btn ps-0 dropdown-toggle w-100 text-start"
+                        type="button" data-bs-toggle="dropdown">
+                    <h2 class="d-inline-block m-0">@active.Text</h2>
+                </button>
+                <ul class="dropdown-menu">
+                    @foreach (var menuItem in children)
+                    {
+                        <li>
+                            <a class="dropdown-item" href="@menuItem.Link">@menuItem.Text</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }        
+    }
+    else
+    {
+        <div class="d-md-none">
+            @await Html.PartialAsync("Components/_Tabs", new TabsViewModel
             {
+                Class = "mt-0",
+                MenuItems = Model.MenuItems
+                .Select(x => new MenuItem
+                {
+                    Active = active != null
+                        ? active.DescendantOf(x) == true
+                        : false,
+                    Text = x.Text,
+                    Link = x.Link
+                })
+                .ToArray()
+            })
+        </div>
+    }
+
+    <div class="d-none d-md-block">
+        <ul class="side-menu">
+            @foreach (var menuItem in Model.MenuItems)
+            {
+                var showChildren = active != null && active.DescendantOf(menuItem);
+
                 <li>
-                    <a class="dropdown-item" href="@menuItem.Link">@menuItem.Text</a>
+                    <a class="nav-link text-nowrap @(menuItem == active ? "active" : "")" href="@menuItem.Link">
+                        @menuItem.Text
+                    </a>
+
+                    @if (showChildren)
+                    {
+                        @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
+                        {
+                            Active = closestActive,
+                            MenuItems = menuItem.Children ?? [],
+                            Root = false
+                        })
+                    }
                 </li>
             }
         </ul>
     </div>
-}
-
-<div class="d-none d-md-block">
-    <ul class="side-menu">
-        @foreach (var menuItem in Model.MenuItems)
-        {
-            var showChildren = active != null && active.DescendantOf(menuItem);
-
-            <li>
-                <a class="nav-link text-nowrap @(menuItem == active ? "active" : "")" href="@menuItem.Link">
-                    @menuItem.Text
-                </a>
-
-                @if (showChildren)
-                {
-                    @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
-                    {
-                        Active = closestActive,
-                        MenuItems = menuItem.Children ?? [],
-                        Root = false
-                    })
-                }
-            </li>
-        }
-    </ul>
 </div>

@@ -5,114 +5,123 @@
 @inject IRequestStore RequestStore
 @inject ISiteSubscriptionAdminService SiteSubscriptionAdminService
 @{
-    var subscriptions = await SiteSubscriptionAdminService.GetAllSubscriptions(RequestStore.MemberServiceRequest);
+    var subscriptions = await SiteSubscriptionAdminService.GetSiteSubscriptionSuperAdminListItems(
+        RequestStore.MemberServiceRequest);
 }
 
-<h2>Subscriptions</h2>
+<div data-odk-component="SuperAdmin/_SubscriptionsContent">
+    <h2>Subscriptions</h2>
 
-<section class="section">
-    <p>
-        <a class="btn btn-primary" href="/superadmin/subscriptions/new">
-            Create
-        </a>
-    </p>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Payment settings</th>
-                    <th>Enabled</th>
-                    <th>Group limit</th>
-                    <th>Member limit</th>
-                    <th>Features</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var subscription in subscriptions.OrderBy(x => x.SitePaymentSettings.Name).ThenBy(x => x.Name))
-                {
+    <section class="section">
+        <p>
+            <a class="btn btn-primary" href="/superadmin/subscriptions/new">
+                Create
+            </a>
+        </p>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>
-                            <a href="/superadmin/subscriptions/@subscription.Id">@subscription.Name</a>
-                        </td>
-                        <td>
-                            <span>
-                                @subscription.SitePaymentSettings.Name
-                            </span>
-                            @if (subscription.SitePaymentSettings.Active)
-                            {
-                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
-                                {
-                                    Class = "text-success"
-                                })
-                            }
-                        </td>
-                        <td>
-                            @if (subscription.Enabled)
-                            {
-                                <form action="/superadmin/subscriptions/@subscription.Id/disable" method="post">
-                                    <button class="btn btn-icon">
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
-                                        {
-                                            Class = "text-success"
-                                        })
-                                    </button>                                    
-                                </form>                                
-                            }
-                            else
-                            {
-                                <form action="/superadmin/subscriptions/@subscription.Id/enable" method="post">
-                                    <button class="btn btn-icon">
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircleOutline)
-                                        {
-                                            Class = "text-danger"
-                                        })
-                                    </button>
-                                </form>                                
-                            }
-                        </td>
-                        <td>@subscription.GroupLimit</td>
-                        <td>@subscription.MemberLimit</td>
-                        <td>
-                            @if (subscription.Premium)
-                            {
-                                <span data-bs-toggle="tooltip" data-bs-title="Premium">
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
-                                    {
-                                        Class = "text-warning"
-                                    })
-                                </span>
-                            }
-                            @if (subscription.SendMemberEmails)
-                            {
-                                <span data-bs-toggle="tooltip" data-bs-title="Send member emails">
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
-                                </span>
-                            }
-                            @if (subscription.MemberSubscriptions)
-                            {
-                                <span data-bs-toggle="tooltip" data-bs-title="Member subscriptions">
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Dollar))
-                                </span>
-                            }
-                        </td>
-                        <td>
-                            @if (subscription.Default)
-                            {
-                                @:Default
-                            }
-                            else
-                            {
-                                <form action="/superadmin/subscriptions/@subscription.Id/default" method="post">
-                                    @*@Html.AntiForgeryToken()*@
-                                    <button class="btn btn-primary btn-sm">Set default</button>
-                                </form>
-                            }
-                        </td>
+                        <th>Name</th>
+                        <th>Payment settings</th>
+                        <th>Enabled</th>
+                        <th>Prices</th>
+                        <th>Group limit</th>
+                        <th>Member limit</th>
+                        <th>Features</th>
+                        <th></th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</section>
+                </thead>
+                <tbody>
+                    @foreach (var subscription in subscriptions)
+                    {
+                        <tr>
+                            <td>
+                                <a href="/superadmin/subscriptions/@subscription.Id">@subscription.Name</a>
+                            </td>
+                            <td>
+                                <span>
+                                    @subscription.PaymentSettingsName
+                                </span>                                
+                            </td>
+                            <td>
+                                @if (subscription.Enabled)
+                                {
+                                    <form action="/superadmin/subscriptions/@subscription.Id/disable" method="post">
+                                        <button class="btn btn-icon" 
+                                                data-bs-toggle="tooltip" data-bs-title="Disable">
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
+                                            {
+                                                Class = "text-success"
+                                            })
+                                        </button>                                    
+                                    </form>                                
+                                }
+                                else
+                                {
+                                    <form action="/superadmin/subscriptions/@subscription.Id/enable" method="post">
+                                        <button class="btn btn-icon"
+                                                data-bs-toggle="tooltip" data-bs-title="Enable">
+                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircleOutline)
+                                            {
+                                                Class = "text-danger"
+                                            })
+                                        </button>
+                                    </form>                                
+                                }
+                            </td>
+                            <td>
+                                @if (subscription.PriceCount > 0)
+                                {
+                                    <span>@subscription.PriceCount</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">None</span>
+                                }
+                            </td>
+                            <td>@subscription.GroupLimit</td>
+                            <td>@subscription.MemberLimit</td>
+                            <td>
+                                @if (subscription.Premium)
+                                {
+                                    <span data-bs-toggle="tooltip" data-bs-title="Premium">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Star)
+                                        {
+                                            Class = "text-warning"
+                                        })
+                                    </span>
+                                }
+                                @if (subscription.SendMemberEmails)
+                                {
+                                    <span data-bs-toggle="tooltip" data-bs-title="Send member emails">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))
+                                    </span>
+                                }
+                                @if (subscription.MemberSubscriptions)
+                                {
+                                    <span data-bs-toggle="tooltip" data-bs-title="Member subscriptions">
+                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Dollar))
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @if (subscription.Default)
+                                {
+                                    @:Default
+                                }
+                                else
+                                {
+                                    <form action="/superadmin/subscriptions/@subscription.Id/default" method="post">
+                                        @*@Html.AntiForgeryToken()*@
+                                        <button class="btn btn-primary btn-sm">Set default</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

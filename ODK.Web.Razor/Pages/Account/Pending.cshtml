@@ -9,7 +9,7 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Create account",
+    TitleContent = await Html.PartialAsync("Components/_SideMenuPageTitle", "Create account"),
     WidthClass = "col-12 col-lg-8 col-xl-6",
     Breadcrumbs = new []
     {

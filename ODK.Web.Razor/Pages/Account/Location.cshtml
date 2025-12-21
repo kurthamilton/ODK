@@ -24,13 +24,12 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Location(),
         Content = 
             @<div>
-                <h2>Location</h2>
+                @await Html.PartialAsync("Components/_SideMenuPageTitle", "Location")
 
                 <section class="section">
                     <form action="/account/location" method="post">

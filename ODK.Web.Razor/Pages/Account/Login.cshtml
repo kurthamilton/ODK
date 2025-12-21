@@ -13,7 +13,7 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Login",
+    TitleContent = await Html.PartialAsync("Components/_SideMenuPageTitle", "Login"),
     WidthClass = "col-12 col-md-8 col-lg-6 col-xl-4",
     Content = await Html.PartialAsync("Account/_SiteLoginContent", new LoginViewModel
     {

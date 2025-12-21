@@ -15,13 +15,12 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = "/Account/Email/Change",
         Content = 
             @<div>
-                <h2>Change email address</h2>
+                @await Html.PartialAsync("Components/_SideMenuPageTitle", "Change email address")
                 <section class="section">
                     <form method="post" action="/account/email/change">
                         @*@Html.AntiForgeryToken()*@        

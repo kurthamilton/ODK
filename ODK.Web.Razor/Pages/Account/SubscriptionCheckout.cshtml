@@ -21,7 +21,6 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Account",
     HideSubscriptionAlert = true,
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
@@ -36,7 +35,6 @@
                         new MenuItem { Text = "Checkout" }
                     }
                 })
-                <h2>Checkout</h2>
                 <section class="section">
                     <div id="checkout"
                          data-stripe="@viewModel.PaymentSettings.ApiPublicKey"

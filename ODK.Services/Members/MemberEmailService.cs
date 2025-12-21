@@ -599,7 +599,6 @@ public class MemberEmailService : IMemberEmailService
             new Dictionary<string, string>
             {
                 { "issue.title", issue.Title },
-                { "issue.title", issue.Title },
                 { "member.name", member.FullName },
                 { "url", urlProvider.IssueAdminUrl(issue.Id) }
             });
