@@ -9,9 +9,6 @@ public interface ISiteSubscriptionService
     Task<ServiceResult> ConfirmMemberSiteSubscription(
         MemberServiceRequest request, Guid siteSubscriptionId, string externalId);
 
-    Task<PaymentStatusType> GetMemberSiteSubscriptionPaymentCheckoutSessionStatus(
-        MemberServiceRequest request, string externalSessionId);
-
     Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
         ServiceRequest request, Guid? memberId);    
 

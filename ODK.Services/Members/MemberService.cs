@@ -465,32 +465,7 @@ public class MemberService : IMemberService
         return image != null
             ? new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image)
             : new VersionedServiceResult<MemberImage>(0, null);
-    }
-
-    public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
-        MemberChapterServiceRequest request, string externalSessionId)
-    {
-        var (chapterPaymentSettings, checkoutSession) = await _unitOfWork.RunAsync(
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
-
-        OdkAssertions.Exists(checkoutSession);
-
-        if (checkoutSession.CompletedUtc != null)
-        {
-            return PaymentStatusType.Complete;
-        }
-
-        var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
-
-        var paymentProvider = _paymentProviderFactory.GetChapterPaymentProvider(chapterPaymentSettings, payment);
-
-        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
-
-        return externalSession == null || externalSession.Metadata.ChapterId != request.ChapterId
-            ? PaymentStatusType.Expired 
-            : PaymentStatusType.Pending;
-    }
+    }    
 
     public async Task<MemberLocation?> GetMemberLocation(Guid memberId)
     {

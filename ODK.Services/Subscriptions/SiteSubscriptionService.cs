@@ -1,5 +1,4 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
@@ -79,32 +78,6 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Successful();
-    }
-
-    public async Task<PaymentStatusType> GetMemberSiteSubscriptionPaymentCheckoutSessionStatus(
-        MemberServiceRequest request, string externalSessionId)
-    {
-        var (sitePaymentSettings, checkoutSession) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
-        
-        OdkAssertions.Exists(checkoutSession);
-
-        if (checkoutSession.CompletedUtc != null)
-        {
-            return PaymentStatusType.Complete;
-        }
-
-        var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
-        var paymentSettings = payment.SitePaymentSettings ?? sitePaymentSettings;
-
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(paymentSettings);
-
-        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
-
-        return externalSession == null
-            ? PaymentStatusType.Expired
-            : PaymentStatusType.Pending;
     }
 
     public async Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
@@ -213,7 +186,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         {
             Id = paymentCheckoutSessionId,
             MemberId = memberId,
-            PaymentId = priceId,
+            PaymentId = paymentId,
             SessionId = externalCheckoutSession.SessionId,
             StartedUtc = utcNow
         });

@@ -20,13 +20,17 @@ public class StripeWebhookParser : IStripeWebhookParser
         _settings = settings;
     }
 
-    public async Task<PaymentProviderWebhook?> ParseWebhook(string json, string? signature)
+    public async Task<PaymentProviderWebhook?> ParseWebhook(string json, string? signature, int version)
     {
         try
         {
-            var stripeEvent = string.IsNullOrEmpty(_settings.WebhookSecret) 
+            var secret = version == 2
+                ? _settings.WebhookSecretV2
+                : _settings.WebhookSecretV1;
+
+            var stripeEvent = string.IsNullOrEmpty(secret) 
                 ? EventUtility.ParseEvent(json)
-                : EventUtility.ConstructEvent(json, signature, _settings.WebhookSecret);
+                : EventUtility.ConstructEvent(json, signature, secret);
 
             return stripeEvent.Type switch
             {

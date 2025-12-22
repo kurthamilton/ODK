@@ -4,30 +4,30 @@ using ODK.Services.Payments;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 
-namespace ODK.Web.Razor.Pages.Chapters.Account;
+namespace ODK.Web.Razor.Pages.Account;
 
-public class SubscriptionCheckoutConfirmModel : ChapterPageModel
+public class SubscriptionConfirmModel : OdkPageModel
 {
     private readonly IPaymentService _paymentService;
 
-    public SubscriptionCheckoutConfirmModel(IPaymentService paymentService)
+    public SubscriptionConfirmModel(IPaymentService paymentService)
     {
         _paymentService = paymentService;
     }
 
-    public string RedirectUrl => OdkRoutes.Account.Subscription(Platform, Chapter);
+    public string RedirectUrl => OdkRoutes.Account.Subscription(Platform, null);
 
     public string? SessionId { get; set; }
 
-    public Guid SubscriptionId { get; set; }
+    public Guid SubscriptionId { get; private set; }
 
     public async Task<IActionResult> OnGet(Guid id, string sessionId)
     {
         SessionId = sessionId;
         SubscriptionId = SubscriptionId;
 
-        var request = MemberChapterServiceRequest(Chapter.Id);
-        var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(request, sessionId);
+        var request = MemberServiceRequest;
+        var status = await _paymentService.GetMemberPaymentCheckoutSessionStatus(request, sessionId);
 
         if (status == PaymentStatusType.Complete)
         {

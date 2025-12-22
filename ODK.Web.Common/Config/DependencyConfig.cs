@@ -104,7 +104,8 @@ public static class DependencyConfig
         services.AddScoped<IStripeWebhookParser, StripeWebhookParser>();
         services.AddSingleton(new StripeWebhookParserSettings
         {
-            WebhookSecret = appSettings.Payments.Stripe.WebhookSecret
+            WebhookSecretV1 = appSettings.Payments.Stripe.WebhookSecretV1,
+            WebhookSecretV2 = appSettings.Payments.Stripe.WebhookSecretV2
         });
     }
 

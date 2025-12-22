@@ -4,5 +4,5 @@ namespace ODK.Services.Payments;
 
 public interface IStripeWebhookParser
 {
-    Task<PaymentProviderWebhook?> ParseWebhook(string json, string? signature);
+    Task<PaymentProviderWebhook?> ParseWebhook(string json, string? signature, int version);
 }

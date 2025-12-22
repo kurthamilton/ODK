@@ -1,4 +1,5 @@
-﻿using ODK.Core.Members;
+﻿using ODK.Core;
+using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Data.Core;
@@ -13,16 +14,72 @@ public class PaymentService : IPaymentService
 {
     private readonly ILoggingService _loggingService;
     private readonly IMemberEmailService _memberEmailService;
+    private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
     public PaymentService(
         IUnitOfWork unitOfWork, 
         ILoggingService loggingService,
-        IMemberEmailService memberEmailService)
+        IMemberEmailService memberEmailService,
+        IPaymentProviderFactory paymentProviderFactory)
     {
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
+        _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
+        MemberChapterServiceRequest request, string externalSessionId)
+    {
+        var (chapterPaymentSettings, checkoutSession) = await _unitOfWork.RunAsync(
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
+
+        OdkAssertions.Exists(checkoutSession);
+
+        if (checkoutSession.CompletedUtc != null)
+        {
+            return PaymentStatusType.Complete;
+        }
+
+        var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
+
+        var paymentProvider = _paymentProviderFactory.GetChapterPaymentProvider(chapterPaymentSettings, payment);
+
+        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
+
+        return externalSession == null || externalSession.Metadata.ChapterId != request.ChapterId
+            ? PaymentStatusType.Expired
+            : PaymentStatusType.Pending;
+    }
+
+    public async Task<PaymentStatusType> GetMemberPaymentCheckoutSessionStatus(
+        MemberServiceRequest request, string externalSessionId)
+    {
+        var checkoutSession = await _unitOfWork.PaymentCheckoutSessionRepository
+            .GetByMemberId(request.CurrentMemberId, externalSessionId)
+            .Run();
+
+        OdkAssertions.Exists(checkoutSession);
+
+        if (checkoutSession.CompletedUtc != null)
+        {
+            return PaymentStatusType.Complete;
+        }
+
+        var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
+
+        var sitePaymentSettings = 
+            payment.SitePaymentSettings ?? await _unitOfWork.SitePaymentSettingsRepository.GetActive().Run();
+
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+
+        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
+
+        return externalSession == null
+            ? PaymentStatusType.Expired
+            : PaymentStatusType.Pending;
     }
 
     public async Task ProcessWebhook(

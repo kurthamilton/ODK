@@ -38,6 +38,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     private readonly IMemberEmailService _memberEmailService;
     private readonly INotificationService _notificationService;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
+    private readonly IPaymentService _paymentService;
     private readonly ChapterAdminServiceSettings _settings;
     private readonly ISiteSubscriptionService _siteSubscriptionService;
     private readonly ITopicService _topicService;
@@ -56,7 +57,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         ChapterAdminServiceSettings settings,
         ISiteSubscriptionService siteSubscriptionService,
         IUrlProviderFactory urlProviderFactory,
-        IPaymentProviderFactory paymentProviderFactory)
+        IPaymentProviderFactory paymentProviderFactory,
+        IPaymentService paymentService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
@@ -66,6 +68,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         _memberEmailService = memberEmailService;
         _notificationService = notificationService;
         _paymentProviderFactory = paymentProviderFactory;
+        _paymentService = paymentService;
         _settings = settings;
         _siteSubscriptionService = siteSubscriptionService;
         _topicService = topicService;
@@ -1201,7 +1204,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var chapterOwnerRequest = new MemberServiceRequest(chapter.OwnerId.Value, request);
         
-        return await _siteSubscriptionService.GetMemberSiteSubscriptionPaymentCheckoutSessionStatus(
+        return await _paymentService.GetMemberPaymentCheckoutSessionStatus(
             chapterOwnerRequest, externalSessionId);
     }
 

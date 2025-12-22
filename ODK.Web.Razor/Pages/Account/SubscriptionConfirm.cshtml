@@ -1,29 +1,27 @@
-﻿@page "/{chapterName}/account/subscription/{id:guid}/confirm"
+﻿@page "/account/subscription/{id:guid}/confirm"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Payments
-@using ODK.Services.Members
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@model SubscriptionCheckoutConfirmModel
-@inject IMemberService MemberService
+@model SubscriptionConfirmModel
 @{
-    Layout = "_OdkChapterLayout";
-    Model.Title = "Subscription pending confirmation";
+    Layout = "_AccountLayout";
+    Model.Title = "Subscription confirm";
 
     var subscriptionUrl = Model.RedirectUrl;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
+    Title = "Account",
     HideSubscriptionAlert = true,
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
-        Active = OdkRoutes.Account.Subscription(Model.Platform, Model.Chapter),
-        Chapter = Model.Chapter,
-        Title = "Checkout",
+        Active = OdkRoutes.Account.Subscription(Model.Platform, null),
+        Title = "",
         Content =
             @<div>
                 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
@@ -34,10 +32,10 @@
                         new MenuItem { Text = "Checkout" }
                     }
                 })
-                <h2>Checkout</h2>
+
                 <section class="section">
                     <div data-odk-checkout
-                         data-odk-polling-url="/payments/sessions/@Model.SessionId/status?groupId=@Model.Chapter.Id">
+                         data-odk-polling-url="/payments/sessions/@Model.SessionId/status">
 
                         <div data-odk-checkout-status="@PaymentStatusType.Complete"
                              data-odk-checkout-action="reload">
@@ -52,7 +50,7 @@
                                     Go back to my subscription
                                 </a>
                             </div>
-                        </div>                        
+                        </div>
 
                         <div data-odk-checkout-status="@PaymentStatusType.Expired"
                              data-odk-checkout-action="reload">

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Services.Members;
+using ODK.Core.Payments;
+using ODK.Services.Payments;
 using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers;
@@ -9,22 +10,31 @@ namespace ODK.Web.Razor.Controllers;
 [ApiController]
 public class PaymentsController : OdkControllerBase
 {
-    private readonly IMemberService _memberService;
+    private readonly IPaymentService _paymentService;
 
     public PaymentsController(
         IRequestStore requestStore,
-        IMemberService memberService) 
+        IPaymentService paymentService) 
         : base(requestStore)
     {
-        _memberService = memberService;
+        _paymentService = paymentService;
     }
 
     [HttpGet("payments/sessions/{id}/status")]
-    public async Task<IActionResult> GetSessionStatus(string id, Guid groupId)
+    public async Task<IActionResult> GetSessionStatus(string id, Guid? groupId = null)
     {
-        var request = MemberChapterServiceRequest(groupId);
-        var status = await _memberService.GetMemberChapterPaymentCheckoutSessionStatus(request, id);
-        
+        PaymentStatusType status;
+
+        if (groupId != null)
+        {
+            var request = MemberChapterServiceRequest(groupId.Value);
+            status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(request, id);
+        }
+        else
+        {
+            status = await _paymentService.GetMemberPaymentCheckoutSessionStatus(MemberServiceRequest, id);
+        }
+
         return Ok(new
         {
             status = status.ToString()
