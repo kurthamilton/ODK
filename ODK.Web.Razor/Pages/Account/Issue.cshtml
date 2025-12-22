@@ -16,10 +16,10 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    TitleContent = await Html.PartialAsync("Components/_SideMenuPageTitle", "Account"),
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Issue(viewModel.Issue.Id),
+        Title = "",
         Content =
             @<div>
                 <section class="section">                    

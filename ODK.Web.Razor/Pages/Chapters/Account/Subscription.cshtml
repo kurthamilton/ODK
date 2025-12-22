@@ -17,12 +17,12 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Account",
     HideSubscriptionAlert = true,    
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Subscription(Model.Platform, Model.Chapter),
         Chapter = Model.Chapter,
+        Title = "My subscription",
         Content = 
             @<div>
                 <h2>My subscription</h2>

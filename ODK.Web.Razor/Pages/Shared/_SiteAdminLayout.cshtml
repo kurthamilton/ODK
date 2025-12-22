@@ -29,7 +29,7 @@
     Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
         BodyContentFunc = _ => RenderBody(),
-        MenuContent = await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
+        MenuContentFunc = _ => Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
         {
             MenuItems = menuItems,
             Root = true

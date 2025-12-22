@@ -9,9 +9,10 @@
 @inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_AccountLayout";
-    Model.Title = "Email preferences";
+    Model.Title = "Emails";
 
     var viewModel = await AccountViewModelService.GetMemberEmailPreferencesPage(Model.MemberServiceRequest);
+    var member = viewModel.CurrentMember;
 }
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
@@ -19,11 +20,27 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.EmailPreferences(null),
+        Title = "Email preferences",
         Content =
             @<div>
-                @await Html.PartialAsync("Components/_SideMenuPageTitle", "Email preferences")
+                @await Html.PartialAsync("Account/_AccountPersonalDetailsMenu")
+
                 <section class="section">
                     @await Html.PartialAsync("Account/_EmailPreferencesContent", viewModel)
+                </section>
+                                
+                <section class="section">                    
+                    <h3 class="mb-3">Change email</h3>
+                    <form method="post" action="/account/email/change">
+                        @*@Html.AntiForgeryToken()*@        
+    
+                        @await Html.PartialAsync("Account/_ChangeEmailForm", new ChangeEmailFormViewModel
+                        {
+                            Current = member.EmailAddress
+                        })
+
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
                 </section>
             </div>
     })

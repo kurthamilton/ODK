@@ -11,17 +11,7 @@
 
     var menuItems = new MenuItem[]
     {
-        new MenuItem 
-        { 
-            Link = OdkRoutes.Account.PersonalDetails(Model.Chapter), 
-            Text = "Personal details",
-            Children = new[]
-            {
-                new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(Model.Chapter), Text = "Email address" },
-                new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.Chapter), Text = "Email preferences" },
-                new MenuItem { Link = OdkRoutes.Account.Picture(Model.Chapter), Text = "Picture" }
-            }
-        },
+        new MenuItem { Link = OdkRoutes.Account.PersonalDetails(Model.Chapter), Text = "Personal details", },
         Model.Chapter == null 
             ? new MenuItem { Link = OdkRoutes.Account.Location(), Text = "Location" }
             : new MenuItem(),
@@ -50,7 +40,7 @@
     @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
     {
         Active = activeMenuItem,
-        CollapseAll = true,
-        MenuItems = menuItems
+        MenuItems = menuItems,
+        Root = true
     })
 </div>

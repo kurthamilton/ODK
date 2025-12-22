@@ -18,7 +18,7 @@
         @Html.HiddenFor(x => x.EmailAddress)
         <div class="form-control-plaintext">
             @Model.EmailAddress
-            <a href="@OdkRoutes.Account.EmailAddressChange(Model.Chapter)">Change</a>
+            <a href="@OdkRoutes.Account.EmailPreferences(Model.Chapter)">Change</a>
         </div>
     }
     else

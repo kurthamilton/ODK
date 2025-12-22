@@ -13,11 +13,11 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Delete(Model.Chapter),
         Chapter = Model.Chapter,
+        Title = "Delete account",
         Content =
             @<div>
                 <h2>Delete account</h2>

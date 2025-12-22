@@ -8,7 +8,7 @@
 @model ODK.Web.Razor.Pages.Account.AccountModel
 @inject IMemberService MemberService
 @{
-    Layout = "_AccountLayout";
+    Layout = "_HomeLayout";
     Model.Title = "Profile";
 
     var member = await MemberService.GetMember(Model.MemberServiceRequest);
@@ -19,9 +19,11 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = "/Account",
+        Title = "Personal details",
         Content = 
             @<div>
-                @await Html.PartialAsync("Components/_SideMenuPageTitle", "Personal details")
+                @await Html.PartialAsync("Account/_AccountPersonalDetailsMenu")
+
                 <section class="section">
                     <form action="/Account/PersonalDetails" method="post">
                         @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel

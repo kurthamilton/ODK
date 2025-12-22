@@ -19,9 +19,9 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Notifications(null),
+        Title = "Notification preferences",
         Content =
             @<div>
-                @await Html.PartialAsync("Components/_SideMenuPageTitle", "Notification preferences")
                 <section class="section">
                     @await Html.PartialAsync("Account/_NotificationsContent", viewModel)
                 </section>

@@ -27,10 +27,9 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Location(),
+        Title = "Location",
         Content = 
             @<div>
-                @await Html.PartialAsync("Components/_SideMenuPageTitle", "Location")
-
                 <section class="section">
                     <form action="/account/location" method="post">
                         @*@Html.AntiForgeryToken()*@

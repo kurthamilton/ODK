@@ -25,6 +25,7 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Subscription(viewModel.Platform, null),
+        Title = "",
         Content =
             @<div>
                 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel

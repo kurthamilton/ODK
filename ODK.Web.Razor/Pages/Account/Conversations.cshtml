@@ -8,7 +8,7 @@
 @model ConversationsModel
 @inject IMemberViewModelService MemberViewModelService
 @{
-    Layout = "_AccountLayout";
+    Layout = "_HomeLayout";
     Model.Title = "My conversations";
 
     var viewModel = await MemberViewModelService.GetMemberConversationsPage(Model.MemberServiceRequest);
@@ -19,9 +19,9 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Conversations(null),
+        Title = "My conversations",
         Content =
             @<div>
-                @await Html.PartialAsync("Components/_SideMenuPageTitle", "My conversations")
                 <section class="section">
                     @await Html.PartialAsync("Account/_ConversationsContent", viewModel)
                 </section>

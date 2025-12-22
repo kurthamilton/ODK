@@ -1,0 +1,18 @@
+﻿@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
+@{
+    var menuItems = new[]
+    {
+        new MenuItem { Link = OdkRoutes.Account.PersonalDetails(chapter: null), Text = "Personal details", },
+        new MenuItem { Link = OdkRoutes.Account.Picture(chapter: null), Text = "Picture" },
+        new MenuItem { Link = OdkRoutes.Account.EmailPreferences(chapter: null), Text = "Emails" }
+    };
+}
+
+<div data-odk-component="_AccountPersonalDetailsMenu">
+    @await Html.PartialAsync("Components/_Tabs", new TabsViewModel
+    {
+        MenuItems = menuItems
+    })
+</div>

@@ -1,18 +1,17 @@
 ﻿@using Microsoft.AspNetCore.Html
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
 @model SiteAccountLayoutViewModel
 
 <div data-odk-component="_SiteAccountLayout">
-    <div class="d-block d-md-flex">
-        <div>
-            @await Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
-            {
-                Active = Model.Active,
-                Chapter = Model.Chapter
-            })
-        </div>
-        <div class="ps-md-5 flex-grow-1">        
-            @Model.Content.Invoke(null)
-        </div>
-    </div>
+    @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+    {
+        Title = Model.Title,
+        BodyContentFunc = Model.Content,
+        MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
+        {
+            Active = Model.Active,
+            Chapter = Model.Chapter            
+        })
+    })    
 </div>

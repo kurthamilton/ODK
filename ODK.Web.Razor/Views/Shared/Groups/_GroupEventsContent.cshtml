@@ -44,7 +44,7 @@
 {
     @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
-        MenuContent = await Html.PartialAsync("Groups/_GroupEventsMenu", Model),
+        MenuContentFunc = _ => Html.PartialAsync("Groups/_GroupEventsMenu", Model),
         BodyContentFunc =
             @<div>
                 @await Html.PartialAsync("Events/_EventList", eventListViewModel)
