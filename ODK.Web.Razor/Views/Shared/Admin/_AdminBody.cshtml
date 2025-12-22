@@ -10,11 +10,6 @@
     })
 }
 
-@if (!string.IsNullOrEmpty(Model.Title))
-{
-    @await Html.PartialAsync("Components/_SideMenuPageTitle", Model.Title)
-}
-
 <section class="section">
     @Model.ContentFunc.Invoke(null)
 </section>
