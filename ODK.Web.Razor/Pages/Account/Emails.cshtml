@@ -17,6 +17,7 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
+    Title = "Account",
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.EmailPreferences(null),
@@ -28,8 +29,8 @@
                 <section class="section">
                     @await Html.PartialAsync("Account/_EmailPreferencesContent", viewModel)
                 </section>
-                                
-                <section class="section">                    
+                                              
+                <section class="section">                                        
                     <h3 class="mb-3">Change email</h3>
                     <form method="post" action="/account/email/change">
                         @*@Html.AntiForgeryToken()*@        
