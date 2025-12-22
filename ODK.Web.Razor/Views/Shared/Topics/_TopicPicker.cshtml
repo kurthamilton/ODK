@@ -65,13 +65,13 @@
     <div class="me-auto">
         @if (Model.Addable)
         {
-            <button type="button" class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#new-topic-list">
+            <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#new-topic-list">
                 Add new
             </button>
         }        
     </div>
     <div>
-        <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#topics-modal">
+        <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#topics-modal">
             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Maximize))
             Show all
         </button>

@@ -78,7 +78,7 @@
     @if (Model.Message.RepliedUtc == null)
     {
         <div class="mb-3">
-            <button type="button" class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#mark-replied">Already replied?</button>
+            <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#mark-replied">Already replied?</button>
             <div class="collapse" id="mark-replied">
                 <form action="/groups/@Model.Chapter.Id/messages/@Model.Message.Id/replied" method="post">
                     @*@Html.AntiForgeryToken()*@
