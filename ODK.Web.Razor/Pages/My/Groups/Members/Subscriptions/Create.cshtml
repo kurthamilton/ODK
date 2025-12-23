@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/members/subscriptions/new"
 @using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model CreateModel
 @inject IMemberAdminService MemberAdminService
 @{
@@ -9,4 +11,12 @@
     var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Create subscription",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = viewModel.Chapter
+    })
+})

@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/events"
 @using ODK.Services.Events
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.My.Groups.Events.IndexModel
 @inject IEventAdminService EventAdminService
 @{
@@ -9,4 +11,12 @@
     var viewModel = await EventAdminService.GetEventsDto(Model.AdminServiceRequest, 1, 500);
 }
 
-@await Html.PartialAsync("Admin/Events/_EventsContent", viewModel)
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Events",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_EventsContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = viewModel.Chapter
+    })
+})

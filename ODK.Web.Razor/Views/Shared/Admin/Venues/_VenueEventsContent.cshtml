@@ -10,19 +10,6 @@
 @using ODK.Web.Razor.Models.Components
 @model VenueEventsAdminPageViewModel
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
-{
-    Breadcrumbs = new[]
-    {
-        new MenuItem
-        {
-            Link = OdkRoutes.MemberGroups.Venues(Model.Platform, Model.Chapter),
-            Text = "Venues"
-        },
-        new MenuItem { Text = Model.Venue.Name }
-    }
-})
-
 @await Html.PartialAsync("Admin/Venues/_VenueAdminTabs", new VenueAdminTabsViewModel
 {
     Chapter = Model.Chapter,

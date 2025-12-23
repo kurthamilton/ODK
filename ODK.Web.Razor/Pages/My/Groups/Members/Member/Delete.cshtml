@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/members/{memberId:guid}/delete"
 @using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model DeleteModel
 @inject IMemberAdminService MemberAdminService
 @{
@@ -10,4 +12,12 @@
     Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
 }
 
-@await Html.PartialAsync("Admin/Members/_MemberDeleteContent", viewModel)
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Member",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberDeleteContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = viewModel.Chapter
+    })
+})

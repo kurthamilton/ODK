@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/members/admins/{memberId:guid}"
 @using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model AdminMemberModel
 @inject IMemberAdminService MemberAdminService
 @{
@@ -9,4 +11,12 @@
     var viewModel = await MemberAdminService.GetAdminMemberViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
-@await Html.PartialAsync("Admin/Members/_AdminMemberContent", viewModel)
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Admin member",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_AdminMemberContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = viewModel.Chapter
+    })
+})
