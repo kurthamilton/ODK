@@ -10,7 +10,7 @@
 
     var viewModel = await ChapterViewModelService.GetGroupSubscriptionPage(Model.MemberServiceRequest, Model.Slug);
 
-    Model.Title = $"Subscription | Profile | {viewModel.Chapter.Name}";
+    Model.Title = $"Subscription | Profile | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

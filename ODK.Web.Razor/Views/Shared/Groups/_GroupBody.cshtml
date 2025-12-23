@@ -1,7 +1,10 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Groups
+@using ODK.Web.Razor.Services
+@inject IRequestStore RequestStore
 @model GroupBodyViewModel
 @{
+    var platform = RequestStore.Platform;
     var memberChapter = Model.Group.CurrentMember?.MemberChapter(Model.Group.Chapter.Id);
 }
 
@@ -9,7 +12,7 @@
 {
     Breadcrumbs = Model.Breadcrumbs,
     Menu = await Html.PartialAsync("Groups/_GroupMenu", Model.Group),
-    Title = Model.Group.Chapter.Name,
+    Title = Model.Group.Chapter.GetDisplayName(platform),
     ContentFunc = 
         @<div>
             @if (memberChapter != null)

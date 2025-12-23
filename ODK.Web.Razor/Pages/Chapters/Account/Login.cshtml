@@ -16,7 +16,7 @@
 {
     @await Html.PartialAsync("Components/_Body", new BodyViewModel
     {
-        Title = $"{Model.Chapter.Name} Drunken Knitwits",
+        Title = Model.Chapter.FullName,
         Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", Model.Chapter)
     })
 

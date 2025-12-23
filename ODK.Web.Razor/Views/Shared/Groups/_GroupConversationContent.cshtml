@@ -11,7 +11,11 @@
     var breadcrumbs = new[]
     {
         Model.Platform == PlatformType.DrunkenKnitwits
-            ? new MenuItem { Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), Text = Model.Chapter.Name }
+            ? new MenuItem 
+            { 
+                Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), 
+                Text = Model.Chapter.GetDisplayName(Model.Platform)
+            }
             : new MenuItem(),
         new MenuItem { Link = OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter), Text = "Contact" },
         new MenuItem { Text = Model.Conversation.Subject }

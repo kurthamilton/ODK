@@ -3,6 +3,7 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
+using ODK.Data.Core.Repositories;
 using ODK.Services.Users.ViewModels;
 
 namespace ODK.Services.Users;
@@ -71,6 +72,7 @@ public class AccountViewModelService : IAccountViewModelService
         {
             Chapter = chapter,
             Profile = CreateProfileFormViewModel(
+                request.Platform,
                 chapter, 
                 chapterProperties, 
                 chapterPropertyOptions, 
@@ -113,8 +115,10 @@ public class AccountViewModelService : IAccountViewModelService
         };
     }
 
-    public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(Guid currentMemberId, string chapterName)
+    public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(MemberServiceRequest request, string chapterName)
     {        
+        var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
+
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
 
@@ -141,6 +145,7 @@ public class AccountViewModelService : IAccountViewModelService
             Chapter = chapter,
             CurrentMember = member,
             ChapterProfile = CreateProfileFormViewModel(
+                platform,
                 chapter,
                 chapterProperties,
                 chapterPropertyOptions,
@@ -227,6 +232,7 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     private ChapterProfileFormViewModel CreateProfileFormViewModel(
+        PlatformType platform,
         Chapter chapter, 
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<ChapterPropertyOption> chapterPropertyOptions,
@@ -237,7 +243,7 @@ public class AccountViewModelService : IAccountViewModelService
 
         return new ChapterProfileFormViewModel
         {
-            ChapterName = chapter.Name,
+            ChapterName = chapter.GetDisplayName(platform),
             ChapterProperties = chapterProperties,
             ChapterPropertyOptions = chapterPropertyOptions,            
             Properties = chapterProperties.Select(x => new ChapterProfileFormPropertyViewModel

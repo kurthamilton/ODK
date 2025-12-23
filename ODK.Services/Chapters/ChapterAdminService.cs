@@ -205,7 +205,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult<Chapter?>.Failure("Your subscription has expired");
         }
 
-        if (existing.Any(x => string.Equals(x.Name, model.Name, StringComparison.InvariantCultureIgnoreCase)))
+        if (existing.Any(x => string.Equals(x.GetDisplayName(platform), model.Name, StringComparison.OrdinalIgnoreCase)))
         {
             return ServiceResult<Chapter?>.Failure($"The name '{model.Name}' is taken");
         }
@@ -535,7 +535,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
                 chapterPaymentAccount);
 
             var platform = request.Platform;
-            var productName = chapter.GetFullName(platform);
+            var productName = chapter.FullName;
 
             var productId = await paymentProvider.GetProductId(productName);
             if (string.IsNullOrEmpty(productId))
@@ -2272,12 +2272,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         if (chapter.OwnerId == null)
         {
-            throw new OdkServiceException($"Error updating group '{chapter.Name}': owner not found");
+            throw new OdkServiceException($"Error updating group '{chapter.Id}': owner not found");
         }
 
         if (viewModel.SiteSubscriptionId == null)
         {
-            throw new OdkServiceException($"Error updating group '{chapter.Name}': subscription not provided");
+            throw new OdkServiceException($"Error updating group '{chapter.Id}': subscription not provided");
         }
 
         subscription ??= new MemberSiteSubscription

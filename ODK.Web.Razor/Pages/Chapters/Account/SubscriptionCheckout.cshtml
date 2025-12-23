@@ -16,7 +16,7 @@
     Model.Title = "Subscription checkout";
 
     var request = Model.MemberChapterServiceRequest(Model.Chapter.Id);
-    var returnPath = $"/{Model.Chapter.Name}/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
+    var returnPath = $"/{Model.Chapter.ShortName}/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
         request, Model.SubscriptionId, returnPath);
 }

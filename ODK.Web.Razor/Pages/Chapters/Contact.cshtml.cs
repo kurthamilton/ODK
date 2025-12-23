@@ -34,6 +34,6 @@ public class ContactModel : ChapterPageModel
             viewModel.Message ?? "",
             viewModel.Recaptcha ?? "");
 
-        return Redirect($"/{Chapter.Name}/Contact?Sent=True");
+        return Redirect($"/{Chapter.ShortName}/Contact?Sent=True");
     }
 }

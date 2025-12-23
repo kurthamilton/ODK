@@ -36,6 +36,6 @@ public class VenueModel : VenueAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Venue updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Events/Venues");
+        return Redirect($"/{Chapter.ShortName}/Admin/Events/Venues");
     }
 }

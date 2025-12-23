@@ -1,96 +1,35 @@
-﻿using ODK.Core.Chapters;
-using ODK.Core.Media;
+﻿using ODK.Core.Media;
 using ODK.Core.Utils;
-using ODK.Data.Core;
 
 namespace ODK.Services.Media;
 
 public class MediaFileProvider : IMediaFileProvider
 {
     private readonly MediaFileProviderSettings _settings;
-    private readonly IUnitOfWork _unitOfWork;
-
-    public MediaFileProvider(IUnitOfWork unitOfWork,
-        MediaFileProviderSettings settings)
+    
+    public MediaFileProvider(MediaFileProviderSettings settings)
     {        
         _settings = settings;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<MediaFile?> GetMediaFile(Guid chapterId, string name)
     {
-        Chapter? chapter = await GetChapter(chapterId);
-        if (chapter == null)
-        {
-            return null;
-        }
-
-        return await GetMediaFile(chapter.Name, name);
-    }
-
-    public async Task<MediaFile?> GetMediaFile(string chapter, string name)
-    {
-        string? filePath = GetMediaFilePath(chapter, name);
+        string? filePath = await GetMediaFilePath(chapterId, name);
 
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
             return null;
         }
 
-        return await GetMediaFile(chapter, new FileInfo(filePath));
+        return await GetMediaFile(chapterId, new FileInfo(filePath));
     }
 
     public async Task<string?> GetMediaFilePath(Guid chapterId, string name)
     {
-        Chapter? chapter = await GetChapter(chapterId);
-        if (chapter == null)
-        {
-            return null;
-        }
-
-        return GetMediaFilePath(chapter.Name, name);
-    }
-
-    public async Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(Guid chapterId)
-    {
-        Chapter? chapter = await GetChapter(chapterId);
-        if (chapter == null)
-        {
-            return Array.Empty<MediaFile>();
-        }
-
-        string path = GetMediaPath(chapter.Name);
-
-        List<MediaFile> mediaFiles = new List<MediaFile>();
-
-        foreach (FileInfo file in new DirectoryInfo(path).GetFiles())
-        {
-            MediaFile mediaFile = await GetMediaFile(chapter.Name, file);
-            mediaFiles.Add(mediaFile);
-        }
-
-        return mediaFiles.ToArray();
-    }
-
-    private async Task<Chapter> GetChapter(Guid chapterId)
-    {
-        return await _unitOfWork.ChapterRepository.GetById(chapterId).Run();
-    }
-
-    private Task<MediaFile> GetMediaFile(string chapter, FileInfo file)
-    {
-        string url = GetMediaUrl(chapter, file.Name);
-        MediaFile mediaFile = new MediaFile(file.FullName, file.Name, url, file.CreationTime);
-        return Task.FromResult(mediaFile);
-    }
-
-    private string? GetMediaFilePath(string chapter, string name)
-    {
-        chapter = chapter.AlphaNumeric();
         name = name.AlphaNumericImageFileName();
 
-        string path = GetMediaPath(chapter);
-        string filePath = Path.Combine(path, name);
+        var path = GetMediaPath(chapterId);
+        var filePath = Path.Combine(path, name);
 
         if (!string.Equals(new FileInfo(filePath).Directory?.FullName, path, StringComparison.OrdinalIgnoreCase))
         {
@@ -100,9 +39,35 @@ public class MediaFileProvider : IMediaFileProvider
         return filePath;
     }
 
-    private string GetMediaPath(string chapter)
+    public async Task<IReadOnlyCollection<MediaFile>> GetMediaFiles(Guid chapterId)
     {
-        string path = Path.Combine(_settings.RootMediaPath, chapter.ToLowerInvariant());
+        var path = GetMediaPath(chapterId);
+
+        var mediaFiles = new List<MediaFile>();
+
+        foreach (var file in new DirectoryInfo(path).GetFiles())
+        {
+            var mediaFile = await GetMediaFile(chapterId, file);
+            mediaFiles.Add(mediaFile);
+        }
+
+        return mediaFiles.ToArray();
+    }
+
+    private Task<MediaFile> GetMediaFile(Guid chapterId, FileInfo file)
+    {
+        var url = GetMediaUrl(chapterId, file.Name);
+        var mediaFile = new MediaFile(file.FullName, file.Name, url, file.CreationTime);
+        return Task.FromResult(mediaFile);
+    }
+
+    private string GetMediaPath(Guid chapterId)
+    {
+        var chapterIdPart = chapterId.ToString()
+            .AlphaNumeric()
+            .ToLowerInvariant();
+
+        var path = Path.Combine(_settings.RootMediaPath, chapterIdPart);
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
@@ -110,7 +75,7 @@ public class MediaFileProvider : IMediaFileProvider
         return path;
     }
 
-    private string GetMediaUrl(string chapter, string name)
+    private string GetMediaUrl(Guid chapterId, string name)
     {
         throw new NotImplementedException();
     }

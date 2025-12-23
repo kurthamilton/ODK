@@ -8,7 +8,7 @@
 {
     Breadcrumbs = new[]
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}/Admin/Chapter/Emails", Text = "Emails" },
+        new MenuItem { Link = $"/{Model.Chapter.ShortName}/Admin/Chapter/Emails", Text = "Emails" },
         new MenuItem { Text = Model.Email.Type.ToString() }
     },
     ContentFunc = 
@@ -49,11 +49,11 @@
                 }
             </form>
 
-            <form method="post" action="/@Model.Chapter.Name/Admin/Chapter/Emails/@Model.Email.Type/SendTest"
+            <form method="post" action="/@Model.Chapter.ShortName/Admin/Chapter/Emails/@Model.Email.Type/SendTest"
                   id="send-test-form">
             </form>
 
-            <form method="post" action="/@Model.Chapter.Name/Admin/Chapter/Emails/@Model.Email.Type/RestoreDefault"
+            <form method="post" action="/@Model.Chapter.ShortName/Admin/Chapter/Emails/@Model.Email.Type/RestoreDefault"
                   id="restore-default-form">
             </form>
         </div>

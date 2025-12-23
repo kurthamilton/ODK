@@ -1,7 +1,12 @@
-﻿@using ODK.Web.Razor.Models.Components
+﻿@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Home
+@using ODK.Web.Razor.Services
+@inject IRequestStore RequestStore
 @model ChaptersSectionViewModel
 @{
+    var platform = RequestStore.Platform;
+
     var continents = Model
         .Countries
         .Select(x => x.Continent)
@@ -43,9 +48,13 @@
                             @foreach (var chapter in chapterDictionary[continent])
                             {
                                 var external = !string.IsNullOrEmpty(chapter.RedirectUrl);
-                                var url = string.IsNullOrEmpty(chapter.RedirectUrl) ? $"/{chapter.Name}" : chapter.RedirectUrl;
+                                var url = string.IsNullOrEmpty(chapter.RedirectUrl) 
+                                    ? OdkRoutes.Groups.Group(platform, chapter) 
+                                    : chapter.RedirectUrl;
                                 <li class="nav-item">
-                                    <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">@chapter.Name</a>
+                                    <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">
+                                        @chapter.GetDisplayName(platform)
+                                    </a>
                                 </li>
                             }
                         </ul>
@@ -65,9 +74,13 @@
                             @foreach (var chapter in chapterDictionary[continent])
                             {
                                 var external = !string.IsNullOrEmpty(chapter.RedirectUrl);
-                                var url = string.IsNullOrEmpty(chapter.RedirectUrl) ? $"/{chapter.Name}" : chapter.RedirectUrl;
+                                var url = string.IsNullOrEmpty(chapter.RedirectUrl) 
+                                    ? OdkRoutes.Groups.Group(platform, chapter)
+                                    : chapter.RedirectUrl;
                                 <li class="nav-item">
-                                    <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">@chapter.Name</a>
+                                    <a class="nav-link" target="@(external ? "_blank" : "")" href="@url">
+                                        @chapter.GetDisplayName(platform)
+                                    </a>
                                 </li>
                             }
                         </ul>

@@ -2,6 +2,7 @@
 @using ODK.Core.Members
 @using ODK.Services.Authorization
 @using ODK.Services.Caching
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Members
 @using ODK.Web.Razor.Pages.Chapters
 @using ODK.Web.Razor.Services
@@ -9,7 +10,7 @@
 @inject IRequestCache RequestCache
 @inject IRequestStore RequestStore
 @{
-    var memberId = RequestStore.CurrentMemberIdOrDefault;
+    var (platform, memberId) = (RequestStore.Platform, RequestStore.CurrentMemberIdOrDefault);
     if (memberId == null)
     {
         return;
@@ -49,13 +50,13 @@
 @if (status == SubscriptionStatus.Expired || status == SubscriptionStatus.Disabled)
 {
     <div class="page-alert alert alert-danger">
-        Your @type has expired <a href="/@chapter.Name/Account/Subscription">@action</a>
+        Your @type has expired <a href="@OdkRoutes.Groups.Subscription(platform, chapter)">@action</a>
     </div>
 }
 else if (status == SubscriptionStatus.Expiring && memberSubscription.ExpiresUtc != null)
 {
     var expiresOn = TimeZoneEntityExtensions.ToLocalTime(chapter, memberSubscription.ExpiresUtc.Value).ToString("d MMMM");
     <div class="page-alert alert alert-warning">
-        Your @type expires @expiresOn <a href="/@chapter.Name/Account/Subscription">@action</a>
+        Your @type expires @expiresOn <a href="@OdkRoutes.Groups.Subscription(platform, chapter)">@action</a>
     </div>
 }

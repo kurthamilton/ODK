@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Events"
 @using ODK.Core
 @using ODK.Services.Events
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model EventsModel
@@ -12,14 +13,14 @@
     var viewModel = await EventViewModelService.GetEventsPage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.ChapterName);
 
-    Model.Path = $"/{viewModel.Chapter.Name}/events";
+    Model.Path = OdkRoutes.Groups.Events(Model.Platform, viewModel.Chapter);
 }
 
 @if (!viewModel.Chapter.IsOpenForRegistration())
 {
     @await Html.PartialAsync("Components/_Body", new BodyViewModel
     {
-        Title = $"{viewModel.Chapter.Name} Drunken Knitwits",
+        Title = viewModel.Chapter.FullName,
         Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", viewModel.Chapter)
     })
 
@@ -31,7 +32,11 @@
     Title = "Events",
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{viewModel.Chapter.Name}", Text = viewModel.Chapter.Name },
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
+            Text = viewModel.Chapter.GetDisplayName(Model.Platform)
+        },
         new MenuItem { Text = "Events" }
     },
     Content = await Html.PartialAsync("Events/_EventsContent", viewModel)

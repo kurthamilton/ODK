@@ -4,6 +4,7 @@
 @using ODK.Services.Events
 @using ODK.Services.Venues
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Events
 @using ODK.Web.Razor.Models.Payments
@@ -19,10 +20,7 @@
         Model.EventId);
 
     Model.Title = viewModel.Event.GetDisplayName();
-
-    var chapterName = viewModel.Chapter.Name;
-
-    Model.Path = $"/{viewModel.Chapter.Name}/events/{viewModel.Event.Id}";
+    Model.Path = OdkRoutes.Groups.Event(Model.Platform, viewModel.Chapter, viewModel.Event.Id);
     Model.Location = viewModel.VenueLocation;
 }
 
@@ -31,8 +29,16 @@
     Title = viewModel.Event.GetDisplayName(),
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{chapterName}", Text = chapterName },
-        new MenuItem { Link = $"/{chapterName}/Events", Text = "Events" },
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter), 
+            Text = viewModel.Chapter.GetDisplayName(Model.Platform)
+        },
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Groups.Events(Model.Platform, viewModel.Chapter),
+            Text = "Events" 
+        },
         new MenuItem { Text = viewModel.Event.GetDisplayName() }
     },
     Content = await Html.PartialAsync("Events/_EventContent", viewModel),

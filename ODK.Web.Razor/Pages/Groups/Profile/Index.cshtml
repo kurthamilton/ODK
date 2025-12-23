@@ -11,7 +11,7 @@
 
     var viewModel = await ChapterViewModelService.GetGroupProfilePage(Model.MemberServiceRequest, Model.Slug);
 
-    Model.Title = $"Profile | {viewModel.Chapter.Name}";
+    Model.Title = $"Profile | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

@@ -41,6 +41,6 @@ public class MemberModel : AdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Member subscription updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Members/{id}");
+        return Redirect($"/{Chapter.ShortName}/Admin/Members/{id}");
     }
 }

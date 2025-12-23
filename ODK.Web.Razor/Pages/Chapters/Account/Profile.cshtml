@@ -11,9 +11,9 @@
 @inject IAccountViewModelService AccountViewModelService
 @{
     Layout = "_OdkChapterLayout";
-    Model.Title = "Profile";
+    Model.Title = "Profile";    
 
-    var viewModel = await AccountViewModelService.GetChapterProfilePage(Model.CurrentMemberId, Model.ChapterName);
+    var viewModel = await AccountViewModelService.GetChapterProfilePage(Model.MemberServiceRequest, Model.ChapterName);
     var memberChapter = viewModel.CurrentMember.MemberChapter(viewModel.Chapter.Id);
     if (memberChapter == null)
     {

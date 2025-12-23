@@ -12,7 +12,9 @@
     HeaderContentFunc = 
         @<div class="d-flex gap-3">
             <div class="me-auto">
-                <a href="@OdkRoutes.Groups.Group(Model.Platform, chapter)">@chapter.Name</a>
+                <a href="@OdkRoutes.Groups.Group(Model.Platform, chapter)">
+                    @chapter.GetDisplayName(Model.Platform)
+                </a>
             </div>
             @if (Model.IsOwner || Model.IsAdmin)
             {

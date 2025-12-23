@@ -7,7 +7,7 @@
 
 @await Html.PartialAsync("Components/_AdminBar", new AdminBarViewModel
 {
-    AdminLink = $"/{Model.Chapter.Name}/Admin/Events",
+    AdminLink = $"/{Model.Chapter.ShortName}/Admin/Events",
     AdminLinkText = "Edit",
     Chapter = Model.Chapter,
     CurrentMember = Model.CurrentMember
@@ -34,7 +34,7 @@ else
     {
         <p>
             There are no upcoming public events.
-            <a href="/@Model.Chapter.Name/Account/Login?returnUrl=/@Model.Chapter.Name/Events">Sign in</a>
+            <a href="/@Model.Chapter.ShortName/Account/Login?returnUrl=/@Model.Chapter.ShortName/Events">Sign in</a>
         </p>
     }
 }

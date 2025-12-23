@@ -12,7 +12,7 @@
     var viewModel = await ChapterViewModelService.GetGroupJoinPage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
 
-    Model.Title = $"Join | {viewModel.Chapter.Name}";
+    Model.Title = $"Join | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

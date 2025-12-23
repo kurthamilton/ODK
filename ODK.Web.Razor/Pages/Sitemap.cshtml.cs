@@ -31,7 +31,7 @@ public class SitemapModel : OdkPageModel
         var chapters = chaptersDto
             .Chapters
             .Where(x => x.Approved())
-            .OrderBy(x => x.Name);
+            .OrderBy(x => x.GetDisplayName(Platform));
 
         foreach (var chapter in chapters)
         {

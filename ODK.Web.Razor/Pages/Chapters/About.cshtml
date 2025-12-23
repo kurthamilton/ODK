@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/About"
 @using ODK.Core
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.About
@@ -13,14 +14,14 @@
 
     var texts = await ChapterService.GetChapterTexts(Model.Chapter.Id);
 
-    Model.Path = $"/{Model.Chapter.Name}/about";
+    Model.Path = OdkRoutes.Groups.About(Model.Platform, Model.Chapter);
 }
 
 @if (!Model.Chapter.IsOpenForRegistration())
 {
     @await Html.PartialAsync("Components/_Body", new BodyViewModel
     {
-        Title = $"{Model.Chapter.Name} Drunken Knitwits",
+        Title = Model.Chapter.FullName,
         Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", Model.Chapter)
     })
 
@@ -32,7 +33,11 @@
     Title = "About",
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter), 
+            Text = Model.Chapter.GetDisplayName(Model.Platform)
+        },
         new MenuItem { Text = "About" }
     },
     Content = await Html.PartialAsync("Chapters/_AboutContent", new AboutContentViewModel

@@ -15,7 +15,7 @@
 <section class="section--admin">
     <h3>Time zone</h3>
 
-    <form action="/@Model.Value.Name/Admin/SuperAdmin/TimeZone" method="post">
+    <form action="/@Model.Value.ShortName/Admin/SuperAdmin/TimeZone" method="post">
         @*@Html.AntiForgeryToken()*@
         @await Html.PartialAsync("Chapters/SuperAdmin/_TimeZoneForm", new ChapterTimeZoneFormViewModel
        {
@@ -28,7 +28,7 @@
 <section class="section--admin">
     <h3>Location</h3>
 
-    <form action="/@Model.Value.Name/Admin/SuperAdmin/Location" method="post">
+    <form action="/@Model.Value.ShortName/Admin/SuperAdmin/Location" method="post">
         @*@Html.AntiForgeryToken()*@
         @await Html.PartialAsync("Chapters/SuperAdmin/_LocationForm", new ChapterLocationFormViewModel
         {

@@ -39,7 +39,7 @@ public class SubscriptionCreateModel : AdminPageModel
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Subscription created", FeedbackType.Success));
-            return Redirect($"/{Chapter.Name}/Admin/Members/Subscriptions");
+            return Redirect($"/{Chapter.ShortName}/Admin/Members/Subscriptions");
         }
 
         AddFeedback(new FeedbackViewModel(result));

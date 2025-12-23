@@ -17,7 +17,7 @@
                 }
 
                 <div class="d-flex flex-column gap-2">
-                    <h6>@Model.Chapter.Name</h6>
+                    <h6>@Model.Chapter.GetDisplayName(Model.Platform)</h6>
                     @if (Model.Location != null)
                     {
                         <div class="d-flex gap-2 small">

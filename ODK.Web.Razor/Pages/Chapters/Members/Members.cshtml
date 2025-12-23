@@ -20,10 +20,14 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-   Title = $"{viewModel.Chapter.Name} Knitwits",
+   Title = $"{viewModel.Chapter.ShortName} Knitwits",
    Breadcrumbs = new []
    {
-       new MenuItem { Link = $"/{viewModel.Chapter.Name}", Text = viewModel.Chapter.Name },
+       new MenuItem 
+       { 
+           Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
+           Text = viewModel.Chapter.GetDisplayName(Model.Platform)
+       },
        new MenuItem { Text = "Knitwits" }
    },
    Content = await Html.PartialAsync("Members/_MembersContent", viewModel)

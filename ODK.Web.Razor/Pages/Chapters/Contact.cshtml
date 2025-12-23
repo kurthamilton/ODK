@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Contact"
 @using ODK.Core
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Contact
@@ -15,14 +16,14 @@
     var viewModel = await ChapterViewModelService.GetGroupContactPage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Chapter.Slug);
 
-    Model.Path = $"/{viewModel.Chapter.Name}/contact";
+    Model.Path = OdkRoutes.Groups.Contact(Model.Platform, viewModel.Chapter);
 }
 
 @if (!viewModel.Chapter.IsOpenForRegistration())
 {
     @await Html.PartialAsync("Components/_Body", new BodyViewModel
     {
-        Title = $"{viewModel.Chapter.Name} Drunken Knitwits",
+        Title = viewModel.Chapter.FullName,
         Content = await Html.PartialAsync("Groups/_GroupRegistrationClosed", viewModel.Chapter)
     })
 
@@ -34,7 +35,11 @@
     Title = "Contact",
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Groups.Group(Model.Platform, viewModel.Chapter),
+            Text = Model.Chapter.GetDisplayName(Model.Platform)
+        },
         new MenuItem { Text = "Contact" }
     },
     Content = await Html.PartialAsync("Groups/_GroupContactContent", viewModel)

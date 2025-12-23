@@ -15,7 +15,7 @@
 
 <h2 class="d-none d-md-block">Email Providers</h2>
 <p>
-    <a class="btn btn-primary" href="/@Model.Value.Name/admin/superadmin/emailproviders/create">
+    <a class="btn btn-primary" href="/@Model.Value.ShortName/admin/superadmin/emailproviders/create">
         Create
     </a>
 </p>
@@ -33,7 +33,7 @@
             {
                 <tr>
                     <td>
-                        <a href="/@Model.Value.Name/admin/superadmin/emailproviders/@emailProvider.Id">@emailProvider.Name</a>
+                        <a href="/@Model.Value.ShortName/admin/superadmin/emailproviders/@emailProvider.Id">@emailProvider.Name</a>
                     </td>
                     <td> 
                         <form method="post" action="/superadmin/groups/@Model.Value.Id/emails/providers/@emailProvider.Id/delete">

@@ -9,7 +9,7 @@
     var viewModel = await ChapterViewModelService.GetGroupHomePage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
 
-    Model.Title = viewModel.Chapter.Name;
+    Model.Title = viewModel.Chapter.GetDisplayName(Model.Platform);
 
     Model.Keywords = viewModel.Topics
         .Select(x => x.Name)

@@ -9,7 +9,7 @@
 
     var viewModel = await ChapterAdminService.GetChapterAdminPageViewModel(Model.AdminServiceRequest);
 
-    Model.Title = viewModel.Chapter.Name;
+    Model.Title = viewModel.Chapter.GetDisplayName(Model.Platform);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel

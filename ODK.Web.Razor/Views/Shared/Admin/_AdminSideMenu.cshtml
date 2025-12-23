@@ -18,7 +18,7 @@
     {
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupConversations(platform, chapter), Text = "Conversations" },
         platform == PlatformType.DrunkenKnitwits
-            ? new MenuItem { Link = $"/{chapter.Name}/admin/chapter/emails", Text = "Emails" }
+            ? new MenuItem { Link = $"/{chapter.ShortName}/admin/chapter/emails", Text = "Emails" }
             : new MenuItem(),
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupQuestions(platform, chapter), Text = "FAQ" },        
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupMessages(platform, chapter), Text = "Messages" },
@@ -60,13 +60,13 @@
     var superadminLinks = platform == PlatformType.DrunkenKnitwits && User.IsInRole(OdkRoles.SuperAdmin)
         ? new[]
         {
-            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Emails", Text = "Emails" },
-            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Members", Text = "Members" },
-            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Payments", Text = "Payments" },
-            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Reconciliations", Text = "Reconciliations" },
-            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Location", Text = "Location" },
-            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Instagram", Text = "Instagram" },
-            new MenuItem { Link = $"/{chapter.Name}/Admin/SuperAdmin/Redirect", Text = "Redirect" }
+            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Emails", Text = "Emails" },
+            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Members", Text = "Members" },
+            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Payments", Text = "Payments" },
+            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Reconciliations", Text = "Reconciliations" },
+            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Location", Text = "Location" },
+            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Instagram", Text = "Instagram" },
+            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Redirect", Text = "Redirect" }
         } 
         : [];
 
@@ -113,7 +113,7 @@
         superadminLinks.Length > 0
             ? new MenuItem
             {
-                Link = $"/{chapter.Name}/Admin/SuperAdmin",
+                Link = $"/{chapter.ShortName}/Admin/SuperAdmin",
                 Text = "SuperAdmin",
                 Children = superadminLinks
             } : new MenuItem()

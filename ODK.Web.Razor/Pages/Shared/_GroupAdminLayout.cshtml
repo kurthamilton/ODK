@@ -20,7 +20,7 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = chapter.Name,
+    Title = chapter.GetDisplayName(platform),
     ContentFunc = _ => RenderBody()
 })
 

@@ -21,7 +21,7 @@
 
     if (chapter != null)
     {
-        title = $"{chapter.Name} {title}";
+        title = $"{chapter.GetDisplayName(platform)} {title}";
     }
 
     var pageTitle = ViewData["Title"] as string;

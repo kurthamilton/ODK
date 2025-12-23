@@ -44,6 +44,6 @@ public class QuestionEditModel : AdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Question updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Chapter/Questions");
+        return Redirect($"/{Chapter.ShortName}/Admin/Chapter/Questions");
     }
 }

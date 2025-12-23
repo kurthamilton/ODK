@@ -20,7 +20,9 @@
                 
                 <tr>
                     <td>
-                        <a href="@OdkRoutes.Groups.Group(Model.Platform, dto.Chapter)">@dto.Chapter.Name</a>
+                        <a href="@OdkRoutes.Groups.Group(Model.Platform, dto.Chapter)">
+                            @dto.Chapter.GetDisplayName(Model.Platform)
+                        </a>
                     </td>
                     <td>
                         @if (payment.PaidUtc != null)

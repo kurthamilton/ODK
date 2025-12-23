@@ -84,7 +84,7 @@ public class StripePaymentProvider : IPaymentProvider
                 Type = "express",
                 BusinessProfile = new AccountBusinessProfileOptions
                 {
-                    Name = options.Chapter.Name,
+                    Name = options.Chapter.FullName,
                     // Url = options.ChapterUrl
                 },
                 BusinessType = "individual",

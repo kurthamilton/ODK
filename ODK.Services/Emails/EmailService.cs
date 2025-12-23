@@ -304,7 +304,7 @@ public class EmailService : IEmailService
         var parameters = options.Parameters ?? new Dictionary<string, string>();
         if (!parameters.ContainsKey("chapter.name"))
         {
-            parameters["chapter.name"] = options.Chapter?.Name ?? "";
+            parameters["chapter.name"] = options.Chapter?.GetDisplayName(platform) ?? "";
         }
 
         var urlProvider = _urlProviderFactory.Create(request);

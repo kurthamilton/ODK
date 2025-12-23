@@ -1,5 +1,6 @@
 ﻿@using ODK.Core.Platforms
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Header
 @model ChapterHeaderViewModel
 @{
@@ -7,21 +8,37 @@
 
     var menuItems = new List<MenuItem>();
 
-    menuItems.Add(new MenuItem { Text = "Events", Link = $"/{Model.Chapter.Name}/Events" });
+    menuItems.Add(new MenuItem 
+    { 
+        Text = "Events", 
+        Link = OdkRoutes.Groups.Events(Model.Platform, Model.Chapter)
+    });
 
     if (isMember)
     {
-        menuItems.Add(new MenuItem { Text = "Knitwits", Link = $"/{Model.Chapter.Name}/Members" });
+        menuItems.Add(new MenuItem 
+        { 
+            Text = "Knitwits", 
+            Link = OdkRoutes.Groups.Members(Model.Platform, Model.Chapter)
+        });
     }
 
-    menuItems.Add(new MenuItem { Text = "Contact", Link = $"/{Model.Chapter.Name}/Contact" });
-    menuItems.Add(new MenuItem { Text = "About", Link = $"/{Model.Chapter.Name}/About" });
+    menuItems.Add(new MenuItem 
+    { 
+        Text = "Contact", 
+        Link = OdkRoutes.Groups.Contact(Model.Platform, Model.Chapter) 
+    });
+    menuItems.Add(new MenuItem 
+    { 
+        Text = "About", 
+        Link = OdkRoutes.Groups.About(Model.Platform, Model.Chapter)
+    });
 }
 
 @await Html.PartialAsync("Header/_Header", new HeaderViewModel(Model.Context)
 {
-    ImageAltText = $"{Model.Chapter.Name} Header Image",
-    ImageLink = $"/{Model.Chapter.Name}",
+    ImageAltText = $"{Model.Chapter.GetDisplayName(Model.Platform)} Header Image",
+    ImageLink = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter),
     ImageUrl = Model.Chapter.BannerImageUrl,
     Navbar = new NavbarViewModel(Model.Context)
     {
