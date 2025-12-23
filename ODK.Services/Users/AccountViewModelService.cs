@@ -170,7 +170,9 @@ public class AccountViewModelService : IAccountViewModelService
         {
             Chapter = chapter,
             CurrentMember = member,
-            Payments = payments,
+            Payments = payments
+                .Select(x => new MemberPaymentsPageViewModelPayment(x))
+                .ToArray(),
             Platform = platform
         };
     }
@@ -196,17 +198,21 @@ public class AccountViewModelService : IAccountViewModelService
     {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
-        var (member, payments) = await _unitOfWork.RunAsync(
+        var (member, chapterPayments, sitePayments) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
-            x => x.PaymentRepository.GetChapterDtosByMemberId(currentMemberId));
+            x => x.PaymentRepository.GetChapterDtosByMemberId(currentMemberId),
+            x => x.PaymentRepository.GetSitePaymentsByMemberId(currentMemberId));
 
         return new MemberPaymentsPageViewModel
         {
             CurrentMember = member,
-            Payments = payments,
+            Payments = chapterPayments
+                .Select(x => new MemberPaymentsPageViewModelPayment(x))
+                .Union(sitePayments.Select(x => new MemberPaymentsPageViewModelPayment(x)))
+                .ToArray(),
             Platform = platform
         };
-    }    
+    }
 
     public Task<SiteLoginPageViewModel> GetSiteLoginPage()
     {

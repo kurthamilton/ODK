@@ -1,4 +1,5 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Chapters
+@using ODK.Core.Utils
 @using ODK.Services.Users.ViewModels
 @using ODK.Web.Common.Routes
 @model MemberPaymentsPageViewModel
@@ -9,25 +10,39 @@
             <tr>
                 <th>Group</th>
                 <th>Date</th>
+                <th>Paid</th>
                 <th>Amount</th>
                 <th>Reference</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var dto in Model.Payments.OrderByDescending(x => x.Payment.CreatedUtc))
-            {
-                var payment = dto.Payment;
-                
+            @foreach (var payment in Model.Payments.OrderByDescending(x => x.CreatedUtc))
+            {                
                 <tr>
                     <td>
-                        <a href="@OdkRoutes.Groups.Group(Model.Platform, dto.Chapter)">
-                            @dto.Chapter.GetDisplayName(Model.Platform)
-                        </a>
+                        @if (payment.Chapter != null)
+                        {
+                            <a href="@OdkRoutes.Groups.Group(Model.Platform, payment.Chapter)">
+                                @payment.Chapter.GetDisplayName(Model.Platform)
+                            </a>
+                        }       
+                        else
+                        {
+                            <div class="badge bg-secondary">
+                                Site
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        @if (payment.CreatedUtc != null)
+                        {
+                            @payment.CreatedUtc.Value.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? payment.Chapter?.TimeZone ?? Chapter.DefaultTimeZone)
+                        }                        
                     </td>
                     <td>
                         @if (payment.PaidUtc != null)
                         {
-                            @payment.PaidUtc.Value.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? dto.Chapter.TimeZone)
+                            @payment.PaidUtc.Value.ToFriendlyDateTimeString(Model.CurrentMember.TimeZone ?? payment.Chapter?.TimeZone ?? Chapter.DefaultTimeZone)
                         }
                         else
                         {
@@ -35,7 +50,7 @@
                         }
                     </td>
                     <td>
-                        @dto.Currency.ToAmountString(payment.Amount)
+                        @payment.Currency.ToAmountString(payment.Amount)
                     </td>
                     <td>
                         @payment.Reference

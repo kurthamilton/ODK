@@ -81,6 +81,11 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
         return query.DeferredMultiple();
     }
 
+    public IDeferredQueryMultiple<PaymentDto> GetSitePaymentsByMemberId(Guid memberId)
+        => DtoQuery()
+            .Where(x => x.Payment.ChapterId == null)
+            .DeferredMultiple();
+
     protected override IQueryable<Payment> Set()
         => base.Set()
             .Include(x => x.SitePaymentSettings);
