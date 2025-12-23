@@ -1,14 +1,10 @@
-﻿namespace ODK.Web.Common.Config.Settings;
+﻿namespace ODK.Services.Integrations.Payments.Stripe;
 
-public class PaymentsStripeSettings
+public class StripePaymentProviderSettings
 {
     public required string ConnectedAccountBaseUrl { get; init; }
 
     public required string ConnectedAccountMcc { get; init; }
 
     public required string ConnectedAccountProductDescription { get; init; }
-
-    public required string WebhookSecretV1 { get; init; }
-
-    public required string WebhookSecretV2 { get; init; }
 }

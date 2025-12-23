@@ -13,15 +13,18 @@ public class PaymentProviderFactory : IPaymentProviderFactory
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILoggingService _loggingService;
     private readonly PayPalPaymentProviderSettings _payPalSettings;
+    private readonly StripePaymentProviderSettings _stripeSettings;
 
     public PaymentProviderFactory(
         IHttpClientFactory httpClientFactory,
         PayPalPaymentProviderSettings payPalSettings,
-        ILoggingService loggingService)
+        ILoggingService loggingService,
+        StripePaymentProviderSettings stripeSettings)
     {
         _httpClientFactory = httpClientFactory;
         _loggingService = loggingService;
         _payPalSettings = payPalSettings;
+        _stripeSettings = stripeSettings;
     }
 
     public IPaymentProvider GetChapterPaymentProvider(
@@ -60,7 +63,8 @@ public class PaymentProviderFactory : IPaymentProviderFactory
                 return new StripePaymentProvider(
                     settings,
                     _loggingService,
-                    connectedAccountId);
+                    connectedAccountId,
+                    _stripeSettings);
             default:
                 throw new InvalidOperationException($"Payment provider type {settings.Provider} not supported");
         }

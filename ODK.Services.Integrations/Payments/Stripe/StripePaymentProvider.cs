@@ -15,11 +15,13 @@ public class StripePaymentProvider : IPaymentProvider
 {
     private readonly IStripeClient _client;
     private readonly ILoggingService _loggingService;
-
+    private readonly StripePaymentProviderSettings _settings;
+    
     public StripePaymentProvider(
         IPaymentSettings paymentSettings,
         ILoggingService loggingService,
-        string? connectedAccountId)
+        string? connectedAccountId,
+        StripePaymentProviderSettings settings)
     {
         _client = new StripeClient(new StripeClientOptions
         {
@@ -27,6 +29,7 @@ public class StripePaymentProvider : IPaymentProvider
             StripeAccount = connectedAccountId
         });
         _loggingService = loggingService;
+        _settings = settings;
     }
 
     public bool HasCustomers => true;
@@ -74,7 +77,22 @@ public class StripePaymentProvider : IPaymentProvider
         await _loggingService.Info($"Creating connected stripe account for '{emailAddress}'");
 
         var service = CreateAccountService();
-        
+
+        // do not send localhost to Stripe
+        var chapterUrl = options.ChapterUrl;
+        var baseUrl = UrlUtils.BaseUrl(chapterUrl);
+        if (!string.IsNullOrEmpty(_settings.ConnectedAccountBaseUrl))
+        {
+            chapterUrl = chapterUrl.Replace(
+                baseUrl, _settings.ConnectedAccountBaseUrl, StringComparison.OrdinalIgnoreCase);
+        }
+
+        baseUrl = UrlUtils.BaseUrl(chapterUrl);
+        if (baseUrl.Contains("localhost"))
+        {
+            chapterUrl = null;
+        }
+
         try
         {
             var account = await service.CreateAsync(new AccountCreateOptions
@@ -85,7 +103,9 @@ public class StripePaymentProvider : IPaymentProvider
                 BusinessProfile = new AccountBusinessProfileOptions
                 {
                     Name = options.Chapter.FullName,
-                    // Url = options.ChapterUrl
+                    Url = chapterUrl,
+                    Mcc = _settings.ConnectedAccountMcc,
+                    ProductDescription = _settings.ConnectedAccountProductDescription
                 },
                 BusinessType = "individual",
                 DefaultCurrency = options.ChapterCurrency.Code,

@@ -101,6 +101,12 @@ public static class DependencyConfig
         {
             ApiBaseUrl = payments.PayPal.ApiBaseUrl
         });
+        services.AddSingleton(new StripePaymentProviderSettings
+        {
+            ConnectedAccountBaseUrl = payments.Stripe.ConnectedAccountBaseUrl,
+            ConnectedAccountMcc = payments.Stripe.ConnectedAccountMcc,
+            ConnectedAccountProductDescription = payments.Stripe.ConnectedAccountProductDescription
+        });
         services.AddScoped<IStripeWebhookParser, StripeWebhookParser>();
         services.AddSingleton(new StripeWebhookParserSettings
         {
