@@ -564,6 +564,8 @@ public class PaymentService : IPaymentService
             Type = chapterSubscription.Type
         });
 
+        await _unitOfWork.SaveChangesAsync();
+
         return PaymentWebhookProcessingResult.Successful(
             member, payment, chapterPaymentSettings.Currency);
     }
@@ -593,6 +595,7 @@ public class PaymentService : IPaymentService
             : utcNow.AddMonths(months);
 
         memberSubscription.ExpiresUtc = expiresUtc;
+        memberSubscription.ExternalId = externalId;
         memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
         memberSubscription.SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId;
         memberSubscription.PaymentProvider = siteSubscription.SitePaymentSettings.Provider;
@@ -607,6 +610,8 @@ public class PaymentService : IPaymentService
         {
             _unitOfWork.MemberSiteSubscriptionRepository.Update(memberSubscription);
         }
+
+        await _unitOfWork.SaveChangesAsync();
 
         return PaymentWebhookProcessingResult.Successful(
             member, payment, siteSubscriptionPrice.Currency);

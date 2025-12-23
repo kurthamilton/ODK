@@ -54,7 +54,7 @@ public class StripePaymentProvider : IPaymentProvider
         await _loggingService.Info($"Cancelling Stripe subscription '{externalId}'");
 
         var service = CreateSubscriptionService();
-
+        
         try
         {
             await service.CancelAsync(externalId);
@@ -450,6 +450,7 @@ public class StripePaymentProvider : IPaymentProvider
 
     public async Task<ExternalCheckoutSession> StartCheckout(
         ServiceRequest request, 
+        string emailAddress,
         ExternalSubscriptionPlan subscriptionPlan, 
         string returnPath, 
         PaymentMetadataModel metadata)
@@ -475,7 +476,8 @@ public class StripePaymentProvider : IPaymentProvider
             Mode = subscriptionPlan.Recurring ? "subscription" : "payment",
             ReturnUrl = returnUrl,
             AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false },
-            Metadata = metadataDictionary,            
+            Metadata = metadataDictionary,
+            CustomerEmail = emailAddress,
             PaymentIntentData = !subscriptionPlan.Recurring ? new SessionPaymentIntentDataOptions
             {
                 Metadata = metadataDictionary
@@ -483,7 +485,7 @@ public class StripePaymentProvider : IPaymentProvider
             SubscriptionData = subscriptionPlan.Recurring ? new SessionSubscriptionDataOptions
             {
                 Metadata = metadataDictionary
-            } : null
+            } : null            
         });
         
         return new ExternalCheckoutSession

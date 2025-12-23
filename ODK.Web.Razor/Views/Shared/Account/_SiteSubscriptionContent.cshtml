@@ -1,10 +1,23 @@
-﻿@using ODK.Core.Utils
+﻿@using ODK.Core.Extensions
+@using ODK.Core.Utils
+@using ODK.Services.Payments
 @using ODK.Services.Subscriptions.ViewModels
 @using ODK.Web.Razor.Models.Payments
 @model SiteSubscriptionsViewModel
 @{    
-    var (currency, currentMember, memberSubscription, subscriptions, paymentSettings) = 
-        (Model.Currency, Model.CurrentMember, Model.CurrentMemberSubscription, Model.Subscriptions, Model.PaymentSettings);
+    var (
+        currency, 
+        currentMember, 
+        memberSubscription, 
+        subscriptions, 
+        paymentSettings,
+        externalSubscription) = (
+        Model.Currency, 
+        Model.CurrentMember, 
+        Model.CurrentMemberSubscription, 
+        Model.Subscriptions, 
+        Model.PaymentSettings,
+        Model.CurrentMemberExternalSubscription);
 }
 
 @if (currency == null)
@@ -36,18 +49,34 @@
     <div class="form-group mb-3">
         <label class="form-label">Current subscription</label>
         <div class="form-control-plaintext">
-            @(memberSubscription?.SiteSubscription.Name ?? "-")
+            <span>@(memberSubscription?.SiteSubscription.Name ?? "-")</span>
+
+            @if (externalSubscription?.Status == ExternalSubscriptionStatus.Cancelled)
+            {
+                <div class="badge bg-warning ms-1">
+                    Cancelled
+                </div>
+            }
         </div>
     </div>
 
     <div class="form-group mb-3">
-        <label class="form-label">Next payment date</label>
+        <label class="form-label">
+            @if (externalSubscription?.Status == ExternalSubscriptionStatus.Cancelled)
+            {
+                @:Expiry date
+            }
+            else
+            {
+                @:Next payment date
+            }            
+        </label>
         <div class="form-control-plaintext">
             @if (memberSubscription?.ExpiresUtc != null)
             {
                 <span>
                     @memberSubscription.ExpiresUtc.Value.ToFriendlyDateString(null)
-                </span>
+                </span>                
             }
             else
             {
@@ -55,6 +84,35 @@
             }
         </div>
     </div>
+
+    @if (memberSubscription != null && 
+         externalSubscription?.Status == ExternalSubscriptionStatus.Active)
+    {
+        @if (externalSubscription.NextBillingDate != null)
+        {
+            <div class="form-group mb-3">
+                <label class="form-label">Next payment date</label>
+                <div class="form-control-plaintext">
+                    <span>
+                        @currentMember.ToLocalTime(externalSubscription.NextBillingDate.Value).ToString("d MMMM yyyy")
+                    </span>
+                </div>
+            </div>
+        }
+
+        <div>
+            <form action="/account/subscription/@memberSubscription.Id/cancel" method="post">
+                <p>
+                    <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription?');">
+                        Cancel subscription
+                    </button>
+                </p>       
+                <p class="text-muted">
+                    Your subscription will remain active until the expiry date, but payment will not be taken when due for renewal.
+                </p>
+            </form>
+        </div>
+    }
 
     @if (Model.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid != true)
     {

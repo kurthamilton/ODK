@@ -225,6 +225,7 @@ public class PayPalPaymentProvider : IPaymentProvider
 
     public Task<ExternalCheckoutSession> StartCheckout(
         ServiceRequest request, 
+        string emailAddress,
         ExternalSubscriptionPlan subscriptionPlan, 
         string returnPath, 
         PaymentMetadataModel metadata)

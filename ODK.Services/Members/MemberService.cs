@@ -760,6 +760,7 @@ public class MemberService : IMemberService
 
         var externalCheckoutSession = await paymentProvider.StartCheckout(
             request, 
+            member.EmailAddress,
             subscriptionPlan, 
             returnPath, 
             metadata);        

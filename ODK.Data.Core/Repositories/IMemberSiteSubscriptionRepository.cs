@@ -4,7 +4,7 @@ using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
 
-public interface IMemberSiteSubscriptionRepository : IWriteRepository<MemberSiteSubscription>
+public interface IMemberSiteSubscriptionRepository : IReadWriteRepository<MemberSiteSubscription>
 {
     IDeferredQueryMultiple<MemberSiteSubscription> GetAllChapterOwnerSubscriptions(PlatformType platform);
 

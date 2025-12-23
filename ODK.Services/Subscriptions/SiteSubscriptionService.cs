@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
@@ -29,6 +30,40 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         _memberEmailService = memberEmailService;
         _paymentProviderFactory = paymentProviderFactory;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<ServiceResult> CancelMemberSiteSubscription(
+        MemberServiceRequest request, Guid siteSubscriptionId)
+    {
+        var (memberId, platform) = (request.CurrentMemberId, request.Platform);
+
+        var memberSubscription = await _unitOfWork.MemberSiteSubscriptionRepository
+            .GetByIdOrDefault(siteSubscriptionId)
+            .Run();
+
+        OdkAssertions.BelongsToMember(memberSubscription, memberId);
+
+        if (memberSubscription == null)
+        {
+            return ServiceResult.Failure("Subscription not found");
+        }
+
+        if (string.IsNullOrEmpty(memberSubscription.ExternalId))
+        {
+            return ServiceResult.Failure("External subscription not found");
+        }
+
+        var sitePaymentSettings = memberSubscription
+            .SiteSubscription
+            .SitePaymentSettings;
+
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+
+        var result = await paymentProvider.CancelSubscription(memberSubscription.ExternalId);
+
+        return result
+            ? ServiceResult.Successful()
+            : ServiceResult.Failure("Subscription could not be cancelled");
     }
 
     public async Task<ServiceResult> ConfirmMemberSiteSubscription(
@@ -126,12 +161,15 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             })
             .ToArray();
 
+        var externalSubscription = await GetExternalSubscription(memberSubscription);
+
         return new SiteSubscriptionsViewModel
         {
             Currencies = currencies,            
             Currency = currency,
             CurrentMember = currentMember,
             CurrentMemberSubscription = memberSubscription,
+            CurrentMemberExternalSubscription = externalSubscription,
             PaymentSettings = subscriptions
                 .Select(x => x.SitePaymentSettings)
                 .GroupBy(x => x.Id)
@@ -178,6 +216,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
 
         var externalCheckoutSession = await paymentProvider.StartCheckout(
             request, 
+            member.EmailAddress,
             externalSubscriptionPlan, 
             returnPath, 
             metadata);
@@ -299,5 +338,19 @@ public class SiteSubscriptionService : ISiteSubscriptionService
         }
 
         return null;
+    }
+
+    private async Task<ExternalSubscription?> GetExternalSubscription(
+        MemberSiteSubscription? memberSubscription)
+    {
+        if (string.IsNullOrEmpty(memberSubscription?.ExternalId))
+        {
+            return null;
+        }
+
+        var sitePaymentSettings = memberSubscription.SiteSubscription.SitePaymentSettings;
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+
+        return await paymentProvider.GetSubscription(memberSubscription.ExternalId);
     }
 }

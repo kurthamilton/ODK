@@ -8,7 +8,7 @@ using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class MemberSiteSubscriptionRepository : WriteRepositoryBase<MemberSiteSubscription>, IMemberSiteSubscriptionRepository
+public class MemberSiteSubscriptionRepository : ReadWriteRepositoryBase<MemberSiteSubscription>, IMemberSiteSubscriptionRepository
 {
     public MemberSiteSubscriptionRepository(OdkContext context) 
         : base(context)

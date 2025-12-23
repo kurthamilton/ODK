@@ -4,7 +4,7 @@ using ODK.Core.Subscriptions;
 
 namespace ODK.Core.Members;
 
-public class MemberSiteSubscription : IDatabaseEntity
+public class MemberSiteSubscription : IDatabaseEntity, IMemberEntity
 {
     public DateTime? ExpiresUtc { get; set; }
 
