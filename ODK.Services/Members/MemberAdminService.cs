@@ -379,9 +379,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
         chapterSubscriptions = chapterSubscriptions
-            .Where(x => 
-                x.ChapterSubscription.SitePaymentSettings == null || 
-                x.ChapterSubscription.SitePaymentSettings.Active)
+            .Where(x => x.ChapterSubscription.Enabled(chapterPaymentSettings))
             .ToArray();
 
         return new SubscriptionsAdminPageViewModel

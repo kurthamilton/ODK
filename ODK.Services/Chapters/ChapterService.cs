@@ -84,7 +84,7 @@ public class ChapterService : IChapterService
             .FirstOrDefault(x => x.Id == memberSubscriptionRecord?.ChapterSubscriptionId);
 
         chapterSubscriptions = chapterSubscriptions
-            .Where(x => x.Enabled())
+            .Where(x => x.Enabled(chapterPaymentSettings))
             .ToArray();
 
         var externalSubscription = await GetExternalSubscription(

@@ -35,22 +35,20 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity, IChapterPaym
 
     public SubscriptionType Type { get; set; }
 
-    public bool Enabled()
+    public bool Enabled(ChapterPaymentSettings chapterPaymentSettings)
     {
         if (Disabled)
         {
             return false; 
         }
 
-        return SitePaymentSettings == null || SitePaymentSettings.Enabled;
+        if (!chapterPaymentSettings.UseSitePaymentProvider)
+        {
+            return true;
+        }
+
+        return SitePaymentSettings?.Enabled == true;
     }
 
     public string ToReference() => $"Subscription: {Name}";
-
-    public bool Uses(ChapterPaymentSettings? chapterPaymentSettings, SitePaymentSettings sitePaymentSettings)
-    {
-        return chapterPaymentSettings?.UseSitePaymentProvider == true
-            ? SitePaymentSettingId == sitePaymentSettings.Id
-            : SitePaymentSettingId == null;
-    }
 }
