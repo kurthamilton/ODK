@@ -2,6 +2,11 @@
 @using ODK.Web.Razor.Models.Components
 @model AdminBodyViewModel
 
+@if (!string.IsNullOrEmpty(Model.Title))
+{
+    <h2>@Model.Title</h2>
+}
+
 @if (Model.Breadcrumbs != null)
 {
     @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
