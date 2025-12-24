@@ -9,6 +9,7 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model AccountModel
 @inject IRequestCache RequestCache
@@ -23,14 +24,17 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    Title = "Account",
+    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
-        Active = OdkRoutes.Account.PersonalDetails(chapter),
-        Chapter = chapter,
         Title = "Personal details",
-        Content = 
+        MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
+        {
+            Chapter = chapter
+        }),
+        BodyContentFunc = 
             @<div>
-                <h2>Personal details</h2>
+
                 <section class="section">
                     <form action="/Account/PersonalDetails" method="post">
                         @await Html.PartialAsync("Account/_PersonalDetailsForm", new PersonalDetailsFormViewModel
@@ -42,7 +46,7 @@
                         })
                         <button class="btn btn-primary">Update</button>
                     </form>
-                </section>                
+                </section>
             </div>
     })
 })

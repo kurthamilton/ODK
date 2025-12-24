@@ -11,13 +11,24 @@
 
     var menuItems = new MenuItem[]
     {
-        new MenuItem { Link = OdkRoutes.Account.PersonalDetails(Model.Chapter), Text = "Personal details", },
-        Model.Chapter == null 
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Account.PersonalDetails(Model.Chapter), 
+            Text = "Personal details", 
+            Children = new[]
+            {
+                platform == PlatformType.DrunkenKnitwits
+                    ? new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(platform, Model.Chapter), Text = "Email address" }
+                    : new MenuItem(),
+                platform == PlatformType.DrunkenKnitwits
+                    ? new MenuItem { Link = OdkRoutes.Account.Picture(Model.Chapter), Text = "Picture" }
+                    : new MenuItem()
+            }
+        },
+        platform == PlatformType.Default 
             ? new MenuItem { Link = OdkRoutes.Account.Location(), Text = "Location" }
             : new MenuItem(),
-        Model.Chapter != null
-            ? new MenuItem { Link = OdkRoutes.Account.Profile(Model.Chapter), Text = "Profile" }
-            : new MenuItem(),
+        new MenuItem { Link = OdkRoutes.Account.Profile(Model.Chapter), Text = "Profile" },
         Model.Chapter == null
             ? new MenuItem { Link = OdkRoutes.Account.Interests(), Text = "My interests" }
             : new MenuItem(),
@@ -25,6 +36,9 @@
         new MenuItem { Link = OdkRoutes.Account.Subscription(platform, Model.Chapter), Text = "My subscription" },
         new MenuItem { Link = OdkRoutes.Account.Payments(Model.Chapter), Text = "My payments" },
         new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.Chapter), Text = "Password" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.Chapter), Text = "Email preferences" }
+            : new MenuItem(),
         new MenuItem { Link = OdkRoutes.Account.Notifications(Model.Chapter), Text = "Notifications" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()

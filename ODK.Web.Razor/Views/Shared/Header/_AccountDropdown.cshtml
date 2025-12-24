@@ -34,7 +34,7 @@
                     var adminChapter = isAdmin ? adminChapters
                         .FirstOrDefault(x => x.Id == memberChapter.Id) : null;
 
-                    <a class="dropdown-item" href="@OdkRoutes.Groups.Profile(platform, memberChapter)">
+                    <a class="dropdown-item" href="@OdkRoutes.Account.Index(memberChapter)">
                         My profile
                     </a>
                     <a class="dropdown-item" href="@OdkRoutes.Groups.Group(platform, memberChapter)">
@@ -69,7 +69,7 @@
                                 <a class="dropdown-item" href="@OdkRoutes.Groups.Group(platform, memberChapter)">
                                     Home
                                 </a>
-                                <a class="dropdown-item" href="@OdkRoutes.Groups.Profile(platform, memberChapter)">
+                                <a class="dropdown-item" href="@OdkRoutes.Account.Index(memberChapter)">
                                     My profile
                                 </a>
 

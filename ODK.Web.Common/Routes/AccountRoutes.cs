@@ -11,10 +11,14 @@ public class AccountRoutes : RoutesBase
         => AccountPath(chapter, $"/activate?token={HttpUtility.UrlEncode(token)}");
     public string Conversations(Chapter? chapter) => AccountPath(chapter, "/conversations");
     public string Delete(Chapter? chapter) => AccountPath(chapter, "/delete");
-    public string EmailAddressChange(Chapter? chapter) => AccountPath(chapter, "/email/change");
+    public string EmailAddressChange(PlatformType platform, Chapter? chapter) => 
+        platform == PlatformType.DrunkenKnitwits
+            ? AccountPath(chapter, "/email/change")
+            : EmailPreferences(chapter);
     public string EmailAddressChangeConfirm(Chapter? chapter, string token)
         => AccountPath(chapter, $"/email/change/confirm?token={HttpUtility.UrlEncode(token)}");
     public string EmailPreferences(Chapter? chapter) => AccountPath(chapter, "/emails");
+    public string Index(Chapter? chapter) => AccountPath(chapter, "/");
     public string Interests() => AccountPath(null, "/interests");
     public string Issue(Guid issueId) => $"{Issues()}/{issueId}";
     public string Issues() => AccountPath(null, $"/issues");

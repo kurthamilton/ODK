@@ -19,14 +19,16 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    Title = "Account",
+    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
-        Active = OdkRoutes.Account.Picture(viewModel.Chapter),
-        Chapter = viewModel.Chapter,
         Title = "Picture",
-        Content = 
+        MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
+        {
+            Chapter = viewModel.Chapter
+        }),
+        BodyContentFunc = 
             @<div>
-                <h2>Picture</h2>
                 <section class="section">
                     @await Html.PartialAsync("Account/_UpdatePictureContent", new UpdatePictureViewModel
                     {

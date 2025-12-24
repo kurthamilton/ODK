@@ -18,13 +18,16 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
+    Title = "Account",
     HideSubscriptionAlert = true,
-    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
-        Active = OdkRoutes.Account.Subscription(Model.Platform, Model.Chapter),
-        Chapter = Model.Chapter,
         Title = "Checkout",
-        Content =
+        MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
+        {
+            Chapter = Model.Chapter
+        }),
+        BodyContentFunc = 
             @<div>
                 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
                 {
