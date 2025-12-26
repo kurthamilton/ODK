@@ -1,31 +1,7 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.Platforms
-@using ODK.Web.Common.Components
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models
-@using ODK.Web.Razor.Models.Admin
-@using ODK.Web.Razor.Models.Admin.Chapters
-@using ODK.Web.Razor.Models.Components
-@model OdkComponentViewModel<Chapter>
+﻿@using ODK.Web.Razor.Models.Admin.Chapters
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Breadcrumbs = new[]
-    {
-        new MenuItem
-        {
-            Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, Model.Value),
-            Text = "FAQ"
-        },
-        new MenuItem { Text = "New" }
-    },
-    Title = "Create question",
-    ContentFunc = 
-        @<div>
-            <form method="post">
-                @*@Html.AntiForgeryToken()*@
-                @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel())
-                <button class="btn btn-primary">Create</button>
-            </form>
-        </div>
-})
+<form method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel())
+    <button class="btn btn-primary">Create</button>
+</form>

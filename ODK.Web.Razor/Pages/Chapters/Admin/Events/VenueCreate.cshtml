@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Events/Venues/Create"
 @using ODK.Core.Chapters
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.VenueCreateModel
@@ -11,7 +12,12 @@
     var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
 }
 
-@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Venue events",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", viewModel)</div>
+})
 
 @section scripts
 {

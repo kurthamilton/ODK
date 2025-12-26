@@ -14,8 +14,6 @@ public class MemberSiteSubscription : IDatabaseEntity, IMemberEntity
 
     public Guid MemberId { get; set; }
 
-    public PaymentProviderType? PaymentProvider { get; set; }
-
     public SiteSubscription SiteSubscription { get; set; } = null!;
 
     public Guid SiteSubscriptionId { get; set; }

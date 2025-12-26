@@ -3,72 +3,67 @@
 @using ODK.Web.Razor.Models.Admin
 @model ChapterPaymentsViewModel
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Payments",
-    ContentFunc =
-    @<div>
-        <div class="table-responsive">
-            <table class="table" data-sortable id="payments-table" data-table-striped>
-                <thead>
-                    <tr>
-                        <th data-sortable-sort="default" data-sortable-dir="desc">Date</th>
-                        <th data-sortable-sort>Member</th>
-                        <th>Reference</th>
-                        <th>Amount</th>
+<div data-odk-component="Admin/Payments/_PaymentsContent">
+    <div class="table-responsive">
+        <table class="table" data-sortable id="payments-table" data-table-striped>
+            <thead>
+                <tr>
+                    <th data-sortable-sort="default" data-sortable-dir="desc">Date</th>
+                    <th data-sortable-sort>Member</th>
+                    <th>Reference</th>
+                    <th>Amount</th>
 
+                    @if (Model.PaymentSettings.UseSitePaymentProvider)
+                    {
+                        <th>Reconciliation</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dto in Model.Payments)
+                {
+                    var (currency, member, payment, reconciliation) = (dto.Currency, dto.Member, dto.Payment, dto.PaymentReconciliation);
+
+                    if (payment.PaidUtc == null)
+                    {
+                        continue;
+                    }
+
+                    <tr>
+                        <td>
+                            @Model.Chapter.ToChapterTime(payment.PaidUtc.Value).ToString("yyyy-MM-dd HH:mm:ss")
+                        </td>
+                        <td>
+                            <a href="@OdkRoutes.MemberGroups.MemberPayments(Model.Platform, Model.Chapter, member.Id)"
+                               data-sort-value="@member.FullName">
+                                @member.FullName
+                            </a>
+                        </td>
+                        <td>@payment.Reference</td>
+                        <td>
+                            @currency.ToAmountString(payment.Amount)
+                        </td>
                         @if (Model.PaymentSettings.UseSitePaymentProvider)
                         {
-                            <th>Reconciliation</th>
+                            <td>
+                                @if (reconciliation != null)
+                                {
+                                    <span>@currency.ToAmountString(payment.PaymentReconciliationAmount ?? 0)</span>
+                                    <span>(@reconciliation.PaymentReference)</span>
+                                }
+                                else if (payment.ExemptFromReconciliation)
+                                {
+                                    <span class="text-muted">Exempt</span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger">PENDING</span>
+                                }
+                            </td>
                         }
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var dto in Model.Payments)
-                    {                     
-                        var (currency, member, payment, reconciliation) = (dto.Currency, dto.Member, dto.Payment, dto.PaymentReconciliation);
-                        
-                        if (payment.PaidUtc == null)
-                        {
-                            continue;
-                        }
-
-                        <tr>
-                            <td>
-                                @Model.Chapter.ToChapterTime(payment.PaidUtc.Value).ToString("yyyy-MM-dd HH:mm:ss")
-                            </td>
-                            <td>
-                                <a href="@OdkRoutes.MemberGroups.MemberPayments(Model.Platform, Model.Chapter, member.Id)" 
-                                    data-sort-value="@member.FullName">
-                                    @member.FullName
-                                </a>
-                            </td>
-                            <td>@payment.Reference</td>
-                            <td>
-                                @currency.ToAmountString(payment.Amount)
-                            </td>
-                            @if (Model.PaymentSettings.UseSitePaymentProvider)
-                            {
-                                <td>
-                                    @if (reconciliation != null)
-                                    {
-                                        <span>@currency.ToAmountString(payment.PaymentReconciliationAmount ?? 0)</span>
-                                        <span>(@reconciliation.PaymentReference)</span>
-                                    }
-                                    else if (payment.ExemptFromReconciliation)
-                                    {
-                                        <span class="text-muted">Exempt</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-danger">PENDING</span>
-                                    }
-                                </td>
-                            }
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
     </div>
-})
+</div>

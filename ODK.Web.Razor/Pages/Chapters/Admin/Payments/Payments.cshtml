@@ -1,6 +1,7 @@
-﻿@page "/{chapterName}/Admin/Payments"
+﻿@page "/{chapterName}/admin/payments"
 @using ODK.Services
 @using ODK.Services.Payments
+@using ODK.Web.Razor.Models.Admin
 @model ODK.Web.Razor.Pages.Chapters.Admin.Payments.PaymentsModel
 @inject IPaymentAdminService PaymentAdminService
 @{
@@ -10,4 +11,9 @@
     var viewModel = await PaymentAdminService.GetPayments(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Payments/_PaymentsContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Payments",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Payments/_PaymentsContent", viewModel)</div>
+})

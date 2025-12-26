@@ -106,7 +106,8 @@ public static class EventAdminServiceTests
     {
         return new Chapter
         {
-            Id = ChapterId
+            Id = ChapterId,
+            Name = "Dummy"
         };
     }
 

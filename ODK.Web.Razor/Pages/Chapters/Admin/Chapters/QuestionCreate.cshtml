@@ -1,14 +1,28 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Questions/Create"
 @using ODK.Core.Chapters
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.QuestionCreateModel
 @{
     Layout = "_OdkChapterAdminLayout";
     Model.Title = "Create question | Admin";
-
-    var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Create question",
+    Chapter = Model.Chapter,
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, Model.Chapter),
+            Text = "FAQ"
+        },
+        new MenuItem { Text = "New" }
+    },
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent")</div>
+})

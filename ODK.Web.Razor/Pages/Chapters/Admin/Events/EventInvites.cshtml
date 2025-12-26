@@ -2,6 +2,7 @@
 @using ODK.Services
 @using ODK.Services.Events
 @using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventInvitesModel
 @inject IEventAdminService EventAdminService
@@ -12,4 +13,9 @@
     var viewModel = await EventAdminService.GetEventInvitesViewModel(Model.AdminServiceRequest, Model.Event.Id);
 }
 
-@await Html.PartialAsync("Admin/Events/Event/_EventInvitesContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Event invites",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/Event/_EventInvitesContent", viewModel)</div>
+})

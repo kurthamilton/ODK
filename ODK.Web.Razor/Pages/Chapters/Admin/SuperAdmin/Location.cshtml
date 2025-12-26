@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Admin/SuperAdmin/Location"
 @using ODK.Core.Chapters
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model LocationModel
 @{
@@ -10,7 +11,12 @@
     var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
 }
 
-@await Html.PartialAsync("Chapters/SuperAdmin/_LocationContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Location",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Chapters/SuperAdmin/_LocationContent", viewModel)</div>
+})
 
 @section scripts
 {

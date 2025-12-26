@@ -3,22 +3,15 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterPaymentSettingsAdminPageViewModel
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Payments",
-    ContentFunc = 
-        @<div>
-            <form method="post">
-                @*@Html.AntiForgeryToken()*@
-                @await Html.PartialAsync("Admin/Chapter/_PaymentSettingsForm", new ChapterPaymentSettingsFormViewModel
-                {
-                    ChapterPaymentSettings = Model.PaymentSettings,
-                    CurrencyId = Model.PaymentSettings?.CurrencyId,
-                    CurrencyOptions = Model.CurrencyOptions,
-                    OwnerSubscription = Model.OwnerSubscription,
-                    UseSitePaymentProvider = Model.PaymentSettings?.UseSitePaymentProvider ?? false
-                })
-                <button class="btn btn-primary">Update</button>
-            </form>
-        </div>
-})
+<form method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Chapter/_PaymentSettingsForm", new ChapterPaymentSettingsFormViewModel
+        {
+        ChapterPaymentSettings = Model.PaymentSettings,
+        CurrencyId = Model.PaymentSettings?.CurrencyId,
+        CurrencyOptions = Model.CurrencyOptions,
+        OwnerSubscription = Model.OwnerSubscription,
+        UseSitePaymentProvider = Model.PaymentSettings?.UseSitePaymentProvider ?? false
+        })
+    <button class="btn btn-primary">Update</button>
+</form>

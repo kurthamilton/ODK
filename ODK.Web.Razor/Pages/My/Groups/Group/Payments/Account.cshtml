@@ -19,35 +19,7 @@
     Title = "Payment account",
     BodyContentFunc = 
         @<div>
-            <p>
-                Set up a payment account to take payments from your members.
-            </p>
-
-            @if (!viewModel.HasPermission)
-            {
-                <div class="alert alert-danger">
-                    Upgrade your <a href="@OdkRoutes.Account.Subscription(platform, null)">subscription</a> to start accepting payments
-                </div>
-                return;
-            }
-            else if (viewModel.Enabled)
-            {
-                var subscriptionsUrl = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, viewModel.Chapter);
-                <div class="alert alert-success">
-                    You have set up a payment account. 
-                    Set up your <a href="@subscriptionsUrl">memberships</a>.
-                </div>
-            }
-            else if (!string.IsNullOrEmpty(viewModel.OnboardingUrl))
-            {    
-                <a href="@viewModel.OnboardingUrl">Resume setup</a>
-            }
-            else
-            {
-                <form method="post">
-                    <button class="btn btn-primary">Create</button>
-                </form>
-            }
+            @await Html.PartialAsync("Admin/Payments/_AccountContent", viewModel)
         </div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
     {

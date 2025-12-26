@@ -11,59 +11,52 @@
 @using ODK.Web.Razor.Models.Components
 @model ChapterMessagesAdminPageViewModel
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Messages",
-    ContentFunc = 
-        @<div>
-            <p>Contact messages sent by unknown users</p>
-            
-            @await Html.PartialAsync("Admin/Chapter/_MessagesTabs", Model)            
+<p>Contact messages sent by unknown users</p>
 
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>From</th>
-                            <th>Message</th>
-                            <th>Replied</th>
-                            <th></th>
-                            <th class="tcol-narrow"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var message in Model.Messages.OrderByDescending(x => x.CreatedUtc))
+@await Html.PartialAsync("Admin/Chapter/_MessagesTabs", Model)
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>From</th>
+                <th>Message</th>
+                <th>Replied</th>
+                <th></th>
+                <th class="tcol-narrow"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var message in Model.Messages.OrderByDescending(x => x.CreatedUtc))
+            {
+                <tr>
+                    <td>@message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
+                    <td>@message.FromAddress</td>
+                    <td>@message.Message</td>
+                    <td>
+                        @if (message.RepliedUtc != null)
                         {
-                            <tr>
-                                <td>@message.CreatedUtc.ToFriendlyDateTimeString(Model.Chapter.TimeZone)</td>
-                                <td>@message.FromAddress</td>
-                                <td>@message.Message</td>
-                                <td>
-                                    @if (message.RepliedUtc != null)
-                                    {
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
-                                        {
-                                            Class = "text-success"
-                                        })   
-                                    }
-                                </td>
-                                <td>
-                                    <a href="@OdkRoutes.MemberGroups.GroupMessage(Model.Platform, Model.Chapter, message.Id)">View</a>
-                                </td>
-                                <td>
-                                    <form method="post" action="/groups/@Model.Chapter.Id/messages/@message.Id/delete">
-                                        @*@Html.AntiForgeryToken()*@
-                                        <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
-                                                onclick="return confirm('Are you sure you want to delete this message?');">
-                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-})
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
+                            {
+                                Class = "text-success"
+                                        })
+                                        }
+                    </td>
+                    <td>
+                        <a href="@OdkRoutes.MemberGroups.GroupMessage(Model.Platform, Model.Chapter, message.Id)">View</a>
+                    </td>
+                    <td>
+                        <form method="post" action="/groups/@Model.Chapter.Id/messages/@message.Id/delete">
+                            @*@Html.AntiForgeryToken()*@
+                            <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
+                                    onclick="return confirm('Are you sure you want to delete this message?');">
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

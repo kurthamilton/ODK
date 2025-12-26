@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Members/Email"
 @using ODK.Services.Members
 @using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
@@ -13,4 +14,9 @@
     var viewModel = await MemberAdminService.GetBulkEmailViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Members/_BulkEmailContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Send bulk email",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_BulkEmailContent", viewModel)</div>
+})

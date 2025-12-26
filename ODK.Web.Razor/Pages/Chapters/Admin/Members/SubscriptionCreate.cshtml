@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Members/Subscriptions/Create"
 @using ODK.Services
 @using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Members.SubscriptionCreateModel
@@ -12,4 +13,9 @@
     var viewModel = await MemberAdminService.GetMemberSubscriptionCreateViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Create subscription",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)</div>
+})

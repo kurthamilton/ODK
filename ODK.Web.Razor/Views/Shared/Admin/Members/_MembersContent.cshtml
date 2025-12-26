@@ -34,136 +34,129 @@
         .ToHashSet();
 }
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Members",
-    ContentFunc = 
-        @<div>
-            <p>
-                <div class="row row-cols-lg-auto g-3 align-items-center">
-                    <div class="col-12">
-                        <label class="form-label" for="name-filter">Name</label>
-                        <input class="form-control" id="name-filter" data-table-filter="#members-table" data-table-filter-field="name" />
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label" for="type-filter">Type</label>
-                        <select class="form-select" id="type-filter" multiple data-table-filter="#members-table" data-table-filter-field="type">
-                            @foreach (var type in Enum.GetValues<SubscriptionType>())
-                            {
-                                if (type == SubscriptionType.None)
-                                {
-                                    continue;
-                                }
-
-                                var selected = types.Length > 0
-                                    ? types.Contains(type.ToString().ToLowerInvariant())
-                                    : true;
-
-                                <option selected="@(selected ? "" : null)">@type</option>                    
-                            }
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label" for="status-filter">Subscription status</label>
-                        <select class="form-select" id="status-filter" multiple data-table-filter="#members-table" data-table-filter-field="status">
-                            @foreach (var status in Enum.GetValues<SubscriptionStatus>())
-                            {
-                                if (status == SubscriptionStatus.None)
-                                {
-                                    continue;
-                                }
-
-                                var selected = statuses.Length > 0
-                                    ? statuses.Contains(status.ToString().ToLowerInvariant())
-                                    : true;
-
-                                <option selected="@(selected ? "" : null)">@status</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col ms-auto align-self-end">
-                        <a href="@OdkRoutes.MemberGroups.MembersDownload(Model.Platform, Model.Chapter)">
-                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Excel))
-                            Download CSV
-                        </a>
-                    </div>
-                </div>
-            </p>
-
-            <div class="table-responsive">
-                <table class="table" data-sortable id="members-table" data-table-striped>
-                    <thead>
-                    <tr>
-                        <th></th>
-                        <th data-sortable-sort="default">Name</th>
-                        <th data-sortable-sort>Type</th>
-                        <th data-sortable-sort>Expires</th>
-                        <th data-sortable-sort>Status</th>
-                        <th>Emails</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var member in members)
-                    {
-                        subscriptionDictionary.TryGetValue(member.Id, out var subscription);
-                        var status = AuthorizationService.GetSubscriptionStatus(member, subscription, Model.MembershipSettings);
-
-                        <tr data-filter-name="@member.FullName" 
-                            data-filter-type="@(subscription?.Type ?? SubscriptionType.Full)"
-                            data-filter-status="@status">
-                            <td width="30px" class="px-0">
-                                @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
-                                {
-                                    Member = member,
-                                    MaxWidth = 30
-                                })
-                            </td>
-                            <td>
-                                <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)" data-sort-value="@member.FullName">
-                                    @member.GetDisplayName(Model.Chapter.Id)
-                                </a>
-                            </td>
-                            <td>@(subscription?.Type ?? SubscriptionType.Full)</td>
-                            <td>
-                                <span class="d-none" data-sort-value="@(subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "")"></span>
-                                <span class="@(subscription?.ExpiresUtc < DateTime.Today ? "text-danger" : null)
-                                             @(subscription?.ExpiresUtc < subscriptionWarningDate ? "text-warning" : null)">
-                                    @subscription?.ExpiresUtc?.ToString("yyyy-MM-dd")
-                                </span>
-                            </td>
-                            <td>@status</td>
-                            <td>
-                                @if (!optOutMemberIds.Contains(member.Id))
-                                {
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
-                                    {
-                                        Class = "text-success"
-                                    })
-                                }
-                                else
-                                {
-                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
-                                    {
-                                        Class = "text-danger"
-                                    })
-                                }
-                            </td>
-                            <td>
-                                @if (!member.Activated)
-                                {
-                                    <form method="post" action="/groups/@Model.Chapter.Id/members/@member.Id/emails/activation/send">
-                                        <button data-bs-toggle="tooltip" data-bs-title="Re-send activation email"
-                                                class="btn-icon text-primary">
-                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.EnvelopeSquare))
-                                        </button>
-                                    </form>
-                                }
-                            </td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
-            </div>
+<p>
+    <div class="row row-cols-lg-auto g-3 align-items-center">
+        <div class="col-12">
+            <label class="form-label" for="name-filter">Name</label>
+            <input class="form-control" id="name-filter" data-table-filter="#members-table" data-table-filter-field="name" />
         </div>
-})
+        <div class="col-12">
+            <label class="form-label" for="type-filter">Type</label>
+            <select class="form-select" id="type-filter" multiple data-table-filter="#members-table" data-table-filter-field="type">
+                @foreach (var type in Enum.GetValues<SubscriptionType>())
+                {
+                    if (type == SubscriptionType.None)
+                    {
+                        continue;
+                    }
+
+                    var selected = types.Length > 0
+                    ? types.Contains(type.ToString().ToLowerInvariant())
+                    : true;
+
+                    <option selected="@(selected ? "" : null)">@type</option>
+                }
+            </select>
+        </div>
+        <div class="col-12">
+            <label class="form-label" for="status-filter">Subscription status</label>
+            <select class="form-select" id="status-filter" multiple data-table-filter="#members-table" data-table-filter-field="status">
+                @foreach (var status in Enum.GetValues<SubscriptionStatus>())
+                {
+                    if (status == SubscriptionStatus.None)
+                    {
+                        continue;
+                    }
+
+                    var selected = statuses.Length > 0
+                    ? statuses.Contains(status.ToString().ToLowerInvariant())
+                    : true;
+
+                    <option selected="@(selected ? "" : null)">@status</option>
+                }
+            </select>
+        </div>
+        <div class="col ms-auto align-self-end">
+            <a href="@OdkRoutes.MemberGroups.MembersDownload(Model.Platform, Model.Chapter)">
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Excel))
+                Download CSV
+            </a>
+        </div>
+    </div>
+</p>
+
+<div class="table-responsive">
+    <table class="table" data-sortable id="members-table" data-table-striped>
+        <thead>
+            <tr>
+                <th></th>
+                <th data-sortable-sort="default">Name</th>
+                <th data-sortable-sort>Type</th>
+                <th data-sortable-sort>Expires</th>
+                <th data-sortable-sort>Status</th>
+                <th>Emails</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var member in members)
+            {
+                subscriptionDictionary.TryGetValue(member.Id, out var subscription);
+                var status = AuthorizationService.GetSubscriptionStatus(member, subscription, Model.MembershipSettings);
+
+                <tr data-filter-name="@member.FullName"
+                    data-filter-type="@(subscription?.Type ?? SubscriptionType.Full)"
+                    data-filter-status="@status">
+                    <td width="30px" class="px-0">
+                        @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
+                        {
+                            Member = member,
+                                        MaxWidth = 30
+                                        })
+                </td>
+                <td>
+                    <a href="@OdkRoutes.MemberGroups.Member(Model.Platform, Model.Chapter, member.Id)" data-sort-value="@member.FullName">
+                        @member.GetDisplayName(Model.Chapter.Id)
+                    </a>
+                </td>
+                <td>@(subscription?.Type ?? SubscriptionType.Full)</td>
+                <td>
+                    <span class="d-none" data-sort-value="@(subscription?.ExpiresUtc?.ToString("yyyy-MM-dd") ?? "")"></span>
+                    <span class="@(subscription?.ExpiresUtc < DateTime.Today ? "text-danger" : null)
+                                             @(subscription?.ExpiresUtc < subscriptionWarningDate ? "text-warning" : null)">
+                        @subscription?.ExpiresUtc?.ToString("yyyy-MM-dd")
+                    </span>
+                </td>
+                <td>@status</td>
+                <td>
+                    @if (!optOutMemberIds.Contains(member.Id))
+                        {
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
+                            {
+                                Class = "text-success"
+                                        })
+                                        }
+                        else
+                        {
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
+                            {
+                                Class = "text-danger"
+                                        })
+                                        }
+                    </td>
+                    <td>
+                        @if (!member.Activated)
+                        {
+                            <form method="post" action="/groups/@Model.Chapter.Id/members/@member.Id/emails/activation/send">
+                                <button data-bs-toggle="tooltip" data-bs-title="Re-send activation email"
+                                        class="btn-icon text-primary">
+                                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.EnvelopeSquare))
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

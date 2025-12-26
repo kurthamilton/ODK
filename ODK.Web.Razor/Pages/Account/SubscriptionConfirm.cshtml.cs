@@ -27,7 +27,7 @@ public class SubscriptionConfirmModel : OdkPageModel
         SubscriptionId = SubscriptionId;
 
         var request = MemberServiceRequest;
-        var status = await _paymentService.GetMemberPaymentCheckoutSessionStatus(request, sessionId);
+        var status = await _paymentService.GetMemberSitePaymentCheckoutSessionStatus(request, sessionId);
 
         if (status == PaymentStatusType.Complete)
         {

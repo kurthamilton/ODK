@@ -3,31 +3,32 @@
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Core.Payments
 @using ODK.Services
+@using ODK.Services.Chapters
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
 @model ChapterSubscriptionCheckoutModel
-@inject ISiteSubscriptionService SiteSubscriptionService
+@inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Subscription | Admin";
+    Model.Title = "Checkout | Subscription | Admin";
 
-    var memberId = Model.Chapter.OwnerId;
-    if (memberId == null)
-    {
-        return;
-    }
-
-    var request = new MemberServiceRequest(memberId.Value, Model.ServiceRequest);
+    var request = Model.MemberChapterServiceRequest(Model.Chapter.Id);
     var returnPath = $"/{Model.ChapterName}/admin/chapter/subscription/{Model.PriceId}/confirm?sessionId={{sessionId}}";
-    var viewModel = await SiteSubscriptionService.StartSiteSubscriptionCheckout(
+    var viewModel = await ChapterAdminService.StartSiteSubscriptionCheckout(
         request, Model.PriceId, returnPath);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionCheckoutContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Checkout",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionCheckoutContent", viewModel)</div>
+})
 
 @section scripts
 {

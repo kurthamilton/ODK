@@ -4,57 +4,46 @@
 @using ODK.Web.Razor.Models.Components
 @model ChapterEmailContentViewModel
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+@if (Model.Email.IsDefault())
 {
-    Breadcrumbs = new[]
+    <p>
+        Chapter emails use the standard emails by default. Update the email below to customise the email for this chapter.
+    </p>
+}
+else
+{
+    <p>
+        <span class="badge bg-secondary">Custom email</span>
+    </p>
+}
+
+<form method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Chapter/_EmailForm", new ChapterEmailFormViewModel
     {
-        new MenuItem { Link = $"/{Model.Chapter.ShortName}/Admin/Chapter/Emails", Text = "Emails" },
-        new MenuItem { Text = Model.Email.Type.ToString() }
-    },
-    ContentFunc = 
-        @<div>
-            @if (Model.Email.IsDefault())
-            {
-                <p>
-                    Chapter emails use the standard emails by default. Update the email below to customise the email for this chapter.
-                </p>
-            }
-            else
-            {
-                <p>
-                    <span class="badge bg-secondary">Custom email</span>
-                </p>
-            }
+        Content = Model.Email.HtmlContent,
+        Subject = Model.Email.Subject
+        })
+    <button class="btn btn-primary">Update</button>
+    <button class="btn btn-secondary" type="button"
+            data-submit="#send-test-form"
+            data-bs-toggle="tooltip" data-bs-title="Send a test email to yourself">
+        Send test
+    </button>
+    @if (!Model.Email.IsDefault())
+    {
+        <button class="btn btn-link" type="button"
+                data-submit="#restore-default-form"
+                data-submit-confirm="Are you sure you want to delete this custom email and restore the default?">
+            Restore default
+        </button>
+    }
+</form>
 
-            <form method="post">
-                @*@Html.AntiForgeryToken()*@
-                @await Html.PartialAsync("Admin/Chapter/_EmailForm", new ChapterEmailFormViewModel
-                {
-                     Content = Model.Email.HtmlContent,
-                     Subject = Model.Email.Subject
-                })
-                <button class="btn btn-primary">Update</button>
-                <button class="btn btn-secondary" type="button" 
-                        data-submit="#send-test-form"
-                        data-bs-toggle="tooltip" data-bs-title="Send a test email to yourself">
-                    Send test
-                </button>
-                @if (!Model.Email.IsDefault())
-                {
-                    <button class="btn btn-link" type="button"
-                            data-submit="#restore-default-form"
-                            data-submit-confirm="Are you sure you want to delete this custom email and restore the default?">
-                        Restore default
-                    </button>
-                }
-            </form>
+<form method="post" action="/@Model.Chapter.ShortName/Admin/Chapter/Emails/@Model.Email.Type/SendTest"
+      id="send-test-form">
+</form>
 
-            <form method="post" action="/@Model.Chapter.ShortName/Admin/Chapter/Emails/@Model.Email.Type/SendTest"
-                  id="send-test-form">
-            </form>
-
-            <form method="post" action="/@Model.Chapter.ShortName/Admin/Chapter/Emails/@Model.Email.Type/RestoreDefault"
-                  id="restore-default-form">
-            </form>
-        </div>
-})
+<form method="post" action="/@Model.Chapter.ShortName/Admin/Chapter/Emails/@Model.Email.Type/RestoreDefault"
+      id="restore-default-form">
+</form>

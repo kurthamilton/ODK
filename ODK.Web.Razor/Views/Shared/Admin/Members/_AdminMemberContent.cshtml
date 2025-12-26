@@ -8,27 +8,16 @@
 @using ODK.Web.Razor.Models.Components
 @model AdminMemberAdminPageViewModel
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Breadcrumbs = new[]
+<form method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
     {
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberAdmins(Model.Platform, Model.Chapter), Text = "Admins" },
-        new MenuItem { Text = Model.AdminMember.Member.FullName }
-    },
-    ContentFunc = 
-        @<div>
-            <form method="post">
-                @*@Html.AntiForgeryToken()*@
-                @await Html.PartialAsync("Admin/Members/_AdminMemberForm", new AdminMemberFormViewModel
-                {
-                    AdminEmailAddress = Model.AdminMember.AdminEmailAddress,
-                    Name = Model.AdminMember.Member.FullName,
-                    ReceiveContactEmails = Model.AdminMember.ReceiveContactEmails,
-                    ReceiveEventCommentEmails = Model.AdminMember.ReceiveEventCommentEmails,
-                    ReceiveNewMemberEmails = Model.AdminMember.ReceiveNewMemberEmails,
-                    SendNewMemberEmails = Model.AdminMember.SendNewMemberEmails
-                })
-                <button class="btn btn-primary">Update</button>
-            </form>
-        </div>
-})
+        AdminEmailAddress = Model.AdminMember.AdminEmailAddress,
+        Name = Model.AdminMember.Member.FullName,
+        ReceiveContactEmails = Model.AdminMember.ReceiveContactEmails,
+        ReceiveEventCommentEmails = Model.AdminMember.ReceiveEventCommentEmails,
+        ReceiveNewMemberEmails = Model.AdminMember.ReceiveNewMemberEmails,
+        SendNewMemberEmails = Model.AdminMember.SendNewMemberEmails
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

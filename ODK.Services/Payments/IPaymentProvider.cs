@@ -1,4 +1,5 @@
-﻿using ODK.Services.Payments.Models;
+﻿using ODK.Core.Payments;
+using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;
 
@@ -7,6 +8,8 @@ public interface IPaymentProvider
     bool HasCustomers { get; }
 
     bool HasExternalGateway { get; }
+
+    IPaymentSettings PaymentSettings { get; }
 
     bool SupportsConnectedAccounts { get; }
 

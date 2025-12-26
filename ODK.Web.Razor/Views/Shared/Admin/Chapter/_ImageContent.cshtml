@@ -3,18 +3,11 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterImageAdminPageViewModel
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Picture",
-    ContentFunc = 
-        @<div>
-            <form action="/groups/@Model.Chapter.Id/image" method="post">
-                @*@Html.AntiForgeryToken()*@
-                @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel
-                {
-                    ChapterImage = Model.Image
-                })
-                <button class="btn btn-primary">Update</button>
-            </form>
-        </div>
-})
+<form action="/groups/@Model.Chapter.Id/image" method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Chapter/_ImageForm", new ChapterImageFormViewModel
+        {
+        ChapterImage = Model.Image
+        })
+    <button class="btn btn-primary">Update</button>
+</form>

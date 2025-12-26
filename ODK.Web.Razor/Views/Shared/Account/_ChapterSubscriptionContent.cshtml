@@ -102,11 +102,13 @@ else
 {
     <h3>@title</h3>
 
-    @foreach (var chapterSubscription in chapterSubscriptions)
+    @foreach (var chapterSubscriptionDto in chapterSubscriptions)
     {
+        var chapterSubscription = chapterSubscriptionDto.ChapterSubscription;
+
         var modalId = $"payment-modal-{chapterSubscription.Id}";
-        IPaymentSettings paymentSettings = chapterSubscription.SitePaymentSettings != null 
-            ? chapterSubscription.SitePaymentSettings
+        IPaymentSettings paymentSettings = chapterSubscriptionDto.SitePaymentSettings != null
+            ? chapterSubscriptionDto.SitePaymentSettings
             : dto.ChapterPaymentSettings;
 
         <div class="mb-3">

@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/admin/superAdmin/emailproviders/create"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model EmailProviderCreateModel
@@ -9,13 +10,14 @@
     Model.Title = "Create email provider | SuperAdmin";
 }
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Breadcrumbs = new []
+    Title = "Create email provider",
+    Chapter = Model.Chapter,
+    Breadcrumbs = new[]
     {
         new MenuItem { Link = $"/{Model.ChapterName}/admin/superadmin/emails", Text = "Emails" },
         new MenuItem { Text = "New provider" }
-    }
+    },
+    ContentFunc = @<div>@await Html.PartialAsync("SuperAdmin/_EmailProviderCreateContent")</div>
 })
-
-@await Html.PartialAsync("SuperAdmin/_EmailProviderCreateContent")

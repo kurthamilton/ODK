@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/admin/events/{id:guid}/responses"
 @using ODK.Services
 @using ODK.Services.Events
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Admin.Events
@@ -13,4 +14,9 @@
     var viewModel = await EventAdminService.GetEventAttendeesViewModel(Model.AdminServiceRequest, Model.Event.Id);
 }
 
-@await Html.PartialAsync("Admin/Events/Event/_EventResponsesContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Event responses",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/Event/_EventResponsesContent", viewModel)</div>
+})

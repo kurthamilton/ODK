@@ -7,28 +7,12 @@
 @using ODK.Web.Razor.Models.Components
 @model ChapterQuestionAdminPageViewModel
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Breadcrumbs = new[]
+<form method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel
     {
-        new MenuItem
-        {
-            Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, Model.Chapter),
-            Text = "FAQ"
-        },
-        new MenuItem { Text = Model.Question.Name }
-    },
-    Title = "Edit question",
-    ContentFunc = 
-        @<div>
-            <form method="post">
-                @*@Html.AntiForgeryToken()*@
-                @await Html.PartialAsync("Admin/Chapter/_QuestionForm", new ChapterQuestionFormViewModel
-                {
-                    Answer = Model.Question.Answer,
-                    Question = Model.Question.Name
-                })
-                <button class="btn btn-primary">Update</button>
-            </form>
-        </div>
-})
+        Answer = Model.Question.Answer,
+        Question = Model.Question.Name
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Admin/Members/{id:guid}"
 @using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Admin.Members
@@ -12,4 +13,9 @@
     var viewModel = await MemberAdminService.GetMemberViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
-@await Html.PartialAsync("Admin/Members/_MemberContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Edit member",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberContent", viewModel)</div>
+})

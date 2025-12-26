@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Events/Settings"
 @using ODK.Services
 @using ODK.Services.Events
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.SettingsModel
 @inject IEventAdminService EventAdminService
@@ -11,4 +12,9 @@
     var viewModel = await EventAdminService.GetEventSettingsViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Events/_SettingsContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Event settings",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_SettingsContent", viewModel)</div>
+})

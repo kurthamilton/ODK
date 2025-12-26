@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Admin/SuperAdmin/Payments"
 @using ODK.Core.Chapters
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model PaymentSettingsModel
 @{
@@ -10,4 +11,9 @@
     var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
 }
 
-@await Html.PartialAsync("Chapters/SuperAdmin/_PaymentsContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Payments",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Chapters/SuperAdmin/_PaymentsContent", viewModel)</div>
+})

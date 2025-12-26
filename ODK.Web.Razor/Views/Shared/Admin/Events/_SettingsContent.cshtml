@@ -12,25 +12,18 @@
 @using ODK.Web.Razor.Models.Admin.Events
 @model EventSettingsAdminPageViewModel
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Event settings",
-    ContentFunc = 
-        @<div>
-            <form action="/groups/@Model.Chapter.Id/events/settings" method="post">
-                @*@Html.AntiForgeryToken()*@
-                @await Html.PartialAsync("Admin/Events/_SettingsForm", new EventSettingsFormViewModel
-                {
-                    DefaultDayOfWeek = Model.Settings?.DefaultDayOfWeek,
-                    DefaultDescription = Model.Settings?.DefaultDescription,
-                    DefaultEndTime = TimeSpanUtils.ToString(Model.Settings?.DefaultEndTime),
-                    DefaultScheduledEmailDayOfWeek = Model.Settings?.DefaultScheduledEmailDayOfWeek,
-                    DefaultScheduledEmailTimeOfDay = TimeSpanUtils.ToString(Model.Settings?.DefaultScheduledEmailTimeOfDay),
-                    DefaultStartTime = TimeSpanUtils.ToString(Model.Settings?.DefaultStartTime),
-                    DisableComments = Model.Settings?.DisableComments ?? false,
-                    OwnerSubscription = Model.OwnerSubscription
-                })
-                <button class="btn btn-primary">Update</button>
-            </form>
-        </div>
-})
+<form action="/groups/@Model.Chapter.Id/events/settings" method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Events/_SettingsForm", new EventSettingsFormViewModel
+    {
+        DefaultDayOfWeek = Model.Settings?.DefaultDayOfWeek,
+        DefaultDescription = Model.Settings?.DefaultDescription,
+        DefaultEndTime = TimeSpanUtils.ToString(Model.Settings?.DefaultEndTime),
+        DefaultScheduledEmailDayOfWeek = Model.Settings?.DefaultScheduledEmailDayOfWeek,
+        DefaultScheduledEmailTimeOfDay = TimeSpanUtils.ToString(Model.Settings?.DefaultScheduledEmailTimeOfDay),
+        DefaultStartTime = TimeSpanUtils.ToString(Model.Settings?.DefaultStartTime),
+        DisableComments = Model.Settings?.DisableComments ?? false,
+        OwnerSubscription = Model.OwnerSubscription
+    })
+    <button class="btn btn-primary">Update</button>
+</form>

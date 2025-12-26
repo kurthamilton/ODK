@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
+using ODK.Core.Payments;
 
 namespace ODK.Data.EntityFramework.Mapping;
 
@@ -19,7 +20,7 @@ public class ChapterSubscriptionMap : IEntityTypeConfiguration<ChapterSubscripti
             .HasColumnName("SubscriptionTypeId")
             .HasConversion<int>();
 
-        builder.HasOne(x => x.SitePaymentSettings)
+        builder.HasOne<SitePaymentSettings>()
             .WithMany()
             .HasForeignKey(x => x.SitePaymentSettingId);
     }

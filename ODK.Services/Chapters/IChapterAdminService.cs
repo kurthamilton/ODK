@@ -1,10 +1,12 @@
-﻿using ODK.Core.Chapters;
+﻿using System.Reflection;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Settings;
+using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Chapters;
 
@@ -129,6 +131,9 @@ public interface IChapterAdminService
         Guid memberId, 
         string subject, 
         string message);
+
+    Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
+        MemberChapterServiceRequest request, Guid priceId, string returnPath);
 
     Task<ServiceResult> UpdateChapterAdminMember(MemberChapterServiceRequest request, Guid memberId, 
         UpdateChapterAdminMember model);

@@ -31,9 +31,5 @@ public class PaymentMap : IEntityTypeConfiguration<Payment>
         builder.HasOne<PaymentReconciliation>()
             .WithMany()
             .HasForeignKey(x => x.PaymentReconciliationId);
-
-        builder.HasOne(x => x.SitePaymentSettings)
-            .WithMany()
-            .HasForeignKey(x => x.SitePaymentSettingId);
     }
 }

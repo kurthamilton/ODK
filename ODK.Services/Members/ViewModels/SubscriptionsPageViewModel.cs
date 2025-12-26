@@ -9,7 +9,7 @@ public class SubscriptionsPageViewModel
 {
     public required ChapterPaymentSettings ChapterPaymentSettings { get; init; }
 
-    public required IReadOnlyCollection<ChapterSubscription> ChapterSubscriptions { get; init; }
+    public required IReadOnlyCollection<ChapterSubscriptionDto> ChapterSubscriptions { get; init; }
 
     public required Currency? Currency { get; init; }
 

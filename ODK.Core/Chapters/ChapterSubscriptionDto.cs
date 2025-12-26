@@ -1,12 +1,10 @@
 ﻿using ODK.Core.Payments;
 
-namespace ODK.Core.Chapters.Dtos;
+namespace ODK.Core.Chapters;
 
-public class ChapterSubscriptionAdminDto
+public class ChapterSubscriptionDto
 {
     public required ChapterSubscription ChapterSubscription { get; init; }
 
     public required SitePaymentSettings? SitePaymentSettings { get; init; }
-
-    public required bool Used { get; init; }
 }

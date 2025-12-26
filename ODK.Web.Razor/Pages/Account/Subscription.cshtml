@@ -40,8 +40,8 @@
 
     @foreach (var dto in viewModel.Subscriptions)
     {
-        var paymentSettings = dto.Subscription.SitePaymentSettings;
-        if (added.Contains(paymentSettings.Id))
+        var paymentSettings = dto.SitePaymentSettings.First(x => x.Id == dto.Subscription.SitePaymentSettingId);
+if (added.Contains(paymentSettings.Id))
         {
             continue;
         }

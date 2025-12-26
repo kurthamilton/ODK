@@ -28,6 +28,8 @@ public class PayPalPaymentProvider : IPaymentProvider
 
     public bool HasExternalGateway => false;
 
+    public IPaymentSettings PaymentSettings => _paymentSettings;
+
     public bool SupportsConnectedAccounts => false;
 
     public bool SupportsRecurringPayments => PaymentProviderType.PayPal.SupportsRecurringPayments();

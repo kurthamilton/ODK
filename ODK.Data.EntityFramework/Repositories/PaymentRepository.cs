@@ -86,10 +86,6 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
             .Where(x => x.Payment.ChapterId == null)
             .DeferredMultiple();
 
-    protected override IQueryable<Payment> Set()
-        => base.Set()
-            .Include(x => x.SitePaymentSettings);
-
     private IQueryable<PaymentDto> DtoQuery()
     {
         var query =

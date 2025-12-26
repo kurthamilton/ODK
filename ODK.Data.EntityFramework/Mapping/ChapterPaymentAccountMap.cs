@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
+using ODK.Core.Payments;
 using ODK.Data.EntityFramework.Converters;
 
 namespace ODK.Data.EntityFramework.Mapping;
@@ -32,7 +33,7 @@ public class ChapterPaymentAccountMap : IEntityTypeConfiguration<ChapterPaymentA
             .WithOne()
             .HasForeignKey<ChapterPaymentAccount>(x => x.ChapterId);
 
-        builder.HasOne(x => x.SitePaymentSettings)
+        builder.HasOne<SitePaymentSettings>()
             .WithMany()
             .HasForeignKey(x => x.SitePaymentSettingId);
     }

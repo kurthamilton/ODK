@@ -32,7 +32,7 @@ public class PaymentsController : OdkControllerBase
         }
         else
         {
-            status = await _paymentService.GetMemberPaymentCheckoutSessionStatus(MemberServiceRequest, id);
+            status = await _paymentService.GetMemberSitePaymentCheckoutSessionStatus(MemberServiceRequest, id);
         }
 
         return Ok(new

@@ -36,8 +36,6 @@ public class SiteSubscription : IDatabaseEntity
 
     public bool SendMemberEmails { get; set; }
 
-    public SitePaymentSettings SitePaymentSettings { get; set; } = null!;
-
     public Guid SitePaymentSettingId { get; set; }
 
     public bool HasCapacity(int memberCount) => MemberLimit == null || memberCount < MemberLimit;
@@ -70,6 +68,8 @@ public class SiteSubscription : IDatabaseEntity
     }
 
     public bool HasFeature(SiteFeatureType feature) => Features().Contains(feature);
+
+    public bool IsEnabled(SitePaymentSettings sitePaymentSettings) => Enabled && sitePaymentSettings.Enabled;
 
     public string ToReference() => $"Subscription: {Name}";
 }

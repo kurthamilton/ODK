@@ -3,24 +3,17 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterLinksAdminPageViewModel
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Social media links",
-    ContentFunc = 
-        @<div>
-            <form action="/groups/@Model.Chapter.Id/links" method="post">
-                @*@Html.AntiForgeryToken()*@
-                @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel
-                {
-                    Chapter = Model.Chapter,
-                    Facebook = Model.Links?.FacebookName,
-                    Instagram = Model.Links?.InstagramName,
-                    OwnerSubscription = Model.OwnerSubscription,
-                    Platform = Model.Platform,
-                    ShowInstagramFeed = Model.ShowInstagramFeed,
-                    Twitter = Model.Links?.TwitterName
-                })
-                <button class="btn btn-primary">Update</button>
-            </form>
-        </div>
-})
+<form action="/groups/@Model.Chapter.Id/links" method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Chapter/_LinksForm", new ChapterLinksFormViewModel
+        {
+        Chapter = Model.Chapter,
+        Facebook = Model.Links?.FacebookName,
+        Instagram = Model.Links?.InstagramName,
+        OwnerSubscription = Model.OwnerSubscription,
+        Platform = Model.Platform,
+        ShowInstagramFeed = Model.ShowInstagramFeed,
+        Twitter = Model.Links?.TwitterName
+        })
+    <button class="btn btn-primary">Update</button>
+</form>

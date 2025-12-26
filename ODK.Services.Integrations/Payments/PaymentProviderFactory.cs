@@ -1,5 +1,4 @@
-﻿using ODK.Core;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Payments;
 using ODK.Services.Integrations.Payments.PayPal;
 using ODK.Services.Integrations.Payments.Stripe;
@@ -27,29 +26,35 @@ public class PaymentProviderFactory : IPaymentProviderFactory
         _stripeSettings = stripeSettings;
     }
 
-    public IPaymentProvider GetChapterPaymentProvider(
-        ChapterPaymentSettings chapterPaymentSettings,
-        IChapterPaymentEntity paymentEntity)
+    public IPaymentProvider GetPaymentProvider(
+        ChapterPaymentSettings? chapterPaymentSettings,
+        IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
+        ChapterPaymentAccount? paymentAccount)
     {
-        IPaymentSettings paymentSettings = paymentEntity.SitePaymentSettings != null
-            ? paymentEntity.SitePaymentSettings
-            : chapterPaymentSettings;
-        return GetPaymentProvider(paymentSettings, paymentEntity.ExternalAccountId);
-    }
-
-    public IPaymentProvider GetChapterPaymentProvider(
-        SitePaymentSettings sitePaymentSettings,
-        ChapterPaymentSettings chapterPaymentSettings,
-        ChapterPaymentAccount? chapterPaymentAccount)
-    {
-        IPaymentSettings paymentSettings = chapterPaymentSettings.UseSitePaymentProvider
-            ? sitePaymentSettings
+        IPaymentSettings paymentSettings = chapterPaymentSettings == null || chapterPaymentSettings.UseSitePaymentProvider == true
+            ? sitePaymentSettings.First(x => x.Active)
             : chapterPaymentSettings;
 
-        return GetPaymentProvider(paymentSettings, chapterPaymentAccount?.ExternalId);
+        return GetPaymentProvider(paymentSettings, paymentAccount?.ExternalId);
     }
 
-    public IPaymentProvider GetPaymentProvider(IPaymentSettings settings, string? connectedAccountId)
+    public IPaymentProvider GetSitePaymentProvider(SitePaymentSettings settings)
+    {
+        return GetPaymentProvider(settings, connectedAccountId: null);
+    }
+
+    public IPaymentProvider GetSitePaymentProvider(
+        IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
+        Guid? sitePaymentSettingId)
+    {
+        var paymentSettings = sitePaymentSettingId != null
+            ? sitePaymentSettings.First(x => x.Id == sitePaymentSettingId.Value)
+            : sitePaymentSettings.First(x => x.Active);
+
+        return GetPaymentProvider(paymentSettings, connectedAccountId: null);
+    }
+    
+    private IPaymentProvider GetPaymentProvider(IPaymentSettings settings, string? connectedAccountId)
     {
         switch (settings.Provider)
         {
@@ -63,15 +68,10 @@ public class PaymentProviderFactory : IPaymentProviderFactory
                 return new StripePaymentProvider(
                     settings,
                     _loggingService,
-                    connectedAccountId,
+                    connectedAccountId: connectedAccountId,
                     _stripeSettings);
             default:
                 throw new InvalidOperationException($"Payment provider type {settings.Provider} not supported");
         }
-    }
-
-    public IPaymentProvider GetSitePaymentProvider(SitePaymentSettings sitePaymentSettings)
-    {
-        return GetPaymentProvider(sitePaymentSettings, connectedAccountId: null);
     }
 }

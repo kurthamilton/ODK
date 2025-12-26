@@ -8,7 +8,7 @@ public interface IPaymentService
     Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         MemberChapterServiceRequest request, string externalSessionId);
 
-    Task<PaymentStatusType> GetMemberPaymentCheckoutSessionStatus(
+    Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
         MemberServiceRequest request, string externalSessionId);
 
     Task ProcessWebhook(ServiceRequest request, PaymentProviderWebhook webhook);    

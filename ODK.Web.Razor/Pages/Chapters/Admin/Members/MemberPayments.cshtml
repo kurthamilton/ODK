@@ -1,12 +1,18 @@
 ﻿@page "/{chapterName}/Admin/Members/{id:guid}/Payments"
 @model MemberPaymentsModel
 @using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin
 @inject IMemberAdminService MemberAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Member events | Admin";
+    Model.Title = "Member payments | Admin";
 
     var viewModel = await MemberAdminService.GetMemberPaymentsViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
-@await Html.PartialAsync("Admin/Members/_MemberPaymentsContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Member payments",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberPaymentsContent", viewModel)</div>
+})

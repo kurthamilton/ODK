@@ -19,45 +19,38 @@
         .ToDictionary(x => x.Key, x => x.Max(_ => _.Date));
 }
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Venues",
-    ContentFunc = 
-        @<section class="section">
-            <p>
-                <a href="@OdkRoutes.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">Create</a>
-            </p>
+<p>
+    <a href="@OdkRoutes.MemberGroups.VenueCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">Create</a>
+</p>
 
-            <div class="table-responsive">
-                <table class="table table-striped" data-sortable>
-                    <thead>
-                        <tr>
-                            <th data-sortable-sort="default">Name</th>
-                            <th>Address</th>
-                            <th data-sortable-sort data-sortable-dir="desc">Events</th>
-                            <th data-sortable-sort data-sortable-dir="desc">Last Event</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var venue in venues.OrderBy(x => x.Name))
+<div class="table-responsive">
+    <table class="table table-striped" data-sortable>
+        <thead>
+            <tr>
+                <th data-sortable-sort="default">Name</th>
+                <th>Address</th>
+                <th data-sortable-sort data-sortable-dir="desc">Events</th>
+                <th data-sortable-sort data-sortable-dir="desc">Last Event</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var venue in venues.OrderBy(x => x.Name))
+            {
+                <tr>
+                    <td>
+                        <a data-sort-value="@venue.Name" href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a>
+                    </td>
+                    <td>@venue.MapQuery</td>
+                    <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>
+                    <td>
+                        @if (lastEvents.TryGetValue(venue.Id, out DateTime lastEventDate))
                         {
-                            <tr>
-                                <td>
-                                    <a data-sort-value="@venue.Name" href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a>
-                                </td>
-                                <td>@venue.MapQuery</td>
-                                <td>@(eventCounts.ContainsKey(venue.Id) ? eventCounts[venue.Id] : 0)</td>
-                                <td>
-                                    @if (lastEvents.TryGetValue(venue.Id, out DateTime lastEventDate))
-                                    {
-                                        <span class="d-none" data-sort-value="@lastEventDate.ToString("yyyy-MM-dd")"></span>
-                                        @lastEventDate.EventDate()
-                                    }
-                                </td>
-                            </tr>
+                            <span class="d-none" data-sort-value="@lastEventDate.ToString("yyyy-MM-dd")"></span>
+                            @lastEventDate.EventDate()
                         }
-                    </tbody>
-                </table>
-            </div>
-        </section>
-})
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

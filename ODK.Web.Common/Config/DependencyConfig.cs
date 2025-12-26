@@ -104,6 +104,7 @@ public static class DependencyConfig
         services.AddSingleton(new StripePaymentProviderSettings
         {
             ConnectedAccountBaseUrl = payments.Stripe.ConnectedAccountBaseUrl,
+            ConnectedAccountCommissionPercentage = payments.Stripe.ConnectedAccountCommissionPercentage,
             ConnectedAccountMcc = payments.Stripe.ConnectedAccountMcc,
             ConnectedAccountProductDescription = payments.Stripe.ConnectedAccountProductDescription
         });

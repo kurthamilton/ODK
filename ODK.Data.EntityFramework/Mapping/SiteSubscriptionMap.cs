@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
 
 namespace ODK.Data.EntityFramework.Mapping;
@@ -19,7 +20,7 @@ public class SiteSubscriptionMap : IEntityTypeConfiguration<SiteSubscription>
             .HasColumnName("PlatformTypeId")
             .HasConversion<int>();
 
-        builder.HasOne(x => x.SitePaymentSettings)
+        builder.HasOne<SitePaymentSettings>()
             .WithMany()
             .HasForeignKey(x => x.SitePaymentSettingId);
 

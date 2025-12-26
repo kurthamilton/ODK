@@ -1,6 +1,6 @@
 ﻿namespace ODK.Core.Payments;
 
-public class Payment : IDatabaseEntity, IChapterPaymentEntity
+public class Payment : IDatabaseEntity
 {
     public Payment()
     {
@@ -15,8 +15,6 @@ public class Payment : IDatabaseEntity, IChapterPaymentEntity
     public Guid CurrencyId { get; set; }
 
     public bool ExemptFromReconciliation { get; set; }
-
-    public string? ExternalAccountId { get; set; }
 
     public string? ExternalId { get; set; }
 
@@ -33,8 +31,6 @@ public class Payment : IDatabaseEntity, IChapterPaymentEntity
     public string Reference { get; set; } = "";
 
     public Guid? SitePaymentSettingId { get; set; }
-
-    public SitePaymentSettings? SitePaymentSettings { get; set; }
 
     public decimal CalculateReconciliationAmount(decimal commission)
     {

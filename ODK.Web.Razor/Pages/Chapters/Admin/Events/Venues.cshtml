@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Events/Venues"
 @using ODK.Services
 @using ODK.Services.Venues
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.VenuesModel
 @inject IVenueAdminService VenueAdminService
@@ -11,4 +12,9 @@
     var viewModel = await VenueAdminService.GetVenuesViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Venues/_VenuesContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Venues",
+    Chapter = viewModel.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenuesContent", viewModel)</div>    
+})

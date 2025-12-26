@@ -366,6 +366,7 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             currentMember, 
             chapterSubscriptions, 
             chapterPaymentSettings, 
+            sitePaymentSettings,
             membershipSettings
         ) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(request.ChapterId),
@@ -374,12 +375,13 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.ChapterSubscriptionRepository.GetAdminDtosByChapterId(chapterId, includeDisabled: true),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapterId));
 
         AssertMemberIsChapterAdmin(currentMember, chapterId, chapterAdminMembers);
 
         chapterSubscriptions = chapterSubscriptions
-            .Where(x => x.ChapterSubscription.Enabled(chapterPaymentSettings))
+            .Where(x => x.ChapterSubscription.IsVisibleToAdmins(chapterPaymentSettings, sitePaymentSettings))
             .ToArray();
 
         return new SubscriptionsAdminPageViewModel
@@ -414,8 +416,12 @@ public class MemberAdminService : OdkAdminServiceBase, IMemberAdminService
 
         OdkAssertions.BelongsToChapter(subscription, request.ChapterId);
 
+        var sitePaymentSettings = subscription.SitePaymentSettingId != null
+            ? await _unitOfWork.SitePaymentSettingsRepository.GetById(subscription.SitePaymentSettingId.Value).Run()
+            : null;
+
         var paymentProvider = 
-            subscription.SitePaymentSettings?.Provider ??
+            sitePaymentSettings?.Provider ??
             chapterPaymentSettings.Provider ?? 
             PaymentProviderType.None;
 

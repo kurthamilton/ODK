@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
@@ -17,8 +16,4 @@ public class ChapterPaymentAccountRepository : ReadWriteRepositoryBase<ChapterPa
         => Set()
             .Where(x => x.ChapterId == chapterId)
             .DeferredSingleOrDefault();
-
-    protected override IQueryable<ChapterPaymentAccount> Set()
-        => base.Set()
-            .Include(x => x.SitePaymentSettings);
 }

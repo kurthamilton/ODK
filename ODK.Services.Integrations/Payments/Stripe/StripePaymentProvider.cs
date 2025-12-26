@@ -14,7 +14,9 @@ namespace ODK.Services.Integrations.Payments.Stripe;
 public class StripePaymentProvider : IPaymentProvider
 {
     private readonly IStripeClient _client;
+    private readonly string? _connectedAccountId;
     private readonly ILoggingService _loggingService;
+    private readonly IPaymentSettings _paymentSettings;
     private readonly StripePaymentProviderSettings _settings;
     
     public StripePaymentProvider(
@@ -25,16 +27,19 @@ public class StripePaymentProvider : IPaymentProvider
     {
         _client = new StripeClient(new StripeClientOptions
         {
-            ApiKey = paymentSettings.ApiSecretKey,
-            StripeAccount = connectedAccountId
+            ApiKey = paymentSettings.ApiSecretKey
         });
+        _connectedAccountId = connectedAccountId;
         _loggingService = loggingService;
+        _paymentSettings = paymentSettings;
         _settings = settings;
     }
 
     public bool HasCustomers => true;
 
     public bool HasExternalGateway => true;
+
+    public IPaymentSettings PaymentSettings => _paymentSettings;
 
     public bool SupportsConnectedAccounts => true;
 
@@ -76,22 +81,7 @@ public class StripePaymentProvider : IPaymentProvider
 
         await _loggingService.Info($"Creating connected stripe account for '{emailAddress}'");
 
-        var service = CreateAccountService();
-
-        // do not send localhost to Stripe
-        var chapterUrl = options.ChapterUrl;
-        var baseUrl = UrlUtils.BaseUrl(chapterUrl);
-        if (!string.IsNullOrEmpty(_settings.ConnectedAccountBaseUrl))
-        {
-            chapterUrl = chapterUrl.Replace(
-                baseUrl, _settings.ConnectedAccountBaseUrl, StringComparison.OrdinalIgnoreCase);
-        }
-
-        baseUrl = UrlUtils.BaseUrl(chapterUrl);
-        if (baseUrl.Contains("localhost"))
-        {
-            chapterUrl = null;
-        }
+        var service = CreateAccountService();        
 
         try
         {
@@ -103,7 +93,7 @@ public class StripePaymentProvider : IPaymentProvider
                 BusinessProfile = new AccountBusinessProfileOptions
                 {
                     Name = options.Chapter.FullName,
-                    Url = chapterUrl,
+                    Url = CleanConnectedAccountUrl(options.ChapterUrl),
                     Mcc = _settings.ConnectedAccountMcc,
                     ProductDescription = _settings.ConnectedAccountProductDescription
                 },
@@ -152,7 +142,7 @@ public class StripePaymentProvider : IPaymentProvider
         });
 
         var match = result
-            .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
 
         if (match != null)
         {
@@ -192,7 +182,7 @@ public class StripePaymentProvider : IPaymentProvider
                     _ => 1
                 }
             } : null,
-            UnitAmountDecimal = subscriptionPlan.Amount * 100
+            UnitAmount = ToStripeAmount(subscriptionPlan.Amount)
         };
 
         var result = await service.CreateAsync(options);
@@ -318,7 +308,7 @@ public class StripePaymentProvider : IPaymentProvider
 
                 var remotePayment = new RemotePaymentModel
                 {
-                    Amount = (decimal)payment.AmountPaid / 100,
+                    Amount = FromStripeAmount(payment.AmountPaid),
                     Created = TimeZoneInfo.ConvertTimeFromUtc(created, Chapter.DefaultTimeZone),
                     Currency = invoice.Currency,
                     CustomerEmail = invoice.CustomerEmail,
@@ -407,7 +397,7 @@ public class StripePaymentProvider : IPaymentProvider
 
             return new ExternalSubscriptionPlan
             {
-                Amount = price.UnitAmountDecimal ?? 0,
+                Amount = FromStripeAmount(price.UnitAmount),
                 CurrencyCode = price.Currency,
                 ExternalId = price.Id,
                 ExternalProductId = price.ProductId,
@@ -431,9 +421,12 @@ public class StripePaymentProvider : IPaymentProvider
         string cardToken, string description, Guid memberId, string memberName)
     {
         var service = CreatePaymentIntentService();
+
+        var stripeAmount = ToStripeAmount(amount);
         var intent = await service.CreateAsync(new PaymentIntentCreateOptions
         {
-            Amount = (int)(amount * 100),
+            Amount = stripeAmount,
+            ApplicationFeeAmount = CalculateCommission(stripeAmount),
             Currency = currencyCode.ToLowerInvariant(),
             Description = $"{memberName}: {description}",
             ExtraParams = new Dictionary<string, object>
@@ -455,7 +448,10 @@ public class StripePaymentProvider : IPaymentProvider
             Metadata = new Dictionary<string, string>
             {
                 { "member_id", memberId.ToString() }
-            }
+            },
+            TransferData = !string.IsNullOrEmpty(_connectedAccountId)
+                ? new PaymentIntentTransferDataOptions { Destination = _connectedAccountId } 
+                : null,
         });
 
         intent = await service.ConfirmAsync(intent.Id);
@@ -482,6 +478,9 @@ public class StripePaymentProvider : IPaymentProvider
         var metadataDictionary = new Dictionary<string, string>(metadata.ToDictionary());
 
         var service = CreateSessionService();
+
+        var stripeAmount = ToStripeAmount(subscriptionPlan.Amount);
+
         var session = await service.CreateAsync(new SessionCreateOptions
         {
             UiMode = "embedded",
@@ -500,12 +499,22 @@ public class StripePaymentProvider : IPaymentProvider
             CustomerEmail = emailAddress,
             PaymentIntentData = !subscriptionPlan.Recurring ? new SessionPaymentIntentDataOptions
             {
-                Metadata = metadataDictionary
+                ApplicationFeeAmount = CalculateCommission(stripeAmount),
+                Metadata = metadataDictionary,
+                TransferData = !string.IsNullOrEmpty(_connectedAccountId)
+                    ? new SessionPaymentIntentDataTransferDataOptions { Destination = _connectedAccountId }
+                    : null
             } : null,
             SubscriptionData = subscriptionPlan.Recurring ? new SessionSubscriptionDataOptions
             {
-                Metadata = metadataDictionary
-            } : null            
+                ApplicationFeePercent = !string.IsNullOrEmpty(_connectedAccountId) 
+                    ? _settings.ConnectedAccountCommissionPercentage
+                    : null,
+                Metadata = metadataDictionary,
+                TransferData = !string.IsNullOrEmpty(_connectedAccountId)
+                    ? new SessionSubscriptionDataTransferDataOptions { Destination = _connectedAccountId }
+                    : null
+            } : null
         });
         
         return new ExternalCheckoutSession
@@ -529,6 +538,34 @@ public class StripePaymentProvider : IPaymentProvider
         {
             Metadata = new Dictionary<string, string>(metadata.ToDictionary())
         });
+    }
+
+    private static decimal FromStripeAmount(long? stripeAmount) => (stripeAmount ?? 0) / 100;
+
+    private static long ToStripeAmount(decimal amount) => (long)(amount * 100);
+
+    private long? CalculateCommission(long stripeAmount)
+    {
+        if (string.IsNullOrEmpty(_connectedAccountId))
+        {
+            return null;
+        }
+
+        return (long)(stripeAmount * _settings.ConnectedAccountCommissionPercentage / 100);
+    }
+
+    private string? CleanConnectedAccountUrl(string url)
+    {
+        // do not send localhost to Stripe
+        var baseUrl = UrlUtils.BaseUrl(url);
+        if (!string.IsNullOrEmpty(_settings.ConnectedAccountBaseUrl))
+        {
+            return url.Replace(baseUrl, _settings.ConnectedAccountBaseUrl, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase)
+            ? baseUrl
+            : null;
     }
 
     private async Task<IReadOnlyCollection<Invoice>> GetAllInvoices(

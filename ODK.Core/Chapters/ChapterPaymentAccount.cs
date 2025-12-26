@@ -1,6 +1,4 @@
-﻿using ODK.Core.Payments;
-
-namespace ODK.Core.Chapters;
+﻿namespace ODK.Core.Chapters;
 
 public class ChapterPaymentAccount : IDatabaseEntity, IChapterEntity
 {
@@ -19,8 +17,6 @@ public class ChapterPaymentAccount : IDatabaseEntity, IChapterEntity
     public DateTime? OnboardingCompletedUtc { get; set; }
 
     public required string? OnboardingUrl { get; set; }
-
-    public SitePaymentSettings SitePaymentSettings { get; set; } = null!;
 
     public Guid SitePaymentSettingId { get; set; }
 

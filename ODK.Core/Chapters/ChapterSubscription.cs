@@ -3,7 +3,7 @@ using ODK.Core.Payments;
 
 namespace ODK.Core.Chapters;
 
-public class ChapterSubscription : IDatabaseEntity, IChapterEntity, IChapterPaymentEntity
+public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 {
     public double Amount { get; set; }
 
@@ -12,8 +12,6 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity, IChapterPaym
     public string Description { get; set; } = "";
 
     public bool Disabled { get; set; }
-
-    public string? ExternalAccountId { get; set; }
 
     public string? ExternalId { get; set; }
 
@@ -27,28 +25,41 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity, IChapterPaym
 
     public bool Recurring { get; set; }
 
-    public SitePaymentSettings? SitePaymentSettings { get; set; }
-
     public Guid? SitePaymentSettingId { get; set; }
 
     public string Title { get; set; } = "";
 
     public SubscriptionType Type { get; set; }
 
-    public bool Enabled(ChapterPaymentSettings chapterPaymentSettings)
+    public bool IsVisibleToMembers(
+        ChapterPaymentSettings chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
     {
         if (Disabled)
         {
             return false; 
         }
 
-        if (!chapterPaymentSettings.UseSitePaymentProvider)
+        return IsVisibleToAdmins(chapterPaymentSettings, sitePaymentSettings);
+    }
+
+    public bool IsVisibleToAdmins(
+        ChapterPaymentSettings chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
+    {
+        if (SitePaymentSettingId != null)
         {
-            return true;
+            return sitePaymentSettings.First(x => x.Id == SitePaymentSettingId.Value).Enabled;
         }
 
-        return SitePaymentSettings?.Enabled == true;
+        if (chapterPaymentSettings.UseSitePaymentProvider)
+        {
+            // SitePaymentSettingId not set, cannot be used
+            return false;
+        }
+
+        return true;
     }
+
+
 
     public string ToReference() => $"Subscription: {Name}";
 }

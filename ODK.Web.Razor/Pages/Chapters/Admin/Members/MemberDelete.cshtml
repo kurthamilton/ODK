@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/admin/members/{id:guid}/delete"
 @using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin
 @model MemberDeleteModel
 @inject IMemberAdminService MemberAdminService
 @{
@@ -9,4 +10,9 @@
     var viewModel = await MemberAdminService.GetMemberDeleteViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
-@await Html.PartialAsync("Admin/Members/_MemberDeleteContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Delete member",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberDeleteContent", viewModel)</div>
+})

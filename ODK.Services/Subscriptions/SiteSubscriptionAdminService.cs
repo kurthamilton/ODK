@@ -73,7 +73,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var currentMemberId = request.CurrentMemberId;
 
-        var (siteSubscription, existing, currency) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (sitePaymentSettings, siteSubscription, existing, currency) = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
             x => x.SiteSubscriptionPriceRepository.GetBySiteSubscriptionId(siteSubscriptionId),
             x => x.CurrencyRepository.GetById(model.CurrencyId));
@@ -96,7 +97,9 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             SiteSubscriptionId = siteSubscriptionId
         };
 
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(siteSubscription.SitePaymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
+            sitePaymentSettings,
+            siteSubscription.SitePaymentSettingId);
 
         if (!string.IsNullOrEmpty(siteSubscription.ExternalProductId) && model.Amount > 0)
         {
@@ -127,7 +130,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
 
     public async Task DeleteSiteSubscriptionPrice(Guid currentMemberId, Guid siteSubscriptionId, Guid siteSubscriptionPriceId)
     {
-        var (siteSubscription, price) = await GetSuperAdminRestrictedContent(currentMemberId,
+        var (sitePaymentSettings, siteSubscription, price) = await GetSuperAdminRestrictedContent(currentMemberId,
+            x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.GetById(siteSubscriptionId),
             x => x.SiteSubscriptionPriceRepository.GetById(siteSubscriptionPriceId));
 
@@ -139,7 +143,8 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         if (!string.IsNullOrEmpty(price.ExternalId))
         {
             var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
-                siteSubscription.SitePaymentSettings);
+                sitePaymentSettings,
+                siteSubscription.SitePaymentSettingId);
             await paymentProvider.DeactivateSubscriptionPlan(price.ExternalId);
         }
     }
@@ -158,13 +163,17 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     {
         var platform = request.Platform;
 
-        var (siteSubscriptions, prices) = await GetSuperAdminRestrictedContent(request.CurrentMemberId,
+        var (sitePaymentSettings, siteSubscriptions, prices) = await GetSuperAdminRestrictedContent(request.CurrentMemberId,
+            x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.SiteSubscriptionRepository.GetAll(platform),
             x => x.SiteSubscriptionPriceRepository.GetAll(platform));
 
         var priceCounts = prices
             .GroupBy(x => x.SiteSubscriptionId)
             .ToDictionary(x => x.Key, x => x.Count());
+
+        var sitePaymentSettingsDictionary = sitePaymentSettings
+            .ToDictionary(x => x.Id);
 
         return siteSubscriptions
             .Select(x => new SiteSubscriptionSuperAdminListItemViewModel
@@ -176,7 +185,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 MemberLimit = x.MemberLimit,
                 MemberSubscriptions = x.MemberSubscriptions,                
                 Name = x.Name,
-                PaymentSettingsName = x.SitePaymentSettings.Name,
+                PaymentSettingsName = sitePaymentSettingsDictionary[x.SitePaymentSettingId].Name,
                 Premium = x.Premium,
                 PriceCount = priceCounts.TryGetValue(x.Id, out var priceCount) ? priceCount : 0,
                 SendMemberEmails = x.SendMemberEmails

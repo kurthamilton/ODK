@@ -4,6 +4,7 @@
 @using ODK.Services.Members
 @using ODK.Services.Subscriptions
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Chapters
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Payments
@@ -17,7 +18,12 @@
     var viewModel = await ChapterAdminService.GetChapterSubscriptionViewModel(request);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Subscription",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ChapterSubscriptionContent", viewModel)</div>
+})
 
 @section scripts
 {
@@ -27,7 +33,8 @@
 
     @foreach (var dto in viewModel.SiteSubscriptions.Subscriptions)
     {
-        var paymentSettings = dto.Subscription.SitePaymentSettings;
+        var paymentSettings = viewModel.SiteSubscriptions.SitePaymentSettings
+        .First(x => x.Id == dto.Subscription.SitePaymentSettingId);
         if (added.Contains(paymentSettings.Id))
         {
             continue;

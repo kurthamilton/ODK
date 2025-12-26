@@ -1,5 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Questions/{id:guid}"
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.QuestionEditModel
@@ -11,4 +13,18 @@
     var viewModel = await ChapterAdminService.GetChapterQuestionViewModel(Model.AdminServiceRequest, Model.Question.Id);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_QuestionEditContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Edit question",
+    Chapter = Model.Chapter,
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, Model.Chapter),
+            Text = "FAQ"
+        },
+        new MenuItem { Text = Model.Question.Name }
+    },
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_QuestionEditContent", viewModel)</div>
+})

@@ -1,0 +1,37 @@
+﻿@using ODK.Services.Chapters.ViewModels
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@model ChapterPaymentAccountAdminPageViewModel
+
+<div data-odk-component="Admin/Payments/_AccountContent">
+    <p>
+        Set up a payment account to take payments from your members.
+    </p>
+
+    @if (!Model.HasPermission)
+    {
+        <div class="alert alert-danger">
+            Upgrade your <a href="@OdkRoutes.Account.Subscription(Model.Platform, null)">subscription</a> to start accepting payments
+        </div>
+        return;
+    }
+
+    @if (Model.Enabled)
+    {
+        var subscriptionsUrl = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, Model.Chapter);
+        <div class="alert alert-success">
+            You have set up a payment account.
+            Set up your <a href="@subscriptionsUrl">memberships</a>.
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Model.OnboardingUrl))
+    {
+        <a href="@Model.OnboardingUrl">Resume setup</a>
+    }
+    else
+    {
+        <form method="post">
+            <button class="btn btn-primary">Create</button>
+        </form>
+    }
+</div>

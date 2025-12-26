@@ -135,7 +135,7 @@ public class EventService : IEventService
             membershipSettings, 
             privacySettings, 
             memberSubscription) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapterId),
@@ -219,7 +219,7 @@ public class EventService : IEventService
         }
 
         var (sitePaymentSettings, chapterPaymentSettings, chapterPaymentAccount) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(@event.ChapterId));
 
@@ -273,7 +273,7 @@ public class EventService : IEventService
             membershipSettings, 
             privacySettings, 
             memberSubscription) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(@event.ChapterId),
             x => x.ChapterPaymentAccountRepository.GetByChapterId(@event.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(@event.ChapterId),
@@ -452,7 +452,7 @@ public class EventService : IEventService
         decimal amount,
         string cardToken,
         ChapterPaymentSettings chapterPaymentSettings,
-        SitePaymentSettings sitePaymentSettings,
+        IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
         ChapterPaymentAccount? chapterPaymentAccount)
     {
         var (chapterId, currency) = (@event.ChapterId, chapterPaymentSettings.Currency);
@@ -462,25 +462,17 @@ public class EventService : IEventService
             Amount = amount,
             ChapterId = @event.ChapterId,
             CurrencyId = currency.Id,
-            ExternalAccountId = chapterPaymentAccount?.ExternalId,
             ExternalId = "",
             MemberId = member.Id,
-            Reference = @event.Name,
-            SitePaymentSettingId = chapterPaymentSettings.UseSitePaymentProvider
-                ? sitePaymentSettings.Id
-                : null
+            Reference = @event.Name
         };
 
         _unitOfWork.PaymentRepository.Add(payment);
         await _unitOfWork.SaveChangesAsync();
 
-        IPaymentSettings paymentSettings = chapterPaymentSettings.UseSitePaymentProvider
-            ? sitePaymentSettings
-            : chapterPaymentSettings;
-
-        var paymentProvider = _paymentProviderFactory.GetChapterPaymentProvider(
-            sitePaymentSettings,
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
             chapterPaymentSettings,
+            sitePaymentSettings,
             chapterPaymentAccount);
 
         var paymentResult = await paymentProvider.MakePayment(

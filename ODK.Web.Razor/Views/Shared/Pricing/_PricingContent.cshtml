@@ -14,7 +14,7 @@
     var currency = Model.SiteSubscriptions.Currency
         ?? Model.SiteSubscriptions.Currencies.FirstOrDefault()
         ?? Model.SiteSubscriptions.Subscriptions.SelectMany(x => x.Prices).Select(x => x.Currency).FirstOrDefault();
-    if (currency == null || Model.SiteSubscriptions.PaymentSettings.Count == 0)
+    if (currency == null || Model.SiteSubscriptions.SitePaymentSettings.Count == 0)
     {
         return;
     }
@@ -60,6 +60,9 @@
                                     continue;
                                 }
 
+                                var paymentSettings = Model.SiteSubscriptions.SitePaymentSettings
+                                    .First(x => x.Id == subscription.SitePaymentSettingId);
+
                                 @await Html.PartialAsync("Pricing/_SubscriptionPrice", new SiteSubscriptionPriceViewModel
                                 {
                                     Amount = price.Amount,
@@ -67,7 +70,7 @@
                                     Currency = currency,
                                     Frequency = price.Frequency,
                                     ExternalId = price.ExternalId,
-                                    Provider = subscription.SitePaymentSettings.Provider,
+                                    Provider = paymentSettings.Provider,
                                     SiteSubscription = subscription,
                                     SiteSubscriptionPriceId = price.Id
                                 })   

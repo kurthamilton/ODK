@@ -32,8 +32,10 @@ public class PaymentService : IPaymentService
     public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
         MemberChapterServiceRequest request, string externalSessionId)
     {
-        var (chapterPaymentSettings, checkoutSession) = await _unitOfWork.RunAsync(
+        var (chapterPaymentSettings, sitePaymentSettings, paymentAccount, checkoutSession) = await _unitOfWork.RunAsync(
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId),
             x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
 
         OdkAssertions.Exists(checkoutSession);
@@ -45,7 +47,10 @@ public class PaymentService : IPaymentService
 
         var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
 
-        var paymentProvider = _paymentProviderFactory.GetChapterPaymentProvider(chapterPaymentSettings, payment);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentSettings, 
+            sitePaymentSettings,
+            paymentAccount);
 
         var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
 
@@ -54,12 +59,12 @@ public class PaymentService : IPaymentService
             : PaymentStatusType.Pending;
     }
 
-    public async Task<PaymentStatusType> GetMemberPaymentCheckoutSessionStatus(
+    public async Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
         MemberServiceRequest request, string externalSessionId)
     {
-        var checkoutSession = await _unitOfWork.PaymentCheckoutSessionRepository
-            .GetByMemberId(request.CurrentMemberId, externalSessionId)
-            .Run();
+        var (checkoutSession, sitePaymentSettings) = await _unitOfWork.RunAsync(
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId),
+            x => x.SitePaymentSettingsRepository.GetAll());
 
         OdkAssertions.Exists(checkoutSession);
 
@@ -70,10 +75,8 @@ public class PaymentService : IPaymentService
 
         var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
 
-        var sitePaymentSettings = 
-            payment.SitePaymentSettings ?? await _unitOfWork.SitePaymentSettingsRepository.GetActive().Run();
-
-        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
+            sitePaymentSettings, payment.SitePaymentSettingId);
 
         var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
 
@@ -284,7 +287,6 @@ public class PaymentService : IPaymentService
                 ChapterId = chapter.Id,
                 CreatedUtc = utcNow,
                 CurrencyId = chapterPaymentSettings.CurrencyId,
-                ExternalAccountId = chapterSubscription.ExternalAccountId,
                 Id = Guid.NewGuid(),
                 MemberId = member.Id,
                 Reference = chapterSubscription.ToReference(),
@@ -426,14 +428,21 @@ public class PaymentService : IPaymentService
             }
         }
 
-        return await UpdateMemberSiteSubscription(
-            request,
-            member,
-            siteSubscription,
-            siteSubscriptionPrice,
-            payment,
-            externalId: webhook.SubscriptionId,
-            utcNow);
+        try
+        {
+            return await UpdateMemberSiteSubscription(
+                request,
+                member,
+                siteSubscription,
+                siteSubscriptionPrice,
+                payment,
+                externalId: webhook.SubscriptionId,
+                utcNow);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSubscription(
@@ -598,7 +607,6 @@ public class PaymentService : IPaymentService
         memberSubscription.ExternalId = externalId;
         memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
         memberSubscription.SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId;
-        memberSubscription.PaymentProvider = siteSubscription.SitePaymentSettings.Provider;
 
         if (memberSubscription.Id == default)
         {

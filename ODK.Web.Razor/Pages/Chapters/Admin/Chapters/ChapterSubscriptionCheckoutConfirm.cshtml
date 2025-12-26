@@ -5,63 +5,56 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ChapterSubscriptionCheckoutConfirmModel
 @{
-    Layout = "_OdkChapterLayout";
+    Layout = "_OdkChapterAdminLayout";
     Model.Title = "Subscription pending confirmation";
 
     var subscriptionUrl = Model.RedirectUrl;
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    HideSubscriptionAlert = true,
-    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    Title = "Checkout",
+    Chapter = Model.Chapter,
+    Breadcrumbs = new[]
     {
-        Active = subscriptionUrl,
-        Chapter = Model.Chapter,
-        Title = "Checkout",
-        Content =
-            @<div>
-                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
-                {
-                    Breadcrumbs = new[]
-                    {
-                        new MenuItem { Text = "Subscription", Link = subscriptionUrl },
-                        new MenuItem { Text = "Checkout" }
-                    }
-                })
-                <h2>Checkout</h2>
-                <section class="section">
-                    <div data-odk-checkout
-                         data-odk-polling-url="/groups/@Model.Chapter.Id/payments/sessions/@Model.SessionId/status">
+        new MenuItem { Text = "Subscription", Link = subscriptionUrl },
+        new MenuItem { Text = "Checkout" }
+    },
+    ContentFunc = 
+        @<div>
+            <section class="section">
+                <div data-odk-checkout
+                     data-odk-polling-url="/groups/@Model.Chapter.Id/payments/sessions/@Model.SessionId/status">
 
-                        <div data-odk-checkout-status="@PaymentStatusType.Complete"
-                                data-odk-checkout-action="reload">
+                    <div data-odk-checkout-status="@PaymentStatusType.Complete"
+                         data-odk-checkout-action="reload">
+                    </div>
+
+                    <div data-odk-checkout-status="@PaymentStatusType.Pending">
+                        <div class="alert alert-warning">
+                            We are just waiting for confirmation of your payment...
                         </div>
-
-                        <div data-odk-checkout-status="@PaymentStatusType.Pending">
-                            <div class="alert alert-warning">
-                                We are just waiting for confirmation of your payment...
-                            </div>
-                            <div>
-                                <a href="@subscriptionUrl">
-                                    Go back to chapter subscription
-                                </a>
-                            </div>
-                        </div>
-
-                        <div data-odk-checkout-status="@PaymentStatusType.Expired"
-                                data-odk-checkout-action="reload">
+                        <div>
+                            <a href="@subscriptionUrl">
+                                Go back to chapter subscription
+                            </a>
                         </div>
                     </div>
-                </section>
-            </div>
-    })
+
+                    <div data-odk-checkout-status="@PaymentStatusType.Expired"
+                         data-odk-checkout-action="reload">
+                    </div>
+                </div>
+            </section>
+        </div>
 })
 
-@section scripts {
+@section scripts 
+{
     <script src="~/js/odk.polling.js" asp-append-version="true"></script>
     <script src="~/js/odk.checkout.js" asp-append-version="true"></script>
 }
