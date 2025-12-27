@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ODK.Services;
 using ODK.Services.Authentication;
 using ODK.Web.Common.Feedback;
+using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Account;
 
 namespace ODK.Web.Razor.Pages.Chapters.Account;
@@ -28,7 +29,9 @@ public class PasswordResetModel : ChapterPageModel
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Your password has been updated.", FeedbackType.Success));
-            return Redirect($"/{Chapter.Name}/Account/Login");
+
+            var redirectUrl = OdkRoutes.Account.Login(Chapter);
+            return Redirect(redirectUrl);
         }
 
         AddFeedback(new FeedbackViewModel(result));

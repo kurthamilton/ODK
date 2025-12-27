@@ -24,7 +24,11 @@
     Title = viewModel.Member.FullName,
     Breadcrumbs = new []
     {
-        new MenuItem { Link = OdkRoutes.Groups.Group(viewModel.Platform, viewModel.Chapter), Text = viewModel.Chapter.Name },
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Groups.Group(viewModel.Platform, viewModel.Chapter), 
+            Text = viewModel.Chapter.GetDisplayName(viewModel.Platform)
+        },
         new MenuItem { Link = OdkRoutes.Groups.Members(viewModel.Platform, viewModel.Chapter), Text = "Knitwits" },
         new MenuItem { Text = viewModel.Member.FullName }
     },

@@ -110,7 +110,8 @@ public class SuperAdminController : OdkControllerBase
             viewModel.Name ?? "",
             viewModel.PublicKey ?? "",
             viewModel.SecretKey ?? "",
-            viewModel.Commission / 100);
+            viewModel.Commission / 100,
+            enabled: viewModel.Enabled);
 
         AddFeedback(result, "Payment settings created");
 
@@ -126,7 +127,8 @@ public class SuperAdminController : OdkControllerBase
             viewModel.Name ?? "",
             viewModel.PublicKey ?? "",
             viewModel.SecretKey ?? "",
-            viewModel.Commission / 100);
+            viewModel.Commission / 100,
+            enabled: viewModel.Enabled);
 
         AddFeedback(result, "Payment settings updated");
 

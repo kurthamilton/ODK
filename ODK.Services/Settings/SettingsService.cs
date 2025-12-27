@@ -66,14 +66,21 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> CreatePaymentSettings(Guid currentMemberId,
-        PaymentProviderType provider, string name, string publicKey, string secretKey, decimal commission)
+    public async Task<ServiceResult> CreatePaymentSettings(
+        Guid currentMemberId,
+        PaymentProviderType provider, 
+        string name, 
+        string publicKey, 
+        string secretKey, 
+        decimal commission,
+        bool enabled)
     {
         _unitOfWork.SitePaymentSettingsRepository.Add(new SitePaymentSettings
         {
             ApiPublicKey = publicKey,
             ApiSecretKey = secretKey,
             Commission = commission,
+            Enabled = enabled,
             Name = name,
             Provider = provider
         });
@@ -186,8 +193,14 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         return ServiceResult.Successful();
     }
 
-    public async Task<ServiceResult> UpdatePaymentSettings(Guid currentMemberId, 
-        Guid id, string name, string publicKey, string secretKey, decimal commission)
+    public async Task<ServiceResult> UpdatePaymentSettings(
+        Guid currentMemberId, 
+        Guid id, 
+        string name, 
+        string publicKey, 
+        string secretKey, 
+        decimal commission,
+        bool enabled)
     {
         var settings = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.SitePaymentSettingsRepository.GetById(id));
@@ -196,6 +209,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
         settings.Name = name;
         settings.ApiPublicKey = publicKey;
         settings.ApiSecretKey = secretKey;
+        settings.Enabled = enabled;
 
         _unitOfWork.SitePaymentSettingsRepository.Update(settings);
         await _unitOfWork.SaveChangesAsync();

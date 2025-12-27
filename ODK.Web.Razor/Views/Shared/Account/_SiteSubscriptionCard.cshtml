@@ -1,0 +1,46 @@
+﻿@using ODK.Core.Payments
+@using ODK.Core.Subscriptions
+@using ODK.Services.Subscriptions.ViewModels
+@using ODK.Web.Razor.Models.Payments
+@model SiteSubscriptionViewModel
+@{
+    var subscription = Model.Subscription;
+    var prices = Model.Prices
+        .Where(x => x.IsPaid)
+        .OrderByDescending(x => x.Amount)
+        .ToArray();
+}
+
+<div data-odk-component="_SiteSubscriptionCard">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">@subscription.Name</h5>
+            <div class="card-text">
+                @Html.Raw(subscription.Description)
+
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var price in prices)
+                    {
+                        if (price.ExternalId == null)
+                        {
+                            continue;
+                        }
+
+                        var modalId = $"payment-modal-upgrade-{price.Id}";
+                        var periodUnit = price.Frequency.PeriodUnit();
+
+                        <div class="d-flex align-items-center gap-1">
+                            <div class="button-container mt-3">
+                                <a class="btn btn-primary" href="/account/subscription/@price.Id/checkout">
+                                    Buy
+                                </a>
+
+                                <span>@price.Currency.ToAmountString(price.Amount)/@periodUnit</span>
+                            </div>                            
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

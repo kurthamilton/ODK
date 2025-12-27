@@ -117,7 +117,7 @@ public class ErrorHandlingMiddleware
                 var chapter = await requestCache.GetChapterAsync(requestStore.Platform, chapterName);
                 if (chapter != null)
                 {
-                    return $"/{chapter.Name}/error/{statusCode}";
+                    return $"/{chapter.ShortName}/error/{statusCode}";
                 }
             }
             catch

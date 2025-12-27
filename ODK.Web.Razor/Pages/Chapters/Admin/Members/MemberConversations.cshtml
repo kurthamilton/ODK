@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Admin/Members/{id:guid}/Conversations"
 @using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin
 @model MemberConversationsModel
 @inject IMemberAdminService MemberAdminService
 @{
@@ -10,4 +11,9 @@
     Model.Title = viewModel.Member.GetDisplayName(viewModel.Chapter.Id);
 }
 
-@await Html.PartialAsync("Admin/Members/_MemberConversationsContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Member conversations",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberConversationsContent", viewModel)</div>
+})

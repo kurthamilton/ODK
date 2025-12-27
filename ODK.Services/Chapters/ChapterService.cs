@@ -71,54 +71,46 @@ public class ChapterService : IChapterService
             chapterSubscriptions, 
             chapterPaymentSettings, 
             sitePaymentSettings,
+            chapterPaymentAccount,
             memberSubscriptionRecord
         ) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.MemberSubscriptionRepository.GetByMemberId(currentMemberId, chapterId),
-            x => x.ChapterSubscriptionRepository.GetByChapterId(chapterId, includeDisabled: true),
+            x => x.ChapterSubscriptionRepository.GetDtosByChapterId(chapterId, includeDisabled: true),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.SitePaymentSettingsRepository.GetActive(),
+            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
             x => x.MemberSubscriptionRecordRepository.GetLatest(currentMemberId, chapterId));
 
         OdkAssertions.MemberOf(currentMember, chapterId);
 
         var currentSubscription = chapterSubscriptions
-            .FirstOrDefault(x => x.Id == memberSubscriptionRecord?.ChapterSubscriptionId);
+            .FirstOrDefault(x => x.ChapterSubscription.Id == memberSubscriptionRecord?.ChapterSubscriptionId)
+            ?.ChapterSubscription;
+
+        var sitePaymentSettingsDictionary = sitePaymentSettings
+            .ToDictionary(x => x.Id);
 
         chapterSubscriptions = chapterSubscriptions
-            .Where(x => !x.Disabled && x.Uses(chapterPaymentSettings, sitePaymentSettings))
+            .Where(x => x.ChapterSubscription.IsVisibleToMembers(chapterPaymentSettings, sitePaymentSettings))
             .ToArray();
 
         var externalSubscription = await GetExternalSubscription(
             chapterPaymentSettings, 
-            sitePaymentSettings, 
+            sitePaymentSettings,
+            chapterPaymentAccount,
             memberSubscriptionRecord,
-            chapterSubscriptions);        
+            chapterSubscriptions.Select(x => x.ChapterSubscription).ToArray());        
 
         return new SubscriptionsPageViewModel
         {
+            ChapterPaymentSettings = chapterPaymentSettings,
             ChapterSubscriptions = chapterSubscriptions,
-            Currency = chapterPaymentSettings?.Currency,
+            Currency = chapterPaymentSettings.Currency,
             CurrentSubscription = currentSubscription,
             ExternalSubscription = externalSubscription,
-            MemberSubscription = memberSubscription,
-            PaymentSettings = chapterPaymentSettings?.UseSitePaymentProvider == true
-                ? sitePaymentSettings
-                : chapterPaymentSettings
+            MemberSubscription = memberSubscription
         };
-    }
-
-    public async Task<IPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId)
-    {
-        var (currentMember, chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
-            x => x.SitePaymentSettingsRepository.GetActive());
-
-        OdkAssertions.MemberOf(currentMember, chapterId);
-        return chapterPaymentSettings?.UseSitePaymentProvider == true
-            ? sitePaymentSettings
-            : chapterPaymentSettings;
     }
 
     public async Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId)
@@ -166,8 +158,9 @@ public class ChapterService : IChapterService
     }
 
     private async Task<ExternalSubscription?> GetExternalSubscription(
-        ChapterPaymentSettings? chapterPaymentSettings,
-        SitePaymentSettings sitePaymentSettings,
+        ChapterPaymentSettings chapterPaymentSettings,
+        IReadOnlyCollection<SitePaymentSettings> sitePaymentSettings,
+        ChapterPaymentAccount? chapterPaymentAccount,
         MemberSubscriptionRecord? memberSubscriptionRecord,
         IReadOnlyCollection<ChapterSubscription> chapterSubscriptions)
     {
@@ -185,18 +178,10 @@ public class ChapterService : IChapterService
             return null;
         }
 
-        IPaymentSettings? paymentSettings = chapterSubscription.SitePaymentSettingId != null
-            ? chapterSubscription.SitePaymentSettingId == sitePaymentSettings.Id
-                ? sitePaymentSettings
-                : null
-            : chapterPaymentSettings;
-
-        if (paymentSettings == null)
-        {
-            return null;
-        }
-
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(paymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentSettings, 
+            sitePaymentSettings,
+            chapterPaymentAccount);
 
         return await paymentProvider.GetSubscription(memberSubscriptionRecord.ExternalId);
     }

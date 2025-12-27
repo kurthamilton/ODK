@@ -20,10 +20,10 @@
     var adminMemberOptions = Model.Members
         .Where(x => !adminMemberDictionary.ContainsKey(x.Id))
         .OrderBy(x => x.FullName)
-        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName });
+        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName })
+        .Prepend(new SelectListItem { Value = "" })
+        .ToArray();
 }
-
-<h2 class="d-none d-md-block">Admin members</h2>
 
 <section class="section">
     @if (Model.AdminMembers.Count == 1)

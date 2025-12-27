@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Admin/Members/{id:guid}/Events"
 @using ODK.Services.Members
+@using ODK.Web.Razor.Models.Admin
 @model MemberEventsModel
 @inject IMemberAdminService MemberAdminService
 @{
@@ -9,4 +10,9 @@
     var viewModel = await MemberAdminService.GetMemberEventsViewModel(Model.AdminServiceRequest, Model.MemberId);
 }
 
-@await Html.PartialAsync("Admin/Members/_MemberEventsContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Member events",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberEventsContent", viewModel)</div>
+})

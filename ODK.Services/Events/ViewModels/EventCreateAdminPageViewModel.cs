@@ -17,7 +17,7 @@ public class EventCreateAdminPageViewModel
 
     public required MemberSiteSubscription? OwnerSubscription { get; init; }
 
-    public required ChapterPaymentSettings? PaymentSettings { get; init; }
+    public required ChapterPaymentSettings PaymentSettings { get; init; }
 
     public required PlatformType Platform { get; init; }
 

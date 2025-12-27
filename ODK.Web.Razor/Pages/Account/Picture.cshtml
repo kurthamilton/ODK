@@ -22,10 +22,11 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Picture(null),
+        Title = "Picture",
         Content =
             @<div>
-                <h2>Picture</h2>
-                
+                @await Html.PartialAsync("Account/_AccountPersonalDetailsMenu")
+
                 <section class="section">
                     @await Html.PartialAsync("Account/_UpdatePictureContent", new UpdatePictureViewModel
                     {

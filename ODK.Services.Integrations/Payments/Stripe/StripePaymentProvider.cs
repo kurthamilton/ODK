@@ -14,19 +14,34 @@ namespace ODK.Services.Integrations.Payments.Stripe;
 public class StripePaymentProvider : IPaymentProvider
 {
     private readonly IStripeClient _client;
+    private readonly string? _connectedAccountId;
     private readonly ILoggingService _loggingService;
-
+    private readonly IPaymentSettings _paymentSettings;
+    private readonly StripePaymentProviderSettings _settings;
+    
     public StripePaymentProvider(
         IPaymentSettings paymentSettings,
-        ILoggingService loggingService)
-    {        
-        _client = new StripeClient(paymentSettings.ApiSecretKey);
+        ILoggingService loggingService,
+        string? connectedAccountId,
+        StripePaymentProviderSettings settings)
+    {
+        _client = new StripeClient(new StripeClientOptions
+        {
+            ApiKey = paymentSettings.ApiSecretKey
+        });
+        _connectedAccountId = connectedAccountId;
         _loggingService = loggingService;
+        _paymentSettings = paymentSettings;
+        _settings = settings;
     }
 
     public bool HasCustomers => true;
 
     public bool HasExternalGateway => true;
+
+    public IPaymentSettings PaymentSettings => _paymentSettings;
+
+    public bool SupportsConnectedAccounts => true;
 
     public bool SupportsRecurringPayments => PaymentProviderType.Stripe.SupportsRecurringPayments();
 
@@ -44,22 +59,78 @@ public class StripePaymentProvider : IPaymentProvider
 
     public async Task<bool> CancelSubscription(string externalId)
     {
-        var subscriptionService = CreateSubscriptionService();
+        await _loggingService.Info($"Cancelling Stripe subscription '{externalId}'");
 
+        var service = CreateSubscriptionService();
+        
         try
         {
-            await subscriptionService.CancelAsync(externalId);
+            await service.CancelAsync(externalId);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            await _loggingService.Error($"Error cancelling Stripe subscription '{externalId}'", ex);
             return false;
         }
     }
 
-    public Task<string?> CreateCustomer(string emailAddress)
+    public async Task<RemoteAccount?> CreateConnectedAccount(CreateRemoteAccountOptions options)
     {
-        throw new NotImplementedException();
+        var emailAddress = options.Owner.EmailAddress;
+
+        await _loggingService.Info($"Creating connected stripe account for '{emailAddress}'");
+
+        var service = CreateAccountService();        
+
+        try
+        {
+            var account = await service.CreateAsync(new AccountCreateOptions
+            {
+                Email = emailAddress,
+                Country = options.Country.IsoCode2,
+                Type = "express",
+                BusinessProfile = new AccountBusinessProfileOptions
+                {
+                    Name = options.Chapter.FullName,
+                    Url = CleanConnectedAccountUrl(options.ChapterUrl),
+                    Mcc = _settings.ConnectedAccountMcc,
+                    ProductDescription = _settings.ConnectedAccountProductDescription
+                },
+                BusinessType = "individual",
+                DefaultCurrency = options.ChapterCurrency.Code,
+                Individual = new AccountIndividualOptions
+                {
+                    Email = options.Owner.EmailAddress,
+                    FirstName = options.Owner.FirstName,
+                    LastName = options.Owner.LastName
+                },
+                Capabilities = new AccountCapabilitiesOptions
+                {
+                    CardPayments = new AccountCapabilitiesCardPaymentsOptions
+                    {
+                        Requested = true
+                    },
+                    Transfers = new AccountCapabilitiesTransfersOptions
+                    {
+                        Requested = true
+                    }
+                }
+            });                        
+            
+            return new RemoteAccount
+            {
+                CardPaymentsEnabled = false,
+                Id = account.Id,
+                IdentityDocumentsProvided = false,
+                InitialOnboardingComplete = false,
+            };
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error creating connected stripe account for '{emailAddress}'", ex);
+            return null;
+        }
     }
 
     public async Task<string?> CreateProduct(string name)
@@ -71,7 +142,7 @@ public class StripePaymentProvider : IPaymentProvider
         });
 
         var match = result
-            .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
 
         if (match != null)
         {
@@ -111,7 +182,7 @@ public class StripePaymentProvider : IPaymentProvider
                     _ => 1
                 }
             } : null,
-            UnitAmountDecimal = subscriptionPlan.Amount * 100
+            UnitAmount = ToStripeAmount(subscriptionPlan.Amount)
         };
 
         var result = await service.CreateAsync(options);
@@ -129,6 +200,31 @@ public class StripePaymentProvider : IPaymentProvider
         });
 
         return ServiceResult.Successful();
+    }
+
+    public async Task<string?> GenerateConnectedAccountSetupUrl(GenerateRemoteAccountSetupUrlOptions options)
+    {
+        await _loggingService.Info($"Refreshing connected stripe account for Stripe account '{options.Id}'");
+
+        var service = CreateAccountLinkService();
+
+        try
+        {
+            var link = service.Create(new AccountLinkCreateOptions
+            {
+                Account = options.Id,
+                Type = "account_onboarding",
+                RefreshUrl = options.RefreshUrl,
+                ReturnUrl = options.ReturnUrl
+            });
+
+            return link.Url;
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error refreshing connected stripe account for Stripe account '{options.Id}'", ex);
+            return null;
+        }
     }
 
     public async Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId)
@@ -157,15 +253,6 @@ public class StripePaymentProvider : IPaymentProvider
         {
             return null;
         }
-    }
-
-    public async Task<string?> GetProductId(string name)
-    {
-        var service = CreateProductService();
-        var products = await service.ListAsync();
-        return products
-            .FirstOrDefault(x => string.Equals(name, x.Name, StringComparison.InvariantCultureIgnoreCase))
-            ?.Id;
     }
 
     public async Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments()
@@ -221,7 +308,7 @@ public class StripePaymentProvider : IPaymentProvider
 
                 var remotePayment = new RemotePaymentModel
                 {
-                    Amount = (decimal)payment.AmountPaid / 100,
+                    Amount = FromStripeAmount(payment.AmountPaid),
                     Created = TimeZoneInfo.ConvertTimeFromUtc(created, Chapter.DefaultTimeZone),
                     Currency = invoice.Currency,
                     CustomerEmail = invoice.CustomerEmail,
@@ -234,6 +321,34 @@ public class StripePaymentProvider : IPaymentProvider
         }
 
         return remotePayments;
+    }
+
+    public async Task<RemoteAccount?> GetConnectedAccount(string externalId)
+    {
+        var service = CreateAccountService();
+
+        var account = await service.GetAsync(externalId);
+
+        var initialOnboardingComplete = account.PayoutsEnabled;
+        var identityDocumentsProvided = initialOnboardingComplete &&
+            !account.Requirements?.EventuallyDue?.Contains("individual.verification.document") == true;
+
+        return new RemoteAccount
+        {
+            CardPaymentsEnabled = account.Capabilities.CardPayments == "active",
+            Id = account.Id,
+            IdentityDocumentsProvided = identityDocumentsProvided,
+            InitialOnboardingComplete = initialOnboardingComplete
+        };
+    }
+
+    public async Task<string?> GetProductId(string name)
+    {
+        var service = CreateProductService();
+        var products = await service.ListAsync();
+        return products
+            .FirstOrDefault(x => string.Equals(name, x.Name, StringComparison.InvariantCultureIgnoreCase))
+            ?.Id;
     }
 
     public async Task<ExternalSubscription?> GetSubscription(string externalId)
@@ -282,7 +397,7 @@ public class StripePaymentProvider : IPaymentProvider
 
             return new ExternalSubscriptionPlan
             {
-                Amount = price.UnitAmountDecimal ?? 0,
+                Amount = FromStripeAmount(price.UnitAmount),
                 CurrencyCode = price.Currency,
                 ExternalId = price.Id,
                 ExternalProductId = price.ProductId,
@@ -306,9 +421,12 @@ public class StripePaymentProvider : IPaymentProvider
         string cardToken, string description, Guid memberId, string memberName)
     {
         var service = CreatePaymentIntentService();
+
+        var stripeAmount = ToStripeAmount(amount);
         var intent = await service.CreateAsync(new PaymentIntentCreateOptions
         {
-            Amount = (int)(amount * 100),
+            Amount = stripeAmount,
+            ApplicationFeeAmount = CalculateCommission(stripeAmount),
             Currency = currencyCode.ToLowerInvariant(),
             Description = $"{memberName}: {description}",
             ExtraParams = new Dictionary<string, object>
@@ -330,12 +448,15 @@ public class StripePaymentProvider : IPaymentProvider
             Metadata = new Dictionary<string, string>
             {
                 { "member_id", memberId.ToString() }
-            }
+            },
+            TransferData = !string.IsNullOrEmpty(_connectedAccountId)
+                ? new PaymentIntentTransferDataOptions { Destination = _connectedAccountId } 
+                : null,
         });
 
         intent = await service.ConfirmAsync(intent.Id);
         return RemotePaymentResult.Successful(intent.Id);
-    }    
+    }        
 
     public Task<string?> SendPayment(string currencyCode, decimal amount, 
         string emailAddress, string paymentId, string note)
@@ -345,15 +466,21 @@ public class StripePaymentProvider : IPaymentProvider
 
     public async Task<ExternalCheckoutSession> StartCheckout(
         ServiceRequest request, 
+        string emailAddress,
         ExternalSubscriptionPlan subscriptionPlan, 
         string returnPath, 
         PaymentMetadataModel metadata)
     {
-        var baseUrl = UrlUtils.BaseUrl(request.HttpRequestContext.RequestUrl);
+        var returnUrl = UrlUtils.Url(
+            baseUrl: request.HttpRequestContext.BaseUrl,
+            path: returnPath.Replace("{sessionId}", "{CHECKOUT_SESSION_ID}"));
 
         var metadataDictionary = new Dictionary<string, string>(metadata.ToDictionary());
 
         var service = CreateSessionService();
+
+        var stripeAmount = ToStripeAmount(subscriptionPlan.Amount);
+
         var session = await service.CreateAsync(new SessionCreateOptions
         {
             UiMode = "embedded",
@@ -366,16 +493,27 @@ public class StripePaymentProvider : IPaymentProvider
                 }
             },
             Mode = subscriptionPlan.Recurring ? "subscription" : "payment",
-            ReturnUrl = baseUrl + returnPath.Replace("{sessionId}", "{CHECKOUT_SESSION_ID}"),
+            ReturnUrl = returnUrl,
             AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false },
-            Metadata = metadataDictionary,            
+            Metadata = metadataDictionary,
+            CustomerEmail = emailAddress,
             PaymentIntentData = !subscriptionPlan.Recurring ? new SessionPaymentIntentDataOptions
             {
-                Metadata = metadataDictionary
+                ApplicationFeeAmount = CalculateCommission(stripeAmount),
+                Metadata = metadataDictionary,
+                TransferData = !string.IsNullOrEmpty(_connectedAccountId)
+                    ? new SessionPaymentIntentDataTransferDataOptions { Destination = _connectedAccountId }
+                    : null
             } : null,
             SubscriptionData = subscriptionPlan.Recurring ? new SessionSubscriptionDataOptions
             {
-                Metadata = metadataDictionary
+                ApplicationFeePercent = !string.IsNullOrEmpty(_connectedAccountId) 
+                    ? _settings.ConnectedAccountCommissionPercentage
+                    : null,
+                Metadata = metadataDictionary,
+                TransferData = !string.IsNullOrEmpty(_connectedAccountId)
+                    ? new SessionSubscriptionDataTransferDataOptions { Destination = _connectedAccountId }
+                    : null
             } : null
         });
         
@@ -402,9 +540,32 @@ public class StripePaymentProvider : IPaymentProvider
         });
     }
 
-    public Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken)
+    private static decimal FromStripeAmount(long? stripeAmount) => (stripeAmount ?? 0) / 100;
+
+    private static long ToStripeAmount(decimal amount) => (long)(amount * 100);
+
+    private long? CalculateCommission(long stripeAmount)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrEmpty(_connectedAccountId))
+        {
+            return null;
+        }
+
+        return (long)(stripeAmount * _settings.ConnectedAccountCommissionPercentage / 100);
+    }
+
+    private string? CleanConnectedAccountUrl(string url)
+    {
+        // do not send localhost to Stripe
+        var baseUrl = UrlUtils.BaseUrl(url);
+        if (!string.IsNullOrEmpty(_settings.ConnectedAccountBaseUrl))
+        {
+            return url.Replace(baseUrl, _settings.ConnectedAccountBaseUrl, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase)
+            ? baseUrl
+            : null;
     }
 
     private async Task<IReadOnlyCollection<Invoice>> GetAllInvoices(
@@ -428,10 +589,12 @@ public class StripePaymentProvider : IPaymentProvider
         return await service.ListAutoPagingAsync().All();
     }
 
-    private InvoiceService CreateInvoiceService() => new InvoiceService(_client);
-    private PaymentIntentService CreatePaymentIntentService() => new PaymentIntentService(_client);
-    private PriceService CreatePriceService() => new PriceService(_client);
-    private ProductService CreateProductService() => new ProductService(_client);
-    private SessionService CreateSessionService() => new SessionService(_client);
-    private SubscriptionService CreateSubscriptionService() => new SubscriptionService(_client);
+    private AccountLinkService CreateAccountLinkService() => new(_client);
+    private AccountService CreateAccountService() => new(_client);
+    private InvoiceService CreateInvoiceService() => new(_client);
+    private PaymentIntentService CreatePaymentIntentService() => new(_client);
+    private PriceService CreatePriceService() => new(_client);
+    private ProductService CreateProductService() => new(_client);
+    private SessionService CreateSessionService() => new(_client);
+    private SubscriptionService CreateSubscriptionService() => new(_client);
 }

@@ -8,5 +8,5 @@ public class ChapterPropertyOption : IDatabaseEntity
 
     public Guid Id { get; set; }
 
-    public string Value { get; set; } = "";
+    public string Value { get; set; } = string.Empty;
 }

@@ -48,7 +48,11 @@ public class GroupRoutes
     
     public string Questions(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/faq");
 
-    public string Subscription(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/subscription");
+    public string Subscription(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => OdkRoutes.Account.Subscription(platform, chapter),
+        _ => GroupPath(platform, chapter, "/subscription")
+    };
 
     public string SubscriptionCheckout(PlatformType platform, Chapter chapter, ChapterSubscription subscription)
         => $"{Subscription(platform, chapter)}/{subscription.Id}/checkout";

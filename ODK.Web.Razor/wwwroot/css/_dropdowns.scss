@@ -28,6 +28,17 @@
     }
 }
 
+.dropdown-item--header {
+    --bs-dropdown-header-padding-x: var(--bs-dropdown-item-padding-x);
+    --bs-dropdown-header-padding-y: var(--bs-dropdown-item-padding-y);
+
+    display: flex;
+    justify-content: end;
+    
+    font-weight: 700;
+    font-size: 1rem;
+}
+
 .dropdown-item--icon {
     display: flex;
     justify-content: space-between;

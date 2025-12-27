@@ -18,7 +18,11 @@
 {
     Breadcrumbs = new []
     {
-        new MenuItem { Link = OdkRoutes.Groups.Group(PlatformType.Default, chapter), Text = chapter.Name },
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Groups.Group(Model.Platform, chapter), 
+            Text = chapter.GetDisplayName(Model.Platform)
+        },
         new MenuItem { Text = Model.ErrorStatusCode.ErrorPageTitle() }
     },
     Content = await Html.PartialAsync("Errors/_ErrorPage", Model.ErrorStatusCode),

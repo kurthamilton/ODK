@@ -1,6 +1,6 @@
 using ODK.Services.Caching;
 
-namespace ODK.Web.Razor.Pages.SuperAdmin;
+namespace ODK.Web.Razor.Pages.SuperAdmin.Subscriptions;
 
 public class SubscriptionModel : SuperAdminPageModel
 {

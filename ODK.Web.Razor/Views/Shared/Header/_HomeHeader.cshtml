@@ -4,6 +4,7 @@
 @using ODK.Core.Utils
 @using ODK.Services.Caching
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Header
 @model OdkComponentContext
@@ -23,8 +24,8 @@
         .Select(c => new MenuItem
         {
             ExternalLink = !string.IsNullOrEmpty(c.RedirectUrl) ? c.RedirectUrl : null,
-            Link = string.IsNullOrEmpty(c.RedirectUrl) ? $"/{c.Name}" : null,
-            Text = c.Name,
+            Link = string.IsNullOrEmpty(c.RedirectUrl) ? OdkRoutes.Groups.Group(Model.Platform, c) : null,
+            Text = c.GetDisplayName(Model.Platform)
         })
         .ToArray();
 }

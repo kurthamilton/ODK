@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Questions"
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.QuestionsModel
 @inject IChapterAdminService ChapterAdminService
@@ -10,4 +11,9 @@
     var viewModel = await ChapterAdminService.GetChapterQuestionsViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_QuestionsContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "FAQ",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_QuestionsContent", viewModel)</div>
+})

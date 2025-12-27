@@ -1,18 +1,36 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model TwoColLeftMenuViewModel
+@{
+    var hasTitle = !string.IsNullOrEmpty(Model.Title);
+}
 
 <div class="d-block d-md-flex">
-    <div>
-        @if (Model.MenuContentFunc != null)
-        {
-            @Model.MenuContentFunc.Invoke(null)
-        }
-        else if (Model.MenuContent != null)
-        {
-            @Model.MenuContent
-        }
+    <div class="d-none d-md-block">
+        @await Model.MenuContentFunc.Invoke(null)
     </div>
-    <div class="ps-md-5 flex-grow-1">        
-        @Model.BodyContentFunc.Invoke(null)
+    <div class="ps-md-5 flex-grow-1">
+        <div class="d-flex">
+            
+            @if (hasTitle)
+            {
+                <h2 class="me-auto">@Model.Title</h2>
+            }
+            else
+            {
+                @*dummy element to push navbar toggler to end*@
+                <div class="me-auto"></div>
+            }
+
+            <button class="navbar-toggler d-md-none mb-3" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#side-menu-nav" aria-controls="side-menu-nav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+        <div class="d-md-none collapse" id="side-menu-nav">
+            @await Model.MenuContentFunc.Invoke(null)
+        </div>
+        <div class="@(hasTitle ? "mt-3" : null)">
+            @Model.BodyContentFunc.Invoke(null)
+        </div>        
     </div>
 </div>

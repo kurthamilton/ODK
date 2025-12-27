@@ -101,10 +101,18 @@ public static class DependencyConfig
         {
             ApiBaseUrl = payments.PayPal.ApiBaseUrl
         });
+        services.AddSingleton(new StripePaymentProviderSettings
+        {
+            ConnectedAccountBaseUrl = payments.Stripe.ConnectedAccountBaseUrl,
+            ConnectedAccountCommissionPercentage = payments.Stripe.ConnectedAccountCommissionPercentage,
+            ConnectedAccountMcc = payments.Stripe.ConnectedAccountMcc,
+            ConnectedAccountProductDescription = payments.Stripe.ConnectedAccountProductDescription
+        });
         services.AddScoped<IStripeWebhookParser, StripeWebhookParser>();
         services.AddSingleton(new StripeWebhookParserSettings
         {
-            WebhookSecret = appSettings.Payments.Stripe.WebhookSecret
+            WebhookSecretV1 = appSettings.Payments.Stripe.WebhookSecretV1,
+            WebhookSecretV2 = appSettings.Payments.Stripe.WebhookSecretV2
         });
     }
 

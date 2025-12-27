@@ -19,41 +19,39 @@
         .ToArray();
 }
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+@if (Model.Venues.Count > 0)
 {
-    Breadcrumbs = new[]
-    {
-        new MenuItem
+    <form method="post">
+        @*@Html.AntiForgeryToken()*@
+
+        @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
         {
-            Link = OdkRoutes.MemberGroups.Events(Model.Platform, Model.Chapter),
-            Text = "Events"
-        },
-        new MenuItem { Text = "New" }
-    },
-    Title = "Create event",
-    ContentFunc = 
-        @<div>
-            <form method="post">
-                @*@Html.AntiForgeryToken()*@
-    
-                @await Html.PartialAsync("Admin/Events/Event/_EventForm", new EventFormViewModel
-                {
-                    Chapter = Model.Chapter,
-                    Date = Model.Date,
-                    Description = Model.EventSettings?.DefaultDescription,
-                    EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
-                    HostOptions = hostOptions,
-                    OwnerSubscription = Model.OwnerSubscription,
-                    PaymentSettings = Model.PaymentSettings,
-                    Platform = Model.Platform,
-                    Venue = Model.VenueId ?? default,
-                    Venues = Model.Venues
-                })
-    
-                <div class="button-container">
-                    <button type="submit" class="btn btn-primary">Create</button>
-                    <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
-                </div>
-            </form>
-        </div>
-})
+            Chapter = Model.Chapter,
+        Date = Model.Date,
+        Description = Model.EventSettings?.DefaultDescription,
+        EndTime = TimeSpanUtils.ToString(Model.EventSettings?.DefaultEndTime),
+        HostOptions = hostOptions,
+        OwnerSubscription = Model.OwnerSubscription,
+        PaymentSettings = Model.PaymentSettings,
+        Platform = Model.Platform,
+        Venue = Model.VenueId ?? default,
+        Venues = Model.Venues
+        })
+
+    <div class="button-container">
+        <button type="submit" class="btn btn-primary">Create</button>
+        <button type="submit" class="btn btn-secondary" name="draft" value="true">Save as draft</button>
+    </div>
+</form>
+            }
+else
+{
+    var venueCreateUrl = OdkRoutes.MemberGroups.VenueCreate(Model.Platform, Model.Chapter);
+
+    <p>
+        You have not yet created any venues.
+    </p>
+    <p>
+        <a class="btn btn-primary" href="@venueCreateUrl">Create venue</a>
+    </p>
+}

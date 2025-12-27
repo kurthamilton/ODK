@@ -24,6 +24,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly Lazy<IChapterLinksRepository> _chapterLinksRepository;
     private readonly Lazy<IChapterLocationRepository> _chapterLocationRepository;
     private readonly Lazy<IChapterMembershipSettingsRepository> _chapterMembershipSettingsRepository;
+    private readonly Lazy<IChapterPaymentAccountRepository> _chapterPaymentAccountRepository;
     private readonly Lazy<IChapterPaymentSettingsRepository> _chapterPaymentSettingsRepository;
     private readonly Lazy<IChapterPrivacySettingsRepository> _chapterPrivacySettingsRepository;
     private readonly Lazy<IChapterPropertyOptionRepository> _chapterPropertyOptionRepository;
@@ -112,6 +113,7 @@ public class UnitOfWork : IUnitOfWork
         _chapterLinksRepository = new(() => new ChapterLinksRepository(_context));
         _chapterLocationRepository = new(() => new ChapterLocationRepository(_context));
         _chapterMembershipSettingsRepository = new(() => new ChapterMembershipSettingsRepository(_context));
+        _chapterPaymentAccountRepository = new(() => new ChapterPaymentAccountRepository(_context));
         _chapterPaymentSettingsRepository = new(() => new ChapterPaymentSettingsRepository(_context));
         _chapterPrivacySettingsRepository = new(() => new ChapterPrivacySettingsRepository(_context));
         _chapterPropertyOptionRepository = new(() => new ChapterPropertyOptionRepository(_context));
@@ -196,6 +198,7 @@ public class UnitOfWork : IUnitOfWork
     public IChapterLinksRepository ChapterLinksRepository => _chapterLinksRepository.Value;
     public IChapterLocationRepository ChapterLocationRepository => _chapterLocationRepository.Value;
     public IChapterMembershipSettingsRepository ChapterMembershipSettingsRepository => _chapterMembershipSettingsRepository.Value;
+    public IChapterPaymentAccountRepository ChapterPaymentAccountRepository => _chapterPaymentAccountRepository.Value;
     public IChapterPaymentSettingsRepository ChapterPaymentSettingsRepository => _chapterPaymentSettingsRepository.Value;
     public IChapterPrivacySettingsRepository ChapterPrivacySettingsRepository => _chapterPrivacySettingsRepository.Value;
     public IChapterPropertyOptionRepository ChapterPropertyOptionRepository => _chapterPropertyOptionRepository.Value;

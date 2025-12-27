@@ -1,37 +1,12 @@
-﻿@using ODK.Core.Chapters
-@using ODK.Core.DataTypes
-@using ODK.Core.Platforms
-@using ODK.Web.Common.Components
-@using ODK.Web.Common.Routes
-@using ODK.Web.Razor.Models
-@using ODK.Web.Razor.Models.Admin
+﻿@using ODK.Core.DataTypes
 @using ODK.Web.Razor.Models.Admin.Chapters
-@using ODK.Web.Razor.Models.Components
-@using ODK.Web.Razor.Views
-@model OdkComponentViewModel<Chapter>
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Breadcrumbs = new[]
+<form method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
     {
-        new MenuItem
-        {
-            Link = OdkRoutes.MemberGroups.GroupProperties(Model.Platform, Model.Value),
-            Text = "Member properties"
-        },
-        new MenuItem { Text = "New" }
-    },
-    Title = "Create member property",
-    ContentFunc = 
-        @<div>
-            <form method="post">
-                @*@Html.AntiForgeryToken()*@
-                @await Html.PartialAsync("Admin/Chapter/_PropertyForm", new ChapterPropertyFormViewModel
-                {
-                    DataType = DataType.Text,
-                    DataTypeEnabled = true
-                })
-                <button class="btn btn-primary">Create</button>
-            </form>
-        </div>
-})
+        DataType = DataType.Text,
+        DataTypeEnabled = true
+    })
+    <button class="btn btn-primary">Create</button>
+</form>

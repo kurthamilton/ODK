@@ -3,13 +3,13 @@ using ODK.Services.Chapters;
 using ODK.Services.Chapters.Models;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
-namespace ODK.Web.Razor.Pages.My.Groups.Group;
+namespace ODK.Web.Razor.Pages.My.Groups.Group.Payments;
 
-public class PaymentsModel : OdkGroupAdminPageModel
+public class IndexModel : OdkGroupAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public PaymentsModel(IChapterAdminService chapterAdminService)
+    public IndexModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
     }

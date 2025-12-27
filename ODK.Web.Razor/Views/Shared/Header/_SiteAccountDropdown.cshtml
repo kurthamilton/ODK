@@ -1,79 +1,85 @@
 ﻿@using ODK.Services.Authentication
 @using ODK.Web.Common.Components
-@using ODK.Web.Common.Extensions
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Components
 @model OdkComponentContext
 
-@if (User.Authenticated())
-{
-    <div class="dropdown" role="button">
-        <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">
-            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.User))
-        </div>
-        <div class="dropdown-menu dropdown-menu-end">
-            <a class="dropdown-item dropdown-item--icon" href="/account">
-                <span class="icon">
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.UserOutline))
-                </span>
-                <span>My account</span>
-            </a>
-            <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.Index(Model.Platform)">
-                <span class="icon">
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Groups))
-                </span>
-                <span>My groups</span>
-            </a>
+<div data-odk-component="_SiteAccountDropdown">
+    @if (Model.CurrentMemberIdOrDefault != null)
+    {
+        <div class="dropdown" role="button">
+            <div class="text-light account-links__user dropdown-toggle" data-bs-toggle="dropdown">
+                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.User))
+            </div>
+            <div class="dropdown-menu dropdown-menu-end">
+                <a class="dropdown-item dropdown-item--icon" href="/account">
+                    <span class="icon">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.UserOutline))
+                    </span>
+                    <span>My account</span>
+                </a>
 
-            <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.GroupCreate(Model.Platform)">
-                <span class="icon">
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
-                </span>
-                <span>Create group</span>
-            </a>
-
-            <div class="dropdown-divider"></div>
-
-            <a class="dropdown-item dropdown-item--icon" href="#" data-theme-selector="dark">
-                <span class="icon">
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Moon))
-                </span>
-                <span>Dark mode</span>
-            </a>
-            <a class="dropdown-item dropdown-item--icon" href="#" data-theme-selector="light">
-                <span class="icon">
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Sun))
-                </span>
-                <span>Light mode</span>
-            </a>
-
-            @if (User.IsInRole(OdkRoles.SuperAdmin))
-            {
                 <div class="dropdown-divider"></div>
 
-                <a class="dropdown-item dropdown-item--icon" href="/superadmin">
-                    <span class="icon">
-                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Wrench))
-                    </span>
-                    <span>Site admin</span>
-                </a>
-            }
+                <div class="dropdown-header dropdown-item--header">Groups</div>
 
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item dropdown-item--icon" href="/account/logout">
-                <span class="icon">
-                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Logout))
-                </span>
-                <span>Sign Out</span>
-            </a>
+                <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.Index(Model.Platform)">
+                    <span class="icon">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Groups))
+                    </span>
+                    <span>My groups</span>
+                </a>
+
+                <a class="dropdown-item dropdown-item--icon" href="@OdkRoutes.MemberGroups.GroupCreate(Model.Platform)">
+                    <span class="icon">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Plus))
+                    </span>
+                    <span>Create</span>
+                </a>
+
+                <div class="dropdown-divider"></div>
+
+                <a class="dropdown-item dropdown-item--icon" href="#" data-theme-selector="dark">
+                    <span class="icon">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Moon))
+                    </span>
+                    <span>Dark mode</span>
+                </a>
+                <a class="dropdown-item dropdown-item--icon" href="#" data-theme-selector="light">
+                    <span class="icon">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Sun))
+                    </span>
+                    <span>Light mode</span>
+                </a>
+
+                @if (User.IsInRole(OdkRoles.SuperAdmin))
+                {
+                    <div class="dropdown-divider"></div>
+
+                    <a class="dropdown-item dropdown-item--icon" href="/superadmin">
+                        <span class="icon">
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Wrench))
+                        </span>
+                        <span>Site admin</span>
+                    </a>
+                }
+
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item dropdown-item--icon" href="/account/logout">
+                    <span class="icon">
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Logout))
+                    </span>
+                    <span>Sign Out</span>
+                </a>
+            </div>
         </div>
-    </div>
-}
-else
-{
-    <div class="button-container">
-        <a class="btn btn-outline-primary anonymous-link" href="/account/login">Sign in</a>
-        <a class="btn btn-primary anonymous-link" href="/account/create">Sign up</a>
-    </div>
-}
+    }
+    else
+    {
+        <div class="button-container">
+            <a class="btn btn-outline-primary anonymous-link" href="/account/login">Sign in</a>
+            <a class="btn btn-primary anonymous-link" href="/account/create">Sign up</a>
+        </div>
+    }
+</div>

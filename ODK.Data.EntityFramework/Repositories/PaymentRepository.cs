@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using Microsoft.EntityFrameworkCore;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
@@ -79,6 +80,11 @@ public class PaymentRepository : ReadWriteRepositoryBase<Payment>, IPaymentRepos
         
         return query.DeferredMultiple();
     }
+
+    public IDeferredQueryMultiple<PaymentDto> GetSitePaymentsByMemberId(Guid memberId)
+        => DtoQuery()
+            .Where(x => x.Payment.ChapterId == null)
+            .DeferredMultiple();
 
     private IQueryable<PaymentDto> DtoQuery()
     {

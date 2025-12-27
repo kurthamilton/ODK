@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}"
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model IndexModel
 @inject IChapterAdminService ChapterAdminService
 @{
@@ -7,7 +9,15 @@
 
     var viewModel = await ChapterAdminService.GetChapterAdminPageViewModel(Model.AdminServiceRequest);
 
-    Model.Title = viewModel.Chapter.Name;
+    Model.Title = viewModel.Chapter.GetDisplayName(Model.Platform);
 }
 
-@await Html.PartialAsync("Groups/_GroupEditContent", viewModel)
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Admin",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Groups/_GroupEditContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = viewModel.Chapter
+    })
+})

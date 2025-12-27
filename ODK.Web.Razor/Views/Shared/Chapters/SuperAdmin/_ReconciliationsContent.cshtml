@@ -50,7 +50,7 @@
                                 @payment.Reference
                             </td>
                             <td>
-                                <form action="/@Model.Value.Name/Admin/SuperAdmin/Payments/@payment.Id/Reconciliation-Status" method="post">
+                                <form action="/@Model.Value.ShortName/Admin/SuperAdmin/Payments/@payment.Id/Reconciliation-Status" method="post">
                                     <button class="btn btn-danger btn-sm">
                                         Exempt
                                     </button>
@@ -77,7 +77,7 @@
         
         <div>
             <h4>Create Reconciliation</h4>
-            <form action="/@Model.Value.Name/Admin/SuperAdmin/Payments/Reconciliations" method="post">
+            <form action="/@Model.Value.ShortName/Admin/SuperAdmin/Payments/Reconciliations" method="post">
                 @await Html.PartialAsync("Chapters/SuperAdmin/_ReconciliationForm", new ReconciliationFormViewModel
                 {
                     PaymentIds = viewModel.PendingReconciliations.Select(x => x.Payment.Id).ToList(),

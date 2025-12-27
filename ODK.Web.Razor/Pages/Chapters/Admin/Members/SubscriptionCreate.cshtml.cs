@@ -33,14 +33,13 @@ public class SubscriptionCreateModel : AdminPageModel
             Months = viewModel.DurationMonths ?? 0,
             Name = viewModel.Name,
             Recurring = viewModel.Recurring,
-            Title = viewModel.Title,
-            Type = viewModel.Type            
+            Title = viewModel.Title
         });
 
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Subscription created", FeedbackType.Success));
-            return Redirect($"/{Chapter.Name}/Admin/Members/Subscriptions");
+            return Redirect($"/{Chapter.ShortName}/Admin/Members/Subscriptions");
         }
 
         AddFeedback(new FeedbackViewModel(result));

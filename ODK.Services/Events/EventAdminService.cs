@@ -51,7 +51,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             currentMember, 
             venue, 
             settings, 
-            chapterPaymentSettings,
             members,
             notificationSettings,
             chapterTopics
@@ -62,7 +61,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             x => x.MemberRepository.GetById(currentMemberId),
             x => x.VenueRepository.GetById(model.VenueId),
             x => x.ChapterEventSettingsRepository.GetByChapterId(chapterId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetAllByChapterId(chapterId),
             x => x.MemberNotificationSettingsRepository.GetByChapterId(chapterId, NotificationType.NewEvent),
             x => x.ChapterTopicRepository.GetByChapterId(chapterId));
@@ -99,7 +97,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             } : null;
         }
 
-        var validationResult = ValidateEvent(@event, venue, chapterPaymentSettings);
+        var validationResult = ValidateEvent(@event, venue);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -592,15 +590,14 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     public async Task<ServiceResult> UpdateEvent(MemberChapterServiceRequest request, Guid id, CreateEvent model)
     {
-        var (chapter, ownerSubscription, chapterAdminMembers, currentMember, @event, hosts, venue, chapterPaymentSettings) = await GetChapterAdminRestrictedContent(request,
+        var (chapter, ownerSubscription, chapterAdminMembers, currentMember, @event, hosts, venue) = await GetChapterAdminRestrictedContent(request,
             x => x.ChapterRepository.GetById(request.ChapterId),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(request.ChapterId),
             x => x.ChapterAdminMemberRepository.GetByChapterId(request.ChapterId),
             x => x.MemberRepository.GetById(request.CurrentMemberId),
             x => x.EventRepository.GetById(id),
             x => x.EventHostRepository.GetByEventId(id),
-            x => x.VenueRepository.GetById(model.VenueId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId));
+            x => x.VenueRepository.GetById(model.VenueId));
 
         OdkAssertions.BelongsToChapter(@event, request.ChapterId);
 
@@ -639,7 +636,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             @event.TicketSettings = null;
         }
         
-        var validationResult = ValidateEvent(@event, venue, chapterPaymentSettings);
+        var validationResult = ValidateEvent(@event, venue);
         if (!validationResult.Success)
         {
             return validationResult;
@@ -858,8 +855,7 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
 
     private static ServiceResult ValidateEvent(
         Event @event, 
-        Venue venue, 
-        ChapterPaymentSettings? chapterPaymentSettings)
+        Venue venue)
     {
         var messages = new List<string>();
 
@@ -904,11 +900,6 @@ public class EventAdminService : OdkAdminServiceBase, IEventAdminService
             if (ticketSettings.Cost < ticketSettings.Deposit)
             {
                 messages.Add("Ticket cost cannot be less than the deposit");
-            }
-
-            if (chapterPaymentSettings == null)
-            {
-                messages.Add("Cannot setup tickets before payment settings have been set up");
             }
         }
 

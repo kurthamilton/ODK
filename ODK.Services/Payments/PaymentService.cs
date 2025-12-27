@@ -1,6 +1,4 @@
 ﻿using ODK.Core;
-using ODK.Core.Chapters;
-using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
@@ -21,9 +19,9 @@ public class PaymentService : IPaymentService
 
     public PaymentService(
         IUnitOfWork unitOfWork, 
-        IPaymentProviderFactory paymentProviderFactory,
         ILoggingService loggingService,
-        IMemberEmailService memberEmailService)
+        IMemberEmailService memberEmailService,
+        IPaymentProviderFactory paymentProviderFactory)
     {
         _loggingService = loggingService;
         _memberEmailService = memberEmailService;
@@ -31,114 +29,60 @@ public class PaymentService : IPaymentService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult> ActivateSubscriptionPlan(IPaymentSettings settings, string externalId)
+    public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
+        MemberChapterServiceRequest request, string externalSessionId)
     {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.ActivateSubscriptionPlan(externalId);
-    }
+        var (chapterPaymentSettings, sitePaymentSettings, paymentAccount, checkoutSession) = await _unitOfWork.RunAsync(
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
+            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(request.ChapterId),
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
 
-    public async Task<ServiceResult> CancelSubscription(IPaymentSettings settings, string externalId)
-    {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        var result = await provider.CancelSubscription(externalId);
-        return result
-            ? ServiceResult.Successful()
-            : ServiceResult.Failure("Error canceling subscription");
-    }    
+        OdkAssertions.Exists(checkoutSession);
 
-    public async Task<string?> CreateProduct(IPaymentSettings settings, string name)
-    {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.CreateProduct(name);
-    }
-
-    public async Task<string?> CreateSubscriptionPlan(IPaymentSettings settings, ExternalSubscriptionPlan subscriptionPlan)
-    {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.CreateSubscriptionPlan(subscriptionPlan);
-    }
-
-    public async Task<ServiceResult> DeactivateSubscriptionPlan(IPaymentSettings settings, string externalId)
-    {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.DeactivateSubscriptionPlan(externalId);
-    }
-
-    public async Task<ExternalCheckoutSession?> GetCheckoutSession(IPaymentSettings settings, string externalId)
-    {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.GetCheckoutSession(externalId);
-    }
-
-    public async Task<string?> GetProductId(IPaymentSettings settings, string name)
-    {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.GetProductId(name);
-    }
-
-    public async Task<ExternalSubscription?> GetSubscription(IPaymentSettings settings, string externalId)
-    {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.GetSubscription(externalId);
-    }
-
-    public async Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(IPaymentSettings settings, string externalId)
-    {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.GetSubscriptionPlan(externalId);
-    }
-
-    public async Task<ServiceResult> MakePayment(
-        ChapterPaymentSettings chapterPaymentSettings, 
-        Currency currency, 
-        Member member, 
-        decimal amount, 
-        string cardToken, 
-        string reference)
-    {
-        var sitePaymentSettings = await _unitOfWork.SitePaymentSettingsRepository.GetActive().Run();
-
-        var sitePaymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings);
-
-        var paymentProvider = chapterPaymentSettings.HasApiKey
-            ? _paymentProviderFactory.GetPaymentProvider(chapterPaymentSettings)
-            : sitePaymentProvider;
-
-        var paymentResult = await paymentProvider.MakePayment(
-            currency.Code, 
-            amount, 
-            cardToken, 
-            reference,
-            member.Id,
-            member.FullName);
-        if (!paymentResult.Success)
+        if (checkoutSession.CompletedUtc != null)
         {
-            await _loggingService.Error(
-                $"Error making payment for member {member.Id} for {amount} with reference '{reference}': {paymentResult.Message}");
-            return ServiceResult.Failure(paymentResult.Message);
+            return PaymentStatusType.Complete;
         }
 
-        var payment = new Payment
-        {
-            Amount = amount,
-            ChapterId = chapterPaymentSettings.ChapterId,
-            CurrencyId = currency.Id,
-            ExternalId = paymentResult.Id,
-            MemberId = member.Id,
-            PaidUtc = DateTime.UtcNow,
-            Reference = reference
-        };
-        _unitOfWork.PaymentRepository.Add(payment);
-        await _unitOfWork.SaveChangesAsync();
+        var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
 
-        if (!chapterPaymentSettings.HasApiKey && !string.IsNullOrEmpty(chapterPaymentSettings.EmailAddress))
-        {
-            amount = Math.Round(amount - (0.025M * amount), 2);
-            await sitePaymentProvider.SendPayment(currency.Code, amount,
-                chapterPaymentSettings.EmailAddress, payment.Id.ToString(), reference);
-        }        
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentSettings, 
+            sitePaymentSettings,
+            paymentAccount);
 
-        return ServiceResult.Successful();
+        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
+
+        return externalSession == null || externalSession.Metadata.ChapterId != request.ChapterId
+            ? PaymentStatusType.Expired
+            : PaymentStatusType.Pending;
+    }
+
+    public async Task<PaymentStatusType> GetMemberSitePaymentCheckoutSessionStatus(
+        MemberServiceRequest request, string externalSessionId)
+    {
+        var (checkoutSession, sitePaymentSettings) = await _unitOfWork.RunAsync(
+            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId),
+            x => x.SitePaymentSettingsRepository.GetAll());
+
+        OdkAssertions.Exists(checkoutSession);
+
+        if (checkoutSession.CompletedUtc != null)
+        {
+            return PaymentStatusType.Complete;
+        }
+
+        var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
+
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(
+            sitePaymentSettings, payment.SitePaymentSettingId);
+
+        var externalSession = await paymentProvider.GetCheckoutSession(externalSessionId);
+
+        return externalSession == null
+            ? PaymentStatusType.Expired
+            : PaymentStatusType.Pending;
     }
 
     public async Task ProcessWebhook(
@@ -170,6 +114,10 @@ public class PaymentService : IPaymentService
         {
             result = await ProcessWebhookSubscription(request, webhook);
         }
+        else if (webhook.Type == PaymentProviderWebhookType.PaymentSucceeded)
+        {
+            result = await ProcessWebhookPayment(webhook);
+        }
         else
         {
             result = PaymentWebhookProcessingResult.Failure();
@@ -192,24 +140,7 @@ public class PaymentService : IPaymentService
 
             await _memberEmailService.SendPaymentNotification(request, member, payment, currency, siteEmailSettings);
         }
-    }
-
-    public async Task<ExternalCheckoutSession> StartCheckoutSession(
-        ServiceRequest request,
-        IPaymentSettings settings, 
-        ExternalSubscriptionPlan subscriptionPlan,
-        string returnPath,
-        PaymentMetadataModel metadata)
-    {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        return await provider.StartCheckout(request, subscriptionPlan, returnPath, metadata);
-    }
-
-    public async Task UpdatePaymentMetadata(IPaymentSettings settings, string externalId, PaymentMetadataModel metadata)
-    {
-        var provider = _paymentProviderFactory.GetPaymentProvider(settings);
-        await provider.UpdatePaymentMetadata(externalId, metadata);
-    }
+    }    
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(PaymentProviderWebhook webhook)
     {
@@ -358,7 +289,8 @@ public class PaymentService : IPaymentService
                 CurrencyId = chapterPaymentSettings.CurrencyId,
                 Id = Guid.NewGuid(),
                 MemberId = member.Id,
-                Reference = chapterSubscription.ToReference()
+                Reference = chapterSubscription.ToReference(),
+                SitePaymentSettingId = chapterSubscription.SitePaymentSettingId
             };
         }
 
@@ -459,7 +391,8 @@ public class PaymentService : IPaymentService
                 CurrencyId = siteSubscriptionPrice.CurrencyId,                
                 Id = Guid.NewGuid(),
                 MemberId = member.Id,
-                Reference = siteSubscription.ToReference()
+                Reference = siteSubscription.ToReference(),
+                SitePaymentSettingId = siteSubscription.SitePaymentSettingId
             };
         }
 
@@ -495,13 +428,21 @@ public class PaymentService : IPaymentService
             }
         }
 
-        return await UpdateMemberSiteSubscription(
-            request,
-            member,
-            siteSubscriptionPrice,
-            payment,
-            externalId: webhook.SubscriptionId,
-            utcNow);
+        try
+        {
+            return await UpdateMemberSiteSubscription(
+                request,
+                member,
+                siteSubscription,
+                siteSubscriptionPrice,
+                payment,
+                externalId: webhook.SubscriptionId,
+                utcNow);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
     }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSubscription(
@@ -632,6 +573,8 @@ public class PaymentService : IPaymentService
             Type = chapterSubscription.Type
         });
 
+        await _unitOfWork.SaveChangesAsync();
+
         return PaymentWebhookProcessingResult.Successful(
             member, payment, chapterPaymentSettings.Currency);
     }
@@ -639,6 +582,7 @@ public class PaymentService : IPaymentService
     private async Task<PaymentWebhookProcessingResult> UpdateMemberSiteSubscription(
         ServiceRequest request,
         Member member,
+        SiteSubscription siteSubscription,
         SiteSubscriptionPrice siteSubscriptionPrice,
         Payment payment,
         string externalId,
@@ -646,9 +590,8 @@ public class PaymentService : IPaymentService
     {        
         var memberId = member.Id;
 
-        var (paymentSettings, memberSubscription) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.MemberSiteSubscriptionRepository.GetByMemberId(memberId, request.Platform));
+        var memberSubscription = await _unitOfWork.MemberSiteSubscriptionRepository
+            .GetByMemberId(memberId, request.Platform).Run();
 
         memberSubscription ??= new MemberSiteSubscription();
 
@@ -661,9 +604,9 @@ public class PaymentService : IPaymentService
             : utcNow.AddMonths(months);
 
         memberSubscription.ExpiresUtc = expiresUtc;
+        memberSubscription.ExternalId = externalId;
         memberSubscription.SiteSubscriptionPriceId = siteSubscriptionPrice.Id;
         memberSubscription.SiteSubscriptionId = siteSubscriptionPrice.SiteSubscriptionId;
-        memberSubscription.PaymentProvider = paymentSettings.Provider;
 
         if (memberSubscription.Id == default)
         {
@@ -675,6 +618,8 @@ public class PaymentService : IPaymentService
         {
             _unitOfWork.MemberSiteSubscriptionRepository.Update(memberSubscription);
         }
+
+        await _unitOfWork.SaveChangesAsync();
 
         return PaymentWebhookProcessingResult.Successful(
             member, payment, siteSubscriptionPrice.Currency);

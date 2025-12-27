@@ -20,20 +20,22 @@
                 @*@Html.AntiForgeryToken()*@
                 @await Html.PartialAsync("Account/_ChapterProfileForm", new ChapterProfileFormViewModel
                 {
-                    ChapterName = Model.Chapter.Name,
-                        ChapterProperties = Model.ChapterProperties,
-                        ChapterPropertyOptions = Model.ChapterPropertyOptions,
-                        Properties = Model.ChapterProperties
+                    ChapterName = Model.Chapter.GetDisplayName(Model.Platform),
+                    ChapterProperties = Model.ChapterProperties,
+                    ChapterPropertyOptions = Model.ChapterPropertyOptions,
+                    Properties = Model.ChapterProperties
                         .Where(x => !x.ApplicationOnly)
                         .OrderBy(x => x.DisplayOrder)
                         .Select(x => new ChapterProfileFormPropertyViewModel
                         {
                             ChapterPropertyId = x.Id,
-                            Value = memberPropertyDictionary.TryGetValue(x.Id, out var memberProperty) ? memberProperty.Value : ""
+                            Value = memberPropertyDictionary.TryGetValue(x.Id, out var memberProperty) 
+                                ? memberProperty.Value 
+                                : ""
                         }).ToList()
-                        })
-            <button class="btn btn-primary">Update</button>
-        </form>
-    </section>
-        }
+                })
+                <button class="btn btn-primary">Update</button>
+            </form>
+        </section>
+    }
 </div>

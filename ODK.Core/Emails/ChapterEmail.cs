@@ -4,11 +4,11 @@ public class ChapterEmail : IDatabaseEntity
 {
     public Guid ChapterId { get; set; }
 
-    public string HtmlContent { get; set; } = "";
+    public string HtmlContent { get; set; } = string.Empty;
 
     public Guid Id { get; set; }
 
-    public string Subject { get; set; } = "";
+    public string Subject { get; set; } = string.Empty;
 
     public EmailType Type { get; set; }
 

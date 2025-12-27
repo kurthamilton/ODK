@@ -1,9 +1,14 @@
 ﻿@using ODK.Services.Authentication
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Models.Header
+@using ODK.Web.Razor.Services
+@inject IRequestStore RequestStore
 @model AccountMenuViewModel
 @{
+    var platform = RequestStore.Platform;
+
     var adminChapters = Model.MemberChapters
         .Where(x => Model.Member?.IsMemberOf(x.Id) == true)
         .ToArray();
@@ -29,15 +34,23 @@
                     var adminChapter = isAdmin ? adminChapters
                         .FirstOrDefault(x => x.Id == memberChapter.Id) : null;
 
-                    <a class="dropdown-item" href="/@memberChapter.Name/Account">My profile</a>
-                    <a class="dropdown-item" href="/@memberChapter.Name">@memberChapter.Name</a>
-                    <a class="dropdown-item" href="/@memberChapter.Name/Account/Logout">Sign Out</a>
+                    <a class="dropdown-item" href="@OdkRoutes.Account.Index(memberChapter)">
+                        My profile
+                    </a>
+                    <a class="dropdown-item" href="@OdkRoutes.Groups.Group(platform, memberChapter)">
+                        @memberChapter.GetDisplayName(platform)
+                    </a>
+                    <a class="dropdown-item" href="/@memberChapter.ShortName/Account/Logout">
+                        Sign Out
+                    </a>
                     
                     @if (adminChapter != null)
                     {
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/@adminChapter.Name/Admin/Chapter/Text">@adminChapter.Name Admin</a>
-                        <a class="dropdown-item" href="/@adminChapter.Name/Admin/Events/Create">Create event</a>
+                        <a class="dropdown-item" href="/@adminChapter.ShortName/Admin/Chapter/Text">
+                            @adminChapter.GetDisplayName(platform) Admin
+                        </a>
+                        <a class="dropdown-item" href="/@adminChapter.ShortName/Admin/Events/Create">Create event</a>
                     }
                 }
                 else if (Model.MemberChapters.Count > 1)
@@ -50,21 +63,25 @@
 
                         <div class="dropdown dropstart">
                             <div class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown">
-                                @memberChapter.Name
+                                @memberChapter.GetDisplayName(platform)
                             </div>
                             <div class="dropdown-menu text-end">
-                                <a class="dropdown-item" href="/@memberChapter.Name">Home</a>
-                                <a class="dropdown-item" href="/@memberChapter.Name/Account">My profile</a>
+                                <a class="dropdown-item" href="@OdkRoutes.Groups.Group(platform, memberChapter)">
+                                    Home
+                                </a>
+                                <a class="dropdown-item" href="@OdkRoutes.Account.Index(memberChapter)">
+                                    My profile
+                                </a>
 
                                 @if (adminChapter != null)
                                 {
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="/@adminChapter.Name/Admin/Chapter/Text">Admin</a>
-                                    <a class="dropdown-item" href="/@adminChapter.Name/Admin/Events/Create">Create event</a>
+                                    <a class="dropdown-item" href="/@adminChapter.ShortName/Admin/Chapter/Text">Admin</a>
+                                    <a class="dropdown-item" href="/@adminChapter.ShortName/Admin/Events/Create">Create event</a>
 
                                     if (Model.Member?.SuperAdmin == true)
                                     {
-                                        <a class="dropdown-item" href="/@adminChapter.Name/Admin/Superadmin">Super admin</a>
+                                        <a class="dropdown-item" href="/@adminChapter.ShortName/Admin/Superadmin">Super admin</a>
                                     }
                                 }
                             </div>                            
@@ -75,7 +92,7 @@
 
                     @if (defaultChapter != null)
                     {
-                        <a class="dropdown-item" href="/@defaultChapter.Name/Account/Logout">Sign Out</a>
+                        <a class="dropdown-item" href="/@defaultChapter.ShortName/Account/Logout">Sign Out</a>
                     }                    
                 }
 

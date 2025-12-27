@@ -2,6 +2,7 @@
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Account
+@using ODK.Web.Razor.Models.Components
 @using ODK.Web.Razor.Services
 @model AccountMenuViewModel
 @inject IRequestStore RequestStore
@@ -10,23 +11,34 @@
 
     var menuItems = new MenuItem[]
     {
-        new MenuItem { Link = OdkRoutes.Account.PersonalDetails(Model.Chapter), Text = "Personal details" },
-        Model.Chapter == null 
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Account.PersonalDetails(Model.Chapter), 
+            Text = "Personal details", 
+            Children = new[]
+            {
+                platform == PlatformType.DrunkenKnitwits
+                    ? new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(platform, Model.Chapter), Text = "Email address" }
+                    : new MenuItem(),
+                platform == PlatformType.DrunkenKnitwits
+                    ? new MenuItem { Link = OdkRoutes.Account.Picture(Model.Chapter), Text = "Picture" }
+                    : new MenuItem()
+            }
+        },
+        platform == PlatformType.Default 
             ? new MenuItem { Link = OdkRoutes.Account.Location(), Text = "Location" }
             : new MenuItem(),
-        Model.Chapter != null
-            ? new MenuItem { Link = OdkRoutes.Account.Profile(Model.Chapter), Text = "Profile" }
-            : new MenuItem(),
-        new MenuItem { Link = OdkRoutes.Account.Picture(Model.Chapter), Text = "Picture" },
+        new MenuItem { Link = OdkRoutes.Account.Profile(Model.Chapter), Text = "Profile" },
         Model.Chapter == null
             ? new MenuItem { Link = OdkRoutes.Account.Interests(), Text = "My interests" }
             : new MenuItem(),
         new MenuItem { Link = OdkRoutes.Account.Conversations(Model.Chapter), Text = "My conversations" },
         new MenuItem { Link = OdkRoutes.Account.Subscription(platform, Model.Chapter), Text = "My subscription" },
         new MenuItem { Link = OdkRoutes.Account.Payments(Model.Chapter), Text = "My payments" },
-        new MenuItem { Link = OdkRoutes.Account.EmailAddressChange(Model.Chapter), Text = "Email address" },
         new MenuItem { Link = OdkRoutes.Account.PasswordChange(Model.Chapter), Text = "Password" },
-        new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.Chapter), Text = "Email preferences" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem { Link = OdkRoutes.Account.EmailPreferences(Model.Chapter), Text = "Email preferences" }
+            : new MenuItem(),
         new MenuItem { Link = OdkRoutes.Account.Notifications(Model.Chapter), Text = "Notifications" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
@@ -38,27 +50,11 @@
         .FirstOrDefault(x => string.Equals(x.Link, Model.Active, StringComparison.InvariantCultureIgnoreCase));
 }
 
-<ul class="list-group d-none d-md-block">
-    @foreach (var menuItem in menuItems)
+<div data-odk-component="_AccountMenu">
+    @await Html.PartialAsync("Components/_SideMenu", new SideMenuViewModel
     {
-        <li class="list-group-item @(activeMenuItem?.Link == menuItem.Link ? "active" : null)">
-            <a class="nav-link text-nowrap" href="@menuItem.Link">
-                @menuItem.Text
-            </a>
-        </li>
-    }
-</ul>
-
-<div class="dropdown d-md-none">
-    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-        @activeMenuItem?.Text
-    </button>
-    <ul class="dropdown-menu">
-        @foreach (var menuItem in menuItems)
-        {
-            <li>
-                <a class="dropdown-item" href="@menuItem.Link">@menuItem.Text</a>
-            </li>
-        }        
-    </ul>
+        Active = activeMenuItem,
+        MenuItems = menuItems,
+        Root = true
+    })
 </div>

@@ -47,6 +47,7 @@
 
                 @await Html.PartialAsync("Groups/_GroupCreateForm", new CreateChapterFormViewModel
                 {
+                    Countries = viewModel.Countries,
                     Location = new LocationFormViewModel
                     {
                         Lat = viewModel.MemberLocation?.LatLong.Lat,

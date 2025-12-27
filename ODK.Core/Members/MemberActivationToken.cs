@@ -2,7 +2,7 @@
 
 public class MemberActivationToken
 {
-    public string ActivationToken { get; set; } = "";
+    public string ActivationToken { get; set; } = string.Empty;
 
     public Guid? ChapterId { get; set; }
 

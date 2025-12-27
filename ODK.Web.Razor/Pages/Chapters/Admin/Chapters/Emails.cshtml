@@ -1,13 +1,19 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Emails"
 @using ODK.Core.Chapters
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.EmailsModel
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Emails | Admin";
+    Model.Title = "Email templates | Admin";
 
     var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_EmailsContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Email templates",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_EmailsContent", viewModel)</div>
+})

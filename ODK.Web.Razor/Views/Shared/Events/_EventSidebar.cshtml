@@ -6,6 +6,7 @@
 @using ODK.Services.Events.ViewModels
 @using ODK.Services.Members
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Events
 @using ODK.Web.Razor.Models.Members
 @using ODK.Web.Razor.Models.Payments
@@ -21,7 +22,9 @@
             <div class="card-body card-body-sm">
                 <div class="d-flex flex-column gap-2">
                     @foreach (var host in Model.Hosts.OrderBy(x => x.FullName))
-                    {                    
+                    {
+                        var hostUrl = OdkRoutes.Groups.Member(Model.Platform, Model.Chapter, host.Id);
+
                         <div class="d-flex align-items-center justify-content-start">
                             @await Html.PartialAsync("Members/_MemberAvatar", new MemberAvatarViewModel
                             {
@@ -29,7 +32,7 @@
                                 MaxWidth = 50
                             })
                             <span class="ms-2">
-                                <a href="/@Model.Chapter.Name/Members/@host.Id" target="_blank">@host.FullName</a>
+                                <a href="@hostUrl" target="_blank">@host.FullName</a>
                             </span>
                         </div>
                     }

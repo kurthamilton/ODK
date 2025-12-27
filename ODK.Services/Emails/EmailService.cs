@@ -40,10 +40,10 @@ public class EmailService : IEmailService
     {
         await SendEmail(request, new SendEmailOptions
         {
-            Body = "",
+            Body = string.Empty,
             Chapter = chapter,
             Parameters = parameters,
-            Subject = "",
+            Subject = string.Empty,
             To = to.Select(x => x.ToEmailAddressee()).ToArray(),
             Type = type
         });
@@ -86,10 +86,10 @@ public class EmailService : IEmailService
 
         await SendEmail(request, new SendEmailOptions
         {
-            Body = "",
+            Body = string.Empty,
             Chapter = chapter,
             Parameters = parameters,
-            Subject = "",
+            Subject = string.Empty,
             To = to.ToArray(),
             Type = EmailType.EventComment
         });
@@ -112,9 +112,9 @@ public class EmailService : IEmailService
     {
         return await SendEmail(request, new SendEmailOptions
         {
-            Body = "",
+            Body = string.Empty,
             Chapter = chapter,
-            Subject = "",
+            Subject = string.Empty,
             Parameters = parameters,
             To = to.ToArray(),
             Type = type
@@ -304,7 +304,7 @@ public class EmailService : IEmailService
         var parameters = options.Parameters ?? new Dictionary<string, string>();
         if (!parameters.ContainsKey("chapter.name"))
         {
-            parameters["chapter.name"] = options.Chapter?.Name ?? "";
+            parameters["chapter.name"] = options.Chapter?.GetDisplayName(platform) ?? "";
         }
 
         var urlProvider = _urlProviderFactory.Create(request);

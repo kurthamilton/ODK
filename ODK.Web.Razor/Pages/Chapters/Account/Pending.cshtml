@@ -1,4 +1,5 @@
 ﻿@page "/{chapterName}/Account/Pending"
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model ODK.Web.Razor.Pages.Chapters.Account.PendingModel
@@ -9,10 +10,14 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = $"Join the {Model.Chapter.Name} Drunken Knitwits",
+    Title = $"Join the {Model.Chapter.FullName}",
     Breadcrumbs = new []
     {
-        new MenuItem { Link = $"/{Model.Chapter.Name}", Text = Model.Chapter.Name },
+        new MenuItem 
+        { 
+            Link = OdkRoutes.Groups.Group(Model.Platform, Model.Chapter),
+            Text = Model.Chapter.GetDisplayName(Model.Platform)
+        },
         new MenuItem { Text = "Join" }
     },
 })

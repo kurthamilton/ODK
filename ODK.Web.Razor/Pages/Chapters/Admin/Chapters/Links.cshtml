@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Admin/Chapter/social-media"
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.LinksModel
 @inject IChapterAdminService ChapterAdminService
@@ -10,4 +11,9 @@
     var viewModel = await ChapterAdminService.GetChapterLinksViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_LinksContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Social media links",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_LinksContent", viewModel)</div>
+})

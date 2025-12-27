@@ -16,6 +16,9 @@ public interface ISiteSubscriptionAdminService
 
     Task<IReadOnlyCollection<SiteSubscription>> GetAllSubscriptions(MemberServiceRequest request);
 
+    Task<IReadOnlyCollection<SiteSubscriptionSuperAdminListItemViewModel>> GetSiteSubscriptionSuperAdminListItems(
+        MemberServiceRequest request);
+
     Task<SiteSubscriptionViewModel> GetSubscriptionViewModel(Guid currentMemberId, Guid siteSubscriptionId);
 
     Task MakeDefault(MemberServiceRequest request, Guid siteSubscriptionId);

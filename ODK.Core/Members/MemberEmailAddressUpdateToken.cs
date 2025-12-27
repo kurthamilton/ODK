@@ -2,9 +2,9 @@
 
 public class MemberEmailAddressUpdateToken
 {
-    public string ConfirmationToken { get; set; } = "";
+    public string ConfirmationToken { get; set; } = string.Empty;
 
     public Guid MemberId { get; set; }
 
-    public string NewEmailAddress { get; set; } = "";
+    public string NewEmailAddress { get; set; } = string.Empty;
 }

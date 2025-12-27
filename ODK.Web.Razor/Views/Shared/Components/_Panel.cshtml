@@ -1,11 +1,21 @@
 ﻿@using ODK.Web.Razor.Models.Components
 @model PanelViewModel
 
-<section class="panel">
+<section class="panel" data-odk-component="_Panel">
     <div class="panel-header">
-        <div class="panel-title">
-            @Model.TitleContentFunc.Invoke(null)
-        </div>
+        
+        @if (Model.TitleContentFunc != null) 
+        {
+            <div class="panel-title">
+                @Model.TitleContentFunc.Invoke(null)
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(Model.Title))
+        {
+            <div class="panel-title">
+                @Model.Title
+            </div>
+        }
 
         @if (Model.TitleEndContentFunc != null)
         {

@@ -6,22 +6,15 @@
 @using ODK.Web.Razor.Models.Admin.Chapters
 @model ChapterPrivacyAdminPageViewModel
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Privacy settings",
-    ContentFunc = 
-        @<div>
-            <form action="/groups/@Model.Chapter.Id/privacy" method="post">
-                @*@Html.AntiForgeryToken()*@
-                @await Html.PartialAsync("Admin/Chapter/_PrivacyForm", new ChapterPrivacySettingsFormViewModel
-                {
-                    Conversations = Model.PrivacySettings?.Conversations,
-                    EventResponseVisibility = Model.PrivacySettings?.EventResponseVisibility,
-                    EventVisibility = Model.PrivacySettings?.EventVisibility,
-                    MemberVisibility = Model.PrivacySettings?.MemberVisibility,
-                    VenueVisibility = Model.PrivacySettings?.VenueVisibility
-                })
-                <button class="btn btn-primary">Update</button>
-            </form>
-        </div>
-})
+<form action="/groups/@Model.Chapter.Id/privacy" method="post">
+    @*@Html.AntiForgeryToken()*@
+    @await Html.PartialAsync("Admin/Chapter/_PrivacyForm", new ChapterPrivacySettingsFormViewModel
+        {
+        Conversations = Model.PrivacySettings?.Conversations,
+        EventResponseVisibility = Model.PrivacySettings?.EventResponseVisibility,
+        EventVisibility = Model.PrivacySettings?.EventVisibility,
+        MemberVisibility = Model.PrivacySettings?.MemberVisibility,
+        VenueVisibility = Model.PrivacySettings?.VenueVisibility
+        })
+    <button class="btn btn-primary">Update</button>
+</form>

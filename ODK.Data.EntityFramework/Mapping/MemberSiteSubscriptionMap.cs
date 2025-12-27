@@ -20,9 +20,6 @@ public class MemberSiteSubscriptionMap : IEntityTypeConfiguration<MemberSiteSubs
         builder.Property(x => x.Id)
             .HasColumnName("MemberSiteSubscriptionId");
 
-        builder.Property(x => x.PaymentProvider)
-            .HasConversion<NullableEnumStringConverter<PaymentProviderType>>();
-
         builder.HasOne<Member>()
             .WithOne()
             .HasForeignKey<MemberSiteSubscription>(x => x.MemberId);

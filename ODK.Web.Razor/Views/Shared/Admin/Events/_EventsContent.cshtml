@@ -24,81 +24,74 @@
         .ToDictionary(x => x.EventId);
 }
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Events",
-    ContentFunc = 
-        @<div>
-            <p>
-                <a class="btn btn-primary" href="@OdkRoutes.MemberGroups.EventCreate(Model.Platform, Model.Chapter)">Create</a>
-            </p>
+<p>
+    <a class="btn btn-primary" href="@OdkRoutes.MemberGroups.EventCreate(Model.Platform, Model.Chapter)">Create</a>
+</p>
 
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Name</th>
-                            <th>Date</th>
-                            <th>Venue</th>
-                            <th>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))</th>
-                            <th>
-                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
-                                {
-                                    Class = "text-success"
-                                })
-                            </th>
-                            <th>
-                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.QuestionCircle)
-                                {
-                                    Class = "text-warning"
-                                })
-                            </th>
-                            <th>
-                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
-                                {
-                                    Class = "text-danger"
-                                })
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var @event in events)
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Venue</th>
+                <th>@await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Envelope))</th>
+                <th>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
+                    {
+                        Class = "text-success"
+                                        })
+                </th>
+                <th>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.QuestionCircle)
+                                        {
+                        Class = "text-warning"
+                                        })
+                </th>
+                <th>
+                    @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.TimesCircle)
+                                        {
+                        Class = "text-danger"
+                                        })
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var @event in events)
+            {
+                invitesDictionary.TryGetValue(@event.Id, out var eventInvites);
+                responseDictionary.TryGetValue(@event.Id, out var eventResponses);
+
+                var venue = venueDictionary[@event.VenueId];
+
+                <tr>
+                    <td>
+                        @if (@event.Ticketed)
                         {
-                            invitesDictionary.TryGetValue(@event.Id, out var eventInvites);
-                            responseDictionary.TryGetValue(@event.Id, out var eventResponses);
-
-                            var venue = venueDictionary[@event.VenueId];
-
-                            <tr>
-                                <td>
-                                    @if (@event.Ticketed)
-                                    {
-                                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Ticket))
-                                    }
-                                </td>
-                                <td><a href="@OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
-                                <td>@(@event.Date.EventDate())</td>
-                                <td><a href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a></td>
-                                <td>
-                                    @if (eventInvites?.SentUtc == null)
-                                    {
-                                        <a href="@OdkRoutes.MemberGroups.EventInvites(Model.Platform, Model.Chapter, @event.Id)">
-                                            @(eventInvites?.ScheduledUtc != null ? "Scheduled" : "Send")
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        @eventInvites.Sent
-                                    }
-                                </td>                                
-                                <td>@(eventResponses?.Yes ?? 0)</td>
-                                <td>@(eventResponses?.Maybe ?? 0)</td>
-                                <td>@(eventResponses?.No ?? 0)</td>
-                            </tr>
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Ticket))
                         }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-})
+                    </td>
+                    <td><a href="@OdkRoutes.MemberGroups.Event(Model.Platform, Model.Chapter, @event.Id)">@(@event.GetDisplayName())</a></td>
+                    <td>@(@event.Date.EventDate())</td>
+                    <td><a href="@OdkRoutes.MemberGroups.Venue(Model.Platform, Model.Chapter, venue.Id)">@venue.Name</a></td>
+                    <td>
+                        @if (eventInvites?.SentUtc == null)
+                        {
+                            <a href="@OdkRoutes.MemberGroups.EventInvites(Model.Platform, Model.Chapter, @event.Id)">
+                                @(eventInvites?.ScheduledUtc != null ? "Scheduled" : "Send")
+                            </a>
+                        }
+                        else
+                        {
+                            @eventInvites.Sent
+                        }
+                    </td>
+                    <td>@(eventResponses?.Yes ?? 0)</td>
+                    <td>@(eventResponses?.Maybe ?? 0)</td>
+                    <td>@(eventResponses?.No ?? 0)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -20,9 +20,9 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Notifications(null),
+        Title = "Notification preferences",
         Content =
             @<div>
-                <h2>Notification preferences</h2>
                 <section class="section">
                     @await Html.PartialAsync("Account/_NotificationsContent", viewModel)
                 </section>

@@ -8,17 +8,17 @@ public class EmailProvider : IDatabaseEntity
 
     public Guid Id { get; set; }
 
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public int Order { get; set; }
 
-    public string SmtpLogin { get; set; } = "";
+    public string SmtpLogin { get; set; } = string.Empty;
 
-    public string SmtpPassword { get; set; } = "";
+    public string SmtpPassword { get; set; } = string.Empty;
 
     public int SmtpPort { get; set; }
 
-    public string SmtpServer { get; set; } = "";   
+    public string SmtpServer { get; set; } = string.Empty;   
     
     public EmailProviderType Type { get; set; }
 

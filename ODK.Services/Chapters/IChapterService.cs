@@ -18,8 +18,6 @@ public interface IChapterService
 
     Task<SubscriptionsPageViewModel> GetChapterMemberSubscriptionsViewModel(Guid currentMemberId, Chapter chapter);
 
-    Task<IPaymentSettings?> GetChapterPaymentSettings(Guid currentMemberId, Guid chapterId);                
-
     Task<IReadOnlyCollection<ChapterQuestion>> GetChapterQuestions(Guid chapterId);
 
     Task<IReadOnlyCollection<Chapter>> GetChaptersByOwnerId(Guid ownerId);

@@ -2,22 +2,24 @@
 @using ODK.Web.Razor.Models.Account
 @model EmailPreferencesFormViewModel
 
-@for (var i = 0; i < Model.Preferences.Count; i++)
-{
-    var preference = Model.Preferences[i];
-
-    var labelText = preference.Type switch
+<div data-odk-component="_EmailPreferencesForm">
+    @for (var i = 0; i < Model.Preferences.Count; i++)
     {
-        MemberEmailPreferenceType.ChapterMessages => "Emails from the group organisers",
-        MemberEmailPreferenceType.ConversationMessages => "Emails notifying you of replies to your conversation messages",
-        MemberEmailPreferenceType.EventMessages => "Emails notifying you of replies to your event messages",
-        MemberEmailPreferenceType.Events => "Emails informing you of new events",
-        _ => ""
-    };
+        var preference = Model.Preferences[i];
 
-    <div class="form-check form-switch mb-3">
-        @Html.HiddenFor(x => x.Preferences[i].Type)
-        @Html.CheckBoxFor(x => x.Preferences[i].Enabled, new { @class = "form-check-input", role = "switch" })
-        @Html.LabelFor(x => x.Preferences[i].Enabled, labelText, new { @class = "form-check-label" })
-    </div>
-}
+        var labelText = preference.Type switch
+        {
+            MemberEmailPreferenceType.ChapterMessages => "From group organisers",
+            MemberEmailPreferenceType.ConversationMessages => "Replies to your conversation messages",
+            MemberEmailPreferenceType.EventMessages => "Replies to your event messages",
+            MemberEmailPreferenceType.Events => "New events",
+            _ => ""
+        };
+
+        <div class="form-check form-switch mb-3">
+            @Html.HiddenFor(x => x.Preferences[i].Type)
+            @Html.CheckBoxFor(x => x.Preferences[i].Enabled, new { @class = "form-check-input", role = "switch" })
+            @Html.LabelFor(x => x.Preferences[i].Enabled, labelText, new { @class = "form-check-label" })
+        </div>
+    }
+</div>

@@ -1,15 +1,25 @@
 ﻿@page "/my/groups/{id:guid}/image"
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model ImageModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_GroupAdminLayout";
-    Model.Title = "Image";
+    Model.Title = "Picture";
 
     var viewModel = await ChapterAdminService.GetChapterImageViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_ImageContent", viewModel)
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Picture",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_ImageContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = viewModel.Chapter
+    })
+})
 
 @section styles
 {

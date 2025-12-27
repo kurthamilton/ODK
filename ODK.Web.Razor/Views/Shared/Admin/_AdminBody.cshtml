@@ -2,19 +2,25 @@
 @using ODK.Web.Razor.Models.Components
 @model AdminBodyViewModel
 
-@if (Model.Breadcrumbs != null)
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
-    @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+    Title = Model.Title,
+    BodyContentFunc = 
+        @<div>
+            @if (Model.Breadcrumbs != null)
+            {
+                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+                {
+                    Breadcrumbs = Model.Breadcrumbs
+                })
+            }
+
+            <section class="section">
+                @Model.ContentFunc.Invoke(null)
+            </section>
+        </div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
     {
-        Breadcrumbs = Model.Breadcrumbs
+        Chapter = Model.Chapter
     })
-}
-
-@if (!string.IsNullOrEmpty(Model.Title))
-{
-    <h2 class="d-none d-md-block">@Model.Title</h2>
-}
-
-<section class="section">
-    @Model.ContentFunc.Invoke(null)
-</section>
+})

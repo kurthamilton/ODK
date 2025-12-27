@@ -4,7 +4,7 @@ using ODK.Core.Subscriptions;
 
 namespace ODK.Core.Members;
 
-public class MemberSiteSubscription : IDatabaseEntity
+public class MemberSiteSubscription : IDatabaseEntity, IMemberEntity
 {
     public DateTime? ExpiresUtc { get; set; }
 
@@ -13,8 +13,6 @@ public class MemberSiteSubscription : IDatabaseEntity
     public Guid Id { get; set; }
 
     public Guid MemberId { get; set; }
-
-    public PaymentProviderType? PaymentProvider { get; set; }
 
     public SiteSubscription SiteSubscription { get; set; } = null!;
 

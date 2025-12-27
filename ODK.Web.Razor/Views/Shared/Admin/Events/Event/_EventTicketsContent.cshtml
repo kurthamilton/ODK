@@ -16,15 +16,6 @@
     {
         return;
     }
-
-    if (Model.PaymentSettings == null)
-    {
-        <div class="alert alert-danger">
-            Chapter payment settings not set up
-        </div>
-
-        return;
-    }
 }
 
 <div class="table-responsive">
@@ -56,7 +47,7 @@
                         })
                     </td>
                     <td>
-                        <a href="/@Model.Chapter.Name/Admin/Members/@ticketPurchase.MemberId">@ticketPurchase.Member.FullName</a>
+                        <a href="/@Model.Chapter.ShortName/Admin/Members/@ticketPurchase.MemberId">@ticketPurchase.Member.FullName</a>
                     </td>
                     @if (Model.Event.TicketSettings.Deposit > 0)
                     {

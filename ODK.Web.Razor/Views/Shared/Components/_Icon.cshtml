@@ -1,147 +1,103 @@
 ﻿@using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Components
 @model IconViewModel
-@{
-}
+
+@*Use <i></i>break; formatting to avoid rendering additional whitespace*@
 
 @switch (Model.Type)
 {
     case IconType.ArrowCircleDown:
-        <i class="@Model.Class fa-solid fa-arrow-circle-down"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-arrow-circle-down"></i>break;
     case IconType.ArrowCircleUp:
-        <i class="@Model.Class fa-solid fa-arrow-circle-up"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-arrow-circle-up"></i>break;
     case IconType.ArrowsSpin:
-        <i class="@Model.Class fa-solid fa-arrows-spin"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-arrows-spin"></i>break;
     case IconType.Bell:
-        <i class="@Model.Class fa-solid fa-bell"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-bell"></i>break;
     case IconType.BellOutline:
-        <i class="@Model.Class fa-regular fa-bell"></i>
-        break;
+        <i class="@Model.Class fa-regular fa-bell"></i>break;
     case IconType.Calendar:
-        <i class="@Model.Class fa-regular fa-calendar"></i>
-        break;
+        <i class="@Model.Class fa-regular fa-calendar"></i>break;
     case IconType.Check:
-        <i class="@Model.Class fa-solid fa-check"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-check"></i>break;
     case IconType.CheckCircle:
-        <i class="@Model.Class fa-solid fa-circle-check"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-circle-check"></i>break;
     case IconType.ChevronRight:
-        <i class="@Model.Class fa-solid fa-chevron-right"></i>
-        break;    
+        <i class="@Model.Class fa-solid fa-chevron-right"></i>break;    
     case IconType.Contact:
-        <i class="@Model.Class fa-regular fa-envelope"></i>
-        break;
+        <i class="@Model.Class fa-regular fa-envelope"></i>break;
     case IconType.Copy:
-        <i class="@Model.Class fa-regular fa-copy"></i>
-        break;
+        <i class="@Model.Class fa-regular fa-copy"></i>break;
     case IconType.Dollar:
-        <i class="@Model.Class fa-solid fa-dollar-sign"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-dollar-sign"></i>break;
     case IconType.Edit:
-        <i class="@Model.Class fa-solid fa-pen-to-square"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-pen-to-square"></i>break;
     case IconType.Envelope:
-        <i class="@Model.Class fa-solid fa-envelope"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-envelope"></i>break;
     case IconType.EnvelopeSquare:
-        <i class="@Model.Class fa-solid fa-envelope-square"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-envelope-square"></i>break;
     case IconType.Excel:
-        <i class="@Model.Class fa-solid fa-file-excel icon--excel"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-file-excel icon--excel"></i>break;
     case IconType.ExclamationTriangle:
-        <i class="@Model.Class fa-solid fa-triangle-exclamation"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-triangle-exclamation"></i>break;
     case IconType.Facebook:
-        <i class="@Model.Class fa-brands fa-facebook-f"></i>
-        break;
+        <i class="@Model.Class fa-brands fa-facebook-f"></i>break;
     case IconType.Google:
-        @await Html.PartialAsync("Components/Icons/_Google")
-        break;
+        @await Html.PartialAsync("Components/Icons/_Google")break;
     case IconType.Groups:
-        <i class="@Model.Class fa-solid fa-users-rectangle"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-users-rectangle"></i>break;
     case IconType.Home:
-        <i class="@Model.Class fa-solid fa-home"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-home"></i>break;
     case IconType.Instagram:
-        <i class="@Model.Class fa-brands fa-instagram"></i>
-        break;
+        <i class="@Model.Class fa-brands fa-instagram"></i>break;
     case IconType.LocationPin:
-        <i class="@Model.Class fa-solid fa-location-dot"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-location-dot"></i>break;
     case IconType.Logout:
-        <i class="@Model.Class fa-solid fa-arrow-right-from-bracket"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-arrow-right-from-bracket"></i>break;
     case IconType.MagnifyingGlass:
-        <i class="@Model.Class fa-solid fa-magnifying-glass"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-magnifying-glass"></i>break;
     case IconType.Maximize:
-        <i class="@Model.Class fa-solid fa-up-right-and-down-left-from-center"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-up-right-and-down-left-from-center"></i>break;
     case IconType.Members:
-        <i class="@Model.Class fa-solid fa-users"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-users"></i>break;
     case IconType.Moon:
-        <i class="@Model.Class fa-regular fa-moon"></i>
-        break;
+        <i class="@Model.Class fa-regular fa-moon"></i>break;
     case IconType.Plus:
-        <i class="@Model.Class fa-solid fa-plus"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-plus"></i>break;
     case IconType.QuestionCircle:
-        <i class="@Model.Class fa-solid fa-circle-question"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-circle-question"></i>break;
     case IconType.Rocket:
-        <i class="@Model.Class">🚀</i>
-        break;
+        <i class="@Model.Class">🚀</i>break;
     case IconType.Settings:
-        <i class="@Model.Class fa-solid fa-gear"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-gear"></i>break;
     case IconType.Star:
-        <i class="@Model.Class fa-solid fa-star"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-star"></i>break;
+    case IconType.StarOutline:
+        <i class="@Model.Class fa-regular fa-star"></i>break;
     case IconType.Sun:
-        <i class="@Model.Class fa-regular fa-sun"></i>
-        break;
+        <i class="@Model.Class fa-regular fa-sun"></i>break;
     case IconType.Ticket:
-        <i class="@Model.Class fa-solid fa-ticket"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-ticket"></i>break;
     case IconType.Times:
-        <i class="@Model.Class fa-solid fa-xmark"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-xmark"></i>break;
     case IconType.TimesCircle:
-        <i class="@Model.Class fa-solid fa-circle-xmark"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-circle-xmark"></i>break;
     case IconType.TimesCircleOutline:
-        <i class="@Model.Class fa-regular fa-circle-xmark"></i>
-        break;
+        <i class="@Model.Class fa-regular fa-circle-xmark"></i>break;
     case IconType.TodoList:
-        <i class="@Model.Class fa-solid fa-list-check"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-list-check"></i>break;
     case IconType.Twitter:
-        <i class="@Model.Class fa-brands fa-x-twitter"></i>
-        break;
+        <i class="@Model.Class fa-brands fa-x-twitter"></i>break;
     case IconType.Undo:
-        <i class="@Model.Class fa-solid fa-undo flip-horizontal"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-undo flip-horizontal"></i>break;
     case IconType.Unlock:
-        <i class="@Model.Class fa-solid fa-unlock"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-unlock"></i>break;
     case IconType.Upload:
-        <i class="@Model.Class fa-solid fa-upload"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-upload"></i>break;
     case IconType.User:
-        <i class="@Model.Class fa-solid fa-user"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-user"></i>break;
     case IconType.UserOutline:
-        <i class="@Model.Class fa-regular fa-user"></i>
-        break;
+        <i class="@Model.Class fa-regular fa-user"></i>break;
     case IconType.Wrench:
-        <i class="@Model.Class fa-solid fa-wrench"></i>
-        break;
+        <i class="@Model.Class fa-solid fa-wrench"></i>break;
 }

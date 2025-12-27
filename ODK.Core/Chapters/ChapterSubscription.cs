@@ -9,7 +9,7 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public Guid ChapterId { get; set; }
 
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
     public bool Disabled { get; set; }
 
@@ -21,22 +21,45 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public int Months { get; set; }
 
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public bool Recurring { get; set; }
 
     public Guid? SitePaymentSettingId { get; set; }
 
-    public string Title { get; set; } = "";
+    public string Title { get; set; } = string.Empty;
 
     public SubscriptionType Type { get; set; }
 
-    public string ToReference() => $"Subscription: {Name}";
-
-    public bool Uses(ChapterPaymentSettings? chapterPaymentSettings, SitePaymentSettings sitePaymentSettings)
+    public bool IsVisibleToMembers(
+        ChapterPaymentSettings chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
     {
-        return chapterPaymentSettings?.UseSitePaymentProvider == true
-            ? SitePaymentSettingId == sitePaymentSettings.Id
-            : SitePaymentSettingId == null;
+        if (Disabled)
+        {
+            return false; 
+        }
+
+        return IsVisibleToAdmins(chapterPaymentSettings, sitePaymentSettings);
     }
+
+    public bool IsVisibleToAdmins(
+        ChapterPaymentSettings chapterPaymentSettings, IEnumerable<SitePaymentSettings> sitePaymentSettings)
+    {
+        if (SitePaymentSettingId != null)
+        {
+            return sitePaymentSettings.First(x => x.Id == SitePaymentSettingId.Value).Enabled;
+        }
+
+        if (chapterPaymentSettings.UseSitePaymentProvider)
+        {
+            // SitePaymentSettingId not set, cannot be used
+            return false;
+        }
+
+        return true;
+    }
+
+
+
+    public string ToReference() => $"Subscription: {Name}";
 }

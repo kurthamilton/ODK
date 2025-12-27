@@ -31,8 +31,7 @@ public class CreateModel : OdkGroupAdminPageModel
             Months = viewModel.DurationMonths ?? 0,
             Name = viewModel.Name,
             Recurring = viewModel.Recurring,
-            Title = viewModel.Title,
-            Type = viewModel.Type
+            Title = viewModel.Title
         });
 
         AddFeedback(result, "Subscription created");

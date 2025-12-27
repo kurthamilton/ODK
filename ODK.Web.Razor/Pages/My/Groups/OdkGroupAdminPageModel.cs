@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Services;
 using ODK.Web.Razor.Pages.Chapters;
 
@@ -28,7 +29,9 @@ public abstract class OdkGroupAdminPageModel : OdkPageModel
         OdkAssertions.Exists(chapterId, "ChapterId missing");
 
         ChapterId = chapterId.Value;
-
+        
         await base.OnPageHandlerExecutionAsync(context, next);
     }
+
+    public Task<Chapter> GetChapter() => RequestCache.GetChapterAsync(Platform, ChapterId);
 }

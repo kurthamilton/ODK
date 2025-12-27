@@ -20,9 +20,11 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
 
     public int? DisplayOrder { get; set; }
 
+    public string FullName => GetFullName(Platform, Name);
+
     public Guid Id { get; set; }
 
-    public string Name { get; set; } = "";
+    public required string Name { get; set; }
 
     public Guid? OwnerId { get; set; }
 
@@ -32,9 +34,53 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
 
     public string? RedirectUrl { get; set; }
 
-    public string Slug { get; set; } = "";
+    public string ShortName => GetShortName(Platform, Name);
+
+    public required string Slug { get; set; }
 
     public TimeZoneInfo? TimeZone { get; set; }
+
+    public static string GetDisplayName(
+        PlatformType currentPlatform, PlatformType platform, string name)
+    {
+        if (platform != PlatformType.DrunkenKnitwits)
+        {
+            // default platform groups should just use the name as-is
+            return name;
+        }
+
+        // Return short name for ODK chapters on ODK platform
+        // Return full name for ODK chapters on default platform
+        return currentPlatform == PlatformType.DrunkenKnitwits
+            ? GetShortName(platform, name)
+            : GetFullName(platform, name);
+    }
+
+    public static string GetFullName(
+        PlatformType platform, string name)
+    {
+        if (platform != PlatformType.DrunkenKnitwits)
+        {
+            return name;
+        }
+
+        return !name.EndsWith(DrunkenKnitwitsSuffix, StringComparison.OrdinalIgnoreCase)
+            ? name + DrunkenKnitwitsSuffix
+            : name;
+    }
+
+    public static string GetShortName(
+        PlatformType platform, string name)
+    {
+        if (platform != PlatformType.DrunkenKnitwits)
+        {
+            return name;
+        }
+
+        return name.EndsWith(DrunkenKnitwitsSuffix, StringComparison.OrdinalIgnoreCase)
+            ? name.Substring(0, name.Length - DrunkenKnitwitsSuffix.Length)
+            : name;
+    }
 
     public bool Approved() => ApprovedUtc != null;
 
@@ -60,35 +106,7 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
     };
 
     public string GetDisplayName(PlatformType currentPlatform)
-    {
-        if (Platform != PlatformType.DrunkenKnitwits)
-        {
-            return Name;
-        }
-
-        if (currentPlatform == PlatformType.DrunkenKnitwits)
-        {
-            return Name.EndsWith(DrunkenKnitwitsSuffix, StringComparison.InvariantCultureIgnoreCase)
-                ? Name.Substring(0, Name.Length - DrunkenKnitwitsSuffix.Length) 
-                : Name;
-        }
-        
-        return !Name.EndsWith(DrunkenKnitwitsSuffix, StringComparison.InvariantCultureIgnoreCase)
-            ? Name + DrunkenKnitwitsSuffix
-            : Name;
-    }
-
-    public string GetFullName(PlatformType currentPlatform)
-    {
-        if (Platform != PlatformType.DrunkenKnitwits)
-        {
-            return Name;
-        }
-
-        return !Name.EndsWith(DrunkenKnitwitsSuffix, StringComparison.InvariantCultureIgnoreCase)
-            ? Name + DrunkenKnitwitsSuffix
-            : Name;
-    }
+        => GetDisplayName(currentPlatform, Platform, Name);
 
     public bool IsOpenForRegistration() => Approved() && Published();
 
@@ -98,5 +116,5 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
         ? TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone)
         : utc;
 
-    public DateTime? ToChapterTime(DateTime? utc) => utc != null ? ToChapterTime(utc.Value) : null;
+    public DateTime? ToChapterTime(DateTime? utc) => utc != null ? ToChapterTime(utc.Value) : null;    
 }

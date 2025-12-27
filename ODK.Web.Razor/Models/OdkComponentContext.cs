@@ -12,5 +12,7 @@ public class OdkComponentContext
 
     public required IHttpRequestContext HttpRequestContext { get; init; }
 
+    public bool IsAuthenticated => CurrentMemberIdOrDefault != null;
+
     public required PlatformType Platform { get; init; }
 }

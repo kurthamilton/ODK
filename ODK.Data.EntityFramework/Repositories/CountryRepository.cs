@@ -1,4 +1,5 @@
-﻿using ODK.Core.Countries;
+﻿using ODK.Core.Chapters;
+using ODK.Core.Countries;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Caching;
@@ -19,4 +20,16 @@ public class CountryRepository : CachingReadWriteRepositoryBase<Country>, ICount
         .DeferredMultiple(
             _cache.GetAll,
             _cache.SetAll);
+
+    public IDeferredQuerySingle<Country> GetByChapterId(Guid chapterId)
+    {
+        var query = 
+            from country in Set()
+            from chapter in Set<Chapter>()
+                .Where(x => country.Id == x.CountryId)
+            where chapter.Id == chapterId
+            select country;
+
+        return query.DeferredSingle();
+    }
 }

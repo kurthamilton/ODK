@@ -40,7 +40,7 @@ public class AdminMemberModel : AdminPageModel
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Chapter admin member updated", FeedbackType.Success));
-            return Redirect($"/{Chapter.Name}/Admin/Members/Admins");
+            return Redirect($"/{Chapter.ShortName}/Admin/Members/Admins");
         }
 
         AddFeedback(new FeedbackViewModel(result));

@@ -37,6 +37,7 @@ public enum IconType
     Settings,
     Sun,
     Star,
+    StarOutline,
     Ticket,
     Times,
     TimesCircle,

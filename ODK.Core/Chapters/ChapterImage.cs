@@ -10,9 +10,9 @@ public class ChapterImage : IVersioned, IChapterEntity
 
     public Guid ChapterId { get; set; }
 
-    public byte[] ImageData { get; set; } = [];    
+    public byte[] ImageData { get; set; } = [];
 
-    public string MimeType { get; set; } = "";
+    public string MimeType { get; set; } = string.Empty;
 
     public byte[] Version { get; set; } = [];
 }

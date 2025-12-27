@@ -25,14 +25,7 @@
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
     Title = "Admin",
-    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
-    {
-        BodyContentFunc = _ => RenderBody(),
-        MenuContent = await Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
-        {
-            Chapter = chapter
-        })
-    })
+    Content = RenderBody()
 })
 
 @section styles

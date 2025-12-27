@@ -12,7 +12,7 @@ public class SentEmail : IDatabaseEntity
 
     public DateTime SentUtc { get; set; }    
 
-    public string Subject { get; set; } = "";
+    public string Subject { get; set; } = string.Empty;
 
-    public string To { get; set; } = "";
+    public string To { get; set; } = string.Empty;
 }

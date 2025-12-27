@@ -17,7 +17,7 @@
                 <th>Amount</th>
                 <th>Reference</th>
 
-                @if (Model.ChapterPaymentSettings?.UseSitePaymentProvider == true)
+                @if (Model.ChapterPaymentSettings.UseSitePaymentProvider)
                 {
                     <th>Reconciliation</th>
                 }
@@ -44,7 +44,7 @@
                         @payment.Reference
                     </td>
 
-                    @if (Model.ChapterPaymentSettings?.UseSitePaymentProvider == true)
+                    @if (Model.ChapterPaymentSettings.UseSitePaymentProvider)
                     {
                         <td>
                             @if (reconciliation != null)

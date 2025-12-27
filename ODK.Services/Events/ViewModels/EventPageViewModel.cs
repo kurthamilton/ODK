@@ -12,7 +12,7 @@ public class EventPageViewModel : GroupPageViewModel
 
     public required bool CanView { get; init; }
 
-    public required ChapterPaymentSettings? ChapterPaymentSettings { get; init; }
+    public required ChapterPaymentSettings ChapterPaymentSettings { get; init; }
 
     public required EventCommentsDto Comments { get; init; }
 

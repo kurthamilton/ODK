@@ -51,6 +51,6 @@ public class EventCreateModel : AdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Event created", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Events");
+        return Redirect($"/{Chapter.ShortName}/Admin/Events");
     }
 }

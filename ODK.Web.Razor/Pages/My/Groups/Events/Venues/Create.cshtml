@@ -2,6 +2,8 @@
 @using ODK.Core.Chapters
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model CreateModel
 @inject IChapterAdminService ChapterAdminService
 @{
@@ -13,7 +15,15 @@
     var viewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, chapter);
 }
 
-@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", viewModel)
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Create venue",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = chapter
+    })
+})
 
 @section scripts
 {

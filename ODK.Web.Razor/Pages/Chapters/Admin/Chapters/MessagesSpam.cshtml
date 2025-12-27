@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Messages/Spam"
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin
 @model MessagesSpamModel
 @inject IChapterAdminService ChapterAdminService
 @{
@@ -9,4 +10,9 @@
     var viewModel = await ChapterAdminService.GetChapterMessagesViewModel(Model.AdminServiceRequest, true);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_MessagesContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Messages",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_MessagesContent", viewModel)</div>
+})

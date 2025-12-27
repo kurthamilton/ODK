@@ -1,5 +1,4 @@
 ﻿@using ODK.Core.Features
-@using ODK.Core.Members
 @using ODK.Services.Members.ViewModels
 @using ODK.Web.Common.Components
 @using ODK.Web.Common.Routes
@@ -27,27 +26,28 @@
         Feature = SiteFeatureType.MemberSubscriptions,
         ContentFunc = 
             @<div>
-                @if (Model.PaymentSettings?.CurrencyId == null)
+                @if (!Model.HasPaymentAccount)
                 {
-                    <div class="alert alert-warning">
-                        You must update your 
-                        <a href="@OdkRoutes.MemberGroups.GroupPayments(Model.Platform, Model.Chapter)">payment settings</a> 
-                        before you can create subscriptions
+                    var paymentAccountUrl = OdkRoutes.Payments.PaymentAccount(Model.Platform, Model.Chapter);
+                    <div class="alert alert-danger">
+                        You must set up a 
+                        <a href="@paymentAccountUrl">payment account</a>
+                        before you can create a subscription.
                     </div>
-                    return;
                 }
-
-                <form method="post">
-                    @*@Html.AntiForgeryToken()*@
-                    @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
-                    {
-                        OwnerSubscription = Model.OwnerSubscription,
-                        PaymentSettings = Model.PaymentSettings,
-                        SupportsRecurringPayments = Model.SupportsRecurringPayments,
-                        Type = SubscriptionType.Full
-                    })
-                    <button class="btn btn-primary">Create</button>
-                </form>
+                else
+                {
+                    <form method="post">
+                        @*@Html.AntiForgeryToken()*@
+                        @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel
+                        {
+                            OwnerSubscription = Model.OwnerSubscription,
+                            PaymentSettings = Model.PaymentSettings,
+                            SupportsRecurringPayments = Model.SupportsRecurringPayments
+                        })
+                        <button class="btn btn-primary">Create</button>
+                    </form>
+                }                
             </div>
     })
 </section>

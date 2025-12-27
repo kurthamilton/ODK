@@ -48,6 +48,6 @@ public class PropertyEditModel : AdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Property updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Chapter/Properties");
+        return Redirect($"/{Chapter.ShortName}/Admin/Chapter/Properties");
     }
 }

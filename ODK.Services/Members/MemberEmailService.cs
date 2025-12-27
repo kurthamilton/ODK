@@ -420,7 +420,7 @@ public class MemberEmailService : IMemberEmailService
 
         var properties = new Dictionary<string, string>
         {
-            { "chapter.name", chapter.Name },
+            { "chapter.name", chapter.GetDisplayName(request.Platform) },
             { "member.firstName", member.FirstName },
             { "subscription.expiryDate", expires.ToFriendlyDateString(chapter.TimeZone) },
             { "subscription.disabledDate", disabledDate.ToFriendlyDateString(chapter.TimeZone) }
@@ -521,7 +521,7 @@ public class MemberEmailService : IMemberEmailService
         var parameters = new Dictionary<string, string>
         {
             { "member.name", member.FullName },
-            { "chapter.name", chapter.Name },
+            { "chapter.name", chapter.GetDisplayName(request.Platform) },
             { "joined", memberChapter?.CreatedUtc.ToFriendlyDateString(chapter.TimeZone) ?? "-" },
             { "reason", reason ?? "" }
         };
@@ -548,7 +548,7 @@ public class MemberEmailService : IMemberEmailService
         var parameters = new Dictionary<string, string>
         {
             { "chapter.description", texts.Description ?? "" },
-            { "chapter.name", chapter.Name },
+            { "chapter.name", chapter.GetDisplayName(request.Platform) },
             { "url", url }
         };
 
@@ -598,7 +598,6 @@ public class MemberEmailService : IMemberEmailService
             body, 
             new Dictionary<string, string>
             {
-                { "issue.title", issue.Title },
                 { "issue.title", issue.Title },
                 { "member.name", member.FullName },
                 { "url", urlProvider.IssueAdminUrl(issue.Id) }

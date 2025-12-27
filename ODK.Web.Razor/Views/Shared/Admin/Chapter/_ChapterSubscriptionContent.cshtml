@@ -15,7 +15,7 @@
 }
 
 <section class="section">
-    <h3>Current subscription</h3>
+    <h4>Current subscription</h4>
     @if (subscription != null)
     {
         var nextPaymentDate = subscription.ExpiresUtc != null
@@ -36,7 +36,7 @@
 </section>
 
 <section class="section">
-    <h3>Change subscription</h3>
+    <h4>Change subscription</h4>
     @if (Model.SiteSubscriptions.Currency != null)
     {
         @await Html.PartialAsync("Pricing/_PricingContent", new PricingContentViewModel
@@ -53,7 +53,7 @@
             .OrderBy(x => x.Text)
             .ToArray();
     
-        <form action="/@Model.Chapter.Name/Admin/Chapter/Currency" method="post">
+        <form action="/@Model.Chapter.ShortName/Admin/Chapter/Currency" method="post">
             @*@Html.AntiForgeryToken()*@
             <div class="form-group mb-3">
                 @Html.Label("currencyId", "Choose currency", new { @class = "form-label" })

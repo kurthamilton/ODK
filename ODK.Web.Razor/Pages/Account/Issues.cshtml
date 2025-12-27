@@ -20,9 +20,9 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Issues(),
+        Title = "My issues",
         Content =
             @<div>
-                <h2>My issues</h2>
                 <section class="section">                    
                     @await Html.PartialAsync("Account/_IssuesContent", viewModel)
                 </section>

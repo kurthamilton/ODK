@@ -1,8 +1,10 @@
 ﻿@using ODK.Services.Chapters
 @using ODK.Web.Common.Extensions
+@using ODK.Web.Razor.Services
 @inject IChapterService ChapterService
+@inject IRequestStore RequestStore
 @{
-    var memberId = User.MemberId();
+    var (platform, memberId) = (RequestStore.Platform, RequestStore.CurrentMemberId);
     var chapters = await ChapterService.GetChaptersByOwnerId(memberId);
     chapters = chapters.Where(x => x.IsOpenForRegistration()).ToArray();
 }
@@ -16,7 +18,7 @@
     <ul class="list-group">
         @foreach (var chapter in chapters)
         {
-            <li class="list-group-item">@chapter.Name</li>
+            <li class="list-group-item">@chapter.GetDisplayName(platform)</li>
         }        
     </ul>
 }

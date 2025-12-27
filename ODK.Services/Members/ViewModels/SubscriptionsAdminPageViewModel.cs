@@ -24,7 +24,5 @@ public class SubscriptionsAdminPageViewModel
 
     public required MemberSiteSubscription? OwnerSubscription { get; init; }
 
-    public required IPaymentSettings? PaymentSettings { get; init; }
-
     public required PlatformType Platform { get; init; }
 }

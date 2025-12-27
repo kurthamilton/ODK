@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
 @model EmailProviderModel
@@ -13,13 +14,14 @@
     var provider = await ChapterAdminService.GetChapterEmailProvider(Model.AdminServiceRequest, Model.ChapterEmailProviderId);
 }
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Breadcrumbs = new []
+    Title = "Edit email provider",
+    Chapter = Model.Chapter,
+    Breadcrumbs = new[]
     {
         new MenuItem { Link = $"/{Model.ChapterName}/admin/superadmin/emails", Text = "Emails" },
         new MenuItem { Text = provider.SmtpServer ?? "SMTP" }
-    }
+    },
+    ContentFunc = @<div>@await Html.PartialAsync("SuperAdmin/_EmailProviderContent", provider)</div>
 })
-
-@await Html.PartialAsync("SuperAdmin/_EmailProviderContent", provider)

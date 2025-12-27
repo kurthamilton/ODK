@@ -4,28 +4,23 @@ using ODK.Core.Platforms;
 using ODK.Core.Topics;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
-using ODK.Data.EntityFramework.Caching;
 using ODK.Data.EntityFramework.Extensions;
 using ODK.Data.EntityFramework.Queries;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapterRepository
+public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepository
 {
-    private static readonly EntityCache<Guid, Chapter> _cache = new DatabaseEntityCache<Chapter>();
-
     private readonly PlatformType _platform;
 
     public ChapterRepository(OdkContext context, IPlatformProvider platformProvider)
-        : base(context, _cache)
+        : base(context)
     {
         _platform = platformProvider.GetPlatform();
     }
 
     public IDeferredQueryMultiple<Chapter> GetAll() => Set()
-        .DeferredMultiple(           
-            _cache.GetAll,
-            _cache.SetAll);    
+        .DeferredMultiple();    
 
     public IDeferredQueryMultiple<Chapter> GetByMemberId(Guid memberId)
     {
@@ -38,15 +33,12 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
         return query.DeferredMultiple();
     }
 
-    public IDeferredQuerySingleOrDefault<Chapter> GetByName(string name) => Set()
-        .Where(x => x.Name == name)
-        .DeferredSingleOrDefault(
-            () => _cache.Find(x => string.Equals(
-                x.Name,
-                name,
-                StringComparison.InvariantCultureIgnoreCase)),
-            _cache.Set,
-            _cache.SetAll);
+    public IDeferredQuerySingleOrDefault<Chapter> GetByName(string name)
+    {
+        return Set()
+            .Where(x => x.Name == name)
+            .DeferredSingleOrDefault();
+    }
 
     public IDeferredQueryMultiple<Chapter> GetByOwnerId(Guid ownerId) => Set()
         .Where(x => x.OwnerId == ownerId)
@@ -54,10 +46,7 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
 
     public IDeferredQuerySingleOrDefault<Chapter> GetBySlug(string slug) => Set()
         .Where(x => x.Slug == slug)
-        .DeferredSingleOrDefault(
-            () => _cache.Find(x => string.Equals(x.Slug, slug, StringComparison.InvariantCultureIgnoreCase)),
-            _cache.Set,
-            _cache.SetAll);
+        .DeferredSingleOrDefault();
 
     public IDeferredQueryMultiple<Chapter> GetByTopicGroupId(Guid topicGroupId)
     {
@@ -80,26 +69,12 @@ public class ChapterRepository : CachingReadWriteRepositoryBase<Chapter>, IChapt
     public override void Update(Chapter entity)
     {
         var clone = entity.Clone();
-        if (clone.Platform == PlatformType.DrunkenKnitwits && !clone.Name.EndsWith(" Drunken Knitwits"))
+        if (clone.Platform == PlatformType.DrunkenKnitwits && !clone.Name.EndsWith(Chapter.DrunkenKnitwitsSuffix))
         {
-            clone.Name += " Drunken Knitwits";
+            clone.Name += Chapter.DrunkenKnitwitsSuffix;
         }
 
         base.Update(clone);
-    }
-
-    protected override void PreCommit(IEnumerable<Chapter> pending)
-    {
-        base.PreCommit(pending);
-
-        foreach (var chapter in pending)
-        {
-            if (_platform == PlatformType.DrunkenKnitwits &&
-                chapter.Platform == PlatformType.DrunkenKnitwits)
-            {
-                chapter.Name = chapter.Name.Replace(" Drunken Knitwits", "");
-            }
-        }
     }
 
     protected override IQueryable<Chapter> Set() => base.Set()

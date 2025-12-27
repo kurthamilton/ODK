@@ -9,7 +9,7 @@
     var viewModel = await ChapterViewModelService.GetGroupEventsPage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
 
-    Model.Title = $"Events | {viewModel.Chapter.Name}";
+    Model.Title = $"Events | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

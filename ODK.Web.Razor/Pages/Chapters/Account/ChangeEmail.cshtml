@@ -22,14 +22,16 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Title = "Account",    
-    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    Title = "Account",
+    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
-        Active = OdkRoutes.Account.EmailAddressChange(chapter),
-        Chapter = chapter,
-        Content = 
+        Title = "Change email address",
+        MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
+        {
+            Chapter = chapter
+        }),
+        BodyContentFunc = 
             @<div>
-                <h2>Change email address</h2>
                 <section class="section">
                     @await Html.PartialAsync("Account/_ChangeEmailContent", viewModel)
                 </section>

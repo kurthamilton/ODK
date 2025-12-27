@@ -2,9 +2,15 @@
 
 public class Country : IDatabaseEntity
 {
-    public string Continent { get; set; } = "";
+    public required string Continent { get; set; }
+
+    public Guid CurrencyId { get; set; }
 
     public Guid Id { get; set; }
 
-    public string Name { get; set; } = "";
+    public required string IsoCode2 { get; set; }
+
+    public required string IsoCode3 { get; set; }
+
+    public required string Name { get; set; }
 }

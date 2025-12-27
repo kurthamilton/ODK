@@ -106,7 +106,9 @@ public static class EventAdminServiceTests
     {
         return new Chapter
         {
-            Id = ChapterId
+            Id = ChapterId,
+            Name = "Dummy",
+            Slug = "slug"
         };
     }
 
@@ -139,7 +141,7 @@ public static class EventAdminServiceTests
         var mock = new Mock<IChapterPaymentSettingsRepository>();
 
         mock.Setup(x => x.GetByChapterId(It.IsAny<Guid>()))
-            .Returns(new MockDeferredQuerySingleOrDefault<ChapterPaymentSettings>(null));
+            .Returns(new MockDeferredQuerySingle<ChapterPaymentSettings>(new()));
 
         return mock.Object;
     }

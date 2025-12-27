@@ -10,7 +10,9 @@ public class SiteSubscription : IDatabaseEntity
 
     public bool Default { get; set; }
 
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
+
+    public int? DisplayOrder { get; set; }
 
     public bool Enabled { get; set; }
 
@@ -26,15 +28,13 @@ public class SiteSubscription : IDatabaseEntity
 
     public bool MemberSubscriptions { get; set; }
 
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public PlatformType Platform { get; set; }
 
     public bool Premium { get; set; }
 
     public bool SendMemberEmails { get; set; }
-
-    public SitePaymentSettings SitePaymentSettings { get; set; } = null!;
 
     public Guid SitePaymentSettingId { get; set; }
 
@@ -49,14 +49,16 @@ public class SiteSubscription : IDatabaseEntity
             yield return SiteFeatureType.EventTickets;
             yield return SiteFeatureType.InstagramFeed;
             yield return SiteFeatureType.MemberSubscriptions;
+            yield return SiteFeatureType.Payments;
             yield return SiteFeatureType.ScheduledEventEmails;
             yield return SiteFeatureType.SendMemberEmails;
             yield break;
         }
 
-        if (MemberSubscriptions)
+        if (MemberSubscriptions && !Premium)
         {
             yield return SiteFeatureType.MemberSubscriptions;
+            yield return SiteFeatureType.Payments;
         }        
 
         if (SendMemberEmails)
@@ -66,6 +68,8 @@ public class SiteSubscription : IDatabaseEntity
     }
 
     public bool HasFeature(SiteFeatureType feature) => Features().Contains(feature);
+
+    public bool IsEnabled(SitePaymentSettings sitePaymentSettings) => Enabled && sitePaymentSettings.Enabled;
 
     public string ToReference() => $"Subscription: {Name}";
 }

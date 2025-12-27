@@ -22,10 +22,9 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
 
     public async Task CreateReconciliation(MemberChapterServiceRequest request, CreateReconciliationModel model)
     {
-        var (payments, chapterPaymentSettings, sitePaymentSettings) = await GetSuperAdminRestrictedContent(
+        var (payments, sitePaymentSettings) = await GetSuperAdminRestrictedContent(
             request.CurrentMemberId,
             x => x.PaymentRepository.GetByIds(model.PaymentIds),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
             x => x.SitePaymentSettingsRepository.GetActive());
 
         if (payments.Count == 0)
@@ -120,7 +119,7 @@ public class PaymentAdminService : OdkAdminServiceBase, IPaymentAdminService
             x => x.SitePaymentSettingsRepository.GetActive(),
             x => x.CurrencyRepository.GetAll());
         
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(sitePaymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetSitePaymentProvider(sitePaymentSettings);
 
         var theirPayments = await paymentProvider.GetAllPayments();
 

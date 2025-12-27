@@ -1,13 +1,19 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Properties"
 @using ODK.Services.Chapters
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.PropertiesModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Properties | Admin";
+    Model.Title = "Member properties | Admin";
 
     var viewModel = await ChapterAdminService.GetChapterPropertiesViewModel(Model.AdminServiceRequest);
 }
 
-@await Html.PartialAsync("Admin/Chapter/_PropertiesContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Member properties",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_PropertiesContent", viewModel)</div>
+})

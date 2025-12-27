@@ -10,6 +10,9 @@ public class SitePaymentSettingsFormViewModel
     public decimal Commission { get; set; }
 
     [Required]
+    public bool Enabled { get; set; }
+
+    [Required]
     public string? Name { get; set; }
 
     public PaymentProviderType? Provider { get; set; }

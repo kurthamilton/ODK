@@ -39,6 +39,6 @@ public class VenueCreateModel : AdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Venue created", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Events/Venues");
+        return Redirect($"/{Chapter.ShortName}/Admin/Events/Venues");
     }
 }

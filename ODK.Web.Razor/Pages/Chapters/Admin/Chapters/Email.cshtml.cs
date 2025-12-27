@@ -43,6 +43,6 @@ public class EmailModel : AdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Email updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Chapter/Emails");
+        return Redirect($"/{Chapter.ShortName}/Admin/Chapter/Emails");
     }
 }

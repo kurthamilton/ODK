@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/events/venues/{venueId:guid}/events"
 @using ODK.Services.Venues
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model EventsModel
 @inject IVenueAdminService VenueAdminService
 @{
@@ -10,4 +12,12 @@
     Model.Title = viewModel.Venue.Name;
 }
 
-@await Html.PartialAsync("Admin/Venues/_VenueEventsContent", viewModel)
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = viewModel.Venue.Name,
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueEventsContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = viewModel.Chapter
+    })
+})

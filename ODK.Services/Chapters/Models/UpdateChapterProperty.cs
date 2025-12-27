@@ -8,9 +8,9 @@ public class UpdateChapterProperty
 
     public bool ApplicationOnly { get; set; }
 
-    public string Label { get; set; } = "";
+    public string Label { get; set; } = string.Empty;
 
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public IReadOnlyCollection<string>? Options { get; set; }
 

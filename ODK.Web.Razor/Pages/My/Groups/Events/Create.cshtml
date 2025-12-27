@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/events/new"
 @using ODK.Services.Events
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
 @model CreateModel
 @inject IEventAdminService EventAdminService
 @{
@@ -10,4 +12,12 @@
     viewModel.VenueId = Model.VenueId;
 }
 
-@await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel)
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Create event",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Events/_EventCreateContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = viewModel.Chapter
+    })
+})

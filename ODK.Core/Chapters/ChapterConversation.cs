@@ -10,5 +10,5 @@ public class ChapterConversation : IDatabaseEntity, IChapterEntity
 
     public Guid MemberId { get; set; }
 
-    public string Subject { get; set; } = "";
+    public required string Subject { get; set; }
 }

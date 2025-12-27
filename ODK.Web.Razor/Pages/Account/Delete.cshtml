@@ -17,9 +17,9 @@
     Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
     {
         Active = OdkRoutes.Account.Delete(null),
+        Title = "Delete account",
         Content = 
             @<div>
-                <h2>Delete account</h2>
                 <section class="section">
                     @await Html.PartialAsync("Account/_DeleteAccountContent")
                 </section>

@@ -38,6 +38,6 @@ public class QuestionCreateModel : AdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Question created", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Chapter/Questions");
+        return Redirect($"/{Chapter.ShortName}/Admin/Chapter/Questions");
     }
 }

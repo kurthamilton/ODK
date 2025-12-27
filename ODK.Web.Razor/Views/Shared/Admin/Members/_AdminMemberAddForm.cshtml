@@ -2,6 +2,6 @@
 
 <div>
     @Html.DropDownListFor(x => x.MemberId, Model.AdminMemberOptions, "", 
-        new { @class = "form-select", data_searchable = "", data_placeholder = "Add member" })
+        new { @class = "form-select", data_searchable = "", data_placeholder = "Add member", data_clearable = "" })
     @Html.ValidationMessage("MemberId")
 </div>

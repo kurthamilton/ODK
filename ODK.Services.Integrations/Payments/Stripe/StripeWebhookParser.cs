@@ -20,18 +20,23 @@ public class StripeWebhookParser : IStripeWebhookParser
         _settings = settings;
     }
 
-    public async Task<PaymentProviderWebhook?> ParseWebhook(string json, string? signature)
+    public async Task<PaymentProviderWebhook?> ParseWebhook(string json, string? signature, int version)
     {
         try
         {
-            var stripeEvent = string.IsNullOrEmpty(_settings.WebhookSecret) 
+            var secret = version == 2
+                ? _settings.WebhookSecretV2
+                : _settings.WebhookSecretV1;
+
+            var stripeEvent = string.IsNullOrEmpty(secret) 
                 ? EventUtility.ParseEvent(json)
-                : EventUtility.ConstructEvent(json, signature, _settings.WebhookSecret);
+                : EventUtility.ConstructEvent(json, signature, secret);
 
             return stripeEvent.Type switch
             {
                 EventTypes.CheckoutSessionCompleted => ToCheckoutSessionCompleted(stripeEvent),
                 EventTypes.InvoicePaymentSucceeded => ToInvoicePaymentSucceeded(stripeEvent),
+                EventTypes.PaymentIntentSucceeded => ToPaymentIntentSucceeded(stripeEvent),
                 _ => null
             };            
         }
@@ -77,6 +82,24 @@ public class StripeWebhookParser : IStripeWebhookParser
             PaymentProviderType = PaymentProviderType.Stripe,
             SubscriptionId = invoice.Parent.SubscriptionDetails.SubscriptionId,
             Type = PaymentProviderWebhookType.InvoicePaymentSucceeded
+        };
+    }
+
+    private static PaymentProviderWebhook ToPaymentIntentSucceeded(Event stripeEvent)
+    {
+        var paymentIntent = (PaymentIntent)stripeEvent.Data.Object;
+
+        return new PaymentProviderWebhook
+        {
+            Amount = (decimal)(paymentIntent.Amount / 100.0),
+            Complete = paymentIntent.Status == "succeeded",
+            Id = paymentIntent.Id,
+            Metadata = paymentIntent.Metadata,
+            OriginatedUtc = stripeEvent.Created,
+            PaymentId = paymentIntent.Id,
+            PaymentProviderType = PaymentProviderType.Stripe,
+            SubscriptionId = null,
+            Type = PaymentProviderWebhookType.PaymentSucceeded
         };
     }
 }

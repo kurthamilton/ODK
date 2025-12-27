@@ -9,7 +9,7 @@
     var viewModel = await ChapterViewModelService.GetGroupContactPage(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug);
 
-    Model.Title = $"Contact | {viewModel.Chapter.Name}";
+    Model.Title = $"Contact | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

@@ -4,7 +4,7 @@ public class PaymentCheckoutSession : IDatabaseEntity, IMemberEntity
 {
     public DateTime? CompletedUtc { get; set; }
 
-    public string SessionId { get; set; } = "";
+    public string SessionId { get; set; } = string.Empty;
 
     public Guid Id { get; set; }
 

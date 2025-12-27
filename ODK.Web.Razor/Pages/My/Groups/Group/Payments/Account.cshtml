@@ -1,0 +1,28 @@
+﻿@page "/my/groups/{id:guid}/payments/account"
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.My.Groups.Group.Payments.AccountModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Account | Payments";
+
+    var request = Model.AdminServiceRequest;
+    var platform = request.Platform;
+    var viewModel = await ChapterAdminService.GetChapterPaymentAccountViewModel(request);
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Payment account",
+    BodyContentFunc = 
+        @<div>
+            @await Html.PartialAsync("Admin/Payments/_AccountContent", viewModel)
+        </div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = viewModel.Chapter
+    })
+})

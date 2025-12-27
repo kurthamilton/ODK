@@ -1,14 +1,20 @@
 ﻿@page "/{chapterName}/Admin/Events/{id:guid}"
 @using ODK.Services.Events
 @using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventModel
 @inject IEventAdminService EventAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Edit Event | Admin";
+    Model.Title = "Edit event | Admin";
 
     var viewModel = await EventAdminService.GetEventEditViewModel(Model.AdminServiceRequest, Model.Event.Id);    
 }
 
-@await Html.PartialAsync("Admin/Events/Event/_EventContent", viewModel)
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Edit event",
+    Chapter = Model.Chapter,
+    ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/Event/_EventContent", viewModel)</div>
+})

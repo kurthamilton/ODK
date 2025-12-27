@@ -16,7 +16,7 @@
     Model.Title = "Subscription checkout";
 
     var request = Model.MemberChapterServiceRequest(Model.Chapter.Id);
-    var returnPath = $"/{Model.Chapter.Name}/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
+    var returnPath = $"/{Model.Chapter.ShortName}/account/subscription/{Model.SubscriptionId}/confirm?sessionId={{sessionId}}";
     var viewModel = await MemberService.StartChapterSubscriptionCheckoutSession(
         request, Model.SubscriptionId, returnPath);
 }
@@ -25,11 +25,14 @@
 {
     Title = "Account",
     HideSubscriptionAlert = true,
-    Content = await Html.PartialAsync("Account/_SiteAccountLayout", new SiteAccountLayoutViewModel
+    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
     {
-        Active = OdkRoutes.Account.Subscription(Model.Platform, Model.Chapter),
-        Chapter = Model.Chapter,
-        Content =
+        Title = "Checkout",
+        MenuContentFunc = _ => Html.PartialAsync("Account/_AccountMenu", new AccountMenuViewModel
+        {
+            Chapter = Model.Chapter
+        }),
+        BodyContentFunc = 
             @<div>
                 @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
                 {
@@ -39,7 +42,6 @@
                         new MenuItem { Text = "Checkout" }
                     }
                 })
-                <h2>Checkout</h2>
                 <section class="section">
                     <div id="checkout"
                          data-stripe="@viewModel.PaymentSettings.ApiPublicKey"

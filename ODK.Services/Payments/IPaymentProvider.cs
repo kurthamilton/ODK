@@ -1,4 +1,4 @@
-﻿using ODK.Core.Web;
+﻿using ODK.Core.Payments;
 using ODK.Services.Payments.Models;
 
 namespace ODK.Services.Payments;
@@ -9,13 +9,17 @@ public interface IPaymentProvider
 
     bool HasExternalGateway { get; }
 
+    IPaymentSettings PaymentSettings { get; }
+
+    bool SupportsConnectedAccounts { get; }
+
     bool SupportsRecurringPayments { get; }
 
     Task<ServiceResult> ActivateSubscriptionPlan(string externalId);
 
-    Task<bool> CancelSubscription(string externalId);    
+    Task<bool> CancelSubscription(string externalId);
 
-    Task<string?> CreateCustomer(string emailAddress);
+    Task<RemoteAccount?> CreateConnectedAccount(CreateRemoteAccountOptions options);
 
     Task<string?> CreateProduct(string name);
 
@@ -23,9 +27,13 @@ public interface IPaymentProvider
 
     Task<ServiceResult> DeactivateSubscriptionPlan(string externalId);
 
-    Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId);
+    Task<string?> GenerateConnectedAccountSetupUrl(GenerateRemoteAccountSetupUrlOptions options);
 
     Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments();
+
+    Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId);
+
+    Task<RemoteAccount?> GetConnectedAccount(string externalId);
 
     Task<string?> GetProductId(string name);
 
@@ -34,18 +42,17 @@ public interface IPaymentProvider
     Task<ExternalSubscriptionPlan?> GetSubscriptionPlan(string externalId);
 
     Task<RemotePaymentResult> MakePayment(string currencyCode, decimal amount, string cardToken, 
-        string description, Guid memberId, string memberName);    
+        string description, Guid memberId, string memberName);
 
     Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
         string paymentId, string note);
 
     Task<ExternalCheckoutSession> StartCheckout(
         ServiceRequest request, 
+        string emailAddress,
         ExternalSubscriptionPlan subscriptionPlan, 
         string returnPath, 
         PaymentMetadataModel metadata);
 
     Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata);
-
-    Task<ServiceResult> VerifyPayment(string currencyCode, decimal amount, string cardToken);
 }

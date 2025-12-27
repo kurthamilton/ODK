@@ -16,7 +16,7 @@
         Response.Redirect(OdkRoutes.Groups.Join(viewModel.Platform, viewModel.Chapter));
     }
 
-    Model.Title = $"Members | {viewModel.Chapter.Name}";
+    Model.Title = $"Members | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBody", new GroupBodyViewModel

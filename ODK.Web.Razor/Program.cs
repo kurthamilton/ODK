@@ -150,14 +150,14 @@ public class Program
             pipeline.AddCssBundle(
                 route: "/css/odk.bundle.lib.css",
                 "lib/font-awesome/css/all.css",
-                "lib/flatpickr/dist/flatpickr.css",
+                "lib/flatpickr/flatpickr.css",
                 "lib/aspnet-client-validation/dist/aspnet-validation.css",
                 "lib/slim-select/slimselect.css");
             pipeline.AddJavaScriptBundle(
                 route: "/js/odk.bundle.js",
                 "lib/cookieconsent/cookieconsent.min.js",
                 "lib/bootstrap/js/bootstrap.bundle.js",
-                "lib/flatpickr/dist/flatpickr.js",
+                "lib/flatpickr/flatpickr.js",
                 "lib/aspnet-client-validation/dist/aspnet-validation.js",
                 "lib/slim-select/slimselect.js",
                 "js/site.js",

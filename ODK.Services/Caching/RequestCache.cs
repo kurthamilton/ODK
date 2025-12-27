@@ -36,7 +36,7 @@ public class RequestCache : IRequestCache
     {
         var chapters = await GetChaptersAsync(platform);
         var chapter = chapters
-            .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            .FirstOrDefault(x => string.Equals(x.GetDisplayName(platform), name, StringComparison.OrdinalIgnoreCase));
         return OdkAssertions.Exists(chapter, $"Chapter not found: '{name}'");
     }
 
@@ -60,7 +60,7 @@ public class RequestCache : IRequestCache
 
         foreach (var chapter in chapters)
         {
-            _chapters[chapter.Name] = chapter;
+            _chapters[chapter.GetDisplayName(platform)] = chapter;
         }
 
         return _chapters.Values.ToArray();

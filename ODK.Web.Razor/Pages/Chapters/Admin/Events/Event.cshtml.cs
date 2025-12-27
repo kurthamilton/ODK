@@ -45,6 +45,6 @@ public class EventModel : EventAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Event updated", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/Admin/Events");
+        return Redirect($"/{Chapter.ShortName}/Admin/Events");
     }
 }

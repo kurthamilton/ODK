@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 using ODK.Core.Images;
@@ -161,18 +162,18 @@ public class AccountController : OdkControllerBase
     [HttpPost("{chapterName}/Account/Login")]
     public async Task<IActionResult> Login(string chapterName, [FromForm] LoginViewModel viewModel, string? returnUrl)
     {
-        var chapter = await _requestCache.GetChapterAsync(_requestStore.Platform, chapterName);
+        var platform = _requestStore.Platform;
+        var chapter = await _requestCache.GetChapterAsync(platform, chapterName);
         var result = await _loginHandler.Login(viewModel.Email ?? "",
             viewModel.Password ?? "", true);
 
         if (result.Success && result.Member != null)
         {
-            if (string.IsNullOrEmpty(returnUrl))
-            {
-                return Redirect($"/{chapter.Name}");
-            }
-
-            return Redirect(returnUrl);
+            var redirectUrl = string.IsNullOrEmpty(returnUrl)
+                ? OdkRoutes.Groups.Group(platform, chapter)
+                : returnUrl;
+            
+            return Redirect(redirectUrl);
         }
 
         AddFeedback("Username or password incorrect", FeedbackType.Error);
@@ -417,6 +418,15 @@ public class AccountController : OdkControllerBase
     {
         await _memberService.RotateMemberImage(MemberId);
 
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("account/subscription/{id:guid}/cancel")]
+    public async Task<IActionResult> CancelSiteSubscription(Guid id)
+    {
+        var result = await _siteSubscriptionService.CancelMemberSiteSubscription(MemberServiceRequest, id);
+
+        AddFeedback(result, "Subscription cancelled");
         return RedirectToReferrer();
     }
 

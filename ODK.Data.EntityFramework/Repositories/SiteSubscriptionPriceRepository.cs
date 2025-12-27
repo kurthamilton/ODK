@@ -14,6 +14,17 @@ public class SiteSubscriptionPriceRepository : ReadWriteRepositoryBase<SiteSubsc
     {
     }
 
+    public IDeferredQueryMultiple<SiteSubscriptionPrice> GetAll(PlatformType platform)
+    {
+        var query =
+            from price in Set()
+            from subscription in Set<SiteSubscription>()
+                .Where(x => x.Platform == platform)
+            where price.SiteSubscriptionId == subscription.Id
+            select price;
+        return query.DeferredMultiple();
+    }
+
     public IDeferredQueryMultiple<SiteSubscriptionPrice> GetAllEnabled(PlatformType platform)
     {
         var query = 

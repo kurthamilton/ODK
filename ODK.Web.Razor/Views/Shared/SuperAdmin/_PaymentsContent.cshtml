@@ -7,46 +7,55 @@
 @using ODK.Web.Razor.Models.SuperAdmin
 @model IReadOnlyCollection<SitePaymentSettings>
 
-<h2 class="d-none d-md-block">Payment settings</h2>
+<div data-odk-component="_SuperAdmin/_PaymentsContent">
+    <h2 class="d-none d-md-block">Payment settings</h2>
 
-<section class="section">
-    <p>
-        <a class="btn btn-primary" href="/superadmin/payments/new">
-            Create
-        </a>
-    </p>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Provider</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var paymentSetting in Model)
-                {
+    <section class="section">
+        <p>
+            <a class="btn btn-primary" href="/superadmin/payments/new">
+                Create
+            </a>
+        </p>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>
-                            <a href="/superadmin/payments/@paymentSetting.Id">@paymentSetting.Name</a>
-                        </td>
-                        <td>@paymentSetting.Provider</td>
-                        <td>
-                            @if (paymentSetting.Active)
-                            {
-                                @:Active
-                            }
-                            else
-                            {
-                                <form action="/superadmin/payments/@paymentSetting.Id/activate" method="post">
-                                    <button class="btn btn-primary">Activate</button>
-                                </form>
-                            }
-                        </td>
+                        <th>Name</th>
+                        <th>Provider</th>
+                        <th>Enabled</th>
+                        <th></th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>        
-</section>
+                </thead>
+                <tbody>
+                    @foreach (var paymentSetting in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a href="/superadmin/payments/@paymentSetting.Id">@paymentSetting.Name</a>
+                            </td>
+                            <td>@paymentSetting.Provider</td>
+                            <td>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" disabled
+                                           checked="@(paymentSetting.Enabled ? "" : null)" />
+                                </div>
+                            </td>
+                            <td>
+                                @if (paymentSetting.Active)
+                                {
+                                    @:Active
+                                }
+                                else
+                                {
+                                    <form action="/superadmin/payments/@paymentSetting.Id/activate" method="post">
+                                        <button class="btn btn-primary">Activate</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>        
+    </section>
+</div>

@@ -11977,10 +11977,6 @@ p:last-child {
   color: var(--bs-body-color);
 }
 
-.link-hover:hover {
-  opacity: 0.8;
-}
-
 /*mimic BS4-style card header*/
 .accordion-button {
   background-color: rgba(0, 0, 0, 0.03);
@@ -12036,6 +12032,11 @@ html[data-platform=odk] {
 .btn-icon {
   background-color: transparent;
   border: none;
+  padding: 0;
+}
+
+.btn-link {
+  align-content: center;
   padding: 0;
 }
 
@@ -12196,6 +12197,15 @@ html[data-platform=odk] {
 
 .dropdown-item:hover .card {
   background-color: var(--bs-dropdown-link-hover-bg);
+}
+
+.dropdown-item--header {
+  --bs-dropdown-header-padding-x: var(--bs-dropdown-item-padding-x);
+  --bs-dropdown-header-padding-y: var(--bs-dropdown-item-padding-y);
+  display: flex;
+  justify-content: end;
+  font-weight: 700;
+  font-size: 1rem;
 }
 
 .dropdown-item--icon {
@@ -12376,6 +12386,15 @@ html[data-platform=odk] {
 
 .icon--excel {
   color: #107C41;
+}
+
+.link-hover:hover.link-hover--opacity,
+.link-hover:hover .link-hover__opacity {
+  opacity: 0.8;
+}
+.link-hover:hover.link-hover--underline,
+.link-hover:hover .link-hover__underline {
+  text-decoration: underline;
 }
 
 .list-item {
@@ -12836,6 +12855,10 @@ th.sortable.sort-desc:after {
 .table thead th {
   border-top: 1px solid var(--bs-table-border-color);
   border-bottom: 2px solid var(--bs-table-border-color);
+}
+
+.tcol-narrow {
+  width: 1px;
 }
 
 .event-list {

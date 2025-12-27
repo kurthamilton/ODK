@@ -16,7 +16,7 @@ public class CreateEvent
 
     public required bool IsPublic { get; init; }
 
-    public required string Name { get; init; } = "";
+    public required string Name { get; init; } = string.Empty;
 
     public required DateTime? RsvpDeadline { get; init; }
 

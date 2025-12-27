@@ -2,5 +2,7 @@
 
 public interface IHttpRequestContext
 {
-    string RequestUrl { get; }
+    string BaseUrl { get; }
+
+    string RequestUrl { get; }    
 }

@@ -20,7 +20,7 @@ public class ChapterConversationMessage : IDatabaseEntity
 
     public double? RecaptchaScore { get; set; }
 
-    public string Text { get; set; } = "";
+    public required string Text { get; set; }
 
     public ChapterConversationMessage Clone() => new ChapterConversationMessage
     {

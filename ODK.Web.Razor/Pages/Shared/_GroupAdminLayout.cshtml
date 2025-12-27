@@ -20,15 +20,8 @@
 
 @await Html.PartialAsync("Components/_Body", new BodyViewModel
 {
-    Content = await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
-    {
-        BodyContentFunc = _ => RenderBody(),
-        MenuContent = await Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
-        {
-            Chapter = chapter
-        })
-    }),
-    Title = chapter.Name
+    Title = chapter.GetDisplayName(platform),
+    ContentFunc = _ => RenderBody()
 })
 
 @section scripts

@@ -12,7 +12,7 @@
     var viewModel = await EventViewModelService.GetGroupEventPageViewModel(
         Model.ServiceRequest, Model.CurrentMemberIdOrDefault, Model.Slug, Model.EventId);
 
-    Model.Title = $"{viewModel.Event.GetDisplayName()} | {viewModel.Chapter.Name}";
+    Model.Title = $"{viewModel.Event.GetDisplayName()} | {viewModel.Chapter.GetDisplayName(Model.Platform)}";
 }
 
 @await Html.PartialAsync("Groups/_GroupBodyWithSidebar", new GroupBodyWithSidebarViewModel
@@ -32,7 +32,7 @@
 
 @section scripts
 {
-    @if (viewModel.Event.TicketSettings != null && viewModel.ChapterPaymentSettings != null)
+    @if (viewModel.Event.TicketSettings != null)
     {
         @await Html.PartialAsync("Payments/_PaymentScripts", new PaymentScriptsViewModel
         {

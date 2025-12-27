@@ -32,8 +32,8 @@
     </div>
 </div>
 <div class="form-group mb-3">
-    <select name="c" class="form-select form-select-sm" data-select data-placeholder="Category">
-        <option data-placeholder value=""></option>
+    <select name="c" class="form-select form-select-sm" data-select data-clearable data-placeholder="Category">
+        <option value=""></option>
         @foreach (var topicGroup in Model.TopicGroups.OrderBy(x => x.Name))
         {
             <option selected="@(Model.TopicGroupId == topicGroup.Id ? "" : null)">

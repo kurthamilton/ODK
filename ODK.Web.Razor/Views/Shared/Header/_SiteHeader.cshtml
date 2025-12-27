@@ -1,5 +1,5 @@
 ﻿@using ODK.Core.Platforms
-@using ODK.Web.Common.Extensions
+@using ODK.Services.Members
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
 @model OdkComponentContext
@@ -9,40 +9,41 @@
         return;
     }
 
-    var id = "site-menu";
-    var authenticated = User.Authenticated();
+    var id = "site-menu";    
 }
 
-<nav class="navbar navbar--site navbar-dark bg-dark text-light border-bottom border-light navbar-expand">
-    <div class="container flex-wrap flex-md-nowrap">
-        <div class="me-3">
-            <a href="/">
-                <img class="site-logo" src="/assets/groupsquirrel/logo2.webp" />
-            </a>
-        </div>
+<div data-odk-component="_SiteHeader">
+    <nav class="navbar navbar--site navbar-dark bg-dark text-light border-bottom border-light navbar-expand">
+        <div class="container flex-wrap flex-md-nowrap">
+            <div class="me-3">
+                <a href="/">
+                    <img class="site-logo" src="/assets/groupsquirrel/logo2.webp" />
+                </a>
+            </div>
         
-        <div class="d-flex gap-4 ms-auto align-self-center order-md-5">
-            @await Html.PartialAsync("Header/_SiteTasksDropdown", Model)
-            @await Html.PartialAsync("Header/_NotificationDropdown", Model)
-            @await Html.PartialAsync("Header/_SiteAccountDropdown", Model)
-        </div>
+            <div class="d-flex gap-4 ms-auto align-self-center order-md-5">
+                @await Html.PartialAsync("Header/_SiteTasksDropdown", Model)
+                @await Html.PartialAsync("Header/_NotificationDropdown", Model)
+                @await Html.PartialAsync("Header/_SiteAccountDropdown", Model)
+            </div>
 
-        <div class="navbar-collapse site-nav" id="@id">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="/pricing">Pricing</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="@OdkRoutes.Groups.Index(Model.Platform)">Groups</a>
-                </li>
-
-                @if (authenticated)
-                {
+            <div class="navbar-collapse site-nav" id="@id">
+                <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="@OdkRoutes.MemberGroups.Index(Model.Platform)">My groups</a>
+                        <a class="nav-link" href="/pricing">Pricing</a>
                     </li>
-                }                
-            </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@OdkRoutes.Groups.Index(Model.Platform)">Groups</a>
+                    </li>
+
+                    @if (Model.IsAuthenticated)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@OdkRoutes.MemberGroups.Index(Model.Platform)">My groups</a>
+                        </li>
+                    }                
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
+</div>

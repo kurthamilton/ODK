@@ -1,16 +1,15 @@
-﻿using ODK.Core.Payments;
-using ODK.Core.Subscriptions;
+﻿using ODK.Core.Subscriptions;
 using ODK.Services.Subscriptions.ViewModels;
 
 namespace ODK.Services.Subscriptions;
 
 public interface ISiteSubscriptionService
 {
+    Task<ServiceResult> CancelMemberSiteSubscription(
+        MemberServiceRequest request, Guid siteSubscriptionId);
+
     Task<ServiceResult> ConfirmMemberSiteSubscription(
         MemberServiceRequest request, Guid siteSubscriptionId, string externalId);
-
-    Task<PaymentStatusType> GetMemberSiteSubscriptionPaymentCheckoutSessionStatus(
-        MemberServiceRequest request, string externalSessionId);
 
     Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
         ServiceRequest request, Guid? memberId);    

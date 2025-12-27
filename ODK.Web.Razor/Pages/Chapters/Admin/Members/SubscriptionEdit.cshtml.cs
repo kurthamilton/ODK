@@ -38,14 +38,13 @@ public class SubscriptionEditModel : AdminPageModel
             Name = viewModel.Name,
             Months = viewModel.DurationMonths ?? 0,
             Recurring = viewModel.Recurring,
-            Title = viewModel.Title,
-            Type = viewModel.Type
+            Title = viewModel.Title
         });
 
         if (result.Success)
         {
             AddFeedback(new FeedbackViewModel("Subscription updated", FeedbackType.Success));
-            return Redirect($"/{Chapter.Name}/Admin/Members/Subscriptions");
+            return Redirect($"/{Chapter.ShortName}/Admin/Members/Subscriptions");
         }
 
         AddFeedback(new FeedbackViewModel(result));

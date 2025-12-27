@@ -1,4 +1,5 @@
-﻿using ODK.Core.Chapters;
+﻿using ODK.Core;
+using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Cryptography;
 using ODK.Core.DataTypes;
@@ -32,14 +33,12 @@ public class MemberService : IMemberService
     private readonly INotificationService _notificationService;
     private readonly IOAuthProviderFactory _oauthProviderFactory;
     private readonly IPaymentProviderFactory _paymentProviderFactory;
-    private readonly IPaymentService _paymentService;    
     private readonly ITopicService _topicService;
     private readonly IUnitOfWork _unitOfWork;
 
     public MemberService(
         IUnitOfWork unitOfWork, 
         IAuthorizationService authorizationService,
-        IPaymentService paymentService, 
         ICacheService cacheService, 
         IMemberImageService memberImageService, 
         IMemberEmailService memberEmailService,
@@ -55,7 +54,6 @@ public class MemberService : IMemberService
         _notificationService = notificationService;
         _oauthProviderFactory = oauthProviderFactory;
         _paymentProviderFactory = paymentProviderFactory;
-        _paymentService = paymentService;        
         _topicService = topicService;
         _unitOfWork = unitOfWork;
     }
@@ -76,23 +74,16 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Error cancelling subscription");
         }
 
-        var (chapterSubscription, chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterSubscriptionRepository.GetById(memberSubscriptionRecord.ChapterSubscriptionId.Value),
+        var (chapterSubscription, chapterPaymentSettings, sitePaymentSettings, connectedAccount) = await _unitOfWork.RunAsync(
+            x => x.ChapterSubscriptionRepository.GetDtoById(memberSubscriptionRecord.ChapterSubscriptionId.Value),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(memberSubscriptionRecord.ChapterId),
-            x => x.SitePaymentSettingsRepository.GetActive());
+            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(memberSubscriptionRecord.ChapterId));
 
-        IPaymentSettings? paymentSettings = chapterPaymentSettings?.UseSitePaymentProvider == true
-            ? chapterSubscription.Uses(chapterPaymentSettings, sitePaymentSettings)
-                ? sitePaymentSettings
-                : null
-            : chapterPaymentSettings;
-
-        if (paymentSettings == null)
-        {
-            return ServiceResult.Failure("Error cancelling subscription");
-        }
-
-        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(paymentSettings);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentSettings,
+            sitePaymentSettings,
+            connectedAccount);
 
         var result = await paymentProvider.CancelSubscription(memberSubscriptionRecord.ExternalId);
         return result
@@ -478,31 +469,7 @@ public class MemberService : IMemberService
         return image != null
             ? new VersionedServiceResult<MemberImage>(BitConverter.ToInt64(image.Version), image)
             : new VersionedServiceResult<MemberImage>(0, null);
-    }
-
-    public async Task<PaymentStatusType> GetMemberChapterPaymentCheckoutSessionStatus(
-        MemberChapterServiceRequest request, string externalSessionId)
-    {
-        var (sitePaymentSettings, chapterPaymentSettings, checkoutSession) = await _unitOfWork.RunAsync(
-            x => x.SitePaymentSettingsRepository.GetActive(),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(request.ChapterId),
-            x => x.PaymentCheckoutSessionRepository.GetByMemberId(request.CurrentMemberId, externalSessionId));
-        
-        IPaymentSettings paymentSettings = chapterPaymentSettings == null || chapterPaymentSettings.UseSitePaymentProvider
-            ? sitePaymentSettings
-            : chapterPaymentSettings;
-
-        if (checkoutSession.CompletedUtc != null)
-        {
-            return PaymentStatusType.Complete;
-        }
-
-        var externalSession = await _paymentService.GetCheckoutSession(paymentSettings, externalSessionId);
-
-        return externalSession == null || externalSession.Metadata.ChapterId != request.ChapterId
-            ? PaymentStatusType.Expired 
-            : PaymentStatusType.Pending;
-    }
+    }    
 
     public async Task<MemberLocation?> GetMemberLocation(Guid memberId)
     {
@@ -610,8 +577,18 @@ public class MemberService : IMemberService
     {
         var (memberId, chapterId) = (request.CurrentMemberId, request.ChapterId);
 
-        var (paymentSettings, member, chapterSubscription, memberSubscription) = await _unitOfWork.RunAsync(
+        var (
+            chapter,
+            chapterPaymentSettings, 
+            sitePaymentSettings,
+            paymentAccount,
+            member, 
+            chapterSubscription, 
+            memberSubscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(memberId),
             x => x.ChapterSubscriptionRepository.GetByIdOrDefault(chapterSubscriptionId),
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId));
@@ -626,13 +603,18 @@ public class MemberService : IMemberService
             return ServiceResult.Failure("Payment not made: you are not a member of this subscription's chapter");
         }
 
-        var paymentResult = await _paymentService.MakePayment(
-            paymentSettings, 
-            paymentSettings.Currency, 
-            member, 
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentSettings, 
+            sitePaymentSettings,
+            paymentAccount);
+
+        var paymentResult = await paymentProvider.MakePayment(
+            chapterPaymentSettings.Currency.Code, 
             (decimal)chapterSubscription.Amount, 
             cardToken, 
-            chapterSubscription.Title);
+            chapterSubscription.Title,
+            member.Id,
+            member.FullName);
         if (!paymentResult.Success)
         {
             return ServiceResult.Failure($"Payment not made: {paymentResult.Message}");
@@ -667,10 +649,6 @@ public class MemberService : IMemberService
         });
 
         await _unitOfWork.SaveChangesAsync();
-
-        var (chapter, chapterPaymentSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(chapterSubscription.ChapterId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId));
 
         await _memberEmailService.SendMemberChapterSubscriptionConfirmationEmail(
             request,
@@ -752,27 +730,35 @@ public class MemberService : IMemberService
     public async Task<ChapterSubscriptionCheckoutStartedViewModel> StartChapterSubscriptionCheckoutSession(
         MemberChapterServiceRequest request, Guid chapterSubscriptionId, string returnPath)
     {        
-        var (platform, memberId) = (request.Platform, request.CurrentMemberId);
+        var (chapterId, platform, memberId) = (request.ChapterId, request.Platform, request.CurrentMemberId);
 
-        var (member, chapterSubscription) = await _unitOfWork.RunAsync(
+        var (
+            chapter, 
+            chapterPaymentSettings, 
+            sitePaymentSettings,
+            chapterPaymentAccount, 
+            member, 
+            chapterSubscription) = await _unitOfWork.RunAsync(
+            x => x.ChapterRepository.GetById(chapterId),
+            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
+            x => x.SitePaymentSettingsRepository.GetAll(),
+            x => x.ChapterPaymentAccountRepository.GetByChapterId(chapterId),
             x => x.MemberRepository.GetById(memberId),
             x => x.ChapterSubscriptionRepository.GetById(chapterSubscriptionId));
 
-        var (chapter, chapterPaymentSettings, sitePaymentSettings) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetById(chapterSubscription.ChapterId),
-            x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterSubscription.ChapterId),
-            x => x.SitePaymentSettingsRepository.GetActive());
-
-        IPaymentSettings paymentSettings = chapterPaymentSettings.UseSitePaymentProvider
-            ? sitePaymentSettings
-            : chapterPaymentSettings;        
+        OdkAssertions.BelongsToChapter(chapterSubscription, request.ChapterId);
 
         if (string.IsNullOrEmpty(chapterSubscription.ExternalId))
         {
             throw new Exception("Error starting checkout session: chapterSubscription.ExternalId missing");
         }
 
-        var subscriptionPlan = await _paymentService.GetSubscriptionPlan(paymentSettings, chapterSubscription.ExternalId);
+        var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
+            chapterPaymentSettings, 
+            sitePaymentSettings,
+            chapterPaymentAccount);
+
+        var subscriptionPlan = await paymentProvider.GetSubscriptionPlan(chapterSubscription.ExternalId);
         if (subscriptionPlan == null)
         {
             throw new Exception("Error starting checkout session: subscriptionPlan not found");
@@ -788,14 +774,18 @@ public class MemberService : IMemberService
             paymentCheckoutSessionId: paymentCheckoutSessionId,
             paymentId: paymentId);
 
-        var externalCheckoutSession = await _paymentService.StartCheckoutSession(
-            request, paymentSettings, subscriptionPlan, returnPath, metadata);        
+        var externalCheckoutSession = await paymentProvider.StartCheckout(
+            request, 
+            member.EmailAddress,
+            subscriptionPlan, 
+            returnPath, 
+            metadata);        
 
         _unitOfWork.PaymentCheckoutSessionRepository.Add(new PaymentCheckoutSession
         {            
             Id = paymentCheckoutSessionId,
             MemberId = memberId,
-            PaymentId = chapterSubscriptionId,
+            PaymentId = paymentId,
             SessionId = externalCheckoutSession.SessionId,
             StartedUtc = utcNow
         });
@@ -809,7 +799,8 @@ public class MemberService : IMemberService
             ExternalId = externalCheckoutSession.PaymentId,
             Id = paymentId,
             MemberId = memberId,
-            Reference = chapterSubscription.ToReference()
+            Reference = chapterSubscription.ToReference(),
+            SitePaymentSettingId = chapterSubscription.SitePaymentSettingId
         });
 
         await _unitOfWork.SaveChangesAsync();
@@ -820,7 +811,7 @@ public class MemberService : IMemberService
             ChapterSubscription = chapterSubscription,
             ClientSecret = externalCheckoutSession.ClientSecret,
             CurrencyCode = subscriptionPlan.CurrencyCode,
-            PaymentSettings = paymentSettings,
+            PaymentSettings = paymentProvider.PaymentSettings,
             Platform = platform
         };
     }

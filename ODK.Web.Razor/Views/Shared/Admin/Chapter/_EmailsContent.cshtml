@@ -15,53 +15,45 @@
     var emails = await EmailAdminService.GetChapterEmails(request);
 }
 
-@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
-{
-    Title = "Email templates",
-    ContentFunc = 
-        @<div>
-            <p>
-                The emails sent by the site use the templates below. 
-                Default templates already exist and can be overridden if you want to include chapter-specific content.
-            </p>
-            <div class="alert alert-warning">
-                CAUTION: it is best not to update these templates unless you know what you are doing!
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>Custom</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (ChapterEmail email in emails.OrderBy(x => x.Type.ToString()))
+<p>
+    The emails sent by the site use the templates below.
+    Default templates already exist and can be overridden if you want to include chapter-specific content.
+</p>
+<div class="alert alert-warning">
+    CAUTION: it is best not to update these templates unless you know what you are doing!
+</div>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Custom</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (ChapterEmail email in emails.OrderBy(x => x.Type.ToString()))
+            {
+                <tr>
+                    <td>
+                        <a href="/@Model.Value.ShortName/Admin/Chapter/Emails/@email.Type">@email.Type</a>
+                    </td>
+                    <td>
+                        @if (email.IsDefault())
                         {
-                            <tr>
-                                <td>
-                                    <a href="/@Model.Value.Name/Admin/Chapter/Emails/@email.Type">@email.Type</a>
-                                </td>
-                                <td>
-                                    @if (email.IsDefault())
-                                    {
-                                        <span class="text-muted">Default</span>
-                                    }
-                                    else
-                                    {
-                                        <span>
-                                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
-                                            {
-                                                Class = "text-success"
-                                            })                                            
-                                        </span>
-                                    }
-                                </td>
-                            </tr>
+                            <span class="text-muted">Default</span>
                         }
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-})
+                        else
+                        {
+                            <span>
+                                @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.CheckCircle)
+                                {
+                                    Class = "text-success"
+                                                })
+                    </span>
+                                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -8,7 +8,7 @@ using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class MemberSiteSubscriptionRepository : WriteRepositoryBase<MemberSiteSubscription>, IMemberSiteSubscriptionRepository
+public class MemberSiteSubscriptionRepository : ReadWriteRepositoryBase<MemberSiteSubscription>, IMemberSiteSubscriptionRepository
 {
     public MemberSiteSubscriptionRepository(OdkContext context) 
         : base(context)
@@ -51,6 +51,5 @@ public class MemberSiteSubscriptionRepository : WriteRepositoryBase<MemberSiteSu
 
     protected override IQueryable<MemberSiteSubscription> Set() => base.Set()
         .Include(x => x.SiteSubscription)
-        .ThenInclude(x => x.SitePaymentSettings)
         .Include(x => x.SiteSubscriptionPrice);
 }

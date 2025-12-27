@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Payments;
-using ODK.Services.Members;
+using ODK.Services.Payments;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 
@@ -8,11 +8,11 @@ namespace ODK.Web.Razor.Pages.Chapters.Account;
 
 public class SubscriptionCheckoutConfirmModel : ChapterPageModel
 {
-    private readonly IMemberService _memberService;
+    private readonly IPaymentService _paymentService;
 
-    public SubscriptionCheckoutConfirmModel(IMemberService memberService)
+    public SubscriptionCheckoutConfirmModel(IPaymentService paymentService)
     {
-        _memberService = memberService;
+        _paymentService = paymentService;
     }
 
     public string RedirectUrl => OdkRoutes.Account.Subscription(Platform, Chapter);
@@ -27,7 +27,7 @@ public class SubscriptionCheckoutConfirmModel : ChapterPageModel
         SubscriptionId = SubscriptionId;
 
         var request = MemberChapterServiceRequest(Chapter.Id);
-        var status = await _memberService.GetMemberChapterPaymentCheckoutSessionStatus(request, sessionId);
+        var status = await _paymentService.GetMemberChapterPaymentCheckoutSessionStatus(request, sessionId);
 
         if (status == PaymentStatusType.Complete)
         {

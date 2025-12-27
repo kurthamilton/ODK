@@ -43,6 +43,6 @@ public class EmailProviderCreateModel : ChapterSuperAdminPageModel
         }
 
         AddFeedback(new FeedbackViewModel("Email provider created", FeedbackType.Success));
-        return Redirect($"/{Chapter.Name}/admin/superadmin/emails");
+        return Redirect($"/{Chapter.ShortName}/admin/superadmin/emails");
     }
 }
