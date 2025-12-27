@@ -12,7 +12,7 @@ public class Issue : IDatabaseEntity
 
     public IssueStatusType Status { get; set; }
 
-    public string Title { get; set; } = "";
+    public string Title { get; set; } = string.Empty;
 
     public IssueType Type { get; set; }
 }

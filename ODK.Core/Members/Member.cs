@@ -13,15 +13,15 @@ public class Member : IVersioned, IDatabaseEntity, ITimeZoneEntity
 
     public DateTime CreatedUtc { get; set; }
 
-    public string EmailAddress { get; set; } = "";
+    public string EmailAddress { get; set; } = string.Empty;
 
-    public string FirstName { get; set; } = "";
+    public string FirstName { get; set; } = string.Empty;
 
     public string FullName => NameUtils.FullName(FirstName, LastName);
 
     public Guid Id { get; set; }
 
-    public string LastName { get; set; } = "";
+    public string LastName { get; set; } = string.Empty;
 
     public ICollection<MemberChapterPrivacySettings> PrivacySettings { get; set; } = new HashSet<MemberChapterPrivacySettings>();
 

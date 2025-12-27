@@ -8,7 +8,7 @@ public class ChapterLocation : ILocation
 
     public LatLong LatLong { get; set; }
 
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public double DistanceFrom(ILocation other, DistanceUnit unit)
         => LatLong.DistanceFrom(other.LatLong, unit);

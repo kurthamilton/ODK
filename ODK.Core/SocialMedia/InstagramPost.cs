@@ -8,9 +8,9 @@ public class InstagramPost : IDatabaseEntity
 
     public DateTime Date { get; set; }
 
-    public string ExternalId { get; set; } = "";
+    public string ExternalId { get; set; } = string.Empty;
 
     public Guid Id { get; set; }
 
-    public string Url { get; set; } = "";
+    public string Url { get; set; } = string.Empty;
 }

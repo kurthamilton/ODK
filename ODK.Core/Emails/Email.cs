@@ -4,13 +4,13 @@ namespace ODK.Core.Emails;
 
 public class Email
 {
-    public string HtmlContent { get; set; } = "";
+    public string HtmlContent { get; set; } = string.Empty;
 
     public bool Overridable { get; set; }
 
     public IDictionary<string, string?> Parameters { get; } = new Dictionary<string, string?>();
 
-    public string Subject { get; set; } = "";
+    public string Subject { get; set; } = string.Empty;
 
     public EmailType Type { get; set; }
 

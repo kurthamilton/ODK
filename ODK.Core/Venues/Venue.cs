@@ -10,7 +10,7 @@ public class Venue : IVersioned, IDatabaseEntity, IChapterEntity
 
     public string? MapQuery { get; set; }
 
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public byte[] Version { get; set; } = [];
 }

@@ -31,7 +31,7 @@ public class CustomCookieAuthenticationEvents : CookieAuthenticationEvents
         }
 
         var fakeChapter = chapterName != null
-            ? new Chapter { Name = chapterName }
+            ? new Chapter { Name = chapterName, Slug = string.Empty }
             : null;
         context.RedirectUri = OdkRoutes.Account.Login(fakeChapter);
         if (!string.IsNullOrEmpty(redirectUri))

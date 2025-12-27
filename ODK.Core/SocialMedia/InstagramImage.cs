@@ -6,7 +6,7 @@ public class InstagramImage : IVersioned
 
     public Guid InstagramPostId { get; set; }
 
-    public string MimeType { get; set; } = "";
+    public string MimeType { get; set; } = string.Empty;
 
     public byte[] Version { get; set; } = [];
 }

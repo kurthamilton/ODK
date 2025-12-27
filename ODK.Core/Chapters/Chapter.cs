@@ -1,5 +1,4 @@
-﻿using System.Xml.Linq;
-using ODK.Core.Platforms;
+﻿using ODK.Core.Platforms;
 
 namespace ODK.Core.Chapters;
 
@@ -37,7 +36,7 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
 
     public string ShortName => GetShortName(Platform, Name);
 
-    public string Slug { get; set; } = "";
+    public required string Slug { get; set; }
 
     public TimeZoneInfo? TimeZone { get; set; }
 

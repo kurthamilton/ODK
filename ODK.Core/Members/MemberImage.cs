@@ -8,7 +8,7 @@ public class MemberImage : IVersioned
 
     public Guid MemberId { get; set; }
 
-    public string MimeType { get; set; } = "";
+    public string MimeType { get; set; } = string.Empty;
 
     public byte[] Version { get; set; } = [];
 }

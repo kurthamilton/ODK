@@ -11,7 +11,7 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public Guid ChapterId { get; set; }
 
-    public string CreatedBy { get; set; } = "";
+    public string CreatedBy { get; set; } = string.Empty;
 
     public DateTime CreatedUtc { get; set; }
 
@@ -31,7 +31,7 @@ public class Event : IDatabaseEntity, IChapterEntity
 
     public bool IsPublished => PublishedUtc != null;
 
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public DateTime? PublishedUtc { get; set; }
 

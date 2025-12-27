@@ -9,7 +9,7 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public Guid ChapterId { get; set; }
 
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
     public bool Disabled { get; set; }
 
@@ -21,13 +21,13 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
 
     public int Months { get; set; }
 
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public bool Recurring { get; set; }
 
     public Guid? SitePaymentSettingId { get; set; }
 
-    public string Title { get; set; } = "";
+    public string Title { get; set; } = string.Empty;
 
     public SubscriptionType Type { get; set; }
 

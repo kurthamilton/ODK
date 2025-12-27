@@ -14,5 +14,5 @@ public class ChapterContactMessageReply : IDatabaseEntity
 
     public Guid MemberId { get; set; }
 
-    public string Message { get; set; } = "";
+    public required string Message { get; set; }
 }

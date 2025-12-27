@@ -14,5 +14,5 @@ public class SiteContactMessageReply : IDatabaseEntity
 
     public Guid MemberId { get; set; }
 
-    public string Message { get; set; } = "";
+    public string Message { get; set; } = string.Empty;
 }

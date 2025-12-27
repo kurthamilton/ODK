@@ -18,9 +18,9 @@ public class ChapterProperty : IDatabaseEntity, IChapterEntity
 
     public Guid Id { get; set; }
 
-    public string Label { get; set; } = "";
+    public string Label { get; set; } = string.Empty;
 
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public bool Required { get; set; }
 

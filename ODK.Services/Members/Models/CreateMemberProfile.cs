@@ -2,7 +2,7 @@
 
 public class CreateMemberProfile : UpdateMemberChapterProfile
 {
-    public string EmailAddress { get; set; } = "";
+    public string EmailAddress { get; set; } = string.Empty;
 
     public bool? EmailOptIn { get; set; }
 

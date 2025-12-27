@@ -549,7 +549,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             {
                 Amount = (decimal)subscription.Amount,
                 CurrencyCode = chapterPaymentSettings.Currency.Code,
-                ExternalId = "",
+                ExternalId = string.Empty,
                 ExternalProductId = productId,
                 Frequency = SiteSubscriptionFrequency.Monthly,
                 Name = subscription.Name,

@@ -1,5 +1,4 @@
 ﻿using ODK.Core.Images;
-using System.Reflection;
 
 namespace ODK.Core.Members;
 
@@ -11,7 +10,7 @@ public class MemberAvatar : IVersioned
 
     public Guid MemberId { get; set; }
 
-    public string MimeType { get; set; } = "";
+    public string MimeType { get; set; } = string.Empty;
 
     public byte[] Version { get; set; } = [];
 

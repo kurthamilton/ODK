@@ -28,7 +28,7 @@ public class Payment : IDatabaseEntity
 
     public Guid? PaymentReconciliationId { get; set; }
 
-    public string Reference { get; set; } = "";
+    public string Reference { get; set; } = string.Empty;
 
     public Guid? SitePaymentSettingId { get; set; }
 

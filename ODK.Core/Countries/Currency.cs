@@ -2,13 +2,13 @@
 
 public class Currency : IDatabaseEntity
 {
-    public string Code { get; set; } = "";
+    public string Code { get; set; } = string.Empty;
 
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
     public Guid Id { get; set; }
 
-    public string Symbol { get; set; } = "";
+    public string Symbol { get; set; } = string.Empty;
 
     public static string ToValueString(decimal amount)
     {

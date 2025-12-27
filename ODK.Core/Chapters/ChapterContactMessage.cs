@@ -6,11 +6,11 @@ public class ChapterContactMessage : IDatabaseEntity, IChapterEntity
 
     public DateTime CreatedUtc { get; set; }
 
-    public string FromAddress { get; set; } = "";
+    public required string FromAddress { get; set; }
 
     public Guid Id { get; set; }
 
-    public string Message { get; set; } = "";
+    public required string Message { get; set; }
 
     public double? RecaptchaScore { get; set; }
 

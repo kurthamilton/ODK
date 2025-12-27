@@ -462,7 +462,7 @@ public class EventService : IEventService
             Amount = amount,
             ChapterId = @event.ChapterId,
             CurrencyId = currency.Id,
-            ExternalId = "",
+            ExternalId = string.Empty,
             MemberId = member.Id,
             Reference = @event.Name
         };
