@@ -114,27 +114,24 @@
         </div>
     }
 
-    @if (Model.CurrentMemberSubscription?.SiteSubscriptionPrice?.IsPaid != true)
-    {
-        <h3>Upgrade</h3>
+    <h3>Upgrade</h3>
 
-        <div class="d-md-flex gap-3">
-            @foreach (var subscriptionDto in subscriptions.OrderBy(x => x.Subscription.DisplayOrder))
+    <div class="d-md-flex gap-3">
+        @foreach (var subscriptionDto in subscriptions.OrderBy(x => x.Subscription.DisplayOrder))
+        {
+            var subscription = subscriptionDto.Subscription;
+            var prices = subscriptionDto.Prices
+            .Where(x => x.IsPaid)
+            .OrderByDescending(x => x.Amount)
+            .ToArray();
+            if (prices.Length == 0)
             {
-                var subscription = subscriptionDto.Subscription;
-                var prices = subscriptionDto.Prices
-                    .Where(x => x.IsPaid)
-                    .OrderByDescending(x => x.Amount)
-                    .ToArray();
-                if (prices.Length == 0)
-                {
-                    continue;
-                }
-
-                <div class="mb-3 col">
-                    @await Html.PartialAsync("Account/_SiteSubscriptionCard", subscriptionDto)
-                </div>              
+                continue;
             }
-        </div>
-    }
+
+            <div class="mb-3 col">
+                @await Html.PartialAsync("Account/_SiteSubscriptionCard", subscriptionDto)
+            </div>
+        }
+    </div>
 </div>

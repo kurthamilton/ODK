@@ -35,13 +35,13 @@
 @section scripts
 {
     @{
-        var added = new List<Guid>();
+        var added = new HashSet<Guid>();
     }
 
     @foreach (var dto in viewModel.Subscriptions)
     {
         var paymentSettings = dto.SitePaymentSettings.First(x => x.Id == dto.Subscription.SitePaymentSettingId);
-if (added.Contains(paymentSettings.Id))
+        if (added.Contains(paymentSettings.Id))
         {
             continue;
         }

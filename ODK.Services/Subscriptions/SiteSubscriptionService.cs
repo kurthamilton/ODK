@@ -164,7 +164,7 @@ public class SiteSubscriptionService : ISiteSubscriptionService
             {
                 Currencies = [],
                 Prices = priceDictionary.ContainsKey(x.Id) ? priceDictionary[x.Id] : [],
-                SitePaymentSettings = [],
+                SitePaymentSettings = sitePaymentSettings,
                 Subscription = x
             })
             .ToArray();
