@@ -40,8 +40,7 @@
                             DistanceUnitOptions = distanceUnitOptions,
                             Lat = location?.LatLong.Lat,
                             Long = location?.LatLong.Long,
-                            Name = location?.Name ?? "",
-                            TimeZoneId = member.TimeZone?.Id ?? Member.DefaultTimeZoneId
+                            LocationName = location?.Name ?? string.Empty
                         })
                         <button class="btn btn-primary">Update</button>
                     </form>

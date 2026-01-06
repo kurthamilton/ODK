@@ -12322,6 +12322,21 @@ html[data-platform=odk] {
   width: 18px;
 }
 
+.google-places-suggestions {
+  width: 100%;
+}
+.google-places-suggestions .dropdown-item {
+  border-top: 1px solid var(--bs-border-color);
+  cursor: pointer;
+  white-space: wrap;
+}
+.google-places-suggestions .dropdown-item:first-child {
+  border-top: none;
+}
+.google-places-suggestions .dropdown-item.active {
+  font-weight: 700;
+}
+
 :root {
   --bg-section-header: #FF0000;
   --color-section-header: #FFF;

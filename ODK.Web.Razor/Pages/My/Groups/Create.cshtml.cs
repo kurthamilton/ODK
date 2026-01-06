@@ -33,12 +33,6 @@ public class CreateModel : OdkPageModel
             return Page();
         }
 
-        if (viewModel.CountryId == null)
-        {
-            AddFeedback("Country not set", FeedbackType.Error);
-            return Page();
-        }
-
         if (viewModel.Location.Lat == null || viewModel.Location.Long == null)
         {
             AddFeedback("Location not set", FeedbackType.Error);
@@ -59,11 +53,10 @@ public class CreateModel : OdkPageModel
 
         var result = await _chapterAdminService.CreateChapter(MemberServiceRequest, new ChapterCreateModel
         {
-            CountryId = viewModel.CountryId.Value,
             Description = viewModel.Description?.Trim() ?? "",
             ImageData = bytes,
             Location = new LatLong(viewModel.Location.Lat.Value, viewModel.Location.Long.Value),
-            LocationName = viewModel.Location.Name,
+            LocationName = viewModel.Location.LocationName,
             Name = viewModel.Name?.Trim() ?? "",
             NewTopics = topics.NewTopics
                 ?.Where((x, i) => !string.IsNullOrEmpty(x) && !string.IsNullOrEmpty(topics.NewTopicGroups![i]))
@@ -73,7 +66,6 @@ public class CreateModel : OdkPageModel
                     TopicGroup = topics.NewTopicGroups![i] ?? ""
                 })
                 .ToArray() ?? [],
-            TimeZoneId = viewModel.Location.TimeZoneId,
             TopicIds = viewModel.TopicIds ?? []
         });
 

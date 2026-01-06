@@ -12,6 +12,8 @@ public class AppSettings
 
     public required ErrorsSettings Errors { get; init; }
 
+    public required GoogleSettings Google { get; init; }
+
     public required HangfireSettings Hangfire { get; init; }
 
     public required LoggingSettings Logging { get; init; }

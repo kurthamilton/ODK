@@ -1,16 +1,4 @@
-﻿@using ODK.Web.Common.Extensions
-@model ODK.Web.Razor.Models.SuperAdmin.ChapterLocationFormViewModel
-@{
-    var latLong = Model.Lat != null && Model.Long != null
-        ? $"{Model.Lat},{Model.Long}"
-        : null;
-}
+﻿@using ODK.Web.Razor.Models.SuperAdmin
+@model ChapterLocationFormViewModel
 
-<div class="form-group mb-3" data-location-container>
-    <label class="form-label">Location</label>
-    <input type="text" class="form-control" placeholder="@Model.Name" data-location />
-    @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
-    @Html.HiddenFor(x => x.Long, new { data_location_long = "" })
-    @Html.HiddenFor(x => x.Name, new { data_location_name = "" })
-    <input type="hidden" id="map-latlong" data-location-latlong value="@latLong" />
-</div>
+@await Html.PartialAsync("Components/_LocationPicker", Model)

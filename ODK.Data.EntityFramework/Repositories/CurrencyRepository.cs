@@ -6,17 +6,18 @@ using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
 
-public class CurrencyRepository : CachingReadWriteRepositoryBase<Currency>, ICurrencyRepository
+public class CurrencyRepository : ReadWriteRepositoryBase<Currency>, ICurrencyRepository
 {
-    private static readonly EntityCache<Guid, Currency> _cache = new DatabaseEntityCache<Currency>();
-
     public CurrencyRepository(OdkContext context) 
-        : base(context, _cache)
+        : base(context)
     {
     }
 
     public IDeferredQueryMultiple<Currency> GetAll() => Set()
-        .DeferredMultiple(
-            _cache.GetAll,
-            _cache.SetAll);
+        .DeferredMultiple();
+
+    public IDeferredQuerySingleOrDefault<Currency> GetByCode(string code)
+        => Set()
+            .Where(x => x.Code == code)
+            .DeferredSingleOrDefault();
 }

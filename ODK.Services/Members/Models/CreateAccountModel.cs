@@ -22,7 +22,5 @@ public class CreateAccountModel
 
     public required string? OAuthToken { get; init; }
 
-    public required string TimeZoneId { get; init; }
-
     public required IReadOnlyCollection<Guid> TopicIds { get; init; }
 }

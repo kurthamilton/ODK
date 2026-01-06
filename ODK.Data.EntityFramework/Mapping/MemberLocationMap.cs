@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ODK.Core.Countries;
 using ODK.Core.Members;
 using ODK.Data.EntityFramework.Converters;
 
@@ -15,6 +16,10 @@ public class MemberLocationMap : IEntityTypeConfiguration<MemberLocation>
 
         builder.Property(x => x.LatLong)
             .HasConversion<LatLongConverter>();
+
+        builder.HasOne<Country>()
+            .WithMany()
+            .HasForeignKey(x => x.CountryId);
 
         builder.HasOne<Member>()
             .WithOne()

@@ -5,8 +5,6 @@ namespace ODK.Services.Chapters.Models;
 
 public class ChapterCreateModel
 {
-    public required Guid CountryId { get; init; }
-
     public required string Description { get; init; }
 
     public required byte[] ImageData { get; init; }
@@ -18,8 +16,6 @@ public class ChapterCreateModel
     public required string Name { get; init; }
 
     public required IReadOnlyCollection<NewTopicModel> NewTopics { get; init; }
-
-    public required string? TimeZoneId { get; init; }
 
     public required IReadOnlyCollection<Guid> TopicIds { get; init; }
 }

@@ -1,7 +1,7 @@
 ﻿@using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@model LocationFormViewModel
+@model LocationPickerViewModel
 
 <div class="input-group">
     <span class="input-group-text">
@@ -9,12 +9,17 @@
             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
         </span>       
     </span>
-    @Html.TextBoxFor(x => x.Name, new { @class = "form-control", data_location = "" })
-    
-    @if (Model.InlineButton)
-    {
-        <button class="btn btn-outline-secondary">Go</button>
-    }    
+
+    <div class="dropdown flex-grow-1">
+        @Html.TextBoxFor(x => x.LocationName, new
+        {
+            @class = "form-control",
+            data_location = "",
+            data_bs_toggle = "dropdown"
+        })
+
+        <ul class="dropdown-menu google-places-suggestions" data-location-options></ul>
+    </div> 
 </div>
 
 @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })

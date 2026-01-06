@@ -3,7 +3,9 @@
 namespace ODK.Core.Members;
 
 public class MemberLocation : ILocation
-{    
+{   
+    public Guid? CountryId { get; set; }
+
     public LatLong LatLong { get; set; }
 
     public Guid MemberId { get; set; }

@@ -16,6 +16,7 @@ using ODK.Services.Caching;
 using ODK.Services.Chapters.Models;
 using ODK.Services.Chapters.ViewModels;
 using ODK.Services.Exceptions;
+using ODK.Services.Geolocation;
 using ODK.Services.Imaging;
 using ODK.Services.Members;
 using ODK.Services.Notifications;
@@ -33,6 +34,7 @@ namespace ODK.Services.Chapters;
 public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 {    
     private readonly ICacheService _cacheService;
+    private readonly IGeolocationService _geolocationService;
     private readonly IHtmlSanitizer _htmlSanitizer;
     private readonly IImageService _imageService;
     private readonly IInstagramService _instagramService;
@@ -59,10 +61,12 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         ISiteSubscriptionService siteSubscriptionService,
         IUrlProviderFactory urlProviderFactory,
         IPaymentProviderFactory paymentProviderFactory,
-        IPaymentService paymentService)
+        IPaymentService paymentService,
+        IGeolocationService geolocationService)
         : base(unitOfWork)
     {
         _cacheService = cacheService;
+        _geolocationService = geolocationService;
         _htmlSanitizer = htmlSanitizer;
         _imageService = imageService;
         _instagramService = instagramService;
@@ -172,7 +176,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
     public async Task<ServiceResult<Chapter?>> CreateChapter(
         MemberServiceRequest request, 
         ChapterCreateModel model)
-    {
+    {        
         var now = DateTime.UtcNow;
         
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
@@ -180,13 +184,11 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         var (
             memberSubscription, 
             existing, 
-            siteEmailSettings,
-            country
+            siteEmailSettings
         ) = await _unitOfWork.RunAsync(
             x => x.MemberSiteSubscriptionRepository.GetByMemberId(currentMemberId, platform),
             x => x.ChapterRepository.GetAll(),
-            x => x.SiteEmailSettingsRepository.Get(platform),
-            x => x.CountryRepository.GetById(model.CountryId));
+            x => x.SiteEmailSettingsRepository.Get(platform));
 
         var memberChapters = existing
             .Where(x => x.OwnerId == currentMemberId)
@@ -211,14 +213,8 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             return ServiceResult<Chapter?>.Failure($"The name '{model.Name}' is taken");
         }
 
-        TimeZoneInfo? timeZone = null;
-        if (model.TimeZoneId != null)
-        {
-            if (!TimeZoneInfo.TryFindSystemTimeZoneById(model.TimeZoneId, out timeZone))
-            {
-                return ServiceResult<Chapter?>.Failure("Invalid time zone");
-            }
-        }
+        var timeZone = await _geolocationService.GetTimeZoneFromLocation(model.Location);
+        var country = await _geolocationService.GetCountryFromLocation(model.Location);
 
         var image = new ChapterImage();
 
@@ -241,7 +237,7 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
 
         var chapter = new Chapter
         {
-            CountryId = model.CountryId,
+            CountryId = country?.Id,
             CreatedUtc = now,
             Name = model.Name,
             OwnerId = currentMemberId,
@@ -290,12 +286,15 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
             TopicId = x
         }));
 
-        _unitOfWork.ChapterPaymentSettingsRepository.Add(new ChapterPaymentSettings
+        if (country != null)
         {
-            ChapterId = chapter.Id,
-            CurrencyId = country.CurrencyId,
-            UseSitePaymentProvider = true            
-        });
+            _unitOfWork.ChapterPaymentSettingsRepository.Add(new ChapterPaymentSettings
+            {
+                ChapterId = chapter.Id,
+                CurrencyId = country.CurrencyId,
+                UseSitePaymentProvider = true
+            });
+        }
 
         image.ChapterId = chapter.Id;
         _unitOfWork.ChapterImageRepository.Add(image);

@@ -15,9 +15,11 @@ using ODK.Services.Emails;
 using ODK.Services.Events;
 using ODK.Services.Features;
 using ODK.Services.Files;
+using ODK.Services.Geolocation;
 using ODK.Services.Imaging;
 using ODK.Services.Integrations.Emails;
 using ODK.Services.Integrations.Emails.Smtp;
+using ODK.Services.Integrations.Geolocation;
 using ODK.Services.Integrations.Imaging;
 using ODK.Services.Integrations.OAuth;
 using ODK.Services.Integrations.Payments;
@@ -150,6 +152,11 @@ public static class DependencyConfig
             DebugEmailAddress = appSettings.Emails.DebugEmailAddress
         });
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IGeolocationService, GoogleGeolocationService>();
+        services.AddSingleton(new GoogleGeolocationServiceSettings
+        {
+            ApiKey = appSettings.Google.Geolocation.ApiKey
+        });
         services.AddScoped<IInstagramService, InstagramService>();
         services.AddScoped<IMediaAdminService, MediaAdminService>();
         services.AddScoped<IMediaFileProvider, MediaFileProvider>();

@@ -23,10 +23,10 @@
 
 <div data-odk-component="_SideMenu">            
     <ul class="side-menu">
-        @foreach (var menuItem in Model.MenuItems)
+        @foreach (var menuItem in Model.MenuItems.Where(x => !string.IsNullOrEmpty(x.Text)))
         {
             var children = active != null && active.DescendantOf(menuItem) && menuItem.Children != null
-                ? menuItem.Children
+                ? menuItem.Children.Where(x => !string.IsNullOrEmpty(x.Text)).ToArray()
                 : [];
 
             <li>
@@ -34,7 +34,7 @@
                     @menuItem.Text
                 </a>
 
-                @if (children.Count > 0)
+                @if (children.Length > 0)
                 {
                     <ul class="side-menu">
                         @foreach (var child in children)
