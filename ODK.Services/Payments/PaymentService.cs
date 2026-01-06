@@ -441,6 +441,7 @@ public class PaymentService : IPaymentService
         }
         catch (Exception ex)
         {
+            await _loggingService.Error("Error processing site subscription webhook", ex);
             throw;
         }
     }
