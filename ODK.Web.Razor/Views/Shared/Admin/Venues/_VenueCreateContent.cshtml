@@ -8,19 +8,6 @@
 @using ODK.Web.Razor.Models.Components
 @model OdkComponentViewModel<Chapter>
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
-{
-    Breadcrumbs = new[]
-    {
-        new MenuItem
-        {
-            Link = OdkRoutes.MemberGroups.Venues(Model.Platform, Model.Value),
-            Text = "Venues"
-        },
-        new MenuItem { Text = "New" }
-    }
-})
-
 <section class="section">
     <form method="post">
         @*@Html.AntiForgeryToken()*@

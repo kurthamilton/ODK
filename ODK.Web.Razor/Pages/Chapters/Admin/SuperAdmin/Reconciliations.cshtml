@@ -12,7 +12,6 @@
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Reconciliations",
     Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Chapters/SuperAdmin/_ReconciliationsContent", viewModel)</div>
 })

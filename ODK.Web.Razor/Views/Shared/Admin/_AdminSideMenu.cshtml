@@ -25,8 +25,7 @@
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
             : new MenuItem { Link = OdkRoutes.MemberGroups.GroupImage(platform, chapter), Text = "Picture" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.GroupProperties(platform, chapter), Text = "Properties" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.GroupPrivacy(platform, chapter), Text = "Privacy" },        
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupSocialMedia(platform, chapter), Text = "Social media" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem { Link = OdkRoutes.MemberGroups.GroupSubscription(platform, chapter), Text = "Subscription" }
@@ -46,6 +45,7 @@
     {
         new MenuItem { Link = OdkRoutes.MemberGroups.MemberAdmins(platform, chapter), Text = "Admins" },
         new MenuItem { Link = OdkRoutes.MemberGroups.MembershipSettings(platform, chapter), Text = "Membership" },
+        new MenuItem { Link = OdkRoutes.MemberGroups.MemberProperties(platform, chapter), Text = "Profile questions" },
         new MenuItem
         {
             Link = OdkRoutes.MemberGroups.MembersSubscriptions(platform, chapter),

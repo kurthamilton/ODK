@@ -134,6 +134,7 @@ public class MemberViewModelService : IMemberViewModelService
             Chapter = chapter,
             ChapterProperties = chapterProperties,
             CurrentMember = currentMember,
+            HasProfiles = chapterProperties.Any(),
             HasQuestions = hasQuestions,
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
             IsMember = currentMember.IsMemberOf(chapter.Id),
@@ -152,12 +153,14 @@ public class MemberViewModelService : IMemberViewModelService
         var (
             members, 
             currentMember,
+            hasProperties,
             hasQuestions,
             adminMembers,
             ownerSubscription) = 
             await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberRepository.GetById(currentMemberId),
+            x => x.ChapterPropertyRepository.ChapterHasProperties(chapter.Id),
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id));
@@ -168,6 +171,7 @@ public class MemberViewModelService : IMemberViewModelService
         {
             Chapter = chapter,
             CurrentMember = currentMember,
+            HasProfiles = hasProperties,
             HasQuestions = hasQuestions,
             IsAdmin = adminMembers.Any(x => x.MemberId == currentMemberId),
             IsMember = isMember,

@@ -4,29 +4,27 @@ using ODK.Services.Chapters.Models;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
 
-namespace ODK.Web.Razor.Pages.My.Groups.Group.Properties;
+namespace ODK.Web.Razor.Pages.My.Groups.Members.Properties;
 
-public class PropertyModel : OdkGroupAdminPageModel
+public class CreateModel : OdkGroupAdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public PropertyModel(IChapterAdminService chapterAdminService)
+    public CreateModel(IChapterAdminService chapterAdminService)
     {
         _chapterAdminService = chapterAdminService;
     }
 
-    public Guid PropertyId { get; private set; }
-
-    public void OnGet(Guid propertyId)
+    public void OnGet()
     {
-        PropertyId = propertyId;
     }
 
-    public async Task<IActionResult> OnPostAsync(Guid propertyId, ChapterPropertyFormViewModel viewModel)
+    public async Task<IActionResult> OnPostAsync(ChapterPropertyFormViewModel viewModel)
     {
-        var result = await _chapterAdminService.UpdateChapterProperty(AdminServiceRequest, propertyId, new UpdateChapterProperty
+        var result = await _chapterAdminService.CreateChapterProperty(AdminServiceRequest, new CreateChapterProperty
         {
             ApplicationOnly = viewModel.ApplicationOnly,
+            DataType = viewModel.DataType,
             DisplayName = viewModel.DisplayName,
             HelpText = viewModel.HelpText,
             Label = viewModel.Label,
@@ -36,7 +34,7 @@ public class PropertyModel : OdkGroupAdminPageModel
             Subtitle = viewModel.Subtitle
         });
 
-        AddFeedback(result, "Property updated");
+        AddFeedback(result, "Property created");
 
         if (!result.Success)
         {            
@@ -45,6 +43,6 @@ public class PropertyModel : OdkGroupAdminPageModel
 
         var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);
 
-        return Redirect(OdkRoutes.MemberGroups.GroupProperties(Platform, chapter));
+        return Redirect(OdkRoutes.MemberGroups.MemberProperties(Platform, chapter));
     }
 }

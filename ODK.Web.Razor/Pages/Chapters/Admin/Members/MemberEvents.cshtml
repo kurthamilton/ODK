@@ -1,5 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Members/{id:guid}/Events"
 @using ODK.Services.Members
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @model MemberEventsModel
 @inject IMemberAdminService MemberAdminService
@@ -13,6 +15,15 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Member events",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.MemberGroups.Members(Model.Platform, Model.Chapter),
+            Text = "Members"
+        },
+        new MenuItem { Text = viewModel.Member.GetDisplayName(Model.Chapter.Id) }
+    },
     Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberEventsContent", viewModel)</div>
 })

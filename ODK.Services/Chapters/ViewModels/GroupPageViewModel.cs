@@ -10,6 +10,8 @@ public class GroupPageViewModel
 
     public required Member? CurrentMember { get; init; }
 
+    public required bool HasProfiles { get; init; }
+
     public required bool HasQuestions { get; init; }
 
     public required bool IsAdmin { get; init; }

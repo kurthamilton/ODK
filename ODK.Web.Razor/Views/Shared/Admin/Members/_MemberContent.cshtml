@@ -7,8 +7,6 @@
 @using ODK.Web.Razor.Models.Admin.Members
 @model MemberAdminPageViewModel
 
-@await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
-
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <form method="post">

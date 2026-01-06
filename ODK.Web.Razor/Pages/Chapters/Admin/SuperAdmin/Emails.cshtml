@@ -13,7 +13,6 @@
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Email templates",
     Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("SuperAdmin/_ChapterEmailsContent", viewModel)</div>
 })

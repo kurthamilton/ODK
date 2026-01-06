@@ -2,6 +2,7 @@
 @using ODK.Services
 @using ODK.Services.Events
 @using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Events.EventInvitesModel
@@ -16,6 +17,15 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Event invites",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.MemberGroups.Events(Model.Platform, Model.Chapter),
+            Text = "Back to events",
+            Icon = IconType.ArrowLeft
+        }
+    },
     Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Events/Event/_EventInvitesContent", viewModel)</div>
 })

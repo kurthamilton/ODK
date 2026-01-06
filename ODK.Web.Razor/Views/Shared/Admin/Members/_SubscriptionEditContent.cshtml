@@ -5,19 +5,6 @@
 @using ODK.Web.Razor.Models.Components
 @model SubscriptionAdminPageViewModel
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
-{
-    Breadcrumbs = new[]
-    {
-        new MenuItem
-        {
-            Link = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, Model.Chapter),
-            Text = "Subscriptions"
-        },
-        new MenuItem { Text = Model.Subscription.Name }
-    }
-})
-
 <form method="post">
     @*@Html.AntiForgeryToken()*@
     @await Html.PartialAsync("Admin/Members/_SubscriptionForm", new SubscriptionFormViewModel

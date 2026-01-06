@@ -1,0 +1,36 @@
+﻿@page "/my/groups/{id:guid}/members/properties/{propertyId:guid}"
+@using ODK.Services.Chapters
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model PropertyModel
+@inject IChapterAdminService ChapterAdminService
+@{
+    Layout = "_GroupAdminLayout";
+    Model.Title = "Edit profile question";
+
+    var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(Model.AdminServiceRequest, Model.PropertyId);
+}
+
+@await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
+{
+    Title = "Edit profile question",
+    Breadcrumbs = new BreadcrumbsViewModel
+    {
+        Breadcrumbs = new[]
+        {
+            new MenuItem
+            {
+                Link = OdkRoutes.MemberGroups.MemberProperties(Model.Platform, viewModel.Chapter),
+                Text = "Back to profile questions",
+                Icon = IconType.ArrowLeft
+            }
+        }
+    },
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_PropertyEditContent", viewModel)</div>,
+    MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
+    {
+        Chapter = viewModel.Chapter
+    })
+})

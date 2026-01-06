@@ -7,8 +7,6 @@
 @using ODK.Web.Razor.Models.Contact
 @model MemberConversationsAdminPageViewModel
 
-@await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
-
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 @if (Model.Conversations.Count > 0)

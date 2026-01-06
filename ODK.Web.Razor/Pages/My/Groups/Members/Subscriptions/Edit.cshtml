@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/members/subscriptions/{subscriptionId:guid}"
 @using ODK.Services.Members
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model EditModel
@@ -14,6 +16,18 @@
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Edit subscription",
+    Breadcrumbs = new BreadcrumbsViewModel
+    {
+        Breadcrumbs = new[]
+        {
+            new MenuItem
+            {
+                Link = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, viewModel.Chapter),
+                Text = "Back to subscriptions",
+                Icon = IconType.ArrowLeft
+            }
+        }
+    },
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_SubscriptionEditContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
     {

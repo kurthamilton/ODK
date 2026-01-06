@@ -3,8 +3,6 @@
 @using ODK.Web.Razor.Models.Admin.Members
 @model MemberDeleteAdminPageViewModel
 
-@await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
-
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <form method="post" action="/groups/@Model.Chapter.Id/members/@Model.Member.Id/delete">

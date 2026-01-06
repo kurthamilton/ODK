@@ -38,11 +38,14 @@
 
     if (Model.IsMember)
     {
-        menuItems.Add(new MenuItem 
-        { 
-            Text = "My profile", 
-            Link = OdkRoutes.Groups.Profile(Model.Platform, Model.Chapter) 
-        });
+        if (Model.HasProfiles)
+        {
+            menuItems.Add(new MenuItem
+            {
+                Text = "My profile",
+                Link = OdkRoutes.Groups.Profile(Model.Platform, Model.Chapter)
+            });
+        }        
 
         menuItems.Add(new MenuItem
         {

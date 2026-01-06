@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/members/admins/{memberId:guid}"
 @using ODK.Services.Members
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model AdminMemberModel
@@ -14,6 +16,18 @@
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Admin member",
+    Breadcrumbs = new BreadcrumbsViewModel
+    {
+        Breadcrumbs = new[]
+        {
+            new MenuItem
+            {
+                Link = OdkRoutes.MemberGroups.MemberAdmins(Model.Platform, viewModel.Chapter),
+                Text = "Back to admin members",
+                Icon = IconType.ArrowLeft
+            }
+        }
+    },
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_AdminMemberContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
     {

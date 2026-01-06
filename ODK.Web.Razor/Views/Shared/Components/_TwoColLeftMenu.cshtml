@@ -9,6 +9,11 @@
         @await Model.MenuContentFunc.Invoke(null)
     </div>
     <div class="ps-md-5 flex-grow-1">
+        @if (Model.Breadcrumbs != null)
+        {
+            @await Html.PartialAsync("Components/_Breadcrumbs", Model.Breadcrumbs)
+        }
+
         <div class="d-flex">
             
             @if (hasTitle)

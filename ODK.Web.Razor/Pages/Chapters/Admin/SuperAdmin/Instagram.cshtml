@@ -9,7 +9,6 @@
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Instagram",
     Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("SuperAdmin/_InstagramContent", Model.Chapter)</div>
 })

@@ -1,6 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Members/Subscriptions/Create"
 @using ODK.Services
 @using ODK.Services.Members
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @using ODK.Web.Common.Components
@@ -16,6 +17,15 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Create subscription",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.MemberGroups.MembersSubscriptions(Model.Platform, Model.Chapter),
+            Text = "Back to subscriptions",
+            Icon = IconType.ArrowLeft
+        }
+    },
     Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_SubscriptionCreateContent", viewModel)</div>
 })

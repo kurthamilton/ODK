@@ -11,7 +11,13 @@ public class ChapterPropertyRepository : ReadWriteRepositoryBase<ChapterProperty
     {
     }
 
-    public IDeferredQueryMultiple<ChapterProperty> GetByChapterId(Guid chapterId) => Set()
-        .Where(x => x.ChapterId == chapterId)
-        .DeferredMultiple();
+    public IDeferredQuery<bool> ChapterHasProperties(Guid chapterId)
+        => Set()
+            .Where(x => x.ChapterId == chapterId)
+            .DeferredAny();
+
+    public IDeferredQueryMultiple<ChapterProperty> GetByChapterId(Guid chapterId) 
+        => Set()
+            .Where(x => x.ChapterId == chapterId)
+            .DeferredMultiple();
 }

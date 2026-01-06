@@ -1,4 +1,5 @@
 ﻿@using ODK.Web.Common.Components
+@using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Models.Components.BreadcrumbsViewModel
 @{
     if (Model.Breadcrumbs.Count == 0)
@@ -14,11 +15,23 @@
             <li class="breadcrumb-item @(breadcrumb.Active ? "active" : null)">
                 @if (breadcrumb.Active)
                 {
+                    @if (breadcrumb.Icon != null)
+                    {
+                        @await Html.PartialAsync("Components/_Icon", new IconViewModel(breadcrumb.Icon.Value))
+                    }
+
                     @:item.Text
                 }
                 else
                 {
-                    <a href="@breadcrumb.Link">@breadcrumb.Text</a>
+                    <a href="@breadcrumb.Link">
+                        @if (breadcrumb.Icon != null)
+                        {
+                            @await Html.PartialAsync("Components/_Icon", new IconViewModel(breadcrumb.Icon.Value))
+                        }
+
+                        @breadcrumb.Text
+                    </a>
                 }
             </li>
         }

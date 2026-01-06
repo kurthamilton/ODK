@@ -10,12 +10,12 @@
 @model ChapterPropertiesAdminPageViewModel
 
 <p>
-    The member properties are questions that form a member's profile for this group.
+    Answers to profile questions form a member's profile for this group.
     Answers are visible to other members.
 </p>
 <p>
-    <a href="@OdkRoutes.MemberGroups.GroupPropertyCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
-        Create property
+    <a href="@OdkRoutes.MemberGroups.MemberPropertyCreate(Model.Platform, Model.Chapter)" class="btn btn-primary">
+        Create question
     </a>
 </p>
 
@@ -34,7 +34,7 @@
             {
                 <tr>
                     <td>
-                        <a href="@OdkRoutes.MemberGroups.GroupProperty(Model.Platform, Model.Chapter, property.Id)">@property.Label</a>
+                        <a href="@OdkRoutes.MemberGroups.MemberProperty(Model.Platform, Model.Chapter, property.Id)">@property.Label</a>
                     </td>
                     <td>@property.Name</td>
                     <td>
@@ -57,7 +57,7 @@
                         <form method="post" action="/groups/@Model.Chapter.Id/properties/@property.Id/delete">
                             @*@Html.AntiForgeryToken()*@
                             <button data-bs-toggle="tooltip" data-bs-title="Delete" class="btn-icon text-danger"
-                                    onclick="return confirm('Are you sure you want to delete this property?');">
+                                    onclick="return confirm('Are you sure you want to delete this question?');">
                                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.Times))
                             </button>
                         </form>

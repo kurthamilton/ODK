@@ -1,5 +1,6 @@
 ﻿@page "/{chapterName}/Admin/Members/{id:guid}/Image"
 @using ODK.Services.Members
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Admin.Members
 @using ODK.Web.Razor.Models.Components
@@ -16,6 +17,15 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Member image",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.MemberGroups.Members(Model.Platform, Model.Chapter),
+            Text = "Members"
+        },
+        new MenuItem { Text = viewModel.Member.GetDisplayName(Model.Chapter.Id) }
+    },
     Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Members/_MemberImageContent", viewModel)</div>
 })

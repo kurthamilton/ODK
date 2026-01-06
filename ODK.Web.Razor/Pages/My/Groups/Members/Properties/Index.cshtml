@@ -1,20 +1,20 @@
-﻿@page "/my/groups/{id:guid}/properties/{propertyId:guid}"
+﻿@page "/my/groups/{id:guid}/members/properties"
 @using ODK.Services.Chapters
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
-@model PropertyModel
+@model IndexModel
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_GroupAdminLayout";
-    Model.Title = "Edit | Properties";
+    Model.Title = "Profile questions";
 
-    var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(Model.AdminServiceRequest, Model.PropertyId);
+    var viewModel = await ChapterAdminService.GetChapterPropertiesViewModel(Model.AdminServiceRequest);
 }
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
-    Title = "Edit property",
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_PropertyEditContent", viewModel)</div>,
+    Title = "Profile questions",
+    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_PropertiesContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
     {
         Chapter = viewModel.Chapter

@@ -14,15 +14,15 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Create question",
-    Chapter = Model.Chapter,
     Breadcrumbs = new[]
     {
         new MenuItem
         {
             Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, Model.Chapter),
-            Text = "FAQ"
-        },
-        new MenuItem { Text = "New" }
+            Text = "Back to FAQ",
+            Icon = IconType.ArrowLeft
+        }
     },
+    Chapter = Model.Chapter,    
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent")</div>
 })

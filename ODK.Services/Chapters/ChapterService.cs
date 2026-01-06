@@ -129,13 +129,19 @@ public class ChapterService : IChapterService
     public async Task<ChaptersHomePageViewModel> GetChaptersDto(PlatformType platform)
     {
         var (chapters, countries) = await _unitOfWork.RunAsync(
-            x => x.ChapterRepository.GetAll(),
+            x => platform == PlatformType.Default
+                ? x.ChapterRepository.GetAll()
+                : x.ChapterRepository.GetByPlatform(platform),
             x => x.CountryRepository.GetAll());
 
         if (platform != PlatformType.Default)
         {
-            chapters = chapters
-                .Where(x => x.Platform == platform)
+            var countryIds = chapters
+                .Select(x => x.CountryId)
+                .ToHashSet();
+
+            countries = countries
+                .Where(x => countryIds.Contains(x.Id))
                 .ToArray();
         }
 

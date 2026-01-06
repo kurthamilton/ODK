@@ -1,0 +1,33 @@
+﻿@page "/{chapterName}/Admin/Members/Properties/Create"
+@using ODK.Core.Chapters
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
+@using ODK.Web.Razor.Models
+@using ODK.Web.Razor.Models.Admin
+@using ODK.Web.Razor.Models.Components
+@model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.PropertyCreateModel
+@{
+    Layout = "_OdkChapterAdminLayout";
+    Model.Title = "Create profile question | Admin";
+
+    var componentViewModel = new OdkComponentViewModel<Chapter>(Model.ComponentContext, Model.Chapter);
+}
+
+@await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
+{
+    Title = "Create profile question",
+    Chapter = Model.Chapter,
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.MemberGroups.MemberProperties(Model.Platform, Model.Chapter),
+            Text = "Back to profile questions",
+            Icon = IconType.ArrowLeft
+        }
+    },
+    ContentFunc = 
+        @<div>
+            @await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent", componentViewModel)
+        </div>
+})

@@ -5,16 +5,14 @@
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = Model.Title,
+    Breadcrumbs = Model.Breadcrumbs != null
+        ? new BreadcrumbsViewModel
+        {
+            Breadcrumbs = Model.Breadcrumbs
+        }
+        : null,
     BodyContentFunc = 
-        @<div>
-            @if (Model.Breadcrumbs != null)
-            {
-                @await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
-                {
-                    Breadcrumbs = Model.Breadcrumbs
-                })
-            }
-
+        @<div>            
             <section class="section">
                 @Model.ContentFunc.Invoke(null)
             </section>

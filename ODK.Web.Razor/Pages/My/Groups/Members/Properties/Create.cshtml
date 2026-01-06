@@ -1,4 +1,4 @@
-﻿@page "/my/groups/{id:guid}/events/venues/new"
+﻿@page "/my/groups/{id:guid}/members/properties/new"
 @using ODK.Core.Chapters
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Components
@@ -10,7 +10,7 @@
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_GroupAdminLayout";
-    Model.Title = "Create venue";
+    Model.Title = "Create profile question";
 
     var chapter = await ChapterAdminService.GetChapter(Model.AdminServiceRequest);
 
@@ -19,27 +19,25 @@
 
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
-    Title = "Create venue",
+    Title = "Create profile question",    
     Breadcrumbs = new BreadcrumbsViewModel
     {
         Breadcrumbs = new[]
         {
-            new MenuItem
-            {
-                Link = OdkRoutes.MemberGroups.Venues(Model.Platform, chapter),
-                Text = "Back to venues",
+            new MenuItem 
+            { 
+                Link = OdkRoutes.MemberGroups.MemberProperties(Model.Platform, chapter), 
+                Text = "Back to profile questions",
                 Icon = IconType.ArrowLeft
             }
         }
     },
-    BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueCreateContent", viewModel)</div>,
+    BodyContentFunc = 
+        @<div>
+            @await Html.PartialAsync("Admin/Chapter/_PropertyCreateContent", viewModel)
+        </div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
     {
         Chapter = chapter
     })
 })
-
-@section scripts
-{
-    @await Html.PartialAsync("Components/Scripts/_GoogleLocation")
-}

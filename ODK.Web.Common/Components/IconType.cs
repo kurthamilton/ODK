@@ -5,6 +5,7 @@ public enum IconType
     None,
     ArrowCircleDown,
     ArrowCircleUp,
+    ArrowLeft,
     ArrowsSpin,
     Bell,
     BellOutline,

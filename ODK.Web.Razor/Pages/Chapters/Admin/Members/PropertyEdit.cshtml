@@ -1,4 +1,4 @@
-﻿@page "/{chapterName}/Admin/Chapter/Properties/{id:guid}"
+﻿@page "/{chapterName}/Admin/Members/Properties/{id:guid}"
 @using ODK.Services.Chapters
 @using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
@@ -8,23 +8,23 @@
 @inject IChapterAdminService ChapterAdminService
 @{
     Layout = "_OdkChapterAdminLayout";
-    Model.Title = "Edit property | Admin";
+    Model.Title = "Edit profile question | Admin";
 
     var viewModel = await ChapterAdminService.GetChapterPropertyViewModel(Model.AdminServiceRequest, Model.PropertyId);
 }
 
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
-    Title = "Edit member property",
+    Title = "Edit profile question",
     Chapter = Model.Chapter,
     Breadcrumbs = new[]
     {
         new MenuItem
         {
-            Link = OdkRoutes.MemberGroups.GroupProperties(Model.Platform, Model.Chapter),
-            Text = "Member properties"
-        },
-        new MenuItem { Text = viewModel.Property.Name }
+            Link = OdkRoutes.MemberGroups.MemberProperties(Model.Platform, Model.Chapter),
+            Text = "Back to profile questions",
+            Icon = IconType.ArrowLeft
+        }
     },
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_PropertyEditContent", viewModel)</div>
 })

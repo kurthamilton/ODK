@@ -85,22 +85,7 @@ public class MemberGroupRoutes
     {
         PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/privacy",
         _ => $"{Group(platform, chapter)}/privacy"
-    };
-
-    public string GroupProperties(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/properties",
-        _ => $"{Group(platform, chapter)}/properties"
-    };
-
-    public string GroupProperty(PlatformType platform, Chapter chapter, Guid propertyId)
-        => $"{GroupProperties(platform, chapter)}/{propertyId}";
-
-    public string GroupPropertyCreate(PlatformType platform, Chapter chapter) => platform switch
-    {
-        PlatformType.DrunkenKnitwits => $"{GroupProperties(platform, chapter)}/create",
-        _ => $"{GroupProperties(platform, chapter)}/new"
-    };
+    };    
 
     public string GroupQuestion(PlatformType platform, Chapter chapter, Guid questionId)
         => $"{GroupQuestions(platform, chapter)}/{questionId}";
@@ -179,6 +164,21 @@ public class MemberGroupRoutes
 
     public string MemberPayments(PlatformType platform, Chapter chapter, Guid memberId)
         => $"{Member(platform, chapter, memberId)}/payments";
+
+    public string MemberProperties(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{Members(platform, chapter)}/properties",
+        _ => $"{Members(platform, chapter)}/properties"
+    };
+
+    public string MemberProperty(PlatformType platform, Chapter chapter, Guid propertyId)
+        => $"{MemberProperties(platform, chapter)}/{propertyId}";
+
+    public string MemberPropertyCreate(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => $"{MemberProperties(platform, chapter)}/create",
+        _ => $"{MemberProperties(platform, chapter)}/new"
+    };
 
     public string MembersDownload(PlatformType platform, Chapter chapter)
         => $"{Members(platform, chapter)}/download";

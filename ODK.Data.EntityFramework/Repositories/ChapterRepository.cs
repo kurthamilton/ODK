@@ -40,13 +40,20 @@ public class ChapterRepository : ReadWriteRepositoryBase<Chapter>, IChapterRepos
             .DeferredSingleOrDefault();
     }
 
-    public IDeferredQueryMultiple<Chapter> GetByOwnerId(Guid ownerId) => Set()
-        .Where(x => x.OwnerId == ownerId)
-        .DeferredMultiple();
+    public IDeferredQueryMultiple<Chapter> GetByOwnerId(Guid ownerId) 
+        => Set()
+            .Where(x => x.OwnerId == ownerId)
+            .DeferredMultiple();
 
-    public IDeferredQuerySingleOrDefault<Chapter> GetBySlug(string slug) => Set()
-        .Where(x => x.Slug == slug)
-        .DeferredSingleOrDefault();
+    public IDeferredQueryMultiple<Chapter> GetByPlatform(PlatformType platform)
+        => Set()
+            .Where(x => x.Platform == platform)
+            .DeferredMultiple();
+
+    public IDeferredQuerySingleOrDefault<Chapter> GetBySlug(string slug) 
+        => Set()
+            .Where(x => x.Slug == slug)
+            .DeferredSingleOrDefault();
 
     public IDeferredQueryMultiple<Chapter> GetByTopicGroupId(Guid topicGroupId)
     {

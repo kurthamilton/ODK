@@ -8,15 +8,13 @@
 @using ODK.Web.Razor.Models.Components
 @model ChapterConversationAdminPageViewModel
 
-@await Html.PartialAsync("Components/_Breadcrumbs", new BreadcrumbsViewModel
-{
-    Breadcrumbs = new[]
-    {
-        new MenuItem { Link = OdkRoutes.MemberGroups.GroupConversations(Model.Platform, Model.Chapter), Text = "Conversations" },
-        new MenuItem { Link = OdkRoutes.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id), Text = Model.Member.FullName },
-        new MenuItem { Text = Model.Conversation.Subject }
-    }
-})
+<h5>@Model.Conversation.Subject</h5>
+
+<p>
+    <a href="@OdkRoutes.MemberGroups.MemberConversations(Model.Platform, Model.Chapter, Model.Member.Id)">
+        @Model.Member.GetDisplayName(Model.Chapter.Id)
+    </a>
+</p>
 
 <div class="row">
     <div class="col-md-8">

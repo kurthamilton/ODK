@@ -5,8 +5,6 @@
         .OrderByDescending(x => x.Payment.PaidUtc);
 }
 
-@await Html.PartialAsync("Admin/Members/_MemberBreadcrumbs", Model)
-
 @await Html.PartialAsync("Admin/Members/_MemberAdminTabs", Model)
 
 <div class="table-responsive">

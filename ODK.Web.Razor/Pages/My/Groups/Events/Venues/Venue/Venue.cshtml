@@ -1,5 +1,7 @@
 ﻿@page "/my/groups/{id:guid}/events/venues/{venueId:guid}"
 @using ODK.Services.Venues
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model VenueModel
@@ -13,6 +15,18 @@
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = viewModel.Venue.Name,
+    Breadcrumbs = new BreadcrumbsViewModel
+    {
+        Breadcrumbs = new[]
+        {
+            new MenuItem
+            {
+                Link = OdkRoutes.MemberGroups.Venues(Model.Platform, viewModel.Chapter),
+                Text = "Back to venues",
+                Icon = IconType.ArrowLeft
+            }
+        }
+    },
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Venues/_VenueContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
     {

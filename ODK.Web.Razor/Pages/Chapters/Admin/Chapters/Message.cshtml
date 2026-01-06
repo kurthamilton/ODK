@@ -1,5 +1,7 @@
 ﻿@page "/{chapterName}/Admin/Chapter/Messages/{id:guid}"
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
 @model ODK.Web.Razor.Pages.Chapters.Admin.Chapters.MessageModel
@@ -14,6 +16,15 @@
 @await Html.PartialAsync("Admin/_AdminBody", new AdminBodyViewModel
 {
     Title = "Message",
+    Breadcrumbs = new[]
+    {
+        new MenuItem
+        {
+            Link = OdkRoutes.MemberGroups.GroupMessages(Model.Platform, Model.Chapter),
+            Text = "Back to messages",
+            Icon = IconType.ArrowLeft
+        }
+    },
     Chapter = Model.Chapter,
     ContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_MessageContent", viewModel)</div>
 })
