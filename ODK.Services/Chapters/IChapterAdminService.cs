@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using ODK.Core.Chapters;
+﻿using ODK.Core.Chapters;
 using ODK.Core.Countries;
 using ODK.Core.Payments;
 using ODK.Core.Subscriptions;
@@ -183,6 +182,8 @@ public interface IChapterAdminService
     Task<ServiceResult> UpdateChapterTexts(MemberChapterServiceRequest request, 
         UpdateChapterTexts model);
 
+    Task<ServiceResult> UpdateChapterTheme(MemberChapterServiceRequest request, UpdateChapterTheme model);
+
     Task<ServiceResult> UpdateChapterTimeZone(MemberChapterServiceRequest request, 
         string? timeZoneId);
 
@@ -190,5 +191,5 @@ public interface IChapterAdminService
         IReadOnlyCollection<Guid> topicIds);
 
     Task<ServiceResult> UpdateSuperAdminChapter(MemberChapterServiceRequest request, 
-        SuperAdminChapterUpdateViewModel viewModel);
+        SuperAdminChapterUpdateViewModel viewModel);    
 }

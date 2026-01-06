@@ -12344,11 +12344,6 @@ html[data-platform=odk] {
   font-weight: 700;
 }
 
-:root {
-  --bg-section-header: #FF0000;
-  --color-section-header: #FFF;
-}
-
 .site-logo {
   height: 40px;
 }
@@ -12359,6 +12354,8 @@ html[data-platform=odk] {
 }
 
 .section--header {
+  --bg-section-header: var(--theme-bg, #FF0000);
+  --color-section-header: var(--theme-color, #FFF);
   color: var(--color-section-header);
   background-color: var(--bg-section-header);
 }
@@ -13035,20 +13032,6 @@ th.sortable.sort-desc:after {
 
 .StripeElement--webkit-autofill {
   background-color: #fefde5 !important;
-}
-
-.chapter-theme--dublin {
-  --bg-section-header: #23DA40;
-  --color-section-header: #000;
-}
-
-.chapter-theme--manchester {
-  --bg-section-header: #F3D402;
-  --color-section-header: #000;
-}
-
-.chapter-theme--oxford {
-  --bg-section-header: #e03034;
 }
 
 .bg-level-1 {

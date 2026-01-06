@@ -25,6 +25,8 @@ internal static class ChapterQueries
                     PublishedUtc = x.PublishedUtc,
                     RedirectUrl = x.RedirectUrl,
                     Slug = x.Slug,
+                    ThemeBackground = x.ThemeBackground,
+                    ThemeColor = x.ThemeColor,
                     TimeZone = x.TimeZone
                 });
         }
@@ -44,6 +46,8 @@ internal static class ChapterQueries
                 PublishedUtc = x.PublishedUtc,
                 RedirectUrl = x.RedirectUrl,
                 Slug = x.Slug,
+                ThemeBackground = x.ThemeBackground,
+                ThemeColor = x.ThemeColor,
                 TimeZone = x.TimeZone
             });
     }

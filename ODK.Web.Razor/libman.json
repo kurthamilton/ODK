@@ -45,6 +45,11 @@
       "provider": "cdnjs",
       "library": "cookieconsent@3.1.1",
       "destination": "wwwroot/lib/cookieconsent/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "jscolor@2.5.2",
+      "destination": "wwwroot/lib/jscolor/"
     }
   ]
 }

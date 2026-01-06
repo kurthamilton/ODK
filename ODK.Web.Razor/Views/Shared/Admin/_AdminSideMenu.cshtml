@@ -35,6 +35,9 @@
         new MenuItem { Link = OdkRoutes.MemberGroups.GroupTexts(platform, chapter), Text = "Texts" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
+            : new MenuItem { Link = OdkRoutes.MemberGroups.GroupTheme(platform, chapter), Text = "Theme" },
+        platform == PlatformType.DrunkenKnitwits
+            ? new MenuItem()
             : new MenuItem { Link = OdkRoutes.MemberGroups.GroupTopics(platform, chapter), Text = "Topics" },
         platform == PlatformType.DrunkenKnitwits
             ? new MenuItem()
@@ -66,7 +69,8 @@
             new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Reconciliations", Text = "Reconciliations" },
             new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Location", Text = "Location" },
             new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Instagram", Text = "Instagram" },
-            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Redirect", Text = "Redirect" }
+            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Redirect", Text = "Redirect" },
+            new MenuItem { Link = $"/{chapter.ShortName}/Admin/SuperAdmin/Theme", Text = "Theme" }
         } 
         : [];
 

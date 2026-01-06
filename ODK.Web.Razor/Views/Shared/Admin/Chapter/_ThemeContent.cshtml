@@ -1,0 +1,15 @@
+﻿@using ODK.Core.Chapters
+@using ODK.Web.Razor.Models.Chapters.SuperAdmin
+@model Chapter
+
+<form method="post" action="/groups/@Model.Id/theme">
+    @*@Html.AntiForgeryToken()*@
+
+    @await Html.PartialAsync("Admin/Chapter/_ThemeForm", new ThemeFormViewModel
+    {
+        Background = Model.ThemeBackground,
+        Color = Model.ThemeColor
+    })
+
+    <button class="btn btn-primary">Update</button>
+</form>

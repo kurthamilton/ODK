@@ -126,6 +126,12 @@ public class MemberGroupRoutes
         _ => $"{Group(platform, chapter)}/texts"
     };
 
+    public string GroupTheme(PlatformType platform, Chapter chapter) => platform switch
+    {
+        PlatformType.DrunkenKnitwits => "/",
+        _ => $"{Group(platform, chapter)}/theme"
+    };
+
     public string GroupTopics(PlatformType platform, Chapter chapter) => platform switch
     {
         PlatformType.DrunkenKnitwits => Group(platform, chapter),

@@ -11,6 +11,18 @@
 
     Guid.TryParse(Context.GetRouteValue("id")?.ToString(), out var chapterId);
     var chapter = await RequestCache.GetChapterAsync(platform, chapterId);
+
+    var customTheme = "";
+
+    if (!string.IsNullOrEmpty(chapter.ThemeBackground))
+    {
+        customTheme += $"--theme-bg: {chapter.ThemeBackground};";
+    }
+
+    if (!string.IsNullOrEmpty(chapter.ThemeColor))
+    {
+        customTheme += $"--theme-color: {chapter.ThemeColor};";
+    }
 }
 
 @section styles
@@ -18,11 +30,13 @@
     @await RenderSectionAsync("styles", required: false)
 }
 
-@await Html.PartialAsync("Components/_Body", new BodyViewModel
-{
-    Title = chapter.GetDisplayName(platform),
-    ContentFunc = _ => RenderBody()
-})
+<div style="@customTheme">
+    @await Html.PartialAsync("Components/_Body", new BodyViewModel
+    {
+        Title = chapter.GetDisplayName(platform),
+        ContentFunc = _ => RenderBody()
+    })
+</div>
 
 @section scripts
 {

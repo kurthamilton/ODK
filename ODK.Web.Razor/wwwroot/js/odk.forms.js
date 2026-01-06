@@ -1,6 +1,7 @@
 ﻿(function () {
     bindClearables();
     bindClientSideValidation();
+    bindColorPickers();
     bindDatePickers();
     bindSubmits();
 
@@ -35,6 +36,14 @@
     function bindClientSideValidation() {
         const v = new aspnetValidation.ValidationService();
         v.bootstrap();
+    }
+
+    function bindColorPickers() {        
+        const $inputs = document.querySelectorAll('[data-color-picker]');
+        $inputs.forEach($input => {
+            const required = $input.hasAttribute('data-val-required');
+            const picker = new JSColor($input, { format: 'hex', required: required });
+        });
     }
 
     function bindDatePickers() {

@@ -38,6 +38,10 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
 
     public required string Slug { get; set; }
 
+    public string? ThemeBackground { get; set; }
+
+    public string? ThemeColor { get; set; }
+
     public TimeZoneInfo? TimeZone { get; set; }
 
     public static string GetDisplayName(
@@ -102,6 +106,8 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
         PublishedUtc = PublishedUtc,
         RedirectUrl = RedirectUrl,
         Slug = Slug,
+        ThemeBackground = ThemeBackground,
+        ThemeColor = ThemeColor,
         TimeZone = TimeZone
     };
 

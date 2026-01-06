@@ -159,6 +159,7 @@ public class Program
                 "lib/bootstrap/js/bootstrap.bundle.js",
                 "lib/flatpickr/flatpickr.js",
                 "lib/aspnet-client-validation/dist/aspnet-validation.js",
+                "lib/jscolor/jscolor.js",
                 "lib/slim-select/slimselect.js",
                 "js/site.js",
                 "js/odk.cookieconsent.js",

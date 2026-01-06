@@ -2248,6 +2248,20 @@ public class ChapterAdminService : OdkAdminServiceBase, IChapterAdminService
         return ServiceResult.Successful();
     }
     
+    public async Task<ServiceResult> UpdateChapterTheme(MemberChapterServiceRequest request, UpdateChapterTheme model)
+    {
+        var chapter = await GetChapterAdminRestrictedContent(request,
+            x => x.ChapterRepository.GetById(request.ChapterId));
+
+        chapter.ThemeBackground = model.Background;
+        chapter.ThemeColor = model.Color;
+
+        _unitOfWork.ChapterRepository.Update(chapter);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Successful();
+    }
+
     public async Task<ServiceResult> UpdateChapterTimeZone(MemberChapterServiceRequest request, string? timeZoneId)
     {
         var chapter = await GetSuperAdminRestrictedContent(request,

@@ -11,6 +11,7 @@ using ODK.Web.Common.Feedback;
 using ODK.Web.Common.Routes;
 using ODK.Web.Razor.Models.Admin.Chapters;
 using ODK.Web.Razor.Models.Admin.Members;
+using ODK.Web.Razor.Models.Chapters.SuperAdmin;
 using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.Admin;
@@ -214,6 +215,19 @@ public class ChapterAdminController : AdminControllerBase
         var serviceRequest = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
         var result = await _chapterAdminService.DeleteChapterContactMessage(serviceRequest, id);
         AddFeedback(result, "Message deleted");
+        return RedirectToReferrer();
+    }
+
+    [HttpPost("groups/{chapterId:guid}/theme")]
+    public async Task<IActionResult> UpdateTheme(Guid chapterId, ThemeFormViewModel viewModel)
+    {
+        var serviceRequest = new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
+        var result = await _chapterAdminService.UpdateChapterTheme(serviceRequest, new UpdateChapterTheme
+        {
+            Background = viewModel.Background,
+            Color = viewModel.Color
+        });
+        AddFeedback(result, "Theme updated");
         return RedirectToReferrer();
     }
 

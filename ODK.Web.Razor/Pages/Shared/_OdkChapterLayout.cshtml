@@ -17,6 +17,17 @@
 
     var member = await chapterContext.GetMemberAsync(RequestStore.CurrentMemberIdOrDefault);
     var componentContext = RequestStore.ComponentContext;
+
+    var customStyle = "";
+    if (!string.IsNullOrEmpty(chapter.ThemeBackground))
+    {
+        customStyle += $"--theme-bg: {chapter.ThemeBackground};";
+    }
+
+    if (!string.IsNullOrEmpty(chapter.ThemeColor))
+    {
+        customStyle += $"--theme-color: {chapter.ThemeColor};";
+    }
 }
 
 @section styles
@@ -30,7 +41,7 @@
         new ChapterHeaderViewModel(chapter, member, componentContext))
 }
 
-<div class="chapter chapter-theme--@chapter.ShortName.ToLowerInvariant()">
+<div class="chapter" style="@customStyle">
     @RenderBody()
 </div>
 
