@@ -20,7 +20,7 @@
     {
         Address = Model.Venue.Address,
         Lat = Model.Location?.LatLong.Lat,
-        LocationName = Model.Location?.Name ?? Model.Venue.MapQuery,
+        LocationName = Model.Location?.Name ?? Model.Venue.MapQuery ?? string.Empty,
         Long = Model.Location?.LatLong.Long,
         Name = Model.Venue.Name
     })

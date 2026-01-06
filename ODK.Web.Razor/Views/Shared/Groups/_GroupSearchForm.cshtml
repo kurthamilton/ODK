@@ -11,7 +11,13 @@
                 @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
             </span>
         </span>
-        <input type="text" name="n" value="@Model.Location?.Name" class="form-control" placeholder="Location" data-location />
+        <div class="dropdown flex-grow-1">
+            <input type="text" name="n" value="@Model.Location?.Name" class="form-control" placeholder="Location" 
+                data-location
+                data-bs-toggle="dropdown"/>
+
+            <ul class="dropdown-menu google-places-suggestions" data-location-options></ul>
+        </div>        
     </div>
 
     <input type="hidden" value="@Model.Location?.LatLong.Lat" data-location-lat />

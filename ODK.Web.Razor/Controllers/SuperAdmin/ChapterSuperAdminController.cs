@@ -69,7 +69,7 @@ public class ChapterSuperAdminController : AdminControllerBase
             : default(LatLong?);
 
         var request = await GetAdminServiceRequest(chapterName);
-        await _chapterAdminService.UpdateChapterLocation(request, location, viewModel.Name);
+        await _chapterAdminService.UpdateChapterLocation(request, location, viewModel.LocationName);
 
         AddFeedback("Location updated", FeedbackType.Success);
 

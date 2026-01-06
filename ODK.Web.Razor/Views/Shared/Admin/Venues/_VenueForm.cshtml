@@ -14,14 +14,9 @@
     @Html.TextBoxFor(x => x.Address, new { @class = "form-control" })
 </div>
 
-<div class="form-group mb-3 required" data-location-container>
-    @Html.LabelFor(x => x.LocationName, new { @class = "form-label" })
-    @Html.TextBoxFor(x => x.LocationName, new { @class = "form-control", data_location = "" })
-    @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })
-    @Html.HiddenFor(x => x.Long, new { data_location_long = "" })    
-</div>
+@await Html.PartialAsync("Components/_LocationPicker", Model)
 
-<div class="mb-3">
+<div class="my-3">
     @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
     {
         LatLong = LatLong.FromCoords(Model.Lat, Model.Long),

@@ -34,9 +34,12 @@
         {
             Lat = location?.LatLong.Lat,
             Long = location?.LatLong.Long,
-            Name = location?.Name
+            LocationName = location?.Name ?? string.Empty
         })
-        <button class="btn btn-primary">Update</button>
+
+        <div class="mt-3">
+            <button class="btn btn-primary">Update</button>
+        </div>
     </form>
 
     @if (location?.LatLong != null)
@@ -45,7 +48,7 @@
             @await Html.PartialAsync("Components/_GoogleMap", new GoogleMapViewModel
             {
                 LatLong = location.LatLong,
-                QuerySource = "#map-latlong"
+                QuerySource = "#LocationName"
             })
         </div>
     }    

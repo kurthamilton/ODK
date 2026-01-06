@@ -1,10 +1,7 @@
-﻿namespace ODK.Web.Razor.Models.SuperAdmin;
+﻿using ODK.Web.Razor.Models.Components;
 
-public class ChapterLocationFormViewModel
-{    
-    public double? Lat { get; set; }
+namespace ODK.Web.Razor.Models.SuperAdmin;
 
-    public double? Long { get; set; }
-
-    public string? Name { get; set; }
+public class ChapterLocationFormViewModel : LocationPickerViewModel
+{        
 }

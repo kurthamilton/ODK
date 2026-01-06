@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Countries;
 using ODK.Core.Images;
@@ -84,7 +83,7 @@ public class AccountController : OdkControllerBase
             Location = location.Lat != null && location.Long != null 
                 ? new LatLong(location.Lat.Value, location.Long.Value)
                 : default(LatLong?),
-            LocationName = location.Name,
+            LocationName = location.LocationName,
             NewTopics = newTopics,
             OAuthProviderType = oauth.Provider,
             OAuthToken = oauth.Token,
@@ -279,7 +278,7 @@ public class AccountController : OdkControllerBase
         var location = viewModel.Lat != null && viewModel.Long != null
             ? new LatLong(viewModel.Lat.Value, viewModel.Long.Value) 
             : default(LatLong?);
-        await _memberService.UpdateMemberLocation(MemberId, location, viewModel.Name, viewModel.DistanceUnit);
+        await _memberService.UpdateMemberLocation(MemberId, location, viewModel.LocationName, viewModel.DistanceUnit);
 
         AddFeedback("Location updated", FeedbackType.Success);
 

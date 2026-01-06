@@ -1,7 +1,7 @@
 ﻿@using ODK.Web.Common.Components
 @using ODK.Web.Razor.Models.Account
 @using ODK.Web.Razor.Models.Components
-@model LocationFormViewModel
+@model LocationPickerViewModel
 
 <div class="input-group">
     <span class="input-group-text">
@@ -11,20 +11,15 @@
     </span>
 
     <div class="dropdown flex-grow-1">
-        @Html.TextBoxFor(x => x.Name, new
-            {
-                @class = "form-control",
-                data_location = "",
-                data_bs_toggle = "dropdown"
-            })
+        @Html.TextBoxFor(x => x.LocationName, new
+        {
+            @class = "form-control",
+            data_location = "",
+            data_bs_toggle = "dropdown"
+        })
 
         <ul class="dropdown-menu google-places-suggestions" data-location-options></ul>
-    </div>
-
-    @if (Model.InlineButton)
-    {
-        <button class="btn btn-outline-secondary">Go</button>
-    }    
+    </div> 
 </div>
 
 @Html.HiddenFor(x => x.Lat, new { data_location_lat = "" })

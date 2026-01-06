@@ -63,7 +63,7 @@ public class CreateModel : OdkPageModel
             Description = viewModel.Description?.Trim() ?? "",
             ImageData = bytes,
             Location = new LatLong(viewModel.Location.Lat.Value, viewModel.Location.Long.Value),
-            LocationName = viewModel.Location.Name,
+            LocationName = viewModel.Location.LocationName,
             Name = viewModel.Name?.Trim() ?? "",
             NewTopics = topics.NewTopics
                 ?.Where((x, i) => !string.IsNullOrEmpty(x) && !string.IsNullOrEmpty(topics.NewTopicGroups![i]))

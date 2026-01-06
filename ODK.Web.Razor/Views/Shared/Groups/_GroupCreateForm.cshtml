@@ -63,16 +63,16 @@
             ContentFunc = 
                 @<div>
                     <div class="form-group mb-3 required" data-location-container>
-                        @Html.LabelFor(x => x.Location.Name, new { @class = "form-label" })
+                        @Html.LabelFor(x => x.Location.LocationName, new { @class = "form-label" })
                         <div class="input-group">
                             <span class="input-group-text">
                                 <span data-bs-toggle="tooltip" data-bs-title="Location">
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
                                 </span>
                             </span>
-                            @Html.TextBoxFor(x => x.Location.Name, new { @class = "form-control", data_location = "" })
+                            @Html.TextBoxFor(x => x.Location.LocationName, new { @class = "form-control", data_location = "" })
                         </div>
-                        @Html.ValidationMessageFor(x => x.Location.Name)
+                        @Html.ValidationMessageFor(x => x.Location.LocationName)
                         @Html.HiddenFor(x => x.Location.Lat, new { data_location_lat = "" })
                         @Html.HiddenFor(x => x.Location.Long, new { data_location_long = "" })
                     </div>
