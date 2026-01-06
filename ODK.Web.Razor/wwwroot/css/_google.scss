@@ -3,3 +3,21 @@
     height: 18px;
     width: 18px;
 }
+
+.google-places-suggestions {
+    width: 100%;
+
+    .dropdown-item {
+        border-top: 1px solid var(--bs-border-color);
+        cursor: pointer;
+        white-space: wrap;
+
+        &:first-child {
+            border-top: none;
+        }
+
+        &.active {
+            font-weight: 700;
+        }
+    }
+}

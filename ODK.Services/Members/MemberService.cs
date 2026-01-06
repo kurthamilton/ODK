@@ -14,6 +14,7 @@ using ODK.Data.Core;
 using ODK.Services.Authentication.OAuth;
 using ODK.Services.Authorization;
 using ODK.Services.Caching;
+using ODK.Services.Geolocation;
 using ODK.Services.Members.Models;
 using ODK.Services.Members.ViewModels;
 using ODK.Services.Notifications;
@@ -28,6 +29,7 @@ public class MemberService : IMemberService
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICacheService _cacheService;
+    private readonly IGeolocationService _geolocationService;
     private readonly IMemberEmailService _memberEmailService;
     private readonly IMemberImageService _memberImageService;
     private readonly INotificationService _notificationService;
@@ -45,10 +47,12 @@ public class MemberService : IMemberService
         INotificationService notificationService,
         IOAuthProviderFactory oauthProviderFactory,
         ITopicService topicService,
-        IPaymentProviderFactory paymentProviderFactory)
+        IPaymentProviderFactory paymentProviderFactory,
+        IGeolocationService geolocationService)
     {
         _authorizationService = authorizationService;
         _cacheService = cacheService;
+        _geolocationService = geolocationService;
         _memberEmailService = memberEmailService;
         _memberImageService = memberImageService;
         _notificationService = notificationService;
@@ -166,8 +170,11 @@ public class MemberService : IMemberService
 
         if (model.Location != null)
         {
+            var country = await _geolocationService.GetCountryFromLocation(model.Location.Value);
+
             _unitOfWork.MemberLocationRepository.Add(new MemberLocation
             {
+                CountryId = country?.Id,
                 MemberId = member.Id,
                 LatLong = model.Location.Value,
                 Name = model.LocationName
@@ -307,6 +314,7 @@ public class MemberService : IMemberService
         {
             _unitOfWork.MemberLocationRepository.Add(new MemberLocation
             {
+                CountryId = chapter.CountryId,
                 MemberId = member.Id,
                 LatLong = chapterLocation.LatLong,
                 Name = chapterLocation.Name
@@ -1001,6 +1009,9 @@ public class MemberService : IMemberService
         {
             memberLocation ??= new MemberLocation();
 
+            var country = await _geolocationService.GetCountryFromLocation(location.Value);
+
+            memberLocation.CountryId = country?.Id;
             memberLocation.LatLong = location.Value;
             memberLocation.Name = name;
         }

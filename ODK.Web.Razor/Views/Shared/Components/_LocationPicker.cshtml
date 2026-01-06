@@ -9,8 +9,18 @@
             @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
         </span>       
     </span>
-    @Html.TextBoxFor(x => x.Name, new { @class = "form-control", data_location = "" })
-    
+
+    <div class="dropdown flex-grow-1">
+        @Html.TextBoxFor(x => x.Name, new
+            {
+                @class = "form-control",
+                data_location = "",
+                data_bs_toggle = "dropdown"
+            })
+
+        <ul class="dropdown-menu google-places-suggestions" data-location-options></ul>
+    </div>
+
     @if (Model.InlineButton)
     {
         <button class="btn btn-outline-secondary">Go</button>

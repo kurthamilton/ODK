@@ -45,7 +45,7 @@ public class LoggingService : OdkAdminServiceBase, ILoggingService
 
     public Task Error(string message, Exception exception)
     {
-        _logger.Error(message, exception);
+        _logger.Error(exception, message);
 
         return Task.CompletedTask;
     }
