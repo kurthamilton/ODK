@@ -1,6 +1,8 @@
 ﻿@page "/my/groups/{id:guid}/questions/new"
 @using ODK.Core.Chapters
 @using ODK.Services.Chapters
+@using ODK.Web.Common.Components
+@using ODK.Web.Common.Routes
 @using ODK.Web.Razor.Models
 @using ODK.Web.Razor.Models.Admin
 @using ODK.Web.Razor.Models.Components
@@ -18,6 +20,18 @@
 @await Html.PartialAsync("Components/_TwoColLeftMenu", new TwoColLeftMenuViewModel
 {
     Title = "Create question",
+    Breadcrumbs = new BreadcrumbsViewModel
+    {
+        Breadcrumbs = new[]
+        {
+            new MenuItem
+            {
+                Link = OdkRoutes.MemberGroups.GroupQuestions(Model.Platform, chapter),
+                Text = "Back to FAQ",
+                Icon = IconType.ArrowLeft
+            }
+        }
+    },
     BodyContentFunc = @<div>@await Html.PartialAsync("Admin/Chapter/_QuestionCreateContent", viewModel)</div>,
     MenuContentFunc = _ => Html.PartialAsync("Admin/_AdminSideMenu", new AdminSideMenuViewModel
     {
