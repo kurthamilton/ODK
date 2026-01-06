@@ -11,6 +11,7 @@
         const $form = $input.closest('form');
         $form.setAttribute('autocomplete', 'off');
         $input.setAttribute('autocomplete', 'off');
+        $input.setAttribute('data-bs-toggle', 'dropdown');
 
         const $dropdownContainer = $input.closest('.dropdown');
         const $options = $dropdownContainer.querySelector('[data-location-options]');
@@ -112,6 +113,8 @@
 
         const location = parseLocation(place);
         setLocation($container, $input, location);
+
+        $input.blur();
     }
 
     function parseLocation(place) {

@@ -87,7 +87,6 @@ public class AccountController : OdkControllerBase
             NewTopics = newTopics,
             OAuthProviderType = oauth.Provider,
             OAuthToken = oauth.Token,
-            TimeZoneId = location.TimeZoneId,
             TopicIds = topics.TopicIds ?? []
         };
 

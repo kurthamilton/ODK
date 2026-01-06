@@ -1,8 +1,11 @@
-﻿using System.Web;
+﻿using System.Globalization;
+using System.Web;
+using GeoTimeZone;
 using ODK.Core.Countries;
 using ODK.Core.Utils;
 using ODK.Core.Web;
 using ODK.Data.Core;
+using ODK.Services.Exceptions;
 using ODK.Services.Geolocation;
 using ODK.Services.Integrations.Geolocation.Models;
 using ODK.Services.Logging;
@@ -30,6 +33,107 @@ public class GoogleGeolocationService : IGeolocationService
 
     public async Task<Country?> GetCountryFromLocation(LatLong location)
     {
+        var countryInfo = await GetCountryInfoFromLocation(location);
+        if (countryInfo == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var country = await _unitOfWork.CountryRepository
+                .GetByIsoCode2(countryInfo.IsoCode2)
+                .Run();
+
+            if (country != null)
+            {
+                return country;
+            }
+
+            return await CreateCountry(countryInfo);
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error getting country for ISO code {countryInfo.IsoCode2}", ex);
+            return null;
+        }        
+    }    
+
+    public Task<TimeZoneInfo?> GetTimeZoneFromLocation(LatLong location)
+    {
+        var ianaId = TimeZoneLookup.GetTimeZone(location.Lat, location.Long).Result;
+
+        var timeZone = TimeZoneInfo.TryConvertIanaIdToWindowsId(ianaId, out var timeZoneId)
+            ? TimeZoneInfo.FindSystemTimeZoneById(timeZoneId)
+            : null;
+
+        return Task.FromResult(timeZone);
+    }
+
+    private async Task<Country> CreateCountry(CountryInfo countryInfo)
+    {
+        var currencyInfo = await GetCurrencyInfoFromCountryCode(countryInfo.IsoCode2);
+
+        if (currencyInfo == null)
+        {
+            throw new OdkServiceException($"Could not get currency info for country code '{countryInfo.IsoCode2}'");
+        }
+
+        var currency = await _unitOfWork.CurrencyRepository.GetByCode(currencyInfo.Code).Run();
+
+        if (currency == null)
+        {
+            currency = new Currency
+            {
+                Code = currencyInfo.Code,
+                Symbol = currencyInfo.Symbol,
+            };
+
+            _unitOfWork.CurrencyRepository.Add(currency);
+        }
+
+        var country = new Country
+        {
+            Continent = "UNKNOWN",
+            CurrencyId = currency.Id,
+            IsoCode2 = countryInfo.IsoCode2,
+            IsoCode3 = countryInfo.IsoCode3,
+            Name = countryInfo.Name
+        };
+
+        _unitOfWork.CountryRepository.Add(country);
+        await _unitOfWork.SaveChangesAsync();
+
+        return country;
+    }
+
+    private async Task<CountryInfo?> GetCountryInfoFromLocation(LatLong location)
+    {
+        var isoCode2 = await GetCountryIsoCode2FromLocation(location);
+        if (isoCode2 == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var region = new RegionInfo(isoCode2);
+            return new CountryInfo
+            {
+                IsoCode2 = region.TwoLetterISORegionName,
+                IsoCode3 = region.ThreeLetterISORegionName,
+                Name = region.EnglishName
+            };
+        }
+        catch (Exception ex)
+        {
+            await _loggingService.Error($"Error getting RegionInfo from country ISO code {isoCode2}", ex);
+            return null;
+        }
+    }    
+
+    private async Task<string?> GetCountryIsoCode2FromLocation(LatLong location)
+    {
         try
         {
             var client = _httpClientFactory.CreateClient();
@@ -55,19 +159,25 @@ public class GoogleGeolocationService : IGeolocationService
                 .AddressComponents?
                 .FirstOrDefault(x => x.Types?.Contains("country", StringComparer.OrdinalIgnoreCase) == true);
 
-            if (countryComponent == null || string.IsNullOrEmpty(countryComponent.ShortName))
-            {
-                return null;
-            }
-
-            return await _unitOfWork.CountryRepository
-                .GetByIsoCode2(countryComponent.ShortName)
-                .Run();
+            return countryComponent?.ShortName;
         }
         catch (Exception ex)
         {
             await _loggingService.Error($"Error retrieving region from lat/long from Google Places API", ex);
             return null;
-        }        
+        }
+    }
+
+    private Task<CurrencyInfo?> GetCurrencyInfoFromCountryCode(string isoCode2)
+    {
+        var region = new RegionInfo(isoCode2);
+
+        var currencyInfo = new CurrencyInfo
+        {
+            Code = region.ISOCurrencySymbol,
+            Symbol = region.CurrencySymbol
+        };
+
+        return Task.FromResult<CurrencyInfo?>(currencyInfo);
     }
 }

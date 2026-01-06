@@ -52,8 +52,7 @@
                     {
                         Lat = viewModel.MemberLocation?.LatLong.Lat,
                         Long = viewModel.MemberLocation?.LatLong.Long,
-                        LocationName = viewModel.MemberLocation?.Name ?? "",
-                        TimeZoneId = viewModel.Member.TimeZone?.Id ?? Member.DefaultTimeZoneId                        
+                        LocationName = viewModel.MemberLocation?.Name ?? string.Empty
                     },
                     TopicGroups = viewModel.TopicGroups,
                     TopicIds = viewModel.MemberTopics.Select(x => x.TopicId).ToList(),

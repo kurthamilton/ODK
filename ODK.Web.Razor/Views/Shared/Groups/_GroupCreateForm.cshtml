@@ -70,23 +70,20 @@
                                     @await Html.PartialAsync("Components/_Icon", new IconViewModel(IconType.LocationPin))
                                 </span>
                             </span>
-                            @Html.TextBoxFor(x => x.Location.LocationName, new { @class = "form-control", data_location = "" })
+
+                            <div class="dropdown flex-grow-1">
+                                @Html.TextBoxFor(x => x.Location.LocationName, new 
+                                { 
+                                    @class = "form-control", 
+                                    data_location = ""
+                                })
+
+                                <ul class="dropdown-menu google-places-suggestions" data-location-options></ul>
+                            </div>                            
                         </div>
                         @Html.ValidationMessageFor(x => x.Location.LocationName)
                         @Html.HiddenFor(x => x.Location.Lat, new { data_location_lat = "" })
                         @Html.HiddenFor(x => x.Location.Long, new { data_location_long = "" })
-                    </div>
-
-                    <div class="form-group mb-3 required">
-                        @Html.LabelFor(x => x.CountryId, new { @class = "form-label" })
-                        @Html.DropDownListFor(x => x.CountryId, countryOptions, new { @class = "form-select", data_clearable = "", data_searchable = "" })
-                        @Html.ValidationMessageFor(x => x.CountryId)
-                    </div>
-
-                    <div class="form-group mb-3 required">
-                        @Html.LabelFor(x => x.Location.TimeZoneId, new { @class = "form-label" })
-                        @Html.OdkTimeZoneDropDownFor(x => x.Location.TimeZoneId, new { @class = "form-select", data_searchable = "" })
-                        @Html.ValidationMessageFor(x => x.Location.TimeZoneId)
                     </div>
                 </div>
     },

@@ -32,10 +32,7 @@
             Title = "Location",
             ContentFunc = 
                 @<div>
-                    @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel
-                    {
-                        TimeZoneId = Member.DefaultTimeZoneId
-                    })
+                    @await Html.PartialAsync("Account/_LocationForm", new LocationFormViewModel())
                 </div>
         },
         new WizardPageViewModel

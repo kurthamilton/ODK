@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using ODK.Core.Countries;
 using ODK.Web.Razor.Models.Components;
 
@@ -11,8 +10,4 @@ public class LocationFormViewModel : LocationPickerViewModel
     public Guid? DistanceUnit { get; set; }
 
     public IReadOnlyCollection<DistanceUnit> DistanceUnitOptions { get; set; } = [];    
-
-    [DisplayName("Time zone")]
-    [Required]
-    public string TimeZoneId { get; set; } = string.Empty;
 }

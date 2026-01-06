@@ -9,5 +9,5 @@ public interface ICountryRepository : IReadWriteRepository<Country>
 
     IDeferredQuerySingle<Country> GetByChapterId(Guid chapterId);
 
-    IDeferredQuerySingle<Country> GetByIsoCode2(string isoCode);
+    IDeferredQuerySingleOrDefault<Country> GetByIsoCode2(string isoCode);
 }

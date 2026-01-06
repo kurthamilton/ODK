@@ -16,12 +16,6 @@
         .ToArray();
 }
 
-<div class="form-group mb-3 required">
-    @Html.LabelFor(x => x.TimeZoneId, new { @class = "form-label" })
-    @Html.OdkTimeZoneDropDownFor(x => x.TimeZoneId, new { @class = "form-select", data_searchable = "" })
-    @Html.ValidationMessageFor(x => x.TimeZoneId)
-</div>
-
 <div class="form-group mb-3 required" data-location-container>
     @Html.LabelFor(x => x.LocationName, new { @class = "form-label" })    
     

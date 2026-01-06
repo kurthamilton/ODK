@@ -141,12 +141,10 @@ public class MemberService : IMemberService
             return ServiceResult<Member?>.Successful(null);
         }
         
-        TimeZoneInfo? timeZone = null;
-        if (!TimeZoneInfo.TryFindSystemTimeZoneById(model.TimeZoneId, out timeZone))
-        {
-            return ServiceResult<Member?>.Failure("Invalid time zone");
-        }
-
+        var timeZone = model.Location != null 
+            ? await _geolocationService.GetTimeZoneFromLocation(model.Location.Value)
+            : null;
+        
         var member = new Member
         {
             CreatedUtc = DateTime.UtcNow,
