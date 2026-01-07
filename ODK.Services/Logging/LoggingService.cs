@@ -1,5 +1,4 @@
-﻿using System;
-using ODK.Core.Logging;
+﻿using ODK.Core.Logging;
 using ODK.Data.Core;
 using Serilog;
 

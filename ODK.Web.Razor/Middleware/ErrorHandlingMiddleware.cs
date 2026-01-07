@@ -161,7 +161,14 @@ public class ErrorHandlingMiddleware
 
         try
         {
-            await loggingService.Error(ex, request);
+            if (ex is OdkNotFoundException)
+            {
+                await loggingService.Warn(ex.Message);
+            }
+            else
+            {
+                await loggingService.Error(ex, request);
+            }
         }
         catch
         {
