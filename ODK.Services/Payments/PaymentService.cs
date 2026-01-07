@@ -182,7 +182,7 @@ public class PaymentService : IPaymentService
                 $"Cannot process {webhook.PaymentProviderType} webhook '{webhook.Id}': " +
                 $"metadata missing properties {string.Join(", ", missingProperties)}";
 
-            await _loggingService.Error(message);
+            await _loggingService.Warn(message);
             return PaymentWebhookProcessingResult.Failure();
         }
 
