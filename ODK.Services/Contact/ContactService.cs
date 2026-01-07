@@ -102,11 +102,11 @@ public class ContactService : IContactService
     {
         ValidateRequest(fromAddress, message);
 
-        var recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);
-        var flagged = !_recaptchaService.Success(recaptchaResponse);
+        var result = await _recaptchaService.Verify(recaptchaToken);
+        var flagged = !_recaptchaService.Success(result);
         if (flagged)
         {
-            message = $"[FLAGGED AS SPAM: {recaptchaResponse.Score} / 1.0] {message}";
+            message = $"[FLAGGED AS SPAM: {result.Score} / 1.0] {message}";
         }
 
         var (adminMembers, notificationSettings) = await _unitOfWork.RunAsync(
@@ -119,7 +119,7 @@ public class ContactService : IContactService
             CreatedUtc = DateTime.UtcNow,
             FromAddress = fromAddress,
             Message = message,
-            RecaptchaScore = recaptchaResponse.Score
+            RecaptchaScore = result.Score
         };
 
         _unitOfWork.ChapterContactMessageRepository.Add(contactMessage);
@@ -152,10 +152,10 @@ public class ContactService : IContactService
 
         var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
 
-        var recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);
-        if (!_recaptchaService.Success(recaptchaResponse))
+        var result = await _recaptchaService.Verify(recaptchaToken);
+        if (!_recaptchaService.Success(result))
         {
-            message = $"[FLAGGED AS SPAM: {recaptchaResponse.Score} / 1.0] {message}";
+            message = $"[FLAGGED AS SPAM: {result.Score} / 1.0] {message}";
         }
 
         var contactMessage = new SiteContactMessage
@@ -163,7 +163,7 @@ public class ContactService : IContactService
             CreatedUtc = DateTime.UtcNow,
             FromAddress = fromAddress,
             Message = message,
-            RecaptchaScore = recaptchaResponse.Score
+            RecaptchaScore = result.Score
         };
 
         _unitOfWork.SiteContactMessageRepository.Add(contactMessage);
@@ -202,7 +202,7 @@ public class ContactService : IContactService
             return ServiceResult.Failure("Permission denied");
         }
 
-        var recaptchaResponse = await _recaptchaService.Verify(recaptchaToken);        
+        var result = await _recaptchaService.Verify(recaptchaToken);        
 
         var now = DateTime.UtcNow;
 
@@ -222,7 +222,7 @@ public class ContactService : IContactService
             CreatedUtc = now,
             MemberId = currentMemberId,
             ReadByMember = true,
-            RecaptchaScore = recaptchaResponse.Score,
+            RecaptchaScore = result.Score,
             Text = message
         };
 

@@ -1,8 +1,12 @@
 ﻿namespace ODK.Core.Members;
 
-public class MemberPassword
+public class MemberPassword : IHashedPassword
 {
+    public string Algorithm { get; set; } = string.Empty;
+
     public string Hash { get; set; } = string.Empty;
+
+    public int Iterations { get; set; }
 
     public Guid MemberId { get; set; }    
 

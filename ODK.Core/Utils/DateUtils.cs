@@ -1,7 +1,9 @@
 ﻿namespace ODK.Core.Utils;
 
 public static class DateUtils
-{    
+{
+    private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+    
     public static long DateVersion(DateTime date)
     {
         return long.Parse($"{date:yyyyMMdd}");
@@ -27,6 +29,13 @@ public static class DateUtils
         return date.ToString(format);
     }
 
+    public static DateTime FromUnixEpochTimestamp(long unixTimestamp)
+    {
+        return UnixEpoch
+            .AddSeconds(unixTimestamp)
+            .ToUniversalTime();
+    }
+    
     public static DateTime Next(this DateTime date, DayOfWeek dayOfWeek)
     {
         date = date.AddDays(1);
@@ -92,6 +101,12 @@ public static class DateUtils
         format += " HH:mm";
 
         return localDate.ToString(format);
+    }
+
+    public static long ToUnixEpochTimestamp(DateTime dateTime)
+    {
+        var diff = dateTime.ToUniversalTime() - UnixEpoch;
+        return (long)Math.Floor(diff.TotalSeconds);
     }
 
     public static DateTime ToUtc(this DateTime local, TimeZoneInfo timeZone) 

@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using Newtonsoft.Json;
+using ODK.Core.Utils;
 using ODK.Services.Integrations.Payments.PayPal.Client.Models;
 
 namespace ODK.Services.Integrations.Payments.PayPal.Client;
@@ -165,7 +165,7 @@ public class PayPalClient
 
     private HttpContent GetJsonContent<T>(T value)
     {
-        var json = JsonConvert.SerializeObject(value);
+        var json = JsonUtils.Serialize(value);
         return GetStringContent(json);
     }
 
@@ -196,6 +196,6 @@ public class PayPalClient
             throw new Exception($"PayPal API error response: {json}");
         }
 
-        return JsonConvert.DeserializeObject<T>(json);
+        return JsonUtils.Deserialize<T>(json);
     }
 }

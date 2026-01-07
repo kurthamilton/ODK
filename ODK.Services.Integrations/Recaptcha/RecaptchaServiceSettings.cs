@@ -1,4 +1,4 @@
-﻿namespace ODK.Services.Recaptcha;
+﻿namespace ODK.Services.Integrations.Recaptcha;
 
 public class RecaptchaServiceSettings
 {

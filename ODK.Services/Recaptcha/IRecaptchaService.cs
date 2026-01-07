@@ -2,7 +2,7 @@
 
 public interface IRecaptchaService
 {
-    bool Success(ReCaptchaResponse response);
+    bool Success(RecaptchaResult response);
 
-    Task<ReCaptchaResponse> Verify(string token);
+    Task<RecaptchaResult> Verify(string token);
 }

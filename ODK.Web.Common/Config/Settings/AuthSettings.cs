@@ -2,7 +2,9 @@
 
 public class AuthSettings
 {
-    public int CookieLifetimeDays { get; set; }
+    public required int CookieLifetimeDays { get; init; }
 
-    public int PasswordResetTokenLifetimeMinutes { get; set; }
+    public required int PasswordResetTokenLifetimeMinutes { get; init; }
+
+    public required AuthPasswordsSettings Passwords { get; init; }
 }
