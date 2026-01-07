@@ -9,7 +9,7 @@ public class CurrencyService : ICurrencyService
 
     public CurrencyService(IUnitOfWork unitOfWork)
     {
-        _unitOfWork = unitOfWork; 
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IReadOnlyCollection<Currency>> GetCurrencies()

@@ -8,7 +8,7 @@ public class InstagramPostViewModel
     {
     }
 
-    public InstagramPostViewModel(Chapter chapter, Guid instagramPostId, string? caption, 
+    public InstagramPostViewModel(Chapter chapter, Guid instagramPostId, string? caption,
         string externalId)
     {
         Caption = caption;

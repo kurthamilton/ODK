@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Pages.SuperAdmin;
 
 public class IconsModel : SuperAdminPageModel
 {
-    public IconsModel(IRequestCache requestCache) 
+    public IconsModel(IRequestCache requestCache)
         : base(requestCache)
     {
     }

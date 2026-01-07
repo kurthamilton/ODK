@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using ODK.Web.Razor.Models.Components;
 
 namespace ODK.Web.Razor.Models.Admin.Venues;

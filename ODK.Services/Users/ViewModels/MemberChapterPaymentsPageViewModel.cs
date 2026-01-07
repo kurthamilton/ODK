@@ -4,5 +4,5 @@ namespace ODK.Services.Users.ViewModels;
 
 public class MemberChapterPaymentsPageViewModel : MemberPaymentsPageViewModel
 {
-    public required Chapter Chapter { get; set; }    
+    public required Chapter Chapter { get; set; }
 }

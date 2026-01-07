@@ -15,7 +15,7 @@ public class GroupHomePageViewModel : GroupPageViewModel
 
     public required ChapterLinks? Links { get; init; }
 
-    public required int MemberCount { get; init; }    
+    public required int MemberCount { get; init; }
 
     public required IReadOnlyCollection<Member> Owners { get; init; }
 

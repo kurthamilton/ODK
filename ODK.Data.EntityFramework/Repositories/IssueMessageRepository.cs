@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class IssueMessageRepository : ReadWriteRepositoryBase<IssueMessage>, IIssueMessageRepository
 {
-    public IssueMessageRepository(OdkContext context) 
+    public IssueMessageRepository(OdkContext context)
         : base(context)
     {
     }

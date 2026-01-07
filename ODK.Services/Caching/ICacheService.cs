@@ -7,8 +7,8 @@ public interface ICacheService
     Task<T?> GetOrSetItem<T>(Func<Task<T?>> getter, object instanceKey) where T : class;
 
     Task<T?> GetOrSetItem<T>(Func<Task<T?>> getter, object instanceKey, TimeSpan lifetime) where T : class;
-    
-    Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T?>> getter, object key, 
+
+    Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(Func<Task<T?>> getter, object key,
         long? currentVersion) where T : class, IVersioned;
 
     void RemoveVersionedCollection<T>(object? key = null);

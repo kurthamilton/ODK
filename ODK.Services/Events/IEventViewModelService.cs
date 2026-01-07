@@ -10,5 +10,5 @@ public interface IEventViewModelService
     Task<EventsPageViewModel> GetEventsPage(ServiceRequest request, Guid? currentMemberId, string chapterName);
 
     Task<EventPageViewModel> GetGroupEventPageViewModel(
-        ServiceRequest request, Guid? currentMemberId, string slug, Guid eventId);    
+        ServiceRequest request, Guid? currentMemberId, string slug, Guid eventId);
 }

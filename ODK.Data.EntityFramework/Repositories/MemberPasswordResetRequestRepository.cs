@@ -4,9 +4,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class MemberPasswordResetRequestRepository : WriteRepositoryBase<MemberPasswordResetRequest>, IMemberPasswordResetRequestRepository
 {
-    public MemberPasswordResetRequestRepository(OdkContext context) 
+    public MemberPasswordResetRequestRepository(OdkContext context)
         : base(context)
     {
     }

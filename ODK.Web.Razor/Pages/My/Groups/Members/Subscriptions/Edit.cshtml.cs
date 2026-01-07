@@ -8,7 +8,7 @@ namespace ODK.Web.Razor.Pages.My.Groups.Members.Subscriptions;
 
 public class EditModel : OdkGroupAdminPageModel
 {
-    private readonly IChapterAdminService _chapterAdminService;    
+    private readonly IChapterAdminService _chapterAdminService;
 
     public EditModel(IChapterAdminService chapterAdminService)
     {
@@ -40,7 +40,7 @@ public class EditModel : OdkGroupAdminPageModel
 
         if (!result.Success)
         {
-            return Page();            
+            return Page();
         }
 
         var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);

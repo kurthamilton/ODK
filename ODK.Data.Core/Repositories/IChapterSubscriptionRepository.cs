@@ -3,6 +3,7 @@ using ODK.Core.Chapters.Dtos;
 using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
+
 public interface IChapterSubscriptionRepository : IReadWriteRepository<ChapterSubscription>
 {
     IDeferredQueryMultiple<ChapterSubscriptionAdminDto> GetAdminDtosByChapterId(

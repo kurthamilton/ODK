@@ -33,13 +33,13 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
             Address = model.Address,
             ChapterId = chapterId,
             MapQuery = model.LocationName,
-            Name = model.Name            
+            Name = model.Name
         };
 
         var location = new VenueLocation
         {
             LatLong = model.Location ?? new LatLong(),
-            Name = model.LocationName ?? ""
+            Name = model.LocationName ?? string.Empty
         };
 
         var validationResult = ValidateVenue(venue, existing, location);
@@ -59,7 +59,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         return ServiceResult.Successful();
     }
-    
+
     public async Task<Venue> GetVenue(MemberChapterServiceRequest request, Guid venueId)
     {
         var venue = await GetChapterAdminRestrictedContent(request,
@@ -128,7 +128,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
     }
 
     public async Task<ServiceResult> UpdateVenue(MemberChapterServiceRequest request, Guid id, CreateVenue model)
-    {       
+    {
         var (venue, existing) = await GetChapterAdminRestrictedContent(request,
             x => x.VenueRepository.GetById(id),
             x => x.VenueRepository.GetByName(request.ChapterId, model.Name));
@@ -137,13 +137,13 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         OdkAssertions.BelongsToChapter(venue, request.ChapterId);
 
-        venue.Address = model.Address;        
+        venue.Address = model.Address;
         venue.MapQuery = model.LocationName;
-        venue.Name = model.Name;                
+        venue.Name = model.Name;
 
         location ??= new VenueLocation();
 
-        location.Name = model.LocationName ?? "";
+        location.Name = model.LocationName ?? string.Empty;
         location.LatLong = model.Location ?? new LatLong();
 
         var validationResult = ValidateVenue(venue, existing, location);
@@ -171,7 +171,7 @@ public class VenueAdminService : OdkAdminServiceBase, IVenueAdminService
 
         return ServiceResult.Successful();
     }
-    
+
     private ServiceResult ValidateVenue(Venue venue, Venue? existing, VenueLocation location)
     {
         if (string.IsNullOrWhiteSpace(venue.Name))

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ODK.Core.Chapters;
-using ODK.Core.Topics;
 
 namespace ODK.Data.EntityFramework.Mapping;
 

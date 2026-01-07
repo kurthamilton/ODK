@@ -10,7 +10,7 @@ public class MediaAdminService : OdkAdminServiceBase, IMediaAdminService
     private readonly IImageService _imageService;
     private readonly IMediaFileProvider _mediaFileProvider;
 
-    public MediaAdminService(IUnitOfWork unitOfWork, 
+    public MediaAdminService(IUnitOfWork unitOfWork,
         IMediaFileProvider mediaFileProvider,
         IImageService imageService)
         : base(unitOfWork)

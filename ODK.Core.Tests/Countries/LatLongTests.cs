@@ -16,7 +16,7 @@ public static class LatLongTests
         // Arrange
         var location1 = new LatLong(50, 5);
         var location2 = new LatLong(50, 5);
-        
+
         // Act
         var result = location1.DistanceFrom(location2, MetresUnit);
 
@@ -25,7 +25,7 @@ public static class LatLongTests
     }
 
     [TestCase(51.7520, 1.2577, 51.5072, 0.1276, 82_615)] // Oxford - London
-    public static void DistanceFrom(double lat1, double long1, double lat2, double long2, 
+    public static void DistanceFrom(double lat1, double long1, double lat2, double long2,
         double expectedApproxDistance)
     {
         // Arrange

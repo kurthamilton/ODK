@@ -4,16 +4,17 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class ChapterPropertyOptionRepository : ReadWriteRepositoryBase<ChapterPropertyOption>, IChapterPropertyOptionRepository
 {
-    public ChapterPropertyOptionRepository(OdkContext context) 
+    public ChapterPropertyOptionRepository(OdkContext context)
         : base(context)
     {
     }
 
     public IDeferredQueryMultiple<ChapterPropertyOption> GetByChapterId(Guid chapterId)
     {
-        var query = 
+        var query =
             from chapterProperty in Set<ChapterProperty>()
             from chapterPropertyOption in Set()
             where chapterProperty.ChapterId == chapterId
@@ -23,6 +24,6 @@ public class ChapterPropertyOptionRepository : ReadWriteRepositoryBase<ChapterPr
     }
 
     public IDeferredQueryMultiple<ChapterPropertyOption> GetByPropertyId(Guid propertyId) => Set()
-        .Where(x => x.ChapterPropertyId ==  propertyId)
+        .Where(x => x.ChapterPropertyId == propertyId)
         .DeferredMultiple();
 }

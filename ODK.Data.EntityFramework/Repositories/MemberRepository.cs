@@ -18,7 +18,7 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
     public IDeferredQueryMultiple<Member> GetAllByChapterId(Guid chapterId) => Set()
         .InChapter(chapterId)
         .DeferredMultiple();
-    
+
     public IDeferredQueryMultiple<Member> GetByChapterId(Guid chapterId) => Set()
         .Current(chapterId)
         .Visible(chapterId)
@@ -41,7 +41,7 @@ public class MemberRepository : ReadWriteRepositoryBase<Member>, IMemberReposito
 
     public IDeferredQuerySingleOrDefault<Member> GetChapterOwner(Guid chapterId)
     {
-        var query = 
+        var query =
             from member in Set()
             from chapter in Set<Chapter>()
                 .Where(x => member.Id == x.OwnerId)

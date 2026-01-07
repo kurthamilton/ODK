@@ -16,7 +16,7 @@ public interface IRequestStore
 
     Guid? CurrentMemberIdOrDefault { get; }
 
-    IHttpRequestContext HttpRequestContext { get; }    
+    IHttpRequestContext HttpRequestContext { get; }
 
     MemberServiceRequest MemberServiceRequest { get; }
 

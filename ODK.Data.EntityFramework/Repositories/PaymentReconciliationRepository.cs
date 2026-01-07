@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 public class PaymentReconciliationRepository : ReadWriteRepositoryBase<PaymentReconciliation>,
     IPaymentReconciliationRepository
 {
-    public PaymentReconciliationRepository(OdkContext context) 
+    public PaymentReconciliationRepository(OdkContext context)
         : base(context)
     {
     }

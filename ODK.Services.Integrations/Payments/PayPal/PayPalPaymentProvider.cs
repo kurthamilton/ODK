@@ -49,7 +49,7 @@ public class PayPalPaymentProvider : IPaymentProvider
         return await client.CancelSubscription(externalId);
     }
 
-    public Task<RemoteAccount?> CreateConnectedAccount(CreateRemoteAccountOptions options) 
+    public Task<RemoteAccount?> CreateConnectedAccount(CreateRemoteAccountOptions options)
         => throw new NotImplementedException();
 
     public async Task<string?> CreateProduct(string name)
@@ -108,10 +108,10 @@ public class PayPalPaymentProvider : IPaymentProvider
     public Task<string?> GenerateConnectedAccountSetupUrl(GenerateRemoteAccountSetupUrlOptions options)
         => throw new NotImplementedException();
 
-    public Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments() 
+    public Task<IReadOnlyCollection<RemotePaymentModel>> GetAllPayments()
         => throw new NotImplementedException();
 
-    public Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId) => 
+    public Task<ExternalCheckoutSession?> GetCheckoutSession(string externalId) =>
         Task.FromResult<ExternalCheckoutSession?>(null);
 
     public Task<RemoteAccount?> GetConnectedAccount(string externalId) => throw new NotImplementedException();
@@ -154,7 +154,7 @@ public class PayPalPaymentProvider : IPaymentProvider
         return new ExternalSubscriptionPlan
         {
             Amount = amount,
-            CurrencyCode = fixedPrice.CurrencyCode ?? "",
+            CurrencyCode = fixedPrice.CurrencyCode ?? string.Empty,
             ExternalId = externalId,
             ExternalProductId = plan.ProductId,
             Frequency = billingCycle.Frequency.OdkFrequency,
@@ -194,7 +194,7 @@ public class PayPalPaymentProvider : IPaymentProvider
         }
 
         return RemotePaymentResult.Successful(order.Id);
-    }    
+    }
 
     public async Task<string?> SendPayment(string currencyCode, decimal amount, string emailAddress,
         string paymentId, string note)
@@ -226,16 +226,16 @@ public class PayPalPaymentProvider : IPaymentProvider
     }
 
     public Task<ExternalCheckoutSession> StartCheckout(
-        ServiceRequest request, 
+        ServiceRequest request,
         string emailAddress,
-        ExternalSubscriptionPlan subscriptionPlan, 
-        string returnPath, 
+        ExternalSubscriptionPlan subscriptionPlan,
+        string returnPath,
         PaymentMetadataModel metadata)
     {
         throw new NotImplementedException();
     }
 
-    public Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata) 
+    public Task UpdatePaymentMetadata(string externalId, PaymentMetadataModel metadata)
         => throw new NotImplementedException();
 
     private PayPalClient GetClient()
@@ -247,8 +247,8 @@ public class PayPalPaymentProvider : IPaymentProvider
 
         return new PayPalClient(
             _settings.ApiBaseUrl,
-            _paymentSettings.ApiPublicKey ?? "",
-            _paymentSettings.ApiSecretKey ?? "",
+            _paymentSettings.ApiPublicKey ?? string.Empty,
+            _paymentSettings.ApiSecretKey ?? string.Empty,
             _httpClientFactory);
     }
 }

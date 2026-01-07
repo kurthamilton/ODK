@@ -2,5 +2,5 @@
 
 public class ScheduledTasksSettings
 {
-    public string ApiKey { get; set; } = "";
+    public string ApiKey { get; set; } = string.Empty;
 }

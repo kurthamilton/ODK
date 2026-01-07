@@ -7,7 +7,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterPaymentAccountRepository : ReadWriteRepositoryBase<ChapterPaymentAccount>, IChapterPaymentAccountRepository
 {
-    public ChapterPaymentAccountRepository(OdkContext context) 
+    public ChapterPaymentAccountRepository(OdkContext context)
         : base(context)
     {
     }

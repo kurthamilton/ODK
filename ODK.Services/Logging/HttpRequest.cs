@@ -15,7 +15,7 @@ public class HttpRequest
     public IDictionary<string, string> Form { get; }
 
     public IDictionary<string, string> Headers { get; }
-    
+
     public string Method { get; }
 
     public string? Username { get; }

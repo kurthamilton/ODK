@@ -10,7 +10,7 @@ public class DistanceUnitRepository : CachingReadWriteRepositoryBase<DistanceUni
 {
     private static readonly EntityCache<Guid, DistanceUnit> _cache = new DatabaseEntityCache<DistanceUnit>();
 
-    public DistanceUnitRepository(OdkContext context) 
+    public DistanceUnitRepository(OdkContext context)
         : base(context, _cache)
     {
     }

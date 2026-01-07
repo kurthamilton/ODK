@@ -8,7 +8,7 @@ public class SocialMediaLinksViewModel
 
     public bool Large { get; init; }
 
-    public bool ShowNames { get; init; }    
+    public bool ShowNames { get; init; }
 
     public string? Twitter { get; init; }
 }

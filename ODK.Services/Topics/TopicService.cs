@@ -97,8 +97,8 @@ public class TopicService : ITopicService
         var topicGroupDictionary = topics
             .GroupBy(x => x.TopicGroup.Name)
             .ToDictionary(
-                x => x.Key, 
-                x => x.Select(x => x.Name).ToHashSet(StringComparer.InvariantCultureIgnoreCase), 
+                x => x.Key,
+                x => x.Select(x => x.Name).ToHashSet(StringComparer.InvariantCultureIgnoreCase),
                 StringComparer.InvariantCultureIgnoreCase);
 
         foreach (var memberNewTopic in memberNewTopics)
@@ -133,10 +133,10 @@ public class TopicService : ITopicService
             }
 
             newTopics.Add(new NewMemberTopic
-            {  
+            {
                 MemberId = currentMemberId,
-                Topic = topic, 
-                TopicGroup = topicGroup 
+                Topic = topic,
+                TopicGroup = topicGroup
             });
 
             topicGroupDictionary[model.TopicGroup].Add(model.Topic);

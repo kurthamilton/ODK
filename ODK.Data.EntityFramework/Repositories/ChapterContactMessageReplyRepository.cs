@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class ChapterContactMessageReplyRepository : ReadWriteRepositoryBase<ChapterContactMessageReply>, IChapterContactMessageReplyRepository
 {
-    public ChapterContactMessageReplyRepository(OdkContext context) 
+    public ChapterContactMessageReplyRepository(OdkContext context)
         : base(context)
     {
     }

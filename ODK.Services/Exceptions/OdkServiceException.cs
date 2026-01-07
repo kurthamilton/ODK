@@ -3,7 +3,7 @@
 public class OdkServiceException : Exception
 {
     public OdkServiceException(string message)
-        : this(new [] { message })
+        : this(new[] { message })
     {
     }
 

@@ -12,7 +12,7 @@ public class RecaptchaService : IRecaptchaService
     private readonly IUnitOfWork _unitOfWork;
 
     public RecaptchaService(
-        RecaptchaServiceSettings settings, 
+        RecaptchaServiceSettings settings,
         IUnitOfWork unitOfWork,
         IHttpClientFactory httpClientFactory)
     {
@@ -27,13 +27,13 @@ public class RecaptchaService : IRecaptchaService
     public async Task<RecaptchaResult> Verify(string token)
     {
         var settings = await _unitOfWork.SiteSettingsRepository.Get().Run();
-        
+
         var postContent = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             { "secret", settings.RecaptchaSecretKey },
             { "response", token }
         });
-        
+
         using var http = _httpClientFactory.CreateClient();
         var response = await http.PostAsync(_settings.VerifyUrl, postContent);
         var responseContent = await response.Content.ReadAsStringAsync();

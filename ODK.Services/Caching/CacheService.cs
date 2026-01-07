@@ -23,23 +23,23 @@ public class CacheService : ICacheService
     {
         return await GetOrSet(getter, instanceKey, null, lifetime);
     }
-    
+
     public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(
-        Func<Task<T?>> getter, 
+        Func<Task<T?>> getter,
         object key,
         long? currentVersion) where T : class, IVersioned
     {
 
-        return await GetOrSetVersionedItem(getter, 
-            t => Task.FromResult(BitConverter.ToInt64(t?.Version ?? [])), 
-            key, 
+        return await GetOrSetVersionedItem(getter,
+            t => Task.FromResult(BitConverter.ToInt64(t?.Version ?? [])),
+            key,
             currentVersion);
     }
 
     public async Task<VersionedServiceResult<T>> GetOrSetVersionedItem<T>(
-        Func<Task<T?>> getter, 
+        Func<Task<T?>> getter,
         Func<T, Task<long>> getVersion,
-        object key, 
+        object key,
         long? currentVersion) where T : class
     {
         long? version = TryGetCachedVersion<T>(key);

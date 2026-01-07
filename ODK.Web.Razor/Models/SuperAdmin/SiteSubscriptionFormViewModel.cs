@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using ODK.Core.Payments;
 
 namespace ODK.Web.Razor.Models.SuperAdmin;
@@ -8,9 +7,9 @@ namespace ODK.Web.Razor.Models.SuperAdmin;
 public class SiteSubscriptionFormViewModel
 {
     [Required]
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
-    public bool Enabled { get; set; }    
+    public bool Enabled { get; set; }
 
     [DisplayName("Fallback")]
     public Guid? FallbackSiteSubscriptionId { get; set; }
@@ -25,7 +24,7 @@ public class SiteSubscriptionFormViewModel
     public bool MemberSubscriptions { get; set; }
 
     [Required]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public bool Premium { get; set; }
 

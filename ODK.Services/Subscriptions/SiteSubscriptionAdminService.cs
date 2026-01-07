@@ -16,7 +16,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     public SiteSubscriptionAdminService(
         IUnitOfWork unitOfWork,
         IHtmlSanitizer htmlSanitizer,
-        IPaymentProviderFactory paymentProviderFactory) 
+        IPaymentProviderFactory paymentProviderFactory)
         : base(unitOfWork)
     {
         _htmlSanitizer = htmlSanitizer;
@@ -33,15 +33,15 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
             x => x.SitePaymentSettingsRepository.GetById(model.SitePaymentSettingId),
             x => x.SiteSubscriptionRepository.GetAll(platform));
 
-        if (existing.Any(x => 
-            x.Platform == platform && 
+        if (existing.Any(x =>
+            x.Platform == platform &&
             x.SitePaymentSettingId == model.SitePaymentSettingId &&
             string.Equals(x.Name, model.Name, StringComparison.InvariantCultureIgnoreCase)))
         {
             return ServiceResult.Failure($"Subscription '{model.Name}' already exists");
         }
 
-        if (model.FallbackSiteSubscriptionId != null && 
+        if (model.FallbackSiteSubscriptionId != null &&
             existing.All(x => x.Id != model.FallbackSiteSubscriptionId))
         {
             return ServiceResult.Failure($"Fallback subscription not found");
@@ -67,7 +67,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
     }
 
     public async Task<ServiceResult> AddSiteSubscriptionPrice(
-        MemberServiceRequest request, 
+        MemberServiceRequest request,
         Guid siteSubscriptionId,
         SiteSubscriptionPriceCreateModel model)
     {
@@ -108,7 +108,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 {
                     Amount = model.Amount,
                     CurrencyCode = currency.Code,
-                    ExternalId = "",
+                    ExternalId = string.Empty,
                     ExternalProductId = siteSubscription.ExternalProductId,
                     Frequency = model.Frequency,
                     Name = $"{siteSubscription.Name} - {model.Frequency} [{currency.Code}]",
@@ -183,7 +183,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
                 GroupLimit = x.GroupLimit,
                 Id = x.Id,
                 MemberLimit = x.MemberLimit,
-                MemberSubscriptions = x.MemberSubscriptions,                
+                MemberSubscriptions = x.MemberSubscriptions,
                 Name = x.Name,
                 PaymentSettingsName = sitePaymentSettingsDictionary[x.SitePaymentSettingId].Name,
                 Premium = x.Premium,
@@ -249,7 +249,7 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         var subscription = existing.FirstOrDefault(x => x.Id == siteSubscriptionId);
         OdkAssertions.Exists(subscription);
 
-        if (model.FallbackSiteSubscriptionId != subscription.FallbackSiteSubscriptionId && 
+        if (model.FallbackSiteSubscriptionId != subscription.FallbackSiteSubscriptionId &&
             model.FallbackSiteSubscriptionId != null)
         {
             var fallback = existing.FirstOrDefault(x => x.Id == model.FallbackSiteSubscriptionId);
@@ -296,6 +296,6 @@ public class SiteSubscriptionAdminService : OdkAdminServiceBase, ISiteSubscripti
         subscription.MemberSubscriptions = model.MemberSubscriptions;
         subscription.Name = model.Name;
         subscription.Premium = model.Premium;
-        subscription.SendMemberEmails = model.SendMemberEmails;                
+        subscription.SendMemberEmails = model.SendMemberEmails;
     }
 }

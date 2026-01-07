@@ -84,12 +84,12 @@ public class RequestCache : IRequestCache
             return member;
         }
 
-        member = await _unitOfWork.MemberRepository.GetByIdOrDefault(memberId).Run();        
+        member = await _unitOfWork.MemberRepository.GetByIdOrDefault(memberId).Run();
         if (member != null)
         {
             _members[memberId] = member;
         }
-        
+
         return member;
     }
 
@@ -101,7 +101,7 @@ public class RequestCache : IRequestCache
             {
                 var subscription = await _unitOfWork.MemberSubscriptionRepository.GetByMemberId(memberId, chapterId).Run();
                 _memberSubscriptions[memberId] = subscription;
-            }            
+            }
             catch
             {
                 return null;

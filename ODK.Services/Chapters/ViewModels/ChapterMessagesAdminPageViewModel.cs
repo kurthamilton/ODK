@@ -5,7 +5,7 @@ namespace ODK.Services.Chapters.ViewModels;
 
 public class ChapterMessagesAdminPageViewModel
 {
-    public required Chapter Chapter { get; init; } 
+    public required Chapter Chapter { get; init; }
 
     public required bool IsSpam { get; init; }
 

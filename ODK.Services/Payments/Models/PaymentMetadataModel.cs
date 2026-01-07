@@ -25,7 +25,7 @@ public class PaymentMetadataModel
         SiteSubscriptionPrice siteSubscriptionPrice,
         Guid paymentCheckoutSessionId,
         Guid paymentId)
-    {        
+    {
         MemberId = member.Id;
         PaymentCheckoutSessionId = paymentCheckoutSessionId;
         PaymentId = paymentId;

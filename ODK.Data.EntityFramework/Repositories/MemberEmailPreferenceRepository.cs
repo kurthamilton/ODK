@@ -8,14 +8,14 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberEmailPreferenceRepository : WriteRepositoryBase<MemberEmailPreference>, IMemberEmailPreferenceRepository
 {
-    public MemberEmailPreferenceRepository(OdkContext context) 
+    public MemberEmailPreferenceRepository(OdkContext context)
         : base(context)
     {
     }
 
     public IDeferredQueryMultiple<MemberEmailPreference> GetByChapterId(Guid chapterId, MemberEmailPreferenceType type)
     {
-        var query = 
+        var query =
             from preference in Set()
             from member in Set<Member>().InChapter(chapterId)
             where preference.MemberId == member.Id

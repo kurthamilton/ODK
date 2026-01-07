@@ -5,7 +5,7 @@ namespace ODK.Web.Razor.Models.Payments;
 
 public class PaymentModalViewModel
 {
-    public required string Action { get; init; }    
+    public required string Action { get; init; }
 
     public Func<object?, IHtmlContent>? FormContentFunc { get; init; }
 

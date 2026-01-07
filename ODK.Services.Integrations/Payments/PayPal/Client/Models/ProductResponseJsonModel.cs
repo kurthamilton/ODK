@@ -5,5 +5,5 @@ namespace ODK.Services.Integrations.Payments.PayPal.Client.Models;
 public class ProductResponseJsonModel : ProductJsonModel
 {
     [JsonPropertyName("id")]
-    public string Id { get; set; } = "";
+    public string Id { get; set; } = string.Empty;
 }

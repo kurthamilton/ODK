@@ -6,5 +6,5 @@ public class MemberImageViewModel : MemberAvatarViewModel
 {
     public bool? HasImage { get; init; }
 
-    public MemberImage? Image { get; init; }    
+    public MemberImage? Image { get; init; }
 }

@@ -22,8 +22,8 @@ public class InstagramService : IInstagramService
     private readonly IUnitOfWork _unitOfWork;
 
     public InstagramService(
-        IUnitOfWork unitOfWork, 
-        ILoggingService loggingService, 
+        IUnitOfWork unitOfWork,
+        ILoggingService loggingService,
         ICacheService cacheService,
         IImageService imageService,
         IAuthorizationService authorizationService,
@@ -69,7 +69,7 @@ public class InstagramService : IInstagramService
             try
             {
                 await ScrapeLatestInstagramPosts(chapter.Id);
-            }            
+            }
             catch
             {
                 // do nothing
@@ -94,9 +94,9 @@ public class InstagramService : IInstagramService
         using var httpClient = CreateHttpClient(settings.InstagramScraperUserAgent);
 
         await DownloadNewImages(
-            httpClient, 
-            chapterId, 
-            links.InstagramName, 
+            httpClient,
+            chapterId,
+            links.InstagramName,
             after);
     }
 
@@ -131,7 +131,7 @@ public class InstagramService : IInstagramService
             {
                 continue;
             }
-            
+
             var image = await ParseImage(httpClient, post, node);
             if (image == null)
             {
@@ -192,7 +192,7 @@ public class InstagramService : IInstagramService
             {
                 return null;
             }
-            
+
             var response = await httpClient.GetAsync(thumbnailUrl);
             if (!response.IsSuccessStatusCode)
             {
@@ -208,7 +208,7 @@ public class InstagramService : IInstagramService
             {
                 ImageData = imageData,
                 InstagramPostId = post.Id,
-                MimeType = mimeType ?? ""
+                MimeType = mimeType ?? string.Empty
             };
         }
         catch
@@ -227,11 +227,11 @@ public class InstagramService : IInstagramService
         try
         {
             var unixTimestamp = node["taken_at_timestamp"]?.GetValue<int>() ?? 0;
-            
+
             var date = DateUtils.FromUnixEpochTimestamp(unixTimestamp);
-            var shortcode = node["shortcode"]?.ToString() ?? "";
-            var caption = (node["edge_media_to_caption"]?["edges"] as JsonArray)?.FirstOrDefault()?["node"]?["text"]?.ToString() ?? "";
-            
+            var shortcode = node["shortcode"]?.ToString() ?? string.Empty;
+            var caption = (node["edge_media_to_caption"]?["edges"] as JsonArray)?.FirstOrDefault()?["node"]?["text"]?.ToString() ?? string.Empty;
+
             var url = UrlBuilder
                 .Base("https://www.instagram.com")
                 .Path($"/p/{shortcode}")

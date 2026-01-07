@@ -16,5 +16,5 @@ public class VenueViewModel
 
     public VenueLocation? Location { get; }
 
-    public Venue Venue { get; }    
+    public Venue Venue { get; }
 }

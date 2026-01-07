@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using ODK.Core.Chapters;
@@ -6,9 +7,9 @@ using ODK.Core.Members;
 using ODK.Data.Core;
 using ODK.Services.Authorization;
 using ODK.Services.Tests.Helpers;
-using System;
 
 namespace ODK.Services.Tests.Authorization;
+
 public static class AuthorizationServiceTests
 {
     private static readonly Guid DefaultChapterId = Guid.NewGuid();

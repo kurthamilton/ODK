@@ -3,14 +3,15 @@ using ODK.Data.Core.Deferred;
 using ODK.Data.EntityFramework.Deferred;
 
 namespace ODK.Data.EntityFramework.Extensions;
+
 internal static class QueryableExtensions
 {
-    internal static IQueryable<T> ConditionalWhere<T>(this IQueryable<T> query, 
+    internal static IQueryable<T> ConditionalWhere<T>(this IQueryable<T> query,
         Expression<Func<T, bool>> condition,
         bool apply)
     {
         return apply
-            ? query.Where(condition) 
+            ? query.Where(condition)
             : query;
     }
 
@@ -37,7 +38,7 @@ internal static class QueryableExtensions
         this IQueryable<T> query,
         Func<T?> getFromCache,
         Action<T> updateCache,
-        Action<IEnumerable<T>>? prefillCache = null) 
+        Action<IEnumerable<T>>? prefillCache = null)
         where T : class
         => new DeferredQuerySingle<T>(query, getFromCache, updateCache, prefillCache);
 
@@ -48,7 +49,7 @@ internal static class QueryableExtensions
         this IQueryable<T> query,
         Func<T?> getFromCache,
         Action<T> updateCache,
-        Action<IEnumerable<T>>? prefillCache = null) 
+        Action<IEnumerable<T>>? prefillCache = null)
         where T : class
         => new DeferredQuerySingleOrDefault<T>(query, getFromCache, updateCache);
 

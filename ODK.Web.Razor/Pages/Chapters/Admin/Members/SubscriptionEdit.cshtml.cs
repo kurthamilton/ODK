@@ -12,7 +12,7 @@ public class SubscriptionEditModel : AdminPageModel
 {
     private readonly IChapterAdminService _chapterAdminService;
 
-    public SubscriptionEditModel(IRequestCache requestCache, IChapterAdminService chapterAdminService) 
+    public SubscriptionEditModel(IRequestCache requestCache, IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;

@@ -4,5 +4,5 @@ namespace ODK.Core.Payments;
 
 public class PaymentChapterDto : PaymentDto
 {
-    public required Chapter Chapter { get; init; }    
+    public required Chapter Chapter { get; init; }
 }

@@ -8,7 +8,7 @@ public class NewTopicsFormItemViewModel
 
     public bool Rejected { get; init; }
 
-    public string Topic { get; init; } = "";
+    public string Topic { get; init; } = string.Empty;
 
-    public string TopicGroup { get; init; } = "";
+    public string TopicGroup { get; init; } = string.Empty;
 }

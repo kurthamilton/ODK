@@ -4,6 +4,7 @@ using NUnit.Framework;
 using ODK.Core.Utils;
 
 namespace ODK.Core.Tests.Utils;
+
 [Parallelizable]
 public static class DateUtilsTests
 {

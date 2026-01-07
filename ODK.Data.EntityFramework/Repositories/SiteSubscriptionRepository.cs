@@ -8,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscription>, ISiteSubscriptionRepository
 {
-    public SiteSubscriptionRepository(OdkContext context) 
+    public SiteSubscriptionRepository(OdkContext context)
         : base(context)
     {
     }
@@ -23,7 +23,7 @@ public class SiteSubscriptionRepository : ReadWriteRepositoryBase<SiteSubscripti
 
     public IDeferredQuerySingle<SiteSubscription> GetByPriceId(Guid priceId)
     {
-        var query = 
+        var query =
             from price in Set<SiteSubscriptionPrice>()
             from siteSubscription in Set()
                 .Where(x => x.Id == price.SiteSubscriptionId)

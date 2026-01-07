@@ -7,7 +7,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class SitePaymentSettingsRepository : ReadWriteRepositoryBase<SitePaymentSettings>, ISitePaymentSettingsRepository
 {
-    public SitePaymentSettingsRepository(OdkContext context) 
+    public SitePaymentSettingsRepository(OdkContext context)
         : base(context)
     {
     }

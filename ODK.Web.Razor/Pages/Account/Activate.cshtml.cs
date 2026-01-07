@@ -9,7 +9,7 @@ public class ActivateModel : OdkPageModel
 {
     private readonly IAuthenticationService _authenticationService;
 
-    public ActivateModel(IAuthenticationService authenticationService) 
+    public ActivateModel(IAuthenticationService authenticationService)
     {
         _authenticationService = authenticationService;
     }

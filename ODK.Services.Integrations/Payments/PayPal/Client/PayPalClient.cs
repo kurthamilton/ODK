@@ -31,7 +31,7 @@ public class PayPalClient
         var url = GetUrl($"/v1/billing/plans/{externalId}/activate");
 
         using var client = await GetAuthenticatedHttpClient();
-        var payload = GetStringContent("");
+        var payload = GetStringContent(string.Empty);
         var response = await client.PostAsync(url, payload);
         return response.IsSuccessStatusCode;
     }
@@ -41,7 +41,7 @@ public class PayPalClient
         var url = GetUrl($"/v1/billing/subscriptions/{externalId}/cancel");
 
         using var client = await GetAuthenticatedHttpClient();
-        var payload = GetStringContent("");
+        var payload = GetStringContent(string.Empty);
         var response = await client.PostAsync(url, payload);
         return response.IsSuccessStatusCode;
     }
@@ -51,7 +51,7 @@ public class PayPalClient
         var url = $"{GetOrderUrl(orderId)}/capture";
 
         using var client = await GetAuthenticatedHttpClient();
-        var payload = GetStringContent("");
+        var payload = GetStringContent(string.Empty);
         var response = await client.PostAsync(url, payload);
 
         return await MapJsonResponse<OrderCaptureJsonModel>(response);
@@ -94,7 +94,7 @@ public class PayPalClient
         var url = GetUrl($"/v1/billing/plans/{externalId}/deactivate");
 
         using var client = await GetAuthenticatedHttpClient();
-        var payload = GetStringContent("");
+        var payload = GetStringContent(string.Empty);
         var response = await client.PostAsync(url, payload);
         return response.IsSuccessStatusCode;
     }

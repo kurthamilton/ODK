@@ -56,8 +56,8 @@ public class GoogleGeolocationService : IGeolocationService
         {
             await _loggingService.Error($"Error getting country for ISO code {countryInfo.IsoCode2}", ex);
             return null;
-        }        
-    }    
+        }
+    }
 
     public Task<TimeZoneInfo?> GetTimeZoneFromLocation(LatLong location)
     {
@@ -130,7 +130,7 @@ public class GoogleGeolocationService : IGeolocationService
             await _loggingService.Error($"Error getting RegionInfo from country ISO code {isoCode2}", ex);
             return null;
         }
-    }    
+    }
 
     private async Task<string?> GetCountryIsoCode2FromLocation(LatLong location)
     {

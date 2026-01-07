@@ -12,7 +12,7 @@ public class SiteEmailSettingsRepository : CachingReadWriteRepositoryBase<SiteEm
 {
     private static readonly EntityCache<Guid, SiteEmailSettings> _cache = new DatabaseEntityCache<SiteEmailSettings>();
 
-    public SiteEmailSettingsRepository(OdkContext context) 
+    public SiteEmailSettingsRepository(OdkContext context)
         : base(context, _cache)
     {
     }

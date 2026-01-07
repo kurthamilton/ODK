@@ -10,7 +10,7 @@ namespace ODK.Web.Razor.Controllers;
 public class MembersController : OdkControllerBase
 {
     private readonly IMemberService _memberService;
-    
+
     public MembersController(
         IMemberService memberService,
         IRequestStore requestStore)
@@ -47,5 +47,5 @@ public class MembersController : OdkControllerBase
         }
 
         return File(image.ImageData, image.MimeType);
-    }    
+    }
 }

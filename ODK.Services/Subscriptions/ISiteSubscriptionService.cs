@@ -12,7 +12,7 @@ public interface ISiteSubscriptionService
         MemberServiceRequest request, Guid siteSubscriptionId, string externalId);
 
     Task<SiteSubscriptionsViewModel> GetSiteSubscriptionsViewModel(
-        ServiceRequest request, Guid? memberId);    
+        ServiceRequest request, Guid? memberId);
 
     Task<SiteSubscriptionCheckoutViewModel> StartSiteSubscriptionCheckout(
         MemberServiceRequest request, Guid priceId, string returnPath);
@@ -20,7 +20,7 @@ public interface ISiteSubscriptionService
     Task SyncExpiredSubscriptions(ServiceRequest request);
 
     Task<ServiceResult> UpdateMemberSiteSubscription(
-        MemberServiceRequest request, 
-        Guid siteSubscriptionId, 
+        MemberServiceRequest request,
+        Guid siteSubscriptionId,
         SiteSubscriptionFrequency frequency);
 }

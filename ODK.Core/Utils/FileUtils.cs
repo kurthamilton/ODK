@@ -10,7 +10,7 @@ public static class FileUtils
 
     public static string AlphaNumericImageFileName(this string fileName)
     {
-        return AlphaNumericImageFileNameRegex.Replace(fileName, "");
+        return AlphaNumericImageFileNameRegex.Replace(fileName, string.Empty);
     }
 
     private static string GetAlphaNumericFileNamePattern(IEnumerable<string> extensions)

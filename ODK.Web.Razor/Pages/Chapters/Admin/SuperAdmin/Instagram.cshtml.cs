@@ -10,7 +10,7 @@ public class InstagramModel : ChapterSuperAdminPageModel
 {
     private readonly ISettingsService _settingsService;
 
-    public InstagramModel(IRequestCache requestCache, ISettingsService settingsService) 
+    public InstagramModel(IRequestCache requestCache, ISettingsService settingsService)
         : base(requestCache)
     {
         _settingsService = settingsService;

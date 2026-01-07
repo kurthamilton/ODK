@@ -7,7 +7,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class NewChapterTopicRepository : ReadWriteRepositoryBase<NewChapterTopic>, INewChapterTopicRepository
 {
-    public NewChapterTopicRepository(OdkContext context) 
+    public NewChapterTopicRepository(OdkContext context)
         : base(context)
     {
     }

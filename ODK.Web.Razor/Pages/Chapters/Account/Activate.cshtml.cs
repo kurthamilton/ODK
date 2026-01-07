@@ -13,7 +13,7 @@ public class ActivateModel : ChapterPageModel2
 
 
     public ActivateModel(IAuthenticationService authenticationService,
-        IRequestCache requestCache) 
+        IRequestCache requestCache)
     {
         _authenticationService = authenticationService;
         _requestCache = requestCache;

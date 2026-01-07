@@ -6,10 +6,10 @@ namespace ODK.Web.Razor.Models.Account;
 public class IssueCreateFormViewModel
 {
     [Required]
-    public string? Message { get; set; } = "";
+    public string? Message { get; set; } = string.Empty;
 
     [Required]
-    public string? Title { get; set; } = "";
+    public string? Title { get; set; } = string.Empty;
 
     [Required]
     public IssueType? Type { get; set; }

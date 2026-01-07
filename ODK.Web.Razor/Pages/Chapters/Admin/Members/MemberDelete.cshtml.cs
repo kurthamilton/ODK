@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Members;
 
 public class MemberDeleteModel : AdminPageModel
 {
-    public MemberDeleteModel(IRequestCache requestCache) 
+    public MemberDeleteModel(IRequestCache requestCache)
         : base(requestCache)
     {
     }

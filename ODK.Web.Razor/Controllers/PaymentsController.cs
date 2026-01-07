@@ -14,7 +14,7 @@ public class PaymentsController : OdkControllerBase
 
     public PaymentsController(
         IRequestStore requestStore,
-        IPaymentService paymentService) 
+        IPaymentService paymentService)
         : base(requestStore)
     {
         _paymentService = paymentService;

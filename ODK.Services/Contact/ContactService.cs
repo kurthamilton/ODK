@@ -19,7 +19,7 @@ public class ContactService : IContactService
     private readonly INotificationService _notificationService;
     private readonly IRecaptchaService _recaptchaService;
     private readonly IUnitOfWork _unitOfWork;
-    
+
     public ContactService(
         IRecaptchaService recaptchaService,
         IUnitOfWork unitOfWork,
@@ -73,20 +73,20 @@ public class ContactService : IContactService
 
         await _memberEmailService.SendChapterConversationEmail(
             request,
-            chapter, 
-            conversation, 
-            conversationMessage, 
-            addressees.ToArray(), 
+            chapter,
+            conversation,
+            conversationMessage,
+            addressees.ToArray(),
             isReply: true);
 
         return ServiceResult.Successful();
     }
 
     public async Task SendChapterContactMessage(
-        ServiceRequest request, 
-        Guid chapterId, 
-        string fromAddress, 
-        string message, 
+        ServiceRequest request,
+        Guid chapterId,
+        string fromAddress,
+        string message,
         string recaptchaToken)
     {
         var chapter = await _unitOfWork.ChapterRepository.GetById(chapterId).Run();
@@ -94,10 +94,10 @@ public class ContactService : IContactService
     }
 
     public async Task SendChapterContactMessage(
-        ServiceRequest request, 
-        Chapter chapter, 
-        string fromAddress, 
-        string message, 
+        ServiceRequest request,
+        Chapter chapter,
+        string fromAddress,
+        string message,
         string recaptchaToken)
     {
         ValidateRequest(fromAddress, message);
@@ -130,20 +130,20 @@ public class ContactService : IContactService
             contactMessage,
             adminMembers,
             notificationSettings);
-        }        
+        }
 
         await _unitOfWork.SaveChangesAsync();
 
         if (!flagged)
         {
             await _memberEmailService.SendChapterMessage(request, chapter, adminMembers, contactMessage);
-        }        
+        }
     }
 
     public async Task SendSiteContactMessage(
-        ServiceRequest request, 
-        string fromAddress, 
-        string message, 
+        ServiceRequest request,
+        string fromAddress,
+        string message,
         string recaptchaToken)
     {
         ValidateRequest(fromAddress, message);
@@ -173,20 +173,20 @@ public class ContactService : IContactService
     }
 
     public async Task<ServiceResult> StartChapterConversation(
-        MemberServiceRequest request, 
-        Guid chapterId, 
-        string subject, 
-        string message, 
+        MemberServiceRequest request,
+        Guid chapterId,
+        string subject,
+        string message,
         string recaptchaToken)
     {
         var currentMemberId = request.CurrentMemberId;
 
         var (
-            chapter, 
-            currentMember, 
-            memberSubscription, 
-            privacySettings, 
-            membershipSettings, 
+            chapter,
+            currentMember,
+            memberSubscription,
+            privacySettings,
+            membershipSettings,
             adminMembers,
             notificationSettings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(chapterId),
@@ -202,7 +202,7 @@ public class ContactService : IContactService
             return ServiceResult.Failure("Permission denied");
         }
 
-        var result = await _recaptchaService.Verify(recaptchaToken);        
+        var result = await _recaptchaService.Verify(recaptchaToken);
 
         var now = DateTime.UtcNow;
 
@@ -241,10 +241,10 @@ public class ContactService : IContactService
 
         await _memberEmailService.SendChapterConversationEmail(
             request,
-            chapter, 
-            conversation, 
-            conversationMessage, 
-            emailMembers.ToArray(), 
+            chapter,
+            conversation,
+            conversationMessage,
+            emailMembers.ToArray(),
             isReply: false);
 
         return ServiceResult.Successful();

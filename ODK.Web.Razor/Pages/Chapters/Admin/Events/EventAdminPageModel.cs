@@ -7,7 +7,7 @@ namespace ODK.Web.Razor.Pages.Chapters.Admin.Events;
 
 public abstract class EventAdminPageModel : AdminPageModel
 {
-    protected EventAdminPageModel(IRequestCache requestCache, IEventAdminService eventAdminService) 
+    protected EventAdminPageModel(IRequestCache requestCache, IEventAdminService eventAdminService)
         : base(requestCache)
     {
         EventAdminService = eventAdminService;
@@ -29,6 +29,6 @@ public abstract class EventAdminPageModel : AdminPageModel
         {
             Response.Redirect($"{ChapterName}/Admin/Events");
             return;
-        }        
+        }
     }
 }

@@ -9,7 +9,7 @@ public class ChapterConversationsAdminPageViewModel
 
     public required IReadOnlyCollection<ChapterConversationDto> Conversations { get; init; }
 
-    public required PlatformType Platform { get; init; }    
+    public required PlatformType Platform { get; init; }
 
     public required ChapterPrivacySettings? PrivacySettings { get; init; }
 

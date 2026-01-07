@@ -1,6 +1,4 @@
-﻿using ODK.Core.Chapters;
-
-namespace ODK.Services.Chapters.ViewModels;
+﻿namespace ODK.Services.Chapters.ViewModels;
 
 public class SuperAdminChaptersViewModel
 {

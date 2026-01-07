@@ -19,7 +19,7 @@ public class EventViewModelService : IEventViewModelService
     private readonly IUnitOfWork _unitOfWork;
 
     public EventViewModelService(
-        IUnitOfWork unitOfWork, 
+        IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService)
     {
         _authorizationService = authorizationService;
@@ -49,11 +49,11 @@ public class EventViewModelService : IEventViewModelService
         var (chapterPrivacySettings, membershipSettings, member, memberSubscription, events) = await _unitOfWork.RunAsync(
             x => x.ChapterPrivacySettingsRepository.GetByChapterId(chapter.Id),
             x => x.ChapterMembershipSettingsRepository.GetByChapterId(chapter.Id),
-            x => currentMemberId != null 
-                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value) 
+            x => currentMemberId != null
+                ? x.MemberRepository.GetByIdOrDefault(currentMemberId.Value)
                 : new DefaultDeferredQuerySingleOrDefault<Member>(),
-            x => currentMemberId != null 
-                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id) 
+            x => currentMemberId != null
+                ? x.MemberSubscriptionRepository.GetByMemberId(currentMemberId.Value, chapter.Id)
                 : new DefaultDeferredQuerySingleOrDefault<MemberSubscription>(),
             x => x.EventRepository.GetByChapterId(chapter.Id, afterUtc));
 
@@ -114,9 +114,9 @@ public class EventViewModelService : IEventViewModelService
             responseSummaryLookup.TryGetValue(@event.Id, out var responseSummary);
 
             var viewModel = new EventResponseViewModel(
-                @event: @event, 
-                venue: canViewVenue ? venue : null, 
-                response: responseType, 
+                @event: @event,
+                venue: canViewVenue ? venue : null,
+                response: responseType,
                 invited: invited,
                 responseSummary: responseSummary);
             viewModels.Add(viewModel);
@@ -181,7 +181,7 @@ public class EventViewModelService : IEventViewModelService
             x => x.ChapterQuestionRepository.ChapterHasQuestions(chapter.Id),
             x => x.ChapterAdminMemberRepository.GetByChapterId(chapter.Id),
             x => x.MemberSiteSubscriptionRepository.GetByChapterId(chapter.Id),
-            x => currentMemberId != null 
+            x => currentMemberId != null
                 ? x.NotificationRepository.GetUnreadByMemberId(currentMemberId.Value, NotificationType.NewEvent, eventId)
                 : new DefaultDeferredQueryMultiple<Notification>());
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 namespace ODK.Web.Common.Components;
+
 public static class MenuItemExtensions
 {
     public static MenuItem? Active(this IEnumerable<MenuItem> items, string? path)

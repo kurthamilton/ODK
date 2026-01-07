@@ -2,7 +2,7 @@
 
 public class TopicPickerGroupFormSubmitViewModel
 {
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     public List<string> SelectedTopics { get; set; } = new();
 

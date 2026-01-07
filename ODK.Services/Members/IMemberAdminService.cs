@@ -5,7 +5,7 @@ using ODK.Services.Members.ViewModels;
 namespace ODK.Services.Members;
 
 public interface IMemberAdminService
-{    
+{
     Task<ServiceResult> ApproveMember(MemberChapterServiceRequest request, Guid memberId);
 
     Task<AdminMemberAdminPageViewModel> GetAdminMemberViewModel(MemberChapterServiceRequest request, Guid memberId);
@@ -57,6 +57,6 @@ public interface IMemberAdminService
     Task<ServiceResult> UpdateMemberImage(MemberChapterServiceRequest request, Guid id,
         UpdateMemberImage model);
 
-    Task<ServiceResult> UpdateMemberSubscription(MemberChapterServiceRequest request, Guid memberId, 
+    Task<ServiceResult> UpdateMemberSubscription(MemberChapterServiceRequest request, Guid memberId,
         UpdateMemberSubscription subscription);
 }

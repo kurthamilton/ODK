@@ -6,5 +6,5 @@ public class PaymentProviderWebhookEvent
 
     public PaymentProviderType PaymentProviderType { get; set; }
 
-    public DateTime ReceivedUtc { get; set; }    
+    public DateTime ReceivedUtc { get; set; }
 }

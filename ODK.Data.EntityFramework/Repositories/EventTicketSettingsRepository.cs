@@ -7,7 +7,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class EventTicketSettingsRepository : WriteRepositoryBase<EventTicketSettings>, IEventTicketSettingsRepository
 {
-    public EventTicketSettingsRepository(OdkContext context) 
+    public EventTicketSettingsRepository(OdkContext context)
         : base(context)
     {
     }

@@ -8,7 +8,7 @@ public interface ILoginHandler
 {
     Task<AuthenticationResult> Impersonate(Guid currentMemberId, Guid memberId);
 
-    Task<AuthenticationResult> Login(string username, string password, 
+    Task<AuthenticationResult> Login(string username, string password,
         bool rememberMe);
 
     Task Logout();

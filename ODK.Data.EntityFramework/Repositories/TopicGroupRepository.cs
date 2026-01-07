@@ -10,7 +10,7 @@ public class TopicGroupRepository : CachingReadWriteRepositoryBase<TopicGroup>, 
 {
     private static readonly EntityCache<Guid, TopicGroup> _cache = new DatabaseEntityCache<TopicGroup>();
 
-    public TopicGroupRepository(OdkContext context) 
+    public TopicGroupRepository(OdkContext context)
         : base(context, _cache)
     {
     }

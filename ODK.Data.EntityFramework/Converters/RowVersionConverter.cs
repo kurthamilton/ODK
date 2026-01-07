@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ODK.Data.EntityFramework.Converters;
+
 internal class RowVersionConverter : ValueConverter<long, byte[]>
 {
     public RowVersionConverter() : base(

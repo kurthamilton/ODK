@@ -43,7 +43,7 @@ public class EventCreateModel : AdminPageModel
             Time = viewModel.Time,
             VenueId = viewModel.Venue
         }, viewModel.Draft);
-        
+
         if (!result.Success)
         {
             AddFeedback(new FeedbackViewModel(result));

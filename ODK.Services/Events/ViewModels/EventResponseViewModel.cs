@@ -6,8 +6,8 @@ namespace ODK.Services.Events.ViewModels;
 public class EventResponseViewModel
 {
     public EventResponseViewModel(
-        Event @event, 
-        Venue? venue, 
+        Event @event,
+        Venue? venue,
         EventResponseType response,
         bool invited,
         EventResponseSummaryDto? responseSummary)

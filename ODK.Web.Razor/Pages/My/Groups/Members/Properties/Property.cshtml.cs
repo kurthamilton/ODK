@@ -39,7 +39,7 @@ public class PropertyModel : OdkGroupAdminPageModel
         AddFeedback(result, "Property updated");
 
         if (!result.Success)
-        {            
+        {
             return Page();
         }
 

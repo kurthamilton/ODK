@@ -8,17 +8,17 @@ public class SiteEmailSettingsViewModel
     [DisplayName("Contact Address")]
     [EmailAddress]
     [Required]
-    public string ContactEmailAddress { get; set; } = "";
+    public string ContactEmailAddress { get; set; } = string.Empty;
 
     [DisplayName("From Address")]
     [EmailAddress]
     [Required]
-    public string FromEmailAddress { get; set; } = "";
+    public string FromEmailAddress { get; set; } = string.Empty;
 
     [DisplayName("From Name")]
     [Required]
-    public string FromEmailName { get; set; } = "";
+    public string FromEmailName { get; set; } = string.Empty;
 
     [Required]
-    public string Title { get; set; } = "";
+    public string Title { get; set; } = string.Empty;
 }

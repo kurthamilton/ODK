@@ -1,4 +1,5 @@
 ﻿namespace ODK.Core.Members;
+
 public class MemberChapterPrivacySettings
 {
     public Guid ChapterId { get; set; }

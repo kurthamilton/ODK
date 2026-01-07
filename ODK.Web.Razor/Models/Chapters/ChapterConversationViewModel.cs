@@ -11,7 +11,7 @@ public class ChapterConversationViewModel
 
     public required Guid MemberId { get; init; }
 
-    public required IReadOnlyCollection<ChapterConversationMessage> Messages { get; init; }    
+    public required IReadOnlyCollection<ChapterConversationMessage> Messages { get; init; }
 
     public TimeZoneInfo? TimeZone => CurrentMember.TimeZone ?? Chapter.TimeZone;
 }

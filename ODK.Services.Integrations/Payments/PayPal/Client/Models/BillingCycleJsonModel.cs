@@ -15,7 +15,7 @@ public class BillingCycleJsonModel
     public int Sequence { get; set; }
 
     [JsonPropertyName("tenure_type")]
-    public string TenureType { get; set; } = "";
+    public string TenureType { get; set; } = string.Empty;
 
     [JsonPropertyName("total_cycles")]
     public int TotalCycles { get; set; }

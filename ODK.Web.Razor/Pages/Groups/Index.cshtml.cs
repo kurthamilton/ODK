@@ -8,11 +8,11 @@ public class IndexModel : OdkPageModel
 
     public string? DistanceUnit { get; private set; }
 
-    public double? Lat {  get; private set; }
+    public double? Lat { get; private set; }
 
     public double? Long { get; private set; }
 
-    public string? LocationName { get; private set; }        
+    public string? LocationName { get; private set; }
 
     public string? TopicGroup { get; private set; }
 

@@ -5,8 +5,8 @@ namespace ODK.Web.Razor.Models.SuperAdmin;
 public class FeatureFormViewModel
 {
     [Required]
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
     [Required]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 }

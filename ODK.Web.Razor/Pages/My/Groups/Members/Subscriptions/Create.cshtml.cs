@@ -38,7 +38,7 @@ public class CreateModel : OdkGroupAdminPageModel
 
         if (!result.Success)
         {
-            return Page();            
+            return Page();
         }
 
         var chapter = await _chapterAdminService.GetChapter(AdminServiceRequest);

@@ -13,7 +13,7 @@ namespace ODK.Services.Events;
 
 public class EventService : IEventService
 {
-    private static readonly Regex HideCommentRegex = new Regex("http://|https://|<script>.*</script>|<img", 
+    private static readonly Regex HideCommentRegex = new Regex("http://|https://|<script>.*</script>|<img",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private readonly IAuthorizationService _authorizationService;
@@ -21,7 +21,7 @@ public class EventService : IEventService
     private readonly IPaymentProviderFactory _paymentProviderFactory;
     private readonly IUnitOfWork _unitOfWork;
 
-    public EventService(IUnitOfWork unitOfWork,       
+    public EventService(IUnitOfWork unitOfWork,
         IAuthorizationService authorizationService,
         IMemberEmailService memberEmailService,
         IPaymentProviderFactory paymentProviderFactory)
@@ -42,12 +42,12 @@ public class EventService : IEventService
 
         var (chapter, settings) = await _unitOfWork.RunAsync(
             x => x.ChapterRepository.GetById(@event.ChapterId),
-            x => x.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId));        
+            x => x.ChapterEventSettingsRepository.GetByChapterId(@event.ChapterId));
 
         if (settings?.DisableComments == true || !@event.CanComment || !@event.IsAuthorized(member))
         {
             return ServiceResult.Failure("You cannot comment on this event");
-        }        
+        }
 
         if (string.IsNullOrWhiteSpace(comment))
         {
@@ -55,7 +55,7 @@ public class EventService : IEventService
         }
 
         EventComment? parentComment = null;
-        Member? parentCommentMember = null;        
+        Member? parentCommentMember = null;
         if (parentEventCommentId != null)
         {
             parentComment = await _unitOfWork.EventCommentRepository.GetByIdOrDefault(parentEventCommentId.Value).Run();
@@ -85,10 +85,10 @@ public class EventService : IEventService
         await _unitOfWork.SaveChangesAsync();
 
         await _memberEmailService.SendEventCommentEmail(
-            request, 
-            chapter, 
-            @event, 
-            eventComment, 
+            request,
+            chapter,
+            @event,
+            eventComment,
             parentCommentMember);
 
         return ServiceResult.Successful();
@@ -104,7 +104,7 @@ public class EventService : IEventService
     public async Task<ServiceResult> PayDeposit(Guid currentMemberId, Guid eventId, string cardToken)
     {
         var (member, memberResponse, @event, numberOfAttendees, ticketPurchase) = await _unitOfWork.RunAsync(
-            x => x.MemberRepository.GetById(currentMemberId),           
+            x => x.MemberRepository.GetById(currentMemberId),
             x => x.EventResponseRepository.GetByMemberId(currentMemberId, eventId),
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetNumberOfAttendees(eventId),
@@ -131,9 +131,9 @@ public class EventService : IEventService
             sitePaymentSettings,
             chapterPaymentSettings,
             chapterPaymentAccount,
-            ownerSubscription, 
-            membershipSettings, 
-            privacySettings, 
+            ownerSubscription,
+            membershipSettings,
+            privacySettings,
             memberSubscription) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(chapterId),
@@ -149,11 +149,11 @@ public class EventService : IEventService
         }
 
         var validationResult = MemberCanAttendEvent(
-            @event, 
+            @event,
             member,
             memberResponse,
-            memberSubscription, 
-            membershipSettings, 
+            memberSubscription,
+            membershipSettings,
             privacySettings);
         if (!validationResult.Success)
         {
@@ -267,11 +267,11 @@ public class EventService : IEventService
 
         var (
             sitePaymentSettings,
-            chapterPaymentSettings, 
+            chapterPaymentSettings,
             chapterPaymentAccount,
-            ownerSubscription, 
-            membershipSettings, 
-            privacySettings, 
+            ownerSubscription,
+            membershipSettings,
+            privacySettings,
             memberSubscription) = await _unitOfWork.RunAsync(
             x => x.SitePaymentSettingsRepository.GetAll(),
             x => x.ChapterPaymentSettingsRepository.GetByChapterId(@event.ChapterId),
@@ -287,11 +287,11 @@ public class EventService : IEventService
         }
 
         var validationResult = MemberCanAttendEvent(
-            @event, 
-            member, 
+            @event,
+            member,
             memberResponse,
-            memberSubscription, 
-            membershipSettings, 
+            memberSubscription,
+            membershipSettings,
             privacySettings);
         if (!validationResult.Success)
         {
@@ -347,7 +347,7 @@ public class EventService : IEventService
             x => x.EventRepository.GetById(eventId),
             x => x.EventResponseRepository.GetByMemberId(memberId, eventId),
             x => x.EventResponseRepository.GetNumberOfAttendees(eventId));
-        
+
         if (memberResponse?.Type == responseType)
         {
             return ServiceResult.Successful();
@@ -364,11 +364,11 @@ public class EventService : IEventService
             x => x.MemberSubscriptionRepository.GetByMemberId(memberId, @event.ChapterId));
 
         var validationResult = MemberCanAttendEvent(
-            @event, 
-            member, 
+            @event,
+            member,
             memberResponse,
-            memberSubscription, 
-            membershipSettings, 
+            memberSubscription,
+            membershipSettings,
             privacySettings);
         if (!validationResult.Success)
         {
@@ -428,7 +428,7 @@ public class EventService : IEventService
             EventResponseType.Maybe,
             EventResponseType.None
         };
-        
+
         return validResponseTypes.Contains(responseType)
             ? responseType
             : EventResponseType.None;
@@ -496,17 +496,17 @@ public class EventService : IEventService
     }
 
     private ServiceResult MemberCanAttendEvent(
-        Event @event, 
-        Member? member, 
+        Event @event,
+        Member? member,
         EventResponse? memberResponse,
-        MemberSubscription? subscription, 
+        MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings)
     {
         if (@event.Date < DateTime.Today)
         {
             return ServiceResult.Failure("Past events cannot be responded to");
-        }        
+        }
 
         return _authorizationService.CanRespondToEvent(@event, member, subscription, membershipSettings, privacySettings)
             ? ServiceResult.Successful()

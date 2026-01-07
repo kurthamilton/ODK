@@ -10,6 +10,6 @@ public class ExternalSubscriptionPlan
     public required string ExternalProductId { get; init; }
     public required SiteSubscriptionFrequency Frequency { get; init; }
     public required string Name { get; init; }
-    public int NumberOfMonths { get; init; }    
+    public int NumberOfMonths { get; init; }
     public required bool Recurring { get; init; }
 }

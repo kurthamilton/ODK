@@ -7,7 +7,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class PaymentProviderWebhookEventRepository : WriteRepositoryBase<PaymentProviderWebhookEvent>, IPaymentProviderWebhookEventRepository
 {
-    public PaymentProviderWebhookEventRepository(OdkContext context) 
+    public PaymentProviderWebhookEventRepository(OdkContext context)
         : base(context)
     {
     }
@@ -17,5 +17,5 @@ public class PaymentProviderWebhookEventRepository : WriteRepositoryBase<Payment
         => Set()
             .Where(x => x.PaymentProviderType == paymentProviderType && x.ExternalId == externalId)
             .DeferredSingleOrDefault();
-            
+
 }

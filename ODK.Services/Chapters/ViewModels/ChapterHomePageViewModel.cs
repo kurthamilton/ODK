@@ -19,7 +19,7 @@ public class ChapterHomePageViewModel : ChapterViewModelBase
 
     public required ChapterLinks? Links { get; init; }
 
-    public required ChapterTexts? Texts { get; init; }    
+    public required ChapterTexts? Texts { get; init; }
 
     public required IReadOnlyCollection<Topic> Topics { get; init; }
 }

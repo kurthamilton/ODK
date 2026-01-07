@@ -3,7 +3,6 @@ using ODK.Core.Chapters;
 using ODK.Core.Members;
 using ODK.Core.Platforms;
 using ODK.Data.Core;
-using ODK.Data.Core.Repositories;
 using ODK.Services.Users.ViewModels;
 
 namespace ODK.Services.Users;
@@ -19,7 +18,7 @@ public class AccountViewModelService : IAccountViewModelService
     {
         _settings = settings;
         _unitOfWork = unitOfWork;
-    }    
+    }
 
     public async Task<AccountCreatePageViewModel> GetAccountCreatePage()
     {
@@ -49,7 +48,7 @@ public class AccountViewModelService : IAccountViewModelService
             Chapter = chapter,
             CurrentMember = member
         };
-    }         
+    }
 
     public async Task<ChapterJoinPageViewModel> GetChapterJoinPage(
         ServiceRequest request, string chapterName)
@@ -58,7 +57,7 @@ public class AccountViewModelService : IAccountViewModelService
 
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
         OdkAssertions.Exists(chapter, $"Chapter not found: '{chapterName}'");
-        
+
         var (
                 chapterProperties,
                 chapterPropertyOptions,
@@ -73,10 +72,10 @@ public class AccountViewModelService : IAccountViewModelService
             Chapter = chapter,
             Profile = CreateProfileFormViewModel(
                 request.Platform,
-                chapter, 
-                chapterProperties, 
-                chapterPropertyOptions, 
-                null, 
+                chapter,
+                chapterProperties,
+                chapterPropertyOptions,
+                null,
                 []),
             Texts = chapterTexts
         };
@@ -116,7 +115,7 @@ public class AccountViewModelService : IAccountViewModelService
     }
 
     public async Task<ChapterProfilePageViewModel> GetChapterProfilePage(MemberServiceRequest request, string chapterName)
-    {        
+    {
         var (currentMemberId, platform) = (request.CurrentMemberId, request.Platform);
 
         var chapter = await _unitOfWork.ChapterRepository.GetByName(chapterName).Run();
@@ -239,7 +238,7 @@ public class AccountViewModelService : IAccountViewModelService
 
     private ChapterProfileFormViewModel CreateProfileFormViewModel(
         PlatformType platform,
-        Chapter chapter, 
+        Chapter chapter,
         IReadOnlyCollection<ChapterProperty> chapterProperties,
         IReadOnlyCollection<ChapterPropertyOption> chapterPropertyOptions,
         Member? member,
@@ -251,11 +250,11 @@ public class AccountViewModelService : IAccountViewModelService
         {
             ChapterName = chapter.GetDisplayName(platform),
             ChapterProperties = chapterProperties,
-            ChapterPropertyOptions = chapterPropertyOptions,            
+            ChapterPropertyOptions = chapterPropertyOptions,
             Properties = chapterProperties.Select(x => new ChapterProfileFormPropertyViewModel
             {
                 ChapterPropertyId = x.Id,
-                Value = memberPropertyDictionary.TryGetValue(x.Id, out var memberProperty) ? memberProperty.Value : ""
+                Value = memberPropertyDictionary.TryGetValue(x.Id, out var memberProperty) ? memberProperty.Value : string.Empty
             }).ToList()
         };
     }

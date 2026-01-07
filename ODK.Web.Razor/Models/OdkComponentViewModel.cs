@@ -11,14 +11,14 @@ public abstract class OdkComponentViewModel
     private readonly Lazy<ServiceRequest> _serviceRequest;
 
     protected OdkComponentViewModel(OdkComponentContext context)
-    {        
+    {
         Context = context;
         HttpRequestContext = context.HttpRequestContext;
         Platform = context.Platform;
 
         _memberServiceRequest =
             new(() => new MemberServiceRequest(
-                Context.CurrentMemberIdOrDefault ?? throw new OdkNotAuthorizedException(), 
+                Context.CurrentMemberIdOrDefault ?? throw new OdkNotAuthorizedException(),
                 ServiceRequest));
         _serviceRequest = new(() => new ServiceRequest(HttpRequestContext, Platform));
     }
@@ -33,6 +33,6 @@ public abstract class OdkComponentViewModel
 
     public ServiceRequest ServiceRequest => _serviceRequest.Value;
 
-    public MemberChapterServiceRequest MemberChapterServiceRequest(Guid chapterId) 
+    public MemberChapterServiceRequest MemberChapterServiceRequest(Guid chapterId)
         => new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
 }

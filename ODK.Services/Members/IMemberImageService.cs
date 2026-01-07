@@ -3,7 +3,7 @@
 namespace ODK.Services.Members;
 
 public interface IMemberImageService
-{    
+{
     void RotateMemberImage(
         MemberImage image,
         MemberAvatar avatar);

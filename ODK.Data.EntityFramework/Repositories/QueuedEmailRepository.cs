@@ -5,7 +5,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class QueuedEmailRepository : ReadWriteRepositoryBase<QueuedEmail>, IQueuedEmailRepository
 {
-    public QueuedEmailRepository(OdkContext context) 
+    public QueuedEmailRepository(OdkContext context)
         : base(context)
     {
     }

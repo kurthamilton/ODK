@@ -9,7 +9,7 @@ public abstract class OdkGroupPageModel : OdkPageModel
     public string Slug { get; private set; } = null!;
 
     public override async Task OnPageHandlerExecutionAsync(
-        PageHandlerExecutingContext context, 
+        PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
     {
         var slug = ChapterPageContext.GetChapterSlug(HttpContext);

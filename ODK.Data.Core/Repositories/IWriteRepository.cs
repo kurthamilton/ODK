@@ -1,4 +1,5 @@
 ﻿namespace ODK.Data.Core.Repositories;
+
 public interface IWriteRepository<T>
 {
     void Add(T entity);

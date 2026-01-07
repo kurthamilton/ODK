@@ -4,9 +4,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class ChapterMembershipSettingsRepository : WriteRepositoryBase<ChapterMembershipSettings>, IChapterMembershipSettingsRepository
 {
-    public ChapterMembershipSettingsRepository(OdkContext context) 
+    public ChapterMembershipSettingsRepository(OdkContext context)
         : base(context)
     {
     }

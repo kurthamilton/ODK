@@ -40,7 +40,7 @@ public struct LatLong
         var dLat = (lat2 - lat1) * Math.PI / 180; // Δφ 
         var dLon = (lon2 - lon1) * Math.PI / 180; // Δλ
 
-        var a = 
+        var a =
             Math.Pow(Math.Sin(dLat / 2), 2) +
             Math.Cos(t1) * Math.Cos(t2) *
             Math.Pow(Math.Sin(dLon / 2), 2);

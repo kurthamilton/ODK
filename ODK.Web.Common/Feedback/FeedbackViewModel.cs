@@ -13,7 +13,7 @@ public enum FeedbackType
 public class FeedbackViewModel
 {
     public FeedbackViewModel(ServiceResult serviceResult)
-        : this(serviceResult.Message ?? "", serviceResult.Success ? FeedbackType.Success : FeedbackType.Error)
+        : this(serviceResult.Message ?? string.Empty, serviceResult.Success ? FeedbackType.Success : FeedbackType.Error)
     {
     }
 

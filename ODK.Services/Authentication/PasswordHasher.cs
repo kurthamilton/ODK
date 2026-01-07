@@ -33,16 +33,16 @@ public class PasswordHasher : IPasswordHasher
         var base64PasswordHash = Convert.ToBase64String(passwordHash);
 
         return (base64PasswordHash, options);
-    }    
+    }
 
     public bool ShouldUpdate(IHashedPassword hashed)
         => hashed.Algorithm != _settings.Algorithm || hashed.Iterations != _settings.Iterations;
 
-    private byte[] ComputeHashBytes(string plainText, IHashedPasswordOptions options) 
+    private byte[] ComputeHashBytes(string plainText, IHashedPasswordOptions options)
         => Rfc2898DeriveBytes.Pbkdf2(
             plainText,
             Convert.FromBase64String(options.Salt),
-            options.Iterations, 
+            options.Iterations,
             new HashAlgorithmName(options.Algorithm),
             HashByteSize);
 

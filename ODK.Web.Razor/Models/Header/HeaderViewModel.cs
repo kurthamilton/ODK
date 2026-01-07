@@ -2,7 +2,7 @@
 
 public class HeaderViewModel : OdkComponentViewModel
 {
-    public HeaderViewModel(OdkComponentContext context) 
+    public HeaderViewModel(OdkComponentContext context)
         : base(context)
     {
     }

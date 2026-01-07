@@ -7,7 +7,7 @@ namespace ODK.Web.Common.Routes;
 public class MemberGroupRoutes
 {
     public string Event(PlatformType platform, Chapter chapter, Guid eventId)
-        => $"{Events(platform, chapter)}/{eventId}";    
+        => $"{Events(platform, chapter)}/{eventId}";
 
     public string EventCreate(PlatformType platform, Chapter chapter) => platform switch
     {
@@ -21,7 +21,7 @@ public class MemberGroupRoutes
     public string EventResponses(PlatformType platform, Chapter chapter, Guid eventId)
         => $"{Events(platform, chapter)}/{@eventId}/responses";
 
-    public string Events(PlatformType platform, Chapter chapter) => 
+    public string Events(PlatformType platform, Chapter chapter) =>
         $"{Group(platform, chapter)}/events";
 
     public string EventSettings(PlatformType platform, Chapter chapter)
@@ -45,7 +45,7 @@ public class MemberGroupRoutes
         _ => $"{Group(platform, chapter)}/conversations"
     };
 
-    public string GroupConversationsRead(PlatformType platform, Chapter chapter) 
+    public string GroupConversationsRead(PlatformType platform, Chapter chapter)
         => $"{GroupConversations(platform, chapter)}/read";
 
     public string GroupCreate(PlatformType platform) => platform switch
@@ -81,7 +81,7 @@ public class MemberGroupRoutes
         _ => $"{Group(platform, chapter)}/messages"
     };
 
-    public string GroupMessagesSpam(PlatformType platform, Chapter chapter) 
+    public string GroupMessagesSpam(PlatformType platform, Chapter chapter)
         => $"{GroupMessages(platform, chapter)}/spam";
 
     public string GroupPayments(PlatformType platform, Chapter chapter)
@@ -91,7 +91,7 @@ public class MemberGroupRoutes
     {
         PlatformType.DrunkenKnitwits => $"{Group(platform, chapter)}/chapter/privacy",
         _ => $"{Group(platform, chapter)}/privacy"
-    };    
+    };
 
     public string GroupQuestion(PlatformType platform, Chapter chapter, Guid questionId)
         => $"{GroupQuestions(platform, chapter)}/{questionId}";
@@ -156,7 +156,7 @@ public class MemberGroupRoutes
     public string MemberAdmin(PlatformType platform, Chapter chapter, ChapterAdminMember adminMember)
         => $"{MemberAdmins(platform, chapter)}/{adminMember.MemberId}";
 
-    public string MemberAdmins(PlatformType platform, Chapter chapter) 
+    public string MemberAdmins(PlatformType platform, Chapter chapter)
         => $"{Members(platform, chapter)}/admins";
 
     public string MemberApprovals(PlatformType platform, Chapter chapter)
@@ -217,7 +217,7 @@ public class MemberGroupRoutes
         => $"{Members(platform, chapter)}/subscriptions";
 
     public string Venue(PlatformType platform, Chapter chapter, Guid venueId)
-        => $"{Venues(platform, chapter)}/{venueId}";    
+        => $"{Venues(platform, chapter)}/{venueId}";
 
     public string VenueCreate(PlatformType platform, Chapter chapter) => platform switch
     {

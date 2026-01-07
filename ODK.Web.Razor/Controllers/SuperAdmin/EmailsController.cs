@@ -17,7 +17,7 @@ public class EmailsController : OdkControllerBase
     private readonly ISettingsService _settingsService;
 
     public EmailsController(
-        ISettingsService settingsService, 
+        ISettingsService settingsService,
         IEmailAdminService emailAdminService,
         IRequestStore requestStore)
         : base(requestStore)
@@ -47,8 +47,8 @@ public class EmailsController : OdkControllerBase
     {
         await _settingsService.UpdateEmailSettings(
             MemberServiceRequest,
-            viewModel.FromEmailAddress, 
-            viewModel.FromEmailName, 
+            viewModel.FromEmailAddress,
+            viewModel.FromEmailName,
             viewModel.Title,
             viewModel.ContactEmailAddress);
         AddFeedback("Email settings updated", FeedbackType.Success);

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ODK.Core.Messages;
 using ODK.Data.Core.Deferred;
 using ODK.Data.Core.Repositories;
@@ -13,7 +8,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class SiteContactMessageReplyRepository : ReadWriteRepositoryBase<SiteContactMessageReply>, ISiteContactMessageReplyRepository
 {
-    public SiteContactMessageReplyRepository(OdkContext context) 
+    public SiteContactMessageReplyRepository(OdkContext context)
         : base(context)
     {
     }

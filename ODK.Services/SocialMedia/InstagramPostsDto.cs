@@ -2,6 +2,7 @@
 using ODK.Core.SocialMedia;
 
 namespace ODK.Services.SocialMedia;
+
 public class InstagramPostsDto
 {
     public required ChapterLinks Links { get; set; }

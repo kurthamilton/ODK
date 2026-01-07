@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ODK.Core.Chapters;
 using ODK.Core.Payments;
-using ODK.Services;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
 using ODK.Web.Common.Feedback;
@@ -15,7 +14,7 @@ public class ChapterSubscriptionCheckoutConfirmModel : AdminPageModel
 
     public ChapterSubscriptionCheckoutConfirmModel(
         IRequestCache requestCache,
-        IChapterAdminService chapterAdminService) 
+        IChapterAdminService chapterAdminService)
         : base(requestCache)
     {
         _chapterAdminService = chapterAdminService;

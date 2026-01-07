@@ -7,6 +7,7 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Repositories;
 
 namespace ODK.Data.EntityFramework;
+
 public class UnitOfWork : IUnitOfWork
 {
     private readonly OdkContext _context;
@@ -101,7 +102,7 @@ public class UnitOfWork : IUnitOfWork
         _context = context;
         _platformProvider = platformProvider;
 
-        _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));        
+        _chapterAdminMemberRepository = new(() => new ChapterAdminMemberRepository(_context));
         _chapterContactMessageReplyRepository = new(() => new ChapterContactMessageReplyRepository(_context));
         _chapterContactMessageRepository = new(() => new ChapterContactMessageRepository(_context));
         _chapterConversationMessageRepository = new(() => new ChapterConversationMessageRepository(_context));
@@ -169,7 +170,7 @@ public class UnitOfWork : IUnitOfWork
         _paymentCheckoutSessionRepository = new(() => new PaymentCheckoutSessionRepository(_context));
         _paymentProviderWebhookEventRepository = new(() => new PaymentProviderWebhookEventRepository(_context));
         _paymentReconciliationRepository = new(() => new PaymentReconciliationRepository(_context));
-        _paymentRepository = new(() => new PaymentRepository(_context));        
+        _paymentRepository = new(() => new PaymentRepository(_context));
         _queuedEmailRecipientRepository = new(() => new QueuedEmailRecipientRepository(_context));
         _queuedEmailRepository = new(() => new QueuedEmailRepository(_context));
         _sentEmailRepository = new(() => new SentEmailRepository(_context));
@@ -271,7 +272,7 @@ public class UnitOfWork : IUnitOfWork
     public IVenueRepository VenueRepository => _venueRepository.Value;
 
     public async Task<(T1, T2)> RunAsync<T1, T2>(
-        Func<IUnitOfWork, IDeferredQuery<T1>> query1, 
+        Func<IUnitOfWork, IDeferredQuery<T1>> query1,
         Func<IUnitOfWork, IDeferredQuery<T2>> query2)
     {
         var q1 = query1(this);

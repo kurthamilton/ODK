@@ -4,7 +4,7 @@ namespace ODK.Web.Razor.Pages.SuperAdmin.Subscriptions;
 
 public class SubscriptionModel : SuperAdminPageModel
 {
-    public SubscriptionModel(IRequestCache requestCache) 
+    public SubscriptionModel(IRequestCache requestCache)
         : base(requestCache)
     {
     }

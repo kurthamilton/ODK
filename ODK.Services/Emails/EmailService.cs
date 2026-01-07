@@ -63,12 +63,12 @@ public class EmailService : IEmailService
             Subject = subject,
             To = to.Select(x => x.ToEmailAddressee()).ToArray(),
         });
-    }    
+    }
 
     public async Task SendEventCommentEmail(
         ServiceRequest request,
-        Chapter chapter, 
-        Member? replyToMember, 
+        Chapter chapter,
+        Member? replyToMember,
         EventComment comment,
         IDictionary<string, string> parameters)
     {
@@ -96,17 +96,17 @@ public class EmailService : IEmailService
     }
 
     public Task<ServiceResult> SendEmail(
-        ServiceRequest request, 
-        Chapter? chapter, 
-        EmailAddressee to, 
+        ServiceRequest request,
+        Chapter? chapter,
+        EmailAddressee to,
         EmailType type,
         IDictionary<string, string> parameters)
         => SendEmail(request, chapter, [to], type, parameters);
 
     public async Task<ServiceResult> SendEmail(
-        ServiceRequest request, 
-        Chapter? chapter, 
-        IEnumerable<EmailAddressee> to, 
+        ServiceRequest request,
+        Chapter? chapter,
+        IEnumerable<EmailAddressee> to,
         EmailType type,
         IDictionary<string, string> parameters)
     {
@@ -122,20 +122,20 @@ public class EmailService : IEmailService
     }
 
     public async Task<ServiceResult> SendEmail(
-        ServiceRequest request, 
-        Chapter? chapter, 
-        IEnumerable<EmailAddressee> to, 
-        string subject, 
+        ServiceRequest request,
+        Chapter? chapter,
+        IEnumerable<EmailAddressee> to,
+        string subject,
         string body)
     {
         return await SendEmail(request, chapter, to, subject, body, new Dictionary<string, string>());
     }
 
     public async Task<ServiceResult> SendEmail(
-        ServiceRequest request, 
-        Chapter? chapter, 
-        IEnumerable<EmailAddressee> to, 
-        string subject, 
+        ServiceRequest request,
+        Chapter? chapter,
+        IEnumerable<EmailAddressee> to,
+        string subject,
         string body,
         IDictionary<string, string> parameters)
     {
@@ -210,7 +210,7 @@ public class EmailService : IEmailService
 
         var provider = GetProvider(siteProviders, chapterProviders, siteSummary, chapterSummary);
         var emailClient = _emailClientFactory.Create(provider.Type);
-        
+
         var result = await emailClient.SendEmail(provider, email);
 
         if (!result.Success)
@@ -291,7 +291,7 @@ public class EmailService : IEmailService
             x => x.EmailRepository.GetAll(),
             x => chapterId != null
                 ? x.ChapterEmailRepository.GetByChapterId(chapterId.Value)
-                : new DefaultDeferredQueryMultiple<ChapterEmail>(),            
+                : new DefaultDeferredQueryMultiple<ChapterEmail>(),
             x => x.SiteEmailSettingsRepository.Get(platform));
 
         var layoutEmail = chapterEmails.FirstOrDefault(x => x.Type == EmailType.Layout)?.ToEmail()
@@ -304,7 +304,7 @@ public class EmailService : IEmailService
         var parameters = options.Parameters ?? new Dictionary<string, string>();
         if (!parameters.ContainsKey("chapter.name"))
         {
-            parameters["chapter.name"] = options.Chapter?.GetDisplayName(platform) ?? "";
+            parameters["chapter.name"] = options.Chapter?.GetDisplayName(platform) ?? string.Empty;
         }
 
         var urlProvider = _urlProviderFactory.Create(request);
@@ -324,11 +324,11 @@ public class EmailService : IEmailService
 
         var subject = !string.IsNullOrEmpty(options.Subject)
             ? options.Subject
-            : bodyEmail?.Subject ?? "";
+            : bodyEmail?.Subject ?? string.Empty;
 
         var body = !string.IsNullOrEmpty(options.Body)
             ? options.Body
-            : bodyEmail?.HtmlContent ?? "";
+            : bodyEmail?.HtmlContent ?? string.Empty;
         body = body.Interpolate(parameters.AsReadOnly(), HttpUtility.HtmlEncode);
 
         foreach (var htmlParameter in parameters.Where(x => x.Key.StartsWith("html:")))
@@ -367,7 +367,7 @@ public class EmailService : IEmailService
         }
 
         await _unitOfWork.SaveChangesAsync();
-        
+
         _backgroundTaskService.Enqueue(() => SendQueuedEmailTask(queuedEmail.Id, chapterId));
 
         return ServiceResult.Successful();

@@ -7,5 +7,5 @@ public interface IEmailRepository : IWriteRepository<Email>
 {
     IDeferredQueryMultiple<Email> GetAll();
 
-    IDeferredQuerySingle<Email> GetByType(EmailType type);    
+    IDeferredQuerySingle<Email> GetByType(EmailType type);
 }

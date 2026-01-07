@@ -9,5 +9,5 @@ public class LocationFormViewModel : LocationPickerViewModel
     [DisplayName("Show distances in")]
     public Guid? DistanceUnit { get; set; }
 
-    public IReadOnlyCollection<DistanceUnit> DistanceUnitOptions { get; set; } = [];    
+    public IReadOnlyCollection<DistanceUnit> DistanceUnitOptions { get; set; } = [];
 }

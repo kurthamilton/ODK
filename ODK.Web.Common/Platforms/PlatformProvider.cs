@@ -1,7 +1,7 @@
-﻿using ODK.Core.Platforms;
-using ODK.Core.Web;
-using System;
+﻿using System;
 using System.Linq;
+using ODK.Core.Platforms;
+using ODK.Core.Web;
 
 namespace ODK.Web.Common.Platforms;
 
@@ -12,7 +12,7 @@ public class PlatformProvider : IPlatformProvider
     private readonly IHttpRequestContextProvider _httpRequestProvider;
     private readonly PlatformProviderSettings _settings;
 
-    public PlatformProvider(PlatformProviderSettings settings, 
+    public PlatformProvider(PlatformProviderSettings settings,
         IHttpRequestContextProvider httpRequestProvider)
     {
         _httpRequestProvider = httpRequestProvider;

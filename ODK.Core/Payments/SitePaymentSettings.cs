@@ -18,7 +18,7 @@ public class SitePaymentSettings : IDatabaseEntity, IPaymentSettings
 
     public string Name { get; set; } = string.Empty;
 
-    public PaymentProviderType Provider { get; set; }    
+    public PaymentProviderType Provider { get; set; }
 
     PaymentProviderType? IPaymentSettings.Provider => Provider;
 }

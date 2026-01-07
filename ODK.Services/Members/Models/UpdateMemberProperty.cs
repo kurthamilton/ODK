@@ -6,7 +6,7 @@ public class UpdateMemberProperty
 {
     public Guid ChapterPropertyId { get; set; }
 
-    public string Value { get; set; } = "";
+    public string Value { get; set; } = string.Empty;
 
     public MemberProperty ToMemberProperty(Guid memberId) => new MemberProperty
     {

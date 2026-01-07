@@ -14,7 +14,7 @@ public abstract class AdminPageModel : ChapterPageModel2
     private readonly Lazy<MemberChapterServiceRequest> _adminServiceRequest;
     private readonly IRequestCache _requestCache;
 
-    protected AdminPageModel(IRequestCache requestCache) 
+    protected AdminPageModel(IRequestCache requestCache)
     {
         _adminServiceRequest = new(() => new MemberChapterServiceRequest(Chapter.Id, MemberServiceRequest));
         _requestCache = requestCache;
@@ -24,7 +24,7 @@ public abstract class AdminPageModel : ChapterPageModel2
 
     public Chapter Chapter { get; set; } = null!;
 
-    public Member CurrentMember { get; private set; } = null!;    
+    public Member CurrentMember { get; private set; } = null!;
 
     protected async Task<MemberChapterServiceRequest> GetAdminServiceRequest()
     {
@@ -33,15 +33,15 @@ public abstract class AdminPageModel : ChapterPageModel2
         return AdminServiceRequest;
     }
 
-    public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, 
+    public override async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context,
         PageHandlerExecutionDelegate next)
-    {        
+    {
         await base.OnPageHandlerExecutionAsync(context, next);
 
         await LoadChapter();
         var member = await _requestCache.GetMemberAsync(CurrentMemberId);
         OdkAssertions.Exists(member);
-        CurrentMember = member;        
+        CurrentMember = member;
     }
 
     protected async Task<Chapter> LoadChapter()

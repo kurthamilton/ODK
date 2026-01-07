@@ -4,9 +4,10 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class ChapterEmailRepository : ReadWriteRepositoryBase<ChapterEmail>, IChapterEmailRepository
 {
-    public ChapterEmailRepository(OdkContext context) 
+    public ChapterEmailRepository(OdkContext context)
         : base(context)
     {
     }

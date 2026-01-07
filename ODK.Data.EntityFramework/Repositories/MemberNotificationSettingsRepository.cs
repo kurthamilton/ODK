@@ -9,7 +9,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class MemberNotificationSettingsRepository : WriteRepositoryBase<MemberNotificationSettings>, IMemberNotificationSettingsRepository
 {
-    public MemberNotificationSettingsRepository(OdkContext context) 
+    public MemberNotificationSettingsRepository(OdkContext context)
         : base(context)
     {
     }
@@ -33,8 +33,8 @@ public class MemberNotificationSettingsRepository : WriteRepositoryBase<MemberNo
         .DeferredMultiple();
 
     public IDeferredQuerySingleOrDefault<MemberNotificationSettings> GetByMemberId(
-        Guid memberId, 
-        NotificationType notificationType) 
+        Guid memberId,
+        NotificationType notificationType)
         => Set()
             .Where(x => x.MemberId == memberId && x.NotificationType == notificationType)
             .DeferredSingleOrDefault();

@@ -16,7 +16,7 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
 
     public Guid? CountryId { get; set; }
 
-    public DateTime CreatedUtc { get; set; }    
+    public DateTime CreatedUtc { get; set; }
 
     public int? DisplayOrder { get; set; }
 
@@ -122,5 +122,5 @@ public class Chapter : IDatabaseEntity, ITimeZoneEntity, ICloneable<Chapter>
         ? TimeZoneInfo.ConvertTimeFromUtc(utc, TimeZone)
         : utc;
 
-    public DateTime? ToChapterTime(DateTime? utc) => utc != null ? ToChapterTime(utc.Value) : null;    
+    public DateTime? ToChapterTime(DateTime? utc) => utc != null ? ToChapterTime(utc.Value) : null;
 }

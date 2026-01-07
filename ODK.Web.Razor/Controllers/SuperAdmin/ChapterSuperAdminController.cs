@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ODK.Core.Countries;
 using ODK.Services.Authentication;
 using ODK.Services.Caching;
 using ODK.Services.Chapters;
@@ -9,7 +8,6 @@ using ODK.Services.Payments.Models;
 using ODK.Web.Common.Feedback;
 using ODK.Web.Razor.Controllers.Admin;
 using ODK.Web.Razor.Models.Chapters.SuperAdmin;
-using ODK.Web.Razor.Models.SuperAdmin;
 using ODK.Web.Razor.Services;
 
 namespace ODK.Web.Razor.Controllers.SuperAdmin;
@@ -21,7 +19,7 @@ public class ChapterSuperAdminController : AdminControllerBase
     private readonly IPaymentAdminService _paymentAdminService;
 
     public ChapterSuperAdminController(
-        IChapterAdminService chapterAdminService, 
+        IChapterAdminService chapterAdminService,
         IRequestCache requestCache,
         IPaymentAdminService paymentAdminService,
         IRequestStore requestStore)
@@ -56,7 +54,7 @@ public class ChapterSuperAdminController : AdminControllerBase
         await _chapterAdminService.DeleteChapterEmailProvider(request, id);
         AddFeedback("Email provider deleted", FeedbackType.Success);
         return RedirectToReferrer();
-    }    
+    }
 
     [HttpPost("/{chapterName}/Admin/SuperAdmin/Payments/{id:guid}/Reconciliation-Status")]
     public async Task<IActionResult> AddReconciliationExemption(string chapterName, Guid id)

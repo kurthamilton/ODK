@@ -8,11 +8,11 @@ public class OrderJsonModel
     public DateTime Created { get; set; }
 
     [JsonPropertyName("id")]
-    public string Id { get; set; } = "";
+    public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("purchase_units")]
     public PurchaseUnitJsonModel[] PurchaseUnits { get; set; } = Array.Empty<PurchaseUnitJsonModel>();
 
     [JsonPropertyName("status")]
-    public string Status { get; set; } = "";
+    public string Status { get; set; } = string.Empty;
 }

@@ -18,7 +18,7 @@ public class PaymentService : IPaymentService
     private readonly IUnitOfWork _unitOfWork;
 
     public PaymentService(
-        IUnitOfWork unitOfWork, 
+        IUnitOfWork unitOfWork,
         ILoggingService loggingService,
         IMemberEmailService memberEmailService,
         IPaymentProviderFactory paymentProviderFactory)
@@ -48,7 +48,7 @@ public class PaymentService : IPaymentService
         var payment = await _unitOfWork.PaymentRepository.GetById(checkoutSession.PaymentId).Run();
 
         var paymentProvider = _paymentProviderFactory.GetPaymentProvider(
-            chapterPaymentSettings, 
+            chapterPaymentSettings,
             sitePaymentSettings,
             paymentAccount);
 
@@ -130,8 +130,8 @@ public class PaymentService : IPaymentService
             return;
         }
 
-        if (result.Payment != null && 
-            result.Currency != null && 
+        if (result.Payment != null &&
+            result.Currency != null &&
             result.Member != null)
         {
             var siteEmailSettings = await _unitOfWork.SiteEmailSettingsRepository
@@ -140,7 +140,7 @@ public class PaymentService : IPaymentService
 
             await _memberEmailService.SendPaymentNotification(request, member, payment, currency, siteEmailSettings);
         }
-    }    
+    }
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookPayment(PaymentProviderWebhook webhook)
     {
@@ -160,7 +160,7 @@ public class PaymentService : IPaymentService
             var message =
                 $"Received {webhook.PaymentProviderType} webhook '{webhook.Id}' for incomplete event; not processing";
 
-            await _loggingService.Warn(message);;
+            await _loggingService.Warn(message); ;
             return PaymentWebhookProcessingResult.Failure();
         }
 
@@ -190,7 +190,7 @@ public class PaymentService : IPaymentService
         var (member, payment, paymentCheckoutSession) = await _unitOfWork.RunAsync(
             x => x.MemberRepository.GetById(metadata.MemberId.Value),
             x => x.PaymentRepository.GetById(metadata.PaymentId.Value),
-            x => x.PaymentCheckoutSessionRepository.GetById(metadata.PaymentCheckoutSessionId.Value));        
+            x => x.PaymentCheckoutSessionRepository.GetById(metadata.PaymentCheckoutSessionId.Value));
 
         // update payment
         if (payment.PaidUtc != null)
@@ -226,9 +226,9 @@ public class PaymentService : IPaymentService
             member,
             payment,
             externalId: webhook.PaymentId,
-            utcNow);        
+            utcNow);
     }
-    
+
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookChapterSubscription(
         PaymentProviderWebhook webhook,
         PaymentMetadataModel metadata)
@@ -388,7 +388,7 @@ public class PaymentService : IPaymentService
             {
                 Amount = webhook.Amount,
                 CreatedUtc = utcNow,
-                CurrencyId = siteSubscriptionPrice.CurrencyId,                
+                CurrencyId = siteSubscriptionPrice.CurrencyId,
                 Id = Guid.NewGuid(),
                 MemberId = member.Id,
                 Reference = siteSubscription.ToReference(),
@@ -448,7 +448,7 @@ public class PaymentService : IPaymentService
 
     private async Task<PaymentWebhookProcessingResult> ProcessWebhookSubscription(
         ServiceRequest request, PaymentProviderWebhook webhook)
-    {        
+    {
         if (string.IsNullOrEmpty(webhook.SubscriptionId))
         {
             var message =
@@ -496,7 +496,7 @@ public class PaymentService : IPaymentService
     {
         if (metadata.ChapterId == null || metadata.ChapterSubscriptionId == null)
         {
-            var message = 
+            var message =
                 $"ChapterId or ChapterSubscriptionId not on payment metadata; " +
                 $"not updating member chapter subscription";
             await _loggingService.Warn(message);
@@ -525,8 +525,8 @@ public class PaymentService : IPaymentService
                 $"not updating member chapter subscription";
             await _loggingService.Warn(message);
             return PaymentWebhookProcessingResult.Failure();
-        }        
-        
+        }
+
         var (chapterId, memberId) = (chapter.Id, member.Id);
 
         var (memberSubscription, existingMemberSubscriptionRecord) = await _unitOfWork.RunAsync(
@@ -588,7 +588,7 @@ public class PaymentService : IPaymentService
         Payment payment,
         string externalId,
         DateTime utcNow)
-    {        
+    {
         var memberId = member.Id;
 
         var memberSubscription = await _unitOfWork.MemberSiteSubscriptionRepository

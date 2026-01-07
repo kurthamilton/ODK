@@ -8,14 +8,14 @@ public class SubscriptionPlanJsonModel
     public BillingCycleJsonModel[] BillingCycles { get; set; } = [];
 
     [JsonPropertyName("name")]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     [JsonPropertyName("payment_preferences")]
     public PaymentPreferencesJsonModel PaymentPreferences { get; set; } = new();
 
     [JsonPropertyName("product_id")]
-    public string ProductId { get; set; } = "";
+    public string ProductId { get; set; } = string.Empty;
 
     [JsonPropertyName("status")]
-    public string Status { get; set; } = "";
+    public string Status { get; set; } = string.Empty;
 }

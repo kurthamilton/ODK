@@ -3,5 +3,5 @@
 namespace ODK.Web.Razor.Models.SuperAdmin;
 
 public class ChapterLocationFormViewModel : LocationPickerViewModel
-{        
+{
 }

@@ -1,6 +1,7 @@
 ﻿using ODK.Core.Features;
 
 namespace ODK.Services.Features;
+
 public interface IFeatureService
 {
     Task<ServiceResult> AddFeature(Guid currentMemberId, UpdateFeature model);

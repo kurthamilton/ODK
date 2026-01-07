@@ -48,7 +48,7 @@ public class VenueRepository : ReadWriteRepositoryBase<Venue>, IVenueRepository
 
         return query.DeferredMultiple();
     }
-        
+
 
     public IDeferredQuerySingleOrDefault<Venue> GetByName(Guid chapterId, string name) => Set()
         .Where(x => x.ChapterId == chapterId && x.Name == name)

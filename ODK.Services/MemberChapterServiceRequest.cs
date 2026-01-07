@@ -6,7 +6,7 @@ namespace ODK.Services;
 public class MemberChapterServiceRequest : MemberServiceRequest
 {
     public MemberChapterServiceRequest(
-        Guid chapterId, 
+        Guid chapterId,
         Guid currentMemberId,
         IHttpRequestContext httpRequestContext,
         PlatformType platform)

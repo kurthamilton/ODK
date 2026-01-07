@@ -8,7 +8,7 @@ public class MemberPassword : IHashedPassword
 
     public int Iterations { get; set; }
 
-    public Guid MemberId { get; set; }    
+    public Guid MemberId { get; set; }
 
     public string Salt { get; set; } = string.Empty;
 }

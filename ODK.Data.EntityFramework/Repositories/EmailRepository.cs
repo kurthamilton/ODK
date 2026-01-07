@@ -17,5 +17,5 @@ public class EmailRepository : WriteRepositoryBase<Email>, IEmailRepository
 
     public IDeferredQuerySingle<Email> GetByType(EmailType type) => Set()
         .Where(x => x.Type == type)
-        .DeferredSingle();    
+        .DeferredSingle();
 }

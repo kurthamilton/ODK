@@ -3,7 +3,7 @@
 namespace ODK.Services.Members;
 
 public interface IMemberViewModelService
-{    
+{
     Task<MemberPageViewModel> GetGroupMemberPage(MemberServiceRequest request, string slug, Guid memberId);
 
     Task<MembersPageViewModel> GetGroupMembersPage(MemberServiceRequest request, string slug);
@@ -16,5 +16,5 @@ public interface IMemberViewModelService
 
     Task<MemberPageViewModel> GetMemberPage(MemberServiceRequest request, string chapterName, Guid memberId);
 
-    Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, string chapterName);    
+    Task<MembersPageViewModel> GetMembersPage(MemberServiceRequest request, string chapterName);
 }

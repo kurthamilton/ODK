@@ -5,19 +5,20 @@ using ODK.Data.Core.Repositories;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework.Repositories;
+
 public class ChapterPaymentSettingsRepository : WriteRepositoryBase<ChapterPaymentSettings>, IChapterPaymentSettingsRepository
 {
-    public ChapterPaymentSettingsRepository(OdkContext context) 
+    public ChapterPaymentSettingsRepository(OdkContext context)
         : base(context)
     {
     }
 
-    public IDeferredQuerySingle<ChapterPaymentSettings> GetByChapterId(Guid chapterId) 
+    public IDeferredQuerySingle<ChapterPaymentSettings> GetByChapterId(Guid chapterId)
         => Set()
             .Where(x => x.ChapterId == chapterId)
             .DeferredSingle();
 
-    protected override IQueryable<ChapterPaymentSettings> Set() 
+    protected override IQueryable<ChapterPaymentSettings> Set()
         => base.Set()
             .Include(x => x.Currency);
 }

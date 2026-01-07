@@ -7,7 +7,7 @@ public class ChapterPaymentSettings : IChapterEntity, IPaymentSettings
 {
     public string? ApiPublicKey { get; set; }
 
-    public string? ApiSecretKey { get; set; }    
+    public string? ApiSecretKey { get; set; }
 
     public Guid ChapterId { get; set; }
 
@@ -17,8 +17,8 @@ public class ChapterPaymentSettings : IChapterEntity, IPaymentSettings
 
     public string? EmailAddress { get; set; }
 
-    public bool HasApiKey => 
-        !string.IsNullOrEmpty(ApiPublicKey) && 
+    public bool HasApiKey =>
+        !string.IsNullOrEmpty(ApiPublicKey) &&
         !string.IsNullOrEmpty(ApiSecretKey) &&
         Provider != null;
 

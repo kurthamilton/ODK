@@ -2,5 +2,5 @@
 
 public class PaymentsPayPalSettings
 {
-    public string ApiBaseUrl { get; set; } = "";
+    public string ApiBaseUrl { get; set; } = string.Empty;
 }

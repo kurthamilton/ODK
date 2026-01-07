@@ -7,12 +7,12 @@ public class MemberImageService : IMemberImageService
 {
     private readonly IImageService _imageService;
     private readonly MemberImageServiceSettings _settings;
-    
+
     public MemberImageService(IImageService imageService, MemberImageServiceSettings settings)
     {
         _imageService = imageService;
         _settings = settings;
-    }    
+    }
 
     public void RotateMemberImage(
         MemberImage image,

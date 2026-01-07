@@ -9,7 +9,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class SiteSubscriptionPriceRepository : ReadWriteRepositoryBase<SiteSubscriptionPrice>, ISiteSubscriptionPriceRepository
 {
-    public SiteSubscriptionPriceRepository(OdkContext context) 
+    public SiteSubscriptionPriceRepository(OdkContext context)
         : base(context)
     {
     }
@@ -27,7 +27,7 @@ public class SiteSubscriptionPriceRepository : ReadWriteRepositoryBase<SiteSubsc
 
     public IDeferredQueryMultiple<SiteSubscriptionPrice> GetAllEnabled(PlatformType platform)
     {
-        var query = 
+        var query =
             from price in Set()
             from subscription in Set<SiteSubscription>()
                 .Where(x => x.Platform == platform && x.Enabled)

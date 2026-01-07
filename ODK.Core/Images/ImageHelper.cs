@@ -15,7 +15,7 @@ public static class ImageHelper
 
     public static bool TryParseDataUrl(string? dataUrl, [NotNullWhen(true)] out byte[]? bytes)
     {
-        var match = Base64Regex.Match(dataUrl ?? "");
+        var match = Base64Regex.Match(dataUrl ?? string.Empty);
         if (!match.Success)
         {
             bytes = null;

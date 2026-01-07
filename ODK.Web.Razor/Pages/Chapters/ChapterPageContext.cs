@@ -60,12 +60,12 @@ public class ChapterPageContext
     }
 
     public async Task<Member?> GetMemberAsync(Guid? memberId)
-    {       
-       if (!memberId.HasValue)
-       {
+    {
+        if (!memberId.HasValue)
+        {
             return null;
-       }
+        }
 
-       return await _requestCache.GetMemberAsync(memberId.Value);
+        return await _requestCache.GetMemberAsync(memberId.Value);
     }
 }

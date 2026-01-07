@@ -22,7 +22,7 @@ public class EmailModel : AdminPageModel
     public async Task<IActionResult> OnGetAsync(EmailType type)
     {
         var request = await GetAdminServiceRequest();
-        Email = await _emailAdminService.GetChapterEmail(request, type);        
+        Email = await _emailAdminService.GetChapterEmail(request, type);
         return Page();
     }
 

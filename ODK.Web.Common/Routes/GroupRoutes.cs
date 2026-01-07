@@ -10,7 +10,7 @@ public class GroupRoutes
 
     public string Contact(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/contact");
 
-    public string Conversation(PlatformType platform, Chapter chapter, Guid conversationId) 
+    public string Conversation(PlatformType platform, Chapter chapter, Guid conversationId)
         => $"{Conversations(platform, chapter)}/{conversationId}";
 
     public string Conversations(PlatformType platform, Chapter chapter)
@@ -31,13 +31,13 @@ public class GroupRoutes
 
     public string Index(PlatformType platform) => platform switch
     {
-        PlatformType.DrunkenKnitwits => "",
+        PlatformType.DrunkenKnitwits => string.Empty,
         _ => "/groups"
     };
-    
+
     public string Join(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/join");
-    
-    public string Member(PlatformType platform, Chapter chapter, Guid memberId) 
+
+    public string Member(PlatformType platform, Chapter chapter, Guid memberId)
         => $"{Members(platform, chapter)}/{memberId}";
 
     public string Members(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/members");
@@ -45,7 +45,7 @@ public class GroupRoutes
     public string PastEvents(PlatformType platform, Chapter chapter) => $"{Events(platform, chapter)}/past";
 
     public string Profile(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/profile");
-    
+
     public string Questions(PlatformType platform, Chapter chapter) => GroupPath(platform, chapter, "/faq");
 
     public string Subscription(PlatformType platform, Chapter chapter) => platform switch
@@ -57,6 +57,6 @@ public class GroupRoutes
     public string SubscriptionCheckout(PlatformType platform, Chapter chapter, ChapterSubscription subscription)
         => $"{Subscription(platform, chapter)}/{subscription.Id}/checkout";
 
-    private string GroupPath(PlatformType platform, Chapter chapter, string path) 
+    private string GroupPath(PlatformType platform, Chapter chapter, string path)
         => $"{Group(platform, chapter)}{path}";
 }

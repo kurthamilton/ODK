@@ -10,7 +10,7 @@ public static class StringUtils
 
     public static string AlphaNumeric(this string text)
     {
-        return AlphaNumericRegex.Replace(text, "");
+        return AlphaNumericRegex.Replace(text, string.Empty);
     }
 
     public static string Interpolate(this string text, IReadOnlyDictionary<string, string> values,
@@ -22,7 +22,7 @@ public static class StringUtils
 
         foreach (string token in tokens.Where(values.ContainsKey))
         {
-            var value = values[token] ?? "";
+            var value = values[token] ?? string.Empty;
             if (process != null)
             {
                 value = process(value);
@@ -80,10 +80,10 @@ public static class StringUtils
 
     private static void AppendCsvValue(StringBuilder csv, string value)
     {
-        var mustQuote = 
-            value.Contains(',') || 
-            value.Contains('"') || 
-            value.Contains('\r') || 
+        var mustQuote =
+            value.Contains(',') ||
+            value.Contains('"') ||
+            value.Contains('\r') ||
             value.Contains('\n');
         if (!mustQuote)
         {

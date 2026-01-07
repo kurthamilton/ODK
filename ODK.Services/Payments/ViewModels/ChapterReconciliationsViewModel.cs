@@ -11,5 +11,5 @@ public class ChapterReconciliationsViewModel
 
     public required decimal PendingReconciliationsAmount { get; init; }
 
-    public required IReadOnlyCollection<PaymentReconciliation> Reconciliations { get; init; }    
+    public required IReadOnlyCollection<PaymentReconciliation> Reconciliations { get; init; }
 }

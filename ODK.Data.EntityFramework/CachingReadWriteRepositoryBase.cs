@@ -5,6 +5,7 @@ using ODK.Data.EntityFramework.Caching;
 using ODK.Data.EntityFramework.Extensions;
 
 namespace ODK.Data.EntityFramework;
+
 public abstract class CachingReadWriteRepositoryBase<T> : CachingWriteRepositoryBase<T, Guid>, IReadWriteRepository<T>
     where T : class, IDatabaseEntity
 {
@@ -44,8 +45,8 @@ public abstract class CachingReadWriteRepositoryBase<T> : CachingWriteRepository
             () => _cache.Get(id),
             _cache.Set);
 
-    public IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids) => 
-        ids.Count > 0 
+    public IDeferredQueryMultiple<T> GetByIds(IReadOnlyCollection<Guid> ids) =>
+        ids.Count > 0
             ? Set()
                 .Where(x => ids.Contains(x.Id))
                 .DeferredMultiple()

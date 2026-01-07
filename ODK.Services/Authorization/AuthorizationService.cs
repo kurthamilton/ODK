@@ -22,7 +22,7 @@ public class AuthorizationService : IAuthorizationService
         MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings,
         ChapterPrivacySettings? privacySettings)
-    {        
+    {
         var memberVisibility = GetMemberVisibilityType(@event.ChapterId, member, subscription, membershipSettings);
         var responseVisibility = privacySettings?.EventResponseVisibility ?? ChapterFeatureVisibilityType.AllMembers;
         return memberVisibility.CanView(responseVisibility);
@@ -84,7 +84,7 @@ public class AuthorizationService : IAuthorizationService
 
     public SubscriptionStatus GetSubscriptionStatus(
         Member? member,
-        MemberSubscription? subscription, 
+        MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings)
     {
         if (member == null || !member.IsCurrent())
@@ -102,7 +102,7 @@ public class AuthorizationService : IAuthorizationService
             return SubscriptionStatus.Disabled;
         }
 
-        if (subscription.ExpiresUtc == null || 
+        if (subscription.ExpiresUtc == null ||
             membershipSettings.MembershipDisabledAfterDaysExpired <= 0)
         {
             return SubscriptionStatus.Current;
@@ -125,8 +125,8 @@ public class AuthorizationService : IAuthorizationService
         Member? member,
         MemberSubscription? subscription,
         ChapterMembershipSettings? membershipSettings)
-    {        
-        var subscriptionStatus = member?.IsApprovedMemberOf(chapterId) == true 
+    {
+        var subscriptionStatus = member?.IsApprovedMemberOf(chapterId) == true
             ? GetSubscriptionStatus(member, subscription, membershipSettings)
             : SubscriptionStatus.None;
 

@@ -2,6 +2,7 @@
 using ODK.Data.Core.Deferred;
 
 namespace ODK.Data.Core.Repositories;
+
 public interface IChapterPropertyRepository : IReadWriteRepository<ChapterProperty>
 {
     IDeferredQuery<bool> ChapterHasProperties(Guid chapterId);

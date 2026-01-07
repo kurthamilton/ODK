@@ -6,7 +6,7 @@ using ODK.Services;
 namespace ODK.Web.Razor.Pages.Chapters;
 
 public abstract class ChapterPageModel : OdkPageModel
-{    
+{
     public Chapter Chapter { get; private set; } = null!;
 
     public MemberChapterServiceRequest MemberChapterServiceRequest()
@@ -19,7 +19,7 @@ public abstract class ChapterPageModel : OdkPageModel
             .GetChapterAsync(RequestStore.Platform);
         OdkAssertions.Exists(chapter);
 
-        Chapter = chapter;        
+        Chapter = chapter;
 
         await base.OnPageHandlerExecutionAsync(context, next);
     }

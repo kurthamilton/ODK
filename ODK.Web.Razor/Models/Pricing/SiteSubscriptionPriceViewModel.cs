@@ -14,7 +14,7 @@ public class SiteSubscriptionPriceViewModel
 
     public required string ExternalId { get; init; }
 
-    public required SiteSubscriptionFrequency Frequency { get; init; }    
+    public required SiteSubscriptionFrequency Frequency { get; init; }
 
     public required PaymentProviderType Provider { get; init; }
 

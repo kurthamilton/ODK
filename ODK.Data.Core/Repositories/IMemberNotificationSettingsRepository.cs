@@ -7,12 +7,12 @@ namespace ODK.Data.Core.Repositories;
 public interface IMemberNotificationSettingsRepository : IWriteRepository<MemberNotificationSettings>
 {
     public IDeferredQueryMultiple<MemberNotificationSettings> GetByChapterId(
-        Guid chapterId, 
+        Guid chapterId,
         NotificationType notificationType);
 
     public IDeferredQueryMultiple<MemberNotificationSettings> GetByMemberId(Guid memberId);
 
     public IDeferredQuerySingleOrDefault<MemberNotificationSettings> GetByMemberId(
-        Guid memberId, 
+        Guid memberId,
         NotificationType notificationType);
 }

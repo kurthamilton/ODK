@@ -7,7 +7,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class SiteContactMessageRepository : ReadWriteRepositoryBase<SiteContactMessage>, ISiteContactMessageRepository
 {
-    public SiteContactMessageRepository(OdkContext context) 
+    public SiteContactMessageRepository(OdkContext context)
         : base(context)
     {
     }

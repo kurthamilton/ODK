@@ -13,7 +13,7 @@ public class ChapterPrivacySettingsRepository :
 
     private readonly IChapterEntityRepository<ChapterPrivacySettings> _chapterEntityRepository;
 
-    public ChapterPrivacySettingsRepository(OdkContext context) 
+    public ChapterPrivacySettingsRepository(OdkContext context)
         : base(context)
     {
         _chapterEntityRepository = new ChapterEntityRepositoryHelper<ChapterPrivacySettings>(this);

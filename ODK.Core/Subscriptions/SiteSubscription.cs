@@ -59,7 +59,7 @@ public class SiteSubscription : IDatabaseEntity
         {
             yield return SiteFeatureType.MemberSubscriptions;
             yield return SiteFeatureType.Payments;
-        }        
+        }
 
         if (SendMemberEmails)
         {

@@ -12,7 +12,7 @@ public class SmtpEmailClient : IEmailClient
 {
     private readonly ILoggingService _loggingService;
     private readonly SmtpEmailClientSettings _settings;
-    
+
     public SmtpEmailClient(
         ILoggingService loggingService,
         SmtpEmailClientSettings settings)
@@ -29,7 +29,7 @@ public class SmtpEmailClient : IEmailClient
         {
             await _loggingService.Info("Not sending email, no recipients set");
             return new SendEmailResult(false, "No recipients set")
-            { 
+            {
                 ExternalId = null
             };
         }
@@ -42,7 +42,7 @@ public class SmtpEmailClient : IEmailClient
             message.To.Clear();
             message.Cc.Clear();
             message.Bcc.Clear();
-            message.To.Add(new MailboxAddress("", _settings.DebugEmailAddress));
+            message.To.Add(new MailboxAddress(string.Empty, _settings.DebugEmailAddress));
         }
 
         try
@@ -64,11 +64,11 @@ public class SmtpEmailClient : IEmailClient
                 await _loggingService.Error("SMTP email client returned a possible error response");
             }
 
-            await client.DisconnectAsync(true);            
+            await client.DisconnectAsync(true);
 
             await _loggingService.Info($"Email sent to {string.Join(", ", message.To)}");
             return new SendEmailResult(true)
-            { 
+            {
                 ExternalId = smtpResponse.ExternalId
             };
         }

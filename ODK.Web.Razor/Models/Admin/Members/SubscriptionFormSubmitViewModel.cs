@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using ODK.Core.Members;
 
 namespace ODK.Web.Razor.Models.Admin.Members;
 
@@ -11,7 +10,7 @@ public class SubscriptionFormSubmitViewModel
     public double? Amount { get; set; }
 
     [Required]
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
     [DisplayName("Duration (months)")]
     [Required]
@@ -21,10 +20,10 @@ public class SubscriptionFormSubmitViewModel
     public bool Enabled { get; set; }
 
     [Required]
-    public string Name { get; set; } = "";
-    
+    public string Name { get; set; } = string.Empty;
+
     public bool Recurring { get; set; }
 
     [Required]
-    public string Title { get; set; } = "";
+    public string Title { get; set; } = string.Empty;
 }

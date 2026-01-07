@@ -39,7 +39,7 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
     public async Task<ServiceResult> AddEmailProvider(Guid currentMemberId, UpdateEmailProvider model)
     {
-        var existing = await GetSuperAdminRestrictedContent(currentMemberId, 
+        var existing = await GetSuperAdminRestrictedContent(currentMemberId,
             x => x.EmailProviderRepository.GetAll());
 
         var provider = new EmailProvider
@@ -68,10 +68,10 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
     public async Task<ServiceResult> CreatePaymentSettings(
         Guid currentMemberId,
-        PaymentProviderType provider, 
-        string name, 
-        string publicKey, 
-        string secretKey, 
+        PaymentProviderType provider,
+        string name,
+        string publicKey,
+        string secretKey,
         decimal commission,
         bool enabled)
     {
@@ -115,13 +115,13 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
 
     public async Task<SiteSettings> GetSiteSettings()
     {
-        return await _unitOfWork.SiteSettingsRepository.Get().Run();        
+        return await _unitOfWork.SiteSettingsRepository.Get().Run();
     }
 
     public async Task<SiteEmailSettings> GetSiteEmailSettings(PlatformType platform)
     {
         return await _unitOfWork.SiteEmailSettingsRepository.Get(platform).Run();
-    }    
+    }
 
     public async Task<IReadOnlyCollection<SitePaymentSettings>> GetSitePaymentSettings(Guid currentMemberId)
     {
@@ -136,9 +136,9 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
     }
 
     public async Task<ServiceResult> UpdateEmailSettings(
-        MemberServiceRequest request, 
-        string fromEmailAddress, 
-        string fromEmailName, 
+        MemberServiceRequest request,
+        string fromEmailAddress,
+        string fromEmailName,
         string emailTitle,
         string contactEmailAddress)
     {
@@ -194,11 +194,11 @@ public class SettingsService : OdkAdminServiceBase, ISettingsService
     }
 
     public async Task<ServiceResult> UpdatePaymentSettings(
-        Guid currentMemberId, 
-        Guid id, 
-        string name, 
-        string publicKey, 
-        string secretKey, 
+        Guid currentMemberId,
+        Guid id,
+        string name,
+        string publicKey,
+        string secretKey,
         decimal commission,
         bool enabled)
     {

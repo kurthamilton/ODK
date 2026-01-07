@@ -36,7 +36,7 @@ public class ChapterSubscription : IDatabaseEntity, IChapterEntity
     {
         if (Disabled)
         {
-            return false; 
+            return false;
         }
 
         return IsVisibleToAdmins(chapterPaymentSettings, sitePaymentSettings);

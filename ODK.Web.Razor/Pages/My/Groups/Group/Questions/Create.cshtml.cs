@@ -22,7 +22,7 @@ public class CreateModel : OdkGroupAdminPageModel
     public async Task<IActionResult> OnPostAsync(ChapterQuestionFormViewModel model)
     {
         var serviceRequest = MemberChapterServiceRequest(ChapterId);
-        
+
         var result = await _chapterAdminService.CreateChapterQuestion(serviceRequest, new CreateChapterQuestion
         {
             Name = model.Question ?? string.Empty,

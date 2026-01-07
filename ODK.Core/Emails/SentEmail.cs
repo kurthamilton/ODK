@@ -10,7 +10,7 @@ public class SentEmail : IDatabaseEntity
 
     public Guid Id { get; set; }
 
-    public DateTime SentUtc { get; set; }    
+    public DateTime SentUtc { get; set; }
 
     public string Subject { get; set; } = string.Empty;
 

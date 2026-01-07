@@ -1,4 +1,5 @@
 ﻿namespace ODK.Core.Events;
+
 public class EventResponseSummaryDto
 {
     public Guid EventId { get; set; }

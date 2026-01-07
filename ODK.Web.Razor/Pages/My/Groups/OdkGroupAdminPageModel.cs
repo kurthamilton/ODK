@@ -29,7 +29,7 @@ public abstract class OdkGroupAdminPageModel : OdkPageModel
         OdkAssertions.Exists(chapterId, "ChapterId missing");
 
         ChapterId = chapterId.Value;
-        
+
         await base.OnPageHandlerExecutionAsync(context, next);
     }
 

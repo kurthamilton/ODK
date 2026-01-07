@@ -6,9 +6,9 @@ namespace ODK.Services.Media;
 public class MediaFileProvider : IMediaFileProvider
 {
     private readonly MediaFileProviderSettings _settings;
-    
+
     public MediaFileProvider(MediaFileProviderSettings settings)
-    {        
+    {
         _settings = settings;
     }
 

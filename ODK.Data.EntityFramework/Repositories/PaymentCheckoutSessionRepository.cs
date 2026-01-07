@@ -7,7 +7,7 @@ namespace ODK.Data.EntityFramework.Repositories;
 
 public class PaymentCheckoutSessionRepository : ReadWriteRepositoryBase<PaymentCheckoutSession>, IPaymentCheckoutSessionRepository
 {
-    public PaymentCheckoutSessionRepository(OdkContext context) 
+    public PaymentCheckoutSessionRepository(OdkContext context)
         : base(context)
     {
     }

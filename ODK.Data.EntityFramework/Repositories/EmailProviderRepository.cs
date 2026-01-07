@@ -10,7 +10,7 @@ public class EmailProviderRepository : CachingReadWriteRepositoryBase<EmailProvi
 {
     private static readonly EntityCache<Guid, EmailProvider> _cache = new DatabaseEntityCache<EmailProvider>();
 
-    public EmailProviderRepository(OdkContext context) 
+    public EmailProviderRepository(OdkContext context)
         : base(context, _cache)
     {
     }

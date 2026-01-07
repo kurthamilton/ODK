@@ -25,7 +25,7 @@ public class EmailModel : SuperAdminPageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(EmailType type, 
+    public async Task<IActionResult> OnPostAsync(EmailType type,
         [FromForm] ChapterEmailFormViewModel viewModel,
         [FromForm] bool overridable)
     {

@@ -4,7 +4,6 @@ using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ODK.Services.Tasks;
@@ -25,7 +24,7 @@ public class Program
         var (app, appSettings) = BuildApp(args);
 
         // Configure the HTTP request pipeline.
-        app            
+        app
             .UseMiddleware<RateLimitingMiddleware>()
             .UseSerilogRequestLogging()
             .UseMiddleware<ErrorHandlingMiddleware>();
@@ -123,7 +122,7 @@ public class Program
         });
 
         builder.Services.AddControllers();
-        
+
         builder.Services.AddScoped<CustomCookieAuthenticationEvents>();
         builder.Services.AddHttpContextAccessor();
         builder.Services
@@ -132,7 +131,7 @@ public class Program
             {
                 options.EventsType = typeof(CustomCookieAuthenticationEvents);
             });
-        
+
         builder.Services
             .AddScoped<IBackgroundTaskService, HangfireService>()
             .AddScoped<IRequestStore, RequestStore>();

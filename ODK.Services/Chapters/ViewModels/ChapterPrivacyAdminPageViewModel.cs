@@ -2,6 +2,7 @@
 using ODK.Core.Platforms;
 
 namespace ODK.Services.Chapters.ViewModels;
+
 public class ChapterPrivacyAdminPageViewModel
 {
     public required Chapter Chapter { get; init; }

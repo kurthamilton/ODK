@@ -4,7 +4,7 @@ using ODK.Core.Members;
 namespace ODK.Core.Chapters;
 
 public class ChapterAdminMember : IDatabaseEntity
-{    
+{
     public string? AdminEmailAddress { get; set; }
 
     public Guid ChapterId { get; set; }

@@ -17,14 +17,15 @@ public class EventResponseIconViewModel
         _ => null
     };
 
-    public bool ReadOnly { get; set; }    
+    public bool ReadOnly { get; set; }
 
     public EventResponseType? ResponseType { get; set; }
 
-    public string Tooltip => CurrentResponse switch        {
+    public string Tooltip => CurrentResponse switch
+    {
         EventResponseType.Yes => ReadOnly ? "Going" : "Yes",
         EventResponseType.Maybe => ReadOnly ? "Maybe going" : "Maybe",
         EventResponseType.No => ReadOnly ? "Not going" : "No",
-        _ => ""
+        _ => string.Empty
     };
 }

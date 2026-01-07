@@ -62,7 +62,7 @@ public abstract class OdkPageModel : PageModel
     {
         get => ViewData["Title"] as string;
         set => ViewData["Title"] = value;
-    }    
+    }
 
     public MemberChapterServiceRequest MemberChapterServiceRequest(Guid chapterId)
         => new MemberChapterServiceRequest(chapterId, MemberServiceRequest);
@@ -72,7 +72,7 @@ public abstract class OdkPageModel : PageModel
     protected void AddFeedback(string message, FeedbackType type = FeedbackType.Success)
         => AddFeedback(new FeedbackViewModel(message, type));
 
-    protected void AddFeedback(ServiceResult result) 
+    protected void AddFeedback(ServiceResult result)
         => AddFeedback(new FeedbackViewModel(result));
 
     protected void AddFeedback(ServiceResult result, string successMessage)

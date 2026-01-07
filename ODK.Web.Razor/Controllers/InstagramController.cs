@@ -28,7 +28,7 @@ public class InstagramController : OdkControllerBase
     public async Task<IActionResult> GetInstagramImage(string chapterName, Guid id)
     {
         return await HandleVersionedRequest(
-            version => _instagramService.GetInstagramImage(version, id), 
+            version => _instagramService.GetInstagramImage(version, id),
             InstagramImageResult);
     }
 

@@ -2,7 +2,7 @@
 
 public class SendEmailResult : ServiceResult
 {
-    public SendEmailResult(bool success, string message = "") 
+    public SendEmailResult(bool success, string message = "")
         : base(success, message)
     {
     }

@@ -8,8 +8,8 @@ public interface ISiteSubscriptionAdminService
     Task<ServiceResult> AddSiteSubscription(MemberServiceRequest request, SiteSubscriptionCreateModel model);
 
     Task<ServiceResult> AddSiteSubscriptionPrice(
-        MemberServiceRequest request, 
-        Guid siteSubscriptionId, 
+        MemberServiceRequest request,
+        Guid siteSubscriptionId,
         SiteSubscriptionPriceCreateModel model);
 
     Task DeleteSiteSubscriptionPrice(Guid currentMemberId, Guid siteSubscriptionId, Guid siteSubscriptionPriceId);
@@ -24,8 +24,8 @@ public interface ISiteSubscriptionAdminService
     Task MakeDefault(MemberServiceRequest request, Guid siteSubscriptionId);
 
     Task<ServiceResult> UpdateSiteSubscription(
-        MemberServiceRequest request, 
-        Guid siteSubscriptionId, 
+        MemberServiceRequest request,
+        Guid siteSubscriptionId,
         SiteSubscriptionCreateModel model);
 
     Task<ServiceResult> UpdateSiteSubscriptionEnabled(Guid currentMemberId, Guid siteSubscriptionId,

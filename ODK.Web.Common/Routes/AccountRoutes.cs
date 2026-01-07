@@ -11,7 +11,7 @@ public class AccountRoutes : RoutesBase
         => AccountPath(chapter, $"/activate?token={HttpUtility.UrlEncode(token)}");
     public string Conversations(Chapter? chapter) => AccountPath(chapter, "/conversations");
     public string Delete(Chapter? chapter) => AccountPath(chapter, "/delete");
-    public string EmailAddressChange(PlatformType platform, Chapter? chapter) => 
+    public string EmailAddressChange(PlatformType platform, Chapter? chapter) =>
         platform == PlatformType.DrunkenKnitwits
             ? AccountPath(chapter, "/email/change")
             : EmailPreferences(chapter);
@@ -30,7 +30,7 @@ public class AccountRoutes : RoutesBase
     public string PasswordReset(Chapter? chapter, string token)
         => AccountPath(chapter, $"/password/reset?token={HttpUtility.UrlEncode(token)}");
     public string Payments(Chapter? chapter) => AccountPath(chapter, "/payments");
-    public string PersonalDetails(Chapter? chapter) => AccountPath(chapter, "");
+    public string PersonalDetails(Chapter? chapter) => AccountPath(chapter, string.Empty);
     public string Picture(Chapter? chapter) => AccountPath(chapter, "/picture");
     public string PictureRotate(Chapter? chapter) => AccountPath(chapter, "/picture/rotate");
     public string PictureUpload(Chapter? chapter) => AccountPath(chapter, "/picture/change");

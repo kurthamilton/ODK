@@ -1,6 +1,5 @@
 ﻿using MimeKit;
 using MimeKit.Text;
-using ODK.Core.Emails;
 using ODK.Services.Emails;
 
 namespace ODK.Services.Integrations.Emails.Extensions;
