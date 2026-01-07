@@ -1,21 +1,21 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ODK.Services.Integrations.Payments.PayPal.Client.Models;
 
 public class SubscriptionPlanJsonModel
 {
-    [JsonProperty("billing_cycles")]
+    [JsonPropertyName("billing_cycles")]
     public BillingCycleJsonModel[] BillingCycles { get; set; } = [];
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; } = "";
 
-    [JsonProperty("payment_preferences")]
+    [JsonPropertyName("payment_preferences")]
     public PaymentPreferencesJsonModel PaymentPreferences { get; set; } = new();
 
-    [JsonProperty("product_id")]
+    [JsonPropertyName("product_id")]
     public string ProductId { get; set; } = "";
 
-    [JsonProperty("status")]
+    [JsonPropertyName("status")]
     public string Status { get; set; } = "";
 }

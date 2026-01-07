@@ -1,18 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ODK.Services.Integrations.Payments.PayPal.Client.Models;
 
 public class PayoutBatchItemJsonModel
 {
-    [JsonProperty("amount")]
+    [JsonPropertyName("amount")]
     public required PayoutAmountJsonModel Amount { get; init; }
 
-    [JsonProperty("note")]
+    [JsonPropertyName("note")]
     public string? Note { get; init; }
 
-    [JsonProperty("receiver")]
+    [JsonPropertyName("receiver")]
     public required string Receiver { get; init; }
 
-    [JsonProperty("recipient_type")]
+    [JsonPropertyName("recipient_type")]
     public required string RecipientType { get; init; }
 }

@@ -1,14 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using ODK.Core.Subscriptions;
 
 namespace ODK.Services.Integrations.Payments.PayPal.Client.Models;
 
 public class FrequencyJsonModel
 {
-    [JsonProperty("interval_count")]
+    [JsonPropertyName("interval_count")]
     public int IntervalCount { get; set; }
 
-    [JsonProperty("interval_unit")]
+    [JsonPropertyName("interval_unit")]
     public string IntervalUnit { get; set; } = "";
 
     [JsonIgnore]

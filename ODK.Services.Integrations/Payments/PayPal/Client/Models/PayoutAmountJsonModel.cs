@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ODK.Services.Integrations.Payments.PayPal.Client.Models;
 
 public class PayoutAmountJsonModel
 {
-    [JsonProperty("currency")]
+    [JsonPropertyName("currency")]
     public required string CurrencyCode { get; init; }
 
-    [JsonProperty("value")]
+    [JsonPropertyName("value")]
     public required string Value { get; init; }
 }

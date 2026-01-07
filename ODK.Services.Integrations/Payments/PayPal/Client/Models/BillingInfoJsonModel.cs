@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ODK.Services.Integrations.Payments.PayPal.Client.Models;
 
 public class BillingInfoJsonModel
 {
-    [JsonProperty("last_payment")]
+    [JsonPropertyName("last_payment")]
     public LastPaymentJsonModel? LastPayment { get; set; }
 
-    [JsonProperty("next_billing_time")]
+    [JsonPropertyName("next_billing_time")]
     public DateTime? NextBillingDate { get; set; }
 }

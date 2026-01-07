@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.IO;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using ODK.Core.Platforms;
 using ODK.Core.Web;
@@ -21,10 +23,12 @@ using ODK.Services.Integrations.Emails;
 using ODK.Services.Integrations.Emails.Smtp;
 using ODK.Services.Integrations.Geolocation;
 using ODK.Services.Integrations.Imaging;
+using ODK.Services.Integrations.Instagram;
 using ODK.Services.Integrations.OAuth;
 using ODK.Services.Integrations.Payments;
 using ODK.Services.Integrations.Payments.PayPal;
 using ODK.Services.Integrations.Payments.Stripe;
+using ODK.Services.Integrations.Recaptcha;
 using ODK.Services.Issues;
 using ODK.Services.Logging;
 using ODK.Services.Media;
@@ -43,8 +47,6 @@ using ODK.Web.Common.Account;
 using ODK.Web.Common.Config.Settings;
 using ODK.Web.Common.Platforms;
 using ODK.Web.Common.Services;
-using System.IO;
-using System.Linq;
 
 namespace ODK.Web.Common.Config;
 

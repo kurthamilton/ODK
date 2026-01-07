@@ -1,23 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ODK.Web.Common.Config;
 
 public static class JsonConfig
 {
-    public static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
-    {
-        ContractResolver = new CamelCasePropertyNamesContractResolver(),
-        NullValueHandling = NullValueHandling.Ignore,
-    };
-
     public static IMvcBuilder ConfigureJson(this IMvcBuilder app)
     {
-        return app.AddNewtonsoftJson(options =>
+        return app.AddJsonOptions(options =>
         {
-            options.SerializerSettings.ContractResolver = SerializerSettings.ContractResolver;
-            options.SerializerSettings.NullValueHandling = SerializerSettings.NullValueHandling;
+            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         });
     }
 }

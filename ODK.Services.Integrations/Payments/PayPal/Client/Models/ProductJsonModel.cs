@@ -1,18 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ODK.Services.Integrations.Payments.PayPal.Client.Models;
 
 public class ProductJsonModel
 {
-    [JsonProperty("category")]
+    [JsonPropertyName("category")]
     public string Category { get; set; } = "SOFTWARE";
 
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string? Description { get; set; }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; } = "";
 
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; } = "SERVICE";
 }
